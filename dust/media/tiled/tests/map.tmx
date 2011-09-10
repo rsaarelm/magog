@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="16" height="8" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" spacing="1" margin="1">
+  <image source="tiles.png" trans="000000"/>
+ </tileset>
+ <tileset firstgid="199" name="objs" tilewidth="16" tileheight="16" spacing="1" margin="1">
+  <image source="objs.png" trans="000000"/>
+ </tileset>
+ <layer name="Background" width="16" height="8">
+  <data encoding="base64" compression="zlib">
+   eJxjYGBgSATiJAbiQCYQr0fCxIA4II4H4gQc+pOBOAUJp+Ixaz0D6fZj059DpH5ktxNrP77wRNabQ4R6fPop8T8MAwCfyhtG
+  </data>
+ </layer>
+ <layer name="Terrain" width="16" height="8">
+  <data encoding="base64" compression="zlib">
+   eJxjYMAE5VCMD5hAMTqohuIuIG4nwgxagXAktgEU10AxNr9JALEUEg7GoqYUiEuAuBCPvcxQOgiIw6DsxXjU7wDinUh8NigNsj8Qyl4KpYuhbshFMncfEO8F4nogbsKCm5FwIRKGiQEAFMIWNw==
+  </data>
+ </layer>
+ <layer name="Objects" width="16" height="8" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYMAN/iCxeRlRaXTwHI3fj8dccoEeDrth4DWU7iGgjljwh7AShm9kmFtEwH3cVHI/MQAAZzoGpw==
+  </data>
+ </layer>
+</map>

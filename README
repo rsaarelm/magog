@@ -1,0 +1,39 @@
+Magog is a roguelike game.
+
+= Running the game =
+
+You need to have the Factor language binary installed from
+http://factorcode.org/ and in your executable path to run it from source.
+
+*To build a binary*, go to the root of the project directory, start the Factor
+runtime with the project in the vocabulary path with
+
+  FACTOR_ROOTS=$PWD factor
+
+then type
+
+  USE: tools.deploy
+  "magog" deploy
+
+on the listener.
+
+The binary should appear in a subdirectory "magog" in your Factor binary tree.
+
+*To run the game from the listener* start the Factor listener as above
+
+  FACTOR_ROOTS=$PWD factor
+
+then type
+
+  "magog" run
+
+This will compile the game anew whenever you do it with a fresh listener, this
+takes a while. If you're familiar with using custom images with the Factor
+listener, you probably want to set one up for yourself. The vocabulary
+`magog.build` has utilities for this.
+
+Keeping the listener on and typing "magog" run again will restart the game.
+
+= Controls =
+
+Use uiojkl to move. Use esc to quit.

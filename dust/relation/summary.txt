@@ -1,0 +1,1 @@
+A simple relational storage with efficient querying

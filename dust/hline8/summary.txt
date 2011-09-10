@@ -1,0 +1,1 @@
+Draw opaque 32-bit two-color horizontal lines of 8 pixels very fast on an x86 platform
