@@ -2,9 +2,12 @@
 
 QUALIFIED-WITH: magog.tile tile
 
-USING: accessors arrays assocs combinators combinators.short-circuit dust.geom
-fry kernel literals locals math math.ranges math.vectors memoize namespaces
-random sequences magog.areautil magog.gen-world.chunks magog.gen-world.spawn ;
+USING: accessors arrays assocs combinators combinators.short-circuit fry
+hash-sets kernel literals locals magog.areautil magog.gen-world.chunks
+magog.gen-world.spawn math math.ranges math.vectors memoize namespaces random
+sequences ;
+
+QUALIFIED: sets
 
 IN: magog.gen-world
 
@@ -19,8 +22,8 @@ CONSTANT: northwest { -1  0  0 }
 CONSTANT: up        {  0  0  1 }
 CONSTANT: down      {  0  0 -1 }
 
-CONSTANT: dirs-with-diagonals { $ north $ northeast $ southeast $ south
-                                $ southwest $ northwest $ up $ down }
+CONSTANT: horizontal-6-dirs { $ north $ northeast $ southeast $ south
+                              $ southwest $ northwest }
 
 CONSTANT: dirs { $ northeast $ southeast $ southwest
                  $ northwest $ up $ down }
@@ -161,6 +164,7 @@ PRIVATE>
         char {
             { "." [ z 0 = tile:grass tile:floor ? loc terrain ] }
             { "#" [ z 0 = tile:tree tile:wall ? loc terrain ] }
+            { "*" [ z 0 = tile:rock tile:wall ? loc terrain ] }
             { "~" [ tile:water loc terrain ] }
             { "<" [ tile:slope0 loc terrain ] }
             { "P" [ tile:slope1 loc terrain ] }
@@ -193,6 +197,15 @@ PRIVATE>
 : random-slot ( z -- loc slot ) level-slots >alist
     [ f f ] [ random first2 ] if-empty ;
 
+: level-chunks ( z -- chunk-assoc )
+    get-mapgen placed-nodes>> [ drop third over = ] assoc-filter nip ;
+
+:: level-border ( z -- locs )
+    z level-chunks :> chunks
+    chunks keys
+    [ horizontal-6-dirs [ over v+ ] map nip ] map concat <hash-set>
+    chunks keys sets:diff >array ;
+
 CONSTANT: chunks-per-level 32
 
 :: ground-chunk ( z -- )
@@ -207,7 +220,9 @@ CONSTANT: chunks-per-level 32
     downstairs-chunk upstairs-loc { 0 0 -1 } v+ place-chunk
     ;
 
-:: cover-edges ( z -- ) ; ! TODO
+:: cover-edges ( z -- )
+    z level-border :> border
+    border [ edge-chunk swap place-chunk ] each ;
 
 :: generate-level ( z -- )
     ! Generate ground chunks
