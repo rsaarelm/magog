@@ -126,6 +126,9 @@ PRIVATE>
 : terrain ( terrain loc -- )
     current-area terrain>> set-at ;
 
+: terrain-at ( loc -- terrain )
+    current-area terrain>> at ;
+
 : portal ( delta-loc target-area loc -- )
     [ <site> ] dip current-area set-portal ;
 
@@ -140,7 +143,7 @@ PRIVATE>
         [ +chunk-loc+ set ] dip
         chunk-loc area-name +area-uid+ set
         init-current-area
-        call( -- )
+        call
     ] with-scope ; inline
 
 : neighbor-sites ( site -- seq )

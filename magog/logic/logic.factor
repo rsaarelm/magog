@@ -120,8 +120,8 @@ PRIVATE>
     [
         {
             { [ uid fight-adjacent? ] [ [ uid % " attacks!" % ] make-msg ] }
-            { [ uid approach-target? ] [ [ uid % " approaches." % ] make-msg ] }
-            [ uid wander [ uid % " stumbles around." % ] make-msg ]
+            { [ uid approach-target? ] [ ] }
+            [ uid wander ]
         } cond
     ] when
     uid player =

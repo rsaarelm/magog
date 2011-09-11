@@ -2,10 +2,10 @@
 
 QUALIFIED-WITH: magog.tile tile
 
-USING: accessors arrays assocs combinators combinators.short-circuit fry
-hash-sets kernel literals locals magog.areautil magog.gen-world.chunks
-magog.gen-world.spawn math math.ranges math.vectors memoize namespaces random
-sequences ;
+USING: accessors arrays assocs combinators combinators.short-circuit dust.geom
+fry hash-sets kernel literals locals magog.areautil magog.gen-world.chunks
+magog.gen-world.spawn magog.rules math math.ranges math.vectors memoize
+namespaces random sequences ;
 
 QUALIFIED: sets
 
@@ -206,13 +206,23 @@ PRIVATE>
     [ horizontal-6-dirs [ over v+ ] map nip ] map concat <hash-set>
     chunks keys sets:diff >array ;
 
-CONSTANT: chunks-per-level 32
+: open-cells ( loc -- seq )
+    [ { 0 0 } chunk-dim rect-iota [ terrain-at can-walk-terrain? ] filter ]
+    make-area ;
+
+:: spawn-mobs ( loc -- )
+    loc [
+        ! TODO: A *much* more involved depth-sensitive distribution of which
+        ! mobs to spawn.
+        4 random 0 =
+        [ loc open-cells 6 random sample [ dreg swap spawn ] each ] when
+    ] make-area ;
 
 :: ground-chunk ( z -- )
     z random-slot :> ( loc slot )
     chunks [ slot fits-in-slot? ] filter
     [ vertical-edge-open? not ] filter
-    [ random loc place-chunk ] unless-empty ;
+    [ random loc place-chunk loc spawn-mobs ] unless-empty ;
 
 :: stairwell ( z -- )
     z random-slot drop :> upstairs-loc
@@ -223,6 +233,8 @@ CONSTANT: chunks-per-level 32
 :: cover-edges ( z -- )
     z level-border :> border
     border [ edge-chunk swap place-chunk ] each ;
+
+CONSTANT: chunks-per-level 32
 
 :: generate-level ( z -- )
     ! Generate ground chunks
