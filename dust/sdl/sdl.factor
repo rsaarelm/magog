@@ -99,7 +99,10 @@ FUNCTION: int SDL_EnableKeyRepeat ( int delay, int interval ) ;
 
 : screen-pitch ( -- pitch ) SDL_GetVideoSurface pitch>> ;
 
+SYMBOL: +quit-received+
+
 :: sdl-init ( fullscreen? width height title -- )
+    f +quit-received+ set
     SDL_INIT_VIDEO SDL_Init
     0 < [ "SDL Error: " SDL_GetError append throw ] when
     title title SDL_WM_SetCaption
@@ -125,8 +128,6 @@ PRIVATE>
     ! XXX: Hardcoded 32bpp screen surface assumption ( 4 * )
     x 4 * screen-pitch y * +
     screen-pitch ;
-
-SYMBOL: +quit-received+
 
 PRIVATE>
 
