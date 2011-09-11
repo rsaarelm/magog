@@ -94,6 +94,9 @@ MEMO: edge ( chunk dir -- edge ) {
     { [ open-vertical-edge? ]
       [ open-horizontal-edge? ] } 1|| ;
 
+: vertical-edge-open? ( chunk -- ? )
+    { [ up edge open? ] [ down edge open? ] } 1|| ;
+
 TUPLE: slot edges ;
 
 : <slot> ( -- slot ) H{ } clone slot boa ;
@@ -135,6 +138,8 @@ SYMBOL: +mapgen+
     ] each ;
 
 : slots ( -- slots ) get-mapgen slots>> ;
+
+: level-slots ( z -- slots ) slots [ drop third over = ] assoc-filter nip ;
 
 PRIVATE>
 
@@ -181,17 +186,39 @@ PRIVATE>
 
 : starting-chunk ( -- chunk ) 0 chunks nth ;
 
-: random-slot ( -- loc slot ) slots >alist
+: upstairs-chunk ( -- chunk ) 7 chunks nth ;
+
+: downstairs-chunk ( -- chunk ) 8 chunks nth ;
+
+: random-slot ( z -- loc slot ) level-slots >alist
     [ f f ] [ random first2 ] if-empty ;
+
+CONSTANT: chunks-per-level 32
+
+:: ground-chunk ( z -- )
+    z random-slot :> ( loc slot )
+    chunks [ slot fits-in-slot? ] filter
+    [ vertical-edge-open? not ] filter
+    [ random loc place-chunk ] unless-empty ;
+
+:: stairwell ( z -- )
+    z random-slot drop :> upstairs-loc
+    upstairs-chunk upstairs-loc place-chunk
+    downstairs-chunk upstairs-loc { 0 0 -1 } v+ place-chunk
+    ;
+
+:: cover-edges ( z -- ) ; ! TODO
+
+:: generate-level ( z -- )
+    ! Generate ground chunks
+    chunks-per-level [ z ground-chunk ] times
+    z -8 > [ z stairwell ] when
+    z cover-edges ;
 
 :: init-world ( -- )
     [
-        starting-chunk random-slot drop place-chunk
-        128
-        [ random-slot :> ( loc slot )
-          chunks [ slot fits-in-slot? ] filter
-          [ random loc place-chunk ] unless-empty
-        ] times
+        starting-chunk starting-loc place-chunk
+        0 -8 [a,b] [ generate-level ] each
     ] with-mapgen
     ! Player in center
-    { 0 0 0 } [ pc { 2 2 } spawn ] make-area ;
+    starting-loc [ pc { 2 2 } spawn ] make-area ;
