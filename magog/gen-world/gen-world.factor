@@ -144,9 +144,11 @@ PRIVATE>
 : new-chunk-sites ( -- locs ) slots keys ;
 
 :: fits-in-slot? ( chunk slot -- ? )
-    slot edges>> >alist [
-        first2 :> ( dir e )
-        chunk dir edge e = ] all? ;
+    slot [
+        slot edges>> >alist [
+            first2 :> ( dir e )
+            chunk dir edge e = ] all?
+    ] [ f ] if ;
 
 :: paint-chunk ( chunk loc -- )
     loc third :> z
@@ -177,12 +179,18 @@ PRIVATE>
     [ add-slots ]
     [ paint-chunk ] } 2cleave ;
 
+: starting-chunk ( -- chunk ) 0 chunks nth ;
+
+: random-slot ( -- loc slot ) slots >alist
+    [ f f ] [ random first2 ] if-empty ;
+
 :: init-world ( -- )
     [
+        starting-chunk random-slot drop place-chunk
         128
-        [ slots >alist [ random first2 :> ( loc slot )
+        [ random-slot :> ( loc slot )
           chunks [ slot fits-in-slot? ] filter
-          [ random loc place-chunk ] unless-empty ] unless-empty
+          [ random loc place-chunk ] unless-empty
         ] times
     ] with-mapgen
     ! Player in center
