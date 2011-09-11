@@ -2,7 +2,7 @@
 
 USING: accessors alien alien.c-types alien.libraries alien.syntax calendar
 classes.struct colors combinators continuations fry generalizations kernel
-literals locals math random system threads ;
+literals locals math namespaces random system threads ;
 
 EXCLUDE: sequences => short ;
 
@@ -125,6 +125,9 @@ PRIVATE>
     ! XXX: Hardcoded 32bpp screen surface assumption ( 4 * )
     x 4 * screen-pitch y * +
     screen-pitch ;
+
+SYMBOL: +quit-received+
+
 PRIVATE>
 
 : sdl-put-char-raw ( fore-sdl-col back-sdl-col x y char -- )
@@ -170,10 +173,14 @@ CONSTANT: columns 80
 :: get-key ( -- key? )
     SDL_Event <struct> :> event
     event >c-ptr SDL_PollEvent
-    [ event type>> KEYBOARD_EVENT =
-      [ event key>> unicode>> ]
-      [ f ] if
+    [ event type>>
+      { { KEYBOARD_EVENT [ event key>> unicode>> ] }
+        { QUIT_EVENT [ t +quit-received+ set f ] }
+        [ drop f ]
+      } case
     ] [ f ] if ;
+
+: sdl-quit-received? ( -- ? ) +quit-received+ get ;
 
 ! SDL-native wait key, will block every other Factor thread while it waits.
 :: wait-key-blocking ( -- key )

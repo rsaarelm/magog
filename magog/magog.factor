@@ -177,7 +177,7 @@ CONSTANT: fov-radius 12
     init-magog
     fov-radius player do-fov
     draw-screen
-    [ cycle ] [ ] while ;
+    [ cycle sdl-quit-received? not and ] [ ] while ;
 
 SYMBOL: +fullscreen+
 
