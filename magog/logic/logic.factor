@@ -91,8 +91,9 @@ CONSTANT: regeneration-rate 1/5
     ! Wake up enemies when they come into player's fov
 
     ! TODO: Stealth check, player can sneak up on unsuspecting enemies.
-    uid wake-creature
-    uid loc vneg give-target
+    loc hex-dist 4 <= [
+        uid wake-creature
+        uid loc vneg give-target ] when
     ! Re-threaten viewer whenever an awake hostile is encountered
     viewer uid enemy-of? uid [ awake>> ] [ f ] if-creature and
     [ viewer activate-threat ] when ;
