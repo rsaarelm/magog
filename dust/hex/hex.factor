@@ -180,8 +180,8 @@ PRIVATE>
 
 : 7-cells ( pos -- seq ) dup neighbors swap prefix ;
 
-: hex-dist ( pos1 pos2 -- dist )
-    v- [ vabs first2 ] [ [ sgn ] map first2 = ] bi
+: hex-dist ( vec -- dist )
+    [ vabs first2 ] [ [ sgn ] map first2 = ] bi
     [ max ] [ + ] if ;
 
 CONSTANT: hex-projection
