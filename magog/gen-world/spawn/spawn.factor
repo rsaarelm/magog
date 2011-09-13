@@ -20,7 +20,7 @@ IN: magog.gen-world.spawn
 
 : dreg ( -- uid )
     new-uid dup {
-        [ "dreg" 51 COLOR: tan4 <view> add-facet ]
+        [ "a dreg" 51 COLOR: tan4 <view> add-facet ]
         [ <creature> H{
             { "body" 2 }
             { "attack" 2 }
@@ -30,7 +30,7 @@ IN: magog.gen-world.spawn
 
 : thrall ( -- uid )
     new-uid dup {
-        [ "thrall" 54 COLOR: cyan4 <view> add-facet ]
+        [ "a thrall" 54 COLOR: cyan4 <view> add-facet ]
         [ <creature> H{
             { "body" 6 }
             { "attack" 5 }

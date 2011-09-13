@@ -8,6 +8,10 @@ IN: magog.rules
 
 : player ( -- player-uid ) "pc" ;
 
+: name ( uid -- txt )
+    dup player = [ drop "you" ]
+    [ dup view-component get-facet? [ name>> nip ] when* ] if ;
+
 : area-drawables ( -- entities ) entities
     [ [ view-component get-facet? ]
       [ loc-component get-facet? ] bi and ] filter ;

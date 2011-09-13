@@ -4,7 +4,7 @@ USING: accessors assocs combinators combinators.short-circuit dust.gamestate
 dust.hex fry kernel locals make math math.order math.parser math.vectors
 random sequences magog.com.area magog.com.creature magog.com.loc
 magog.com.map-memory magog.com.view magog.effects magog.fov magog.gen-world
-magog.offset magog.rules ;
+magog.offset magog.rules magog.text ;
 
 IN: magog.logic
 
@@ -28,13 +28,17 @@ IN: magog.logic
 
 :: attack ( attacker-uid target-uid -- )
     "attack" attacker-uid skill? "body" target-uid skill? contest :> damage
-    damage 0 > [
-        damage "body" target-uid skill? dup 0 = [ drop 1 ] when / :> scaled
-        target-uid [ body>> scaled - ] [ -1 ] if-creature :> new-body
-        new-body 0 <
-        [ "Kill!" msg target-uid kill ]
-        [ [ "Hit for " % damage # "." % ] make-msg
-          target-uid >creature? [ new-body >>body drop ] when* ] if ] when ;
+    damage 0 >
+    [ damage "body" target-uid skill? dup 0 = [ drop 1 ] when / :> scaled
+      target-uid [ body>> scaled - ] [ -1 ] if-creature :> new-body
+      new-body 0 <
+      [ attacker-uid "kill" target-uid verbs-msg msg target-uid kill ]
+      [ attacker-uid "hit" target-uid verbs-msg msg
+        target-uid >creature? [ new-body >>body drop ] when* ] if
+    ]
+    [
+        attacker-uid "miss" target-uid verbs-msg msg
+    ] if ;
 
 :: attempt-move ( uid vec -- actually-moved-vec )
     vec uid >site offset-site :> target
@@ -120,7 +124,7 @@ PRIVATE>
     { [ uid >creature? ] [ uid player = not ] } 0&&
     [
         {
-            { [ uid fight-adjacent? ] [ [ uid % " attacks!" % ] make-msg ] }
+            { [ uid fight-adjacent? ] [ ] }
             { [ uid approach-target? ] [ ] }
             [ uid wander ]
         } cond
