@@ -1,8 +1,9 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: accessors arrays combinators.short-circuit dust.com dust.gamestate
-dust.hex kernel locals magog.com.creature magog.com.loc magog.com.view
-magog.offset math math.functions math.order random sequences ;
+USING: accessors arrays combinators combinators.short-circuit dust.com
+dust.gamestate dust.hex formatting kernel locals magog.com.creature
+magog.com.loc magog.com.view magog.offset math math.functions math.order
+math.parser random sequences splitting ;
 
 IN: magog.rules
 
@@ -55,3 +56,8 @@ CONSTANT: skill-exponent-factor 5
 :: current-hp ( uid -- hp )
     uid >creature? [ body>> "body" uid skill? [ * ] when* >integer ]
     [ 1 ] if* ;
+
+: zone-title ( site -- name )
+    area-uid>> "," split third string>number
+    { { [ dup 0 = ] [ drop "overworld" ] }
+      [ neg "underground %d" sprintf ] } cond ;

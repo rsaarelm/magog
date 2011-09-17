@@ -133,7 +133,7 @@ CONSTANT: fov-radius 12
     ] each
     ;
 
-: draw-screen ( -- )
+:: draw-screen ( -- )
     +fps+ get [ 0.05 <fps> +fps+ set ] unless
     ! Reset fps timestamp so that the time spent waiting for keypresses won't
     ! get factored in.
@@ -144,6 +144,11 @@ CONSTANT: fov-radius 12
     { 0 0 }
     player current-hp "body" player skill?
     "HP: %3d/%3d  " sprintf put-string
+
+    player >site zone-title :> title
+    ! TODO: Nice, non-hacky way to do right-justified text
+    80 1 - title length - 0 2array title put-string
+
     { 66 23 } "Move: u i o" put-string
     { 66 24 } "keys  j k l" put-string
     print-msgs
