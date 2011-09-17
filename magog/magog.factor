@@ -195,4 +195,6 @@ SYMBOL: +fullscreen+
 
 : fullscreen-magog ( -- ) [ +fullscreen+ on main ] with-scope ;
 
-MAIN: main
+: scoped-main ( -- ) [ main ] with-scope ;
+
+MAIN: scoped-main
