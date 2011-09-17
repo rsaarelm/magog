@@ -144,19 +144,56 @@ CONSTANT: fov-radius 12
     { 0 0 }
     player current-hp "body" player skill?
     "HP: %3d/%3d  " sprintf put-string
+    { 66 23 } "Move: u i o" put-string
+    { 66 24 } "keys  j k l" put-string
     print-msgs
     sdl-flip
     fps-tick ;
 
+CONSTANT: north { -1 -1 }
+CONSTANT: northeast { 0 -1 }
+CONSTANT: southeast { 1 0 }
+CONSTANT: south { 1 1 }
+CONSTANT: southwest { 0 1 }
+CONSTANT: northwest { -1 0 }
+
+: pseudo-east ( -- dir )
+    player >map-memory perceived-loc>> first2 + odd? northeast southeast ? ;
+
+: pseudo-west ( -- dir )
+    player >map-memory perceived-loc>> first2 + odd? northwest southwest ? ;
+
+: cmd-move ( dir -- ? ) player swap attempt-move memory-move t ;
+
 : process-input ( key -- running? )
     {
-        { 27 [ f ] }
-        { CHAR: u [ player { -1  0 } attempt-move memory-move t ] }
-        { CHAR: l [ player {  1  0 } attempt-move memory-move t ] }
-        { CHAR: o [ player {  0 -1 } attempt-move memory-move t ] }
-        { CHAR: j [ player {  0  1 } attempt-move memory-move t ] }
-        { CHAR: i [ player { -1 -1 } attempt-move memory-move t ] }
-        { CHAR: k [ player {  1  1 } attempt-move memory-move t ] }
+        { SDLK-ESCAPE [ f ] }
+
+        { CHAR: u [ northwest cmd-move ] }
+        { SDLK-KP7 [ northwest cmd-move ] }
+
+        { CHAR: i [ north cmd-move ] }
+        { SDLK-KP8 [ north cmd-move ] }
+        { SDLK-UP [ north cmd-move ] }
+
+        { CHAR: o [ northeast cmd-move ] }
+        { SDLK-KP9 [ northeast cmd-move ] }
+
+        { CHAR: j [ southwest cmd-move ] }
+        { SDLK-KP1 [ southwest cmd-move ] }
+
+        { CHAR: k [ south cmd-move ] }
+        { SDLK-KP2 [ south cmd-move ] }
+        { SDLK-DOWN [ south cmd-move ] }
+
+        { CHAR: l [ southeast cmd-move ] }
+        { SDLK-KP3 [ southeast cmd-move ] }
+
+        { SDLK-LEFT [ pseudo-west cmd-move ] }
+        { SDLK-KP4 [ pseudo-west cmd-move ] }
+
+        { SDLK-RIGHT [ pseudo-east cmd-move ] }
+        { SDLK-KP6 [ pseudo-east cmd-move ] }
         [ drop t ]
     } case ;
 
