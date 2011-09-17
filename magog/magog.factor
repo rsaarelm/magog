@@ -142,8 +142,8 @@ CONSTANT: fov-radius 12
     draw-map
     COLOR: white fore-color set COLOR: black back-color set
     { 0 0 }
-    player current-hp "body" player skill? "attack" player skill?
-    "HP: %3d/%3d  Attack: %3d" sprintf put-string
+    player current-hp "body" player skill?
+    "HP: %3d/%3d  " sprintf put-string
     print-msgs
     sdl-flip
     fps-tick ;
