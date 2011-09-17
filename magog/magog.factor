@@ -2,14 +2,14 @@
 
 USE: images.png
 
+QUALIFIED: threads
+
 USING: accessors arrays assocs calendar colors.constants combinators
 dust.bitfont dust.com dust.fps dust.gamestate dust.geom dust.sdl formatting
-images.loader kernel literals locals math math.functions math.matrices
-math.vectors memoize namespaces random sequences splitting magog.areautil
-magog.com.creature magog.com.loc magog.com.view magog.effects magog.fov
-magog.logic magog.com.map-memory magog.rules magog.tiledata ;
-
-QUALIFIED: threads
+images.loader kernel locals magog.areautil magog.com.creature magog.com.loc
+magog.com.map-memory magog.com.view magog.effects magog.logic magog.rules
+magog.tiledata math math.matrices math.vectors memoize namespaces sequences
+splitting ;
 
 IN: magog
 
@@ -157,8 +157,6 @@ CONSTANT: fov-radius 12
         { CHAR: j [ player {  0  1 } attempt-move memory-move t ] }
         { CHAR: i [ player { -1 -1 } attempt-move memory-move t ] }
         { CHAR: k [ player {  1  1 } attempt-move memory-move t ] }
-        { CHAR: d [ "the quick brown fox jumps over the lazy dog." msg
-                    "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG." msg t ] }
         [ drop t ]
     } case ;
 

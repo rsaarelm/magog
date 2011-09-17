@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: arrays assocs dust.hex fry kernel locals math math.functions math.order
-math.ranges namespaces sequences magog.com.loc ;
+USING: arrays assocs dust.hex fry kernel locals magog.com.loc math
+math.functions math.order math.ranges namespaces sequences ;
 
 IN: magog.fov
 

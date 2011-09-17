@@ -1,7 +1,6 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: accessors assocs dust.com kernel locals math.vectors sequences
-magog.com.creature magog.com.loc magog.fov magog.logic magog.rules ;
+USING: accessors assocs dust.com kernel locals math.vectors ;
 
 IN: magog.com.map-memory
 

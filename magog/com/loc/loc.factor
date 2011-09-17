@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Risto Saarelma
 
 USING: accessors arrays assocs combinators dust.com dust.gamestate
-dust.relation kernel math.vectors sequences strings magog.com.area ;
+dust.relation kernel magog.com.area math.vectors sequences strings ;
 
 IN: magog.com.loc
 

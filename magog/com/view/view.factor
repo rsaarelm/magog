@@ -1,6 +1,6 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: accessors dust.com kernel ;
+USING: dust.com kernel ;
 
 IN: magog.com.view
 

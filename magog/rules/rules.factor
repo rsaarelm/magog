@@ -1,8 +1,8 @@
 ! Copyright (C) 2011 Risto Saarelma
 
 USING: accessors arrays combinators.short-circuit dust.com dust.gamestate
-dust.hex kernel locals math math.functions math.order random sequences
-magog.com.creature magog.com.loc magog.com.view magog.offset ;
+dust.hex kernel locals magog.com.creature magog.com.loc magog.com.view
+magog.offset math math.functions math.order random sequences ;
 
 IN: magog.rules
 

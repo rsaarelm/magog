@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: assocs dust.hex kernel math.vectors memoize namespaces sequences
-magog.com.loc ;
+USING: assocs dust.hex kernel magog.com.loc math.vectors memoize namespaces
+sequences ;
 
 IN: magog.offset
 

@@ -1,10 +1,10 @@
 ! Copyright (C) 2011 Risto Saarelma
 
 USING: accessors assocs combinators combinators.short-circuit dust.gamestate
-dust.hex fry kernel locals make math math.order math.parser math.vectors
-random sequences magog.com.area magog.com.creature magog.com.loc
+dust.hex fry kernel locals magog.com.area magog.com.creature magog.com.loc
 magog.com.map-memory magog.com.view magog.effects magog.fov magog.gen-world
-magog.offset magog.rules magog.text ;
+magog.offset magog.rules magog.text math math.order math.vectors random
+sequences ;
 
 IN: magog.logic
 

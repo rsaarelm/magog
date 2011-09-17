@@ -1,14 +1,14 @@
 ! Copyright (C) 2011 Risto Saarelma
 
 USING: accessors arrays assocs combinators dust.com dust.gamestate dust.hex
-kernel locals make math math.parser math.vectors namespaces sequences
-magog.com.area magog.com.loc magog.offset ;
+kernel locals magog.com.area magog.com.loc magog.offset make math math.parser
+math.vectors namespaces sequences ;
 
 IN: magog.areautil
 
 <PRIVATE
 
-! Dim should probably be even, given how we operate with it halved a lot here.
+! Dim should always be even, given how we operate with it halved a lot here.
 
 : hex-edge-offsets ( dim -- offsets )
     { { 1 1/2 } { 1/2 1 } { -1/2 1/2 } { -1 -1/2 } { -1/2 -1 } { 1/2 -1/2 } }
@@ -145,9 +145,6 @@ PRIVATE>
         init-current-area
         call
     ] with-scope ; inline
-
-: neighbor-sites ( site -- seq )
-    { 0 0 } neighbors [ over atomic-offset ] map nip ;
 
 : wall-mask ( site -- mask )
     neighbor-sites [ >terrain spread?>> 1 0 ? ] map

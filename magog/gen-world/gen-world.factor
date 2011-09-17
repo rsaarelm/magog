@@ -2,12 +2,12 @@
 
 QUALIFIED-WITH: magog.tile tile
 
+QUALIFIED: sets
+
 USING: accessors arrays assocs combinators combinators.short-circuit dust.geom
 fry hash-sets kernel literals locals magog.areautil magog.gen-world.chunks
 magog.gen-world.spawn magog.rules math math.ranges math.vectors memoize
 namespaces random sequences ;
-
-QUALIFIED: sets
 
 IN: magog.gen-world
 

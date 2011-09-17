@@ -1,7 +1,7 @@
 ! Copyright (C) 2011 Risto Saarelma
 
-USING: combinators kernel locals magog.com.view magog.rules make math
-sequences unicode.case ;
+USING: combinators kernel locals magog.rules make math sequences unicode.case
+;
 
 IN: magog.text
 

@@ -149,16 +149,6 @@ PRIVATE>
 CONSTANT: rows 25
 CONSTANT: columns 80
 
-! Demo cruft
-: epileptic-party ( -- )
-    rows iota [
-        columns iota [
-            over [ bitfont-w * ] [ bitfont-h * ] bi*
-            [ HEX: ffffff random HEX: ffffff random ] 2dip
-            255 random sdl-put-char-raw
-        ] each drop
-    ] each ;
-
 : sdl-flip ( -- ) SDL_GetVideoSurface SDL_Flip ;
 
 : sdl-clear ( color -- )
@@ -204,11 +194,6 @@ CONSTANT: wait-key-delay $[ 10 milliseconds ]
 : wait-key ( -- key )
     get-key [ dup not app-key-focus? and ]
     [ wait-key-delay sleep drop get-key ] while ;
-
-! Demo cruft
-: sdl-demo ( -- )
-    f 640 400 "Factor SDL Demo"
-    [ [ get-key ] [ epileptic-party sdl-flip ] until ] with-sdl ;
 
 TUPLE: bitmap8
     data
