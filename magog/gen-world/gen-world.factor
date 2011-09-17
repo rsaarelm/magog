@@ -210,12 +210,24 @@ PRIVATE>
     [ { 0 0 } chunk-dim rect-iota [ terrain-at can-walk-terrain? ] filter ]
     make-area ;
 
+: 1-chance-in ( n -- ? ) random 0 = ;
+
+: on-cells ( loc n quot -- ) [ open-cells ] 2dip [ sample ] dip each ; inline
+
 :: spawn-mobs ( loc -- )
     loc [
-        ! TODO: A *much* more involved depth-sensitive distribution of which
-        ! mobs to spawn.
-        4 random 0 =
-        [ loc open-cells 6 random sample [ dreg swap spawn ] each ] when
+        loc third :> z
+        {
+            { [ z -6 < 8 1-chance-in and ]
+              [ loc 2 random [ totem-guardian swap spawn ] on-cells ] }
+            { [ z -4 < 6 1-chance-in and ]
+              [ loc 3 random [ golem swap spawn ] on-cells ] }
+            { [ z -1 < 5 1-chance-in and ]
+              [ loc 5 random [ thrall swap spawn ] on-cells ] }
+            { [ 4 1-chance-in ]
+              [ loc 6 random [ dreg swap spawn ] on-cells ] }
+            [ ]
+        } cond
     ] make-area ;
 
 :: ground-chunk ( z -- )

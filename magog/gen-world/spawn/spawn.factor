@@ -37,3 +37,23 @@ IN: magog.gen-world.spawn
           } clone >>skills
           add-facet ]
     } cleave ;
+
+: golem ( -- uid )
+    new-uid dup {
+        [ "a golem" 57 COLOR: SlateGray <view> add-facet ]
+        [ <creature> H{
+            { "body" 13 }
+            { "attack" 3 }
+          } clone >>skills
+          add-facet ]
+    } cleave ;
+
+: totem-guardian ( -- uid )
+    new-uid dup {
+        [ "a totem guardian" 60 COLOR: OrangeRed <view> add-facet ]
+        [ <creature> H{
+            { "body" 9 }
+            { "attack" 7 }
+          } clone >>skills
+          add-facet ]
+    } cleave ;
