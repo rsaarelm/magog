@@ -113,6 +113,7 @@ FUNCTION: int SDL_PollEvent ( SDL_Event* event ) ;
 FUNCTION: uint SDL_MapRGB ( void* format, uchar R, uchar g, uchar b ) ;
 FUNCTION: void SDL_WM_SetCaption ( c-string title, c-string icon ) ;
 FUNCTION: char SDL_GetAppState ( ) ;
+FUNCTION: void SDL_Delay ( int ms ) ;
 
 FUNCTION: int SDL_EnableKeyRepeat ( int delay, int interval ) ;
 : screen-data ( -- ptr ) SDL_GetVideoSurface pixels>> ;
@@ -214,6 +215,13 @@ CONSTANT: wait-key-delay $[ 10 milliseconds ]
 : wait-key ( -- key )
     get-key [ dup not app-key-focus? and ]
     [ wait-key-delay sleep drop get-key ] while ;
+
+: sdl-delay ( ms -- ) SDL_Delay ;
+
+: wait-focus ( -- )
+    app-key-focus?
+    [ SDL_Event <struct>
+      >c-ptr SDL_WaitEvent drop ] unless ;
 
 TUPLE: bitmap8
     data

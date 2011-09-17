@@ -203,15 +203,13 @@ CONSTANT: northwest { -1 0 }
     } case ;
 
 : cycle ( -- ? )
-    app-key-focus?
-    [ get-key
-      [ clear-msgs process-input
-        fov-radius player do-fov
-        run-heartbeats ]
+    wait-focus
+    get-key
+    [ clear-msgs process-input
+      fov-radius player do-fov
+      run-heartbeats ]
       [ 50 milliseconds threads:sleep t ] if*
-      draw-screen
-    ]
-    [ 50 milliseconds threads:sleep t ] if ;
+    draw-screen ;
 
 : game-loop ( -- )
     init-magog
