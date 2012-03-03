@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include "bake.h"
 #define STB_TRUETYPE_IMPLEMENTATION
-#include <xev/contrib/stb/stb_truetype.h>
-#include <xev/tools/bake.h>
+#include "../contrib/stb/stb_truetype.h"
 
 void usage() {
   printf("Usage: fontbake ttf_file point_size > baked_data.c\n");

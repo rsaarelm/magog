@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include <xev/vec.hpp>
-#include <xev/game_state.hpp>
+#include "vec.hpp"
+#include "game_state.hpp"
 
 namespace xev {
 

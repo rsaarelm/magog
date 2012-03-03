@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 #include <algorithm>
-#include <xev/static_file.hpp>
-#include <xev/color.hpp>
+#include "static_file.hpp"
+#include "color.hpp"
 
 namespace xev {
 

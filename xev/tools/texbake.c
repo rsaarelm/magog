@@ -1,6 +1,6 @@
+#include "bake.h"
+#include "../contrib/stb/stb_image.c"
 #include <stdio.h>
-#include <xev/contrib/stb/stb_image.c>
-#include <xev/tools/bake.h>
 
 void usage() {
   printf(

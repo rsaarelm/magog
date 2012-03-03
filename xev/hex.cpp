@@ -1,6 +1,6 @@
 #include "hex.hpp"
-#include <xev/num.hpp>
-#include <xev/util.hpp>
+#include "num.hpp"
+#include "util.hpp"
 #include <boost/range/counting_range.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/join.hpp>

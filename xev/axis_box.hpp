@@ -1,9 +1,9 @@
 #ifndef XEV_AXISBOX_HPP
 #define XEV_AXISBOX_HPP
 
-#include <xev/alg.hpp>
-#include <xev/vec.hpp>
-#include <xev/util.hpp>
+#include "alg.hpp"
+#include "vec.hpp"
+#include "util.hpp"
 #include <algorithm>
 
 namespace xev {

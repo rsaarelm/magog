@@ -1,8 +1,8 @@
 #ifndef XEV_HEX_HPP
 #define XEV_HEX_HPP
 
-#include <xev/vec.hpp>
-#include <xev/alg.hpp>
+#include "vec.hpp"
+#include "alg.hpp"
 #include <array>
 
 namespace xev {

@@ -1,7 +1,7 @@
 #include "imgui.hpp"
 #include <GL/glew.h>
-#include <xev/font.hpp>
-#include <xev/gldraw.hpp>
+#include "font.hpp"
+#include "gldraw.hpp"
 
 namespace xev {
 

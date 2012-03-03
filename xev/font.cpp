@@ -1,9 +1,9 @@
 #include "font.hpp"
 #include <cstdarg>
 #include <GL/glew.h>
-#include <xev/contrib/stb/stb_truetype.h>
-#include <xev/util.hpp>
-#include <xev/gldraw.hpp>
+#include "contrib/stb/stb_truetype.h"
+#include "util.hpp"
+#include "gldraw.hpp"
 
 namespace xev {
 

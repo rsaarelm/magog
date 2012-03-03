@@ -1,7 +1,7 @@
 #include "game_loop.hpp"
-#include <xev/game_state.hpp>
-#include <xev/imgui.hpp>
-#include <xev/util.hpp>
+#include "game_state.hpp"
+#include "imgui.hpp"
+#include "util.hpp"
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>

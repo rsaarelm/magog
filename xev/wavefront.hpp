@@ -5,7 +5,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
-#include <xev/vec.hpp>
+#include "vec.hpp"
 
 namespace xev {
 

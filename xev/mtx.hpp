@@ -3,7 +3,7 @@
 
 #include <boost/static_assert.hpp>
 #include <iostream>
-#include <xev/vec.hpp>
+#include "vec.hpp"
 
 namespace xev {
 

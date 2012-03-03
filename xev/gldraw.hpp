@@ -1,7 +1,7 @@
 #ifndef XEV_GLDRAW_HPP
 #define XEV_GLDRAW_HPP
 
-#include <xev/axis_box.hpp>
+#include "axis_box.hpp"
 
 namespace xev {
 

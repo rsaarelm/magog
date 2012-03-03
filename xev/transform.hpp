@@ -1,8 +1,8 @@
 #ifndef XEV_TRANSFORM_HPP
 #define XEV_TRANSFORM_HPP
 
-#include <xev/vec.hpp>
-#include <xev/mtx.hpp>
+#include "vec.hpp"
+#include "mtx.hpp"
 
 namespace xev {
 

@@ -1,7 +1,7 @@
 #ifndef XEV_COLOR_HPP
 #define XEV_COLOR_HPP
 
-#include <xev/vec.hpp>
+#include "vec.hpp"
 #include <GL/glew.h>
 #include <stdexcept>
 

@@ -1,9 +1,9 @@
 #ifndef XEV_IMGUI_HPP
 #define XEV_IMGUI_HPP
 
-#include <xev/vec.hpp>
-#include <xev/axis_box.hpp>
-#include <xev/util.hpp>
+#include "vec.hpp"
+#include "axis_box.hpp"
+#include "util.hpp"
 
 #define GEN_ID (xev::const_hash(__FILE__) + __LINE__)
 

@@ -2,7 +2,7 @@
 #define XEV_GEOM_UTIL_HPP
 
 #include <functional>
-#include <xev/vec.hpp>
+#include "vec.hpp"
 
 namespace xev {
 

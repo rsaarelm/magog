@@ -2,9 +2,9 @@
 #define XEV_FONT_HPP
 
 #include <cstddef>
-#include <xev/contrib/stb/stb_truetype.h>
-#include <xev/surface.hpp>
-#include <xev/vec.hpp>
+#include "contrib/stb/stb_truetype.h"
+#include "surface.hpp"
+#include "vec.hpp"
 
 namespace xev {
 

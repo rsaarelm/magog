@@ -1,7 +1,7 @@
 #include "shader.hpp"
 #include <iostream>
 #include <GL/glew.h>
-#include <xev/util.hpp>
+#include "util.hpp"
 
 namespace xev {
 
