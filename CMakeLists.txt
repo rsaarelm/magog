@@ -1,81 +1,115 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(TARGETNAME telos)
+project(${TARGETNAME})
 
-add_subdirectory(xev)
+# Settings from this file propagate to CMakeLists.txt files in subdirectories.
 
-include_directories("${PROJECT_SOURCE_DIR}/")
-set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
-
-set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Woverloaded-virtual -Wold-style-cast ${CMAKE_CXX_FLAGS}")
-
-set(CMAKE_CXX_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CXX_FLAGS}")
-add_definitions("-DGLEW_STATIC")
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_scripts
+                      ${CMAKE_MODULE_PATH})
 
 # Black magic to make boost::range work with C++11 lambdas
 add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE")
 
-# XXX: Doesn't work on Linux?
-# find_package(OpenGL REQUIRED)
 
-project(${TARGETNAME})
+
+# Compiler-specific settings
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+  # GCC-specific flags here
+  set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Werror -Woverloaded-virtual -Wold-style-cast")
+  message(STATUS "Using GCC")
+endif (CMAKE_COMPILER_IS_GNUCXX)
+
+if (MSVC)
+  # Definitions for MSVC compilers here.
+  message(STATUS "Using MSVC")
+endif (MSVC)
+
+
+# OS-specific settings
+
+if (WIN32)
+  message(STATUS "On Windows")
+endif (WIN32)
+
+if (UNIX)
+  message(STATUS "On *nix")
+endif (UNIX)
+
+
+# Package search
+
+find_library(M_LIB m)
+
+find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(Portaudio)
+
+
+# Helpful settings
+
+set(CORELIBS ${M_LIB}
+             ${Boost_PROGRAM_OPTIONS_LIBRARY}
+             ${OPENGL_LIBRARY}
+             ${GLFW_LIBRARY}
+             ${GLEW_LIBRARY}
+             ${PORTAUDIO_LIBRARIES})
+
+
+# Project definition
+
+include_directories("${PROJECT_SOURCE_DIR}/")
+
+add_executable(fontbake xev/tools/fontbake.c)
+target_link_libraries(fontbake ${M_LIB})
+
+add_executable(texbake xev/tools/texbake.c)
+target_link_libraries(texbake ${M_LIB})
 
 add_executable(${TARGETNAME}
-        ui/main.cpp
-        ui/intro_screen.cpp
-        ui/game_screen.cpp
-        ui/message_buffer.cpp
-        ui/config.cpp
-        tiletex.cpp
-        ttf.cpp
-        world/actor.cpp
-        world/world.cpp
-        world/fov.cpp
-        world/cavegen.cpp
+  xev/util.cpp
+  xev/contrib/stb/stb_image.c
+  xev/num.cpp
+  xev/hex.cpp
+  xev/shader.cpp
+  xev/color.cpp
+  xev/surface.cpp
+  xev/gldraw.cpp
+  xev/font.cpp
+  xev/imgui.cpp
+  xev/static_file.cpp
+  xev/transform.cpp
+  xev/geom_util.cpp
+  xev/wavefront.cpp
+  xev/game_loop.cpp
+
+  ui/main.cpp
+  ui/intro_screen.cpp
+  ui/game_screen.cpp
+  ui/message_buffer.cpp
+  ui/config.cpp
+  tiletex.cpp
+  ttf.cpp
+  world/actor.cpp
+  world/world.cpp
+  world/fov.cpp
+  world/cavegen.cpp
 )
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-# XXX: Linux version tries to link nonexistent static GL libs if
-# set to use static linking.
-set_target_properties(${TARGETNAME} PROPERTIES LINK_FLAGS -static)
-endif()
+target_link_libraries(${TARGETNAME} ${CORELIBS})
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        COMMAND xev/fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
+        COMMAND fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf fontbake
 )
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        COMMAND xev/texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
+        COMMAND texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png texbake
 )
-
-find_library(M_LIB m)
-target_link_libraries(${TARGETNAME} ${M_LIB})
-target_link_libraries(${TARGETNAME} xev)
-target_link_libraries(${TARGETNAME} "-lglfw")
-target_link_libraries(${TARGETNAME} "-lboost_program_options")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-target_link_libraries(${TARGETNAME} "-lglew32 -lglu32 -lopengl32")
-else()
-target_link_libraries(${TARGETNAME} "-lGLEW -lGLU -lGL")
-endif()
-
-get_property(targetpath TARGET ${TARGETNAME} PROPERTY LOCATION)
-
-# Optional step, minimize executable size.
-if(${CMAKE_BUILD_TYPE} MATCHES RELEASE)
-message(STATUS "Building release")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-set(CMAKE_CXX_FLAGS "-mwindows ${CMAKE_CXX_FLAGS}")
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-add_custom_command(
-        TARGET ${TARGETNAME} POST_BUILD
-        COMMAND strip ${targetpath}
-        COMMAND upx ${targetpath})
-endif(${CMAKE_BUILD_TYPE} MATCHES RELEASE)
