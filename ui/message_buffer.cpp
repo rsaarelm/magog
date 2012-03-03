@@ -1,9 +1,8 @@
 #include "message_buffer.hpp"
 #include <GL/glew.h>
-#include <xev.hpp>
+#include <util.hpp>
 
 using namespace std;
-using namespace xev;
 
 static void my_draw_text(const Vec2i& pos, const char* txt) {
   glPushAttrib(GL_CURRENT_BIT);

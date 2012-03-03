@@ -3,12 +3,10 @@
 #include <world/world.hpp>
 #include <world/cavegen.hpp>
 #include <GL/glfw.h>
-#include <xev.hpp>
+#include <util.hpp>
 #include <vector>
 #include <sstream>
 #include <string>
-
-using namespace xev;
 
 typedef struct { int w; int h; int bpp; const char* data; } _Texture_Data;
 extern _Texture_Data _texdata_tiles;

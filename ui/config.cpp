@@ -1,10 +1,9 @@
 #include "config.hpp"
 #include <string>
 #include <boost/program_options.hpp>
-#include <xev.hpp>
+#include <util.hpp>
 
 using namespace std;
-using namespace xev;
 using namespace boost::program_options;
 
 Key_Bindings g_keybindings;

@@ -1,10 +1,9 @@
 #include "cavegen.hpp"
-#include <xev.hpp>
+#include <util.hpp>
 #include <set>
 #include <array>
 
 using namespace std;
-using namespace xev;
 
 void dig(const Location& loc) {
   // XXX: Move the hardcoded terrain data somewhere else.

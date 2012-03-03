@@ -1,10 +1,10 @@
 #ifndef TELOS_HPP
 #define TELOS_HPP
 
-#include <xev.hpp>
+#include <util.hpp>
 
 #define VERSION "000-pre"
 
-extern xev::Font_Data _fontdata_font;
+extern Font_Data _fontdata_font;
 
 #endif

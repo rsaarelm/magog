@@ -2,10 +2,8 @@
 #include "telos.hpp"
 #include <GL/glew.h>
 #include <GL/glfw.h>
-#include <xev.hpp>
+#include <util.hpp>
 #include "game_screen.hpp"
-
-using namespace xev;
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {

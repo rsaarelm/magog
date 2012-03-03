@@ -2,8 +2,6 @@
 #include "fov.hpp"
 #include <stdexcept>
 
-using namespace xev;
-
 void msg(const char* fmt) {
   raw_msg(fmt);
 }

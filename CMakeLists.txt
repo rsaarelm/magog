@@ -64,28 +64,28 @@ set(CORELIBS ${M_LIB}
 
 include_directories("${PROJECT_SOURCE_DIR}/")
 
-add_executable(fontbake xev/tools/fontbake.c)
+add_executable(fontbake tools/fontbake.c)
 target_link_libraries(fontbake ${M_LIB})
 
-add_executable(texbake xev/tools/texbake.c)
+add_executable(texbake tools/texbake.c)
 target_link_libraries(texbake ${M_LIB})
 
 add_executable(${TARGETNAME}
-  xev/util.cpp
-  xev/contrib/stb/stb_image.c
-  xev/num.cpp
-  xev/hex.cpp
-  xev/shader.cpp
-  xev/color.cpp
-  xev/surface.cpp
-  xev/gldraw.cpp
-  xev/font.cpp
-  xev/imgui.cpp
-  xev/static_file.cpp
-  xev/transform.cpp
-  xev/geom_util.cpp
-  xev/wavefront.cpp
-  xev/game_loop.cpp
+  util/core.cpp
+  contrib/stb/stb_image.c
+  util/num.cpp
+  util/hex.cpp
+  util/shader.cpp
+  util/color.cpp
+  util/surface.cpp
+  util/gldraw.cpp
+  util/font.cpp
+  util/imgui.cpp
+  util/static_file.cpp
+  util/transform.cpp
+  util/geom_util.cpp
+  util/wavefront.cpp
+  util/game_loop.cpp
 
   ui/main.cpp
   ui/intro_screen.cpp

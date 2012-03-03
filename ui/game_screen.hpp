@@ -4,11 +4,11 @@
 #include <GL/glew.h>
 #include "message_buffer.hpp"
 #include <world/world.hpp>
-#include <xev.hpp>
+#include <util.hpp>
 #include <queue>
 #include <functional>
 
-class Game_Screen : public xev::Game_State {
+class Game_Screen : public Game_State {
  public:
   typedef std::function<bool(float)> Animation;
 
@@ -28,8 +28,8 @@ class Game_Screen : public xev::Game_State {
 
   void add_animation(Animation anim);
 
-  void draw_tile(int idx, const xev::Vec2f& pos);
-  void draw_tile(int idx, const xev::Vec2f& pos, const xev::Color& color);
+  void draw_tile(int idx, const Vec2f& pos);
+  void draw_tile(int idx, const Vec2f& pos, const Color& color);
 
   void draw_anims(float interval_seconds);
 

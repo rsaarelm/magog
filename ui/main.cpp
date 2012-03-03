@@ -1,11 +1,9 @@
 #include "telos.hpp"
 #include <GL/glew.h>
-#include <xev.hpp>
-#include <xev/winmain.hpp>
+#include <util.hpp>
+#include <util/winmain.hpp>
 #include "intro_screen.hpp"
 #include "config.hpp"
-
-using namespace xev;
 
 int main(int argc, char* argv[])
 {

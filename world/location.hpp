@@ -2,12 +2,12 @@
 #define WORLD_LOCATION_HPP
 
 #include <world/actor.hpp>
-#include <xev.hpp>
+#include <util.hpp>
 #include <boost/optional.hpp>
 #include <map>
 
 struct Portal {
-  xev::Vec2i delta;
+  Vec2i delta;
   Actor area;
 
   bool operator==(const Portal& rhs) const {
@@ -16,7 +16,7 @@ struct Portal {
 };
 
 struct Location {
-  xev::Vec2i pos;
+  Vec2i pos;
   Actor area;
 
   bool operator<(const Location& rhs) const {
@@ -32,7 +32,7 @@ struct Location {
     return !(*this < rhs) && !(rhs < *this);
   }
 
-  Location operator+(const xev::Vec2i& offset) const {
+  Location operator+(const Vec2i& offset) const {
     return Location{pos + offset, area};
   }
 
@@ -61,13 +61,13 @@ struct Location {
 };
 
 
-typedef std::map<xev::Vec2i, Location> Relative_Fov;
+typedef std::map<Vec2i, Location> Relative_Fov;
 
 
 struct Terrain {
   int icon;
   const char* name;
-  xev::Color color;
+  Color color;
 };
 
 #endif

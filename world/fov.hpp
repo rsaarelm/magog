@@ -1,7 +1,6 @@
 #ifndef WORLD_FOV_HPP
 #define WORLD_FOV_HPP
 
-#include <xev.hpp>
 #include <world/world.hpp>
 #include <map>
 

@@ -1,9 +1,8 @@
 #include "fov.hpp"
-#include <xev/util.hpp>
+#include <util.hpp>
 #include <array>
 #include <cmath>
 
-using namespace xev;
 using namespace std;
 using namespace boost;
 

@@ -1,9 +1,9 @@
 #ifndef INTRO_SCREEN_HPP
 #define INTRO_SCREEN_HPP
 
-#include <xev.hpp>
+#include <util.hpp>
 
-class Intro_Screen : public xev::Game_State {
+class Intro_Screen : public Game_State {
  public:
   Intro_Screen() {}
   virtual ~Intro_Screen() {}

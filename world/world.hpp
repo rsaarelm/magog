@@ -1,7 +1,7 @@
 #ifndef WORLD_WORLD_HPP
 #define WORLD_WORLD_HPP
 
-#include <xev.hpp>
+#include <util.hpp>
 #include <world/actor.hpp>
 #include <world/location.hpp>
 #include <boost/optional.hpp>
@@ -18,14 +18,14 @@ class Blob_Part : public Part {
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(const Location& loc, int icon, const xev::Color& color, int power)
+  Blob_Part(const Location& loc, int icon, const Color& color, int power)
       : loc(loc), icon(icon), color(color), power(power), energy(0) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
   Location loc;
   int icon;
-  xev::Color color;
+  Color color;
   int power;
   int energy;
  private:
@@ -108,9 +108,9 @@ Location get_location(Actor actor);
 
 bool can_enter(Actor actor, const Location& location);
 
-bool action_walk(Actor actor, const xev::Vec2i& dir);
-bool action_melee(Actor actor, const xev::Vec2i& dir);
-bool action_bump(Actor actor, const xev::Vec2i& dir);
+bool action_walk(Actor actor, const Vec2i& dir);
+bool action_melee(Actor actor, const Vec2i& dir);
+bool action_bump(Actor actor, const Vec2i& dir);
 
 void clear_seen();
 void mark_seen(const Location& location);
