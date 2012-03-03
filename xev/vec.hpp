@@ -22,7 +22,8 @@ template<class T, int N> class Vec {
   Vec(std::initializer_list<T> args) {
     int i = 0;
     for (auto v : args) {
-      data[i++] = v;
+      data[i] = v;
+      ++i;
       if (i == N)
         break;
     }
