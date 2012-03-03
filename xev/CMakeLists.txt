@@ -17,16 +17,20 @@ add_executable(texbake
   tools/texbake.c
 )
 
+find_library(M_LIB m)
+target_link_libraries(texbake ${M_LIB})
+
 add_executable(fontbake
   tools/fontbake.c
 )
+target_link_libraries(fontbake ${M_LIB})
 
-add_executable(test_xev
-  tests/*.cpp
-)
+# add_executable(test_xev
+#   tests/*.cpp
+# )
 
 # ENABLE_TESTING()
-add_test(xev test_xev)
+# add_test(xev test_xev)
 
 add_library(xev STATIC
   util.cpp
@@ -46,7 +50,7 @@ add_library(xev STATIC
   game_loop.cpp
 )
 
-target_link_libraries(test_xev boost_unit_test_framework)
+# target_link_libraries(test_xev boost_unit_test_framework)
 
 # "bake_file(picture.png)" adds a target picture.png.cpp which contains a
 # static table that has the binary data from picture.png you can compile into

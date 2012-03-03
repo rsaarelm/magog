@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <xev/util.hpp>
+#include <stdlib.h>
 #ifdef __WIN32__
 #include <windows.h>
 #endif

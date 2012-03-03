@@ -9,14 +9,14 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Woverloaded-virtual -Wold-style-cast ${CMAKE_CXX_FLAGS}")
 
-# XXX: Hardcoded directory.
-set(CMAKE_CXX_FLAGS "-I/c/Users/winuser/work/telos/ ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CXX_FLAGS}")
 add_definitions("-DGLEW_STATIC")
 
 # Black magic to make boost::range work with C++11 lambdas
 add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE")
 
-find_package(OpenGL REQUIRED)
+# XXX: Doesn't work on Linux?
+# find_package(OpenGL REQUIRED)
 
 project(${TARGETNAME})
 
@@ -34,7 +34,11 @@ add_executable(${TARGETNAME}
         world/cavegen.cpp
 )
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+# XXX: Linux version tries to link nonexistent static GL libs if
+# set to use static linking.
 set_target_properties(${TARGETNAME} PROPERTIES LINK_FLAGS -static)
+endif()
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
@@ -48,6 +52,8 @@ add_custom_command(
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png texbake
 )
 
+find_library(M_LIB m)
+target_link_libraries(${TARGETNAME} ${M_LIB})
 target_link_libraries(${TARGETNAME} xev)
 target_link_libraries(${TARGETNAME} "-lglfw")
 target_link_libraries(${TARGETNAME} "-lboost_program_options")
@@ -55,7 +61,7 @@ target_link_libraries(${TARGETNAME} "-lboost_program_options")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 target_link_libraries(${TARGETNAME} "-lglew32 -lglu32 -lopengl32")
 else()
-target_link_libraries(${TARGETNAME} "-lglew -lglu -lgl")
+target_link_libraries(${TARGETNAME} "-lGLEW -lGLU -lGL")
 endif()
 
 get_property(targetpath TARGET ${TARGETNAME} PROPERTY LOCATION)
