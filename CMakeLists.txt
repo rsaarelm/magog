@@ -64,11 +64,7 @@ set(CORELIBS ${M_LIB}
 
 include_directories("${PROJECT_SOURCE_DIR}/")
 
-add_executable(fontbake tools/fontbake.c)
-target_link_libraries(fontbake ${M_LIB})
-
-add_executable(texbake tools/texbake.c)
-target_link_libraries(texbake ${M_LIB})
+add_subdirectory(tools)
 
 add_executable(${TARGETNAME}
   util/core.cpp
@@ -104,12 +100,12 @@ target_link_libraries(${TARGETNAME} ${CORELIBS})
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        COMMAND fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf fontbake
+        COMMAND tools/fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
+        DEPENDS assets/font.ttf tools/fontbake
 )
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        COMMAND texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png texbake
+        COMMAND tools/texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
+        DEPENDS assets/tiles.png tools/texbake
 )
