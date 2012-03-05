@@ -1,4 +1,5 @@
 #include "cavegen.hpp"
+#include <world/terrain.hpp>
 #include <util.hpp>
 #include <set>
 #include <array>

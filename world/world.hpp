@@ -4,6 +4,7 @@
 #include <util.hpp>
 #include <world/actor.hpp>
 #include <world/location.hpp>
+#include <world/terrain.hpp>
 #include <boost/optional.hpp>
 #include <exception>
 #include <map>
