@@ -28,6 +28,13 @@ class Part_Not_Found : public Actor_Exception {
 };
 
 
+enum Actor_Icon {
+  icon_null,
+  icon_infantry,
+  icon_tank,
+  icon_telos,
+};
+
 enum Kind {
   Blob_Kind,
   num_kinds

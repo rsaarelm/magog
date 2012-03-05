@@ -88,6 +88,7 @@ add_executable(${TARGETNAME}
   ui/game_screen.cpp
   ui/message_buffer.cpp
   ui/config.cpp
+  ui/tile_drawable.cpp
   tiletex.cpp
   ttf.cpp
   world/actor.cpp

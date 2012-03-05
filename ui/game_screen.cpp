@@ -1,5 +1,6 @@
 #include "game_screen.hpp"
 #include "intro_screen.hpp"
+#include "tile_drawable.hpp"
 #include <world/world.hpp>
 #include <world/cavegen.hpp>
 #include <GL/glfw.h>
@@ -7,6 +8,8 @@
 #include <vector>
 #include <sstream>
 #include <string>
+
+using namespace std;
 
 typedef struct { int w; int h; int bpp; const char* data; } _Texture_Data;
 extern _Texture_Data _texdata_tiles;
@@ -36,18 +39,46 @@ static GLuint load_tile_tex() {
 
 Actor spawn_infantry(const Location& location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(location, 38, Color("#0f7"), 3));
+  actor.add_part(new Blob_Part(location, icon_infantry, 3));
   return actor;
 }
 
 Actor spawn_armor(const Location& location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(location, 40, Color("#fd0"), 5));
+  actor.add_part(new Blob_Part(location, icon_tank, 5));
   return actor;
+}
+
+static unique_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color) {
+  static const Vec2f tile_dim(16, 16);
+  static const Vec2f tex_dim(1.0/16, 1.0/8);
+  static const int pitch=16;
+
+  return unique_ptr<Drawable>(
+    new Tile_Drawable(
+      texture,
+      ARectf(Vec2f(index % pitch, index / pitch).elem_mul(tex_dim), tex_dim),
+      tile_dim,
+      color));
 }
 
 void Game_Screen::enter() {
   tiletex = load_tile_tex();
+
+  // TODO: Less verbose data entry.
+  actor_drawables.clear();
+  actor_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
+  actor_drawables.push_back(tile_drawable(tiletex, 38, "#0f7"));
+  actor_drawables.push_back(tile_drawable(tiletex, 40, "#fd0"));
+  actor_drawables.push_back(tile_drawable(tiletex, 48, "#88f"));
+
+  terrain_drawables.clear();
+  for (int i = 0; i < NUM_TERRAINS; i++)
+    terrain_drawables.push_back(
+      tile_drawable(
+        tiletex,
+        terrain_data[i].icon,
+        terrain_data[i].color));
 
   // XXX: Ensure player actor exists. Hacky magic number id.
   new_actor(1);
@@ -103,7 +134,7 @@ void Game_Screen::enter() {
   }
 
   auto player = get_player();
-  player.add_part(new Blob_Part(Location{Vec2i(0, 0), 0}, 48, Color(128, 128, 255), 7));
+  player.add_part(new Blob_Part(Location{Vec2i(0, 0), 0}, icon_telos, 7));
   rfov = do_fov(player);
 
   msg_buffer.add_caption("Telos Unit online");
@@ -232,19 +263,15 @@ void Game_Screen::draw() {
           if (!is_explored(new_loc))
             continue;
         }
-        auto terrain = get_terrain(new_loc);
-        Color color = terrain_data[terrain].color;
-        int icon = terrain_data[terrain].icon;
-        if (!in_fov) {
-          color.as_vec().in_elem_div(Color::Color_Vec(2, 2, 4, 1));
-        }
-
         auto draw_pos = Vec2f(projection * Vec3f(x, y, 1));
-        draw_tile(icon, draw_pos, color);
+
+        // TODO: Darken terrain out of fov.
+        terrain_drawables[get_terrain(new_loc)]->draw(draw_pos);
+
         if (in_fov) {
           for (auto& actor : actors_at(new_loc)) {
             auto& blob = actor.as<Blob_Part>();
-            draw_tile(blob.icon, draw_pos, blob.color);
+            actor_drawables[blob.icon]->draw(draw_pos);
           }
         }
       }

@@ -3,9 +3,12 @@
 
 #include <GL/glew.h>
 #include "message_buffer.hpp"
+#include "drawable.hpp"
 #include <world/world.hpp>
 #include <util.hpp>
 #include <queue>
+#include <vector>
+#include <memory>
 #include <functional>
 
 class Game_Screen : public Game_State {
@@ -41,6 +44,9 @@ class Game_Screen : public Game_State {
   Relative_Fov rfov;
 
   Message_Buffer msg_buffer;
+
+  std::vector<std::unique_ptr<Drawable>> actor_drawables;
+  std::vector<std::unique_ptr<Drawable>> terrain_drawables;
 };
 
 #endif

@@ -7,7 +7,7 @@ class Drawable {
 public:
   virtual ~Drawable() {}
 
-  void draw(const Vec2f& offset) = 0;
+  virtual void draw(const Vec2f& offset) = 0;
 };
 
 #endif

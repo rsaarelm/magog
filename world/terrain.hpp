@@ -33,6 +33,7 @@ struct Terrain_Data {
 #define X(a, b, c, d) a,
 enum Terrain : uint8_t {
   TERRAIN_TABLE
+  NUM_TERRAINS
 };
 #undef X
 

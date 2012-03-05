@@ -19,14 +19,13 @@ class Blob_Part : public Part {
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(const Location& loc, int icon, const Color& color, int power)
-      : loc(loc), icon(icon), color(color), power(power), energy(0) {}
+  Blob_Part(const Location& loc, Actor_Icon icon, int power)
+      : loc(loc), icon(icon), power(power), energy(0) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
   Location loc;
-  int icon;
-  Color color;
+  Actor_Icon icon;
   int power;
   int energy;
  private:
