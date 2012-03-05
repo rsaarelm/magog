@@ -4,11 +4,13 @@
 #include <GL/glew.h>
 #include "message_buffer.hpp"
 #include "drawable.hpp"
+#include "sprite.hpp"
 #include <world/world.hpp>
 #include <util.hpp>
 #include <queue>
 #include <vector>
 #include <memory>
+#include <set>
 #include <functional>
 
 class Game_Screen : public Game_State {
@@ -25,6 +27,8 @@ class Game_Screen : public Game_State {
   virtual void key_event(int keycode, int printable);
   virtual void update(float interval_seconds);
   virtual void draw();
+
+  void generate_sprites(std::set<Sprite>& output);
 
   void do_ai();
   void end_game();

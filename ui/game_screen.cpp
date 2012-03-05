@@ -248,30 +248,49 @@ void Game_Screen::draw() {
     0,   0,  1};
   glClear(GL_COLOR_BUFFER_BIT);
 
+  set<Sprite> sprites;
+  generate_sprites(sprites);
+  for (auto sprite : sprites) {
+    auto draw_pos = Vec2f(projection * Vec3f(sprite.pos[0], sprite.pos[1], 1));
+    sprite.draw(draw_pos);
+  }
+
+  draw_anims(anim_interval);
+  anim_interval = 0;
+  Color(255, 255, 255).gl_color();
+  msg_buffer.draw();
+}
+
+void Game_Screen::generate_sprites(std::set<Sprite>& output) {
+  const int terrain_layer = 1;
+  const int actor_layer = 2;
+
   try {
     auto loc = get_location(get_player());
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
+        Vec2i offset(x, y);
         bool in_fov = true;
         Location new_loc;
-        try {
-          new_loc = rfov.at(Vec2i(x, y));
-        } catch (std::out_of_range& e) {
+
+        auto iter = rfov.find(offset);
+        if (iter != rfov.end()) {
+          new_loc = iter->second;
+        } else {
           in_fov = false;
           // XXX: Hacky.
-          new_loc = loc + Vec2i(x, y);
+          new_loc = loc + offset;
           if (!is_explored(new_loc))
             continue;
         }
-        auto draw_pos = Vec2f(projection * Vec3f(x, y, 1));
 
         // TODO: Darken terrain out of fov.
-        terrain_drawables[get_terrain(new_loc)]->draw(draw_pos);
+        output.insert(Sprite{terrain_layer, offset, *terrain_drawables[get_terrain(new_loc)]});
 
         if (in_fov) {
           for (auto& actor : actors_at(new_loc)) {
             auto& blob = actor.as<Blob_Part>();
-            actor_drawables[blob.icon]->draw(draw_pos);
+            output.insert(Sprite{actor_layer, offset, *actor_drawables[blob.icon]});
           }
         }
       }
@@ -279,11 +298,6 @@ void Game_Screen::draw() {
   } catch (Actor_Exception& e) {
     // No player actor found or no valid Loction component in it.
   }
-
-  draw_anims(anim_interval);
-  anim_interval = 0;
-  Color(255, 255, 255).gl_color();
-  msg_buffer.draw();
 }
 
 void Game_Screen::add_animation(Animation anim) {

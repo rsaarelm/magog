@@ -14,11 +14,11 @@ struct Sprite {
 
     // First sort by layer.
     if (z_layer < rhs.z_layer) return true;
-    if (z_layer > rhs.z_layer) return false;
+    if (rhs.z_layer < z_layer) return false;
 
     // Then distinguish by position.
     if (pos < rhs.pos) return true;
-    if (pos > rhs.pos) return false;
+    if (rhs.pos < pos) return false;
 
     // Finally use memory address of drawable as tie-breaker.
     if (reinterpret_cast<size_t>(&drawable) < reinterpret_cast<size_t>(&rhs.drawable)) return true;
