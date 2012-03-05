@@ -110,6 +110,11 @@ add_custom_command(
         DEPENDS assets/tiles.png tools/texbake
 )
 
+add_custom_target(run
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}
+        DEPENDS ${TARGETNAME}
+)
+
 
 # Documentation generation
 
