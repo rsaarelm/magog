@@ -12,7 +12,7 @@ typedef struct { int w; int h; int bpp; const char* data; } _Texture_Data;
 extern _Texture_Data _texdata_tiles;
 
 bool is_wall(const Location& loc) {
-  return get_terrain(loc).icon == 1;
+  return terrain_data[get_terrain(loc)].kind == wall_terrain;
 }
 
 int wall_mask(const Location& loc) {
@@ -57,9 +57,9 @@ void Game_Screen::enter() {
 
   for (auto pos : hex_area_points(r)) {
     if (one_chance_in(8))
-      set_terrain(Location{pos, 0}, Terrain{5, "sand", Color("khaki")});
+      set_terrain(Location{pos, 0}, terrain_sand);
     else
-      set_terrain(Location{pos, 0}, Terrain{5, "ground", Color("olive drab")});
+      set_terrain(Location{pos, 0}, terrain_grass);
   }
 
 
@@ -96,10 +96,10 @@ void Game_Screen::enter() {
   }
 
   for (auto pos : hex_circle_points(r)) {
-    set_terrain(Location{pos, 0}, Terrain{5, "edge", Color("pale green")});
+    set_terrain(Location{pos, 0}, terrain_floor);
   }
   for (auto pos : hex_circle_points(r+1)) {
-    set_terrain(Location{pos, 0}, Terrain{5, "void", Color("magenta")});
+    set_terrain(Location{pos, 0}, terrain_void);
   }
 
   auto player = get_player();
@@ -233,13 +233,11 @@ void Game_Screen::draw() {
             continue;
         }
         auto terrain = get_terrain(new_loc);
-        auto color = terrain.color;
-        auto icon = terrain.icon;
+        Color color = terrain_data[terrain].color;
+        int icon = terrain_data[terrain].icon;
         if (!in_fov) {
           color.as_vec().in_elem_div(Color::Color_Vec(2, 2, 4, 1));
         }
-        if (is_wall(new_loc))
-          icon += hex_wall(wall_mask(new_loc));
 
         auto draw_pos = Vec2f(projection * Vec3f(x, y, 1));
         draw_tile(icon, draw_pos, color);

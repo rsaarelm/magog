@@ -37,8 +37,8 @@ World::World()
 {}
 
 bool can_enter(Actor actor, const Location& location) {
-  // TODO: Proper walkability info in terrain data.
-  return get_terrain(location).icon == 5;
+  auto kind = terrain_data[get_terrain(location)].kind;
+  return kind == open_terrain;
 }
 
 bool action_walk(Actor actor, const Vec2i& dir) {
@@ -62,12 +62,10 @@ bool action_walk(Actor actor, const Vec2i& dir) {
 }
 
 Terrain World::get_terrain(const Location& location) {
-  static Terrain solid_terrain {1, "wall", Color(196, 196, 196)};
-
-  return assoc_find_or(terrain, location, solid_terrain);
+  return assoc_find_or(terrain, location, terrain_void);
 }
 
-void World::set_terrain(const Location& location, const Terrain& cell) {
+void World::set_terrain(const Location& location, Terrain cell) {
   terrain[location] = cell;
 }
 
@@ -117,8 +115,8 @@ bool is_explored(const Location& location) {
 }
 
 bool blocks_sight(const Location& location) {
-  // TODO: Do this properly.
-  return get_terrain(location).icon != 5;
+  auto kind = terrain_data[get_terrain(location)].kind;
+  return kind == wall_terrain || kind == void_terrain;
 }
 
 Relative_Fov do_fov(Actor actor) {
@@ -130,7 +128,7 @@ Terrain get_terrain(const Location& location) {
   return World::get().get_terrain(location);
 }
 
-void set_terrain(const Location& location, const Terrain& cell) {
+void set_terrain(const Location& location, Terrain cell) {
   World::get().set_terrain(location, cell);
 }
 

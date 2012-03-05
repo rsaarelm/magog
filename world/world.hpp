@@ -40,7 +40,7 @@ class World {
   static void clear();
 
   Terrain get_terrain(const Location& location);
-  void set_terrain(const Location& location, const Terrain& cell);
+  void set_terrain(const Location& location, Terrain cell);
 
   /// Return the actor whose turn it is to act now.
   ///
@@ -121,7 +121,7 @@ bool blocks_sight(const Location& location);
 Relative_Fov do_fov(Actor actor);
 
 Terrain get_terrain(const Location& location);
-void set_terrain(const Location& location, const Terrain& cell);
+void set_terrain(const Location& location, Terrain cell);
 
 boost::optional<Portal> get_portal(const Location& location);
 void set_portal(const Location& location, const Portal& portal);
