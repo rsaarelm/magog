@@ -57,7 +57,11 @@ set(CORELIBS ${M_LIB}
              ${OPENGL_LIBRARY}
              ${GLFW_LIBRARY}
              ${GLEW_LIBRARY}
-             ${PORTAUDIO_LIBRARIES})
+)
+
+if(PORTAUDIO_FOUND)
+  set(CORELIBS ${CORELIBS} ${PORTAUDIO_LIBRARIES})
+endif(PORTAUDIO_FOUND)
 
 
 # Project definition
