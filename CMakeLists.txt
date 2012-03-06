@@ -43,7 +43,7 @@ endif (UNIX)
 
 find_library(M_LIB m)
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost)
 find_package(OpenGL REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLEW REQUIRED)
@@ -53,7 +53,6 @@ find_package(Portaudio)
 # Helpful settings
 
 set(CORELIBS ${M_LIB}
-             ${Boost_PROGRAM_OPTIONS_LIBRARY}
              ${OPENGL_LIBRARY}
              ${GLFW_LIBRARY}
              ${GLEW_LIBRARY}
@@ -91,7 +90,6 @@ add_executable(${TARGETNAME}
   ui/intro_screen.cpp
   ui/game_screen.cpp
   ui/message_buffer.cpp
-  ui/config.cpp
   ui/tile_drawable.cpp
   tiletex.cpp
   ttf.cpp
