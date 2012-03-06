@@ -12,7 +12,7 @@ using namespace std;
 
 const std::array<const Vec2i, 6> hex_dirs{{{-1, -1}, {0, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 0}}};
 
-int hex_wall(int edge_mask) {
+Shaped_Wall hex_wall(int edge_mask) {
   // 0: Pillar, 1: x-axis wall, 2: y-axis wall, 3: xy-diagonal wall.
 
   // The values were determined by guesstimating what would look best for each
@@ -27,7 +27,7 @@ int hex_wall(int edge_mask) {
       1, 0, 0, 0, 1, 0, 0, 1,
       0, 0, 2, 2, 1, 0, 0, 0,
       0, 3, 0, 2, 1, 1, 0, 0}};
-  return walls[edge_mask];
+  return Shaped_Wall(walls[edge_mask]);
 }
 
 int hex_circumference(int radius) {

@@ -1,6 +1,8 @@
 #ifndef UTIL_VEC_HPP
 #define UTIL_VEC_HPP
 
+/// \file vec.hpp \brief Geometric vectors
+
 #include <cmath>
 #include <algorithm>
 #include <initializer_list>
@@ -9,6 +11,7 @@
 
 template<class T, int C, int R> class Mtx;
 
+/// Geometric vector class.
 template<class T, int N> class Vec {
  public:
   Vec() {
@@ -248,18 +251,18 @@ Vec<T, N> operator*(const Vec<T, N>& lhs, T rhs) {
   return result;
 }
 
+/// Complex product
 template<class T>
 Vec<T, 2> operator*(const Vec<T, 2>& lhs, const Vec<T, 2>& rhs) {
-  // Complex product
   return Vec<T, 2>{
     lhs[0]*rhs[0] - lhs[1]*rhs[1],
     lhs[1]*rhs[0] + lhs[0]*rhs[1]
   };
 }
 
+/// Cross product
 template<class T>
 Vec<T, 3> operator*(const Vec<T, 3>& lhs, const Vec<T, 3>& rhs) {
-  // Cross product
   return Vec<T, 3>{
     lhs[1]*rhs[2] - lhs[2]*rhs[1],
     lhs[2]*rhs[0] - lhs[0]*rhs[2],
@@ -267,6 +270,7 @@ Vec<T, 3> operator*(const Vec<T, 3>& lhs, const Vec<T, 3>& rhs) {
   };
 }
 
+/// Quaternion product
 template<class T>
 Vec<T, 4> operator*(const Vec<T, 4>& lhs, const Vec<T, 4>& rhs) {
   // Quaternion product
@@ -280,18 +284,20 @@ Vec<T, 4> operator*(const Vec<T, 4>& lhs, const Vec<T, 4>& rhs) {
 
 // Completionists may add octonion product here.
 
-/// Quaternion from axis-angle.
+/// Convert an axis-angle orientation into the corresponding quaternion.
 template<class T>
 Vec<T, 4> quat(const Vec<T, 3>& axis, T angle) {
   T s = sin(angle/2);
   return Vec<T, 4>{T(cos(angle/2)), axis[0]*s, axis[1]*s, axis[2]*s};
 }
 
+/// Complex conjugate.
 template<class T>
 Vec<T, 2> conjugated(const Vec<T, 2>& complex) {
   return Vec<T, 2>{complex[0], -complex[1]};
 }
 
+/// Quaternion conjugate.
 template<class T>
 Vec<T, 4> conjugated(const Vec<T, 4>& quaternion) {
   return Vec<T, 4>{quaternion[0], -quaternion[1], -quaternion[2], -quaternion[3]};
