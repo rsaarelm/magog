@@ -33,8 +33,15 @@ FIND_PATH(GLFW_INCLUDE_DIR GL/glfw.h DOC "Path to GLFW include directory."
   ${GLFW_ROOT_DIR}/include/ # added by ptr
 )
 
+set(GLFW_LIB_NAMES glfw GLFW.lib)
+
+IF (WIN32)
+   message(STATUS "Targeting Windows, seeking static GLFW first")
+   set(GLFW_LIB_NAMES libglfw.a ${GLFW_LIB_NAMES})
+ENDIF (WIN32)
+
 FIND_LIBRARY(GLFW_LIBRARY DOC "Absolute path to GLFW library."
-  NAMES glfw GLFW.lib
+  NAMES ${GLFW_LIB_NAMES}
   HINTS
   $ENV{GLFW_ROOT}
   PATH_SUFFIXES lib/win32 #For finding the library file under the root of the glfw expanded archive, typically on Windows.
