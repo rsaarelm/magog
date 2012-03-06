@@ -1,5 +1,6 @@
 # the name of the target operating system
 SET(CMAKE_SYSTEM_NAME Windows)
+SET(CROSS_COMPILING_TO_WINDOWS 1)
 
 # which compilers to use for C and C++
 SET(CMAKE_C_COMPILER i486-mingw32-gcc)

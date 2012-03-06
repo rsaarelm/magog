@@ -101,15 +101,23 @@ add_executable(${TARGETNAME}
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
 
+# XXX: Hack to make the cross-compiled tools work during compilation on the
+# host system. Assumes host system to have a working Wine available.
+IF (CROSS_COMPILING_TO_WINDOWS)
+   set(CMD wine)
+ELSE()
+   set(CMD "")
+ENDIF (CROSS_COMPILING_TO_WINDOWS)
+
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        COMMAND tools/fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
+        COMMAND ${CMD} tools/fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
         DEPENDS assets/font.ttf tools/fontbake
 )
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        COMMAND tools/texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
+        COMMAND ${CMD} tools/texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
         DEPENDS assets/tiles.png tools/texbake
 )
 
