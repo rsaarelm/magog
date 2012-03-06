@@ -1,33 +1,30 @@
-.PHONY: build/debug/telos build/release/telos run clean rundebug runrelease
+.PHONY: debug release xdebug xrelease all run xrun clean
 
-build/debug/telos: build/debug/
-	cd build/debug/; make telos
+debug:
+	mkdir -p debug
+	cd debug/; cmake -D CMAKE_BUILD_TYPE=DEBUG .. && make
 
-build/release/telos: build/release/
-	cd build/release/; make telos
+release:
+	mkdir -p release
+	cd release/; cmake -D CMAKE_BUILD_TYPE=RELEASE .. && make
 
-all: build/debug/telos build/release/telos
+X_OPT=-DCMAKE_TOOLCHAIN_FILE=../cmake_scripts/Toolchain-mingw32.cmake
 
-rundebug: build/debug/
-	cd build/debug/; make telos && ./telos
+xdebug:
+	mkdir -p xdebug
+	cd xdebug/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=DEBUG .. && make
 
-runrelease: build/release/
-	cd build/release/; make telos && ./telos
+xrelease:
+	mkdir -p xrelease
+	cd xrelease/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=RELEASE .. && make
 
-run: rundebug
+all: debug release
 
-#CMAKE_TYPE="-G MSYS Makefiles"
-CMAKE_TYPE=
+run: debug
+	./debug/telos
 
-build/debug/:
-	mkdir -p build/debug
-	cd build/debug; \
-	cmake $(CMAKE_TYPE) -D CMAKE_BUILD_TYPE=DEBUG ../..
-
-build/release/:
-	mkdir -p build/release
-	cd build/release; \
-	cmake $(CMAKE_TYPE) -D CMAKE_BUILD_TYPE=RELEASE ../..
+xrun: xdebug
+	wine ./xdebug/telos
 
 clean:
-	rm -rf build/
+	rm -rf debug/ release/ xdebug/ xrelease/

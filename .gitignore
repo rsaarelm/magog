@@ -1,2 +1,5 @@
-build/
+debug/
+release/
+xdebug/
+xrelease/
 TAGS
