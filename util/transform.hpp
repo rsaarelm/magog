@@ -1,6 +1,10 @@
 #ifndef UTIL_TRANSFORM_HPP
 #define UTIL_TRANSFORM_HPP
 
+/** \file transform.hpp
+ * 3D graphics transformations for OpenGL.
+ */
+
 #include "vec.hpp"
 #include "mtx.hpp"
 

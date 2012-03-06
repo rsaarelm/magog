@@ -5,6 +5,18 @@
 
 class Drawable;
 
+/**
+ * A lightweight handle for `Drawable` objects.
+ *
+ * Sprites are used to collate the drawables that are displayed during one
+ * frame. They are intended to be inserted into a sorted and
+ * duplicate-removing container, such as a `std::set`. The insertion will
+ * remove duplicate draws where the same (by memory address identity)
+ * `Drawable` is commanded to be drawn several times in the same place, while
+ * allowing the same `Drawable` to be drawn into several different positions
+ * for the same frame. The sort stage will also provide a draw order for the
+ * sprites as they are sorted according to their `z_layer` field.
+ */
 struct Sprite {
   inline bool operator<(const Sprite& rhs) const {
     // Function to tell sprites apart, with a bonus for doing draw layers.
@@ -26,6 +38,7 @@ struct Sprite {
     return false;
   }
 
+  /// Call the `draw` method for the sprite's `Drawable` object.
   inline void draw(const Vec2f& offset) {
     drawable.draw(offset);
   }

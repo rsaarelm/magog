@@ -1,6 +1,10 @@
 #ifndef UTIL_SHADER_HPP
 #define UTIL_SHADER_HPP
 
+/** \file shader.hpp
+ * OpenGL shader utilities.
+ */
+
 #include <GL/glew.h>
 
 GLuint load_shader(const char* source, GLenum type);

@@ -1,6 +1,7 @@
 #include "color.hpp"
 #include "core.hpp"
 #include <cstring>
+#include <stdexcept>
 
 // XXX: The hex parsing could probably be done with fewer lines.
 
@@ -210,5 +211,5 @@ Color::Color(const char* desc)
     }
   }
 
-  die("Unknown color description %s", desc);
+  throw std::invalid_argument("Bad color description");
 }

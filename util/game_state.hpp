@@ -1,6 +1,10 @@
 #ifndef UTIL_GAME_STATE_HPP
 #define UTIL_GAME_STATE_HPP
 
+/**
+ * Interface for describing a specific state of a game application, such as
+ * the intro screen or the main gameplay stage.
+ */
 class Game_State {
  public:
   Game_State() {}

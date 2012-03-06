@@ -6,6 +6,7 @@
 #include "core.hpp"
 #include <algorithm>
 
+/// Axis-aligned variable-dimension box.
 template<class T, int N> class Axis_Box {
  public:
   Axis_Box() {}

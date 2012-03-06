@@ -7,6 +7,11 @@
 #include "vec.hpp"
 #include "game_state.hpp"
 
+/**
+ * Class for the top-level game application loop.
+ *
+ * Use with custom Game_State objects.
+ */
 class Game_Loop {
  public:
   ~Game_Loop();

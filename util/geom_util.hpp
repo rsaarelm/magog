@@ -1,6 +1,10 @@
 #ifndef UTIL_GEOM_UTIL_HPP
 #define UTIL_GEOM_UTIL_HPP
 
+/** \file geom_util.hpp
+ * Geometric utilities.
+ */
+
 #include <functional>
 #include "vec.hpp"
 

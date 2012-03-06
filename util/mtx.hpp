@@ -5,9 +5,7 @@
 #include <iostream>
 #include "vec.hpp"
 
-///
 /// Column-major fixed-size matrix template class.
-///
 template<class T, int C, int R> class Mtx {
 public:
   typedef Vec<T, R> Column_Vec;

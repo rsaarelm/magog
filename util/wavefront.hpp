@@ -1,6 +1,10 @@
 #ifndef UTIL_WAVEFRONT_HPP
 #define UTIL_WAVEFRONT_HPP
 
+/** \file wavefront.hpp
+ * Wavefront OBJ data parsing.
+ */
+
 #include <vector>
 #include <tuple>
 #include <string>
@@ -34,6 +38,7 @@ struct Wavefront_Face_Point {
   }
 };
 
+/// Parse Wavefront OBJ data into a 3D model data structure.
 class Parsed_Wavefront_Obj {
  public:
   Parsed_Wavefront_Obj(std::istream& is);
@@ -71,6 +76,7 @@ struct Unified_Model {
   std::vector<short> faces;
 };
 
+/// Unify a parsed Wavefront OBJ model's vertices, texture coordinates and normals into the same indexing.
 Unified_Model unify_model(const Parsed_Wavefront_Obj& obj);
 
 #endif

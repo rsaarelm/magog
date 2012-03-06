@@ -1,6 +1,10 @@
 #ifndef UTIL_IMGUI_HPP
 #define UTIL_IMGUI_HPP
 
+/** \file imgui.hpp
+ * Immediate Mode GUI.
+ */
+
 #include "vec.hpp"
 #include "axis_box.hpp"
 #include "core.hpp"
