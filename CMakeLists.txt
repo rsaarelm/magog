@@ -12,6 +12,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_scripts
 add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE")
 
 
+# Cross-compilation settings
+
+if (CROSS_COMPILING_TO_WINDOWS)
+   # Staticness settings
+   add_definitions(-DGLEW_STATIC)
+   set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
+
+   # XXX: Hack to make the cross-compiled tools work during compilation on the
+   # host system. Assumes host system to have a working Wine available.
+   set(CMD wine)
+else (CROSS_COMPILING_TO_WINDOWS)
+   set(CMD "")
+endif (CROSS_COMPILING_TO_WINDOWS)
+
 
 # Compiler-specific settings
 
@@ -21,22 +35,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Werror -Woverloaded-virtual -Wold-style-cast")
   message(STATUS "Using GCC")
 endif (CMAKE_COMPILER_IS_GNUCXX)
-
-if (MSVC)
-  # Definitions for MSVC compilers here.
-  message(STATUS "Using MSVC")
-endif (MSVC)
-
-
-# OS-specific settings
-
-if (WIN32)
-  message(STATUS "On Windows")
-endif (WIN32)
-
-if (UNIX)
-  message(STATUS "On *nix")
-endif (UNIX)
 
 
 # Package search
@@ -52,10 +50,11 @@ find_package(Portaudio)
 
 # Helpful settings
 
-set(CORELIBS ${M_LIB}
-             ${OPENGL_LIBRARY}
-             ${GLFW_LIBRARY}
+set(CORELIBS
              ${GLEW_LIBRARY}
+             ${GLFW_LIBRARY}
+             ${OPENGL_LIBRARY}
+             ${M_LIB}
 )
 
 if(PORTAUDIO_FOUND)
@@ -100,14 +99,6 @@ add_executable(${TARGETNAME}
 )
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
-
-# XXX: Hack to make the cross-compiled tools work during compilation on the
-# host system. Assumes host system to have a working Wine available.
-IF (CROSS_COMPILING_TO_WINDOWS)
-   set(CMD wine)
-ELSE()
-   set(CMD "")
-ENDIF (CROSS_COMPILING_TO_WINDOWS)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
