@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <iterator>
 
+const float pi = 3.1415926535;
+
 /// Modulo function that handles negative numbers like you'd expect.
 template<class Num>
 Num mod(Num x, Num m) {

@@ -1,7 +1,7 @@
 #include "transform.hpp"
+#include "num.hpp"
 #include <cmath>
 #include <boost/assert.hpp>
-#include <boost/math/constants/constants.hpp>
 
 // OpenGL Programming Guide, 7th Edition, page 807.
 Gl_Matrix frustum(
@@ -36,7 +36,7 @@ Gl_Matrix ortho(
 Gl_Matrix perspective(
     float v_fov, float aspect,
     float z_near, float z_far) {
-  float fh = tan(v_fov / 360.0f * boost::math::constants::pi<float>()) * z_near;
+  float fh = tan(v_fov / 360.0f * pi) * z_near;
   float fw = fh * aspect;
   return frustum(-fw, fw, -fh, fh, z_near, z_far);
 }
