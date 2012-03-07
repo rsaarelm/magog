@@ -91,8 +91,7 @@ add_executable(${TARGETNAME}
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
 
-
-add_subdirectory(tools)
+include(tools/tools.cmake)
 
 add_custom_target(run
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}

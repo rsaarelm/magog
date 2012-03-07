@@ -1,22 +1,25 @@
-cmake_minimum_required(VERSION 2.8)
-
 if (NOT CMAKE_CROSSCOMPILING)
    # Render-font needs ImageMagick to emit pngs.
    find_package(ImageMagick REQUIRED)
 
-   add_executable(render-font render-font.cpp)
+   add_executable(render-font tools/render-font.cpp)
    target_link_libraries(render-font ${M_LIBRARY})
 
-   add_executable(emit-chardata emit-chardata.cpp)
+   add_executable(emit-chardata tools/emit-chardata.cpp)
    target_link_libraries(emit-chardata ${M_LIBRARY})
 
-   add_executable(bake-data bake-data.cpp)
+   add_executable(bake-data tools/bake-data.cpp)
 
    EXPORT(TARGETS render-font emit-chardata bake-data FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
-endif ()
+else ()
+   # XXX: Assumes that the host build dir is called "build" and is in the same
+   # parent directory with the cross-compilation build dir.
 
-if (CMAKE_CROSSCOMPILING)
-   set(IMPORT_EXECUTABLES "${PROJECT_SOURCE_DIR}/build/ImportExecutables.cmake" CACHE FILEPATH "")
+   if (NOT DEFINED BUILD_TOOLS_DIR)
+     set(BUILD_TOOLS_DIR "${CMAKE_BINARY_DIR}/../build")
+   endif ()
+
+   set(IMPORT_EXECUTABLES "${BUILD_TOOLS_DIR}/ImportExecutables.cmake" CACHE FILEPATH "")
    include(${IMPORT_EXECUTABLES})
 endif ()
 
