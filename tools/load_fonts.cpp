@@ -8,15 +8,20 @@
 
 using namespace std;
 
-vector<uint8_t> read_binary_stdin() {
+vector<uint8_t> read_binary_file(const char* filename) {
   vector<uint8_t> result;
-  freopen(NULL, "rb", stdin);
+  FILE* file = fopen(filename, "rb");
+  if (!file) {
+    fprintf(stderr, "Couldn't open file '%s'\n", filename);
+    exit(1);
+  }
   while (true) {
-    int c = fgetc(stdin);
+    int c = fgetc(file);
     if (c < 0)
       break;
     result.push_back(static_cast<uint8_t>(c));
   }
+  fclose(file);
   return result;
 }
 
@@ -59,12 +64,12 @@ Font_Data load_fonts(
 }
 
 void usage(int argc, char* argv[]) {
-  fprintf(stderr, "Usage: %s pixel_height first_char num_chars\n", argv[0]);
+  fprintf(stderr, "Usage: %s pixel_height first_char num_chars input_file output_file\n", argv[0]);
   exit(1);
 }
 
 Font_Data load_fonts(int argc, char* argv[]) {
-  if (argc != 4)
+  if (argc != 6)
     usage(argc, argv);
 
   int height = atoi(argv[1]);
@@ -74,5 +79,5 @@ Font_Data load_fonts(int argc, char* argv[]) {
   if (height <= 0 || first_char < 0 || num_chars < 1)
     usage(argc, argv);
 
-  return load_fonts(height, first_char, num_chars, read_binary_stdin());
+  return load_fonts(height, first_char, num_chars, read_binary_file(argv[4]));
 }

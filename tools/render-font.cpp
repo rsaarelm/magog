@@ -7,7 +7,9 @@ int main(int argc, char* argv[]) {
 
   // Use ImageMagick to create a png.
   char buffer[4096];
-  snprintf(buffer, sizeof(buffer), "convert -depth 8 -size %dx%d gray: png:", data.width, data.height);
+  snprintf(
+    buffer, sizeof(buffer), "convert -depth 8 -size %dx%d gray: png:\"%s\"",
+    data.width, data.height, argv[5]);
 
   FILE* output = popen(buffer, "w");
   if (!output) {

@@ -90,20 +90,10 @@ add_executable(${TARGETNAME}
 target_link_libraries(${TARGETNAME} ${CORELIBS})
 
 
+add_subdirectory(tools)
 
 # Tools used to build intermediate files
 if (NOT CMAKE_CROSSCOMPILING)
-   # Render-font needs ImageMagick to emit pngs.
-   find_package(ImageMagick REQUIRED)
-
-   add_executable(render-font tools/render-font.cpp)
-   target_link_libraries(render-font ${M_LIBRARY})
-
-   add_executable(emit-chardata tools/emit-chardata.cpp)
-   target_link_libraries(emit-chardata ${M_LIBRARY})
-
-   add_executable(bake-data tools/bake-data.cpp)
-
    # XXX: These are deprecated, remove.
    add_executable(fontbake tools/fontbake.c)
    target_link_libraries(fontbake ${M_LIBRARY})
