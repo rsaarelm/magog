@@ -12,21 +12,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_scripts
 add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE")
 
 
-# Cross-compilation settings
-
-if (CROSS_COMPILING_TO_WINDOWS)
-   # Staticness settings
-   add_definitions(-DGLEW_STATIC)
-   set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
-
-   # XXX: Hack to make the cross-compiled tools work during compilation on the
-   # host system. Assumes host system to have a working Wine available.
-   set(CMD wine)
-else (CROSS_COMPILING_TO_WINDOWS)
-   set(CMD "")
-endif (CROSS_COMPILING_TO_WINDOWS)
-
-
 # Compiler-specific settings
 
 if (CMAKE_COMPILER_IS_GNUCXX)
@@ -50,6 +35,12 @@ if (CROSS_COMPILING_TO_WINDOWS)
    # Link SDL statically
    execute_process(COMMAND ${TARGET_SDL_CONFIG} --static-libs OUTPUT_VARIABLE SDL_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
    set(SDL_LIBRARY "-Wl,-Bstatic ${SDL_LIBRARY} -Wl,-Bdynamic")
+
+   # Link GLEW statically
+   add_definitions(-DGLEW_STATIC)
+
+   # Link standard C and C++ libraries statically
+   set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
 endif (CROSS_COMPILING_TO_WINDOWS)
 
 
@@ -66,8 +57,6 @@ set(CORELIBS
 # Project definition
 
 include_directories("${PROJECT_SOURCE_DIR}/")
-
-add_subdirectory(tools)
 
 add_executable(${TARGETNAME}
   util/core.cpp
@@ -100,16 +89,35 @@ add_executable(${TARGETNAME}
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
 
+
+
+if (NOT CMAKE_CROSSCOMPILING)
+   add_executable(fontbake tools/fontbake.c)
+   target_link_libraries(fontbake ${M_LIB})
+
+   add_executable(texbake tools/texbake.c)
+   target_link_libraries(texbake ${M_LIB})
+endif ()
+
+if (CMAKE_CROSSCOMPILING)
+   SET(IMPORT_EXECUTABLES "${PROJECT_SOURCE_DIR}/build/ImportExecutables.cmake" CACHE FILEPATH "Point it to the export file from a native build")
+   INCLUDE(${IMPORT_EXECUTABLES})
+endif ()
+
+IF(NOT CMAKE_CROSSCOMPILING)
+  EXPORT(TARGETS fontbake texbake FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
+ENDIF(NOT CMAKE_CROSSCOMPILING)
+
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        COMMAND ${CMD} tools/fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        DEPENDS assets/font.ttf tools/fontbake
+        COMMAND fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
+        DEPENDS assets/font.ttf fontbake
 )
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        COMMAND ${CMD} tools/texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        DEPENDS assets/tiles.png tools/texbake
+        COMMAND texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
+        DEPENDS assets/tiles.png texbake
 )
 
 add_custom_target(run

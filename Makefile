@@ -1,32 +1,35 @@
 TARGET=telos
 
-.PHONY: debug release xdebug xrelease all run xrun clean
+.PHONY: tools build xbuild all run xrun clean
 
-debug:
-	mkdir -p debug
-	cd debug/; cmake -D CMAKE_BUILD_TYPE=DEBUG .. && make
+build: build/Makefile
+	cd build/; make
 
-release:
-	mkdir -p release
-	cd release/; cmake -D CMAKE_BUILD_TYPE=RELEASE .. && make && strip $(TARGET)
+build/Makefile: CMakeLists.txt
+	mkdir -p build
+	cd build/; cmake ..
+
+# Tools are a separate target so that the cross-compile target can build them
+# as local binaries.
+tools: build/Makefile
+	cd build/; make fontbake && make texbake
 
 X_OPT=-D CMAKE_TOOLCHAIN_FILE=../cmake_scripts/Toolchain-mingw32.cmake
 
-xdebug:
-	mkdir -p xdebug
-	cd xdebug/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=DEBUG .. && make
+xbuild/Makefile: CMakeLists.txt tools
+	mkdir -p xbuild
+	cd xbuild/; cmake $(X_OPT) ..
 
-xrelease:
-	mkdir -p xrelease
-	cd xrelease/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=RELEASE .. && make && strip $(TARGET).exe
+xbuild: xbuild/Makefile
+	cd xbuild/; make
 
-all: debug release xdebug xrelease
+all: build xbuild
 
-run: debug
-	./debug/telos
+run: build
+	./build/telos
 
-xrun: xdebug
-	wine ./xdebug/telos
+xrun: xbuild
+	wine ./xbuild/telos
 
 clean:
-	rm -rf debug/ release/ xdebug/ xrelease/
+	rm -rf build/ xbuild/
