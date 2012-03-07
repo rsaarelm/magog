@@ -16,7 +16,7 @@ class Surface {
   Surface(const Vec2i& dim);
   ~Surface();
 
-  void load_image(const unsigned char* buffer, int buffer_len);
+  void load_image(const uint8_t* buffer, size_t buffer_len);
   void load_image(const Static_File* file);
 
   void init_image(int width, int height);
@@ -25,7 +25,7 @@ class Surface {
     return *reinterpret_cast<const Vec2i*>(&width);
   }
 
-  unsigned char* get_data() { return data; }
+  uint8_t* get_data() { return data; }
 
   Color& operator[](int i) { return reinterpret_cast<Color*>(data)[i]; }
 
@@ -38,7 +38,7 @@ class Surface {
   Surface(const Surface&);
   Surface& operator=(const Surface&);
 
-  unsigned char* data;
+  uint8_t* data;
   // GLuint texture_handle;
 
   // Fields width and heigth must be kept together and in this order so that

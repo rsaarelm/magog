@@ -13,8 +13,9 @@
 
 using namespace std;
 
-typedef struct { int w; int h; int bpp; const char* data; } _Texture_Data;
-extern _Texture_Data _texdata_tiles;
+uint8_t tiles_png[] = {
+#include <tiles_image.hpp>
+};
 
 bool is_wall(const Location& loc) {
   return terrain_data[get_terrain(loc)].kind == wall_terrain;
@@ -28,14 +29,18 @@ int wall_mask(const Location& loc) {
 }
 
 static GLuint load_tile_tex() {
+  // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
+  Surface surf;
+  surf.load_image(tiles_png, sizeof(tiles_png));
+
   GLuint result;
   glGenTextures(1, &result);
   glBindTexture(GL_TEXTURE_2D, result);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, _texdata_tiles.w, _texdata_tiles.h,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, _texdata_tiles.data);
+    GL_TEXTURE_2D, 0, GL_RGBA, surf.get_dim()[0], surf.get_dim()[1],
+    0, GL_RGBA, GL_UNSIGNED_BYTE, surf.get_data());
   return result;
 }
 

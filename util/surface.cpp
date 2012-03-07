@@ -4,8 +4,8 @@
 #include <cstdlib>
 
 extern "C" {
-  extern unsigned char* stbi_load_from_memory(
-      unsigned char const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+  extern uint8_t* stbi_load_from_memory(
+      uint8_t const *buffer, int len, int *x, int *y, int *comp, int req_comp);
 }
 
 Surface::Surface()
@@ -44,7 +44,7 @@ Surface::~Surface() {
   free(data);
 }
 
-void Surface::load_image(const unsigned char* buffer, int buffer_len) {
+void Surface::load_image(const uint8_t* buffer, size_t buffer_len) {
   free(data);
   data = stbi_load_from_memory(buffer, buffer_len, &width, &height, nullptr, 4);
 }
@@ -55,7 +55,7 @@ void Surface::init_image(int width, int height) {
   free(data);
   width = width;
   height = height;
-  data = static_cast<unsigned char*>(malloc(width * height * 4));
+  data = static_cast<uint8_t*>(malloc(width * height * 4));
 }
 
 #if 0

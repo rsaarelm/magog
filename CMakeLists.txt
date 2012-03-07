@@ -56,7 +56,7 @@ set(CORELIBS
 
 # Project definition
 
-include_directories("${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/" "${PROJECT_BINARY_DIR}/")
 
 add_executable(${TARGETNAME}
   util/core.cpp
@@ -79,7 +79,6 @@ add_executable(${TARGETNAME}
   ui/game_screen.cpp
   ui/message_buffer.cpp
   ui/tile_drawable.cpp
-  tiletex.cpp
   ttf.cpp
   world/actor.cpp
   world/world.cpp
@@ -88,7 +87,7 @@ add_executable(${TARGETNAME}
 
 #  font_image.hpp
 #  font_data.hpp
-#  tiles_image.hpp
+  tiles_image.hpp
 )
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
@@ -101,9 +100,6 @@ if (NOT CMAKE_CROSSCOMPILING)
    # XXX: These are deprecated, remove.
    add_executable(fontbake tools/fontbake.c)
    target_link_libraries(fontbake ${M_LIBRARY})
-
-   add_executable(texbake tools/texbake.c)
-   target_link_libraries(texbake ${M_LIBRARY})
 endif ()
 
 if (CMAKE_CROSSCOMPILING)
@@ -112,19 +108,13 @@ if (CMAKE_CROSSCOMPILING)
 endif ()
 
 IF(NOT CMAKE_CROSSCOMPILING)
-  EXPORT(TARGETS fontbake texbake FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
+  EXPORT(TARGETS fontbake FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
 ENDIF(NOT CMAKE_CROSSCOMPILING)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
         COMMAND fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
         DEPENDS assets/font.ttf fontbake
-)
-
-add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        COMMAND texbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/tiles.png > ${CMAKE_CURRENT_BINARY_DIR}/tiletex.cpp
-        DEPENDS assets/tiles.png texbake
 )
 
 add_custom_target(run
