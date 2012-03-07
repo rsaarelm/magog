@@ -20,9 +20,9 @@ int from_hex(char c) {
 
 void hex_set(char sixteens, char ones, Color::Color_Elt& target) {
   int num = from_hex(sixteens);
-  if (num == -1) die("Bad hex value %c", sixteens);
+  if (num == -1) throw std::invalid_argument("Bad hex color description");
   int num2 = from_hex(ones);
-  if (num2 == -1) die("Bad hex value %c", ones);
+  if (num2 == -1) throw std::invalid_argument("Bad hex color description");
   target = static_cast<Color::Color_Elt>((num << 4) + num2);
 }
 
