@@ -44,14 +44,14 @@ find_library(M_LIB m)
 find_package(Boost)
 find_package(OpenGL REQUIRED)
 find_package(GLFW REQUIRED)
-find_package(GLEW REQUIRED)
+# find_package(GLEW REQUIRED)
 find_package(Portaudio)
 
 
 # Helpful settings
 
 set(CORELIBS
-             ${GLEW_LIBRARY}
+             # ${GLEW_LIBRARY}
              ${GLFW_LIBRARY}
              ${OPENGL_LIBRARY}
              ${M_LIB}
@@ -73,7 +73,6 @@ add_executable(${TARGETNAME}
   contrib/stb/stb_image.c
   util/num.cpp
   util/hex.cpp
-  util/shader.cpp
   util/color.cpp
   util/surface.cpp
   util/gldraw.cpp
