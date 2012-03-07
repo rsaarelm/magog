@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "config.hpp"
 #include <string>
 #include <boost/program_options.hpp>

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "cavegen.hpp"
 #include <world/terrain.hpp>
 #include <util.hpp>

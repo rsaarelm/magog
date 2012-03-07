@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_TRANSFORM_HPP
 #define UTIL_TRANSFORM_HPP
 

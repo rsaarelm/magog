@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_GLDRAW_HPP
 #define UTIL_GLDRAW_HPP
 

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "intro_screen.hpp"
 #include "telos.hpp"
 #include <GL/glew.h>

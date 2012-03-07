@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_SHADER_HPP
 #define UTIL_SHADER_HPP
 

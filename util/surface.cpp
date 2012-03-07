@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "surface.hpp"
 #include <cstdlib>
 

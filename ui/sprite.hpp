@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UI_SPRITE_HPP
 #define UI_SPRITE_HPP
 

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "tile_drawable.hpp"
 #include <util/gldraw.hpp>
 

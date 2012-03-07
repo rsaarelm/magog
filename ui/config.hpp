@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 

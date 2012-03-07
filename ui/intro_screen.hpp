@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef INTRO_SCREEN_HPP
 #define INTRO_SCREEN_HPP
 

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_SURFACE_HPP
 #define UTIL_SURFACE_HPP
 

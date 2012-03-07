@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_ALG_HPP
 #define UTIL_ALG_HPP
 

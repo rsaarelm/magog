@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_GEOM_UTIL_HPP
 #define UTIL_GEOM_UTIL_HPP
 

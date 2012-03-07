@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "game_loop.hpp"
 #include "game_state.hpp"
 #include "imgui.hpp"

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "color.hpp"
 #include "core.hpp"
 #include <cstring>

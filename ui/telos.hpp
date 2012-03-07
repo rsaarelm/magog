@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef TELOS_HPP
 #define TELOS_HPP
 

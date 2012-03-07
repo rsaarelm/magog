@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef GAME_SCREEN_HPP
 #define GAME_SCREEN_HPP
 

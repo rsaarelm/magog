@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "font.hpp"
 #include <cstdarg>
 #include <GL/glew.h>

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "fov.hpp"
 #include <util.hpp>
 #include <array>

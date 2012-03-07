@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef MESSAGE_BUFFER_HPP
 #define MESSAGE_BUFFER_HPP
 

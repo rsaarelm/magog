@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "game_screen.hpp"
 #include "intro_screen.hpp"
 #include "tile_drawable.hpp"

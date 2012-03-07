@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "core.hpp"
 #include <cstdio>
 #include <cstdarg>

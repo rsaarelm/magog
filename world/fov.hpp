@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef WORLD_FOV_HPP
 #define WORLD_FOV_HPP
 

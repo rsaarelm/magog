@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include <util/vec.hpp>
 #include <util/mtx.hpp>
 #define BOOST_TEST_MODULE vec

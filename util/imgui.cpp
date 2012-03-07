@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "imgui.hpp"
 #include <GL/glew.h>
 #include "font.hpp"

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_FONT_HPP
 #define UTIL_FONT_HPP
 

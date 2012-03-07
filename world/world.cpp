@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "world.hpp"
 #include "fov.hpp"
 #include <stdexcept>

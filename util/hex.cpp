@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "hex.hpp"
 #include "num.hpp"
 #include "core.hpp"

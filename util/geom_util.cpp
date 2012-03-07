@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "geom_util.hpp"
 #include <algorithm>
 

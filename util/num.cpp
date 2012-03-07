@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "num.hpp"
 #include "core.hpp"
 #include <ctime>

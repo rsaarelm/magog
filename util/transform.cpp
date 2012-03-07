@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "transform.hpp"
 #include "num.hpp"
 #include <cmath>

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "shader.hpp"
 #include <iostream>
 #include <GL/glew.h>

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_VEC_HPP
 #define UTIL_VEC_HPP
 

@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #include "message_buffer.hpp"
 #include <GL/glew.h>
 #include <util.hpp>

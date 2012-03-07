@@ -1,3 +1,5 @@
+// Copyright (C) 2012 Risto Saarelma
+
 #ifndef UTIL_GAME_LOOP_HPP
 #define UTIL_GAME_LOOP_HPP
 
