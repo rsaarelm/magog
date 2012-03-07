@@ -3,6 +3,7 @@
 #ifndef MESSAGE_BUFFER_HPP
 #define MESSAGE_BUFFER_HPP
 
+#include <util/color.hpp>
 #include <string>
 #include <queue>
 #include <list>
@@ -19,6 +20,9 @@ class Message_Buffer {
   void draw();
   void add_msg(std::string str);
   void add_caption(std::string str);
+
+  Color text_color;
+  Color edge_color;
  private:
   // Update the total time when texts will be read and return the time
   // the user should have read added_text.

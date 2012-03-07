@@ -6,21 +6,22 @@
 
 using namespace std;
 
-static void my_draw_text(const Vec2i& pos, const char* txt) {
-  glPushAttrib(GL_CURRENT_BIT);
-  Color(0, 0, 0).gl_color();
+static void my_draw_text(const Message_Buffer& buffer, const Vec2i& pos, const char* txt) {
+  buffer.edge_color.gl_color();
   draw_text(pos + Vec2i(-1, 0), txt);
   draw_text(pos + Vec2i(0, -1), txt);
   draw_text(pos + Vec2i(1, 0), txt);
   draw_text(pos + Vec2i(0, 1), txt);
-  glPopAttrib();
+  buffer.text_color.gl_color();
   draw_text(pos, txt);
 }
 
 Message_Buffer::Message_Buffer()
-    : clock(0)
-    , read_new_text_time(0)
-    , letter_read_duration(0.2)
+  : text_color("white")
+  , edge_color("black")
+  , clock(0)
+  , read_new_text_time(0)
+  , letter_read_duration(0.2)
 {}
 
 void Message_Buffer::update(float interval_seconds) {
@@ -44,7 +45,7 @@ void Message_Buffer::draw() {
   Vec2f offset(0, font_height());
   for (auto msg: messages) {
     // TODO: Support multiline messages
-    my_draw_text(pos, msg.text.c_str());
+    my_draw_text(*this, pos, msg.text.c_str());
     pos += offset;
   }
 
@@ -53,7 +54,7 @@ void Message_Buffer::draw() {
     auto txt = captions.front().text.c_str();
     auto dim = Game_Loop::get().get_dim();
     // XXX: Recalculating TextWidth is expensive for every frame.
-    my_draw_text(Vec2f(dim[0] / 2 - text_width(txt) / 2, dim[1] / 2), txt);
+    my_draw_text(*this, Vec2f(dim[0] / 2 - text_width(txt) / 2, dim[1] / 2), txt);
   }
 }
 

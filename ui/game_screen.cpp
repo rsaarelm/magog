@@ -259,7 +259,6 @@ void Game_Screen::draw() {
 
   draw_anims(anim_interval);
   anim_interval = 0;
-  Color(255, 255, 255).gl_color();
   msg_buffer.draw();
 }
 
