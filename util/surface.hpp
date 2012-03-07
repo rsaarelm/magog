@@ -3,10 +3,11 @@
 #ifndef UTIL_SURFACE_HPP
 #define UTIL_SURFACE_HPP
 
-#include <cstdlib>
-#include <algorithm>
 #include "static_file.hpp"
 #include "color.hpp"
+#include <cstdlib>
+#include <algorithm>
+#include <GL/gl.h>
 
 class Surface {
  public:
@@ -33,7 +34,7 @@ class Surface {
     return (*this)[pos[0] + pos[1]*width];
   }
 
-  // GLuint MakeTexture();
+  GLuint make_texture();
  private:
   Surface(const Surface&);
   Surface& operator=(const Surface&);

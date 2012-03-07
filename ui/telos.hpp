@@ -7,6 +7,4 @@
 
 #define VERSION "000-pre"
 
-extern Font_Data _fontdata_font;
-
 #endif

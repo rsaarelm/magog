@@ -2,6 +2,7 @@
 
 #include "imgui.hpp"
 #include <GL/glew.h>
+#include "color.hpp"
 #include "font.hpp"
 #include "gldraw.hpp"
 

@@ -9,20 +9,16 @@ int main(int argc, char* argv[]) {
 
   // Emit a code fragment matching an array of
   // struct {
-  //   int character_index;
   //   int x0, y0; // Character rectangle on texture.
   //   int x1, y1;
   //   float xoff, yoff;  // Rendering offset for the character.
-  //   float xadvance;    // Width of the character in text.
+  //   float char_width;
   // };
   // data.
-  for (size_t i = 0; i < data.chardata.size(); i++) {
-    auto character = data.chardata[i];
-    fprintf(output, "{%d, %d, %d, %d, %d, %g, %g, %g},\n",
-           data.first_char + i,
+  for (auto character : data.chardata)
+    fprintf(output, "{%d, %d, %d, %d, %g, %g, %g},\n",
            character.x0, character.y0, character.x1, character.y1,
            character.xoff, character.yoff, character.xadvance);
-  }
   fclose(output);
   return 0;
 }

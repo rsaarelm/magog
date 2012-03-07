@@ -79,14 +79,13 @@ add_executable(${TARGETNAME}
   ui/game_screen.cpp
   ui/message_buffer.cpp
   ui/tile_drawable.cpp
-  ttf.cpp
   world/actor.cpp
   world/world.cpp
   world/fov.cpp
   world/cavegen.cpp
 
-#  font_image.hpp
-#  font_data.hpp
+  font_image.hpp
+  font_data.hpp
   tiles_image.hpp
 )
 
@@ -94,28 +93,6 @@ target_link_libraries(${TARGETNAME} ${CORELIBS})
 
 
 add_subdirectory(tools)
-
-# Tools used to build intermediate files
-if (NOT CMAKE_CROSSCOMPILING)
-   # XXX: These are deprecated, remove.
-   add_executable(fontbake tools/fontbake.c)
-   target_link_libraries(fontbake ${M_LIBRARY})
-endif ()
-
-if (CMAKE_CROSSCOMPILING)
-   SET(IMPORT_EXECUTABLES "${PROJECT_SOURCE_DIR}/build/ImportExecutables.cmake" CACHE FILEPATH "Point it to the export file from a native build")
-   INCLUDE(${IMPORT_EXECUTABLES})
-endif ()
-
-IF(NOT CMAKE_CROSSCOMPILING)
-  EXPORT(TARGETS fontbake FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
-ENDIF(NOT CMAKE_CROSSCOMPILING)
-
-add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        COMMAND fontbake ${CMAKE_CURRENT_SOURCE_DIR}/assets/font.ttf 13 > ${CMAKE_CURRENT_BINARY_DIR}/ttf.cpp
-        DEPENDS assets/font.ttf fontbake
-)
 
 add_custom_target(run
         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}

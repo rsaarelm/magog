@@ -58,7 +58,6 @@ void Surface::init_image(int width, int height) {
   data = static_cast<uint8_t*>(malloc(width * height * 4));
 }
 
-#if 0
 GLuint Surface::make_texture() {
   GLuint result;
   glGenTextures(1, &result);
@@ -71,4 +70,3 @@ GLuint Surface::make_texture() {
       0, GL_RGBA, GL_UNSIGNED_BYTE, data);
   return result;
 }
-#endif

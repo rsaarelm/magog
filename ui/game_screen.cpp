@@ -32,16 +32,7 @@ static GLuint load_tile_tex() {
   // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
   Surface surf;
   surf.load_image(tiles_png, sizeof(tiles_png));
-
-  GLuint result;
-  glGenTextures(1, &result);
-  glBindTexture(GL_TEXTURE_2D, result);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(
-    GL_TEXTURE_2D, 0, GL_RGBA, surf.get_dim()[0], surf.get_dim()[1],
-    0, GL_RGBA, GL_UNSIGNED_BYTE, surf.get_data());
-  return result;
+  return surf.make_texture();
 }
 
 Actor spawn_infantry(const Location& location) {

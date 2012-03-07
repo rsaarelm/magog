@@ -1,53 +1,66 @@
 // Copyright (C) 2012 Risto Saarelma
 
 #include "font.hpp"
-#include <cstdarg>
-#include <GL/glew.h>
+#include "surface.hpp"
 #include "core.hpp"
 #include "gldraw.hpp"
+#include <cstdarg>
+#include <GL/gl.h>
 
 static GLuint g_font_tex = 0;
 
-static Font_Data g_fontdata_font;
+static Surface font_image;
 
-void init_font(const Font_Data& data) {
-  g_fontdata_font = data;
-  glGenTextures(1, &g_font_tex);
-  glBindTexture(GL_TEXTURE_2D, g_font_tex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_ALPHA, g_fontdata_font.w, g_fontdata_font.h,
-      0, GL_ALPHA, GL_UNSIGNED_BYTE, g_fontdata_font.data);
+struct Char_Data {
+  int x0, y0, x1, y1; ///< The rectangle points on the font texture
+  float x_off, y_off; ///< Rendering offsets
+  float char_width;
+};
+
+const int g_font_height = 13;
+const int begin_char = 32;
+const int num_chars = 96;
+
+static Char_Data g_font_data[] = {
+#include <font_data.hpp>
+};
+
+static uint8_t g_font_image[] = {
+#include <font_image.hpp>
+};
+
+void init_font() {
+  font_image.load_image(g_font_image, sizeof(g_font_image));
+  g_font_tex = font_image.make_texture();
 }
 
 int draw_char(Vec2f pos, char ch) {
   if (!g_font_tex) die("Font not initialized");
 
-  pos[1] += g_fontdata_font.font_height;
+  pos[1] += g_font_height;
 
   glBindTexture(GL_TEXTURE_2D, g_font_tex);
-  auto chdata = g_fontdata_font.chars[ch - 32];
+  auto chdata = g_font_data[ch - begin_char];
 
-  Vec2f offset = Vec2f(chdata.xoff, chdata.yoff) + pos;
+  Vec2f offset = Vec2f(chdata.x_off, chdata.y_off) + pos;
   Vec2f origin(chdata.x0, chdata.y0);
   Vec2f dim(chdata.x1 - chdata.x0, chdata.y1 - chdata.y0);
-  Vec2f tex_scale(g_fontdata_font.w, g_fontdata_font.h);
+  Vec2f tex_scale = font_image.get_dim();
 
   gl_tex_rect(ARectf(offset, dim), ARectf(origin.elem_div(tex_scale), dim.elem_div(tex_scale)));
 
-  return chdata.xadvance;
+  return chdata.char_width;
 }
 
 int text_width(const char* text) {
   int result = 0;
   for (const char* c = text; *c; c++)
-    result += g_fontdata_font.chars[*c - 32].xadvance;
+    result += g_font_data[*c - begin_char].char_width;
   return result;
 }
 
 int font_height() {
-  return g_fontdata_font.font_height;
+  return g_font_height;
 }
 
 int draw_text_raw(const Vec2f& pos, const char* text) {

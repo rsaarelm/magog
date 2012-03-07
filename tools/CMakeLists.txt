@@ -12,13 +12,13 @@ if (NOT CMAKE_CROSSCOMPILING)
 
    add_executable(bake-data bake-data.cpp)
 
-#    EXPORT(TARGETS render-font emit-chardata bake-data FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
+   EXPORT(TARGETS render-font emit-chardata bake-data FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
 endif ()
-#
-# if (CMAKE_CROSSCOMPILING)
-#    set(IMPORT_EXECUTABLES "${PROJECT_SOURCE_DIR}/build/ImportExecutables.cmake" CACHE FILEPATH "")
-#    include(${IMPORT_EXECUTABLES})
-# endif ()
+
+if (CMAKE_CROSSCOMPILING)
+   set(IMPORT_EXECUTABLES "${PROJECT_SOURCE_DIR}/build/ImportExecutables.cmake" CACHE FILEPATH "")
+   include(${IMPORT_EXECUTABLES})
+endif ()
 
 function(bake bake_source bake_target)
    add_custom_command(
