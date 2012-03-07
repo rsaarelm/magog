@@ -24,8 +24,6 @@ void die(const char* format, ...) {
 }
 
 size_t hash(const char* s) {
-  if (*s)
-    return (hash(s + 1) ^ *s) * 16777619u;
-  else
-    return 2166136261u;
+  size_t next = *s ? hash(s + 1) : 2166136261u;
+  return (next ^ *s) * 16777619u;
 }
