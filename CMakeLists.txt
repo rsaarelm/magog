@@ -24,7 +24,7 @@ endif (CMAKE_COMPILER_IS_GNUCXX)
 
 # Package search
 
-find_library(M_LIB m)
+find_library(M_LIBRARY m)
 
 find_package(Boost)
 find_package(OpenGL REQUIRED)
@@ -50,7 +50,7 @@ set(CORELIBS
              ${GLEW_LIBRARY}
              ${SDL_LIBRARY}
              ${OPENGL_LIBRARY}
-             ${M_LIB}
+             ${M_LIBRARY}
 )
 
 
@@ -91,12 +91,23 @@ target_link_libraries(${TARGETNAME} ${CORELIBS})
 
 
 
+# Tools used to build intermediate files
 if (NOT CMAKE_CROSSCOMPILING)
+   # Render-font needs ImageMagick to emit pngs.
+   find_package(ImageMagick REQUIRED)
+
+   add_executable(render-font tools/render-font.cpp)
+   target_link_libraries(render-font ${M_LIBRARY})
+
+   add_executable(emit-chardata tools/emit-chardata.cpp)
+   target_link_libraries(emit-chardata ${M_LIBRARY})
+
+   # XXX: These are deprecated, remove.
    add_executable(fontbake tools/fontbake.c)
-   target_link_libraries(fontbake ${M_LIB})
+   target_link_libraries(fontbake ${M_LIBRARY})
 
    add_executable(texbake tools/texbake.c)
-   target_link_libraries(texbake ${M_LIB})
+   target_link_libraries(texbake ${M_LIBRARY})
 endif ()
 
 if (CMAKE_CROSSCOMPILING)
