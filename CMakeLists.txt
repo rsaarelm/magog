@@ -102,6 +102,8 @@ if (NOT CMAKE_CROSSCOMPILING)
    add_executable(emit-chardata tools/emit-chardata.cpp)
    target_link_libraries(emit-chardata ${M_LIBRARY})
 
+   add_executable(bake-data tools/bake-data.cpp)
+
    # XXX: These are deprecated, remove.
    add_executable(fontbake tools/fontbake.c)
    target_link_libraries(fontbake ${M_LIBRARY})
