@@ -26,46 +26,46 @@ void hex_set(char sixteens, char ones, Color::Color_Elt& target) {
   target = static_cast<Color::Color_Elt>((num << 4) + num2);
 }
 
-#define X(name, red, green, blue) else if (strcmp(desc, name) == 0) { r = red; g = green; b = blue; a = 0xff; return; }
+#define X(name, red, green, blue) case const_hash(name): r = red; g = green; b = blue; return;
 
 Color::Color(const char* desc)
     : r(0), g(0), b(0), a(255) {
-  if (strlen(desc) == 4 && desc[0] == '#') {
-    // #RGB format.
-    hex_set(desc[1], desc[1], r);
-    hex_set(desc[2], desc[2], g);
-    hex_set(desc[3], desc[3], b);
-    return;
-  }
+  if (desc[0] == '#') {
+    switch (strlen(desc)) {
+    case 4:
+      // #RGB format.
+      hex_set(desc[1], desc[1], r);
+      hex_set(desc[2], desc[2], g);
+      hex_set(desc[3], desc[3], b);
+      return;
 
-  if (strlen(desc) == 5 && desc[0] == '#') {
-    // #RGBA format.
-    hex_set(desc[1], desc[1], r);
-    hex_set(desc[2], desc[2], g);
-    hex_set(desc[3], desc[3], b);
-    hex_set(desc[4], desc[4], a);
-    return;
-  }
+    case 5:
+      // #RGBA format.
+      hex_set(desc[1], desc[1], r);
+      hex_set(desc[2], desc[2], g);
+      hex_set(desc[3], desc[3], b);
+      hex_set(desc[4], desc[4], a);
+      return;
 
-  if (strlen(desc) == 7 && desc[0] == '#') {
-    // #RRGGBB format.
-    hex_set(desc[1], desc[2], r);
-    hex_set(desc[3], desc[4], g);
-    hex_set(desc[5], desc[6], b);
-    return;
-  }
+    case 7:
+      // #RRGGBB format.
+      hex_set(desc[1], desc[2], r);
+      hex_set(desc[3], desc[4], g);
+      hex_set(desc[5], desc[6], b);
+      return;
 
-  if (strlen(desc) == 9 && desc[0] == '#') {
-    // #RRGGBBAA format.
-    hex_set(desc[1], desc[2], r);
-    hex_set(desc[3], desc[4], g);
-    hex_set(desc[5], desc[6], b);
-    hex_set(desc[7], desc[8], a);
-    return;
+    case 9:
+      // #RRGGBBAA format.
+      hex_set(desc[1], desc[2], r);
+      hex_set(desc[3], desc[4], g);
+      hex_set(desc[5], desc[6], b);
+      hex_set(desc[7], desc[8], a);
+      return;
+    }
   }
 
   // Check for named color
-  if (false) {} // the macros are all else ifs, so we need to have a dummy if here.
+  switch (hash(desc)) {
   X("alice blue", 0xf0, 0xf8, 0xff)
   X("antique white", 0xfa, 0xeb, 0xd7)
   X("aqua", 0x00, 0xff, 0xff)
@@ -205,8 +205,9 @@ Color::Color(const char* desc)
   X("white smoke", 0xf5, 0xf5, 0xf5)
   X("yellow", 0xff, 0xff, 0x00)
   X("yellow green", 0x9a, 0xcd, 0x32)
-
-  throw std::invalid_argument("Bad color description");
+  default:
+    throw std::invalid_argument("Bad color description");
+  }
 }
 
 #undef X
