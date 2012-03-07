@@ -6,7 +6,7 @@
 #include "drawable.hpp"
 #include <util/color.hpp>
 #include <util/axis_box.hpp>
-#include <GL/glfw.h>
+#include <GL/gl.h>
 
 class Tile_Drawable : public Drawable {
 public:

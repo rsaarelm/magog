@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <SDL/SDL.h>
 
 std::unique_ptr<Game_Loop> Game_Loop::s_instance;
 
@@ -64,23 +64,31 @@ Game_Loop& Game_Loop::init(int w, int h, const char* title) {
   ASSERT(s_instance == nullptr);
   s_instance = std::unique_ptr<Game_Loop>(new Game_Loop);
 
-  if (!glfwInit())
-    die("Unable to init GLFW");
-  if (!glfwOpenWindow(w, h, 0, 0, 0, 0, 0, 0, GLFW_WINDOW))
-    die("Unable to open GLFW window");
-  glfwSetWindowTitle(title);
-  glfwSetKeyCallback(Game_Loop::key_callback);
-  glfwSetMouseButtonCallback(Game_Loop::mouse_button_callback);
-  glfwSetMousePosCallback(Game_Loop::mouse_pos_callback);
-  glfwEnable(GLFW_KEY_REPEAT);
+  if (SDL_Init(SDL_INIT_VIDEO))
+    die("Unable to init SDL: %s", SDL_GetError());
+
+  if (SDL_SetVideoMode(w, h, 0, SDL_OPENGL) == nullptr)
+    die("Unable to open SDL window: %s", SDL_GetError());
+
+  SDL_WM_SetCaption(title, title);
+
+  SDL_EnableUNICODE(1);
+  SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
   init_gl();
   return get();
 }
 
 Vec2i Game_Loop::get_dim() const {
   Vec2i result;
-  glfwGetWindowSize(&result[0], &result[1]);
+  auto surface = SDL_GetVideoSurface();
+  result[0] = surface->w;
+  result[1] = surface->h;
   return result;
+}
+
+double Game_Loop::get_seconds() const {
+  return SDL_GetTicks() / 1000.0;
 }
 
 bool Game_Loop::update_states(float interval) {
@@ -95,13 +103,18 @@ bool Game_Loop::update_states(float interval) {
   }
 }
 
+static int mouse_button_mask() {
+  int x, y;
+  return SDL_GetMouseState(&x, &y);
+}
+
 void Game_Loop::run() {
   const float interval = 1.0 / target_fps;
-  double time = glfwGetTime();
+  double time = SDL_GetTicks() / 1000.0;
   running = true;
   update_state_stack();
   while (running) {
-    double current_time = glfwGetTime();
+    double current_time = SDL_GetTicks() / 1000.0;
 
     // Failsafe in case updates keep taking more time than interval and the
     // loop keeps falling back.
@@ -124,15 +137,43 @@ void Game_Loop::run() {
       glViewport(0, 0, dim[0], dim[1]);
       for (auto state : states)
         state->draw();
-      glfwSwapBuffers();
+      SDL_GL_SwapBuffers();
     } else {
       // Don't busy wait.
-      glfwSleep(0.01);
+      SDL_Delay(10);
     }
-    if (!glfwGetWindowParam(GLFW_OPENED))
-      quit();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      Game_State *top = top_state();
+      switch (event.type) {
+      case SDL_KEYDOWN:
+        if (top)
+          top->key_event(event.key.keysym.sym, event.key.keysym.unicode);
+        break;
+      case SDL_KEYUP:
+        if (top)
+          top->key_event(-event.key.keysym.sym, -1);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONUP:
+        if (top)
+          top->mouse_event(event.button.x, event.button.y, mouse_button_mask());
+        imgui_state.pos = Vec2f(event.button.x, event.button.y);
+        imgui_state.button = mouse_button_mask();
+        break;
+      case SDL_MOUSEMOTION:
+        if (top)
+          top->mouse_event(event.motion.x, event.motion.y, mouse_button_mask());
+        imgui_state.pos = Vec2f(event.motion.x, event.motion.y);
+        imgui_state.button = mouse_button_mask();
+        break;
+      case SDL_QUIT:
+        quit();
+        break;
+      }
+    }
   }
-  glfwTerminate();
+  SDL_Quit();
 }
 
 void Game_Loop::quit() {
@@ -148,36 +189,4 @@ Game_State* Game_Loop::top_state() {
     return states.back();
   else
     return nullptr;
-}
-
-void Game_Loop::key_callback(int key, int action) {
-  Game_State *top;
-  if ((top = get().top_state()))
-    top->key_event(key * (action == GLFW_PRESS ? 1 : -1), -1);
-}
-
-static int glfw_mouse_button_state() {
-  return (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) +
-      ((glfwGetMouseButton(GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) << 1) +
-      ((glfwGetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) << 2);
-}
-
-void Game_Loop::mouse_pos_callback(int x, int y) {
-  int buttons = glfw_mouse_button_state();
-  Game_State *top;
-  if ((top = get().top_state()))
-    top->mouse_event(x, y, buttons);
-  imgui_state.pos = Vec2f(x, y);
-  imgui_state.button = buttons;
-}
-
-void Game_Loop::mouse_button_callback(int button, int action) {
-  int buttons = glfw_mouse_button_state();
-  int x, y;
-  glfwGetMousePos(&x, &y);
-  Game_State *top;
-  if ((top = get().top_state()))
-    top->mouse_event(x, y, buttons);
-  imgui_state.pos = Vec2f(x, y);
-  imgui_state.button = buttons;
 }

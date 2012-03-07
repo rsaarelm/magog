@@ -43,23 +43,24 @@ find_library(M_LIB m)
 
 find_package(Boost)
 find_package(OpenGL REQUIRED)
-find_package(GLFW REQUIRED)
-# find_package(GLEW REQUIRED)
-find_package(Portaudio)
+find_package(SDL REQUIRED)
+find_package(GLEW REQUIRED)
+
+if (CROSS_COMPILING_TO_WINDOWS)
+   # Link SDL statically
+   execute_process(COMMAND ${TARGET_SDL_CONFIG} --static-libs OUTPUT_VARIABLE SDL_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
+   set(SDL_LIBRARY "-Wl,-Bstatic ${SDL_LIBRARY} -Wl,-Bdynamic")
+endif (CROSS_COMPILING_TO_WINDOWS)
 
 
 # Helpful settings
 
 set(CORELIBS
-             # ${GLEW_LIBRARY}
-             ${GLFW_LIBRARY}
+             ${GLEW_LIBRARY}
+             ${SDL_LIBRARY}
              ${OPENGL_LIBRARY}
              ${M_LIB}
 )
-
-if(PORTAUDIO_FOUND)
-  set(CORELIBS ${CORELIBS} ${PORTAUDIO_LIBRARIES})
-endif(PORTAUDIO_FOUND)
 
 
 # Project definition

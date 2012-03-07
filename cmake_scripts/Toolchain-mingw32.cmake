@@ -10,6 +10,10 @@ SET(CMAKE_RC_COMPILER i486-mingw32-windres)
 # here is the target environment located
 SET(CMAKE_FIND_ROOT_PATH  /usr/i486-mingw32 $ENV{HOME}/mingw )
 
+# Find the sdl-config binary on the target environment.
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ALWAYS)
+find_program(TARGET_SDL_CONFIG sdl-config)
+
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search
 # programs in the host environment

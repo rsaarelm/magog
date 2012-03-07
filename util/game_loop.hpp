@@ -37,15 +37,13 @@ class Game_Loop {
   static Game_Loop& init(int w, int h, const char* title);
 
   Vec2i get_dim() const;
+
+  double get_seconds() const;
  private:
   Game_Loop();
 
   void update_state_stack();
   bool update_states(float interval);
-
-  static void key_callback(int key, int action);
-  static void mouse_pos_callback(int x, int y);
-  static void mouse_button_callback(int button, int action);
 
   std::vector<Game_State*> states;
   std::vector<std::function<void()>> stack_ops;

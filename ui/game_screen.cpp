@@ -5,7 +5,7 @@
 #include "tile_drawable.hpp"
 #include <world/world.hpp>
 #include <world/cavegen.hpp>
-#include <GL/glfw.h>
+#include <GL/gl.h>
 #include <util.hpp>
 #include <vector>
 #include <sstream>
@@ -169,27 +169,27 @@ static Game_Screen::Animation demo_anim() {
 void Game_Screen::key_event(int keysym, int printable) {
   Vec2i delta(0, 0);
   switch (from_colemak(keysym)) {
-    case GLFW_KEY_ESC:
+    case 27: // Escape
       end_game();
       break;
-    case 'Q': delta = Vec2i(-1, 0); break;
-    case 'W': delta = Vec2i(-1, -1); break;
-    case 'E': delta = Vec2i(0, -1); break;
-    case 'A': delta = Vec2i(0, 1); break;
-    case 'S': delta = Vec2i(1, 1); break;
-    case 'D': delta = Vec2i(1, 0); break;
+    case 'q': delta = Vec2i(-1, 0); break;
+    case 'w': delta = Vec2i(-1, -1); break;
+    case 'e': delta = Vec2i(0, -1); break;
+    case 'a': delta = Vec2i(0, 1); break;
+    case 's': delta = Vec2i(1, 1); break;
+    case 'd': delta = Vec2i(1, 0); break;
     case '1':
       add_animation(demo_anim());
       msg_buffer.add_msg("Foobar");
       break;
-    case 'B':
+    case 'b':
       {
         printf("Benchmarking lots of FOV\n");
-        double t = glfwGetTime();
+        double t = Game_Loop::get().get_seconds();
         int n = 1000;
         for (int i = 0; i < n; i++)
           do_fov(get_player());
-        t = glfwGetTime() - t;
+        t = Game_Loop::get().get_seconds() - t;
         printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
       }
       break;

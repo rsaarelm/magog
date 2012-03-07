@@ -3,16 +3,15 @@
 #include "intro_screen.hpp"
 #include "telos.hpp"
 #include <GL/glew.h>
-#include <GL/glfw.h>
 #include <util.hpp>
 #include "game_screen.hpp"
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {
-    case GLFW_KEY_ESC:
+    case 27: // Escape
       Game_Loop::get().pop_state();
       break;
-    case 'N':
+    case 'n':
       Game_Loop::get().pop_state();
       Game_Loop::get().push_state(new Game_Screen);
       break;
