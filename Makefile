@@ -1,3 +1,5 @@
+TARGET=telos
+
 .PHONY: debug release xdebug xrelease all run xrun clean
 
 debug:
@@ -6,9 +8,9 @@ debug:
 
 release:
 	mkdir -p release
-	cd release/; cmake -D CMAKE_BUILD_TYPE=RELEASE .. && make
+	cd release/; cmake -D CMAKE_BUILD_TYPE=RELEASE .. && make && strip $(TARGET)
 
-X_OPT=-DCMAKE_TOOLCHAIN_FILE=../cmake_scripts/Toolchain-mingw32.cmake
+X_OPT=-D CMAKE_TOOLCHAIN_FILE=../cmake_scripts/Toolchain-mingw32.cmake
 
 xdebug:
 	mkdir -p xdebug
@@ -16,7 +18,7 @@ xdebug:
 
 xrelease:
 	mkdir -p xrelease
-	cd xrelease/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=RELEASE .. && make
+	cd xrelease/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=RELEASE .. && make && strip $(TARGET).exe
 
 all: debug release xdebug xrelease
 
