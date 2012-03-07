@@ -18,7 +18,7 @@ xrelease:
 	mkdir -p xrelease
 	cd xrelease/; cmake $(X_OPT) -D CMAKE_BUILD_TYPE=RELEASE .. && make
 
-all: debug release
+all: debug release xdebug xrelease
 
 run: debug
 	./debug/telos
