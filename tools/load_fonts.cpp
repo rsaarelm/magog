@@ -57,8 +57,10 @@ Font_Data load_fonts(
     ttf.data(), 0, height, result.pixels.data(), result.width, result.height,
     first_char, num_chars, result.chardata.data());
 
-  if (error <= 0)
+  if (error <= 0) {
     fprintf(stderr, "WARNING: load_fonts couldn't fit all characters\n");
+    exit(1);
+  }
 
   return result;
 }
