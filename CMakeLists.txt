@@ -99,7 +99,7 @@ add_custom_target(run
 )
 
 bake(assets/tiles.png tiles_image.hpp)
-bake_font(assets/font.ttf 13 32 96 font_image.hpp font_data.hpp)
+bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_data.hpp)
 
 # Documentation generation
 
