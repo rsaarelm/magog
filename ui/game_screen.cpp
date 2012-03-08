@@ -13,6 +13,12 @@
 
 using namespace std;
 
+const int tile_size = 16;
+
+const Mtx<float, 2, 2> tile_projection{
+  tile_size,    -tile_size,
+  tile_size / 2, tile_size / 2};
+
 class DemoThingie : public Drawable {
 public:
   DemoThingie() : life(10) { msg("DemoThingie is born"); }
@@ -33,6 +39,48 @@ public:
 
   virtual int get_z_layer() const { return 100; }
 private:
+  float life;
+};
+
+struct BeamDrawable : public Drawable {
+  BeamDrawable(const Color& color, const Vec2i& dir, int length, float life)
+    : color(color), dir(dir), length(length), life(life) {}
+
+  World_Space_Anims::Footprint footprint(const Location& start) const {
+    World_Space_Anims::Footprint result;
+    Location current_loc = start;
+    Vec2i offset = Vec2i(0, 0);
+
+    for (int i = 0; i < length; i++) {
+      result[offset] = current_loc;
+      offset = offset + dir;
+      current_loc = current_loc.offset_and_portal(dir);
+    }
+    return result;
+  }
+
+  virtual bool update(float interval_sec) {
+    life -= interval_sec;
+    return life > 0;
+  }
+
+  virtual void draw(const Vec2f& offset) {
+    Vec2f start = offset + Vec2f(tile_size / 2, tile_size / 2);
+    Vec2f end = tile_projection * Vec2f(dir * length) + offset +
+      Vec2f(tile_size / 2, tile_size / 2);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    color.gl_color();
+    glBegin(GL_LINES);
+    glVertex2f(start[0], start[1]);
+    glVertex2f(end[0], end[1]);
+    glEnd();
+  }
+
+  virtual int get_z_layer() const { return 100; }
+
+  Color color;
+  Vec2i dir;
+  int length;
   float life;
 };
 
@@ -190,6 +238,13 @@ void Game_Screen::key_event(int keysym, int printable) {
     case '1':
       world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_location(get_player()));
       break;
+    case 'u':
+    {
+      auto beam = new BeamDrawable(Color("pink"), {-1, 0}, 6, 1.0);
+      world_anims.add(
+        std::unique_ptr<Drawable>(beam), beam->footprint(get_location(get_player())));
+      break;
+    }
     case 'b':
       {
         printf("Benchmarking lots of FOV\n");
