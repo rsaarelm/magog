@@ -18,11 +18,8 @@
 
 class Game_Screen : public Game_State {
  public:
-  typedef std::function<bool(float)> Animation;
-
   Game_Screen()
-      : tiletex(0)
-      , anim_interval(0.0) {}
+      : tiletex(0) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -36,17 +33,10 @@ class Game_Screen : public Game_State {
   void do_ai();
   void end_game();
 
-  void add_animation(Animation anim);
-
   void draw_tile(int idx, const Vec2f& pos);
   void draw_tile(int idx, const Vec2f& pos, const Color& color);
 
-  void draw_anims(float interval_seconds);
-
   GLuint tiletex;
-
-  float anim_interval;
-  std::queue<Animation> animations;
 
   Message_Buffer msg_buffer;
 

@@ -13,6 +13,29 @@
 
 using namespace std;
 
+class DemoThingie : public Drawable {
+public:
+  DemoThingie() : life(10) { msg("DemoThingie is born"); }
+  virtual ~DemoThingie() { msg("DemoThingie perishes"); }
+
+  virtual bool update(float interval_sec) {
+    life -= interval_sec;
+    return life > 0;
+  }
+
+  virtual void draw(const Vec2f& offset) {
+    // TODO: Centered draw_text.
+    static char buf[256];
+    snprintf(buf, sizeof(buf), "DemoThingie represent: %d", static_cast<int>(life));
+    Color("white").gl_color();
+    draw_text(offset + Vec2f(-text_width(buf) / 2, -font_height()), buf);
+  }
+
+  virtual int get_z_layer() const { return 100; }
+private:
+  float life;
+};
+
 uint8_t tiles_png[] = {
 #include <tiles_image.hpp>
 };
@@ -152,16 +175,6 @@ int from_colemak(int keysym) {
     return keysym;
 }
 
-static Game_Screen::Animation demo_anim() {
-  float c = 5.0;
-  Vec2f pos(rand() % 640, rand() % 480);
-  return [=](float t) mutable {
-    Color(255, 255, 196).gl_color();
-    draw_text(pos, "%f", c);
-    return (c -= t) > 0.0;
-  };
-}
-
 void Game_Screen::key_event(int keysym, int printable) {
   Vec2i delta(0, 0);
   switch (from_colemak(keysym)) {
@@ -175,8 +188,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      add_animation(demo_anim());
-      msg_buffer.add_msg("Foobar");
+      world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_location(get_player()));
       break;
     case 'b':
       {
@@ -205,7 +217,6 @@ void Game_Screen::key_event(int keysym, int printable) {
 }
 
 void Game_Screen::update(float interval_seconds) {
-  anim_interval = interval_seconds;
   msg_buffer.update(interval_seconds);
   world_anims.update(interval_seconds);
 
@@ -254,8 +265,6 @@ void Game_Screen::draw() {
     sprite.draw(draw_pos);
   }
 
-  draw_anims(anim_interval);
-  anim_interval = 0;
   msg_buffer.draw();
 }
 
@@ -291,10 +300,6 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   }
 }
 
-void Game_Screen::add_animation(Animation anim) {
-  animations.push(anim);
-}
-
 void Game_Screen::draw_tile(int idx, const Vec2f& pos) {
   static const Vec2f tile_dim(16, 16);
   static const Vec2f tex_dim(1.0/16, 1.0/8);
@@ -306,15 +311,6 @@ void Game_Screen::draw_tile(int idx, const Vec2f& pos) {
 void Game_Screen::draw_tile(int idx, const Vec2f& pos, const Color& color) {
   color.gl_color();
   draw_tile(idx, pos);
-}
-
-void Game_Screen::draw_anims(float interval_seconds) {
-  for (size_t i = 0; i < animations.size(); i++) {
-    auto anim = std::move(animations.front());
-    animations.pop();
-    if (anim(interval_seconds))
-      animations.push(std::move(anim));
-  }
 }
 
 void raw_msg(std::string str) {
