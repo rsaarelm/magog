@@ -204,6 +204,22 @@ template<class T, int N> class Vec {
       result[i][i] = (*this)[i];
     return result;
   }
+
+  struct Hasher {
+    size_t operator()(const Vec<T, N>& vec) const {
+      size_t result = 0;
+      for (int i = 0; i < N; i++)
+        result = std::hash<T>()(vec[i]) ^ (result << 1);
+      return result;
+    }
+  };
+
+  struct Equator {
+    bool operator()(const Vec<T, N>& lhs, const Vec<T, N>& rhs) const {
+      return lhs == rhs;
+    }
+  };
+
 private:
   T data[N];
 };

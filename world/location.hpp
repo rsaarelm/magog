@@ -50,7 +50,7 @@ struct Location {
   }
 
   size_t hash() const {
-    return (((pos[0] << 1) ^ pos[1]) << 1) ^ area.hash();
+    return (Vec2i::Hasher()(pos) << 1) ^ area.hash();
   }
 
   struct Hasher {
