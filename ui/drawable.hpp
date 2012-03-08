@@ -4,6 +4,10 @@
 #define UI_DRAWABLE_HPP
 
 #include <util/vec.hpp>
+#include <world/location.hpp>
+#include <map>
+
+typedef std::map<Vec2i, Location> Footprint;
 
 class Drawable {
 public:
@@ -16,6 +20,12 @@ public:
   virtual void draw(const Vec2f& offset) = 0;
 
   virtual int get_z_layer() const { return 0; }
+
+  virtual Footprint footprint(const Location& start) const {
+    Footprint result;
+    result[Vec2i(0, 0)] = start;
+    return result;
+  }
 };
 
 #endif

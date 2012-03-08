@@ -14,8 +14,6 @@
 
 class World_Space_Anims {
 public:
-  typedef std::map<Vec2i, Location> Footprint;
-
   void collect_sprites(const Vec2i& view_space_pos, std::set<Sprite>& output);
 
   void add(std::unique_ptr<Drawable> drawable, const Location& loc);

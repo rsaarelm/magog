@@ -39,9 +39,7 @@ void World_Space_Anims::add(
 
 void World_Space_Anims::add(
   std::unique_ptr<Drawable> drawable, const Location& location) {
-  World_Space_Anims::Footprint footprint;
-  footprint[Vec2i(0, 0)] = location;
-  add(std::move(drawable), footprint);
+  add(std::move(drawable), drawable->footprint(location));
 }
 
 void World_Space_Anims::update(float interval_sec) {

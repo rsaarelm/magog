@@ -43,11 +43,11 @@ private:
 };
 
 struct BeamDrawable : public Drawable {
-  BeamDrawable(const Color& color, const Vec2i& dir, int length, float life)
-    : color(color), dir(dir), length(length), life(life) {}
+  BeamDrawable(const Vec2i& dir, int length, const Color& color = Color("pink"), float life = 1.0)
+    : dir(dir), length(length), color(color), life(life) {}
 
-  World_Space_Anims::Footprint footprint(const Location& start) const {
-    World_Space_Anims::Footprint result;
+  virtual Footprint footprint(const Location& start) const {
+    Footprint result;
     Location current_loc = start;
     Vec2i offset = Vec2i(0, 0);
 
@@ -78,9 +78,9 @@ struct BeamDrawable : public Drawable {
 
   virtual int get_z_layer() const { return 100; }
 
-  Color color;
   Vec2i dir;
   int length;
+  Color color;
   float life;
 };
 
@@ -239,12 +239,23 @@ void Game_Screen::key_event(int keysym, int printable) {
       world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_location(get_player()));
       break;
     case 'u':
-    {
-      auto beam = new BeamDrawable(Color("pink"), {-1, 0}, 6, 1.0);
-      world_anims.add(
-        std::unique_ptr<Drawable>(beam), beam->footprint(get_location(get_player())));
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({-1, 0}, 6)), get_location(get_player()));
       break;
-    }
+    case 'i':
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({-1, -1}, 6)), get_location(get_player()));
+      break;
+    case 'o':
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({0, -1}, 6)), get_location(get_player()));
+      break;
+    case 'l':
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({1, 0}, 6)), get_location(get_player()));
+      break;
+    case 'k':
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({1, 1}, 6)), get_location(get_player()));
+      break;
+    case 'j':
+      world_anims.add(std::unique_ptr<Drawable>(new BeamDrawable({0, 1}, 6)), get_location(get_player()));
+      break;
     case 'b':
       {
         printf("Benchmarking lots of FOV\n");
