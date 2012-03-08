@@ -17,6 +17,9 @@ struct Portal {
   }
 };
 
+struct Location;
+boost::optional<Portal> get_portal(const Location& location);
+
 struct Location {
   Vec2i pos;
   Actor area;
@@ -47,6 +50,12 @@ struct Location {
       return Location{pos + portal->delta, portal->area};
     else
       return Location(*this);
+  }
+
+  Location offset_and_portal(const Vec2i& offset) const {
+    Location result = *this + offset;
+    result = result + get_portal(result);
+    return result;
   }
 
   size_t hash() const {
