@@ -83,6 +83,7 @@ add_executable(${TARGETNAME}
   world/world.cpp
   world/fov.cpp
   world/cavegen.cpp
+  world/view_space.cpp
 
   font_image.hpp
   font_data.hpp

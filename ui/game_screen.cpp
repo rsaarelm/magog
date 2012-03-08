@@ -133,7 +133,7 @@ void Game_Screen::enter() {
 
   auto player = get_player();
   player.add_part(new Blob_Part(Location{Vec2i(0, 0), 0}, icon_telos, 7));
-  rfov = do_fov(player);
+  do_fov();
 
   msg_buffer.add_caption("Telos Unit online");
 }
@@ -184,7 +184,7 @@ void Game_Screen::key_event(int keysym, int printable) {
         double t = Game_Loop::get().get_seconds();
         int n = 1000;
         for (int i = 0; i < n; i++)
-          do_fov(get_player());
+          do_fov();
         t = Game_Loop::get().get_seconds() - t;
         printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
       }
@@ -195,7 +195,7 @@ void Game_Screen::key_event(int keysym, int printable) {
   if (active_actor() == get_player() && ready_to_act(get_player())) {
     if (delta != Vec2i(0, 0)) {
       if (action_walk(get_player(), delta)) {
-        rfov = do_fov(get_player());
+        do_fov();
         next_actor();
       } else {
         msg_buffer.add_msg("Bump!");
@@ -267,25 +267,17 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);
-        bool in_fov = true;
-        Location new_loc;
+        auto loc = view_space_location(offset);
+        if (!loc)
+          continue;
 
-        auto iter = rfov.find(offset);
-        if (iter != rfov.end()) {
-          new_loc = iter->second;
-        } else {
-          in_fov = false;
-          // XXX: Hacky.
-          new_loc = loc + offset;
-          if (!is_explored(new_loc))
-            continue;
-        }
+        bool in_fov = is_seen(*loc);
 
         // TODO: Darken terrain out of fov.
-        output.insert(Sprite{terrain_layer, offset, *terrain_drawables[get_terrain(new_loc)]});
+        output.insert(Sprite{terrain_layer, offset, *terrain_drawables[get_terrain(*loc)]});
 
         if (in_fov) {
-          for (auto& actor : actors_at(new_loc)) {
+          for (auto& actor : actors_at(*loc)) {
             auto& blob = actor.as<Blob_Part>();
             output.insert(Sprite{actor_layer, offset, *actor_drawables[blob.icon]});
           }

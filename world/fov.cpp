@@ -54,11 +54,6 @@ struct Angle {
   }
 };
 
-void mark(Relative_Fov& rfov, const Vec2i& relative_pos, const Location& loc) {
-  mark_seen(loc);
-  rfov[relative_pos] = loc;
-}
-
 void process(
     Relative_Fov& rfov,
     int range,
@@ -75,7 +70,7 @@ void process(
       process(rfov, range, local_origin, a, end);
       return;
     }
-    mark(rfov, *a, local_origin + *a + group.portal);
+    rfov[*a] = local_origin + *a + group.portal;
   }
   if (!group.opaque)
     process(rfov, range, local_origin + group.portal, begin.extended(), end.extended());
@@ -85,7 +80,7 @@ Relative_Fov hex_field_of_view(
     int range,
     const Location& origin) {
   Relative_Fov result;
-  mark(result, Vec2i(0, 0), origin);
+  result[Vec2i(0, 0)] = origin;
   process(result, range, origin);
   return result;
 }

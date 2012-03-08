@@ -47,8 +47,6 @@ class Game_Screen : public Game_State {
   float anim_interval;
   std::queue<Animation> animations;
 
-  Relative_Fov rfov;
-
   Message_Buffer msg_buffer;
 
   std::vector<std::unique_ptr<Drawable>> actor_drawables;

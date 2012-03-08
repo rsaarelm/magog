@@ -7,6 +7,7 @@
 #include <world/actor.hpp>
 #include <world/location.hpp>
 #include <world/terrain.hpp>
+#include <world/view_space.hpp>
 #include <boost/optional.hpp>
 #include <exception>
 #include <map>
@@ -52,10 +53,6 @@ class World {
   /// Called when done with the current active actor to move to the next one.
   void next_actor();
 
-  // Public because I'm lazy.
-  std::set<Location> explored;
-  std::set<Location> seen;
-
   // TODO: Use indexed lookup to a static terrain set instead of having
   // individual data here to compress the structure.
   std::map<Location, Terrain> terrain;
@@ -69,6 +66,7 @@ class World {
   std::map<Actor, std::map<Kind, std::unique_ptr<Part>>> actors;
 
   Actor_Id next_actor_id;
+  View_Space view_space;
  private:
   World();
   World(const World&);
@@ -114,13 +112,10 @@ bool action_walk(Actor actor, const Vec2i& dir);
 bool action_melee(Actor actor, const Vec2i& dir);
 bool action_bump(Actor actor, const Vec2i& dir);
 
-void clear_seen();
-void mark_seen(const Location& location);
 bool is_seen(const Location& location);
-bool is_explored(const Location& location);
 bool blocks_sight(const Location& location);
-
-Relative_Fov do_fov(Actor actor);
+boost::optional<Location> view_space_location(const Vec2i& relative_pos);
+void do_fov();
 
 Terrain get_terrain(const Location& location);
 void set_terrain(const Location& location, Terrain cell);

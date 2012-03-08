@@ -47,6 +47,10 @@ bool action_walk(Actor actor, const Vec2i& dir) {
   auto loc = get_location(actor);
   auto new_loc = loc + dir + get_portal(loc + dir);
   if (can_enter(actor, new_loc)) {
+    // XXX Hacky. Player is tracked by the view space object.
+    if (actor == get_player())
+      World::get().view_space.move_pos(dir);
+
     for (auto a : actors_at(new_loc)) {
       // TODO: Msg writing, inform that crushination takes place here.
       msg("Crush!");
@@ -99,21 +103,8 @@ void World::next_actor() {
 }
 
 
-void clear_seen() {
-  World::get().seen.clear();
-}
-
-void mark_seen(const Location& location) {
-  World::get().seen.insert(location);
-  World::get().explored.insert(location);
-}
-
 bool is_seen(const Location& location) {
-  return World::get().seen.count(location) > 0;
-}
-
-bool is_explored(const Location& location) {
-  return World::get().explored.count(location) > 0;
+  return World::get().view_space.is_seen(location) > 0;
 }
 
 bool blocks_sight(const Location& location) {
@@ -121,9 +112,13 @@ bool blocks_sight(const Location& location) {
   return kind == wall_terrain || kind == void_terrain;
 }
 
-Relative_Fov do_fov(Actor actor) {
-  clear_seen();
-  return hex_field_of_view(8, get_location(actor));
+boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
+  auto& view = World::get().view_space;
+  return view.at(relative_pos + view.get_pos());
+}
+
+void do_fov() {
+  World::get().view_space.do_fov(8, get_location(get_player()));
 }
 
 Terrain get_terrain(const Location& location) {
