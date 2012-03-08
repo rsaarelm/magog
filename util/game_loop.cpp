@@ -45,15 +45,14 @@ void Game_Loop::update_state_stack() {
 }
 
 void init_gl() {
-#if 0
   GLenum err = glewInit();
   if (GLEW_OK != err) {
     die("GLEW init failed: %d", err);
   }
   if (!GLEW_VERSION_2_0) {
-    die("OpenGL 2.0 not available\n");
+    die("OpenGL 2.0 not available.\nMake sure your video drivers are up to date.");
   }
-#endif
+
   glClearColor(.05, .1, .1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
