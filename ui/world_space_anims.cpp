@@ -31,7 +31,7 @@ void World_Space_Anims::add(
   for (auto offset_location : footprint) {
     locations.insert(std::make_pair(
                      offset_location.second,
-                     std::make_pair(offset_location.first, ptr)));
+                     std::make_pair(-offset_location.first, ptr)));
   }
 
   drawables.push(std::move(element));
@@ -67,7 +67,7 @@ void World_Space_Anims::remove(Element element) {
     for (auto i = loc_pair.first; i != loc_pair.second;) {
       auto& location_offset = i->second.first;
       Drawable* location_ptr = i->second.second;
-      if (location_offset == footprint_offset && location_ptr == ptr) {
+      if (location_offset == -footprint_offset && location_ptr == ptr) {
         locations.erase(i++);
         sanity_check--;
       } else {
