@@ -75,6 +75,13 @@ Game_Loop& Game_Loop::init(int w, int h, const char* title) {
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
+#if !defined(NDEBUG) && defined(__WIN32__)
+  // Windows builds aren't console apps, so make them output info to a log
+  // file.
+  freopen("stdout.txt", "w", stdout);
+  freopen("stderr.txt", "w", stderr);
+#endif
+
   init_gl();
   return get();
 }
@@ -179,7 +186,6 @@ void Game_Loop::run() {
 void Game_Loop::quit() {
   if (!running) return;
   running = false;
-  printf("Quitting..\n");
   for (size_t i = 0; i < states.size(); i++)
     pop_state();
 }
