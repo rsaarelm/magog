@@ -79,6 +79,7 @@ add_executable(${TARGETNAME}
   ui/game_screen.cpp
   ui/message_buffer.cpp
   ui/tile_drawable.cpp
+  ui/world_space_anims.cpp
   world/actor.cpp
   world/world.cpp
   world/fov.cpp

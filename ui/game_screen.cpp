@@ -207,6 +207,7 @@ void Game_Screen::key_event(int keysym, int printable) {
 void Game_Screen::update(float interval_seconds) {
   anim_interval = interval_seconds;
   msg_buffer.update(interval_seconds);
+  world_anims.update(interval_seconds);
 
   while (!(active_actor() == get_player() && ready_to_act(get_player()))) {
     do_ai();
@@ -267,6 +268,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);
+        world_anims.collect_sprites(offset, output);
         auto loc = view_space_location(offset);
         if (!loc)
           continue;

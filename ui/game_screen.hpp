@@ -7,6 +7,7 @@
 #include "message_buffer.hpp"
 #include "drawable.hpp"
 #include "sprite.hpp"
+#include "world_space_anims.hpp"
 #include <world/world.hpp>
 #include <util.hpp>
 #include <queue>
@@ -48,6 +49,8 @@ class Game_Screen : public Game_State {
   std::queue<Animation> animations;
 
   Message_Buffer msg_buffer;
+
+  World_Space_Anims world_anims;
 
   std::vector<std::unique_ptr<Drawable>> actor_drawables;
   std::vector<std::unique_ptr<Drawable>> terrain_drawables;
