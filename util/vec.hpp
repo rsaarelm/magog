@@ -253,6 +253,14 @@ Vec<T, N> operator*(const Vec<T, N>& lhs, T rhs) {
   return result;
 }
 
+template<class T, int N>
+T inner_product(const Vec<T, N>& lhs, const Vec<T, N>& rhs) {
+  T result;
+  for (int i = 0; i < N; i++)
+    result += lhs[i] * rhs[i];
+  return result;
+}
+
 /// Complex product
 template<class T>
 Vec<T, 2> operator*(const Vec<T, 2>& lhs, const Vec<T, 2>& rhs) {
