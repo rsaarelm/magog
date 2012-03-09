@@ -6,7 +6,7 @@ project(${TARGETNAME})
 # Settings from this file propagate to CMakeLists.txt files in subdirectories.
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_scripts
-                      ${CMAKE_MODULE_PATH})
+  ${CMAKE_MODULE_PATH})
 
 # Black magic to make boost::range work with C++11 lambdas
 add_definitions("-DBOOST_RESULT_OF_USE_DECLTYPE")
@@ -32,25 +32,25 @@ find_package(SDL REQUIRED)
 find_package(GLEW REQUIRED)
 
 if (CROSS_COMPILING_TO_WINDOWS)
-   # Link SDL statically
-   execute_process(COMMAND ${TARGET_SDL_CONFIG} --static-libs OUTPUT_VARIABLE SDL_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
-   set(SDL_LIBRARY "-Wl,-Bstatic ${SDL_LIBRARY} -Wl,-Bdynamic")
+  # Link SDL statically
+  execute_process(COMMAND ${TARGET_SDL_CONFIG} --static-libs OUTPUT_VARIABLE SDL_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(SDL_LIBRARY "-Wl,-Bstatic ${SDL_LIBRARY} -Wl,-Bdynamic")
 
-   # Link GLEW statically
-   add_definitions(-DGLEW_STATIC)
+  # Link GLEW statically
+  add_definitions(-DGLEW_STATIC)
 
-   # Link standard C and C++ libraries statically
-   set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
+  # Link standard C and C++ libraries statically
+  set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
 endif (CROSS_COMPILING_TO_WINDOWS)
 
 
 # Helpful settings
 
 set(CORELIBS
-             ${GLEW_LIBRARY}
-             ${SDL_LIBRARY}
-             ${OPENGL_LIBRARY}
-             ${M_LIBRARY}
+  ${GLEW_LIBRARY}
+  ${SDL_LIBRARY}
+  ${OPENGL_LIBRARY}
+  ${M_LIBRARY}
 )
 
 
@@ -96,8 +96,8 @@ target_link_libraries(${TARGETNAME} ${CORELIBS})
 include(tools/tools.cmake)
 
 add_custom_target(run
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}
-        DEPENDS ${TARGETNAME}
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}
+  DEPENDS ${TARGETNAME}
 )
 
 bake(assets/tiles.png tiles_image.hpp)
@@ -112,6 +112,5 @@ if(DOXYGEN_FOUND)
   add_custom_target(doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating API documentation with Doxygen" VERBATIM
-  )
+    COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif(DOXYGEN_FOUND)
