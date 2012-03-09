@@ -1,1 +1,5 @@
 Single-unit strategic ground combat game.
+
+Dependencies: SDL 1.2, Boost 1.49, GLEW 1.7.
+
+Build dependencies: GCC 4.6, CMake 2.8, ImageMagick.

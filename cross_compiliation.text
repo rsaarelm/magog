@@ -1,0 +1,6 @@
+Cross-compilation to Windows is possible using mingw32 packages. It has been
+tested on x86_64 Arch Linux. The cross-compiling build directory needs
+native-built data processing tools for generating the data source code. It
+expects to find these in a sister directory called `build` where a regular
+CMake build has been set up and used to build at least the data generation
+tool binaries.
