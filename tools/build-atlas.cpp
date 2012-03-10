@@ -24,7 +24,7 @@
 #include <memory>
 
 void usage(int argc, char* argv[]) {
-  fprintf(stderr, "Usage: %s [rectdata_output_file] [atlas_png_output_file] [file]...\n");
+  fprintf(stderr, "Usage: %s [rectdata_output_file] [atlas_png_output_file] ([file] | -n [num_tiles])...\n", argv[0]);
   exit(1);
 }
 
@@ -61,12 +61,39 @@ int main(int argc, char* argv[]) {
   std::vector<Vec2i> offsets;
   long num_pixels = 0;
   for (int i = 3; i < argc; i++) {
-    Surface* img = new Surface(argv[i]);
-    ARecti rect = img->crop_rect();
-    num_pixels += rect.volume();
-    images.push_back(std::unique_ptr<Surface>(img));
-    dims.push_back(rect.dim());
-    offsets.push_back(rect.min());
+    int n_tiles = 1;
+    const char* arg = argv[i];
+    if (arg[0] == '-') {
+      if (strcmp(arg, "-n") == 0) {
+        i++;
+        if (i >= argc)
+          usage(argc, argv);
+        n_tiles = atoi(argv[i]);
+        if (n_tiles < 1)
+          usage(argc, argv);
+        i++;
+        if (i >= argc)
+          break;
+      } else {
+        usage(argc, argv);
+      }
+    }
+    Surface tiles(argv[i]);
+    // Extract horizontal tile strips.
+    for (int j = 0; j < n_tiles; j++) {
+      int width = tiles.get_dim()[0] / n_tiles;
+      int height = tiles.get_dim()[1];
+      Surface* img = new Surface(width, height);
+      tiles.blit(
+        ARecti(Vec2i(width * j, 0), Vec2i(width, height)),
+        *img,
+        Vec2i(0, 0));
+      ARecti rect = img->crop_rect();
+      num_pixels += rect.volume();
+      images.push_back(std::unique_ptr<Surface>(img));
+      dims.push_back(rect.dim());
+      offsets.push_back(rect.min());
+    }
   }
 
   // Get the smallest power-of-two square texture size that fits the
@@ -94,13 +121,10 @@ int main(int argc, char* argv[]) {
   }
   fclose(rectdata);
 
-  printf("Need %d x %d texture\n", size, size);
-
   Surface canvas(size, size);
   for (int i = 0; i < pack.size(); i++)
     images[i]->blit(ARecti(offsets[i], dims[i]), canvas, pack[i]);
 
-  printf("%d %d\n", canvas.get_dim()[0], canvas.get_dim()[1]);
   int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.get_data(), 0);
   if (!result)
     return 1;
