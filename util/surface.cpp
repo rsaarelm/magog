@@ -83,8 +83,8 @@ void Surface::load_image(const char* filename) {
 
 void Surface::init_image(int width, int height) {
   free(data);
-  width = width;
-  height = height;
+  this->width = width;
+  this->height = height;
   data = static_cast<uint8_t*>(malloc(width * height * 4));
 }
 
