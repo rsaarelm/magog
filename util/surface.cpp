@@ -119,5 +119,13 @@ ARecti Surface::crop_rect() const {
     return ARecti(Vec2i(0, 0));
 }
 
-  return ARecti(p1, p2 - p1);
+void Surface::blit(const ARecti& src_rect, Surface& dest, const Vec2i& dest_pos) {
+  // XXX: Unoptimized.
+  for (int y = src_rect.min()[1], e_y = src_rect.max()[1]; y < e_y; y++)
+    for (int x = src_rect.min()[0], e_x = src_rect.max()[0]; x < e_x; x++) {
+      Vec2i src_vec(x, y);
+      Vec2i dest_vec = src_vec - src_rect.min() + dest_pos;
+      if (contains(src_vec) && dest.contains(dest_vec))
+        dest[dest_vec] = (*this)[src_vec];
+    }
 }

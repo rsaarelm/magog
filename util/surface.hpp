@@ -42,9 +42,7 @@ class Surface {
 
   void init_image(int width, int height);
   void init_image(const Vec2i& dim) { init_image(dim[0], dim[1]); }
-  const Vec2i& get_dim() const {
-    return *reinterpret_cast<const Vec2i*>(&width);
-  }
+  Vec2i get_dim() const { return Vec2i(width, height); }
 
   uint8_t* get_data() { return data; }
 
@@ -65,14 +63,18 @@ class Surface {
   /// Get the smallest rectangle containing all of the surface's
   /// non-transparent pixels.
   ARecti crop_rect() const;
+
+  void blit(const ARecti& src_rect, Surface& dest, const Vec2i& dest_pos);
+
+  bool contains(const Vec2i& pos) {
+    return pos[0] >= 0 && pos[1] >= 0 && pos[0] < width && pos[1] < height;
+  }
  private:
   Surface(const Surface&);
   Surface& operator=(const Surface&);
 
   uint8_t* data;
 
-  // Fields width and heigth must be kept together and in this order so that
-  // the get_dim memory mapping hack will work.
   int width;
   int height;
 };
