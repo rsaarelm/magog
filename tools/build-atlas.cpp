@@ -30,7 +30,7 @@ void usage(int argc, char* argv[]) {
 
 // Pack as many rectangles as you can into the result, then return it.
 std::vector<Vec2i> try_pack(const std::vector<Vec2i>& dims, int width, int height) {
-  // A very stupid packer.
+  // XXX A very stupid packer.
   std::vector<Vec2i> result;
   int x = 0;
   int y = 0;

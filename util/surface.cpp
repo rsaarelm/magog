@@ -86,6 +86,7 @@ void Surface::init_image(int width, int height) {
   this->width = width;
   this->height = height;
   data = static_cast<uint8_t*>(malloc(width * height * 4));
+  memset(data, 0, width * height * 4);
 }
 
 GLuint Surface::make_texture() {
@@ -114,7 +115,7 @@ ARecti Surface::crop_rect() const {
   }
 
   if (x0 < x1 && y0 < y1)
-    return ARecti(Vec2i(x0, y0), Vec2i(x1 - x0, y1 - y0));
+    return ARecti(Vec2i(x0, y0), Vec2i(x1 - x0 + 1, y1 - y0 + 1));
   else
     return ARecti(Vec2i(0, 0));
 }
