@@ -21,27 +21,34 @@
 
 extern "C" {
   extern uint8_t* stbi_load_from_memory(
-      uint8_t const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+    uint8_t const *buffer, int len, int *x, int *y, int *comp, int req_comp);
+
+  extern uint8_t* stbi_load(
+    char const *filename, int *x, int *y, int *comp, int req_comp);
 }
 
 Surface::Surface()
     : data(nullptr)
-      // , texture_handle(0)
     , width(0)
     , height(0) {}
 
 // XXX: Use delegating constructors when gcc supports them.
 Surface::Surface(const Static_File* file)
     : data(nullptr)
-      // , texture_handle(0)
     , width(0)
     , height(0) {
   load_image(file);
 }
 
+Surface::Surface(const char* filename)
+    : data(nullptr)
+    , width(0)
+    , height(0) {
+  load_image(filename);
+}
+
 Surface::Surface(int width, int height)
     : data(nullptr)
-      // , texture_handle(0)
     , width(0)
     , height(0) {
   init_image(width, height);
@@ -49,7 +56,6 @@ Surface::Surface(int width, int height)
 
 Surface::Surface(const Vec2i& dim)
     : data(nullptr)
-      // , texture_handle(0)
     , width(0)
     , height(0) {
   init_image(dim);
@@ -66,6 +72,14 @@ void Surface::load_image(const uint8_t* buffer, size_t buffer_len) {
 }
 
 void Surface::load_image(const Static_File* file) { load_image(file->get_data(), file->get_len()); }
+
+void Surface::load_image(const char* filename) {
+  free(data);
+  data = stbi_load(filename, &width, &height, nullptr, 4);
+  if (!data) {
+    throw "Unable to load file";
+  }
+}
 
 void Surface::init_image(int width, int height) {
   free(data);
@@ -85,4 +99,25 @@ GLuint Surface::make_texture() {
       GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
       0, GL_RGBA, GL_UNSIGNED_BYTE, data);
   return result;
+}
+
+ARecti Surface::crop_rect() const {
+  int x0 = width, y0 = height, x1 = 0, y1 = 0;
+  for (int i = 0; i < width * height; i++) {
+    if ((*this)[i].a) {
+      int x = i % width, y = i / width;
+      if (x < x0) x0 = x;
+      if (y < y0) y0 = y;
+      if (x > x1) x1 = x;
+      if (y > y1) y1 = y;
+    }
+  }
+
+  if (x0 < x1 && y0 < y1)
+    return ARecti(Vec2i(x0, y0), Vec2i(x1 - x0, y1 - y0));
+  else
+    return ARecti(Vec2i(0, 0));
+}
+
+  return ARecti(p1, p2 - p1);
 }

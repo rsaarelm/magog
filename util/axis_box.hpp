@@ -34,6 +34,11 @@ template<class T, int N> class Axis_Box {
     ASSERT(all_of(dim_vec, [](T x) { return x >= 0; }));
   }
 
+  Axis_Box(const Vec<T, N>& dim)
+      : min_pt(), dim_vec(dim) {
+    ASSERT(all_of(dim_vec, [](T x) { return x >= 0; }));
+  }
+
   bool contains(const Vec<T, N>& pos) const {
     return pairwise_all_of(min_pt, pos, [](T a, T b) { return a <= b; }) &&
         pairwise_all_of(pos, max(), [](T a, T b) { return a < b; });

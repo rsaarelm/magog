@@ -21,13 +21,16 @@
 
 #include "static_file.hpp"
 #include "color.hpp"
+#include "axis_box.hpp"
+#include <GL/gl.h>
 #include <cstdlib>
 #include <algorithm>
-#include <GL/gl.h>
+#include <vector>
 
 class Surface {
  public:
   Surface();
+  Surface(const char* filename);
   Surface(const Static_File* file);
   Surface(int width, int height);
   Surface(const Vec2i& dim);
@@ -35,6 +38,7 @@ class Surface {
 
   void load_image(const uint8_t* buffer, size_t buffer_len);
   void load_image(const Static_File* file);
+  void load_image(const char* filename);
 
   void init_image(int width, int height);
   void init_image(const Vec2i& dim) { init_image(dim[0], dim[1]); }
@@ -46,17 +50,26 @@ class Surface {
 
   Color& operator[](int i) { return reinterpret_cast<Color*>(data)[i]; }
 
+  Color operator[](int i) const { return reinterpret_cast<Color*>(data)[i]; }
+
   Color& operator[](const Vec2i& pos) {
     return (*this)[pos[0] + pos[1]*width];
   }
 
+  Color operator[](const Vec2i& pos) const {
+    return (*this)[pos[0] + pos[1]*width];
+  }
+
   GLuint make_texture();
+
+  /// Get the smallest rectangle containing all of the surface's
+  /// non-transparent pixels.
+  ARecti crop_rect() const;
  private:
   Surface(const Surface&);
   Surface& operator=(const Surface&);
 
   uint8_t* data;
-  // GLuint texture_handle;
 
   // Fields width and heigth must be kept together and in this order so that
   // the get_dim memory mapping hack will work.
