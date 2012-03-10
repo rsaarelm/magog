@@ -1,0 +1,43 @@
+# Maintainer: Risto Saarelma <risto.saarelma@iki.fi>
+pkgname=telos-git
+pkgver=20120310
+pkgrel=1
+pkgdesc="A turn-based death tank game"
+arch=('i686', 'x86_64')
+url="https://github.com/rsaarelm/telos"
+license=('GPL')
+depends=('mesa' 'sdl' 'boost' 'glew')
+makedepends=('cmake' 'imagemagick' 'git' 'libpng')
+
+_gitroot=https://github.com/rsaarelm/telos.git
+_gitname=telos
+
+build() {
+  cd "$srcdir"
+  msg "Connecting to Git server..."
+
+  if [[ -d "$_gitname" ]]; then
+    cd "$_gitname" && git pull origin
+    msg "The local files are updated."
+  else
+    git clone "$_gitroot" "$_gitname"
+  fi
+
+  msg "Git checkout done or server timeout"
+  msg "Starting build..."
+
+  rm -rf "$srcdir/build"
+  # git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
+  mkdir -p "$srcdir/build"
+  cd "$srcdir/build"
+
+  cmake $srcdir/$_gitname
+  make
+}
+
+package() {
+  cd "$srcdir/build"
+  install -Dm755 telos "$pkgdir/usr/bin/telos"
+}
+
+# vim:set ts=2 sw=2 et:
