@@ -90,6 +90,9 @@ add_executable(${TARGETNAME}
   font_image.hpp
   font_data.hpp
   tiles_image.hpp
+
+  tile_rect.hpp
+  tile_atlas.hpp
 )
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
@@ -104,6 +107,15 @@ add_custom_target(run
 bake(assets/tiles.png tiles_image.hpp)
 bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_data.hpp)
 
+atlas(tile_rect.hpp tile_atlas.hpp
+  -n 8 assets/tiles/000-8-terrain.png
+  -n 6 assets/tiles/008-6-slope.png
+  -n 8 assets/tiles/014-8-wall.png
+  -n 5 assets/tiles/022-5-units.png
+  -n 9 assets/tiles/027-9-telos.png
+  -n 6 assets/tiles/036-6-missile.png
+  -n 6 assets/tiles/042-6-armor.png
+)
 # Documentation generation
 
 find_package(Doxygen)

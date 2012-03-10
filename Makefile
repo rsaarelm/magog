@@ -12,7 +12,7 @@ build/Makefile: CMakeLists.txt
 # Tools are a separate target so that the cross-compile target can build them
 # as local binaries.
 tools: build/Makefile
-	cd build/; make render-font && make emit-chardata && make bake-data
+	cd build/; make render-font && make emit-chardata && make bake-data && make build-atlas
 
 X_OPT=-D CMAKE_TOOLCHAIN_FILE=../cmake_scripts/Toolchain-mingw32.cmake
 

@@ -61,3 +61,17 @@ function(bake_font font_file pixel_height first_char num_chars image_target char
     COMMAND bake-data ${CMAKE_BINARY_DIR}/${image_target}.png ${CMAKE_BINARY_DIR}/${image_target}
     DEPENDS ${image_target}.png bake-data)
 endfunction(bake_font)
+
+macro(atlas data_target image_target)
+  # TODO: Filter filenames from ARGN so they can be added to depends
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/${data_target} ${CMAKE_BINARY_DIR}/${image_target}.png
+    COMMAND build-atlas ${CMAKE_BINARY_DIR}/${data_target} ${CMAKE_BINARY_DIR}/${image_target}.png ${ARGN}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS build-atlas)
+
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/${image_target}
+    COMMAND bake-data ${CMAKE_BINARY_DIR}/${image_target}.png ${CMAKE_BINARY_DIR}/${image_target}
+    DEPENDS ${image_target}.png bake-data)
+endmacro(atlas)
