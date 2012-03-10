@@ -1,0 +1,11 @@
+Snippets for the Emacs yasnippet mode
+
+Use with
+
+    (yas/load-directory "$PATH_TO_PROJECT/extra/snippets")
+
+or
+
+    (setq yas/root-directory (cons "$PATH_TO_PROJECT/extra/snippets" yas/root-directory))
+
+in your .emacs file.

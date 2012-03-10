@@ -1,0 +1,8 @@
+# name: header include guard with parent dir name
+# --
+#ifndef ${1:`(let ((path (reverse (split-string (buffer-file-name (current-buffer)) "/"))))
+        (upcase (format "%s_%s_%s"
+        (cadr path) (file-name-sans-extension (car path)) (file-name-extension (car path)))))`}
+#define $1
+$0
+#endif
