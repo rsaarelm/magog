@@ -7,7 +7,7 @@ arch=('i686', 'x86_64')
 url="https://github.com/rsaarelm/telos"
 license=('GPL')
 depends=('mesa' 'sdl' 'boost' 'glew')
-makedepends=('cmake' 'imagemagick' 'git' 'libpng')
+makedepends=('cmake' 'git')
 
 _gitroot=https://github.com/rsaarelm/telos.git
 _gitname=telos
