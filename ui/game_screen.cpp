@@ -100,9 +100,15 @@ struct BeamDrawable : public Drawable {
   float life;
 };
 
-uint8_t tiles_png[] = {
-#include <tiles_image.hpp>
+Tile_Rect tile_rects[] = {
+#include <tile_rect.hpp>
 };
+
+uint8_t tiles_png[] = {
+#include <tile_atlas.hpp>
+};
+
+Surface g_tile_surface;
 
 bool is_wall(const Location& loc) {
   return terrain_data[get_terrain(loc)].kind == wall_terrain;
@@ -117,9 +123,8 @@ int wall_mask(const Location& loc) {
 
 static GLuint load_tile_tex() {
   // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
-  Surface surf;
-  surf.load_image(tiles_png, sizeof(tiles_png));
-  return surf.make_texture();
+  g_tile_surface.load_image(tiles_png, sizeof(tiles_png));
+  return g_tile_surface.make_texture();
 }
 
 Actor spawn_infantry(const Location& location) {
@@ -135,16 +140,12 @@ Actor spawn_armor(const Location& location) {
 }
 
 static unique_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color) {
-  static const Vec2f tile_dim(16, 16);
-  static const Vec2f tex_dim(1.0/16, 1.0/8);
-  static const int pitch=16;
-
   return unique_ptr<Drawable>(
     new Tile_Drawable(
       texture,
-      ARectf(Vec2f(index % pitch, index / pitch).elem_mul(tex_dim), tex_dim),
-      tile_dim,
-      color));
+      color,
+      tile_rects[index],
+      g_tile_surface.get_dim()));
 }
 
 void Game_Screen::enter() {
@@ -153,9 +154,9 @@ void Game_Screen::enter() {
   // TODO: Less verbose data entry.
   actor_drawables.clear();
   actor_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
-  actor_drawables.push_back(tile_drawable(tiletex, 38, "#0f7"));
-  actor_drawables.push_back(tile_drawable(tiletex, 40, "#fd0"));
-  actor_drawables.push_back(tile_drawable(tiletex, 48, "#88f"));
+  actor_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
+  actor_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
+  actor_drawables.push_back(tile_drawable(tiletex, 27, "#88f"));
 
   terrain_drawables.clear();
   for (int i = 0; i < NUM_TERRAINS; i++)
@@ -380,19 +381,6 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   } catch (Actor_Exception& e) {
     // No player actor found or no valid Loction component in it.
   }
-}
-
-void Game_Screen::draw_tile(int idx, const Vec2f& pos) {
-  static const Vec2f tile_dim(16, 16);
-  static const Vec2f tex_dim(1.0/16, 1.0/8);
-  static const int pitch=16;
-  glBindTexture(GL_TEXTURE_2D, tiletex);
-  gl_tex_rect(ARectf(pos, tile_dim), ARectf(Vec2f(idx % pitch, idx / pitch).elem_mul(tex_dim), tex_dim));
-}
-
-void Game_Screen::draw_tile(int idx, const Vec2f& pos, const Color& color) {
-  color.gl_color();
-  draw_tile(idx, pos);
 }
 
 void raw_msg(std::string str) {

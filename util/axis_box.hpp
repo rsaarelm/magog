@@ -50,6 +50,10 @@ template<class T, int N> class Axis_Box {
 
   const Vec<T, N>& dim() const { return dim_vec; }
 
+  Axis_Box<T, N> operator+(const Vec<T, N>& offset) const {
+    return Axis_Box<T, N>(min_pt + offset, dim_vec);
+  }
+
   T volume() const {
     return std::accumulate(
         dim_vec.begin(), dim_vec.end(), T(1),

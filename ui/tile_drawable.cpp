@@ -19,8 +19,19 @@
 #include "tile_drawable.hpp"
 #include <util/gldraw.hpp>
 
+Tile_Drawable::Tile_Drawable(
+  GLuint texture, const Color& color, const Tile_Rect& tile_rect, const Vec2i& texture_dim)
+    : texture(texture), color(color) {
+  Vec2f dim = texture_dim;
+  Vec2f p0(tile_rect.x0, tile_rect.y0);
+  Vec2f p1(tile_rect.x1, tile_rect.y1);
+
+  texture_coords = ARectf(p0.elem_div(dim), (p1 - p0).elem_div(dim));
+  draw_box = ARectf(Vec2f(tile_rect.x_off, tile_rect.y_off), p1 - p0);
+}
+
 void Tile_Drawable::draw(const Vec2f& offset) {
   glBindTexture(GL_TEXTURE_2D, texture);
   color.gl_color();
-  gl_tex_rect(ARectf(offset, size), tex_rect);
+  gl_tex_rect(draw_box + offset, texture_coords);
 }

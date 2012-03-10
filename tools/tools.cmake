@@ -20,7 +20,7 @@ if (NOT CMAKE_CROSSCOMPILING)
   target_link_libraries(build-atlas ${M_LIBRARY} ${OPENGL_LIBRARY})
 
 
-  EXPORT(TARGETS render-font emit-chardata bake-data FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
+  EXPORT(TARGETS render-font emit-chardata bake-data build-atlas FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
 else ()
   # XXX: Assumes that the host build dir is called "build" and is in the same
   # parent directory with the cross-compilation build dir.

@@ -39,14 +39,14 @@ struct Terrain_Data {
 
 #define TERRAIN_TABLE \
   X(terrain_void,         8, "magenta",     void_terrain)          \
-  X(terrain_grass,        5, "olive drab",  open_terrain)          \
-  X(terrain_sand,         5, "khaki",       open_terrain)          \
-  X(terrain_floor,        5, "dim gray",    open_terrain)          \
-  X(terrain_water,        6, "royal blue",  water_terrain)         \
-  X(terrain_wall_center,  1, "gray",        wall_terrain)          \
-  X(terrain_wall_x,       2, "gray",        wall_terrain)          \
-  X(terrain_wall_y,       3, "gray",        wall_terrain)          \
-  X(terrain_wall_xy,      4, "gray",        wall_terrain)
+  X(terrain_grass,        1, "olive drab",  open_terrain)          \
+  X(terrain_sand,         1, "khaki",       open_terrain)          \
+  X(terrain_floor,        1, "dim gray",    open_terrain)          \
+  X(terrain_water,        2, "royal blue",  water_terrain)         \
+  X(terrain_wall_center, 14, "gray",        wall_terrain)          \
+  X(terrain_wall_x,      15, "gray",        wall_terrain)          \
+  X(terrain_wall_y,      16, "gray",        wall_terrain)          \
+  X(terrain_wall_xy,     17, "gray",        wall_terrain)
 
 #define X(a, b, c, d) a,
 enum Terrain : uint8_t {

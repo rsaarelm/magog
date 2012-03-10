@@ -89,7 +89,6 @@ add_executable(${TARGETNAME}
 
   font_image.hpp
   font_data.hpp
-  tiles_image.hpp
 
   tile_rect.hpp
   tile_atlas.hpp
@@ -104,7 +103,6 @@ add_custom_target(run
   DEPENDS ${TARGETNAME}
 )
 
-bake(assets/tiles.png tiles_image.hpp)
 bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_data.hpp)
 
 atlas(tile_rect.hpp tile_atlas.hpp

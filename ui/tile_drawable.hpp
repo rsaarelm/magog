@@ -24,17 +24,21 @@
 #include <util/axis_box.hpp>
 #include <GL/gl.h>
 
+struct Tile_Rect {
+  int x0, y0, x1, y1;
+  int x_off, y_off;
+};
+
 class Tile_Drawable : public Drawable {
 public:
-  Tile_Drawable(GLuint texture, const ARectf& tex_rect, const Vec2f& size, Color color)
-    : texture(texture), tex_rect(tex_rect), size(size), color(color) {}
+  Tile_Drawable(GLuint texture, const Color& color, const Tile_Rect& tile_rect, const Vec2i& texture_dim);
 
   virtual void draw(const Vec2f& offset);
 private:
   GLuint texture;
-  ARectf tex_rect;
-  Vec2f size;
   Color color;
+  ARectf texture_coords;
+  ARectf draw_box;
 };
 
 #endif
