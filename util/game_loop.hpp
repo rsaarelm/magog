@@ -19,11 +19,12 @@
 #ifndef UTIL_GAME_LOOP_HPP
 #define UTIL_GAME_LOOP_HPP
 
+#include <util/vec.hpp>
+#include <util/game_state.hpp>
+#include <util/mixer.hpp>
 #include <memory>
 #include <vector>
 #include <functional>
-#include "vec.hpp"
-#include "game_state.hpp"
 
 /**
  * Class for the top-level game application loop.
@@ -56,6 +57,8 @@ class Game_Loop {
 
   double get_seconds() const;
  private:
+  friend void add_wave(Mixer::Wave, float);
+
   Game_Loop();
 
   void update_state_stack();
@@ -66,6 +69,8 @@ class Game_Loop {
 
   float target_fps;
   bool running;
+
+  Mixer mixer;
 
   static std::unique_ptr<Game_Loop> s_instance;
 };

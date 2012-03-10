@@ -17,9 +17,9 @@
 */
 
 #include "game_loop.hpp"
-#include "game_state.hpp"
-#include "imgui.hpp"
-#include "core.hpp"
+#include <util/game_state.hpp>
+#include <util/imgui.hpp>
+#include <util/core.hpp>
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
@@ -79,7 +79,7 @@ Game_Loop& Game_Loop::init(int w, int h, const char* title) {
   ASSERT(s_instance == nullptr);
   s_instance = std::unique_ptr<Game_Loop>(new Game_Loop);
 
-  if (SDL_Init(SDL_INIT_VIDEO))
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     die("Unable to init SDL: %s", SDL_GetError());
 
   if (SDL_SetVideoMode(w, h, 0, SDL_OPENGL) == nullptr)
@@ -89,6 +89,8 @@ Game_Loop& Game_Loop::init(int w, int h, const char* title) {
 
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
+  s_instance->mixer.init();
 
 #if !defined(NDEBUG) && defined(__WIN32__)
   // Windows builds aren't console apps, so make them output info to a log

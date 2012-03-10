@@ -31,6 +31,12 @@ void Intro_Screen::key_event(int keysym, int printable) {
       Game_Loop::get().pop_state();
       Game_Loop::get().push_state(new Game_Screen);
       break;
+  case '1':
+    add_wave([](float t) { return sin(t * 5000) / 10.0; }, 2);
+    break;
+  case '2':
+    add_wave([](float t) { return sin(t * 7000) / 10.0; }, 2);
+    break;
     default:
       break;
   }
