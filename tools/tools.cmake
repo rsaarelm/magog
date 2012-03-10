@@ -10,6 +10,16 @@ if (NOT CMAKE_CROSSCOMPILING)
 
   add_executable(bake-data tools/bake-data.cpp)
 
+  add_executable(build-atlas
+    tools/build-atlas.cpp
+    util/surface.cpp
+    util/core.cpp
+    contrib/stb/stb_image.c
+    )
+  # XXX: OpenGL library from surface, tool doesn't need it.
+  target_link_libraries(build-atlas ${M_LIBRARY} ${OPENGL_LIBRARY})
+
+
   EXPORT(TARGETS render-font emit-chardata bake-data FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
 else ()
   # XXX: Assumes that the host build dir is called "build" and is in the same
