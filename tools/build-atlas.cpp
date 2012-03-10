@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < pack.size(); i++)
     images[i]->blit(ARecti(offsets[i], dims[i]), canvas, pack[i]);
 
-  int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.get_data(), 0);
+  int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.data(), 0);
   if (!result)
     return 1;
 

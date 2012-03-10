@@ -42,20 +42,24 @@ class Surface {
 
   void init_image(int width, int height);
   void init_image(const Vec2i& dim) { init_image(dim[0], dim[1]); }
-  Vec2i get_dim() const { return Vec2i(width, height); }
+  Vec2i get_dim() const { return Vec2i(width_, height_); }
 
-  uint8_t* get_data() { return data; }
+  uint8_t* data() { return data_; }
+  const uint8_t* data() const { return data_; }
 
-  Color& operator[](int i) { return reinterpret_cast<Color*>(data)[i]; }
+  int width() const { return width_; }
+  int height() const { return height_; }
 
-  Color operator[](int i) const { return reinterpret_cast<Color*>(data)[i]; }
+  Color& operator[](int i) { return reinterpret_cast<Color*>(data_)[i]; }
+
+  Color operator[](int i) const { return reinterpret_cast<Color*>(data_)[i]; }
 
   Color& operator[](const Vec2i& pos) {
-    return (*this)[pos[0] + pos[1]*width];
+    return (*this)[pos[0] + pos[1]*width_];
   }
 
   Color operator[](const Vec2i& pos) const {
-    return (*this)[pos[0] + pos[1]*width];
+    return (*this)[pos[0] + pos[1]*width_];
   }
 
   GLuint make_texture();
@@ -67,16 +71,16 @@ class Surface {
   void blit(const ARecti& src_rect, Surface& dest, const Vec2i& dest_pos);
 
   bool contains(const Vec2i& pos) {
-    return pos[0] >= 0 && pos[1] >= 0 && pos[0] < width && pos[1] < height;
+    return pos[0] >= 0 && pos[1] >= 0 && pos[0] < width_ && pos[1] < height_;
   }
  private:
   Surface(const Surface&);
   Surface& operator=(const Surface&);
 
-  uint8_t* data;
+  uint8_t* data_;
 
-  int width;
-  int height;
+  int width_;
+  int height_;
 };
 
 #endif

@@ -16,8 +16,21 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <GL/glew.h>
 #include "gldraw.hpp"
+#include <util/surface.hpp>
+
+GLuint make_texture(const Surface& surface) {
+  GLuint result;
+  glGenTextures(1, &result);
+  glBindTexture(GL_TEXTURE_2D, result);
+  // TODO: Support other types of filtering.
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage2D(
+    GL_TEXTURE_2D, 0, GL_RGBA8, surface.width(), surface.height(),
+    0, GL_RGBA, GL_UNSIGNED_BYTE, surface.data());
+  return result;
+}
 
 void gl_rect(const ARectf& box) {
   glBindTexture(GL_TEXTURE_2D, 0);

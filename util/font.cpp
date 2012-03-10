@@ -47,7 +47,7 @@ static uint8_t g_font_image[] = {
 
 void init_font() {
   font_image.load_image(g_font_image, sizeof(g_font_image));
-  g_font_tex = font_image.make_texture();
+  g_font_tex = make_texture(font_image);
 }
 
 int draw_char(Vec2f pos, char ch) {

@@ -28,85 +28,72 @@ extern "C" {
 }
 
 Surface::Surface()
-    : data(nullptr)
-    , width(0)
-    , height(0) {}
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {}
 
 // XXX: Use delegating constructors when gcc supports them.
 Surface::Surface(const Static_File* file)
-    : data(nullptr)
-    , width(0)
-    , height(0) {
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
   load_image(file);
 }
 
 Surface::Surface(const char* filename)
-    : data(nullptr)
-    , width(0)
-    , height(0) {
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
   load_image(filename);
 }
 
 Surface::Surface(int width, int height)
-    : data(nullptr)
-    , width(0)
-    , height(0) {
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
   init_image(width, height);
 }
 
 Surface::Surface(const Vec2i& dim)
-    : data(nullptr)
-    , width(0)
-    , height(0) {
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
   init_image(dim);
 }
 
 Surface::~Surface() {
   // Need to use free since data may come from C code which malloc's it.
-  free(data);
+  free(data_);
 }
 
 void Surface::load_image(const uint8_t* buffer, size_t buffer_len) {
-  free(data);
-  data = stbi_load_from_memory(buffer, buffer_len, &width, &height, nullptr, 4);
+  free(data_);
+  data_ = stbi_load_from_memory(buffer, buffer_len, &width_, &height_, nullptr, 4);
 }
 
 void Surface::load_image(const Static_File* file) { load_image(file->get_data(), file->get_len()); }
 
 void Surface::load_image(const char* filename) {
-  free(data);
-  data = stbi_load(filename, &width, &height, nullptr, 4);
-  if (!data) {
+  free(data_);
+  data_ = stbi_load(filename, &width_, &height_, nullptr, 4);
+  if (!data_) {
     throw "Unable to load file";
   }
 }
 
 void Surface::init_image(int width, int height) {
-  free(data);
-  this->width = width;
-  this->height = height;
-  data = static_cast<uint8_t*>(malloc(width * height * 4));
-  memset(data, 0, width * height * 4);
-}
-
-GLuint Surface::make_texture() {
-  GLuint result;
-  glGenTextures(1, &result);
-  glBindTexture(GL_TEXTURE_2D, result);
-  // TODO: Support other types of filtering.
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
-      0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-  return result;
+  free(data_);
+  width_ = width;
+  height_ = height;
+  data_ = static_cast<uint8_t*>(malloc(width_ * height_ * 4));
+  memset(data_, 0, width_ * height_ * 4);
 }
 
 ARecti Surface::crop_rect() const {
-  int x0 = width, y0 = height, x1 = 0, y1 = 0;
-  for (int i = 0; i < width * height; i++) {
+  int x0 = width_, y0 = height_, x1 = 0, y1 = 0;
+  for (int i = 0; i < width_ * height_; i++) {
     if ((*this)[i].a) {
-      int x = i % width, y = i / width;
+      int x = i % width_, y = i / width_;
       if (x < x0) x0 = x;
       if (y < y0) y0 = y;
       if (x > x1) x1 = x;

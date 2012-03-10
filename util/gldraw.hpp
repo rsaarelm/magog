@@ -23,7 +23,12 @@
  * OpenGL drawing utilities.
  */
 
-#include "axis_box.hpp"
+#include <util/axis_box.hpp>
+#include <GL/glew.h>
+
+class Surface;
+
+GLuint make_texture(const Surface& surface);
 
 void gl_rect(const ARectf& box);
 

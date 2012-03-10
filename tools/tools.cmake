@@ -16,8 +16,7 @@ if (NOT CMAKE_CROSSCOMPILING)
     util/core.cpp
     contrib/stb/stb_image.c
     )
-  # XXX: OpenGL library from surface, tool doesn't need it.
-  target_link_libraries(build-atlas ${M_LIBRARY} ${OPENGL_LIBRARY})
+  target_link_libraries(build-atlas ${M_LIBRARY})
 
 
   EXPORT(TARGETS render-font emit-chardata bake-data build-atlas FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )

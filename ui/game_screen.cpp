@@ -124,7 +124,7 @@ int wall_mask(const Location& loc) {
 static GLuint load_tile_tex() {
   // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
   g_tile_surface.load_image(tiles_png, sizeof(tiles_png));
-  return g_tile_surface.make_texture();
+  return make_texture(g_tile_surface);
 }
 
 Actor spawn_infantry(const Location& location) {
