@@ -90,4 +90,6 @@ struct Location {
 
 typedef std::map<Vec2i, Location> Relative_Fov;
 
+typedef std::map<Vec2i, Location> Footprint;
+
 #endif

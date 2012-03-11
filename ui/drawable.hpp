@@ -23,8 +23,6 @@
 #include <world/location.hpp>
 #include <map>
 
-typedef std::map<Vec2i, Location> Footprint;
-
 class Drawable {
 public:
   virtual ~Drawable() {}
