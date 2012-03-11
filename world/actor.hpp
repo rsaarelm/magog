@@ -121,9 +121,8 @@ class Actor {
   /// Pop the Actor back into existence from the void.
   void pop();
 
-  /// Pop the Actor into a specific location. Return false if the Actor can't
-  /// occupy the location.
-  bool pop(const Location& location);
+  /// Pop the Actor into a specific location.
+  void pop(const Location& location);
 
   Footprint footprint(const Location& center) const;
   Footprint footprint() const;

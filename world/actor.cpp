@@ -55,14 +55,9 @@ void Actor::pop() {
   World::get().spatial_index.add(*this, footprint());
 }
 
-bool Actor::pop(const Location& location) {
-  if (can_pop(location)) {
-    as<Blob_Part>().loc = location;
-    pop();
-    return true;
-  } else {
-    return false;
-  }
+void Actor::pop(const Location& location) {
+  as<Blob_Part>().loc = location;
+  pop();
 }
 
 Footprint Actor::footprint(const Location& center) const {
