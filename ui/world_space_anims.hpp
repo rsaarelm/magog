@@ -21,7 +21,7 @@
 
 #include "drawable.hpp"
 #include "sprite.hpp"
-#include <world/location.hpp>
+#include <world/spatial_index.hpp>
 #include <util/vec.hpp>
 #include <map>
 #include <set>
@@ -42,7 +42,8 @@ private:
   void remove(Element element);
 
   std::queue<Element> drawables;
-  std::multimap<Location, std::pair<Vec2i, Drawable*>> locations;
+
+  Spatial_Index<Drawable*> index;
 };
 
 #endif
