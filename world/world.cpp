@@ -63,17 +63,17 @@ bool blocks_shot(const Location& location) {
 bool action_walk(Actor actor, const Vec2i& dir) {
   auto loc = actor.location();
   auto new_loc = loc + dir + get_portal(loc + dir);
-  if (can_enter(actor, new_loc)) {
+  if (actor.can_pop(new_loc)) {
+    actor.push();
+
     // XXX Hacky. Player is tracked by the view space object.
     if (actor == get_player())
       World::get().view_space.move_pos(dir);
 
-    for (auto a : actors_at(new_loc)) {
-      // TODO: Msg writing, inform that crushination takes place here.
+    for (auto a : actors_on(actor.footprint(new_loc))) {
       msg("Crush!");
       delete_actor(a);
     }
-    actor.push();
     actor.pop(new_loc);
     // Energy cost for movement.
     // TODO: account for terrain differences.
@@ -93,7 +93,15 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
 
   for (loc = loc + dir; dist < range; loc = loc + dir) {
     dist++;
-    if (has_actors(loc)) {
+    bool hit_actor = false;
+    for (auto& a : actors_at(loc)) {
+      if (a != actor) {
+        hit_actor = true;
+        break;
+      }
+    }
+
+    if (hit_actor) {
       msg("Zap!");
       damage(loc);
       explosion_fx(loc);
@@ -212,6 +220,17 @@ std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& loca
   auto range = World::get().spatial_index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
     result.push_back(i->second);
+  }
+  return result;
+}
+
+std::vector<Actor> actors_on(const Footprint& footprint) {
+  std::vector<Actor> result;
+  for (auto& pair : footprint) {
+    auto range = World::get().spatial_index.equal_range(pair.second);
+    for (auto i = range.first; i != range.second; ++i) {
+      result.push_back(i->second.second);
+    }
   }
   return result;
 }

@@ -41,10 +41,13 @@ void Actor::push() {
 }
 
 bool Actor::can_pop(const Location& location) const {
-  // TODO: Handle whole footprint.
-  // TODO: Handle actor collisions.
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == open_terrain;
+  for (auto& pair : footprint(location)) {
+    auto& loc = pair.second;
+    if (terrain_data[get_terrain(loc)].kind != open_terrain)
+      return false;
+    // TODO: Handle actor collisions.
+  }
+  return true;
 }
 
 void Actor::pop() {
@@ -62,9 +65,17 @@ bool Actor::pop(const Location& location) {
   }
 }
 
-Footprint Actor::footprint() const {
-  // TODO: Multi-tile ones.
+Footprint Actor::footprint(const Location& center) const {
   Footprint result;
-  result[Vec2i(0, 0)] = as<Blob_Part>().loc;
+  result[Vec2i(0, 0)] = center;
+  if (as<Blob_Part>().big) {
+    for (auto& i : hex_dirs) {
+      result[i] = center.offset_and_portal(i);
+    }
+  }
   return result;
+}
+
+Footprint Actor::footprint() const {
+  return footprint(as<Blob_Part>().loc);
 }

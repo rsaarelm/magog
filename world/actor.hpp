@@ -125,6 +125,7 @@ class Actor {
   /// occupy the location.
   bool pop(const Location& location);
 
+  Footprint footprint(const Location& center) const;
   Footprint footprint() const;
  private:
   Actor_Id uid;

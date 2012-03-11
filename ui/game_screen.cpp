@@ -133,6 +133,8 @@ void Game_Screen::enter() {
   for (auto pos : hex_area_points(r)) {
     if (one_chance_in(8))
       set_terrain(Location{pos, 0}, terrain_sand);
+    if (one_chance_in(12))
+      set_terrain(Location{pos, 0}, terrain_water);
     else
       set_terrain(Location{pos, 0}, terrain_grass);
   }
@@ -178,7 +180,7 @@ void Game_Screen::enter() {
   }
 
   auto player = get_player();
-  player.add_part(new Blob_Part(icon_telos, 7));
+  player.add_part(new Blob_Part(icon_telos, 7, true));
   player.pop(Location{Vec2i(0, 0), 0});
   do_fov();
 
@@ -338,9 +340,10 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         output.insert(Sprite{terrain_layer, offset, *terrain_drawables[get_terrain(*loc)]});
 
         if (in_fov) {
-          for (auto& actor : actors_at(*loc)) {
+          for (auto& pair : actors_with_offsets_at(*loc)) {
+            Actor& actor = pair.second;
             auto& blob = actor.as<Blob_Part>();
-            output.insert(Sprite{actor_layer, offset, *actor_drawables[blob.icon]});
+            output.insert(Sprite{actor_layer, offset + pair.first, *actor_drawables[blob.icon]});
           }
         }
       }

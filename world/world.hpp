@@ -40,14 +40,15 @@ class Blob_Part : public Part {
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(Actor_Icon icon, int power)
-      : icon(icon), power(power), energy(0) {}
+  Blob_Part(Actor_Icon icon, int power, bool big=false)
+    : icon(icon), power(power), energy(0), big(big) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
   Actor_Icon icon;
   int power;
   int energy;
+  bool big; // XXX: Very crude, should have a more complex size system.
  private:
   Location loc;
   Blob_Part(const Blob_Part&);
@@ -150,6 +151,7 @@ void clear_portal(const Location& location);
 std::vector<Actor> all_actors();
 std::vector<Actor> actors_at(const Location& location);
 std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& location);
+std::vector<Actor> actors_on(const Footprint& footprint);
 bool has_actors(const Location& location);
 
 Actor new_actor(Actor_Id id);
