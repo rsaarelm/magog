@@ -20,8 +20,10 @@
 #include <util/gldraw.hpp>
 
 Tile_Drawable::Tile_Drawable(
-  GLuint texture, const Color& color, const Tile_Rect& tile_rect, const Vec2i& texture_dim)
-    : texture(texture), color(color) {
+  GLuint texture, const Color& color, const Tile_Rect& tile_rect,
+  const Vec2i& texture_dim,
+  const Vec2f& offset)
+  : texture(texture), color(color), offset_(offset) {
   Vec2f dim = texture_dim;
   Vec2f p0(tile_rect.x0, tile_rect.y0);
   Vec2f p1(tile_rect.x1, tile_rect.y1);
@@ -33,5 +35,5 @@ Tile_Drawable::Tile_Drawable(
 void Tile_Drawable::draw(const Vec2f& offset) {
   glBindTexture(GL_TEXTURE_2D, texture);
   color.gl_color();
-  gl_tex_rect(draw_box + offset, texture_coords);
+  gl_tex_rect(draw_box + offset + offset_, texture_coords);
 }

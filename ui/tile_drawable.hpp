@@ -31,7 +31,9 @@ struct Tile_Rect {
 
 class Tile_Drawable : public Drawable {
 public:
-  Tile_Drawable(GLuint texture, const Color& color, const Tile_Rect& tile_rect, const Vec2i& texture_dim);
+  Tile_Drawable(
+    GLuint texture, const Color& color, const Tile_Rect& tile_rect,
+    const Vec2i& texture_dim, const Vec2f& offset = Vec2f(0, 0));
 
   virtual void draw(const Vec2f& offset);
 private:
@@ -39,6 +41,7 @@ private:
   Color color;
   ARectf texture_coords;
   ARectf draw_box;
+  Vec2f offset_;
 };
 
 #endif

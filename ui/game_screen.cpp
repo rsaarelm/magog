@@ -95,13 +95,15 @@ Actor spawn_armor(const Location& location) {
   return actor;
 }
 
-static unique_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color) {
+static unique_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color,
+                                          Vec2f offset = Vec2f(0, 0)) {
   return unique_ptr<Drawable>(
     new Tile_Drawable(
       texture,
       color,
       tile_rects[index],
-      g_tile_surface.get_dim()));
+      g_tile_surface.get_dim(),
+      offset));
 }
 
 void Game_Screen::enter() {
@@ -112,7 +114,7 @@ void Game_Screen::enter() {
   actor_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
   actor_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
   actor_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
-  actor_drawables.push_back(tile_drawable(tiletex, 27, "#88f"));
+  actor_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
 
   terrain_drawables.clear();
   for (int i = 0; i < NUM_TERRAINS; i++)
