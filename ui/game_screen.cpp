@@ -210,21 +210,27 @@ void Game_Screen::key_event(int keysym, int printable) {
       break;
     case 'u':
       action_shoot(get_player(), Vec2i(-1, 0));
+      next_actor();
       break;
     case 'i':
       action_shoot(get_player(), Vec2i(-1, -1));
+      next_actor();
       break;
     case 'o':
       action_shoot(get_player(), Vec2i(0, -1));
+      next_actor();
       break;
     case 'l':
       action_shoot(get_player(), Vec2i(1, 0));
+      next_actor();
       break;
     case 'k':
       action_shoot(get_player(), Vec2i(1, 1));
+      next_actor();
       break;
     case 'j':
       action_shoot(get_player(), Vec2i(0, 1));
+      next_actor();
       break;
     case 'b':
       {

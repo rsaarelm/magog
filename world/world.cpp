@@ -92,10 +92,11 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
   ASSERT(is_hex_dir(dir));
   // TODO: Actors have multiple weapons. (The weapon could be the actor though.)
   const int range = 6; // TODO: Actors have different fire ranges.
-  int dist = 1;
+  int dist = 0;
   Location loc = get_location(actor);
 
-  for (loc = loc + dir; dist < range; dist++, loc = loc + dir) {
+  for (loc = loc + dir; dist < range; loc = loc + dir) {
+    dist++;
     if (has_actors(loc)) {
       msg("Zap!");
       damage(loc);
@@ -106,6 +107,10 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
   }
 
   beam_fx(get_location(actor), dir, dist, Color("pink"));
+
+  auto& blob = actor.as<Blob_Part>();
+  // Energy cost for shooting.
+  blob.energy -= 100;
 }
 
 void damage(const Location& location) {
