@@ -44,6 +44,23 @@ template<class T, int N> class Axis_Box {
         pairwise_all_of(pos, max(), [](T a, T b) { return a < b; });
   }
 
+  bool contains(const Axis_Box<T, N>& other) const {
+    for (int i = 0; i < N; i++) {
+      if (other.min()[i] < min()[i]) return false;
+      if (other.max()[i] > max()[i]) return false;
+    }
+    return true;
+  }
+
+  bool intersects(const Axis_Box<T, N>& other) const {
+    int no_intersect = N;
+    for (int i = 0; i < N; i++) {
+      if (!(other.min()[i] >= max()[i] || min()[i] >= other.max()[i]))
+        no_intersect--;
+    }
+    return !no_intersect;
+  }
+
   const Vec<T, N>& min() const { return min_pt; }
 
   Vec<T, N> max() const { return min_pt + dim_vec; }
