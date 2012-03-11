@@ -29,3 +29,42 @@ void Actor::add_part(Part* new_part) {
 bool Actor::exists() const {
   return actor_exists(*this);
 }
+
+Location Actor::location() const {
+  return as<Blob_Part>().loc;
+}
+
+void Actor::push() {
+  auto& index = World::get().spatial_index;
+  if (index.has(*this))
+    index.remove(*this);
+}
+
+bool Actor::can_pop(const Location& location) const {
+  // TODO: Handle whole footprint.
+  // TODO: Handle actor collisions.
+  auto kind = terrain_data[get_terrain(location)].kind;
+  return kind == open_terrain;
+}
+
+void Actor::pop() {
+  ASSERT(!World::get().spatial_index.has(*this));
+  World::get().spatial_index.add(*this, footprint());
+}
+
+bool Actor::pop(const Location& location) {
+  if (can_pop(location)) {
+    as<Blob_Part>().loc = location;
+    pop();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+Footprint Actor::footprint() const {
+  // TODO: Multi-tile ones.
+  Footprint result;
+  result[Vec2i(0, 0)] = as<Blob_Part>().loc;
+  return result;
+}

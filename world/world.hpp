@@ -24,6 +24,7 @@
 #include <world/location.hpp>
 #include <world/terrain.hpp>
 #include <world/view_space.hpp>
+#include <world/spatial_index.hpp>
 #include <boost/optional.hpp>
 #include <exception>
 #include <map>
@@ -35,20 +36,22 @@
 /// A proto-kind as a precursor to a full-fledged parts system.
 class Blob_Part : public Part {
  public:
+  friend class Actor;
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(const Location& loc, Actor_Icon icon, int power)
-      : loc(loc), icon(icon), power(power), energy(0) {}
+  Blob_Part(Actor_Icon icon, int power)
+      : icon(icon), power(power), energy(0) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
-  Location loc;
   Actor_Icon icon;
   int power;
   int energy;
  private:
+  Location loc;
   Blob_Part(const Blob_Part&);
+  Blob_Part& operator=(const Blob_Part&);
 };
 
 /// Main container for all of the game state.
@@ -83,6 +86,8 @@ class World {
 
   Actor_Id next_actor_id;
   View_Space view_space;
+
+  Spatial_Index<Actor> spatial_index;
  private:
   World();
   World(const World&);
@@ -95,7 +100,7 @@ class World {
 
 
 template<class T>
-T& Actor::as() {
+T& Actor::as() const {
   Kind kind = T::s_get_kind();
 
   auto iter = World::get().actors.find(*this);
@@ -117,7 +122,6 @@ T& Actor::as() {
 void msg(const char* fmt);
 
 Actor get_player();
-Location get_location(Actor actor);
 
 bool can_enter(Actor actor, const Location& location);
 bool blocks_shot(const Location& location);
@@ -145,6 +149,7 @@ void clear_portal(const Location& location);
 // form may change.
 std::vector<Actor> all_actors();
 std::vector<Actor> actors_at(const Location& location);
+std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& location);
 bool has_actors(const Location& location);
 
 Actor new_actor(Actor_Id id);

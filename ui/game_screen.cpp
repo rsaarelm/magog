@@ -83,13 +83,15 @@ static GLuint load_tile_tex() {
 
 Actor spawn_infantry(const Location& location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(location, icon_infantry, 3));
+  actor.add_part(new Blob_Part(icon_infantry, 3));
+  actor.pop(location);
   return actor;
 }
 
 Actor spawn_armor(const Location& location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(location, icon_tank, 5));
+  actor.add_part(new Blob_Part(icon_tank, 5));
+  actor.pop(location);
   return actor;
 }
 
@@ -174,7 +176,8 @@ void Game_Screen::enter() {
   }
 
   auto player = get_player();
-  player.add_part(new Blob_Part(Location{Vec2i(0, 0), 0}, icon_telos, 7));
+  player.add_part(new Blob_Part(icon_telos, 7));
+  player.pop(Location{Vec2i(0, 0), 0});
   do_fov();
 
   msg_buffer.add_caption("Telos Unit online");
@@ -209,7 +212,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_location(get_player()));
+      world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_player().location());
       break;
     case 'u':
       action_shoot(get_player(), Vec2i(-1, 0));
@@ -318,7 +321,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   const int actor_layer = 2;
 
   try {
-    auto loc = get_location(get_player());
+    auto loc = get_player().location();
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);

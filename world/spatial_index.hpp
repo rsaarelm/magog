@@ -28,6 +28,8 @@ class Spatial_Index {
 public:
   typedef typename std::multimap<Location, std::pair<Vec2i, C>>::iterator iterator;
 
+  Spatial_Index() {}
+
   void add(const C& element, const Footprint& footprint) {
     ASSERT(footprints.find(element) == footprints.end());
 
@@ -43,12 +45,12 @@ public:
   }
 
   void remove(const C& element) {
-    auto footprint = footprints.find(element);
-    ASSERT(footprint != footprints.end());
+    auto foot = footprints.find(element);
+    ASSERT(foot != footprints.end());
 
-    size_t sanity_check = footprint->second.size();
+    size_t sanity_check = foot->second.size();
 
-    for (auto& foot_elem : footprint->second) {
+    for (auto& foot_elem : foot->second) {
       auto& foot_offset = foot_elem.first;
       auto loc_pair = contents.equal_range(foot_elem.second);
       for (auto obj = loc_pair.first; obj != loc_pair.second;) {
@@ -64,13 +66,20 @@ public:
       }
     }
     ASSERT(sanity_check == 0);
-    footprints.erase(footprint);
+    footprints.erase(foot);
   }
 
   std::pair<iterator, iterator> equal_range(const Location& location) {
     return contents.equal_range(location);
   }
+
+  bool has(const C& element) const {
+    return footprints.find(element) != footprints.end();
+  }
 private:
+  Spatial_Index(const Spatial_Index&);
+  Spatial_Index& operator=(const Spatial_Index&);
+
   std::map<C, Footprint> footprints;
   std::multimap<Location, std::pair<Vec2i, C>> contents;
 };

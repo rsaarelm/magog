@@ -19,14 +19,13 @@
 #ifndef WORLD_LOCATION_HPP
 #define WORLD_LOCATION_HPP
 
-#include <world/actor.hpp>
 #include <util.hpp>
 #include <boost/optional.hpp>
 #include <map>
 
 struct Portal {
   Vec2i delta;
-  Actor area;
+  uint16_t area;
 
   bool operator==(const Portal& rhs) const {
     return delta == rhs.delta && area == rhs.area;
@@ -38,7 +37,7 @@ boost::optional<Portal> get_portal(const Location& location);
 
 struct Location {
   Vec2i pos;
-  Actor area;
+  uint16_t area;
 
   bool operator<(const Location& rhs) const {
     if (area < rhs.area)
@@ -75,7 +74,7 @@ struct Location {
   }
 
   size_t hash() const {
-    return (Vec2i::Hasher()(pos) << 1) ^ area.hash();
+    return (Vec2i::Hasher()(pos) << 1) ^ area;
   }
 
   struct Hasher {

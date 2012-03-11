@@ -33,10 +33,6 @@ Actor get_player() {
   return Actor(1);
 }
 
-Location get_location(Actor actor) {
-  return actor.as<Blob_Part>().loc;
-}
-
 
 std::unique_ptr<World> World::s_world;
 
@@ -65,7 +61,7 @@ bool blocks_shot(const Location& location) {
 }
 
 bool action_walk(Actor actor, const Vec2i& dir) {
-  auto loc = get_location(actor);
+  auto loc = actor.location();
   auto new_loc = loc + dir + get_portal(loc + dir);
   if (can_enter(actor, new_loc)) {
     // XXX Hacky. Player is tracked by the view space object.
@@ -77,11 +73,11 @@ bool action_walk(Actor actor, const Vec2i& dir) {
       msg("Crush!");
       delete_actor(a);
     }
-    auto& blob = actor.as<Blob_Part>();
-    blob.loc = new_loc;
+    actor.push();
+    actor.pop(new_loc);
     // Energy cost for movement.
     // TODO: account for terrain differences.
-    blob.energy -= 100;
+    actor.as<Blob_Part>().energy -= 100;
     return true;
   } else {
     return false;
@@ -93,7 +89,7 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
   // TODO: Actors have multiple weapons. (The weapon could be the actor though.)
   const int range = 6; // TODO: Actors have different fire ranges.
   int dist = 0;
-  Location loc = get_location(actor);
+  Location loc = actor.location();
 
   for (loc = loc + dir; dist < range; loc = loc + dir) {
     dist++;
@@ -107,7 +103,7 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
       break;
   }
 
-  beam_fx(get_location(actor), dir, dist, Color("pink"));
+  beam_fx(actor.location(), dir, dist, Color("pink"));
 
   auto& blob = actor.as<Blob_Part>();
   // Energy cost for shooting.
@@ -172,7 +168,7 @@ boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
 }
 
 void do_fov() {
-  World::get().view_space.do_fov(8, get_location(get_player()));
+  World::get().view_space.do_fov(8, get_player().location());
 }
 
 Terrain get_terrain(const Location& location) {
@@ -204,9 +200,18 @@ std::vector<Actor> all_actors() {
 
 std::vector<Actor> actors_at(const Location& location) {
   std::vector<Actor> result;
-  for (auto& i : all_actors()) {
-    if (get_location(i) == location)
-      result.push_back(i);
+  auto range = World::get().spatial_index.equal_range(location);
+  for (auto i = range.first; i != range.second; ++i) {
+    result.push_back(i->second.second);
+  }
+  return result;
+}
+
+std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& location) {
+  std::vector<std::pair<Vec2i, Actor>> result;
+  auto range = World::get().spatial_index.equal_range(location);
+  for (auto i = range.first; i != range.second; ++i) {
+    result.push_back(i->second);
   }
   return result;
 }
@@ -230,6 +235,7 @@ Actor new_actor() {
 
 void delete_actor(Actor actor) {
   // TODO: Notify components of removal
+  actor.push();
   World::get().actors.erase(actor);
 }
 

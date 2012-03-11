@@ -20,6 +20,7 @@
 #define WORLD_ACTOR_HPP
 
 #include <stdexcept>
+#include <world/location.hpp>
 
 typedef long Actor_Id;
 
@@ -67,6 +68,17 @@ class Part {
 };
 
 
+// Given that there is a componet system and lots of multi-actor interactions
+// in play, when should we nevertheless implement operations as methdos of
+// Actor. Basic rules of thumb, an operation should be a method of Actor if 1)
+// most kinds of actors will use this method (exists and location would
+// probably be good candidates) and 2) the method has an unambiguous single
+// actor as it's main focus. Operation "attack" might not be a good method,
+// since it's only of interest for the animate subset of actors, and it might
+// also rather reliant on the combined properties of the attacker and the
+// target actors.
+
+
 class Actor {
  public:
   Actor(): uid(-1) {}
@@ -88,7 +100,7 @@ class Actor {
   bool exists() const;
 
   template <class T>
-  T& as();
+  T& as() const;
 
   void add_part(Part* new_part);
 
@@ -97,6 +109,23 @@ class Actor {
   }
 
   Actor_Id id() const { return uid; }
+
+  Location location() const;
+
+  /// Push the Actor into the ethereal void.
+  void push();
+
+  /// Checks if an actor in void can enter a location.
+  bool can_pop(const Location& location) const;
+
+  /// Pop the Actor back into existence from the void.
+  void pop();
+
+  /// Pop the Actor into a specific location. Return false if the Actor can't
+  /// occupy the location.
+  bool pop(const Location& location);
+
+  Footprint footprint() const;
  private:
   Actor_Id uid;
 };
