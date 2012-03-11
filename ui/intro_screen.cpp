@@ -17,7 +17,7 @@
 */
 
 #include "intro_screen.hpp"
-#include "telos.hpp"
+#include <ui/registry.hpp>
 #include <GL/glew.h>
 #include <util.hpp>
 #include "game_screen.hpp"
@@ -53,7 +53,7 @@ void Intro_Screen::draw() {
   glMatrixMode(GL_MODELVIEW);
   glScalef(4.0, 4.0, 1.0);
   Color(196, 255, 196).gl_color();
-  draw_text(Vec2f(0, 0), "TELOS v%s", VERSION);
+  draw_text(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
   glLoadIdentity();
 
   if (im_button(GEN_ID, "New Game", ARectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {

@@ -18,6 +18,9 @@
 
 #include "registry.hpp"
 
+const char* Registry::app_name = "Telos";
+const char* Registry::version = "000-pre";
+
 int Registry::window_w = 800;
 int Registry::window_h = 600;
 bool Registry::using_colemak = false;

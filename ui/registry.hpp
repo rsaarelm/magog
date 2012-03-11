@@ -20,6 +20,8 @@
 
 /// Application-wide configuration settings.
 struct Registry {
+  static const char* app_name;
+  static const char* version;
   static int window_w;
   static int window_h;
   static bool using_colemak;

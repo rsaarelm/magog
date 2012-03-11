@@ -16,7 +16,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ui/telos.hpp>
 #include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
 #include <GL/glew.h>
