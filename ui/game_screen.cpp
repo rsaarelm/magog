@@ -267,7 +267,7 @@ void Game_Screen::update(float interval_seconds) {
 
   while (!(active_actor() == get_player() && ready_to_act(get_player()))) {
     do_ai();
-    if (!get_player()) {
+    if (!get_player().exists()) {
       // TODO: Some kind of message that the player acknowledges here instead of
       // just a crude drop to intro.
       end_game();

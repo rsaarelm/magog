@@ -85,8 +85,7 @@ class Actor {
     return uid != rhs.uid;
   }
 
-  /// Return whether the Actor actually exists in world.
-  operator bool() const;
+  bool exists() const;
 
   template <class T>
   T& as();

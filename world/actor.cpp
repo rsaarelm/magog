@@ -26,6 +26,6 @@ void Actor::add_part(Part* new_part) {
   World::get().actors[*this][new_part->get_kind()] = std::unique_ptr<Part>(new_part);
 }
 
-Actor::operator bool() const {
+bool Actor::exists() const {
   return actor_exists(*this);
 }
