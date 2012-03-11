@@ -121,11 +121,15 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  // Get the smallest power-of-two square texture size that fits the
+  // Get the smallest power-of-two dimensional texture size that fits the
   // number of pixels seen.
-  int size = 1;
-  while (size * size < num_pixels)
-    size <<= 1;
+  int width = 1, height = 1;
+  while (width * height < num_pixels) {
+    if (width > height)
+      height <<= 1;
+    else
+      width <<= 1;
+  }
 
   std::vector<Vec2i> packed;
   for (;;) {
@@ -139,10 +143,14 @@ int main(int argc, char* argv[]) {
     indices.sort([&](const size_t& a, const size_t& b) {
         return dims[a][0] * dims[a][1] > dims[b][0] * dims[b][1]; });
 
-    pack(dims, ARecti(Vec2i(size, size)), packed, indices);
+    pack(dims, ARecti(Vec2i(width, height)), packed, indices);
 
-    if (!indices.empty())
-      size <<= 1;
+    if (!indices.empty()) {
+      if (width > height)
+        height <<= 1;
+      else
+        width <<= 1;
+    }
     else
       break;
   }
@@ -156,7 +164,7 @@ int main(int argc, char* argv[]) {
   }
   fclose(rectdata);
 
-  Surface canvas(size, size);
+  Surface canvas(width, height);
   for (int i = 0; i < packed.size(); i++)
     images[i]->blit(ARecti(offsets[i], dims[i]), canvas, packed[i]);
 
