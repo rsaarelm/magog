@@ -29,6 +29,10 @@ int rand_int(int max) {
   return uniform_int_distribution<int>(0, max)(g_rng);
 }
 
+float uniform_rand() {
+  return uniform_real_distribution<>(0.0, 1.0)(g_rng);
+}
+
 bool one_chance_in(int n) {
   return rand_int(n) == 0;
 }

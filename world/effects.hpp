@@ -24,6 +24,8 @@
 
 void beam_fx(const Location& location, const Vec2i& dir, int length, const Color& color);
 
+void explosion_fx(const Location& location);
+
 void raw_msg(std::string string);
 
 #endif

@@ -32,11 +32,11 @@
 #include <set>
 #include <functional>
 
-const int tile_size = 16;
+const Vec2f tile_size(16, 16);
 
 const Mtx<float, 2, 2> tile_projection{
-  tile_size,    -tile_size,
-  tile_size / 2, tile_size / 2};
+  tile_size[0],    -tile_size[0],
+  tile_size[1] / 2, tile_size[1] / 2};
 
 class Game_Screen : public Game_State {
  public:

@@ -226,4 +226,17 @@ Color::Color(const char* desc)
   }
 }
 
+const Color& as_color(const Color::Color_Vec& vec) {
+  return *reinterpret_cast<const Color*>(&vec);
+}
+
+Color lerp(float f, const Color& c1, const Color& c2) {
+  Color result;
+  for (int i = 0; i < 4; i++) {
+    result.as_vec()[i] = c1.as_vec()[i] +
+      f * (c2.as_vec()[i] - c1.as_vec()[i]);
+  }
+  return result;
+}
+
 #undef X

@@ -19,11 +19,13 @@
 #include <world/effects.hpp>
 #include <ui/drawable.hpp>
 #include <ui/game_screen.hpp>
+#include <util/num.hpp>
 #include <memory>
+#include <vector>
 
 
-struct BeamDrawable : public Drawable {
-  BeamDrawable(const Vec2i& dir, int length, const Color& color = Color("pink"), float life = 0.2)
+struct Beam_Drawable : public Drawable {
+  Beam_Drawable(const Vec2i& dir, int length, const Color& color = Color("pink"), float life = 0.2)
     : dir(dir), length(length), color(color), life(life) {}
 
   virtual Footprint footprint(const Location& start) const {
@@ -45,9 +47,8 @@ struct BeamDrawable : public Drawable {
   }
 
   virtual void draw(const Vec2f& offset) {
-    Vec2f start = offset + Vec2f(tile_size / 2, tile_size / 2);
-    Vec2f end = tile_projection * Vec2f(dir * length) + offset +
-      Vec2f(tile_size / 2, tile_size / 2);
+    Vec2f start = offset + .5f * tile_size;
+    Vec2f end = tile_projection * Vec2f(dir * length) + offset + .5f * tile_size;
     glBindTexture(GL_TEXTURE_2D, 0);
     color.gl_color();
     glBegin(GL_LINES);
@@ -62,6 +63,57 @@ struct BeamDrawable : public Drawable {
   int length;
   Color color;
   float life;
+};
+
+
+struct Particles_Drawable : public Drawable {
+  Particles_Drawable(int num_particles=50, float life=0.4, float speed=80.0,
+                    const Color& color1 = Color("yellow"),
+                    const Color& color2 = Color("dark red"))
+    : max_life(life)
+    , current_life(life)
+    , color1(color1)
+    , color2(color2) {
+    pos.resize(num_particles);
+    vel.resize(num_particles);
+    for (int i = 0; i < pos.size(); i++) {
+      pos[i] = Vec2f(0, 0);
+      vel[i] = Vec2f(uniform_rand() - 0.5, uniform_rand() - 0.5) * speed;
+    }
+  }
+
+  virtual bool update(float interval_sec) {
+    current_life -= interval_sec;
+    for (int i = 0; i < pos.size(); i++) {
+      pos[i] += vel[i] * interval_sec;
+    }
+    return current_life > 0;
+  }
+
+  Color color() const {
+    return lerp(current_life / max_life, color2, color1);
+  }
+
+  virtual void draw(const Vec2f& offset) {
+    Vec2f o = offset + .5f * tile_size;
+    glBindTexture(GL_TEXTURE_2D, 0);
+    color().gl_color();
+    glBegin(GL_POINTS);
+    for (auto& p : pos) {
+      // TODO: Maybe use point sprites or something.
+      glVertex2f(p[0] + o[0], p[1] + o[1]);
+    }
+    glEnd();
+  }
+
+  virtual int get_z_layer() const { return 100; }
+
+  float max_life;
+  float current_life;
+  Color color1;
+  Color color2;
+  std::vector<Vec2f> pos;
+  std::vector<Vec2f> vel;
 };
 
 
@@ -81,8 +133,15 @@ void beam_fx(const Location& location, const Vec2i& dir, int length, const Color
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->world_anims.add(
-      std::unique_ptr<Drawable>(new BeamDrawable(dir, length, color)),
+      std::unique_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
       location);
   }
 }
 
+void explosion_fx(const Location& location) {
+  Game_Screen* scr = get_game_screen();
+  if (scr) {
+    scr->world_anims.add(
+      std::unique_ptr<Drawable>(new Particles_Drawable()), location);
+  }
+}

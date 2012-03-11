@@ -59,4 +59,8 @@ struct Color {
   Color_Elt r, g, b, a;
 };
 
+const Color& as_color(const Color::Color_Vec& vec);
+
+Color lerp(float f, const Color& c1, const Color& c2);
+
 #endif

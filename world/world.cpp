@@ -100,6 +100,7 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
     if (has_actors(loc)) {
       msg("Zap!");
       damage(loc);
+      explosion_fx(loc);
       break;
     }
     if (blocks_shot(loc))
