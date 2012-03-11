@@ -113,9 +113,6 @@ T& Actor::as() {
   return *result;
 }
 
-// Implement this on UI.
-void raw_msg(std::string string);
-
 // TODO variadics.
 void msg(const char* fmt);
 
@@ -123,10 +120,14 @@ Actor get_player();
 Location get_location(Actor actor);
 
 bool can_enter(Actor actor, const Location& location);
+bool blocks_shot(const Location& location);
 
 bool action_walk(Actor actor, const Vec2i& dir);
 bool action_melee(Actor actor, const Vec2i& dir);
 bool action_bump(Actor actor, const Vec2i& dir);
+bool action_shoot(Actor actor, const Vec2i& dir);
+
+void damage(const Location& location);
 
 bool is_seen(const Location& location);
 bool blocks_sight(const Location& location);
@@ -144,6 +145,7 @@ void clear_portal(const Location& location);
 // form may change.
 std::vector<Actor> all_actors();
 std::vector<Actor> actors_at(const Location& location);
+bool has_actors(const Location& location);
 
 Actor new_actor(Actor_Id id);
 Actor new_actor();

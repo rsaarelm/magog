@@ -17,7 +17,8 @@
 */
 
 #include "world.hpp"
-#include "fov.hpp"
+#include <world/fov.hpp>
+#include <world/effects.hpp>
 #include <stdexcept>
 
 void msg(const char* fmt) {
@@ -59,6 +60,10 @@ bool can_enter(Actor actor, const Location& location) {
   return kind == open_terrain;
 }
 
+bool blocks_shot(const Location& location) {
+  return terrain_data[get_terrain(location)].kind == wall_terrain;
+}
+
 bool action_walk(Actor actor, const Vec2i& dir) {
   auto loc = get_location(actor);
   auto new_loc = loc + dir + get_portal(loc + dir);
@@ -80,6 +85,33 @@ bool action_walk(Actor actor, const Vec2i& dir) {
     return true;
   } else {
     return false;
+  }
+}
+
+bool action_shoot(Actor actor, const Vec2i& dir) {
+  ASSERT(is_hex_dir(dir));
+  // TODO: Actors have multiple weapons. (The weapon could be the actor though.)
+  const int range = 6; // TODO: Actors have different fire ranges.
+  int dist = 1;
+  Location loc = get_location(actor);
+
+  for (loc = loc + dir; dist < range; dist++, loc = loc + dir) {
+    if (has_actors(loc)) {
+      msg("Zap!");
+      damage(loc);
+      break;
+    }
+    if (blocks_shot(loc))
+      break;
+  }
+
+  beam_fx(get_location(actor), dir, dist, Color("pink"));
+}
+
+void damage(const Location& location) {
+  // TODO, lots more detail
+  for (auto a : actors_at(location)) {
+    delete_actor(a);
   }
 }
 
@@ -171,6 +203,12 @@ std::vector<Actor> actors_at(const Location& location) {
       result.push_back(i);
   }
   return result;
+}
+
+bool has_actors(const Location& location) {
+  for (auto a : actors_at(location))
+    return true;
+  return false;
 }
 
 Actor new_actor(Actor_Id id) {

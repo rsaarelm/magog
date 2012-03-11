@@ -142,4 +142,6 @@ Range<Vec2i>::T hex_area_points(int radius);
  */
 int hex_dist(const Vec2i& vec);
 
+bool is_hex_dir(const Vec2i& dir);
+
 #endif

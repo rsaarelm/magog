@@ -83,3 +83,11 @@ int hex_dist(const Vec2i& vec) {
   else
     return abs(vec[0]) + abs(vec[1]);
 }
+
+bool is_hex_dir(const Vec2i& dir) {
+  for (auto& i : hex_dirs) {
+    if (dir == i)
+      return true;
+  }
+  return false;
+}
