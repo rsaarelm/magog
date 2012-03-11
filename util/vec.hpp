@@ -162,7 +162,7 @@ template<class T, int N> class Vec {
   }
 
   Vec<T, N> operator-() const {
-    return -1 * *this;
+    return T(-1) * *this;
   }
 
   Vec<T, N>& in_elem_mul(const Vec<T, N>& rhs) {
