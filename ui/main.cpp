@@ -16,15 +16,23 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "telos.hpp"
+#include <ui/telos.hpp>
+#include <ui/intro_screen.hpp>
+#include <ui/registry.hpp>
 #include <GL/glew.h>
 #include <util.hpp>
 #include <util/winmain.hpp>
-#include "intro_screen.hpp"
 
 int main(int argc, char* argv[])
 {
-  Game_Loop& game = Game_Loop::init(800, 600, "Telos");
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--colemak") == 0)
+      Registry::using_colemak = true;
+    else
+      printf("Unknown command line option '%s'\n", argv[i]);
+  }
+
+  Game_Loop& game = Game_Loop::init(Registry::window_w, Registry::window_h, "Telos");
 
   init_font();
   game.push_state(new Intro_Screen);

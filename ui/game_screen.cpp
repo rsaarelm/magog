@@ -19,6 +19,7 @@
 #include "game_screen.hpp"
 #include "intro_screen.hpp"
 #include "tile_drawable.hpp"
+#include <ui/registry.hpp>
 #include <world/world.hpp>
 #include <world/cavegen.hpp>
 #include <GL/gl.h>
@@ -195,7 +196,9 @@ int from_colemak(int keysym) {
 
 void Game_Screen::key_event(int keysym, int printable) {
   Vec2i delta(0, 0);
-  switch (from_colemak(keysym)) {
+  if (Registry::using_colemak)
+    keysym = from_colemak(keysym);
+  switch (keysym) {
     case 27: // Escape
       end_game();
       break;

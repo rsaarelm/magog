@@ -26,10 +26,10 @@ xbuild: xbuild/Makefile
 all: build xbuild
 
 run: build
-	./build/telos
+	./build/telos $(ARGS)
 
 xrun: xbuild
-	wine ./xbuild/telos
+	wine ./xbuild/telos $(ARGS)
 
 clean:
 	rm -rf build/ xbuild/
