@@ -21,6 +21,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <contrib/stb/stb_image_write.h>
 #include <vector>
+#include <list>
 #include <memory>
 
 void usage(int argc, char* argv[]) {
@@ -28,29 +29,53 @@ void usage(int argc, char* argv[]) {
   exit(1);
 }
 
-// Pack as many rectangles as you can into the result, then return it.
-std::vector<Vec2i> try_pack(const std::vector<Vec2i>& dims, int width, int height) {
-  // XXX A very stupid packer.
-  std::vector<Vec2i> result;
-  int x = 0;
-  int y = 0;
-  int max_y = 0;
-  for (auto& dim : dims) {
-    if (dim[1] > max_y)
-      max_y = dim[1];
-    if (dim[0] + x > width) {
-      // New line
-      x = 0;
-      y += max_y;
+void pack(const std::vector<Vec2i>& dims, const ARecti& current_area,
+          std::vector<Vec2i>& inout_positions, std::list<size_t>& inout_unplaced_indices) {
+  auto index = inout_unplaced_indices.begin();
+  ARecti place_rect;
+
+  // Find the first unplaced item we can place.
+  while (true) {
+    if (index == inout_unplaced_indices.end()) {
+      // Nothing left we can place.
+      return;
     }
-    if (dim[1] + y > height) {
-      // Can't fit any more.
-      return result;
+    place_rect = ARecti(current_area.min(), dims[*index]);
+    if (current_area.contains(place_rect)) {
+      // Erase the index of the thing we managed to place.
+      inout_unplaced_indices.erase(index);
+      break;
     }
-    result.push_back(Vec2i(x, y));
-    x += dim[0];
+    ++index;
   }
-  return result;
+
+  // Place the first unplaced element into top-left of current area.
+  inout_positions[*index] = current_area.min();
+
+  ARecti recurse1, recurse2;
+  // Split along the longer edge of the newly allocted rectangle.
+  if (place_rect.dim()[1] > place_rect.dim()[0]) {
+    // taller than wide.
+    recurse1 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
+                      Vec2i(place_rect.dim()[0], current_area.dim()[1] - place_rect.dim()[1]));
+    recurse2 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
+                      current_area.dim() - place_rect.dim().elem_mul(Vec2i(1, 0)));
+  } else {
+    // wider than tall or square.
+    recurse1 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
+                      Vec2i(current_area.dim()[0] - place_rect.dim()[0], place_rect.dim()[1]));
+    recurse2 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
+                      current_area.dim() - place_rect.dim().elem_mul(Vec2i(0, 1)));
+  }
+  ASSERT(!place_rect.intersects(recurse1));
+  ASSERT(!place_rect.intersects(recurse2));
+  ASSERT(current_area.contains(recurse1));
+  ASSERT(current_area.contains(recurse2));
+  ASSERT(!recurse1.intersects(recurse2));
+  ASSERT(place_rect.volume() + recurse1.volume() + recurse2.volume() == current_area.volume());
+
+  pack(dims, recurse1, inout_positions, inout_unplaced_indices);
+  pack(dims, recurse2, inout_positions, inout_unplaced_indices);
 }
 
 int main(int argc, char* argv[]) {
@@ -102,28 +127,38 @@ int main(int argc, char* argv[]) {
   while (size * size < num_pixels)
     size <<= 1;
 
-  std::vector<Vec2i> pack;
+  std::vector<Vec2i> packed;
   for (;;) {
-    pack = try_pack(dims, size, size);
-    // Keep growing the bin until packing succeeds.
-    if (pack.size() < dims.size())
+    packed.clear();
+    packed.resize(dims.size());
+    std::list<size_t> indices;
+    for (size_t i = 0; i < dims.size(); i++) indices.push_back(i);
+
+    // Sort indices into order of descending size. Pack the biggest sprite
+    // first.
+    indices.sort([&](const size_t& a, const size_t& b) {
+        return dims[a][0] * dims[a][1] > dims[b][0] * dims[b][1]; });
+
+    pack(dims, ARecti(Vec2i(size, size)), packed, indices);
+
+    if (!indices.empty())
       size <<= 1;
     else
       break;
   }
 
   FILE* rectdata = fopen(argv[1], "w");
-  for (int i = 0; i < pack.size(); i++) {
-    Vec2i p1 = pack[i];
-    Vec2i p2 = pack[i] + dims[i];
+  for (int i = 0; i < packed.size(); i++) {
+    Vec2i p1 = packed[i];
+    Vec2i p2 = packed[i] + dims[i];
     fprintf(rectdata, "{%d, %d, %d, %d, %d, %d},\n",
             p1[0], p1[1], p2[0], p2[1], offsets[i][0], offsets[i][1]);
   }
   fclose(rectdata);
 
   Surface canvas(size, size);
-  for (int i = 0; i < pack.size(); i++)
-    images[i]->blit(ARecti(offsets[i], dims[i]), canvas, pack[i]);
+  for (int i = 0; i < packed.size(); i++)
+    images[i]->blit(ARecti(offsets[i], dims[i]), canvas, packed[i]);
 
   int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.data(), 0);
   if (!result)
