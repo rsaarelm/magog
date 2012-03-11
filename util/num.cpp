@@ -37,7 +37,7 @@ bool one_chance_in(int n) {
   return rand_int(n) == 0;
 }
 
-void seed_Rand(int seed) {
+void seed_rand(int seed) {
   g_rng.seed(seed);
 }
 
