@@ -52,7 +52,7 @@ struct Location {
 
   Location() : area(0), x(0), y(0) {}
 
-  bool operator<(const Location& rhs) const {
+  bool operator<(Location rhs) const {
     if (area < rhs.area) return true;
     if (area > rhs.area) return false;
 
@@ -65,7 +65,7 @@ struct Location {
     return false;
   }
 
-  bool operator==(const Location& rhs) const {
+  bool operator==(Location rhs) const {
     return !(*this < rhs) && !(rhs < *this);
   }
 
@@ -90,11 +90,11 @@ struct Location {
   }
 
   struct Hasher {
-    size_t operator()(const Location& location) const { return location.hash(); }
+    size_t operator()(Location location) const { return location.hash(); }
   };
 
   struct Equator {
-    bool operator()(const Location& lhs, const Location& rhs) const { return lhs == rhs; }
+    bool operator()(Location lhs, Location rhs) const { return lhs == rhs; }
   };
 
   // Fit the whole thing into a 32-bit word.

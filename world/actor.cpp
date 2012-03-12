@@ -40,7 +40,7 @@ void Actor::push() {
     index.remove(*this);
 }
 
-bool Actor::can_pop(const Location& location) const {
+bool Actor::can_pop(Location location) const {
   for (auto& pair : footprint(location)) {
     auto& loc = pair.second;
     if (terrain_data[get_terrain(loc)].kind != open_terrain)
@@ -55,12 +55,12 @@ void Actor::pop() {
   World::get().spatial_index.add(*this, footprint());
 }
 
-void Actor::pop(const Location& location) {
+void Actor::pop(Location location) {
   as<Blob_Part>().loc = location;
   pop();
 }
 
-Footprint Actor::footprint(const Location& center) const {
+Footprint Actor::footprint(Location center) const {
   Footprint result;
   result[Vec2i(0, 0)] = center;
   if (as<Blob_Part>().big) {

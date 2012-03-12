@@ -62,8 +62,8 @@ class World {
   static World& get();
   static void clear();
 
-  Terrain get_terrain(const Location& location);
-  void set_terrain(const Location& location, Terrain cell);
+  Terrain get_terrain(Location location);
+  void set_terrain(Location location, Terrain cell);
 
   /// Return the actor whose turn it is to act now.
   ///
@@ -124,35 +124,35 @@ void msg(const char* fmt);
 
 Actor get_player();
 
-bool can_enter(Actor actor, const Location& location);
-bool blocks_shot(const Location& location);
+bool can_enter(Actor actor, Location location);
+bool blocks_shot(Location location);
 
 bool action_walk(Actor actor, const Vec2i& dir);
 bool action_melee(Actor actor, const Vec2i& dir);
 bool action_bump(Actor actor, const Vec2i& dir);
 bool action_shoot(Actor actor, const Vec2i& dir);
 
-void damage(const Location& location);
+void damage(Location location);
 
-bool is_seen(const Location& location);
-bool blocks_sight(const Location& location);
+bool is_seen(Location location);
+bool blocks_sight(Location location);
 boost::optional<Location> view_space_location(const Vec2i& relative_pos);
 void do_fov();
 
-Terrain get_terrain(const Location& location);
-void set_terrain(const Location& location, Terrain cell);
+Terrain get_terrain(Location location);
+void set_terrain(Location location, Terrain cell);
 
 Portal get_portal(Location location);
-void set_portal(const Location& location, const Portal& portal);
-void clear_portal(const Location& location);
+void set_portal(Location location, Portal portal);
+void clear_portal(Location location);
 
 // XXX: Return type should be considered just some iterable type, the exact
 // form may change.
 std::vector<Actor> all_actors();
-std::vector<Actor> actors_at(const Location& location);
-std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& location);
+std::vector<Actor> actors_at(Location location);
+std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location);
 std::vector<Actor> actors_on(const Footprint& footprint);
-bool has_actors(const Location& location);
+bool has_actors(Location location);
 
 Actor new_actor(Actor_Id id);
 Actor new_actor();

@@ -24,13 +24,13 @@
 
 using namespace std;
 
-void dig(const Location& loc) {
+void dig(Location loc) {
   // XXX: Move the hardcoded terrain data somewhere else.
   // TODO: Figure out formatting the walls around the floor.
   set_terrain(loc, terrain_floor);
 }
 
-void generate_cave(const Location& origin, const ARecti& area) {
+void generate_cave(Location origin, const ARecti& area) {
   set<Vec2i> dug;
   set<Vec2i> edge;
 

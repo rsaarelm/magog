@@ -35,7 +35,7 @@ public:
 
   virtual int get_z_layer() const { return 0; }
 
-  virtual Footprint footprint(const Location& start) const {
+  virtual Footprint footprint(Location start) const {
     Footprint result;
     result[Vec2i(0, 0)] = start;
     return result;

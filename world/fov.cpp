@@ -27,7 +27,7 @@ struct Fov_Group {
   bool opaque;
   Portal portal;
 
-  Fov_Group(const Location& origin, const Vec2i& offset)
+  Fov_Group(Location origin, const Vec2i& offset)
     : opaque(blocks_sight(origin.raw_offset(offset).portaled()))
     , portal(get_portal(origin.raw_offset(offset))) {}
 
@@ -72,7 +72,7 @@ struct Angle {
 void process(
     Relative_Fov& rfov,
     int range,
-    const Location& local_origin,
+    Location local_origin,
     Angle begin = Angle{0, 1},
     Angle end = Angle{6, 1}) {
   if (begin.radius > range)
@@ -93,7 +93,7 @@ void process(
 
 Relative_Fov hex_field_of_view(
     int range,
-    const Location& origin) {
+    Location origin) {
   Relative_Fov result;
   result[Vec2i(0, 0)] = origin;
   process(result, range, origin);

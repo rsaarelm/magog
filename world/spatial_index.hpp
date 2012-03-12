@@ -69,7 +69,7 @@ public:
     footprints.erase(foot);
   }
 
-  std::pair<iterator, iterator> equal_range(const Location& location) {
+  std::pair<iterator, iterator> equal_range(Location location) {
     return contents.equal_range(location);
   }
 

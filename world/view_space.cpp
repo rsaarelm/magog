@@ -24,7 +24,7 @@
 using namespace boost;
 using namespace std;
 
-void View_Space::do_fov(int radius, const Location& origin) {
+void View_Space::do_fov(int radius, Location origin) {
   prune();
   visible.clear();
   auto fov = hex_field_of_view(radius, origin);
@@ -39,7 +39,7 @@ boost::optional<Location> View_Space::at(const Vec2i& pos) const {
   return assoc_find(view, pos);
 }
 
-bool View_Space::is_seen(const Location& loc) const {
+bool View_Space::is_seen(Location loc) const {
   return assoc_contains(visible, loc);
 }
 

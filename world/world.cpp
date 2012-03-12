@@ -51,12 +51,12 @@ World::World()
     , previous_actor(-1)
 {}
 
-bool can_enter(Actor actor, const Location& location) {
+bool can_enter(Actor actor, Location location) {
   auto kind = terrain_data[get_terrain(location)].kind;
   return kind == open_terrain;
 }
 
-bool blocks_shot(const Location& location) {
+bool blocks_shot(Location location) {
   return terrain_data[get_terrain(location)].kind == wall_terrain;
 }
 
@@ -118,18 +118,18 @@ bool action_shoot(Actor actor, const Vec2i& dir) {
   blob.energy -= 100;
 }
 
-void damage(const Location& location) {
+void damage(Location location) {
   // TODO, lots more detail
   for (auto a : actors_at(location)) {
     delete_actor(a);
   }
 }
 
-Terrain World::get_terrain(const Location& location) {
+Terrain World::get_terrain(Location location) {
   return assoc_find_or(terrain, location, terrain_void);
 }
 
-void World::set_terrain(const Location& location, Terrain cell) {
+void World::set_terrain(Location location, Terrain cell) {
   terrain[location] = cell;
 }
 
@@ -161,11 +161,11 @@ void World::next_actor() {
 }
 
 
-bool is_seen(const Location& location) {
+bool is_seen(Location location) {
   return World::get().view_space.is_seen(location) > 0;
 }
 
-bool blocks_sight(const Location& location) {
+bool blocks_sight(Location location) {
   auto kind = terrain_data[get_terrain(location)].kind;
   return kind == wall_terrain || kind == void_terrain;
 }
@@ -179,11 +179,11 @@ void do_fov() {
   World::get().view_space.do_fov(8, get_player().location());
 }
 
-Terrain get_terrain(const Location& location) {
+Terrain get_terrain(Location location) {
   return World::get().get_terrain(location);
 }
 
-void set_terrain(const Location& location, Terrain cell) {
+void set_terrain(Location location, Terrain cell) {
   World::get().set_terrain(location, cell);
 }
 
@@ -196,11 +196,11 @@ Portal get_portal(Location location) {
     return Portal();
 }
 
-void set_portal(const Location& location, const Portal& portal) {
+void set_portal(Location location, Portal portal) {
   World::get().portal[location] = portal;
 }
 
-void clear_portal(const Location& location) {
+void clear_portal(Location location) {
   World::get().portal.erase(location);
 }
 
@@ -211,7 +211,7 @@ std::vector<Actor> all_actors() {
   return result;
 }
 
-std::vector<Actor> actors_at(const Location& location) {
+std::vector<Actor> actors_at(Location location) {
   std::vector<Actor> result;
   auto range = World::get().spatial_index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
@@ -220,7 +220,7 @@ std::vector<Actor> actors_at(const Location& location) {
   return result;
 }
 
-std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(const Location& location) {
+std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location) {
   std::vector<std::pair<Vec2i, Actor>> result;
   auto range = World::get().spatial_index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
@@ -240,7 +240,7 @@ std::vector<Actor> actors_on(const Footprint& footprint) {
   return result;
 }
 
-bool has_actors(const Location& location) {
+bool has_actors(Location location) {
   for (auto a : actors_at(location))
     return true;
   return false;

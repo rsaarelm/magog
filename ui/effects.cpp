@@ -28,7 +28,7 @@ struct Beam_Drawable : public Drawable {
   Beam_Drawable(const Vec2i& dir, int length, const Color& color = Color("pink"), float life = 0.2)
     : dir(dir), length(length), color(color), life(life) {}
 
-  virtual Footprint footprint(const Location& start) const {
+  virtual Footprint footprint(Location start) const {
     Footprint result;
     Location current_loc = start;
     Vec2i offset = Vec2i(0, 0);
@@ -129,7 +129,7 @@ void raw_msg(std::string str) {
   }
 }
 
-void beam_fx(const Location& location, const Vec2i& dir, int length, const Color& color) {
+void beam_fx(Location location, const Vec2i& dir, int length, const Color& color) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->world_anims.add(
@@ -138,7 +138,7 @@ void beam_fx(const Location& location, const Vec2i& dir, int length, const Color
   }
 }
 
-void explosion_fx(const Location& location) {
+void explosion_fx(Location location) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->world_anims.add(

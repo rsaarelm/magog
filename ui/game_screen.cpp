@@ -64,11 +64,11 @@ uint8_t tiles_png[] = {
 
 Surface g_tile_surface;
 
-bool is_wall(const Location& loc) {
+bool is_wall(Location loc) {
   return terrain_data[get_terrain(loc)].kind == wall_terrain;
 }
 
-int wall_mask(const Location& loc) {
+int wall_mask(Location loc) {
   int result = 0;
   for (size_t i = 0; i < hex_dirs.size(); i++)
     result += is_wall(loc + hex_dirs[i]) << i;
@@ -81,14 +81,14 @@ static GLuint load_tile_tex() {
   return make_texture(g_tile_surface);
 }
 
-Actor spawn_infantry(const Location& location) {
+Actor spawn_infantry(Location location) {
   auto actor = new_actor();
   actor.add_part(new Blob_Part(icon_infantry, 3));
   actor.pop(location);
   return actor;
 }
 
-Actor spawn_armor(const Location& location) {
+Actor spawn_armor(Location location) {
   auto actor = new_actor();
   actor.add_part(new Blob_Part(icon_tank, 5));
   actor.pop(location);

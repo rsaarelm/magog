@@ -116,15 +116,15 @@ class Actor {
   void push();
 
   /// Checks if an actor in void can enter a location.
-  bool can_pop(const Location& location) const;
+  bool can_pop(Location location) const;
 
   /// Pop the Actor back into existence from the void.
   void pop();
 
   /// Pop the Actor into a specific location.
-  void pop(const Location& location);
+  void pop(Location location);
 
-  Footprint footprint(const Location& center) const;
+  Footprint footprint(Location center) const;
   Footprint footprint() const;
  private:
   Actor_Id uid;

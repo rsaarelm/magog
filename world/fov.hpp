@@ -26,6 +26,6 @@
 /// origin location on a hexagon tile map that may contain portals.
 Relative_Fov hex_field_of_view(
     int radius,
-    const Location& origin);
+    Location origin);
 
 #endif

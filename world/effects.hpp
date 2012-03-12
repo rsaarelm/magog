@@ -22,9 +22,9 @@
 
 // These are implemented on the UI module.
 
-void beam_fx(const Location& location, const Vec2i& dir, int length, const Color& color);
+void beam_fx(Location location, const Vec2i& dir, int length, const Color& color);
 
-void explosion_fx(const Location& location);
+void explosion_fx(Location location);
 
 void raw_msg(std::string string);
 

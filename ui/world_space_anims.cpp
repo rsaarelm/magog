@@ -49,7 +49,7 @@ void World_Space_Anims::add(
 }
 
 void World_Space_Anims::add(
-  std::unique_ptr<Drawable> drawable, const Location& location) {
+  std::unique_ptr<Drawable> drawable, Location location) {
   add(std::move(drawable), drawable->footprint(location));
 }
 

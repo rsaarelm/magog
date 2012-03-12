@@ -29,10 +29,10 @@ class View_Space {
 public:
   void move_pos(const Vec2i& delta) { subjective_pos += delta; }
   Vec2i get_pos() const { return subjective_pos; }
-  void do_fov(int radius, const Location& loc);
+  void do_fov(int radius, Location loc);
 
   boost::optional<Location> at(const Vec2i& pos) const;
-  bool is_seen(const Location& loc) const;
+  bool is_seen(Location loc) const;
 
   View_Space() {}
 private:
