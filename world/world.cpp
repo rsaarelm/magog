@@ -51,13 +51,9 @@ World::World()
     , previous_actor(-1)
 {}
 
-bool can_enter(Actor actor, Location location) {
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == open_terrain;
-}
-
 bool blocks_shot(Location location) {
-  return terrain_data[get_terrain(location)].kind == wall_terrain;
+  auto kind = terrain_data[get_terrain(location)].kind;
+  return kind == wall_terrain || kind == curtain_terrain;
 }
 
 bool action_walk(Actor actor, const Vec2i& dir) {
@@ -167,7 +163,7 @@ bool is_seen(Location location) {
 
 bool blocks_sight(Location location) {
   auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == wall_terrain || kind == void_terrain;
+  return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
 }
 
 boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
@@ -176,6 +172,15 @@ boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
 }
 
 void do_fov() {
+  auto& view = World::get().view_space;
+
+  view.clear_seen();
+  if (get_player().as<Blob_Part>().big) {
+    // Big actors see with their edge cells too so that they're not completely
+    // blind in a forest style terrain.
+    for (auto i : hex_dirs)
+      World::get().view_space.do_fov(8, get_player().location() + i, i);
+  }
   World::get().view_space.do_fov(8, get_player().location());
 }
 

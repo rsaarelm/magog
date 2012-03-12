@@ -124,7 +124,6 @@ void msg(const char* fmt);
 
 Actor get_player();
 
-bool can_enter(Actor actor, Location location);
 bool blocks_shot(Location location);
 
 bool action_walk(Actor actor, const Vec2i& dir);

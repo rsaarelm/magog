@@ -129,10 +129,15 @@ void Game_Screen::enter() {
   const int r = 16;
 
   for (auto pos : hex_area_points(r)) {
-    if (one_chance_in(8))
-      set_terrain(Location(1, pos), terrain_sand);
-    if (one_chance_in(12))
+    int n = rand_int(100);
+    if (n < 3)
+      set_terrain(Location(1, pos), terrain_wall_center);
+    else if (n < 6)
       set_terrain(Location(1, pos), terrain_water);
+    else if (n < 12)
+      set_terrain(Location(1, pos), terrain_forest);
+    else if (n < 20)
+      set_terrain(Location(1, pos), terrain_sand);
     else
       set_terrain(Location(1, pos), terrain_grass);
   }

@@ -43,7 +43,8 @@ void Actor::push() {
 bool Actor::can_pop(Location location) const {
   for (auto& pair : footprint(location)) {
     auto& loc = pair.second;
-    if (terrain_data[get_terrain(loc)].kind != open_terrain)
+    auto kind = terrain_data[get_terrain(loc)].kind;
+    if (!(kind == open_terrain || kind == curtain_terrain))
       return false;
     // TODO: Handle actor collisions.
   }

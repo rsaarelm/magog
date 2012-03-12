@@ -24,12 +24,11 @@
 using namespace boost;
 using namespace std;
 
-void View_Space::do_fov(int radius, Location origin) {
+void View_Space::do_fov(int radius, Location origin, const Vec2i& offset) {
   prune();
-  visible.clear();
   auto fov = hex_field_of_view(radius, origin);
   for (auto& pair : fov) {
-    auto pos = pair.first + subjective_pos;
+    auto pos = pair.first + subjective_pos + offset;
     view[pos] = pair.second;
     visible.insert(pair.second);
   }
@@ -41,6 +40,10 @@ boost::optional<Location> View_Space::at(const Vec2i& pos) const {
 
 bool View_Space::is_seen(Location loc) const {
   return assoc_contains(visible, loc);
+}
+
+void View_Space::clear_seen() {
+  visible.clear();
 }
 
 void View_Space::prune() {

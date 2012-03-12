@@ -26,6 +26,7 @@ enum Terrain_Kind : uint8_t {
   open_terrain,
   wall_terrain,
   water_terrain,
+  curtain_terrain,
 };
 
 struct Terrain_Data {
@@ -38,15 +39,16 @@ struct Terrain_Data {
 // (http://en.wikibooks.org/wiki/C_Programming/Preprocessor#X-Macros)
 
 #define TERRAIN_TABLE \
-  X(terrain_void,         8, "magenta",     void_terrain)          \
-  X(terrain_grass,        1, "olive drab",  open_terrain)          \
-  X(terrain_sand,         1, "khaki",       open_terrain)          \
-  X(terrain_floor,        1, "dim gray",    open_terrain)          \
-  X(terrain_water,        2, "royal blue",  water_terrain)         \
-  X(terrain_wall_center, 14, "gray",        wall_terrain)          \
-  X(terrain_wall_x,      15, "gray",        wall_terrain)          \
-  X(terrain_wall_y,      16, "gray",        wall_terrain)          \
-  X(terrain_wall_xy,     17, "gray",        wall_terrain)
+  X(terrain_void,         8, "magenta",      void_terrain)          \
+  X(terrain_grass,        1, "olive drab",   open_terrain)          \
+  X(terrain_sand,         1, "khaki",        open_terrain)          \
+  X(terrain_floor,        1, "dim gray",     open_terrain)          \
+  X(terrain_water,        2, "royal blue",   water_terrain)         \
+  X(terrain_wall_center, 14, "gray",         wall_terrain)          \
+  X(terrain_wall_x,      15, "gray",         wall_terrain)          \
+  X(terrain_wall_y,      16, "gray",         wall_terrain)          \
+  X(terrain_wall_xy,     17, "gray",         wall_terrain)          \
+  X(terrain_forest,       7, "forest green", curtain_terrain)
 
 #define X(a, b, c, d) a,
 enum Terrain : uint8_t {
