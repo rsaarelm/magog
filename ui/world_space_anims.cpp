@@ -38,7 +38,7 @@ void World_Space_Anims::collect_sprites(
 }
 
 void World_Space_Anims::add(
-  std::shared_ptr<Drawable> drawable, const Footprint& footprint) {
+  const std::shared_ptr<Drawable>& drawable, const Footprint& footprint) {
   ASSERT(footprint.size() > 0);
 
   index.add(drawable, footprint);
@@ -48,7 +48,7 @@ void World_Space_Anims::add(
 }
 
 void World_Space_Anims::add(
-  std::shared_ptr<Drawable> drawable, Location location) {
+  const std::shared_ptr<Drawable>& drawable, Location location) {
   add(drawable, drawable->footprint(location));
 }
 

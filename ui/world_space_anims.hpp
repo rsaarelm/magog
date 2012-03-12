@@ -34,8 +34,8 @@ public:
 
   void collect_sprites(const Vec2i& view_space_pos, std::set<Sprite>& output);
 
-  void add(std::shared_ptr<Drawable> drawable, Location loc);
-  void add(std::shared_ptr<Drawable> drawable, const Footprint& footprint);
+  void add(const std::shared_ptr<Drawable>& drawable, Location loc);
+  void add(const std::shared_ptr<Drawable>& drawable, const Footprint& footprint);
 
   void update(float interval_sec);
 private:
