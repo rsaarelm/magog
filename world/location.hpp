@@ -23,28 +23,44 @@
 #include <boost/optional.hpp>
 #include <map>
 
+// By convention, area 0 is no-op.
+
 struct Portal {
-  Vec2i delta;
-  uint16_t area;
+  Portal() : area(0), delta_x(0), delta_y(0) {}
+
+  Portal(uint16_t area, int8_t x, int8_t y) : area(area), delta_x(x), delta_y(y) {}
+
+  Portal(uint16_t area, const Vec2i& pos) : area(area), delta_x(pos[0]), delta_y(pos[1]) {}
 
   bool operator==(const Portal& rhs) const {
-    return delta == rhs.delta && area == rhs.area;
+    return delta_x == rhs.delta_x && delta_y == rhs.delta_y && area == rhs.area;
   }
+
+  operator bool() const {
+    return area != 0 || delta_x != 0 || delta_y != 0;
+  }
+
+  uint16_t area;
+  int8_t delta_x, delta_y;
 };
 
-struct Location;
-boost::optional<Portal> get_portal(const Location& location);
-
 struct Location {
-  Vec2i pos;
-  uint16_t area;
+  Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y) {}
+
+  Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]) {}
+
+  Location() : area(0), x(0), y(0) {}
 
   bool operator<(const Location& rhs) const {
-    if (area < rhs.area)
-      return true;
-    else if (area == rhs.area) {
-      return pos < rhs.pos;
-    }
+    if (area < rhs.area) return true;
+    if (area > rhs.area) return false;
+
+    if (y < rhs.y) return true;
+    if (y > rhs.y) return false;
+
+    if (x < rhs.x) return true;
+    if (x > rhs.x) return false;
+
     return false;
   }
 
@@ -52,29 +68,40 @@ struct Location {
     return !(*this < rhs) && !(rhs < *this);
   }
 
+  /// Offset without portaling.
+  Location raw_offset(const Vec2i& offset) const {
+    return Location(area, x + offset[0], y + offset[1]);
+  }
+
+  /// Location through a possible portal in this location.
+  Location portaled() const;
+
   Location operator+(const Vec2i& offset) const {
-    return Location{pos + offset, area};
+    // TODO: Make it portal by default.
+
+    //return raw_offset(offset).portaled();
+    return raw_offset(offset);
   }
 
-  Location operator+(const Portal& portal) const {
-    return Location{pos + portal.delta, portal.area};
+  Location operator+(Portal portal) const {
+    return Location(portal.area ? portal.area : area, x + portal.delta_x, y + portal.delta_y);
   }
 
-  Location operator+(const boost::optional<Portal>& portal) const {
+  // XXX: Deprecated
+  Location operator+(boost::optional<Portal> portal) const {
     if (portal)
-      return Location{pos + portal->delta, portal->area};
+      return *this + *portal;
     else
-      return Location(*this);
+      return *this;
   }
 
+  // XXX: Deprecated
   Location offset_and_portal(const Vec2i& offset) const {
-    Location result = *this + offset;
-    result = result + get_portal(result);
-    return result;
+    return (*this + offset).portaled();
   }
 
   size_t hash() const {
-    return (Vec2i::Hasher()(pos) << 1) ^ area;
+    return (((area << 1) ^ y) << 1) ^ x;
   }
 
   struct Hasher {
@@ -84,6 +111,10 @@ struct Location {
   struct Equator {
     bool operator()(const Location& lhs, const Location& rhs) const { return lhs == rhs; }
   };
+
+  // Fit the whole thing into a 32-bit word.
+  uint16_t area;
+  int8_t x, y;
 };
 
 

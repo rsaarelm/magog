@@ -132,11 +132,11 @@ void Game_Screen::enter() {
 
   for (auto pos : hex_area_points(r)) {
     if (one_chance_in(8))
-      set_terrain(Location{pos, 0}, terrain_sand);
+      set_terrain(Location(1, pos), terrain_sand);
     if (one_chance_in(12))
-      set_terrain(Location{pos, 0}, terrain_water);
+      set_terrain(Location(1, pos), terrain_water);
     else
-      set_terrain(Location{pos, 0}, terrain_grass);
+      set_terrain(Location(1, pos), terrain_grass);
   }
 
 
@@ -160,11 +160,11 @@ void Game_Screen::enter() {
 
   for (int sector = 0; sector < 6; sector++)
     for (int i = 0; i < r + (sector % 2); i++)
-      set_portal(Location{start[sector] + hex_dirs[(sector + 1) % 6] * i, 0}, Portal{offset[sector], 0});
+      set_portal(Location(1, start[sector] + hex_dirs[(sector + 1) % 6] * i), Portal(0, offset[sector]));
 
   for (int i = 0; i < 16; i++) {
     // TODO: random location function
-    auto loc = Location{Vec2i(rand_int(10), rand_int(10)), 0};
+    auto loc = Location(1, Vec2i(rand_int(10), rand_int(10)));
     // TODO: check if loc is occupied
     if (one_chance_in(3))
       spawn_armor(loc);
@@ -173,15 +173,15 @@ void Game_Screen::enter() {
   }
 
   for (auto pos : hex_circle_points(r)) {
-    set_terrain(Location{pos, 0}, terrain_floor);
+    set_terrain(Location(1, pos), terrain_floor);
   }
   for (auto pos : hex_circle_points(r+1)) {
-    set_terrain(Location{pos, 0}, terrain_void);
+    set_terrain(Location(1, pos), terrain_void);
   }
 
   auto player = get_player();
   player.add_part(new Blob_Part(icon_telos, 7, true));
-  player.pop(Location{Vec2i(0, 0), 0});
+  player.pop(Location(1, Vec2i(0, 0)));
   do_fov();
 
   msg_buffer.add_caption("Telos Unit online");

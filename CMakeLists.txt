@@ -83,6 +83,7 @@ add_executable(${TARGETNAME}
   ui/tile_drawable.cpp
   ui/world_space_anims.cpp
   ui/registry.cpp
+  world/location.cpp
   world/actor.cpp
   world/world.cpp
   world/fov.cpp
