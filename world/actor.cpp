@@ -65,7 +65,7 @@ Footprint Actor::footprint(const Location& center) const {
   result[Vec2i(0, 0)] = center;
   if (as<Blob_Part>().big) {
     for (auto& i : hex_dirs) {
-      result[i] = center.offset_and_portal(i);
+      result[i] = center + i;
     }
   }
   return result;

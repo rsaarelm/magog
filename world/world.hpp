@@ -142,7 +142,7 @@ void do_fov();
 Terrain get_terrain(const Location& location);
 void set_terrain(const Location& location, Terrain cell);
 
-boost::optional<Portal> get_portal(const Location& location);
+Portal get_portal(Location location);
 void set_portal(const Location& location, const Portal& portal);
 void clear_portal(const Location& location);
 

@@ -62,7 +62,7 @@ bool blocks_shot(const Location& location) {
 
 bool action_walk(Actor actor, const Vec2i& dir) {
   auto loc = actor.location();
-  auto new_loc = loc + dir + get_portal(loc + dir);
+  auto new_loc = loc + dir;
   if (actor.can_pop(new_loc)) {
     actor.push();
 
@@ -187,8 +187,13 @@ void set_terrain(const Location& location, Terrain cell) {
   World::get().set_terrain(location, cell);
 }
 
-boost::optional<Portal> get_portal(const Location& location) {
-  return assoc_find(World::get().portal, location);
+Portal get_portal(Location location) {
+  auto result = assoc_find(World::get().portal, location);
+  if (result) {
+    return *result;
+  }
+  else
+    return Portal();
 }
 
 void set_portal(const Location& location, const Portal& portal) {

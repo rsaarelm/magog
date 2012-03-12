@@ -36,7 +36,7 @@ struct Beam_Drawable : public Drawable {
     for (int i = 0; i < length; i++) {
       result[offset] = current_loc;
       offset = offset + dir;
-      current_loc = current_loc.offset_and_portal(dir);
+      current_loc = current_loc + dir;
     }
     return result;
   }

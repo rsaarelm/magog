@@ -22,15 +22,14 @@
 #include <cmath>
 
 using namespace std;
-using namespace boost;
 
 struct Fov_Group {
   bool opaque;
-  optional<Portal> portal;
+  Portal portal;
 
-  Fov_Group(const Location& location)
-      : opaque(blocks_sight(location + get_portal(location)))
-      , portal(get_portal(location)) {}
+  Fov_Group(const Location& origin, const Vec2i& offset)
+    : opaque(blocks_sight(origin.raw_offset(offset).portaled()))
+    , portal(get_portal(origin.raw_offset(offset))) {}
 
   bool operator!=(const Fov_Group& rhs) {
     return rhs.opaque != opaque || rhs.portal != portal;
@@ -78,15 +77,15 @@ void process(
     Angle end = Angle{6, 1}) {
   if (begin.radius > range)
     return;
-  Fov_Group group(local_origin + *begin);
+  Fov_Group group(local_origin, *begin);
   for (auto a = begin; a.is_below(end); ++a) {
-    if (Fov_Group(local_origin + *a) != group) {
+    if (Fov_Group(local_origin, *a) != group) {
       if (!group.opaque)
         process(rfov, range, local_origin + group.portal, begin.extended(), a.extended());
       process(rfov, range, local_origin, a, end);
       return;
     }
-    rfov[*a] = local_origin + *a + group.portal;
+    rfov[*a] = local_origin + *a;
   }
   if (!group.opaque)
     process(rfov, range, local_origin + group.portal, begin.extended(), end.extended());

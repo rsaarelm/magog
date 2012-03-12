@@ -19,8 +19,6 @@
 #include "location.hpp"
 #include <world/world.hpp>
 
-boost::optional<Portal> get_portal(const Location& location);
-
 Location Location::portaled() const {
   return *this + get_portal(*this);
 }

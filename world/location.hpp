@@ -23,7 +23,8 @@
 #include <boost/optional.hpp>
 #include <map>
 
-// By convention, area 0 is no-op.
+// By convention, area 0 is no-op. A default portal does nothing. A portal
+// with area 0 translates within the current area.
 
 struct Portal {
   Portal() : area(0), delta_x(0), delta_y(0) {}
@@ -32,12 +33,12 @@ struct Portal {
 
   Portal(uint16_t area, const Vec2i& pos) : area(area), delta_x(pos[0]), delta_y(pos[1]) {}
 
-  bool operator==(const Portal& rhs) const {
+  bool operator==(Portal rhs) const {
     return delta_x == rhs.delta_x && delta_y == rhs.delta_y && area == rhs.area;
   }
 
-  operator bool() const {
-    return area != 0 || delta_x != 0 || delta_y != 0;
+  bool operator!=(Portal rhs) const {
+    return !((*this) == rhs);
   }
 
   uint16_t area;
@@ -77,27 +78,11 @@ struct Location {
   Location portaled() const;
 
   Location operator+(const Vec2i& offset) const {
-    // TODO: Make it portal by default.
-
-    //return raw_offset(offset).portaled();
-    return raw_offset(offset);
+    return raw_offset(offset).portaled();
   }
 
   Location operator+(Portal portal) const {
     return Location(portal.area ? portal.area : area, x + portal.delta_x, y + portal.delta_y);
-  }
-
-  // XXX: Deprecated
-  Location operator+(boost::optional<Portal> portal) const {
-    if (portal)
-      return *this + *portal;
-    else
-      return *this;
-  }
-
-  // XXX: Deprecated
-  Location offset_and_portal(const Vec2i& offset) const {
-    return (*this + offset).portaled();
   }
 
   size_t hash() const {
