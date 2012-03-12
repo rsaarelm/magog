@@ -191,9 +191,9 @@ void Game_Screen::enter() {
   auto locations = area_locations(1);
   int n_tries = 1024;
   for (; n_tries; n_tries--) {
-    auto loc = rand_choice(locations);
-    if (player.can_pop(*loc)) {
-      player.pop(*loc);
+    auto loc = rand_choice(locations.first, locations.second);
+    if (player.can_pop(loc->first)) {
+      player.pop(loc->first);
       break;
     }
   }

@@ -146,7 +146,9 @@ Portal get_portal(Location location);
 void set_portal(Location location, Portal portal);
 void clear_portal(Location location);
 
-std::vector<Location> area_locations(uint16_t area);
+std::pair<std::map<Location, Terrain>::const_iterator,
+          std::map<Location, Terrain>::const_iterator>
+area_locations(uint16_t area);
 
 // XXX: Return type should be considered just some iterable type, the exact
 // form may change.

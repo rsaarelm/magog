@@ -56,6 +56,14 @@ typename Container::const_iterator rand_choice(const Container& container) {
   return result;
 }
 
+template<class Iterator>
+Iterator rand_choice(const Iterator begin, const Iterator end) {
+  size_t size = std::distance(begin, end);
+  Iterator result = begin;
+  std::advance(result, rand_int(size - 1));
+  return result;
+}
+
 /// Return a random float from `[0, 1)`.
 float uniform_rand();
 
