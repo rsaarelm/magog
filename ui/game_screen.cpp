@@ -84,14 +84,20 @@ static GLuint load_tile_tex() {
 Actor spawn_infantry(Location location) {
   auto actor = new_actor();
   actor.add_part(new Blob_Part(icon_infantry, 3));
-  actor.pop(location);
+  if (actor.can_pop(location))
+    actor.pop(location);
+  else
+    delete_actor(actor);
   return actor;
 }
 
 Actor spawn_armor(Location location) {
   auto actor = new_actor();
   actor.add_part(new Blob_Part(icon_tank, 5));
-  actor.pop(location);
+  if (actor.can_pop(location))
+    actor.pop(location);
+  else
+    delete_actor(actor);
   return actor;
 }
 
@@ -181,7 +187,19 @@ void Game_Screen::enter() {
 
   auto player = get_player();
   player.add_part(new Blob_Part(icon_telos, 7, true));
-  player.pop(Location(1, Vec2i(0, 0)));
+
+  auto locations = area_locations(1);
+  int n_tries = 1024;
+  for (; n_tries; n_tries--) {
+    auto loc = rand_choice(locations);
+    if (player.can_pop(*loc)) {
+      player.pop(*loc);
+      break;
+    }
+  }
+  if (n_tries == 0) {
+    die("Couldn't find spawn point");
+  }
   do_fov();
 
   msg_buffer.add_caption("Telos Unit online");

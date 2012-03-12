@@ -50,7 +50,7 @@ int rand_int(int max);
 
 /// Return a randomly chosen element from a container.
 template<class Container>
-typename Container::iterator rand_choice(const Container& container) {
+typename Container::const_iterator rand_choice(const Container& container) {
   auto result = container.begin();
   std::advance(result, rand_int(container.size() - 1));
   return result;
