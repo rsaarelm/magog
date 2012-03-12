@@ -34,21 +34,21 @@ public:
 
   void collect_sprites(const Vec2i& view_space_pos, std::set<Sprite>& output);
 
-  void add(std::unique_ptr<Drawable> drawable, Location loc);
-  void add(std::unique_ptr<Drawable> drawable, const Footprint& footprint);
+  void add(std::shared_ptr<Drawable> drawable, Location loc);
+  void add(std::shared_ptr<Drawable> drawable, const Footprint& footprint);
 
   void update(float interval_sec);
 private:
   World_Space_Anims(const World_Space_Anims&);
   World_Space_Anims& operator=(const World_Space_Anims&);
 
-  typedef std::pair<std::unique_ptr<Drawable>, Footprint> Element;
+  typedef std::pair<std::shared_ptr<Drawable>, Footprint> Element;
 
   void remove(Element element);
 
   std::queue<Element> drawables;
 
-  Spatial_Index<Drawable*> index;
+  Spatial_Index<std::shared_ptr<Drawable>> index;
 };
 
 #endif

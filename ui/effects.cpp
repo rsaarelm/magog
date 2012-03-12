@@ -133,7 +133,7 @@ void beam_fx(Location location, const Vec2i& dir, int length, const Color& color
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->world_anims.add(
-      std::unique_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
+      std::shared_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
       location);
   }
 }
@@ -142,6 +142,6 @@ void explosion_fx(Location location) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->world_anims.add(
-      std::unique_ptr<Drawable>(new Particles_Drawable()), location);
+      std::shared_ptr<Drawable>(new Particles_Drawable()), location);
   }
 }

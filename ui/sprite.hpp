@@ -20,6 +20,7 @@
 #define UI_SPRITE_HPP
 
 #include <util/vec.hpp>
+#include <memory>
 
 class Drawable;
 
@@ -51,19 +52,19 @@ struct Sprite {
     if (rhs.pos < pos) return false;
 
     // Finally use memory address of drawable as tie-breaker.
-    if (reinterpret_cast<size_t>(&drawable) < reinterpret_cast<size_t>(&rhs.drawable)) return true;
+    if (drawable < rhs.drawable) return true;
 
     return false;
   }
 
   /// Call the `draw` method for the sprite's `Drawable` object.
   inline void draw(const Vec2f& offset) {
-    drawable.draw(offset);
+    drawable->draw(offset);
   }
 
   int z_layer;
   Vec2i pos;
-  Drawable& drawable;
+  std::shared_ptr<Drawable> drawable;
 };
 
 #endif

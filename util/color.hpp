@@ -46,6 +46,11 @@ struct Color {
    */
   Color(const char* desc);
 
+  Color monochrome() const {
+    Color_Elt i = .2989 * r + .5870 * g + .1140 * b;
+    return Color(i, i, i, a);
+  }
+
   void gl_color() const {
     glColor4ub(r, g, b, a);
   }

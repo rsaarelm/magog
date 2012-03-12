@@ -101,9 +101,9 @@ Actor spawn_armor(Location location) {
   return actor;
 }
 
-static unique_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color,
+static shared_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color,
                                           Vec2f offset = Vec2f(0, 0)) {
-  return unique_ptr<Drawable>(
+  return shared_ptr<Drawable>(
     new Tile_Drawable(
       texture,
       color,
@@ -121,14 +121,6 @@ void Game_Screen::enter() {
   actor_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
   actor_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
   actor_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
-
-  terrain_drawables.clear();
-  for (int i = 0; i < NUM_TERRAINS; i++)
-    terrain_drawables.push_back(
-      tile_drawable(
-        tiletex,
-        terrain_data[i].icon,
-        terrain_data[i].color));
 
   // XXX: Ensure player actor exists. Hacky magic number id.
   new_actor(1);
@@ -234,7 +226,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      world_anims.add(std::unique_ptr<Drawable>(new DemoThingie()), get_player().location());
+      world_anims.add(std::shared_ptr<Drawable>(new DemoThingie()), get_player().location());
       break;
     case 'u':
       action_shoot(get_player(), Vec2i(-1, 0));
@@ -355,13 +347,21 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         bool in_fov = is_seen(*loc);
 
         // TODO: Darken terrain out of fov.
-        output.insert(Sprite{terrain_layer, offset, *terrain_drawables[get_terrain(*loc)]});
+        auto terrain = terrain_data[get_terrain(*loc)];
+        auto color = terrain.color;
+        if (!in_fov)
+          color = lerp(0.5, Color("black"), color.monochrome());
+        auto terrain_tile = tile_drawable(
+          tiletex,
+          terrain.icon,
+          color);
+        output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
 
         if (in_fov) {
           for (auto& pair : actors_with_offsets_at(*loc)) {
             Actor& actor = pair.second;
             auto& blob = actor.as<Blob_Part>();
-            output.insert(Sprite{actor_layer, offset + pair.first, *actor_drawables[blob.icon]});
+            output.insert(Sprite{actor_layer, offset + pair.first, actor_drawables[blob.icon]});
           }
         }
       }

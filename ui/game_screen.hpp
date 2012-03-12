@@ -64,8 +64,7 @@ class Game_Screen : public Game_State {
 
   World_Space_Anims world_anims;
 
-  std::vector<std::unique_ptr<Drawable>> actor_drawables;
-  std::vector<std::unique_ptr<Drawable>> terrain_drawables;
+  std::vector<std::shared_ptr<Drawable>> actor_drawables;
 };
 
 #endif

@@ -32,40 +32,38 @@ void World_Space_Anims::collect_sprites(
       output.insert(Sprite{
           drawable->get_z_layer(),
           offset + view_space_pos,
-          *drawable});
+          drawable});
     }
   }
 }
 
 void World_Space_Anims::add(
-  std::unique_ptr<Drawable> drawable, const Footprint& footprint) {
+  std::shared_ptr<Drawable> drawable, const Footprint& footprint) {
   ASSERT(footprint.size() > 0);
 
-  Drawable* ptr = drawable.get();
-  index.add(ptr, footprint);
+  index.add(drawable, footprint);
 
-  World_Space_Anims::Element element(std::move(drawable), footprint);
-  drawables.push(std::move(element));
+  World_Space_Anims::Element element(drawable, footprint);
+  drawables.push(element);
 }
 
 void World_Space_Anims::add(
-  std::unique_ptr<Drawable> drawable, Location location) {
-  add(std::move(drawable), drawable->footprint(location));
+  std::shared_ptr<Drawable> drawable, Location location) {
+  add(drawable, drawable->footprint(location));
 }
 
 void World_Space_Anims::update(float interval_sec) {
   for (size_t i = 0, j = drawables.size(); i < j; i++) {
-    Element element = std::move(drawables.front());
+    Element element = drawables.front();
     drawables.pop();
     bool is_alive = element.first->update(interval_sec);
     if (is_alive)
-      drawables.push(std::move(element));
+      drawables.push(element);
     else
-      remove(std::move(element));
+      remove(element);
   }
 }
 
 void World_Space_Anims::remove(Element element) {
-  Drawable* ptr = element.first.get();
-  index.remove(ptr);
+  index.remove(element.first);
 }
