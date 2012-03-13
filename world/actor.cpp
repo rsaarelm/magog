@@ -21,9 +21,7 @@
 
 /// Add a part to the Actor. Ownership of the part will move to Actor.
 void Actor::add_part(Part* new_part) {
-  ASSERT(assoc_contains(World::get().actors, *this));
-  // XXX: If old part is getting overwritten, does it need to be informed first?
-  World::get().actors[*this][new_part->get_kind()] = std::unique_ptr<Part>(new_part);
+  ::add_part(*this, std::unique_ptr<Part>(new_part));
 }
 
 bool Actor::exists() const {
@@ -35,7 +33,7 @@ Location Actor::location() const {
 }
 
 void Actor::push() {
-  auto& index = World::get().spatial_index;
+  auto& index = get_spatial_index();
   if (index.has(*this))
     index.remove(*this);
 }
@@ -52,8 +50,8 @@ bool Actor::can_pop(Location location) const {
 }
 
 void Actor::pop() {
-  ASSERT(!World::get().spatial_index.has(*this));
-  World::get().spatial_index.add(*this, footprint());
+  ASSERT(!get_spatial_index().has(*this));
+  get_spatial_index().add(*this, footprint());
 }
 
 void Actor::pop(Location location) {

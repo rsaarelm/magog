@@ -21,6 +21,50 @@
 #include <world/effects.hpp>
 #include <stdexcept>
 
+/// Main container for all of the game state.
+class World {
+ public:
+  static void init();
+  static World& get();
+  static void clear();
+
+  Terrain get_terrain(Location location);
+  void set_terrain(Location location, Terrain cell);
+
+  /// Return the actor whose turn it is to act now.
+  ///
+  /// Throws Actor_Not_Found if there are no actors that can act.
+  Actor active_actor();
+
+  /// Called when done with the current active actor to move to the next one.
+  void next_actor();
+
+  // TODO: Use indexed lookup to a static terrain set instead of having
+  // individual data here to compress the structure.
+  std::map<Location, Terrain> terrain;
+  std::map<Location, Portal> portal;
+
+  // Note to optimizers: Heavy-duty component systems want to have parts of
+  // one kind in contiguous memory, so that, for example, all physics parts
+  // can be processed using fast vectorized code. This simple system does not
+  // support that. Shouldn't be a problem unless heavy physics-style stuff is
+  // needed.
+  std::map<Actor, std::map<Kind, std::unique_ptr<Part>>> actors;
+
+  Actor_Id next_actor_id;
+  View_Space view_space;
+
+  Spatial_Index<Actor> spatial_index;
+ private:
+  World();
+  World(const World&);
+  World& operator=(const World&);
+
+  static std::unique_ptr<World> s_world;
+
+  Actor previous_actor;
+};
+
 void msg(const char* fmt) {
   raw_msg(fmt);
 }
@@ -42,8 +86,34 @@ World& World::get() {
   return *s_world.get();
 }
 
+Part* find_part(Actor actor, Kind kind) {
+  auto& actors = World::get().actors;
+  auto iter = actors.find(actor);
+  if (iter == actors.end())
+    throw Actor_Not_Found();
+
+  auto part_iter = iter->second.find(kind);
+  if (part_iter == iter->second.end())
+    throw Part_Not_Found();
+
+  return(part_iter->second.get());
+}
+
+void add_part(Actor actor, std::unique_ptr<Part> new_part) {
+  ASSERT(assoc_contains(World::get().actors, actor));
+  World::get().actors[actor][new_part->get_kind()] = std::move(new_part);
+}
+
+Spatial_Index<Actor>& get_spatial_index() {
+  return World::get().spatial_index;
+}
+
 void World::clear() {
   s_world.reset(nullptr);
+}
+
+void clear_world() {
+  World::get().clear();
 }
 
 World::World()

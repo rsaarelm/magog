@@ -55,69 +55,22 @@ class Blob_Part : public Part {
   Blob_Part& operator=(const Blob_Part&);
 };
 
-/// Main container for all of the game state.
-class World {
- public:
-  static void init();
-  static World& get();
-  static void clear();
-
-  Terrain get_terrain(Location location);
-  void set_terrain(Location location, Terrain cell);
-
-  /// Return the actor whose turn it is to act now.
-  ///
-  /// Throws Actor_Not_Found if there are no actors that can act.
-  Actor active_actor();
-
-  /// Called when done with the current active actor to move to the next one.
-  void next_actor();
-
-  // TODO: Use indexed lookup to a static terrain set instead of having
-  // individual data here to compress the structure.
-  std::map<Location, Terrain> terrain;
-  std::map<Location, Portal> portal;
-
-  // Note to optimizers: Heavy-duty component systems want to have parts of
-  // one kind in contiguous memory, so that, for example, all physics parts
-  // can be processed using fast vectorized code. This simple system does not
-  // support that. Shouldn't be a problem unless heavy physics-style stuff is
-  // needed.
-  std::map<Actor, std::map<Kind, std::unique_ptr<Part>>> actors;
-
-  Actor_Id next_actor_id;
-  View_Space view_space;
-
-  Spatial_Index<Actor> spatial_index;
- private:
-  World();
-  World(const World&);
-  World& operator=(const World&);
-
-  static std::unique_ptr<World> s_world;
-
-  Actor previous_actor;
-};
-
+Part* find_part(Actor actor, Kind kind);
+void add_part(Actor actor, std::unique_ptr<Part> new_part);
 
 template<class T>
 T& Actor::as() const {
-  Kind kind = T::s_get_kind();
+  Part* part = find_part(*this, T::s_get_kind());
 
-  auto iter = World::get().actors.find(*this);
-  if (iter == World::get().actors.end())
-    throw Actor_Not_Found();
-
-  auto part_iter = iter->second.find(kind);
-  if (part_iter == iter->second.end())
-    throw Part_Not_Found();
-
-  Part* part = part_iter->second.get();
   T* result = dynamic_cast<T*>(part);
   // If kind doesn't match to the actual object, there's been data corruption.
   ASSERT(result != nullptr);
   return *result;
 }
+
+void clear_world();
+
+Spatial_Index<Actor>& get_spatial_index();
 
 // TODO variadics.
 void msg(const char* fmt);

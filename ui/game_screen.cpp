@@ -204,7 +204,7 @@ void Game_Screen::enter() {
 
 void Game_Screen::exit() {
   glDeleteTextures(1, &tiletex);
-  World::clear();
+  clear_world();
 }
 
 int from_colemak(int keysym) {
