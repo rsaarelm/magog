@@ -67,7 +67,6 @@ class Part {
   virtual Kind get_kind() = 0;
 };
 
-
 // Given that there is a componet system and lots of multi-actor interactions
 // in play, when should we nevertheless implement operations as methdos of
 // Actor. Basic rules of thumb, an operation should be a method of Actor if 1)
@@ -77,7 +76,6 @@ class Part {
 // since it's only of interest for the animate subset of actors, and it might
 // also rather reliant on the combined properties of the attacker and the
 // target actors.
-
 
 class Actor {
  public:
@@ -129,5 +127,17 @@ class Actor {
  private:
   Actor_Id uid;
 };
+
+Part* find_part(Actor actor, Kind kind);
+
+template <class T>
+T& Actor::as() const {
+  Part* part = find_part(*this, T::s_get_kind());
+
+  T* result = dynamic_cast<T*>(part);
+  // If kind doesn't match to the actual object, there's been data corruption.
+  ASSERT(result != nullptr);
+  return *result;
+}
 
 #endif

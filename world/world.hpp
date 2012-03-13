@@ -37,16 +37,6 @@
 Part* find_part(Actor actor, Kind kind);
 void add_part(Actor actor, std::unique_ptr<Part> new_part);
 
-template<class T>
-T& Actor::as() const {
-  Part* part = find_part(*this, T::s_get_kind());
-
-  T* result = dynamic_cast<T*>(part);
-  // If kind doesn't match to the actual object, there's been data corruption.
-  ASSERT(result != nullptr);
-  return *result;
-}
-
 void clear_world();
 
 Spatial_Index<Actor>& get_spatial_index();
