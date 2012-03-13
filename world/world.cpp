@@ -278,3 +278,20 @@ void next_actor() {
 void move_view_pos(const Vec2i& offset) {
   World::get().view_space.move_pos(offset);
 }
+
+template <typename Archive>
+void serialize_world(Archive& ar) {
+  // TODO: Use the Boost serialization idiom here
+}
+
+// XXX: serialize_world, despite being a template function, must be
+// implemented on the .cpp, since it relies on the hidden World class
+// internals. To prevent linking errors, the serializers used must be defined
+// explicitly here:
+
+#define REGISTER_ARCHIVE(A) template void serialize_world<A>(A& ar)
+
+// REGISTER_ARCHIVE(boost::archive::binary_oarchive);
+// REGISTER_ARCHIVE(boost::archive::binary_iarchive);
+
+#undef REGISTER_ARCHIVE

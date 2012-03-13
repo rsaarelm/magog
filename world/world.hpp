@@ -109,4 +109,7 @@ Actor actor_after(Actor actor);
 
 void move_view_pos(const Vec2i& offset);
 
+template<typename Archive>
+void serialize_world(Archive& ar);
+
 #endif
