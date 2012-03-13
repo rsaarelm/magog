@@ -17,7 +17,8 @@
 */
 
 #include "actor.hpp"
-#include "world.hpp"
+#include <world/world.hpp>
+#include <world/parts.hpp>
 
 /// Add a part to the Actor. Ownership of the part will move to Actor.
 void Actor::add_part(Part* new_part) {

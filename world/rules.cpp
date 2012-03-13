@@ -19,6 +19,7 @@
 #include "rules.hpp"
 #include <world/world.hpp>
 #include <world/effects.hpp>
+#include <world/parts.hpp>
 
 Actor get_player() {
   // TODO: Assert that the actor is registered in World.

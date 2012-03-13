@@ -23,6 +23,7 @@
 #include <world/world.hpp>
 #include <world/rules.hpp>
 #include <world/cavegen.hpp>
+#include <world/parts.hpp>
 #include <GL/gl.h>
 #include <util.hpp>
 #include <vector>

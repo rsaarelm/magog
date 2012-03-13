@@ -20,6 +20,7 @@
 #include <world/fov.hpp>
 #include <world/effects.hpp>
 #include <world/rules.hpp>
+#include <world/parts.hpp>
 #include <stdexcept>
 
 /// Main container for all of the game state.
