@@ -19,6 +19,8 @@
 #ifndef WORLD_WORLD_HPP
 #define WORLD_WORLD_HPP
 
+/// \file world.hpp \brief Core interface to the game state
+
 #include <util.hpp>
 #include <world/actor.hpp>
 #include <world/location.hpp>
@@ -75,19 +77,7 @@ Spatial_Index<Actor>& get_spatial_index();
 // TODO variadics.
 void msg(const char* fmt);
 
-Actor get_player();
-
-bool blocks_shot(Location location);
-
-bool action_walk(Actor actor, const Vec2i& dir);
-bool action_melee(Actor actor, const Vec2i& dir);
-bool action_bump(Actor actor, const Vec2i& dir);
-bool action_shoot(Actor actor, const Vec2i& dir);
-
-void damage(Location location);
-
 bool is_seen(Location location);
-bool blocks_sight(Location location);
 boost::optional<Location> view_space_location(const Vec2i& relative_pos);
 void do_fov();
 
@@ -108,7 +98,6 @@ std::vector<Actor> all_actors();
 std::vector<Actor> actors_at(Location location);
 std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location);
 std::vector<Actor> actors_on(const Footprint& footprint);
-bool has_actors(Location location);
 
 Actor new_actor(Actor_Id id);
 Actor new_actor();
@@ -116,9 +105,8 @@ void delete_actor(Actor actor);
 bool actor_exists(Actor actor);
 Actor active_actor();
 void next_actor();
+Actor actor_after(Actor actor);
 
-void start_turn_update(Actor actor);
-
-bool ready_to_act(Actor actor);
+void move_view_pos(const Vec2i& offset);
 
 #endif

@@ -17,6 +17,7 @@
 */
 
 #include "fov.hpp"
+#include <world/rules.hpp>
 #include <util.hpp>
 #include <array>
 #include <cmath>

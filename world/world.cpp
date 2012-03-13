@@ -19,6 +19,7 @@
 #include "world.hpp"
 #include <world/fov.hpp>
 #include <world/effects.hpp>
+#include <world/rules.hpp>
 #include <stdexcept>
 
 /// Main container for all of the game state.
@@ -69,14 +70,6 @@ void msg(const char* fmt) {
   raw_msg(fmt);
 }
 
-Actor get_player() {
-  // TODO: Assert that the actor is registered in World.
-
-  // XXX: Fixed ID is problematic if we want to switch the player entity
-  // around.
-  return Actor(1);
-}
-
 
 std::unique_ptr<World> World::s_world;
 
@@ -121,76 +114,6 @@ World::World()
     , previous_actor(-1)
 {}
 
-bool blocks_shot(Location location) {
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == wall_terrain || kind == curtain_terrain;
-}
-
-bool action_walk(Actor actor, const Vec2i& dir) {
-  auto loc = actor.location();
-  auto new_loc = loc + dir;
-  if (actor.can_pop(new_loc)) {
-    actor.push();
-
-    // XXX Hacky. Player is tracked by the view space object.
-    if (actor == get_player())
-      World::get().view_space.move_pos(dir);
-
-    for (auto a : actors_on(actor.footprint(new_loc))) {
-      msg("Crush!");
-      delete_actor(a);
-    }
-    actor.pop(new_loc);
-    // Energy cost for movement.
-    // TODO: account for terrain differences.
-    actor.as<Blob_Part>().energy -= 100;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool action_shoot(Actor actor, const Vec2i& dir) {
-  ASSERT(is_hex_dir(dir));
-  // TODO: Actors have multiple weapons. (The weapon could be the actor though.)
-  const int range = 6; // TODO: Actors have different fire ranges.
-  int dist = 0;
-  Location loc = actor.location();
-
-  for (loc = loc + dir; dist < range; loc = loc + dir) {
-    dist++;
-    bool hit_actor = false;
-    for (auto& a : actors_at(loc)) {
-      if (a != actor) {
-        hit_actor = true;
-        break;
-      }
-    }
-
-    if (hit_actor) {
-      msg("Zap!");
-      damage(loc);
-      explosion_fx(loc);
-      break;
-    }
-    if (blocks_shot(loc))
-      break;
-  }
-
-  beam_fx(actor.location(), dir, dist, Color("pink"));
-
-  auto& blob = actor.as<Blob_Part>();
-  // Energy cost for shooting.
-  blob.energy -= 100;
-}
-
-void damage(Location location) {
-  // TODO, lots more detail
-  for (auto a : actors_at(location)) {
-    delete_actor(a);
-  }
-}
-
 Terrain World::get_terrain(Location location) {
   return assoc_find_or(terrain, location, terrain_void);
 }
@@ -229,11 +152,6 @@ void World::next_actor() {
 
 bool is_seen(Location location) {
   return World::get().view_space.is_seen(location) > 0;
-}
-
-bool blocks_sight(Location location) {
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
 }
 
 boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
@@ -328,12 +246,6 @@ std::vector<Actor> actors_on(const Footprint& footprint) {
   return result;
 }
 
-bool has_actors(Location location) {
-  for (auto a : actors_at(location))
-    return true;
-  return false;
-}
-
 Actor new_actor(Actor_Id id) {
   auto result = Actor{id};
   ASSERT(!actor_exists(result));
@@ -363,17 +275,6 @@ void next_actor() {
   World::get().next_actor();
 }
 
-void start_turn_update(Actor actor) {
-  try {
-    auto& blob = actor.as<Blob_Part>();
-    blob.energy += blob.power;
-  } catch (Part_Not_Found& e) {}
-}
-
-bool ready_to_act(Actor actor) {
-  try {
-    return actor.as<Blob_Part>().energy >= 0;
-  } catch (Part_Not_Found& e) {
-    return false;
-  }
+void move_view_pos(const Vec2i& offset) {
+  World::get().view_space.move_pos(offset);
 }

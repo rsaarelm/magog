@@ -21,6 +21,7 @@
 #include "tile_drawable.hpp"
 #include <ui/registry.hpp>
 #include <world/world.hpp>
+#include <world/rules.hpp>
 #include <world/cavegen.hpp>
 #include <GL/gl.h>
 #include <util.hpp>
