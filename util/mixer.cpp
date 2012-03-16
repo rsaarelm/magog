@@ -78,9 +78,10 @@ void Mixer::generate(int8_t* stream, int len) {
     }
     float avg = 0;
     if (samples.size() > 0) {
+      // Normalize the combined sample if both values are loud, but if one is
+      // loud and the other is not, keep the loud value as it is.
       for (auto sample : samples)
-        avg += sample;
-      avg /= samples.size();
+        avg = avg + sample - (avg * sample);
     }
     stream[i] = static_cast<int8_t>(avg * (1 << (sizeof(Sample) * 8 - 1)));
   }
