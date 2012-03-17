@@ -28,12 +28,15 @@ Actor get_player();
 bool blocks_shot(Location location);
 bool blocks_sight(Location location);
 
+bool blocks_movement(Actor actor);
+
 bool action_walk(Actor actor, const Vec2i& dir);
 bool action_melee(Actor actor, const Vec2i& dir);
 bool action_bump(Actor actor, const Vec2i& dir);
 bool action_shoot(Actor actor, const Vec2i& dir);
 
-void damage(Location location);
+void damage(Location location, int amount);
+void damage(Actor actor, int amount);
 
 bool has_actors(Location location);
 

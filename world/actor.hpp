@@ -100,6 +100,9 @@ class Actor {
   template <class T>
   T& as() const;
 
+  template <class T>
+  bool has() const;
+
   void add_part(Part* new_part);
 
   size_t hash() const {
@@ -138,6 +141,16 @@ T& Actor::as() const {
   // If kind doesn't match to the actual object, there's been data corruption.
   ASSERT(result != nullptr);
   return *result;
+}
+
+template <class T>
+bool Actor::has() const {
+  try {
+    Part* part = find_part(*this, T::s_get_kind());
+    return true;
+  } catch (Part_Not_Found& e) {
+    return false;
+  }
 }
 
 #endif

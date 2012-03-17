@@ -25,8 +25,8 @@ class Blob_Part : public Part {
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(Actor_Icon icon, int power, bool big=false)
-    : icon(icon), power(power), energy(0), big(big) {}
+  Blob_Part(Actor_Icon icon, int power, int armor, int damage, bool big=false)
+    : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
@@ -34,6 +34,9 @@ class Blob_Part : public Part {
   int power;
   int energy;
   bool big; // XXX: Very crude, should have a more complex size system.
+
+  int armor;
+  int damage;
  private:
   Location loc;
   Blob_Part(const Blob_Part&);

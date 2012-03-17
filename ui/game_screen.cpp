@@ -85,7 +85,7 @@ static GLuint load_tile_tex() {
 
 Actor spawn_infantry(Location location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(icon_infantry, 3));
+  actor.add_part(new Blob_Part(icon_infantry, 3, 6, 2));
   if (actor.can_pop(location))
     actor.pop(location);
   else
@@ -95,7 +95,7 @@ Actor spawn_infantry(Location location) {
 
 Actor spawn_armor(Location location) {
   auto actor = new_actor();
-  actor.add_part(new Blob_Part(icon_tank, 5));
+  actor.add_part(new Blob_Part(icon_tank, 5, 8, 4));
   if (actor.can_pop(location))
     actor.pop(location);
   else
@@ -185,7 +185,7 @@ void Game_Screen::enter() {
   }
 
   auto player = get_player();
-  player.add_part(new Blob_Part(icon_telos, 7, true));
+  player.add_part(new Blob_Part(icon_telos, 7, 40, 10, true));
 
   auto locations = area_locations(1);
   int n_tries = 1024;
@@ -335,6 +335,9 @@ void Game_Screen::draw() {
   }
 
   msg_buffer.draw();
+
+  Color("beige").gl_color();
+  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d", get_player().as<Blob_Part>().armor);
 }
 
 void Game_Screen::generate_sprites(std::set<Sprite>& output) {
