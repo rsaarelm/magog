@@ -17,6 +17,7 @@
 */
 
 #include "entities_system.hpp"
+#include <world/world.hpp>
 #include <util/core.hpp>
 #include <util/alg.hpp>
 
@@ -43,9 +44,13 @@ void Entities_System::destroy(Entity entity) {
 }
 
 void Entities_System::add(Entity entity, std::unique_ptr<Part> part) {
+  // TODO: Use Entities_System store
+  add_part(entity, std::move(part));
+/*
   ASSERT(assoc_contains(entities, entity));
   Kind kind = part->get_kind();
   entities[entity][kind] = std::move(part);
+*/
 }
 
 bool Entities_System::has(Entity entity, Kind kind) const {
@@ -58,6 +63,9 @@ bool Entities_System::has(Entity entity, Kind kind) const {
 }
 
 Part* Entities_System::get(Entity entity, Kind kind) {
+  // TODO: Use Entities_System store
+  return find_part(entity, kind);
+/*
   ASSERT(assoc_contains(entities, entity));
 
   auto& parts = entities[entity];
@@ -66,6 +74,7 @@ Part* Entities_System::get(Entity entity, Kind kind) {
     return nullptr;
 
   return(part_iter->second.get());
+*/
 }
 
 // A forward-declarable wrapper for fetching parts

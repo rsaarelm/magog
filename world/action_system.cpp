@@ -26,7 +26,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
   auto loc = entity.location();
   auto new_loc = loc + dir;
   if (spatial.can_pop(entity, new_loc)) {
-    for (auto a : entities_on(entity.footprint(new_loc))) {
+    for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {
       if (a == entity) continue;
       // Uncrushable entities in the target area, abort movement.
       if (blocks_movement(a) && !can_crush(entity, a))
@@ -39,7 +39,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     if (entity == get_player())
       fov.move_view_pos(dir);
 
-    for (auto a : entities_on(entity.footprint(new_loc))) {
+    for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {
       if (blocks_movement(a)) {
         // Crushing damages you.
         damage(entity, a.as<Blob_Part>().armor / 2);
@@ -68,7 +68,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
     dist++;
 
     bool hit_entity = false;
-    for (auto& a : entities_at(loc)) {
+    for (auto& a : spatial.entities_at(loc)) {
       if (a != entity) {
         hit_entity = true;
         break;
@@ -92,7 +92,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
 }
 
 void Action_System::damage(Location location, int amount) {
-  for (auto a : entities_at(location))
+  for (auto a : spatial.entities_at(location))
     damage(a, amount);
 }
 

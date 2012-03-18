@@ -379,7 +379,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
 
         if (in_fov) {
-          for (auto& pair : entities_with_offsets_at(loc)) {
+          for (auto& pair : spatial.entities_with_offsets_at(loc)) {
             Entity& entity = pair.second;
             auto& blob = entity.as<Blob_Part>();
             output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});

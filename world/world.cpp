@@ -195,35 +195,6 @@ std::vector<Entity> all_entities() {
   return result;
 }
 
-std::vector<Entity> entities_at(Location location) {
-  std::vector<Entity> result;
-  auto range = World::get().spatial_index.equal_range(location);
-  for (auto i = range.first; i != range.second; ++i) {
-    result.push_back(i->second.second);
-  }
-  return result;
-}
-
-std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location) {
-  std::vector<std::pair<Vec2i, Entity>> result;
-  auto range = World::get().spatial_index.equal_range(location);
-  for (auto i = range.first; i != range.second; ++i) {
-    result.push_back(i->second);
-  }
-  return result;
-}
-
-std::vector<Entity> entities_on(const Footprint& footprint) {
-  std::vector<Entity> result;
-  for (auto& pair : footprint) {
-    auto range = World::get().spatial_index.equal_range(pair.second);
-    for (auto i = range.first; i != range.second; ++i) {
-      result.push_back(i->second.second);
-    }
-  }
-  return result;
-}
-
 Entity new_entity(Entity_Id id) {
   auto result = Entity(nullptr, id);
   ASSERT(!entity_exists(result));
@@ -235,9 +206,14 @@ Entity new_entity() {
   return new_entity(World::get().next_entity_id++);
 }
 
+#include <ui/game_screen.hpp>
+
 void delete_entity(Entity entity) {
   // TODO: Notify components of removal
-  entity._push();
+
+  // XXX HACKHACKHACK
+  // TODO: Get rid of this function and this kludge
+  static_cast<Game_Screen*>(Game_Loop::get().top_state())->spatial.push(entity);
   World::get().entities.erase(entity);
 }
 

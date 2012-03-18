@@ -53,12 +53,6 @@ bool blocks_movement(Entity entity) {
   return entity.has<Blob_Part>();
 }
 
-bool has_entities(Location location) {
-  for (auto a : entities_at(location))
-    return true;
-  return false;
-}
-
 void start_turn_update(Entity entity) {
   try {
     auto& blob = entity.as<Blob_Part>();

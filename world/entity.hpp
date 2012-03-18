@@ -119,20 +119,6 @@ class Entity {
 
   Location location() const;
 
-  /// Push the Entity into the ethereal void.
-  void _push();
-
-  /// Checks if an entity in void can enter a location.
-  bool _can_pop(Location location) const;
-
-  /// Pop the Entity back into existence from the void.
-  void _pop();
-
-  /// Pop the Entity into a specific location.
-  void _pop(Location location);
-
-  Footprint footprint(Location center) const;
-  Footprint footprint() const;
  private:
   Entities_System* system;
   Entity_Id uid;

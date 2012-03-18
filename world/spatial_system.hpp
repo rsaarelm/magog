@@ -20,6 +20,8 @@
 
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
+#include <world/spatial_index.hpp>
+#include <vector>
 
 class Spatial_System {
 public:
@@ -31,12 +33,25 @@ public:
 
   bool can_pop(Entity entity, Location loc) const;
   void push(Entity entity);
+  void pop(Entity entity);
   void pop(Entity entity, Location loc);
 
+  Location location(Entity entity) const;
+  Footprint footprint(Entity entity, Location center) const;
   Footprint footprint(Entity entity) const;
+
+  std::vector<Entity> entities_at(Location location);
+  std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location);
+  std::vector<Entity> entities_on(const Footprint& footprint);
+
 private:
+  Spatial_System(const Spatial_System&);
+  Spatial_System& operator=(const Spatial_System&);
+
   Entities_System& entities;
   Terrain_System& terrain;
+
+  Spatial_Index<Entity> index;
 };
 
 #endif

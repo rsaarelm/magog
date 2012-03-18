@@ -62,9 +62,6 @@ area_locations(uint16_t area);
 // XXX: Return type should be considered just some iterable type, the exact
 // form may change.
 std::vector<Entity> all_entities();
-std::vector<Entity> entities_at(Location location);
-std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location);
-std::vector<Entity> entities_on(const Footprint& footprint);
 
 Entity new_entity(Entity_Id id);
 Entity new_entity();

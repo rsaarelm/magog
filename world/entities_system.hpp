@@ -44,6 +44,11 @@ public:
     return *result;
   }
 
+  template<class C>
+  const C& as(Entity entity) const {
+    return as<C>(entity);
+  }
+
 private:
   Entity_Id next_entity_id;
   std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;
