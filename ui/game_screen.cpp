@@ -66,8 +66,11 @@ uint8_t tiles_png[] = {
 
 Surface g_tile_surface;
 
+#if 0
+// TODO: Move to Terrain_System0
+
 bool is_wall(Location loc) {
-  return terrain_data[get_terrain(loc)].kind == wall_terrain;
+  return terrain_data[terrain.get(loc)].kind == wall_terrain;
 }
 
 int wall_mask(Location loc) {
@@ -76,6 +79,7 @@ int wall_mask(Location loc) {
     result += is_wall(loc + hex_dirs[i]) << i;
   return result;
 }
+#endif
 
 static GLuint load_tile_tex() {
   // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
@@ -133,15 +137,15 @@ void Game_Screen::enter() {
   for (auto pos : hex_area_points(r)) {
     int n = rand_int(100);
     if (n < 3)
-      set_terrain(Location(1, pos), terrain_wall_center);
+      terrain.set(Location(1, pos), terrain_wall_center);
     else if (n < 6)
-      set_terrain(Location(1, pos), terrain_water);
+      terrain.set(Location(1, pos), terrain_water);
     else if (n < 12)
-      set_terrain(Location(1, pos), terrain_forest);
+      terrain.set(Location(1, pos), terrain_forest);
     else if (n < 20)
-      set_terrain(Location(1, pos), terrain_sand);
+      terrain.set(Location(1, pos), terrain_sand);
     else
-      set_terrain(Location(1, pos), terrain_grass);
+      terrain.set(Location(1, pos), terrain_grass);
   }
 
 
@@ -165,7 +169,8 @@ void Game_Screen::enter() {
 
   for (int sector = 0; sector < 6; sector++)
     for (int i = 0; i < r + (sector % 2); i++)
-      set_portal(Location(1, start[sector] + hex_dirs[(sector + 1) % 6] * i), Portal(0, offset[sector]));
+      terrain.set_portal(
+        Location(1, start[sector] + hex_dirs[(sector + 1) % 6] * i), Portal(0, offset[sector]));
 
   for (int i = 0; i < 16; i++) {
     // TODO: random location function
@@ -178,10 +183,10 @@ void Game_Screen::enter() {
   }
 
   for (auto pos : hex_circle_points(r)) {
-    set_terrain(Location(1, pos), terrain_floor);
+    terrain.set(Location(1, pos), terrain_floor);
   }
   for (auto pos : hex_circle_points(r+1)) {
-    set_terrain(Location(1, pos), terrain_void);
+    terrain.set(Location(1, pos), terrain_void);
   }
 
   auto player = get_player();
@@ -363,13 +368,13 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         bool in_fov = fov.is_seen(loc);
 
         // TODO: Darken terrain out of fov.
-        auto terrain = terrain_data[get_terrain(loc)];
-        auto color = terrain.color;
+        auto ter = terrain_data[terrain.get(loc)];
+        auto color = ter.color;
         if (!in_fov)
           color = lerp(0.5, Color("black"), color.monochrome());
         auto terrain_tile = tile_drawable(
           tiletex,
-          terrain.icon,
+          ter.icon,
           color);
         output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
 

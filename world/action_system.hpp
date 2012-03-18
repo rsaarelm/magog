@@ -21,13 +21,18 @@
 #include <world/entity.hpp>
 #include <world/entities_system.hpp>
 #include <world/fov_system.hpp>
+#include <world/terrain_system.hpp>
 #include <util/vec.hpp>
 
 class Action_System {
 public:
-  Action_System(Entities_System& entities, Fov_System& fov)
+  Action_System(
+    Entities_System& entities,
+    Fov_System& fov,
+    Terrain_System& terrain)
   : entities(entities)
-  , fov(fov) {}
+  , fov(fov)
+  , terrain(terrain) {}
 
   bool walk(Entity entity, const Vec2i& dir);
   bool melee(Entity entity, const Vec2i& dir);
@@ -42,6 +47,7 @@ public:
 private:
   Entities_System& entities;
   Fov_System& fov;
+  Terrain_System& terrain;
 };
 
 #endif

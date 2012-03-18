@@ -80,7 +80,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
       damage(loc, entity.as<Blob_Part>().damage);
       break;
     }
-    if (blocks_shot(loc))
+    if (terrain.blocks_shot(loc))
       break;
   }
 

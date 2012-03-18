@@ -17,7 +17,46 @@
 */
 
 #include "terrain_system.hpp"
+#include <world/world.hpp>
 
-Location Terrain_System::make_location(uint16_t area, const Vec2i& pos) {
+Location Terrain_System::loc(uint16_t area, const Vec2i& pos) {
   return Location(this, area, pos[0], pos[1]);
+}
+
+Terrain Terrain_System::get(Location loc) const {
+  // TODO: Use Terrain_System storage
+  return get_terrain(loc);
+}
+
+void Terrain_System::set(Location loc, Terrain terrain) {
+  // TODO
+  _set_terrain(loc, terrain);
+}
+
+void Terrain_System::clear(Location loc) {
+  // TODO
+}
+
+Portal Terrain_System::get_portal(Location loc) const {
+  // TODO
+  return ::get_portal(loc);
+}
+
+void Terrain_System::set_portal(Location loc, Portal portal) {
+  // TODO
+  _set_portal(loc, portal);
+}
+
+void Terrain_System::clear_portal(Location loc) {
+  portals.erase(loc);
+}
+
+bool Terrain_System::blocks_shot(Location loc) {
+  auto kind = terrain_data[get(loc)].kind;
+  return kind == wall_terrain || kind == curtain_terrain;
+}
+
+bool Terrain_System::blocks_sight(Location loc) {
+  auto kind = terrain_data[get_terrain(loc)].kind;
+  return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
 }

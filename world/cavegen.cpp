@@ -27,7 +27,9 @@ using namespace std;
 void dig(Location loc) {
   // XXX: Move the hardcoded terrain data somewhere else.
   // TODO: Figure out formatting the walls around the floor.
-  set_terrain(loc, terrain_floor);
+
+  // TODO: Reactivate for systems code when cavegen is in use again.
+  //set_terrain(loc, terrain_floor);
 }
 
 void generate_cave(Location origin, const ARecti& area) {

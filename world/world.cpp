@@ -154,7 +154,7 @@ Terrain get_terrain(Location location) {
   return World::get().get_terrain(location);
 }
 
-void set_terrain(Location location, Terrain cell) {
+void _set_terrain(Location location, Terrain cell) {
   World::get().set_terrain(location, cell);
 }
 
@@ -167,7 +167,7 @@ Portal get_portal(Location location) {
     return Portal();
 }
 
-void set_portal(Location location, Portal portal) {
+void _set_portal(Location location, Portal portal) {
   World::get().portal[location] = portal;
 }
 

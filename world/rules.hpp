@@ -25,7 +25,6 @@
 
 Entity get_player();
 
-bool blocks_shot(Location location);
 bool blocks_sight(Location location);
 
 bool blocks_movement(Entity entity);

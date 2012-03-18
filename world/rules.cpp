@@ -40,11 +40,6 @@ int fudge_roll() {
   return result;
 }
 
-bool blocks_shot(Location location) {
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == wall_terrain || kind == curtain_terrain;
-}
-
 bool blocks_sight(Location location) {
   auto kind = terrain_data[get_terrain(location)].kind;
   return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;

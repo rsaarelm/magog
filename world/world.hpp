@@ -44,12 +44,16 @@ Spatial_Index<Entity>& get_spatial_index();
 // TODO variadics.
 void msg(const char* fmt);
 
+// TODO REMOVE
 Terrain get_terrain(Location location);
-void set_terrain(Location location, Terrain cell);
 
+// TODO REMOVE
+void _set_terrain(Location location, Terrain cell);
+
+// TODO REMOVE
 Portal get_portal(Location location);
-void set_portal(Location location, Portal portal);
-void clear_portal(Location location);
+// TODO REMOVE
+void _set_portal(Location location, Portal portal);
 
 std::pair<std::map<Location, Terrain>::const_iterator,
           std::map<Location, Terrain>::const_iterator>

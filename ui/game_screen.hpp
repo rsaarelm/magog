@@ -26,6 +26,7 @@
 #include "sprite_system.hpp"
 #include <world/world.hpp>
 #include <world/entities_system.hpp>
+#include <world/terrain_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
 #include <util.hpp>
@@ -46,9 +47,10 @@ class Game_Screen : public Game_State {
   Game_Screen()
       : tiletex(0)
       , entities()
+      , terrain()
       , fov(entities)
       , sprite(fov)
-      , action(entities, fov) {}
+      , action(entities, fov, terrain) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -72,6 +74,7 @@ class Game_Screen : public Game_State {
   std::vector<std::shared_ptr<Drawable>> entity_drawables;
 
   Entities_System entities;
+  Terrain_System terrain;
   Fov_System fov;
   Sprite_System sprite;
   Action_System action;
