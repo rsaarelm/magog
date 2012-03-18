@@ -52,6 +52,10 @@ struct Location {
 
   Location() : area(0), x(0), y(0) {}
 
+  bool is_null() const {
+    return area == 0 && x == 0 && y == 0;
+  }
+
   bool operator<(Location rhs) const {
     if (area < rhs.area) return true;
     if (area > rhs.area) return false;

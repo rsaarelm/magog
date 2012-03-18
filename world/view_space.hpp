@@ -31,7 +31,7 @@ public:
   Vec2i get_pos() const { return subjective_pos; }
   void do_fov(int radius, Location loc, const Vec2i& offset=Vec2i(0, 0));
 
-  boost::optional<Location> at(const Vec2i& pos) const;
+  Location at(const Vec2i& pos) const;
   bool is_seen(Location loc) const;
 
   void clear_seen();

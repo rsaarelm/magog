@@ -37,7 +37,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
 
     // XXX Hacky. Player is tracked by the view space object.
     if (entity == get_player())
-      move_view_pos(dir);
+      fov.move_view_pos(dir);
 
     for (auto a : entities_on(entity.footprint(new_loc))) {
       if (blocks_movement(a)) {

@@ -150,29 +150,6 @@ void World::next_entity() {
   } catch (Entity_Not_Found &e) {}
 }
 
-
-bool is_seen(Location location) {
-  return World::get().view_space.is_seen(location) > 0;
-}
-
-boost::optional<Location> view_space_location(const Vec2i& relative_pos) {
-  auto& view = World::get().view_space;
-  return view.at(relative_pos + view.get_pos());
-}
-
-void do_fov() {
-  auto& view = World::get().view_space;
-
-  view.clear_seen();
-  if (get_player().as<Blob_Part>().big) {
-    // Big entities see with their edge cells too so that they're not completely
-    // blind in a forest style terrain.
-    for (auto i : hex_dirs)
-      World::get().view_space.do_fov(8, get_player().location() + i, i);
-  }
-  World::get().view_space.do_fov(8, get_player().location());
-}
-
 Terrain get_terrain(Location location) {
   return World::get().get_terrain(location);
 }
@@ -274,10 +251,6 @@ Entity active_entity() {
 
 void next_entity() {
   World::get().next_entity();
-}
-
-void move_view_pos(const Vec2i& offset) {
-  World::get().view_space.move_pos(offset);
 }
 
 template <typename Archive>

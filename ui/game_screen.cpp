@@ -199,7 +199,7 @@ void Game_Screen::enter() {
   if (n_tries == 0) {
     die("Couldn't find spawn point");
   }
-  do_fov();
+  fov.do_fov();
 
   msg_buffer.add_caption("Telos Unit online");
 }
@@ -265,7 +265,7 @@ void Game_Screen::key_event(int keysym, int printable) {
         double t = Game_Loop::get().get_seconds();
         int n = 1000;
         for (int i = 0; i < n; i++)
-          do_fov();
+          fov.do_fov();
         t = Game_Loop::get().get_seconds() - t;
         printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
       }
@@ -276,7 +276,7 @@ void Game_Screen::key_event(int keysym, int printable) {
   if (active_entity() == get_player() && action.is_ready(get_player())) {
     if (delta != Vec2i(0, 0)) {
       if (action.walk(get_player(), delta)) {
-        do_fov();
+        fov.do_fov();
         next_entity();
       } else {
         msg_buffer.add_msg("Bump!");
@@ -356,14 +356,14 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);
         world_anims.collect_sprites(offset, output);
-        auto loc = view_space_location(offset);
-        if (!loc)
+        auto loc = fov.view_location(offset);
+        if (loc.is_null())
           continue;
 
-        bool in_fov = is_seen(*loc);
+        bool in_fov = fov.is_seen(loc);
 
         // TODO: Darken terrain out of fov.
-        auto terrain = terrain_data[get_terrain(*loc)];
+        auto terrain = terrain_data[get_terrain(loc)];
         auto color = terrain.color;
         if (!in_fov)
           color = lerp(0.5, Color("black"), color.monochrome());
@@ -374,7 +374,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
 
         if (in_fov) {
-          for (auto& pair : entities_with_offsets_at(*loc)) {
+          for (auto& pair : entities_with_offsets_at(loc)) {
             Entity& entity = pair.second;
             auto& blob = entity.as<Blob_Part>();
             output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});

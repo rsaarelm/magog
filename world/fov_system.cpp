@@ -26,12 +26,7 @@ bool Fov_System::is_seen(Location loc) {
 }
 
 Location Fov_System::view_location(const Vec2i& relative_pos) {
-  //return view_space.at(relative_pos + view_space.get_pos());
-  auto opt = view_space.at(relative_pos + view_space.get_pos());
-  if (opt)
-    return *opt;
-  else
-    return Location();
+  return view_space.at(relative_pos + view_space.get_pos());
 }
 
 void Fov_System::do_fov() {

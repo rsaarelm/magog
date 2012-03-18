@@ -34,8 +34,12 @@ void View_Space::do_fov(int radius, Location origin, const Vec2i& offset) {
   }
 }
 
-boost::optional<Location> View_Space::at(const Vec2i& pos) const {
-  return assoc_find(view, pos);
+Location View_Space::at(const Vec2i& pos) const {
+  auto iter = view.find(pos);
+  if (iter == view.end())
+    return Location();
+  else
+    return iter->second;
 }
 
 bool View_Space::is_seen(Location loc) const {

@@ -22,9 +22,9 @@
 
 void World_Space_Anims::collect_sprites(
   const Vec2i& view_space_pos, std::set<Sprite>& output) {
-  auto loc = view_space_location(view_space_pos);
-  if (loc) {
-    auto pair = index.equal_range(*loc);
+  auto loc = fov.view_location(view_space_pos);
+  if (!loc.is_null()) {
+    auto pair = index.equal_range(loc);
     for (auto i = pair.first; i != pair.second; i++) {
       auto& offset = i->second.first;
       auto& drawable = i->second.second;

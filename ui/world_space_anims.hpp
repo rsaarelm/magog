@@ -22,6 +22,7 @@
 #include "drawable.hpp"
 #include "sprite.hpp"
 #include <world/spatial_index.hpp>
+#include <world/fov_system.hpp>
 #include <util/vec.hpp>
 #include <map>
 #include <set>
@@ -30,7 +31,8 @@
 
 class World_Space_Anims {
 public:
-  World_Space_Anims() {}
+  World_Space_Anims(Fov_System& fov)
+  : fov(fov) {}
 
   void collect_sprites(const Vec2i& view_space_pos, std::set<Sprite>& output);
 
@@ -45,6 +47,8 @@ private:
   typedef std::pair<std::shared_ptr<Drawable>, Footprint> Element;
 
   void remove(Element element);
+
+  Fov_System& fov;
 
   std::queue<Element> drawables;
 

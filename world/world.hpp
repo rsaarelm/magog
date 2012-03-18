@@ -44,10 +44,6 @@ Spatial_Index<Entity>& get_spatial_index();
 // TODO variadics.
 void msg(const char* fmt);
 
-bool is_seen(Location location);
-boost::optional<Location> view_space_location(const Vec2i& relative_pos);
-void do_fov();
-
 Terrain get_terrain(Location location);
 void set_terrain(Location location, Terrain cell);
 
@@ -73,8 +69,6 @@ bool entity_exists(Entity entity);
 Entity active_entity();
 void next_entity();
 Entity entity_after(Entity entity);
-
-void move_view_pos(const Vec2i& offset);
 
 template<typename Archive>
 void serialize_world(Archive& ar);

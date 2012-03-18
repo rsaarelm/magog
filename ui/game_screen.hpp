@@ -26,6 +26,7 @@
 #include "world_space_anims.hpp"
 #include <world/world.hpp>
 #include <world/entities_system.hpp>
+#include <world/fov_system.hpp>
 #include <world/action_system.hpp>
 #include <util.hpp>
 #include <queue>
@@ -45,7 +46,9 @@ class Game_Screen : public Game_State {
   Game_Screen()
       : tiletex(0)
       , entities()
-      , action(entities) {}
+      , fov(entities)
+      , world_anims(fov)
+      , action(entities, fov) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -66,11 +69,11 @@ class Game_Screen : public Game_State {
 
   Message_Buffer msg_buffer;
 
-  World_Space_Anims world_anims;
-
   std::vector<std::shared_ptr<Drawable>> entity_drawables;
 
   Entities_System entities;
+  Fov_System fov;
+  World_Space_Anims world_anims;
   Action_System action;
 };
 
