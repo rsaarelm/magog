@@ -1,4 +1,4 @@
-/* world_space_anims.cpp
+/* sprite_system.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,11 +16,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "world_space_anims.hpp"
+#include "sprite_system.hpp"
 #include <world/world.hpp>
 #include <util/alg.hpp>
 
-void World_Space_Anims::collect_sprites(
+void Sprite_System::collect_sprites(
   const Vec2i& view_space_pos, std::set<Sprite>& output) {
   auto loc = fov.view_location(view_space_pos);
   if (!loc.is_null()) {
@@ -37,22 +37,22 @@ void World_Space_Anims::collect_sprites(
   }
 }
 
-void World_Space_Anims::add(
+void Sprite_System::add(
   const std::shared_ptr<Drawable>& drawable, const Footprint& footprint) {
   ASSERT(footprint.size() > 0);
 
   index.add(drawable, footprint);
 
-  World_Space_Anims::Element element(drawable, footprint);
+  Sprite_System::Element element(drawable, footprint);
   drawables.push(element);
 }
 
-void World_Space_Anims::add(
+void Sprite_System::add(
   const std::shared_ptr<Drawable>& drawable, Location location) {
   add(drawable, drawable->footprint(location));
 }
 
-void World_Space_Anims::update(float interval_sec) {
+void Sprite_System::update(float interval_sec) {
   for (size_t i = 0, j = drawables.size(); i < j; i++) {
     Element element = drawables.front();
     drawables.pop();
@@ -64,6 +64,6 @@ void World_Space_Anims::update(float interval_sec) {
   }
 }
 
-void World_Space_Anims::remove(Element element) {
+void Sprite_System::remove(Element element) {
   index.remove(element.first);
 }

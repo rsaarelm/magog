@@ -132,7 +132,7 @@ void raw_msg(std::string str) {
 void beam_fx(Location location, const Vec2i& dir, int length, const Color& color) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
-    scr->world_anims.add(
+    scr->sprite.add(
       std::shared_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
       location);
   }
@@ -141,7 +141,7 @@ void beam_fx(Location location, const Vec2i& dir, int length, const Color& color
 void explosion_fx(Location location) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
-    scr->world_anims.add(
+    scr->sprite.add(
       std::shared_ptr<Drawable>(new Particles_Drawable()), location);
   }
 }

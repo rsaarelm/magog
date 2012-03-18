@@ -81,7 +81,7 @@ add_executable(${TARGETNAME}
   ui/game_screen.cpp
   ui/message_buffer.cpp
   ui/tile_drawable.cpp
-  ui/world_space_anims.cpp
+  ui/sprite_system.cpp
   ui/registry.cpp
 
   world/entities_system.cpp

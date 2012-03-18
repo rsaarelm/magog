@@ -233,7 +233,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      world_anims.add(std::shared_ptr<Drawable>(new DemoThingie()), get_player().location());
+      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), get_player().location());
       break;
     case 'u':
       action.shoot(get_player(), Vec2i(-1, 0));
@@ -287,7 +287,7 @@ void Game_Screen::key_event(int keysym, int printable) {
 
 void Game_Screen::update(float interval_seconds) {
   msg_buffer.update(interval_seconds);
-  world_anims.update(interval_seconds);
+  sprite.update(interval_seconds);
 
   while (!(active_entity() == get_player() && action.is_ready(get_player()))) {
     do_ai();
@@ -355,7 +355,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);
-        world_anims.collect_sprites(offset, output);
+        sprite.collect_sprites(offset, output);
         auto loc = fov.view_location(offset);
         if (loc.is_null())
           continue;

@@ -23,7 +23,7 @@
 #include "message_buffer.hpp"
 #include "drawable.hpp"
 #include "sprite.hpp"
-#include "world_space_anims.hpp"
+#include "sprite_system.hpp"
 #include <world/world.hpp>
 #include <world/entities_system.hpp>
 #include <world/fov_system.hpp>
@@ -47,7 +47,7 @@ class Game_Screen : public Game_State {
       : tiletex(0)
       , entities()
       , fov(entities)
-      , world_anims(fov)
+      , sprite(fov)
       , action(entities, fov) {}
   virtual ~Game_Screen() {}
 
@@ -73,7 +73,7 @@ class Game_Screen : public Game_State {
 
   Entities_System entities;
   Fov_System fov;
-  World_Space_Anims world_anims;
+  Sprite_System sprite;
   Action_System action;
 };
 

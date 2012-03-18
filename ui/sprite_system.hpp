@@ -1,4 +1,4 @@
-/* world_space_anims.hpp
+/* sprite_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,8 +16,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_SPACE_ANIMS_HPP
-#define WORLD_SPACE_ANIMS_HPP
+#ifndef SPRITE_SYSTEM_HPP
+#define SPRITE_SYSTEM_HPP
 
 #include "drawable.hpp"
 #include "sprite.hpp"
@@ -29,9 +29,9 @@
 #include <queue>
 #include <memory>
 
-class World_Space_Anims {
+class Sprite_System {
 public:
-  World_Space_Anims(Fov_System& fov)
+  Sprite_System(Fov_System& fov)
   : fov(fov) {}
 
   void collect_sprites(const Vec2i& view_space_pos, std::set<Sprite>& output);
@@ -41,8 +41,8 @@ public:
 
   void update(float interval_sec);
 private:
-  World_Space_Anims(const World_Space_Anims&);
-  World_Space_Anims& operator=(const World_Space_Anims&);
+  Sprite_System(const Sprite_System&);
+  Sprite_System& operator=(const Sprite_System&);
 
   typedef std::pair<std::shared_ptr<Drawable>, Footprint> Element;
 
