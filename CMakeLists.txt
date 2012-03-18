@@ -92,7 +92,6 @@ add_executable(${TARGETNAME}
   world/location.cpp
   world/entity.cpp
   world/world.cpp
-  world/fov.cpp
   world/cavegen.cpp
   world/rules.cpp
 

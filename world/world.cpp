@@ -17,7 +17,6 @@
 */
 
 #include "world.hpp"
-#include <world/fov.hpp>
 #include <world/effects.hpp>
 #include <world/rules.hpp>
 #include <world/parts.hpp>
