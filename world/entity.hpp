@@ -77,22 +77,28 @@ class Part {
 // also rather reliant on the combined properties of the attacker and the
 // target entities.
 
+class Entities_System;
+
 class Entity {
  public:
-  Entity(): uid(-1) {}
-  Entity(const Entity& rhs) : uid(rhs.uid) {}
-  Entity(Entity_Id uid) : uid(uid) {}
+  Entity(): system(nullptr), uid(-1) {}
+
+  Entity(const Entity& rhs) : system(rhs.system), uid(rhs.uid) {}
+  Entity& operator=(const Entity& rhs) { system = rhs.system; uid = rhs.uid; }
+
+  Entity(Entities_System* system, Entity_Id uid) : system(system), uid(uid) {}
 
   bool operator<(const Entity& rhs) const {
+    ASSERT(system == rhs.system);
     return uid < rhs.uid;
   }
 
   bool operator==(const Entity& rhs) const {
-    return uid == rhs.uid;
+    return uid == rhs.uid && system == rhs.system;
   }
 
   bool operator!=(const Entity& rhs) const {
-    return uid != rhs.uid;
+    return uid != rhs.uid || system != rhs.system;
   }
 
   bool exists() const;
@@ -128,13 +134,18 @@ class Entity {
   Footprint footprint(Location center) const;
   Footprint footprint() const;
  private:
+  Entities_System* system;
   Entity_Id uid;
 };
 
+Part* _find_part(Entities_System* entities_system, Entity entity, Kind kind);
+
+// XXX: Deprecated
 Part* find_part(Entity entity, Kind kind);
 
 template <class T>
 T& Entity::as() const {
+  // TODO: Assert system != nullptr, use system to find the part.
   Part* part = find_part(*this, T::s_get_kind());
 
   T* result = dynamic_cast<T*>(part);

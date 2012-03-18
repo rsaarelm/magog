@@ -27,7 +27,7 @@ Entity get_player() {
 
   // XXX: Fixed ID is problematic if we want to switch the player entity
   // around.
-  return Entity(1);
+  return Entity(nullptr, 1);
 }
 
 /// Add results of four dice which can give -1, 0 or 1 with equal

@@ -25,6 +25,7 @@
 #include "sprite.hpp"
 #include "world_space_anims.hpp"
 #include <world/world.hpp>
+#include <world/entities_system.hpp>
 #include <util.hpp>
 #include <queue>
 #include <vector>
@@ -65,6 +66,8 @@ class Game_Screen : public Game_State {
   World_Space_Anims world_anims;
 
   std::vector<std::shared_ptr<Drawable>> entity_drawables;
+
+  Entities_System entities;
 };
 
 #endif

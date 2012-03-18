@@ -112,7 +112,7 @@ void clear_world() {
 
 World::World()
     : next_entity_id(256) // IDs below this are reserved for fixed stuff.
-    , previous_entity(-1)
+    , previous_entity(nullptr, -1)
 {}
 
 Terrain World::get_terrain(Location location) {
@@ -129,7 +129,7 @@ Entity World::active_entity() {
     return i->first;
 
   // Nothing left after previous_entity, loop to start.
-  previous_entity = Entity(-1);
+  previous_entity = Entity(nullptr, -1);
   i = entities.upper_bound(previous_entity);
   if (i != entities.end())
     return i->first;
@@ -143,7 +143,7 @@ void World::next_entity() {
   if (i != entities.end())
     previous_entity = i->first;
   else
-    previous_entity = Entity(-1);
+    previous_entity = Entity(nullptr, -1);
 
   try {
     start_turn_update(active_entity());
@@ -248,7 +248,7 @@ std::vector<Entity> entities_on(const Footprint& footprint) {
 }
 
 Entity new_entity(Entity_Id id) {
-  auto result = Entity{id};
+  auto result = Entity(nullptr, id);
   ASSERT(!entity_exists(result));
   World::get().entities[result] = std::map<Kind, std::unique_ptr<Part>>();
   return result;
