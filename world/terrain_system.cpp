@@ -24,27 +24,23 @@ Location Terrain_System::loc(uint16_t area, const Vec2i& pos) {
 }
 
 Terrain Terrain_System::get(Location loc) const {
-  // TODO: Use Terrain_System storage
-  return get_terrain(loc);
+  return assoc_find_or(terrain, loc, terrain_void);
 }
 
-void Terrain_System::set(Location loc, Terrain terrain) {
-  // TODO
-  _set_terrain(loc, terrain);
+void Terrain_System::set(Location loc, Terrain ter) {
+  terrain[loc] = ter;
 }
 
 void Terrain_System::clear(Location loc) {
-  // TODO
+  terrain.erase(loc);
 }
 
 Portal Terrain_System::get_portal(Location loc) const {
-  // TODO
-  return ::get_portal(loc);
+  return assoc_find_or(portals, loc, Portal());
 }
 
 void Terrain_System::set_portal(Location loc, Portal portal) {
-  // TODO
-  _set_portal(loc, portal);
+  portals[loc] = portal;
 }
 
 void Terrain_System::clear_portal(Location loc) {
@@ -57,6 +53,19 @@ bool Terrain_System::blocks_shot(Location loc) {
 }
 
 bool Terrain_System::blocks_sight(Location loc) {
-  auto kind = terrain_data[get_terrain(loc)].kind;
+  auto kind = terrain_data[get(loc)].kind;
   return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
+}
+
+std::pair<std::map<Location, Terrain>::const_iterator,
+          std::map<Location, Terrain>::const_iterator>
+Terrain_System::area_locations(uint16_t area) {
+  ASSERT(area != 0);
+  auto i = terrain.upper_bound(Location(area - 1, 0, 0)),
+    j = terrain.lower_bound(Location(area + 1, 0, 0));
+
+  while (i->first.area < area) ++i;
+  while (j->first.area > area) --j;
+  ++j;
+  return std::make_pair(i, j);
 }

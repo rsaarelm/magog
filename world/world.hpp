@@ -40,25 +40,6 @@ void clear_world();
 // TODO variadics.
 void msg(const char* fmt);
 
-// TODO REMOVE
-Terrain get_terrain(Location location);
-
-// TODO REMOVE
-void _set_terrain(Location location, Terrain cell);
-
-// TODO REMOVE
-Portal get_portal(Location location);
-// TODO REMOVE
-void _set_portal(Location location, Portal portal);
-
-std::pair<std::map<Location, Terrain>::const_iterator,
-          std::map<Location, Terrain>::const_iterator>
-area_locations(uint16_t area);
-
-// XXX: Return type should be considered just some iterable type, the exact
-// form may change.
-std::vector<Entity> all_entities();
-
 Entity new_entity(Entity_Id id);
 Entity new_entity();
 void delete_entity(Entity entity);

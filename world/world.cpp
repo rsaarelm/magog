@@ -167,26 +167,6 @@ void clear_portal(Location location) {
   World::get().portal.erase(location);
 }
 
-std::pair<std::map<Location, Terrain>::const_iterator,
-          std::map<Location, Terrain>::const_iterator>
-area_locations(uint16_t area) {
-  ASSERT(area != 0);
-  auto i = World::get().terrain.upper_bound(Location(area - 1, 0, 0)),
-    j = World::get().terrain.lower_bound(Location(area + 1, 0, 0));
-
-  while (i->first.area < area) ++i;
-  while (j->first.area > area) --j;
-  ++j;
-  return std::make_pair(i, j);
-}
-
-std::vector<Entity> all_entities() {
-  std::vector<Entity> result;
-  for (auto& i : World::get().entities)
-    result.push_back(i.first);
-  return result;
-}
-
 Entity new_entity(Entity_Id id) {
   auto result = Entity(nullptr, id);
   ASSERT(!entity_exists(result));

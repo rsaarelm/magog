@@ -192,7 +192,7 @@ void Game_Screen::enter() {
   auto player = get_player();
   player.add_part(new Blob_Part(icon_telos, 7, 40, 10, true));
 
-  auto locations = area_locations(1);
+  auto locations = terrain.area_locations(1);
   int n_tries = 1024;
   for (; n_tries; n_tries--) {
     auto loc = rand_choice(locations.first, locations.second);

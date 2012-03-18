@@ -25,8 +25,6 @@
 
 Entity get_player();
 
-bool blocks_sight(Location location);
-
 bool blocks_movement(Entity entity);
 
 bool can_crush(Entity entity, Entity crushee);

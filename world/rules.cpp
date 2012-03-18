@@ -40,11 +40,6 @@ int fudge_roll() {
   return result;
 }
 
-bool blocks_sight(Location location) {
-  auto kind = terrain_data[get_terrain(location)].kind;
-  return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
-}
-
 bool can_crush(Entity entity, Entity crushee) {
   return entity.as<Blob_Part>().big && !crushee.as<Blob_Part>().big;
 }

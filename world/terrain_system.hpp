@@ -32,7 +32,7 @@ public:
   Location loc(uint16_t area, const Vec2i& pos);
 
   Terrain get(Location loc) const;
-  void set(Location loc, Terrain terrain);
+  void set(Location loc, Terrain ter);
   void clear(Location loc);
 
   Portal get_portal(Location loc) const;
@@ -42,6 +42,11 @@ public:
   bool blocks_movement(Location loc);
   bool blocks_shot(Location loc);
   bool blocks_sight(Location loc);
+
+  std::pair<std::map<Location, Terrain>::const_iterator,
+            std::map<Location, Terrain>::const_iterator>
+  area_locations(uint16_t area);
+
 private:
   Terrain_System(const Terrain_System&);
   Terrain_System& operator=(const Terrain_System&);

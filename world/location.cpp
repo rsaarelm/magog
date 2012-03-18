@@ -20,9 +20,18 @@
 #include <world/terrain_system.hpp>
 #include <world/world.hpp>
 
+#include <ui/game_screen.hpp>
+#include <util/game_loop.hpp>
+
 Location Location::portaled() const {
-  // TODO: Convert to use terrain handle.
-  return *this + ::get_portal(*this);
+  Terrain_System* ter = terrain;
+  // XXX HACKHACKHACK FIXME
+  if (ter == nullptr) {
+    ter = &(dynamic_cast<Game_Screen*>(Game_Loop::get().top_state())->terrain);
+  }
+  return *this + ter->get_portal(*this);
+//  ASSERT(terrain != nullptr);
+//  return *this + terrain->get_portal(*this);
 }
 
 bool Location::blocks_sight() const {
