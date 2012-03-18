@@ -26,8 +26,11 @@
 
 class Fov_System {
 public:
-  Fov_System(Entities_System& entities)
-  : entities(entities) {}
+  Fov_System(
+    Entities_System& entities,
+    Terrain_System& terrain)
+    : entities(entities)
+    , terrain(terrain) {}
 
   bool is_seen(Location loc);
   Location view_location(const Vec2i& relative_pos);
@@ -46,6 +49,7 @@ private:
   void prune();
 
   Entities_System& entities;
+  Terrain_System& terrain;
 
   Vec2i subjective_pos;
   std::map<Vec2i, Location> view;

@@ -17,8 +17,20 @@
 */
 
 #include "location.hpp"
+#include <world/terrain_system.hpp>
 #include <world/world.hpp>
 
 Location Location::portaled() const {
-  return *this + get_portal(*this);
+  // TODO: Convert to use terrain handle.
+  return *this + ::get_portal(*this);
+}
+
+bool Location::blocks_sight() const {
+  ASSERT(terrain != nullptr);
+  return terrain->blocks_sight(*this);
+}
+
+Portal Location::get_portal() const {
+  ASSERT(terrain != nullptr);
+  return terrain->get_portal(*this);
 }

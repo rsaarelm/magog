@@ -35,6 +35,9 @@ Location Fov_System::view_location(const Vec2i& relative_pos) {
 
 void Fov_System::do_fov(int radius, Location origin, const Vec2i& offset) {
   prune();
+  // XXX: HACK: Force insert terrain to the loc for FOV because FOV needs the
+  // functionality, but most locs aren't terrain-carrying yet.
+  origin.terrain = &terrain;
   auto fov = hex_field_of_view(radius, origin);
   for (auto& pair : fov) {
     auto pos = pair.first + subjective_pos + offset;

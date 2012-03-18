@@ -29,8 +29,8 @@ struct Fov_Group {
   Portal portal;
 
   Fov_Group(Location origin, const Vec2i& offset)
-    : opaque(blocks_sight(origin.raw_offset(offset).portaled()))
-    , portal(get_portal(origin.raw_offset(offset))) {}
+    : opaque((origin + offset).blocks_sight())
+    , portal(origin.raw_offset(offset).get_portal()) {}
 
   bool operator!=(const Fov_Group& rhs) {
     return rhs.opaque != opaque || rhs.portal != portal;

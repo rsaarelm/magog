@@ -79,7 +79,7 @@ struct Location {
 
   /// Offset without portaling.
   Location raw_offset(const Vec2i& offset) const {
-    return Location(area, x + offset[0], y + offset[1]);
+    return Location(terrain, area, x + offset[0], y + offset[1]);
   }
 
   /// Location through a possible portal in this location.
@@ -90,8 +90,12 @@ struct Location {
   }
 
   Location operator+(Portal portal) const {
-    return Location(portal.area ? portal.area : area, x + portal.delta_x, y + portal.delta_y);
+    return Location(terrain, portal.area ? portal.area : area, x + portal.delta_x, y + portal.delta_y);
   }
+
+  bool blocks_sight() const;
+
+  Portal get_portal() const;
 
   size_t hash() const {
     return (((area << 1) ^ y) << 1) ^ x;
