@@ -20,7 +20,6 @@
 #define WORLD_LOCATION_HPP
 
 #include <util.hpp>
-#include <boost/optional.hpp>
 #include <map>
 
 // By convention, area 0 is no-op. A default portal does nothing. A portal
@@ -45,12 +44,17 @@ struct Portal {
   int8_t delta_x, delta_y;
 };
 
+class Terrain_System;
+
 struct Location {
-  Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y) {}
+  Location(Terrain_System* terrain, uint16_t area, int8_t x, int8_t y)
+  : area(area), x(x), y(y), terrain(terrain) {}
 
-  Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]) {}
+  Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y), terrain(nullptr) {}
 
-  Location() : area(0), x(0), y(0) {}
+  Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]), terrain(nullptr) {}
+
+  Location() : area(0), x(0), y(0), terrain(nullptr) {}
 
   bool is_null() const {
     return area == 0 && x == 0 && y == 0;
@@ -104,6 +108,8 @@ struct Location {
   // Fit the whole thing into a 32-bit word.
   uint16_t area;
   int8_t x, y;
+
+  Terrain_System* terrain;
 };
 
 
