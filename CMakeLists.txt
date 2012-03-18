@@ -86,6 +86,7 @@ add_executable(${TARGETNAME}
 
   world/entities_system.cpp
   world/action_system.cpp
+  world/fov_system.cpp
   world/location.cpp
   world/entity.cpp
   world/world.cpp
