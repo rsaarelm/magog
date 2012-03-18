@@ -21,16 +21,16 @@
 /// A proto-kind as a precursor to a full-fledged parts system.
 class Blob_Part : public Part {
  public:
-  friend class Actor;
+  friend class Entity;
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(Actor_Icon icon, int power, int armor, int damage, bool big=false)
+  Blob_Part(Entity_Icon icon, int power, int armor, int damage, bool big=false)
     : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
-  Actor_Icon icon;
+  Entity_Icon icon;
   int power;
   int energy;
   bool big; // XXX: Very crude, should have a more complex size system.

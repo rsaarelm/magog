@@ -33,13 +33,13 @@ class World {
   Terrain get_terrain(Location location);
   void set_terrain(Location location, Terrain cell);
 
-  /// Return the actor whose turn it is to act now.
+  /// Return the entity whose turn it is to act now.
   ///
-  /// Throws Actor_Not_Found if there are no actors that can act.
-  Actor active_actor();
+  /// Throws Entity_Not_Found if there are no entities that can act.
+  Entity active_entity();
 
-  /// Called when done with the current active actor to move to the next one.
-  void next_actor();
+  /// Called when done with the current active entity to move to the next one.
+  void next_entity();
 
   // TODO: Use indexed lookup to a static terrain set instead of having
   // individual data here to compress the structure.
@@ -51,12 +51,12 @@ class World {
   // can be processed using fast vectorized code. This simple system does not
   // support that. Shouldn't be a problem unless heavy physics-style stuff is
   // needed.
-  std::map<Actor, std::map<Kind, std::unique_ptr<Part>>> actors;
+  std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;
 
-  Actor_Id next_actor_id;
+  Entity_Id next_entity_id;
   View_Space view_space;
 
-  Spatial_Index<Actor> spatial_index;
+  Spatial_Index<Entity> spatial_index;
  private:
   World();
   World(const World&);
@@ -64,7 +64,7 @@ class World {
 
   static std::unique_ptr<World> s_world;
 
-  Actor previous_actor;
+  Entity previous_entity;
 };
 
 void msg(const char* fmt) {
@@ -80,11 +80,11 @@ World& World::get() {
   return *s_world.get();
 }
 
-Part* find_part(Actor actor, Kind kind) {
-  auto& actors = World::get().actors;
-  auto iter = actors.find(actor);
-  if (iter == actors.end())
-    throw Actor_Not_Found();
+Part* find_part(Entity entity, Kind kind) {
+  auto& entities = World::get().entities;
+  auto iter = entities.find(entity);
+  if (iter == entities.end())
+    throw Entity_Not_Found();
 
   auto part_iter = iter->second.find(kind);
   if (part_iter == iter->second.end())
@@ -93,12 +93,12 @@ Part* find_part(Actor actor, Kind kind) {
   return(part_iter->second.get());
 }
 
-void add_part(Actor actor, std::unique_ptr<Part> new_part) {
-  ASSERT(assoc_contains(World::get().actors, actor));
-  World::get().actors[actor][new_part->get_kind()] = std::move(new_part);
+void add_part(Entity entity, std::unique_ptr<Part> new_part) {
+  ASSERT(assoc_contains(World::get().entities, entity));
+  World::get().entities[entity][new_part->get_kind()] = std::move(new_part);
 }
 
-Spatial_Index<Actor>& get_spatial_index() {
+Spatial_Index<Entity>& get_spatial_index() {
   return World::get().spatial_index;
 }
 
@@ -111,8 +111,8 @@ void clear_world() {
 }
 
 World::World()
-    : next_actor_id(256) // IDs below this are reserved for fixed stuff.
-    , previous_actor(-1)
+    : next_entity_id(256) // IDs below this are reserved for fixed stuff.
+    , previous_entity(-1)
 {}
 
 Terrain World::get_terrain(Location location) {
@@ -123,31 +123,31 @@ void World::set_terrain(Location location, Terrain cell) {
   terrain[location] = cell;
 }
 
-Actor World::active_actor() {
-  auto i = actors.upper_bound(previous_actor);
-  if (i != actors.end())
+Entity World::active_entity() {
+  auto i = entities.upper_bound(previous_entity);
+  if (i != entities.end())
     return i->first;
 
-  // Nothing left after previous_actor, loop to start.
-  previous_actor = Actor(-1);
-  i = actors.upper_bound(previous_actor);
-  if (i != actors.end())
+  // Nothing left after previous_entity, loop to start.
+  previous_entity = Entity(-1);
+  i = entities.upper_bound(previous_entity);
+  if (i != entities.end())
     return i->first;
 
-  // No actors, period.
-  throw Actor_Not_Found();
+  // No entities, period.
+  throw Entity_Not_Found();
 }
 
-void World::next_actor() {
-  auto i = actors.upper_bound(previous_actor);
-  if (i != actors.end())
-    previous_actor = i->first;
+void World::next_entity() {
+  auto i = entities.upper_bound(previous_entity);
+  if (i != entities.end())
+    previous_entity = i->first;
   else
-    previous_actor = Actor(-1);
+    previous_entity = Entity(-1);
 
   try {
-    start_turn_update(active_actor());
-  } catch (Actor_Not_Found &e) {}
+    start_turn_update(active_entity());
+  } catch (Entity_Not_Found &e) {}
 }
 
 
@@ -165,7 +165,7 @@ void do_fov() {
 
   view.clear_seen();
   if (get_player().as<Blob_Part>().big) {
-    // Big actors see with their edge cells too so that they're not completely
+    // Big entities see with their edge cells too so that they're not completely
     // blind in a forest style terrain.
     for (auto i : hex_dirs)
       World::get().view_space.do_fov(8, get_player().location() + i, i);
@@ -211,15 +211,15 @@ area_locations(uint16_t area) {
   return std::make_pair(i, j);
 }
 
-std::vector<Actor> all_actors() {
-  std::vector<Actor> result;
-  for (auto& i : World::get().actors)
+std::vector<Entity> all_entities() {
+  std::vector<Entity> result;
+  for (auto& i : World::get().entities)
     result.push_back(i.first);
   return result;
 }
 
-std::vector<Actor> actors_at(Location location) {
-  std::vector<Actor> result;
+std::vector<Entity> entities_at(Location location) {
+  std::vector<Entity> result;
   auto range = World::get().spatial_index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
     result.push_back(i->second.second);
@@ -227,8 +227,8 @@ std::vector<Actor> actors_at(Location location) {
   return result;
 }
 
-std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location) {
-  std::vector<std::pair<Vec2i, Actor>> result;
+std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location) {
+  std::vector<std::pair<Vec2i, Entity>> result;
   auto range = World::get().spatial_index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
     result.push_back(i->second);
@@ -236,8 +236,8 @@ std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location) {
   return result;
 }
 
-std::vector<Actor> actors_on(const Footprint& footprint) {
-  std::vector<Actor> result;
+std::vector<Entity> entities_on(const Footprint& footprint) {
+  std::vector<Entity> result;
   for (auto& pair : footprint) {
     auto range = World::get().spatial_index.equal_range(pair.second);
     for (auto i = range.first; i != range.second; ++i) {
@@ -247,33 +247,33 @@ std::vector<Actor> actors_on(const Footprint& footprint) {
   return result;
 }
 
-Actor new_actor(Actor_Id id) {
-  auto result = Actor{id};
-  ASSERT(!actor_exists(result));
-  World::get().actors[result] = std::map<Kind, std::unique_ptr<Part>>();
+Entity new_entity(Entity_Id id) {
+  auto result = Entity{id};
+  ASSERT(!entity_exists(result));
+  World::get().entities[result] = std::map<Kind, std::unique_ptr<Part>>();
   return result;
 }
 
-Actor new_actor() {
-  return new_actor(World::get().next_actor_id++);
+Entity new_entity() {
+  return new_entity(World::get().next_entity_id++);
 }
 
-void delete_actor(Actor actor) {
+void delete_entity(Entity entity) {
   // TODO: Notify components of removal
-  actor.push();
-  World::get().actors.erase(actor);
+  entity.push();
+  World::get().entities.erase(entity);
 }
 
-bool actor_exists(Actor actor) {
-  return assoc_contains(World::get().actors, actor);
+bool entity_exists(Entity entity) {
+  return assoc_contains(World::get().entities, entity);
 }
 
-Actor active_actor() {
-  return World::get().active_actor();
+Entity active_entity() {
+  return World::get().active_entity();
 }
 
-void next_actor() {
-  World::get().next_actor();
+void next_entity() {
+  World::get().next_entity();
 }
 
 void move_view_pos(const Vec2i& offset) {

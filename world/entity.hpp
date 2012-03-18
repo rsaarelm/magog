@@ -1,4 +1,4 @@
-/* actor.hpp
+/* entity.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,30 +16,30 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_ACTOR_HPP
-#define WORLD_ACTOR_HPP
+#ifndef WORLD_ENTITY_HPP
+#define WORLD_ENTITY_HPP
 
 #include <stdexcept>
 #include <world/location.hpp>
 
-typedef long Actor_Id;
+typedef long Entity_Id;
 
 
-class Actor_Exception : public std::exception {
+class Entity_Exception : public std::exception {
 };
 
 
-/// Exception thrown when a UID has no corresponding Actor.
-class Actor_Not_Found : public Actor_Exception {
+/// Exception thrown when a UID has no corresponding Entity.
+class Entity_Not_Found : public Entity_Exception {
  public:
   virtual const char* what() const throw() {
-    return "Actor not found";
+    return "Entity not found";
   }
 };
 
 
-/// Exception thrown when an Actor doesn't have an expected Part.
-class Part_Not_Found : public Actor_Exception {
+/// Exception thrown when an Entity doesn't have an expected Part.
+class Part_Not_Found : public Entity_Exception {
  public:
   virtual const char* what() const throw() {
     return "Part not found";
@@ -47,7 +47,7 @@ class Part_Not_Found : public Actor_Exception {
 };
 
 
-enum Actor_Icon {
+enum Entity_Icon {
   icon_null,
   icon_infantry,
   icon_tank,
@@ -67,31 +67,31 @@ class Part {
   virtual Kind get_kind() = 0;
 };
 
-// Given that there is a componet system and lots of multi-actor interactions
+// Given that there is a component system and lots of multi-entity interactions
 // in play, when should we nevertheless implement operations as methdos of
-// Actor. Basic rules of thumb, an operation should be a method of Actor if 1)
-// most kinds of actors will use this method (exists and location would
+// Entity. Basic rules of thumb, an operation should be a method of Entity if 1)
+// most kinds of entities will use this method (exists and location would
 // probably be good candidates) and 2) the method has an unambiguous single
-// actor as it's main focus. Operation "attack" might not be a good method,
-// since it's only of interest for the animate subset of actors, and it might
+// entity as it's main focus. Operation "attack" might not be a good method,
+// since it's only of interest for the animate subset of entities, and it might
 // also rather reliant on the combined properties of the attacker and the
-// target actors.
+// target entities.
 
-class Actor {
+class Entity {
  public:
-  Actor(): uid(-1) {}
-  Actor(const Actor& rhs) : uid(rhs.uid) {}
-  Actor(Actor_Id uid) : uid(uid) {}
+  Entity(): uid(-1) {}
+  Entity(const Entity& rhs) : uid(rhs.uid) {}
+  Entity(Entity_Id uid) : uid(uid) {}
 
-  bool operator<(const Actor& rhs) const {
+  bool operator<(const Entity& rhs) const {
     return uid < rhs.uid;
   }
 
-  bool operator==(const Actor& rhs) const {
+  bool operator==(const Entity& rhs) const {
     return uid == rhs.uid;
   }
 
-  bool operator!=(const Actor& rhs) const {
+  bool operator!=(const Entity& rhs) const {
     return uid != rhs.uid;
   }
 
@@ -109,32 +109,32 @@ class Actor {
     return uid;
   }
 
-  Actor_Id id() const { return uid; }
+  Entity_Id id() const { return uid; }
 
   Location location() const;
 
-  /// Push the Actor into the ethereal void.
+  /// Push the Entity into the ethereal void.
   void push();
 
-  /// Checks if an actor in void can enter a location.
+  /// Checks if an entity in void can enter a location.
   bool can_pop(Location location) const;
 
-  /// Pop the Actor back into existence from the void.
+  /// Pop the Entity back into existence from the void.
   void pop();
 
-  /// Pop the Actor into a specific location.
+  /// Pop the Entity into a specific location.
   void pop(Location location);
 
   Footprint footprint(Location center) const;
   Footprint footprint() const;
  private:
-  Actor_Id uid;
+  Entity_Id uid;
 };
 
-Part* find_part(Actor actor, Kind kind);
+Part* find_part(Entity entity, Kind kind);
 
 template <class T>
-T& Actor::as() const {
+T& Entity::as() const {
   Part* part = find_part(*this, T::s_get_kind());
 
   T* result = dynamic_cast<T*>(part);
@@ -144,7 +144,7 @@ T& Actor::as() const {
 }
 
 template <class T>
-bool Actor::has() const {
+bool Entity::has() const {
   try {
     Part* part = find_part(*this, T::s_get_kind());
     return true;

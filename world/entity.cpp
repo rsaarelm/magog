@@ -1,4 +1,4 @@
-/* actor.cpp
+/* entity.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,51 +16,51 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "actor.hpp"
+#include "entity.hpp"
 #include <world/world.hpp>
 #include <world/parts.hpp>
 
-/// Add a part to the Actor. Ownership of the part will move to Actor.
-void Actor::add_part(Part* new_part) {
+/// Add a part to the Entity. Ownership of the part will move to Entity.
+void Entity::add_part(Part* new_part) {
   ::add_part(*this, std::unique_ptr<Part>(new_part));
 }
 
-bool Actor::exists() const {
-  return actor_exists(*this);
+bool Entity::exists() const {
+  return entity_exists(*this);
 }
 
-Location Actor::location() const {
+Location Entity::location() const {
   return as<Blob_Part>().loc;
 }
 
-void Actor::push() {
+void Entity::push() {
   auto& index = get_spatial_index();
   if (index.has(*this))
     index.remove(*this);
 }
 
-bool Actor::can_pop(Location location) const {
+bool Entity::can_pop(Location location) const {
   for (auto& pair : footprint(location)) {
     auto& loc = pair.second;
     auto kind = terrain_data[get_terrain(loc)].kind;
     if (!(kind == open_terrain || kind == curtain_terrain))
       return false;
-    // TODO: Handle actor collisions.
+    // TODO: Handle entity collisions.
   }
   return true;
 }
 
-void Actor::pop() {
+void Entity::pop() {
   ASSERT(!get_spatial_index().has(*this));
   get_spatial_index().add(*this, footprint());
 }
 
-void Actor::pop(Location location) {
+void Entity::pop(Location location) {
   as<Blob_Part>().loc = location;
   pop();
 }
 
-Footprint Actor::footprint(Location center) const {
+Footprint Entity::footprint(Location center) const {
   Footprint result;
   result[Vec2i(0, 0)] = center;
   if (as<Blob_Part>().big) {
@@ -71,6 +71,6 @@ Footprint Actor::footprint(Location center) const {
   return result;
 }
 
-Footprint Actor::footprint() const {
+Footprint Entity::footprint() const {
   return footprint(as<Blob_Part>().loc);
 }

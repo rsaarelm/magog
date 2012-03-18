@@ -20,27 +20,27 @@
 
 /// \file rules.hpp \brief Various operations on game state
 
-#include <world/actor.hpp>
+#include <world/entity.hpp>
 #include <world/location.hpp>
 
-Actor get_player();
+Entity get_player();
 
 bool blocks_shot(Location location);
 bool blocks_sight(Location location);
 
-bool blocks_movement(Actor actor);
+bool blocks_movement(Entity entity);
 
-bool action_walk(Actor actor, const Vec2i& dir);
-bool action_melee(Actor actor, const Vec2i& dir);
-bool action_bump(Actor actor, const Vec2i& dir);
-bool action_shoot(Actor actor, const Vec2i& dir);
+bool action_walk(Entity entity, const Vec2i& dir);
+bool action_melee(Entity entity, const Vec2i& dir);
+bool action_bump(Entity entity, const Vec2i& dir);
+bool action_shoot(Entity entity, const Vec2i& dir);
 
 void damage(Location location, int amount);
-void damage(Actor actor, int amount);
+void damage(Entity entity, int amount);
 
-bool has_actors(Location location);
+bool has_entities(Location location);
 
-void start_turn_update(Actor actor);
-bool ready_to_act(Actor actor);
+void start_turn_update(Entity entity);
+bool ready_to_act(Entity entity);
 
 #endif

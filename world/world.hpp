@@ -22,7 +22,7 @@
 /// \file world.hpp \brief Core interface to the game state
 
 #include <util.hpp>
-#include <world/actor.hpp>
+#include <world/entity.hpp>
 #include <world/location.hpp>
 #include <world/terrain.hpp>
 #include <world/view_space.hpp>
@@ -34,12 +34,12 @@
 #include <vector>
 #include <string>
 
-Part* find_part(Actor actor, Kind kind);
-void add_part(Actor actor, std::unique_ptr<Part> new_part);
+Part* find_part(Entity entity, Kind kind);
+void add_part(Entity entity, std::unique_ptr<Part> new_part);
 
 void clear_world();
 
-Spatial_Index<Actor>& get_spatial_index();
+Spatial_Index<Entity>& get_spatial_index();
 
 // TODO variadics.
 void msg(const char* fmt);
@@ -61,18 +61,18 @@ area_locations(uint16_t area);
 
 // XXX: Return type should be considered just some iterable type, the exact
 // form may change.
-std::vector<Actor> all_actors();
-std::vector<Actor> actors_at(Location location);
-std::vector<std::pair<Vec2i, Actor>> actors_with_offsets_at(Location location);
-std::vector<Actor> actors_on(const Footprint& footprint);
+std::vector<Entity> all_entities();
+std::vector<Entity> entities_at(Location location);
+std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location);
+std::vector<Entity> entities_on(const Footprint& footprint);
 
-Actor new_actor(Actor_Id id);
-Actor new_actor();
-void delete_actor(Actor actor);
-bool actor_exists(Actor actor);
-Actor active_actor();
-void next_actor();
-Actor actor_after(Actor actor);
+Entity new_entity(Entity_Id id);
+Entity new_entity();
+void delete_entity(Entity entity);
+bool entity_exists(Entity entity);
+Entity active_entity();
+void next_entity();
+Entity entity_after(Entity entity);
 
 void move_view_pos(const Vec2i& offset);
 

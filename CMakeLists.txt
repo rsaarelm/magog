@@ -84,7 +84,7 @@ add_executable(${TARGETNAME}
   ui/world_space_anims.cpp
   ui/registry.cpp
   world/location.cpp
-  world/actor.cpp
+  world/entity.cpp
   world/world.cpp
   world/fov.cpp
   world/cavegen.cpp

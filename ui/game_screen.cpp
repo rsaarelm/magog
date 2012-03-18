@@ -83,24 +83,24 @@ static GLuint load_tile_tex() {
   return make_texture(g_tile_surface);
 }
 
-Actor spawn_infantry(Location location) {
-  auto actor = new_actor();
-  actor.add_part(new Blob_Part(icon_infantry, 3, 6, 2));
-  if (actor.can_pop(location))
-    actor.pop(location);
+Entity spawn_infantry(Location location) {
+  auto entity = new_entity();
+  entity.add_part(new Blob_Part(icon_infantry, 3, 6, 2));
+  if (entity.can_pop(location))
+    entity.pop(location);
   else
-    delete_actor(actor);
-  return actor;
+    delete_entity(entity);
+  return entity;
 }
 
-Actor spawn_armor(Location location) {
-  auto actor = new_actor();
-  actor.add_part(new Blob_Part(icon_tank, 5, 8, 4));
-  if (actor.can_pop(location))
-    actor.pop(location);
+Entity spawn_armor(Location location) {
+  auto entity = new_entity();
+  entity.add_part(new Blob_Part(icon_tank, 5, 8, 4));
+  if (entity.can_pop(location))
+    entity.pop(location);
   else
-    delete_actor(actor);
-  return actor;
+    delete_entity(entity);
+  return entity;
 }
 
 static shared_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color,
@@ -118,14 +118,14 @@ void Game_Screen::enter() {
   tiletex = load_tile_tex();
 
   // TODO: Less verbose data entry.
-  actor_drawables.clear();
-  actor_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
-  actor_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
-  actor_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
-  actor_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
+  entity_drawables.clear();
+  entity_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
+  entity_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
+  entity_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
+  entity_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
 
-  // XXX: Ensure player actor exists. Hacky magic number id.
-  new_actor(1);
+  // XXX: Ensure player entity exists. Hacky magic number id.
+  new_entity(1);
 
   // Generate portals for a looping hex area.
   const int r = 16;
@@ -237,27 +237,27 @@ void Game_Screen::key_event(int keysym, int printable) {
       break;
     case 'u':
       action_shoot(get_player(), Vec2i(-1, 0));
-      next_actor();
+      next_entity();
       break;
     case 'i':
       action_shoot(get_player(), Vec2i(-1, -1));
-      next_actor();
+      next_entity();
       break;
     case 'o':
       action_shoot(get_player(), Vec2i(0, -1));
-      next_actor();
+      next_entity();
       break;
     case 'l':
       action_shoot(get_player(), Vec2i(1, 0));
-      next_actor();
+      next_entity();
       break;
     case 'k':
       action_shoot(get_player(), Vec2i(1, 1));
-      next_actor();
+      next_entity();
       break;
     case 'j':
       action_shoot(get_player(), Vec2i(0, 1));
-      next_actor();
+      next_entity();
       break;
     case 'b':
       {
@@ -273,11 +273,11 @@ void Game_Screen::key_event(int keysym, int printable) {
     default:
       break;
   }
-  if (active_actor() == get_player() && ready_to_act(get_player())) {
+  if (active_entity() == get_player() && ready_to_act(get_player())) {
     if (delta != Vec2i(0, 0)) {
       if (action_walk(get_player(), delta)) {
         do_fov();
-        next_actor();
+        next_entity();
       } else {
         msg_buffer.add_msg("Bump!");
       }
@@ -289,7 +289,7 @@ void Game_Screen::update(float interval_seconds) {
   msg_buffer.update(interval_seconds);
   world_anims.update(interval_seconds);
 
-  while (!(active_actor() == get_player() && ready_to_act(get_player()))) {
+  while (!(active_entity() == get_player() && ready_to_act(get_player()))) {
     do_ai();
     if (!get_player().exists()) {
       // TODO: Some kind of message that the player acknowledges here instead of
@@ -301,7 +301,7 @@ void Game_Screen::update(float interval_seconds) {
 }
 
 void Game_Screen::do_ai() {
-  auto mob = active_actor();
+  auto mob = active_entity();
   if (ready_to_act(mob)) {
     auto& dir = *rand_choice(hex_dirs);
     // Stupid random fire
@@ -310,7 +310,7 @@ void Game_Screen::do_ai() {
     else
       action_walk(mob, dir);
   }
-  next_actor();
+  next_entity();
 }
 
 void Game_Screen::end_game() {
@@ -348,7 +348,7 @@ void Game_Screen::draw() {
 
 void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   const int terrain_layer = 1;
-  const int actor_layer = 2;
+  const int entity_layer = 2;
 
   try {
     auto loc = get_player().location();
@@ -374,15 +374,15 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
 
         if (in_fov) {
-          for (auto& pair : actors_with_offsets_at(*loc)) {
-            Actor& actor = pair.second;
-            auto& blob = actor.as<Blob_Part>();
-            output.insert(Sprite{actor_layer, offset + pair.first, actor_drawables[blob.icon]});
+          for (auto& pair : entities_with_offsets_at(*loc)) {
+            Entity& entity = pair.second;
+            auto& blob = entity.as<Blob_Part>();
+            output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});
           }
         }
       }
     }
-  } catch (Actor_Exception& e) {
-    // No player actor found or no valid Loction component in it.
+  } catch (Entity_Exception& e) {
+    // No player entity found or no valid Loction component in it.
   }
 }
