@@ -27,6 +27,7 @@
 #include <world/world.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
+#include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
 #include <util.hpp>
@@ -48,9 +49,10 @@ class Game_Screen : public Game_State {
       : tiletex(0)
       , entities()
       , terrain()
+      , spatial(entities, terrain)
       , fov(entities)
       , sprite(fov)
-      , action(entities, fov, terrain) {}
+      , action(entities, terrain, spatial, fov) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -75,6 +77,7 @@ class Game_Screen : public Game_State {
 
   Entities_System entities;
   Terrain_System terrain;
+  Spatial_System spatial;
   Fov_System fov;
   Sprite_System sprite;
   Action_System action;

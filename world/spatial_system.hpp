@@ -1,4 +1,4 @@
-/* action_system.hpp
+/* spatial_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,43 +15,28 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef WORLD_ACTION_SYSTEM_HPP
-#define WORLD_ACTION_SYSTEM_HPP
+#ifndef WORLD_SPATIAL_SYSTEM_HPP
+#define WORLD_SPATIAL_SYSTEM_HPP
 
-#include <world/entity.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
-#include <world/spatial_system.hpp>
-#include <world/fov_system.hpp>
-#include <util/vec.hpp>
 
-class Action_System {
+class Spatial_System {
 public:
-  Action_System(
+  Spatial_System(
     Entities_System& entities,
-    Terrain_System& terrain,
-    Spatial_System& spatial,
-    Fov_System& fov)
-  : entities(entities)
-  , terrain(terrain)
-  , spatial(spatial)
-  , fov(fov) {}
+    Terrain_System& terrain)
+    : entities(entities)
+    , terrain(terrain) {}
 
-  bool walk(Entity entity, const Vec2i& dir);
-  bool melee(Entity entity, const Vec2i& dir);
-  bool bump(Entity entity, const Vec2i& dir);
-  bool shoot(Entity entity, const Vec2i& dir);
+  bool can_pop(Entity entity, Location loc) const;
+  void push(Entity entity);
+  void pop(Entity entity, Location loc);
 
-  void damage(Location location, int amount);
-  void damage(Entity entity, int amount);
-
-  bool is_ready(Entity entity);
-
+  Footprint footprint(Entity entity) const;
 private:
   Entities_System& entities;
   Terrain_System& terrain;
-  Spatial_System& spatial;
-  Fov_System& fov;
 };
 
 #endif
