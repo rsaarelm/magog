@@ -33,13 +33,13 @@ Location Entity::location() const {
   return as<Blob_Part>().loc;
 }
 
-void Entity::push() {
+void Entity::_push() {
   auto& index = get_spatial_index();
   if (index.has(*this))
     index.remove(*this);
 }
 
-bool Entity::can_pop(Location location) const {
+bool Entity::_can_pop(Location location) const {
   for (auto& pair : footprint(location)) {
     auto& loc = pair.second;
     auto kind = terrain_data[get_terrain(loc)].kind;
@@ -50,14 +50,14 @@ bool Entity::can_pop(Location location) const {
   return true;
 }
 
-void Entity::pop() {
+void Entity::_pop() {
   ASSERT(!get_spatial_index().has(*this));
   get_spatial_index().add(*this, footprint());
 }
 
-void Entity::pop(Location location) {
+void Entity::_pop(Location location) {
   as<Blob_Part>().loc = location;
-  pop();
+  _pop();
 }
 
 Footprint Entity::footprint(Location center) const {

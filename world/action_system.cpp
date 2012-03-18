@@ -25,7 +25,7 @@
 bool Action_System::walk(Entity entity, const Vec2i& dir) {
   auto loc = entity.location();
   auto new_loc = loc + dir;
-  if (entity.can_pop(new_loc)) {
+  if (spatial.can_pop(entity, new_loc)) {
     for (auto a : entities_on(entity.footprint(new_loc))) {
       if (a == entity) continue;
       // Uncrushable entities in the target area, abort movement.
@@ -33,7 +33,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
         return false;
     }
 
-    entity.push();
+    spatial.push(entity);
 
     // XXX Hacky. Player is tracked by the view space object.
     if (entity == get_player())
@@ -47,7 +47,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
         delete_entity(a);
       }
     }
-    entity.pop(new_loc);
+    spatial.pop(entity, new_loc);
     // Energy cost for movement.
     // TODO: account for terrain differences.
     entity.as<Blob_Part>().energy -= 100;

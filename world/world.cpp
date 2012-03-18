@@ -237,7 +237,7 @@ Entity new_entity() {
 
 void delete_entity(Entity entity) {
   // TODO: Notify components of removal
-  entity.push();
+  entity._push();
   World::get().entities.erase(entity);
 }
 

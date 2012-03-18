@@ -81,6 +81,10 @@ class Game_Screen : public Game_State {
   Fov_System fov;
   Sprite_System sprite;
   Action_System action;
+
+private:
+  Entity spawn_infantry(Location location);
+  Entity spawn_armor(Location location);
 };
 
 #endif

@@ -87,21 +87,21 @@ static GLuint load_tile_tex() {
   return make_texture(g_tile_surface);
 }
 
-Entity spawn_infantry(Location location) {
+Entity Game_Screen::spawn_infantry(Location location) {
   auto entity = new_entity();
   entity.add_part(new Blob_Part(icon_infantry, 3, 6, 2));
-  if (entity.can_pop(location))
-    entity.pop(location);
+  if (spatial.can_pop(entity, location))
+    spatial.pop(entity, location);
   else
     delete_entity(entity);
   return entity;
 }
 
-Entity spawn_armor(Location location) {
+Entity Game_Screen::spawn_armor(Location location) {
   auto entity = new_entity();
   entity.add_part(new Blob_Part(icon_tank, 5, 8, 4));
-  if (entity.can_pop(location))
-    entity.pop(location);
+  if (spatial.can_pop(entity, location))
+    spatial.pop(entity, location);
   else
     delete_entity(entity);
   return entity;
@@ -196,8 +196,8 @@ void Game_Screen::enter() {
   int n_tries = 1024;
   for (; n_tries; n_tries--) {
     auto loc = rand_choice(locations.first, locations.second);
-    if (player.can_pop(loc->first)) {
-      player.pop(loc->first);
+    if (spatial.can_pop(player, loc->first)) {
+      spatial.pop(player, loc->first);
       break;
     }
   }

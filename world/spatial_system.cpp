@@ -20,15 +20,15 @@
 
 bool Spatial_System::can_pop(Entity entity, Location loc) const {
   // TODO: Use Spatial_System
-  return entity.can_pop(loc);
+  return entity._can_pop(loc);
 }
 
-void push(Entity entity) {
+void Spatial_System::push(Entity entity) {
   // TODO: Use Spatial_System
-  entity.push();
+  entity._push();
 }
 
-void pop(Entity entity, Location loc) {
+void Spatial_System::pop(Entity entity, Location loc) {
   // TODO: Use Spatial_System
-  entity.pop(loc);
+  entity._pop(loc);
 }
