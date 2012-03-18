@@ -25,8 +25,6 @@
 #include <world/entity.hpp>
 #include <world/location.hpp>
 #include <world/terrain.hpp>
-#include <world/view_space.hpp>
-#include <world/spatial_index.hpp>
 #include <boost/optional.hpp>
 #include <exception>
 #include <map>
@@ -38,8 +36,6 @@ Part* find_part(Entity entity, Kind kind);
 void add_part(Entity entity, std::unique_ptr<Part> new_part);
 
 void clear_world();
-
-Spatial_Index<Entity>& get_spatial_index();
 
 // TODO variadics.
 void msg(const char* fmt);

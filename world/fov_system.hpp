@@ -19,8 +19,10 @@
 #define WORLD_FOV_SYSTEM_HPP
 
 #include <world/entities_system.hpp>
-#include <world/view_space.hpp>
 #include <world/location.hpp>
+#include <util/vec.hpp>
+#include <map>
+#include <set>
 
 class Fov_System {
 public:
@@ -29,12 +31,25 @@ public:
 
   bool is_seen(Location loc);
   Location view_location(const Vec2i& relative_pos);
+
+  void do_fov(int radius, Location loc, const Vec2i& offset=Vec2i(0, 0));
   void do_fov();
-  void move_view_pos(const Vec2i& offset);
+
+  void move_pos(const Vec2i& delta) { subjective_pos += delta; }
+  Vec2i get_pos() const { return subjective_pos; }
+
+  void clear_seen() { visible.clear(); }
 private:
+  Fov_System(const Fov_System&);
+  Fov_System& operator=(const Fov_System&);
+
+  void prune();
+
   Entities_System& entities;
 
-  View_Space view_space;
+  Vec2i subjective_pos;
+  std::map<Vec2i, Location> view;
+  std::set<Location> visible;
 };
 
 #endif

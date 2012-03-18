@@ -22,26 +22,52 @@
 #include <world/rules.hpp>
 
 bool Fov_System::is_seen(Location loc) {
-  return view_space.is_seen(loc);
+  return assoc_contains(visible, loc);
 }
 
 Location Fov_System::view_location(const Vec2i& relative_pos) {
-  return view_space.at(relative_pos + view_space.get_pos());
+  auto iter = view.find(relative_pos + subjective_pos);
+  if (iter == view.end())
+    return Location();
+  else
+    return iter->second;
+}
+
+void Fov_System::do_fov(int radius, Location origin, const Vec2i& offset) {
+  prune();
+  auto fov = hex_field_of_view(radius, origin);
+  for (auto& pair : fov) {
+    auto pos = pair.first + subjective_pos + offset;
+    view[pos] = pair.second;
+    visible.insert(pair.second);
+  }
 }
 
 void Fov_System::do_fov() {
   const int radius = 8;
 
-  view_space.clear_seen();
+  clear_seen();
   if (get_player().as<Blob_Part>().big) {
     // Big entities see with their edge cells too so that they're not completely
     // blind in a forest style terrain.
     for (auto i : hex_dirs)
-      view_space.do_fov(radius, get_player().location() + i, i);
+      do_fov(radius, get_player().location() + i, i);
   }
-  view_space.do_fov(radius, get_player().location());
+  do_fov(radius, get_player().location());
 }
 
-void Fov_System::move_view_pos(const Vec2i& offset) {
-  view_space.move_pos(offset);
+void Fov_System::prune() {
+  // Cut down far-away parts if the storage threatens to become too large.
+  const int capacity = 65536;
+  const int keep_radius = 48;
+
+  // XXX: This could be a lot more efficient if the underlying structure was a quadtree.
+  if (view.size() > capacity) {
+    for (auto i = view.begin(); i != view.end(); i++) {
+      auto dist = hex_dist(subjective_pos - i->first);
+      if (dist > keep_radius) {
+        view.erase(i);
+      }
+    }
+  }
 }

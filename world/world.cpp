@@ -54,9 +54,6 @@ class World {
   std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;
 
   Entity_Id next_entity_id;
-  View_Space view_space;
-
-  Spatial_Index<Entity> spatial_index;
  private:
   World();
   World(const World&);
@@ -96,10 +93,6 @@ Part* find_part(Entity entity, Kind kind) {
 void add_part(Entity entity, std::unique_ptr<Part> new_part) {
   ASSERT(assoc_contains(World::get().entities, entity));
   World::get().entities[entity][new_part->get_kind()] = std::move(new_part);
-}
-
-Spatial_Index<Entity>& get_spatial_index() {
-  return World::get().spatial_index;
 }
 
 void World::clear() {
