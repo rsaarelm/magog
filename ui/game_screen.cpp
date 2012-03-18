@@ -302,8 +302,14 @@ void Game_Screen::update(float interval_seconds) {
 
 void Game_Screen::do_ai() {
   auto mob = active_actor();
-  if (ready_to_act(mob))
-    action_walk(mob, *rand_choice(hex_dirs));
+  if (ready_to_act(mob)) {
+    auto& dir = *rand_choice(hex_dirs);
+    // Stupid random fire
+    if (one_chance_in(3))
+      action_shoot(mob, dir);
+    else
+      action_walk(mob, dir);
+  }
   next_actor();
 }
 
