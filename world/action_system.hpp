@@ -1,4 +1,4 @@
-/* entities_system.hpp
+/* action_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,38 +15,30 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef WORLD_ENTITIES_SYSTEM_HPP
-#define WORLD_ENTITIES_SYSTEM_HPP
+#ifndef WORLD_ACTION_SYSTEM_HPP
+#define WORLD_ACTION_SYSTEM_HPP
 
 #include <world/entity.hpp>
-#include <map>
-#include <memory>
+#include <world/entities_system.hpp>
+#include <util/vec.hpp>
 
-class Entities_System {
+class Action_System {
 public:
-  Entities_System();
+  Action_System(Entities_System& entities)
+  : entities(entities) {}
 
-  Entity create(Entity_Id id);
-  Entity create();
-  void destroy(Entity entity);
+  bool walk(Entity entity, const Vec2i& dir);
+  bool melee(Entity entity, const Vec2i& dir);
+  bool bump(Entity entity, const Vec2i& dir);
+  bool shoot(Entity entity, const Vec2i& dir);
 
-  void add(Entity entity, std::unique_ptr<Part> part);
-  bool has(Entity entity, Kind kind) const;
-  Part* get(Entity entity, Kind kind);
+  void damage(Location location, int amount);
+  void damage(Entity entity, int amount);
 
-  template<class C>
-  C& as(Entity entity) {
-    Part* part = get(entity, C::s_get_kind());
-    if (part == nullptr)
-      throw Part_Not_Found();
-    C* result = dynamic_cast<C*>(part);
-    ASSERT(result != nullptr);
-    return *result;
-  }
+  bool is_ready(Entity entity);
 
 private:
-  Entity_Id next_entity_id;
-  std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;
+  Entities_System& entities;
 };
 
 #endif

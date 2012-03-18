@@ -30,17 +30,10 @@ bool blocks_sight(Location location);
 
 bool blocks_movement(Entity entity);
 
-bool action_walk(Entity entity, const Vec2i& dir);
-bool action_melee(Entity entity, const Vec2i& dir);
-bool action_bump(Entity entity, const Vec2i& dir);
-bool action_shoot(Entity entity, const Vec2i& dir);
-
-void damage(Location location, int amount);
-void damage(Entity entity, int amount);
+bool can_crush(Entity entity, Entity crushee);
 
 bool has_entities(Location location);
 
 void start_turn_update(Entity entity);
-bool ready_to_act(Entity entity);
 
 #endif

@@ -26,6 +26,7 @@
 #include "world_space_anims.hpp"
 #include <world/world.hpp>
 #include <world/entities_system.hpp>
+#include <world/action_system.hpp>
 #include <util.hpp>
 #include <queue>
 #include <vector>
@@ -42,7 +43,9 @@ const Mtx<float, 2, 2> tile_projection{
 class Game_Screen : public Game_State {
  public:
   Game_Screen()
-      : tiletex(0) {}
+      : tiletex(0)
+      , entities()
+      , action(entities) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -68,6 +71,7 @@ class Game_Screen : public Game_State {
   std::vector<std::shared_ptr<Drawable>> entity_drawables;
 
   Entities_System entities;
+  Action_System action;
 };
 
 #endif

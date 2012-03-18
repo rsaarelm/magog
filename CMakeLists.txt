@@ -85,6 +85,7 @@ add_executable(${TARGETNAME}
   ui/registry.cpp
 
   world/entities_system.cpp
+  world/action_system.cpp
   world/location.cpp
   world/entity.cpp
   world/world.cpp

@@ -236,27 +236,27 @@ void Game_Screen::key_event(int keysym, int printable) {
       world_anims.add(std::shared_ptr<Drawable>(new DemoThingie()), get_player().location());
       break;
     case 'u':
-      action_shoot(get_player(), Vec2i(-1, 0));
+      action.shoot(get_player(), Vec2i(-1, 0));
       next_entity();
       break;
     case 'i':
-      action_shoot(get_player(), Vec2i(-1, -1));
+      action.shoot(get_player(), Vec2i(-1, -1));
       next_entity();
       break;
     case 'o':
-      action_shoot(get_player(), Vec2i(0, -1));
+      action.shoot(get_player(), Vec2i(0, -1));
       next_entity();
       break;
     case 'l':
-      action_shoot(get_player(), Vec2i(1, 0));
+      action.shoot(get_player(), Vec2i(1, 0));
       next_entity();
       break;
     case 'k':
-      action_shoot(get_player(), Vec2i(1, 1));
+      action.shoot(get_player(), Vec2i(1, 1));
       next_entity();
       break;
     case 'j':
-      action_shoot(get_player(), Vec2i(0, 1));
+      action.shoot(get_player(), Vec2i(0, 1));
       next_entity();
       break;
     case 'b':
@@ -273,9 +273,9 @@ void Game_Screen::key_event(int keysym, int printable) {
     default:
       break;
   }
-  if (active_entity() == get_player() && ready_to_act(get_player())) {
+  if (active_entity() == get_player() && action.is_ready(get_player())) {
     if (delta != Vec2i(0, 0)) {
-      if (action_walk(get_player(), delta)) {
+      if (action.walk(get_player(), delta)) {
         do_fov();
         next_entity();
       } else {
@@ -289,7 +289,7 @@ void Game_Screen::update(float interval_seconds) {
   msg_buffer.update(interval_seconds);
   world_anims.update(interval_seconds);
 
-  while (!(active_entity() == get_player() && ready_to_act(get_player()))) {
+  while (!(active_entity() == get_player() && action.is_ready(get_player()))) {
     do_ai();
     if (!get_player().exists()) {
       // TODO: Some kind of message that the player acknowledges here instead of
@@ -302,13 +302,13 @@ void Game_Screen::update(float interval_seconds) {
 
 void Game_Screen::do_ai() {
   auto mob = active_entity();
-  if (ready_to_act(mob)) {
+  if (action.is_ready(mob)) {
     auto& dir = *rand_choice(hex_dirs);
     // Stupid random fire
     if (one_chance_in(3))
-      action_shoot(mob, dir);
+      action.shoot(mob, dir);
     else
-      action_walk(mob, dir);
+      action.walk(mob, dir);
   }
   next_entity();
 }
