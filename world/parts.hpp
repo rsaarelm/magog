@@ -21,7 +21,6 @@
 /// A proto-kind as a precursor to a full-fledged parts system.
 class Blob_Part : public Part {
  public:
-  friend class Entity;
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}

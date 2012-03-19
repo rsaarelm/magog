@@ -24,6 +24,7 @@
 
 typedef long Entity_Id;
 
+typedef Entity_Id Entity;
 
 class Entity_Exception : public std::exception {
 };
@@ -65,50 +66,6 @@ class Part {
   virtual ~Part() {}
 
   virtual Kind get_kind() = 0;
-};
-
-// Given that there is a component system and lots of multi-entity interactions
-// in play, when should we nevertheless implement operations as methdos of
-// Entity. Basic rules of thumb, an operation should be a method of Entity if 1)
-// most kinds of entities will use this method (exists and location would
-// probably be good candidates) and 2) the method has an unambiguous single
-// entity as it's main focus. Operation "attack" might not be a good method,
-// since it's only of interest for the animate subset of entities, and it might
-// also rather reliant on the combined properties of the attacker and the
-// target entities.
-
-class Entity {
- public:
-  Entity(): uid(-1) {}
-
-  Entity(const Entity& rhs) : uid(rhs.uid) {}
-  Entity& operator=(const Entity& rhs) { uid = rhs.uid; }
-
-  Entity(Entity_Id uid) : uid(uid) {}
-
-  bool operator<(const Entity& rhs) const {
-    return uid < rhs.uid;
-  }
-
-  bool operator==(const Entity& rhs) const {
-    return uid == rhs.uid;
-  }
-
-  bool operator!=(const Entity& rhs) const {
-    return uid != rhs.uid;
-  }
-
-  template <class T>
-  T& _as() const;
-
-  size_t hash() const {
-    return uid;
-  }
-
-  Entity_Id id() const { return uid; }
-
- private:
-  Entity_Id uid;
 };
 
 #endif
