@@ -34,22 +34,18 @@ Game_Loop::Game_Loop()
 {}
 
 Game_Loop::~Game_Loop() {
-  for (auto state : states) {
-    delete state;
-  }
 }
 
 void Game_Loop::push_state(Game_State* state) {
   stack_ops.push_back([&, state]() {
-      states.push_back(state);
-      state->enter();
+      states.push_back(std::unique_ptr<Game_State>(state));
+      top_state()->enter();
     });
 }
 
 void Game_Loop::pop_state() {
   stack_ops.push_back([&]() {
       states.back()->exit();
-      delete states.back();
       states.pop_back();
     });
 }
@@ -121,7 +117,7 @@ bool Game_Loop::update_states(float interval) {
   if (states.empty()) {
     return false;
   } else {
-    for (auto state : states)
+    for (auto& state : states)
       state->update(interval);
     return true;
   }
@@ -159,7 +155,7 @@ void Game_Loop::run() {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       auto dim = get_dim();
       glViewport(0, 0, dim[0], dim[1]);
-      for (auto state : states)
+      for (auto& state : states)
         state->draw();
       SDL_GL_SwapBuffers();
     } else {
@@ -209,7 +205,7 @@ void Game_Loop::quit() {
 
 Game_State* Game_Loop::top_state() {
   if (states.size() > 0)
-    return states.back();
+    return states.back().get();
   else
     return nullptr;
 }

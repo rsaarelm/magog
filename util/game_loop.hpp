@@ -64,7 +64,7 @@ class Game_Loop {
   void update_state_stack();
   bool update_states(float interval);
 
-  std::vector<Game_State*> states;
+  std::vector<std::unique_ptr<Game_State>> states;
   std::vector<std::function<void()>> stack_ops;
 
   float target_fps;
