@@ -40,8 +40,8 @@ using namespace std;
 
 class DemoThingie : public Drawable {
 public:
-  DemoThingie() : life(10) { msg("DemoThingie is born"); }
-  virtual ~DemoThingie() { msg("DemoThingie perishes"); }
+  DemoThingie() : life(10) { }
+  virtual ~DemoThingie() { }
 
   virtual bool update(float interval_sec) {
     life -= interval_sec;

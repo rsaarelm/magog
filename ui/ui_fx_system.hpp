@@ -1,4 +1,4 @@
-/* effects.hpp
+/* ui_fx_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,19 +15,18 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef WORLD_EFFECTS_HPP
-#define WORLD_EFFECTS_HPP
+#ifndef UI_UI_FX_SYSTEM_HPP
+#define UI_UI_FX_SYSTEM_HPP
 
-#include <world/location.hpp>
-#include <util/color.hpp>
-#include <util/vec.hpp>
+#include <world/fx_system.hpp>
 
-// These are implemented on the UI module.
+class Ui_Fx_System : public Fx_System {
+  virtual void beam(Location location, const Vec2i& dir, int length, const Color& color);
 
-void beam_fx(Location location, const Vec2i& dir, int length, const Color& color);
+  virtual void explosion(Location location, int intensity, const Color& color);
 
-void explosion_fx(Location location);
-
-void raw_msg(std::string string);
+private:
+  virtual void raw_msg(std::string text);
+};
 
 #endif

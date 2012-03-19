@@ -23,11 +23,8 @@
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
+#include <world/fx_system.hpp>
 #include <util/vec.hpp>
-
-// TODO variadics.
-// TODO: into Msg_System
-void msg(const char* fmt);
 
 class Action_System {
 public:
@@ -35,11 +32,13 @@ public:
     Entities_System& entities,
     Terrain_System& terrain,
     Spatial_System& spatial,
-    Fov_System& fov)
+    Fov_System& fov,
+    Fx_System& fx)
   : entities(entities)
   , terrain(terrain)
   , spatial(spatial)
   , fov(fov)
+  , fx(fx)
 
   , previous_entity(-1) {}
 
@@ -64,6 +63,7 @@ private:
   Terrain_System& terrain;
   Spatial_System& spatial;
   Fov_System& fov;
+  Fx_System& fx;
 
   Entity previous_entity;
 };

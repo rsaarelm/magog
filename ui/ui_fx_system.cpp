@@ -1,4 +1,4 @@
-/* effects.cpp
+/* ui_fx_system.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,14 +16,14 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <world/effects.hpp>
+#include "ui_fx_system.hpp"
+
 #include <ui/drawable.hpp>
 #include <ui/game_screen.hpp>
 #include <util/num.hpp>
 #include <util/game_loop.hpp>
 #include <memory>
 #include <vector>
-
 
 struct Beam_Drawable : public Drawable {
   Beam_Drawable(const Vec2i& dir, int length, const Color& color = Color("pink"), float life = 0.2)
@@ -123,14 +123,14 @@ static Game_Screen* get_game_screen() {
   return dynamic_cast<Game_Screen*>(state);
 }
 
-void raw_msg(std::string str) {
+void Ui_Fx_System::raw_msg(std::string str) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->msg_buffer.add_msg(str);
   }
 }
 
-void beam_fx(Location location, const Vec2i& dir, int length, const Color& color) {
+void Ui_Fx_System::beam(Location location, const Vec2i& dir, int length, const Color& color) {
   Game_Screen* scr = get_game_screen();
   if (scr) {
     scr->sprite.add(
@@ -139,10 +139,12 @@ void beam_fx(Location location, const Vec2i& dir, int length, const Color& color
   }
 }
 
-void explosion_fx(Location location) {
+void Ui_Fx_System::explosion(Location location, int intensity, const Color& color) {
   Game_Screen* scr = get_game_screen();
+  // TODO: Add in intensity and color.
   if (scr) {
     scr->sprite.add(
       std::shared_ptr<Drawable>(new Particles_Drawable()), location);
   }
 }
+

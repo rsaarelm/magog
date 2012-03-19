@@ -18,13 +18,7 @@
 
 #include "action_system.hpp"
 #include <world/parts.hpp>
-#include <world/effects.hpp>
 #include <util/hex.hpp>
-
-// TODO: into Msg_System
-void msg(const char* fmt) {
-  raw_msg(fmt);
-}
 
 bool Action_System::walk(Entity entity, const Vec2i& dir) {
   auto loc = spatial.location(entity);
@@ -47,7 +41,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
       if (blocks_movement(a)) {
         // Crushing damages you.
         damage(entity, entities.as<Blob_Part>(a).armor / 2);
-        msg("Crush!");
+        fx.msg("Crush!");
         entities.destroy(a);
       }
     }
@@ -80,7 +74,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
     }
 
     if (hit_entity) {
-      msg("Zap!");
+      fx.msg("Zap!");
       damage(loc, entities.as<Blob_Part>(entity).damage);
       break;
     }
@@ -88,7 +82,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
       break;
   }
 
-  beam_fx(spatial.location(entity), dir, dist, Color("pink"));
+  fx.beam(spatial.location(entity), dir, dist, Color("pink"));
 
   auto& blob = entities.as<Blob_Part>(entity);
   // Energy cost for shooting.
@@ -105,7 +99,7 @@ void Action_System::damage(Entity entity, int amount) {
     auto& blob = entities.as<Blob_Part>(entity);
     blob.armor -= amount;
     if (blob.armor <= 0) {
-      explosion_fx(spatial.location(entity));
+      fx.explosion(spatial.location(entity), 10, Color("red"));
       entities.destroy(entity);
     }
   }

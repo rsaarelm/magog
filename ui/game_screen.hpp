@@ -22,6 +22,7 @@
 #include <GL/glew.h>
 #include <ui/message_buffer.hpp>
 #include <ui/drawable.hpp>
+#include <ui/ui_fx_system.hpp>
 #include <ui/sprite.hpp>
 #include <ui/sprite_system.hpp>
 #include <world/entities_system.hpp>
@@ -51,7 +52,8 @@ class Game_Screen : public Game_State {
       , spatial(entities, terrain)
       , fov(entities, terrain, spatial)
       , sprite(fov)
-      , action(entities, terrain, spatial, fov) {}
+      , fx()
+      , action(entities, terrain, spatial, fov, fx) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -79,6 +81,7 @@ class Game_Screen : public Game_State {
   Spatial_System spatial;
   Fov_System fov;
   Sprite_System sprite;
+  Ui_Fx_System fx;
   Action_System action;
 
 private:
