@@ -17,7 +17,6 @@
 */
 
 #include "rules.hpp"
-#include <world/world.hpp>
 #include <world/effects.hpp>
 #include <world/parts.hpp>
 #include <util/num.hpp>

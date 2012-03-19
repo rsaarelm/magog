@@ -18,9 +18,13 @@
 
 #include "action_system.hpp"
 #include <world/rules.hpp>
-#include <world/world.hpp>
 #include <world/parts.hpp>
 #include <world/effects.hpp>
+
+// TODO: into Msg_System
+void msg(const char* fmt) {
+  raw_msg(fmt);
+}
 
 bool Action_System::walk(Entity entity, const Vec2i& dir) {
   auto loc = spatial.location(entity);

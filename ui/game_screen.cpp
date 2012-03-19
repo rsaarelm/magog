@@ -20,7 +20,6 @@
 #include "intro_screen.hpp"
 #include "tile_drawable.hpp"
 #include <ui/registry.hpp>
-#include <world/world.hpp>
 #include <world/rules.hpp>
 #include <world/cavegen.hpp>
 #include <world/parts.hpp>
@@ -211,7 +210,6 @@ void Game_Screen::enter() {
 
 void Game_Screen::exit() {
   glDeleteTextures(1, &tiletex);
-  clear_world();
 }
 
 int from_colemak(int keysym) {

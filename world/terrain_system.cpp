@@ -17,7 +17,7 @@
 */
 
 #include "terrain_system.hpp"
-#include <world/world.hpp>
+#include <world/location.hpp>
 
 Location Terrain_System::loc(uint16_t area, const Vec2i& pos) {
   return Location(this, area, pos[0], pos[1]);

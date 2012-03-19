@@ -17,7 +17,6 @@
 */
 
 #include "entities_system.hpp"
-#include <world/world.hpp>
 #include <util/core.hpp>
 #include <util/alg.hpp>
 

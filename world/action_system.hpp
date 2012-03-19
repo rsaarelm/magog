@@ -25,6 +25,10 @@
 #include <world/fov_system.hpp>
 #include <util/vec.hpp>
 
+// TODO variadics.
+// TODO: into Msg_System
+void msg(const char* fmt);
+
 class Action_System {
 public:
   Action_System(

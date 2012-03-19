@@ -17,7 +17,6 @@
 */
 
 #include "sprite_system.hpp"
-#include <world/world.hpp>
 #include <util/alg.hpp>
 
 void Sprite_System::collect_sprites(

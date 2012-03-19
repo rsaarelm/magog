@@ -20,7 +20,7 @@
 #define WORLD_CAVEGEN_HPP
 
 #include <util.hpp>
-#include <world/world.hpp>
+#include <world/location.hpp>
 
 void generate_cave(Location origin, const ARecti& area);
 

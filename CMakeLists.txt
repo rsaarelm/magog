@@ -90,7 +90,6 @@ add_executable(${TARGETNAME}
   world/action_system.cpp
   world/fov_system.cpp
   world/location.cpp
-  world/world.cpp
   world/cavegen.cpp
   world/rules.cpp
 

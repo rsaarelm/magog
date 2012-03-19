@@ -18,7 +18,6 @@
 
 #include "location.hpp"
 #include <world/terrain_system.hpp>
-#include <world/world.hpp>
 
 #include <ui/game_screen.hpp>
 #include <util/game_loop.hpp>

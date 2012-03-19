@@ -24,7 +24,6 @@
 #include "drawable.hpp"
 #include "sprite.hpp"
 #include "sprite_system.hpp"
-#include <world/world.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
