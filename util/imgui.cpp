@@ -24,7 +24,7 @@
 
 Imgui_State imgui_state;
 
-bool im_button(int id, const char* title, const ARectf& bounds) {
+bool im_button(int id, const char* title, const Rectf& bounds) {
   bool hit = bounds.contains(imgui_state.pos);
   if (hit) {
     glColor4f(0, .50, 0, 1);

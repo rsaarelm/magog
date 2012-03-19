@@ -32,7 +32,7 @@ void dig(Location loc) {
   //set_terrain(loc, terrain_floor);
 }
 
-void generate_cave(Location origin, const ARecti& area) {
+void generate_cave(Location origin, const Recti& area) {
   set<Vec2i> dug;
   set<Vec2i> edge;
 

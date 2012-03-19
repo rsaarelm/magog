@@ -89,7 +89,7 @@ void Surface::init_image(int width, int height) {
   memset(data_, 0, width_ * height_ * 4);
 }
 
-ARecti Surface::crop_rect() const {
+Recti Surface::crop_rect() const {
   int x0 = width_, y0 = height_, x1 = 0, y1 = 0;
   for (int i = 0; i < width_ * height_; i++) {
     if ((*this)[i].a) {
@@ -102,12 +102,12 @@ ARecti Surface::crop_rect() const {
   }
 
   if (x0 < x1 && y0 < y1)
-    return ARecti(Vec2i(x0, y0), Vec2i(x1 - x0 + 1, y1 - y0 + 1));
+    return Recti(Vec2i(x0, y0), Vec2i(x1 - x0 + 1, y1 - y0 + 1));
   else
-    return ARecti(Vec2i(0, 0));
+    return Recti(Vec2i(0, 0));
 }
 
-void Surface::blit(const ARecti& src_rect, Surface& dest, const Vec2i& dest_pos) {
+void Surface::blit(const Recti& src_rect, Surface& dest, const Vec2i& dest_pos) {
   // XXX: Unoptimized.
   for (int y = src_rect.min()[1], e_y = src_rect.max()[1]; y < e_y; y++)
     for (int x = src_rect.min()[0], e_x = src_rect.max()[0]; x < e_x; x++) {

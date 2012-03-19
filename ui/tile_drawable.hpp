@@ -21,7 +21,7 @@
 
 #include "drawable.hpp"
 #include <util/color.hpp>
-#include <util/axis_box.hpp>
+#include <util/box.hpp>
 #include <GL/gl.h>
 
 struct Tile_Rect {
@@ -39,8 +39,8 @@ public:
 private:
   GLuint texture;
   Color color;
-  ARectf texture_coords;
-  ARectf draw_box;
+  Rectf texture_coords;
+  Rectf draw_box;
   Vec2f offset_;
 };
 

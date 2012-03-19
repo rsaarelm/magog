@@ -23,15 +23,15 @@
  * OpenGL drawing utilities.
  */
 
-#include <util/axis_box.hpp>
+#include <util/box.hpp>
 #include <GL/glew.h>
 
 class Surface;
 
 GLuint make_texture(const Surface& surface);
 
-void gl_rect(const ARectf& box);
+void gl_rect(const Rectf& box);
 
-void gl_tex_rect(const ARectf& box, const ARectf& texcoords);
+void gl_tex_rect(const Rectf& box, const Rectf& texcoords);
 
 #endif

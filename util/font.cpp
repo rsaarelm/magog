@@ -63,7 +63,7 @@ int draw_char(Vec2f pos, char ch) {
   Vec2f dim(chdata.x1 - chdata.x0, chdata.y1 - chdata.y0);
   Vec2f tex_scale = font_image.get_dim();
 
-  gl_tex_rect(ARectf(offset, dim), ARectf(origin.elem_div(tex_scale), dim.elem_div(tex_scale)));
+  gl_tex_rect(Rectf(offset, dim), Rectf(origin.elem_div(tex_scale), dim.elem_div(tex_scale)));
 
   return chdata.char_width;
 }

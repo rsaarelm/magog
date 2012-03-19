@@ -22,6 +22,6 @@
 #include <util.hpp>
 #include <world/location.hpp>
 
-void generate_cave(Location origin, const ARecti& area);
+void generate_cave(Location origin, const Recti& area);
 
 #endif

@@ -17,7 +17,7 @@
 */
 
 #include <util/surface.hpp>
-#include <util/axis_box.hpp>
+#include <util/box.hpp>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <contrib/stb/stb_image_write.h>
 #include <vector>
@@ -29,10 +29,10 @@ void usage(int argc, char* argv[]) {
   exit(1);
 }
 
-void pack(const std::vector<Vec2i>& dims, const ARecti& current_area,
+void pack(const std::vector<Vec2i>& dims, const Recti& current_area,
           std::vector<Vec2i>& inout_positions, std::list<size_t>& inout_unplaced_indices) {
   auto index = inout_unplaced_indices.begin();
-  ARecti place_rect;
+  Recti place_rect;
 
   // Find the first unplaced item we can place.
   while (true) {
@@ -40,7 +40,7 @@ void pack(const std::vector<Vec2i>& dims, const ARecti& current_area,
       // Nothing left we can place.
       return;
     }
-    place_rect = ARecti(current_area.min(), dims[*index]);
+    place_rect = Recti(current_area.min(), dims[*index]);
     if (current_area.contains(place_rect)) {
       // Erase the index of the thing we managed to place.
       inout_unplaced_indices.erase(index);
@@ -52,19 +52,19 @@ void pack(const std::vector<Vec2i>& dims, const ARecti& current_area,
   // Place the first unplaced element into top-left of current area.
   inout_positions[*index] = current_area.min();
 
-  ARecti recurse1, recurse2;
+  Recti recurse1, recurse2;
   // Split along the longer edge of the newly allocted rectangle.
   if (place_rect.dim()[1] > place_rect.dim()[0]) {
     // taller than wide.
-    recurse1 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
+    recurse1 = Recti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
                       Vec2i(place_rect.dim()[0], current_area.dim()[1] - place_rect.dim()[1]));
-    recurse2 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
+    recurse2 = Recti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
                       current_area.dim() - place_rect.dim().elem_mul(Vec2i(1, 0)));
   } else {
     // wider than tall or square.
-    recurse1 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
+    recurse1 = Recti(current_area.min() + place_rect.dim().elem_mul(Vec2i(1, 0)),
                       Vec2i(current_area.dim()[0] - place_rect.dim()[0], place_rect.dim()[1]));
-    recurse2 = ARecti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
+    recurse2 = Recti(current_area.min() + place_rect.dim().elem_mul(Vec2i(0, 1)),
                       current_area.dim() - place_rect.dim().elem_mul(Vec2i(0, 1)));
   }
   ASSERT(!place_rect.intersects(recurse1));
@@ -110,10 +110,10 @@ int main(int argc, char* argv[]) {
       int height = tiles.get_dim()[1];
       Surface* img = new Surface(width, height);
       tiles.blit(
-        ARecti(Vec2i(width * j, 0), Vec2i(width, height)),
+        Recti(Vec2i(width * j, 0), Vec2i(width, height)),
         *img,
         Vec2i(0, 0));
-      ARecti rect = img->crop_rect();
+      Recti rect = img->crop_rect();
       num_pixels += rect.volume();
       images.push_back(std::unique_ptr<Surface>(img));
       dims.push_back(rect.dim());
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
     indices.sort([&](const size_t& a, const size_t& b) {
         return dims[a][0] * dims[a][1] > dims[b][0] * dims[b][1]; });
 
-    pack(dims, ARecti(Vec2i(width, height)), packed, indices);
+    pack(dims, Recti(Vec2i(width, height)), packed, indices);
 
     if (!indices.empty()) {
       if (width > height)
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 
   Surface canvas(width, height);
   for (int i = 0; i < packed.size(); i++)
-    images[i]->blit(ARecti(offsets[i], dims[i]), canvas, packed[i]);
+    images[i]->blit(Recti(offsets[i], dims[i]), canvas, packed[i]);
 
   int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.data(), 0);
   if (!result)

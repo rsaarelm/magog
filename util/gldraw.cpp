@@ -32,7 +32,7 @@ GLuint make_texture(const Surface& surface) {
   return result;
 }
 
-void gl_rect(const ARectf& box) {
+void gl_rect(const Rectf& box) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBegin(GL_QUADS);
   glVertex2f(box.min()[0], box.min()[1]);
@@ -42,7 +42,7 @@ void gl_rect(const ARectf& box) {
   glEnd();
 }
 
-void gl_tex_rect(const ARectf& box, const ARectf& texcoords) {
+void gl_tex_rect(const Rectf& box, const Rectf& texcoords) {
   glBegin(GL_QUADS);
   glTexCoord2f(texcoords.min()[0], texcoords.min()[1]);
   glVertex2f(box.min()[0], box.min()[1]);

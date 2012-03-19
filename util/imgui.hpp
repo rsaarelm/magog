@@ -24,7 +24,7 @@
  */
 
 #include "vec.hpp"
-#include "axis_box.hpp"
+#include "box.hpp"
 #include "core.hpp"
 
 #define GEN_ID (const_hash(__FILE__) + __LINE__)
@@ -37,6 +37,6 @@ struct Imgui_State {
 
 extern Imgui_State imgui_state;
 
-bool im_button(int id, const char* title, const ARectf& bounds);
+bool im_button(int id, const char* title, const Rectf& bounds);
 
 #endif

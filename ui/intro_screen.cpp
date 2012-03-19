@@ -56,12 +56,12 @@ void Intro_Screen::draw() {
   draw_text(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
   glLoadIdentity();
 
-  if (im_button(GEN_ID, "New Game", ARectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
+  if (im_button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
     Game_Loop::get().pop_state();
     Game_Loop::get().push_state(new Game_Screen);
   }
 
-  if (im_button(GEN_ID, "Exit", ARectf(Vec2f(dim[0]/2, 280), Vec2f(96, 16))))
+  if (im_button(GEN_ID, "Exit", Rectf(Vec2f(dim[0]/2, 280), Vec2f(96, 16))))
     Game_Loop::get().quit();
 
 }

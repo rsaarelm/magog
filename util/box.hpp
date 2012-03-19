@@ -1,4 +1,4 @@
-/* axis_box.hpp
+/* box.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,8 +16,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef UTIL_AXISBOX_HPP
-#define UTIL_AXISBOX_HPP
+#ifndef UTIL_BOX_HPP
+#define UTIL_BOX_HPP
 
 #include "alg.hpp"
 #include "vec.hpp"
@@ -25,16 +25,16 @@
 #include <algorithm>
 
 /// Axis-aligned variable-dimension box.
-template<class T, int N> class Axis_Box {
+template<class T, int N> class Box {
  public:
-  Axis_Box() {}
+  Box() {}
 
-  Axis_Box(const Vec<T, N>& min, const Vec<T, N>& dim)
+  Box(const Vec<T, N>& min, const Vec<T, N>& dim)
       : min_pt(min), dim_vec(dim) {
     ASSERT(all_of(dim_vec, [](T x) { return x >= 0; }));
   }
 
-  Axis_Box(const Vec<T, N>& dim)
+  Box(const Vec<T, N>& dim)
       : min_pt(), dim_vec(dim) {
     ASSERT(all_of(dim_vec, [](T x) { return x >= 0; }));
   }
@@ -44,7 +44,7 @@ template<class T, int N> class Axis_Box {
         pairwise_all_of(pos, max(), [](T a, T b) { return a < b; });
   }
 
-  bool contains(const Axis_Box<T, N>& other) const {
+  bool contains(const Box<T, N>& other) const {
     for (int i = 0; i < N; i++) {
       if (other.min()[i] < min()[i]) return false;
       if (other.max()[i] > max()[i]) return false;
@@ -52,7 +52,7 @@ template<class T, int N> class Axis_Box {
     return true;
   }
 
-  bool intersects(const Axis_Box<T, N>& other) const {
+  bool intersects(const Box<T, N>& other) const {
     int no_intersect = N;
     for (int i = 0; i < N; i++) {
       if (!(other.min()[i] >= max()[i] || min()[i] >= other.max()[i]))
@@ -67,8 +67,8 @@ template<class T, int N> class Axis_Box {
 
   const Vec<T, N>& dim() const { return dim_vec; }
 
-  Axis_Box<T, N> operator+(const Vec<T, N>& offset) const {
-    return Axis_Box<T, N>(min_pt + offset, dim_vec);
+  Box<T, N> operator+(const Vec<T, N>& offset) const {
+    return Box<T, N>(min_pt + offset, dim_vec);
   }
 
   T volume() const {
@@ -82,11 +82,11 @@ template<class T, int N> class Axis_Box {
   Vec<T, N> dim_vec;
 };
 
-typedef Axis_Box<int, 2> ARecti;
-typedef Axis_Box<float, 2> ARectf;
-typedef Axis_Box<double, 2> ARectd;
-typedef Axis_Box<int, 3> ACubei;
-typedef Axis_Box<float, 3> ACubef;
-typedef Axis_Box<double, 3> ACubed;
+typedef Box<int, 2> Recti;
+typedef Box<float, 2> Rectf;
+typedef Box<double, 2> Rectd;
+typedef Box<int, 3> Cubei;
+typedef Box<float, 3> Cubef;
+typedef Box<double, 3> Cubed;
 
 #endif

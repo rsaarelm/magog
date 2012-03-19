@@ -21,7 +21,7 @@
 
 #include "static_file.hpp"
 #include "color.hpp"
-#include "axis_box.hpp"
+#include "box.hpp"
 #include <GL/gl.h>
 #include <cstdlib>
 #include <algorithm>
@@ -66,9 +66,9 @@ class Surface {
 
   /// Get the smallest rectangle containing all of the surface's
   /// non-transparent pixels.
-  ARecti crop_rect() const;
+  Recti crop_rect() const;
 
-  void blit(const ARecti& src_rect, Surface& dest, const Vec2i& dest_pos);
+  void blit(const Recti& src_rect, Surface& dest, const Vec2i& dest_pos);
 
   bool contains(const Vec2i& pos) {
     return pos[0] >= 0 && pos[1] >= 0 && pos[0] < width_ && pos[1] < height_;
