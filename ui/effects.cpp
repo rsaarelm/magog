@@ -20,6 +20,7 @@
 #include <ui/drawable.hpp>
 #include <ui/game_screen.hpp>
 #include <util/num.hpp>
+#include <util/game_loop.hpp>
 #include <memory>
 #include <vector>
 

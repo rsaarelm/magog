@@ -19,6 +19,8 @@
 #define WORLD_EFFECTS_HPP
 
 #include <world/location.hpp>
+#include <util/color.hpp>
+#include <util/vec.hpp>
 
 // These are implemented on the UI module.
 

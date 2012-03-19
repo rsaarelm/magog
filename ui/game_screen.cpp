@@ -22,8 +22,16 @@
 #include <ui/registry.hpp>
 #include <world/cavegen.hpp>
 #include <world/parts.hpp>
+#include <util/color.hpp>
+#include <util/vec.hpp>
+#include <util/mtx.hpp>
+#include <util/font.hpp>
+#include <util/surface.hpp>
+#include <util/hex.hpp>
+#include <util/num.hpp>
+#include <util/gldraw.hpp>
+#include <util/game_loop.hpp>
 #include <GL/gl.h>
-#include <util.hpp>
 #include <vector>
 #include <sstream>
 #include <string>

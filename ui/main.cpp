@@ -19,8 +19,11 @@
 #include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
 #include <GL/glew.h>
-#include <util.hpp>
+#include <util/game_loop.hpp>
+#include <util/font.hpp>
 #include <util/winmain.hpp>
+#include <string.h>
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {

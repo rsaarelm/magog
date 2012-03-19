@@ -19,8 +19,8 @@
 #ifndef WORLD_CAVEGEN_HPP
 #define WORLD_CAVEGEN_HPP
 
-#include <util.hpp>
 #include <world/location.hpp>
+#include <util/box.hpp>
 
 void generate_cave(Location origin, const Recti& area);
 

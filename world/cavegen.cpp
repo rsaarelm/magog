@@ -18,7 +18,8 @@
 
 #include "cavegen.hpp"
 #include <world/terrain.hpp>
-#include <util.hpp>
+#include <util/hex.hpp>
+#include <util/num.hpp>
 #include <set>
 #include <array>
 

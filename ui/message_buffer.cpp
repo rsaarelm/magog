@@ -18,7 +18,9 @@
 
 #include "message_buffer.hpp"
 #include <GL/glew.h>
-#include <util.hpp>
+#include <util/vec.hpp>
+#include <util/font.hpp>
+#include <util/game_loop.hpp>
 
 using namespace std;
 

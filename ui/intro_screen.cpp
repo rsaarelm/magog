@@ -17,10 +17,12 @@
 */
 
 #include "intro_screen.hpp"
+#include <ui/game_screen.hpp>
 #include <ui/registry.hpp>
+#include <util/game_loop.hpp>
+#include <util/imgui.hpp>
+#include <util/font.hpp>
 #include <GL/glew.h>
-#include <util.hpp>
-#include "game_screen.hpp"
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {

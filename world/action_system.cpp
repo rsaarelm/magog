@@ -19,6 +19,7 @@
 #include "action_system.hpp"
 #include <world/parts.hpp>
 #include <world/effects.hpp>
+#include <util/hex.hpp>
 
 // TODO: into Msg_System
 void msg(const char* fmt) {

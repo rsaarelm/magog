@@ -19,7 +19,8 @@
 #ifndef WORLD_LOCATION_HPP
 #define WORLD_LOCATION_HPP
 
-#include <util.hpp>
+#include <util/core.hpp>
+#include <util/vec.hpp>
 #include <map>
 
 // By convention, area 0 is no-op. A default portal does nothing. A portal

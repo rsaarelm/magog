@@ -18,6 +18,7 @@
 
 #include "fov_system.hpp"
 #include <world/parts.hpp>
+#include <util/hex.hpp>
 
 using namespace std;
 

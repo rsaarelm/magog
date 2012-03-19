@@ -18,6 +18,7 @@
 
 #include "spatial_system.hpp"
 #include <world/parts.hpp>
+#include <util/hex.hpp>
 
 bool Spatial_System::can_pop(Entity entity, Location loc) const {
   for (auto& pair : footprint(entity, loc)) {

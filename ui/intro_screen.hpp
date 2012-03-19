@@ -19,7 +19,7 @@
 #ifndef INTRO_SCREEN_HPP
 #define INTRO_SCREEN_HPP
 
-#include <util.hpp>
+#include <util/game_state.hpp>
 
 class Intro_Screen : public Game_State {
  public:

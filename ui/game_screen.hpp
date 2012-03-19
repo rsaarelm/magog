@@ -20,17 +20,17 @@
 #define GAME_SCREEN_HPP
 
 #include <GL/glew.h>
-#include "message_buffer.hpp"
-#include "drawable.hpp"
-#include "sprite.hpp"
-#include "sprite_system.hpp"
+#include <ui/message_buffer.hpp>
+#include <ui/drawable.hpp>
+#include <ui/sprite.hpp>
+#include <ui/sprite_system.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
-#include <util.hpp>
-#include <queue>
+#include <util/mtx.hpp>
+#include <util/game_state.hpp>
 #include <vector>
 #include <memory>
 #include <set>
