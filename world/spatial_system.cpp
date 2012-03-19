@@ -46,7 +46,7 @@ void Spatial_System::pop(Entity entity, Location loc) {
 }
 
 Location Spatial_System::location(Entity entity) const {
-  return entities.as<Blob_Part>(entity).loc;
+  return terrain.location(entities.as<Blob_Part>(entity).loc);
 }
 
 Footprint Spatial_System::footprint(Entity entity, Location center) const {

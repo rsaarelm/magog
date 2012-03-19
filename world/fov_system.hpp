@@ -57,8 +57,8 @@ private:
   Spatial_System& spatial;
 
   Vec2i subjective_pos;
-  std::map<Vec2i, Location> view;
-  std::set<Location> visible;
+  std::map<Vec2i, Plain_Location> view;
+  std::set<Plain_Location> visible;
 };
 
 #endif

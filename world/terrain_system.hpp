@@ -21,6 +21,7 @@
 #include <world/location.hpp>
 #include <world/terrain.hpp>
 #include <map>
+#include <vector>
 
 class Terrain_System {
 public:
@@ -29,30 +30,30 @@ public:
   bool contains(Location loc) const;
 
   /// Create a Location handle object that refers back to this system.
-  Location loc(uint16_t area, const Vec2i& pos);
+  Location location(uint16_t area, const Vec2i& pos);
+  Location location(Plain_Location loc);
+  Location location();
 
-  Terrain get(Location loc) const;
-  void set(Location loc, Terrain ter);
-  void clear(Location loc);
+  Terrain get(Plain_Location loc) const;
+  void set(Plain_Location loc, Terrain ter);
+  void clear(Plain_Location loc);
 
-  Portal get_portal(Location loc) const;
-  void set_portal(Location loc, Portal portal);
-  void clear_portal(Location loc);
+  Portal get_portal(Plain_Location loc) const;
+  void set_portal(Plain_Location loc, Portal portal);
+  void clear_portal(Plain_Location loc);
 
-  bool blocks_movement(Location loc);
-  bool blocks_shot(Location loc);
-  bool blocks_sight(Location loc);
+  bool blocks_movement(Plain_Location loc);
+  bool blocks_shot(Plain_Location loc);
+  bool blocks_sight(Plain_Location loc);
 
-  std::pair<std::map<Location, Terrain>::const_iterator,
-            std::map<Location, Terrain>::const_iterator>
-  area_locations(uint16_t area);
+  std::vector<Location> area_locations(uint16_t area);
 
 private:
   Terrain_System(const Terrain_System&);
   Terrain_System& operator=(const Terrain_System&);
 
-  std::map<Location, Terrain> terrain;
-  std::map<Location, Portal> portals;
+  std::map<Plain_Location, Terrain> terrain;
+  std::map<Plain_Location, Portal> portals;
 };
 
 #endif

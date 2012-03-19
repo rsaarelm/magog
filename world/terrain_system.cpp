@@ -19,53 +19,64 @@
 #include "terrain_system.hpp"
 #include <world/location.hpp>
 
-Location Terrain_System::loc(uint16_t area, const Vec2i& pos) {
-  return Location(this, area, pos[0], pos[1]);
+Location Terrain_System::location(uint16_t area, const Vec2i& pos) {
+  return Location(*this, area, pos[0], pos[1]);
 }
 
-Terrain Terrain_System::get(Location loc) const {
+Location Terrain_System::location(Plain_Location loc) {
+  return Location(*this, loc);
+}
+
+Location Terrain_System::location() {
+  return Location(*this);
+}
+
+Terrain Terrain_System::get(Plain_Location loc) const {
   return assoc_find_or(terrain, loc, terrain_void);
 }
 
-void Terrain_System::set(Location loc, Terrain ter) {
+void Terrain_System::set(Plain_Location loc, Terrain ter) {
   terrain[loc] = ter;
 }
 
-void Terrain_System::clear(Location loc) {
+void Terrain_System::clear(Plain_Location loc) {
   terrain.erase(loc);
 }
 
-Portal Terrain_System::get_portal(Location loc) const {
+Portal Terrain_System::get_portal(Plain_Location loc) const {
   return assoc_find_or(portals, loc, Portal());
 }
 
-void Terrain_System::set_portal(Location loc, Portal portal) {
+void Terrain_System::set_portal(Plain_Location loc, Portal portal) {
   portals[loc] = portal;
 }
 
-void Terrain_System::clear_portal(Location loc) {
+void Terrain_System::clear_portal(Plain_Location loc) {
   portals.erase(loc);
 }
 
-bool Terrain_System::blocks_shot(Location loc) {
+bool Terrain_System::blocks_shot(Plain_Location loc) {
   auto kind = terrain_data[get(loc)].kind;
   return kind == wall_terrain || kind == curtain_terrain;
 }
 
-bool Terrain_System::blocks_sight(Location loc) {
+bool Terrain_System::blocks_sight(Plain_Location loc) {
   auto kind = terrain_data[get(loc)].kind;
   return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
 }
 
-std::pair<std::map<Location, Terrain>::const_iterator,
-          std::map<Location, Terrain>::const_iterator>
-Terrain_System::area_locations(uint16_t area) {
+std::vector<Location> Terrain_System::area_locations(uint16_t area) {
   ASSERT(area != 0);
-  auto i = terrain.upper_bound(Location(area - 1, 0, 0)),
-    j = terrain.lower_bound(Location(area + 1, 0, 0));
+  std::vector<Location> result;
+  auto i = terrain.upper_bound({static_cast<uint16_t>(area - 1), 0, 0}),
+    j = terrain.lower_bound({static_cast<uint16_t>(area + 1), 0, 0});
 
   while (i->first.area < area) ++i;
   while (j->first.area > area) --j;
   ++j;
-  return std::make_pair(i, j);
+  while (i != j) {
+    result.push_back(location(i->first));
+    ++i;
+  }
+  return result;
 }

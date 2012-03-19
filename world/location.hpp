@@ -44,23 +44,20 @@ struct Portal {
   int8_t delta_x, delta_y;
 };
 
-class Terrain_System;
 
-struct Location {
-  Location(Terrain_System* terrain, uint16_t area, int8_t x, int8_t y)
-  : area(area), x(x), y(y), terrain(terrain) {}
-
-  Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y), terrain(nullptr) {}
-
-  Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]), terrain(nullptr) {}
-
-  Location() : area(0), x(0), y(0), terrain(nullptr) {}
+/// Unadorned, plain-old-data location class, good for storing in containers
+/// and structurers.
+class Plain_Location {
+public:
+  Plain_Location() : area(0), x(0), y(0) {}
+  Plain_Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y) {}
+  Plain_Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]) {}
 
   bool is_null() const {
     return area == 0 && x == 0 && y == 0;
   }
 
-  bool operator<(Location rhs) const {
+  bool operator<(Plain_Location rhs) const {
     if (area < rhs.area) return true;
     if (area > rhs.area) return false;
 
@@ -73,8 +70,47 @@ struct Location {
     return false;
   }
 
-  bool operator==(Location rhs) const {
+  bool operator==(Plain_Location rhs) const {
     return !(*this < rhs) && !(rhs < *this);
+  }
+
+  size_t hash() const {
+    return (((area << 1) ^ y) << 1) ^ x;
+  }
+
+  struct Hasher {
+    size_t operator()(Plain_Location location) const { return location.hash(); }
+  };
+
+  struct Equator {
+    bool operator()(Plain_Location lhs, Plain_Location rhs) const { return lhs == rhs; }
+  };
+
+  // Fit the whole thing into a 32-bit word.
+  uint16_t area;
+  int8_t x, y;
+};
+
+class Terrain_System;
+
+/// Location objects that link to a terrain system so that they can know about
+/// portals and implement the portaled offsetting semantics. These are created
+/// by Terrain_System.
+class Location : public Plain_Location {
+  friend class Terrain_System;
+public:
+  Location(const Location& rhs) : terrain(rhs.terrain) {
+    area = rhs.area;
+    x = rhs.x;
+    y = rhs.y;
+  }
+
+  Location& operator=(const Location& rhs) {
+    ASSERT(&terrain == &rhs.terrain);
+    area = rhs.area;
+    x = rhs.x;
+    y = rhs.y;
+    return *this;
   }
 
   /// Offset without portaling.
@@ -97,28 +133,21 @@ struct Location {
 
   Portal get_portal() const;
 
-  size_t hash() const {
-    return (((area << 1) ^ y) << 1) ^ x;
-  }
+private:
+  Location(Terrain_System& terrain, uint16_t area, int8_t x, int8_t y)
+    : Plain_Location(area, x, y), terrain(terrain) {}
 
-  struct Hasher {
-    size_t operator()(Location location) const { return location.hash(); }
-  };
+  Location(Terrain_System& terrain, Plain_Location loc)
+    : Plain_Location(loc), terrain(terrain) {}
 
-  struct Equator {
-    bool operator()(Location lhs, Location rhs) const { return lhs == rhs; }
-  };
+  Location(Terrain_System& terrain) : terrain(terrain) {}
 
-  // Fit the whole thing into a 32-bit word.
-  uint16_t area;
-  int8_t x, y;
-
-  Terrain_System* terrain;
+  Terrain_System& terrain;
 };
 
 
-typedef std::map<Vec2i, Location> Relative_Fov;
+typedef std::map<Vec2i, Plain_Location> Relative_Fov;
 
-typedef std::map<Vec2i, Location> Footprint;
+typedef std::map<Vec2i, Plain_Location> Footprint;
 
 #endif

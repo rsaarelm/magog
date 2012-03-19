@@ -37,7 +37,7 @@ class Blob_Part : public Part {
 
   int armor;
   int damage;
-  Location loc;
+  Plain_Location loc;
  private:
   Blob_Part(const Blob_Part&);
   Blob_Part& operator=(const Blob_Part&);

@@ -136,15 +136,15 @@ void Game_Screen::enter() {
   for (auto pos : hex_area_points(r)) {
     int n = rand_int(100);
     if (n < 3)
-      terrain.set(Location(1, pos), terrain_wall_center);
+      terrain.set(Plain_Location(1, pos), terrain_wall_center);
     else if (n < 6)
-      terrain.set(Location(1, pos), terrain_water);
+      terrain.set(Plain_Location(1, pos), terrain_water);
     else if (n < 12)
-      terrain.set(Location(1, pos), terrain_forest);
+      terrain.set(Plain_Location(1, pos), terrain_forest);
     else if (n < 20)
-      terrain.set(Location(1, pos), terrain_sand);
+      terrain.set(Plain_Location(1, pos), terrain_sand);
     else
-      terrain.set(Location(1, pos), terrain_grass);
+      terrain.set(Plain_Location(1, pos), terrain_grass);
   }
 
 
@@ -169,11 +169,11 @@ void Game_Screen::enter() {
   for (int sector = 0; sector < 6; sector++)
     for (int i = 0; i < r + (sector % 2); i++)
       terrain.set_portal(
-        Location(1, start[sector] + hex_dirs[(sector + 1) % 6] * i), Portal(0, offset[sector]));
+        {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
 
   for (int i = 0; i < 16; i++) {
     // TODO: random location function
-    auto loc = Location(1, Vec2i(rand_int(10), rand_int(10)));
+    auto loc = terrain.location(1, Vec2i(rand_int(10), rand_int(10)));
     // TODO: check if loc is occupied
     if (one_chance_in(3))
       spawn_armor(loc);
@@ -182,10 +182,10 @@ void Game_Screen::enter() {
   }
 
   for (auto pos : hex_circle_points(r)) {
-    terrain.set(Location(1, pos), terrain_floor);
+    terrain.set({1, pos}, terrain_floor);
   }
   for (auto pos : hex_circle_points(r+1)) {
-    terrain.set(Location(1, pos), terrain_void);
+    terrain.set({1, pos}, terrain_void);
   }
 
   auto player = get_player();
@@ -194,9 +194,9 @@ void Game_Screen::enter() {
   auto locations = terrain.area_locations(1);
   int n_tries = 1024;
   for (; n_tries; n_tries--) {
-    auto loc = rand_choice(locations.first, locations.second);
-    if (spatial.can_pop(player, loc->first)) {
-      spatial.pop(player, loc->first);
+    auto loc = rand_choice(locations);
+    if (spatial.can_pop(player, *loc)) {
+      spatial.pop(player, *loc);
       break;
     }
   }
