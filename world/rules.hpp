@@ -25,10 +25,6 @@
 
 Entity get_player();
 
-bool blocks_movement(Entity entity);
-
-bool can_crush(Entity entity, Entity crushee);
-
 bool has_entities(Location location);
 
 void start_turn_update(Entity entity);

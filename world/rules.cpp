@@ -40,17 +40,9 @@ int fudge_roll() {
   return result;
 }
 
-bool can_crush(Entity entity, Entity crushee) {
-  return entity.as<Blob_Part>().big && !crushee.as<Blob_Part>().big;
-}
-
-bool blocks_movement(Entity entity) {
-  return entity.has<Blob_Part>();
-}
-
 void start_turn_update(Entity entity) {
   try {
-    auto& blob = entity.as<Blob_Part>();
+    auto& blob = entity._as<Blob_Part>();
     blob.energy += blob.power;
   } catch (Part_Not_Found& e) {}
 }

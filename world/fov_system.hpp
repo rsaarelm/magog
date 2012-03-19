@@ -19,6 +19,8 @@
 #define WORLD_FOV_SYSTEM_HPP
 
 #include <world/entities_system.hpp>
+#include <world/terrain_system.hpp>
+#include <world/spatial_system.hpp>
 #include <world/location.hpp>
 #include <util/vec.hpp>
 #include <map>
@@ -28,9 +30,11 @@ class Fov_System {
 public:
   Fov_System(
     Entities_System& entities,
-    Terrain_System& terrain)
+    Terrain_System& terrain,
+    Spatial_System& spatial)
     : entities(entities)
-    , terrain(terrain) {}
+    , terrain(terrain)
+    , spatial(spatial) {}
 
   bool is_seen(Location loc);
   Location view_location(const Vec2i& relative_pos);
@@ -50,6 +54,7 @@ private:
 
   Entities_System& entities;
   Terrain_System& terrain;
+  Spatial_System& spatial;
 
   Vec2i subjective_pos;
   std::map<Vec2i, Location> view;

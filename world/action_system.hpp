@@ -47,6 +47,8 @@ public:
 
   bool is_ready(Entity entity);
 
+  bool can_crush(Entity entity, Entity crushee);
+  bool blocks_movement(Entity entity);
 private:
   Entities_System& entities;
   Terrain_System& terrain;

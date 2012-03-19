@@ -129,13 +129,13 @@ void Fov_System::do_fov() {
   const int radius = 8;
 
   clear_seen();
-  if (get_player().as<Blob_Part>().big) {
+  if (entities.as<Blob_Part>(get_player()).big) {
     // Big entities see with their edge cells too so that they're not completely
     // blind in a forest style terrain.
     for (auto i : hex_dirs)
-      do_fov(radius, get_player().location() + i, i);
+      do_fov(radius, spatial.location(get_player()) + i, i);
   }
-  do_fov(radius, get_player().location());
+  do_fov(radius, spatial.location(get_player()));
 }
 
 void Fov_System::prune() {

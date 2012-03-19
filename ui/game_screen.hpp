@@ -50,7 +50,7 @@ class Game_Screen : public Game_State {
       , entities()
       , terrain()
       , spatial(entities, terrain)
-      , fov(entities, terrain)
+      , fov(entities, terrain, spatial)
       , sprite(fov)
       , action(entities, terrain, spatial, fov) {}
   virtual ~Game_Screen() {}

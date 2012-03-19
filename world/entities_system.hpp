@@ -30,6 +30,8 @@ public:
   Entity create();
   void destroy(Entity entity);
 
+  bool exists(Entity entity) const;
+
   void add(Entity entity, std::unique_ptr<Part> part);
   bool has(Entity entity, Kind kind) const;
   Part* get(Entity entity, Kind kind);

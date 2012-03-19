@@ -43,6 +43,13 @@ void Entities_System::destroy(Entity entity) {
   entities.erase(entity);
 }
 
+bool Entities_System::exists(Entity entity) const {
+  // TODO: Remove old logic
+  return entity_exists(entity);
+
+  return assoc_contains(entities, entity);
+}
+
 void Entities_System::add(Entity entity, std::unique_ptr<Part> part) {
   // TODO: Use Entities_System store
   add_part(entity, std::move(part));
@@ -55,11 +62,14 @@ void Entities_System::add(Entity entity, std::unique_ptr<Part> part) {
 
 bool Entities_System::has(Entity entity, Kind kind) const {
   //ASSERT(assoc_contains(entities, entity));
+
+  // TODO remove dependency on old system.
+  return find_part(entity, kind) != nullptr;
+
   auto iter = entities.find(entity);
   if (iter == entities.end())
     throw Entity_Not_Found();
   return iter->second.find(kind) != iter->second.end();
-  //return assoc_contains(entities[entity], kind);
 }
 
 Part* Entities_System::get(Entity entity, Kind kind) {

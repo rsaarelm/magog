@@ -101,23 +101,14 @@ class Entity {
     return uid != rhs.uid || system != rhs.system;
   }
 
-  bool exists() const;
-
   template <class T>
-  T& as() const;
-
-  template <class T>
-  bool has() const;
-
-  void add_part(Part* new_part);
+  T& _as() const;
 
   size_t hash() const {
     return uid;
   }
 
   Entity_Id id() const { return uid; }
-
-  Location location() const;
 
  private:
   Entities_System* system;
@@ -130,7 +121,7 @@ Part* _find_part(Entities_System* entities_system, Entity entity, Kind kind);
 Part* find_part(Entity entity, Kind kind);
 
 template <class T>
-T& Entity::as() const {
+T& Entity::_as() const {
   // TODO: Assert system != nullptr, use system to find the part.
   Part* part = find_part(*this, T::s_get_kind());
 
@@ -138,16 +129,6 @@ T& Entity::as() const {
   // If kind doesn't match to the actual object, there's been data corruption.
   ASSERT(result != nullptr);
   return *result;
-}
-
-template <class T>
-bool Entity::has() const {
-  try {
-    Part* part = find_part(*this, T::s_get_kind());
-    return true;
-  } catch (Part_Not_Found& e) {
-    return false;
-  }
 }
 
 #endif

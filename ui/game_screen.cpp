@@ -89,7 +89,7 @@ static GLuint load_tile_tex() {
 
 Entity Game_Screen::spawn_infantry(Location location) {
   auto entity = new_entity();
-  entity.add_part(new Blob_Part(icon_infantry, 3, 6, 2));
+  entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_infantry, 3, 6, 2)));
   if (spatial.can_pop(entity, location))
     spatial.pop(entity, location);
   else
@@ -99,7 +99,7 @@ Entity Game_Screen::spawn_infantry(Location location) {
 
 Entity Game_Screen::spawn_armor(Location location) {
   auto entity = new_entity();
-  entity.add_part(new Blob_Part(icon_tank, 5, 8, 4));
+  entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_tank, 5, 8, 4)));
   if (spatial.can_pop(entity, location))
     spatial.pop(entity, location);
   else
@@ -190,7 +190,7 @@ void Game_Screen::enter() {
   }
 
   auto player = get_player();
-  player.add_part(new Blob_Part(icon_telos, 7, 40, 10, true));
+  entities.add(player, unique_ptr<Part>(new Blob_Part(icon_telos, 7, 40, 10, true)));
 
   auto locations = terrain.area_locations(1);
   int n_tries = 1024;
@@ -238,7 +238,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), get_player().location());
+      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), spatial.location(get_player()));
       break;
     case 'u':
       action.shoot(get_player(), Vec2i(-1, 0));
@@ -296,7 +296,7 @@ void Game_Screen::update(float interval_seconds) {
 
   while (!(active_entity() == get_player() && action.is_ready(get_player()))) {
     do_ai();
-    if (!get_player().exists()) {
+    if (!entities.exists(get_player())) {
       // TODO: Some kind of message that the player acknowledges here instead of
       // just a crude drop to intro.
       end_game();
@@ -348,7 +348,7 @@ void Game_Screen::draw() {
   msg_buffer.draw();
 
   Color("beige").gl_color();
-  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d", get_player().as<Blob_Part>().armor);
+  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d", entities.as<Blob_Part>(get_player()).armor);
 }
 
 void Game_Screen::generate_sprites(std::set<Sprite>& output) {
@@ -356,7 +356,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   const int entity_layer = 2;
 
   try {
-    auto loc = get_player().location();
+    auto loc = spatial.location(get_player());
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);
@@ -381,7 +381,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
         if (in_fov) {
           for (auto& pair : spatial.entities_with_offsets_at(loc)) {
             Entity& entity = pair.second;
-            auto& blob = entity.as<Blob_Part>();
+            auto& blob = entities.as<Blob_Part>(entity);
             output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});
           }
         }
