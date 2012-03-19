@@ -40,12 +40,12 @@ Entity Entities_System::create() {
 
 void Entities_System::destroy(Entity entity) {
   // TODO: Notify components of removal
-  // TODO: Systems might want notification too, eg. the spatial index.
-
-  // XXX HACKHACKHACK FIXME, use a listener system for this.
-  dynamic_cast<Game_Screen*>(Game_Loop::get().top_state())->spatial.push(entity);
 
   ASSERT(assoc_contains(entities, entity));
+
+  for (auto& f : destroy_observers)
+    f(entity);
+
   entities.erase(entity);
 }
 
@@ -91,4 +91,8 @@ Entity Entities_System::entity_after(Entity previous) {
 
   // No entities, period.
   throw Entity_Not_Found();
+}
+
+void Entities_System::destroy_hook(Entities_System::Callback callback_fn) {
+  destroy_observers.push_back(callback_fn);
 }

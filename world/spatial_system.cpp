@@ -20,6 +20,15 @@
 #include <world/parts.hpp>
 #include <util/hex.hpp>
 
+Spatial_System::Spatial_System(
+  Entities_System& entities,
+  Terrain_System& terrain)
+  : entities(entities)
+  , terrain(terrain) {
+  entities.destroy_hook([&](Entity e) { push(e); });
+}
+
+
 bool Spatial_System::can_pop(Entity entity, Location loc) const {
   for (auto& pair : footprint(entity, loc)) {
     auto& foot_loc = pair.second;

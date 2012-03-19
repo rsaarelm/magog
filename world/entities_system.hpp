@@ -21,6 +21,8 @@
 #include <world/entity.hpp>
 #include <map>
 #include <memory>
+#include <vector>
+#include <functional>
 
 class Entities_System {
 public:
@@ -52,9 +54,15 @@ public:
   }
 
   Entity entity_after(Entity entity);
+
+  typedef std::function<void(Entity)> Callback;
+
+  void destroy_hook(Callback callback_fn);
 private:
   Entity_Id next_entity_id;
   std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;
+
+  std::vector<Callback> destroy_observers;
 };
 
 #endif

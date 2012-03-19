@@ -27,9 +27,7 @@ class Spatial_System {
 public:
   Spatial_System(
     Entities_System& entities,
-    Terrain_System& terrain)
-    : entities(entities)
-    , terrain(terrain) {}
+    Terrain_System& terrain);
 
   bool can_pop(Entity entity, Location loc) const;
   void push(Entity entity);
