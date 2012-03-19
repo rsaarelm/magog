@@ -329,6 +329,12 @@ void Game_Screen::end_game() {
 }
 
 void Game_Screen::draw() {
+  // No player, no show.
+  // TODO Make this more decoupled from a locked player so we don't need hacks
+  // like this.
+  if (!entities.exists(spatial.get_player()))
+    return;
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   auto dim = Game_Loop::get().get_dim();
