@@ -44,3 +44,10 @@ void seed_rand(int seed) {
 void seed_rand(const char* seed) {
   g_rng.seed(::hash(seed));
 }
+
+int fudge_roll() {
+  int result = 0;
+  for (int i = 0; i < 4; i++)
+    result += rand_int(3) - 1;
+  return result;
+}

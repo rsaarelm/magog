@@ -20,7 +20,6 @@
 #include "intro_screen.hpp"
 #include "tile_drawable.hpp"
 #include <ui/registry.hpp>
-#include <world/rules.hpp>
 #include <world/cavegen.hpp>
 #include <world/parts.hpp>
 #include <GL/gl.h>
@@ -188,7 +187,7 @@ void Game_Screen::enter() {
     terrain.set({1, pos}, terrain_void);
   }
 
-  auto player = get_player();
+  auto player = spatial.get_player();
   entities.add(player, unique_ptr<Part>(new Blob_Part(icon_telos, 7, 40, 10, true)));
 
   auto locations = terrain.area_locations(1);
@@ -236,30 +235,30 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), spatial.location(get_player()));
+      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), spatial.location(spatial.get_player()));
       break;
     case 'u':
-      action.shoot(get_player(), Vec2i(-1, 0));
+      action.shoot(spatial.get_player(), Vec2i(-1, 0));
       action.next_entity();
       break;
     case 'i':
-      action.shoot(get_player(), Vec2i(-1, -1));
+      action.shoot(spatial.get_player(), Vec2i(-1, -1));
       action.next_entity();
       break;
     case 'o':
-      action.shoot(get_player(), Vec2i(0, -1));
+      action.shoot(spatial.get_player(), Vec2i(0, -1));
       action.next_entity();
       break;
     case 'l':
-      action.shoot(get_player(), Vec2i(1, 0));
+      action.shoot(spatial.get_player(), Vec2i(1, 0));
       action.next_entity();
       break;
     case 'k':
-      action.shoot(get_player(), Vec2i(1, 1));
+      action.shoot(spatial.get_player(), Vec2i(1, 1));
       action.next_entity();
       break;
     case 'j':
-      action.shoot(get_player(), Vec2i(0, 1));
+      action.shoot(spatial.get_player(), Vec2i(0, 1));
       action.next_entity();
       break;
     case 'b':
@@ -276,9 +275,9 @@ void Game_Screen::key_event(int keysym, int printable) {
     default:
       break;
   }
-  if (action.active_entity() == get_player() && action.is_ready(get_player())) {
+  if (action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player())) {
     if (delta != Vec2i(0, 0)) {
-      if (action.walk(get_player(), delta)) {
+      if (action.walk(spatial.get_player(), delta)) {
         fov.do_fov();
         action.next_entity();
       } else {
@@ -292,9 +291,9 @@ void Game_Screen::update(float interval_seconds) {
   msg_buffer.update(interval_seconds);
   sprite.update(interval_seconds);
 
-  while (!(action.active_entity() == get_player() && action.is_ready(get_player()))) {
+  while (!(action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player()))) {
     do_ai();
-    if (!entities.exists(get_player())) {
+    if (!entities.exists(spatial.get_player())) {
       // TODO: Some kind of message that the player acknowledges here instead of
       // just a crude drop to intro.
       end_game();
@@ -346,7 +345,8 @@ void Game_Screen::draw() {
   msg_buffer.draw();
 
   Color("beige").gl_color();
-  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d", entities.as<Blob_Part>(get_player()).armor);
+  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d",
+            entities.as<Blob_Part>(spatial.get_player()).armor);
 }
 
 void Game_Screen::generate_sprites(std::set<Sprite>& output) {
@@ -354,7 +354,7 @@ void Game_Screen::generate_sprites(std::set<Sprite>& output) {
   const int entity_layer = 2;
 
   try {
-    auto loc = spatial.location(get_player());
+    auto loc = spatial.location(spatial.get_player());
     for (int y = -8; y <= 8; y++) {
       for (int x = -8; x <= 8; x++) {
         Vec2i offset(x, y);

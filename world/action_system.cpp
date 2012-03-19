@@ -17,7 +17,6 @@
 */
 
 #include "action_system.hpp"
-#include <world/rules.hpp>
 #include <world/parts.hpp>
 #include <world/effects.hpp>
 
@@ -40,7 +39,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     spatial.push(entity);
 
     // XXX Hacky. Player is tracked by the view space object.
-    if (entity == get_player())
+    if (entity == spatial.get_player())
       fov.move_pos(dir);
 
     for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {

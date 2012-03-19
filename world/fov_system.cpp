@@ -18,7 +18,6 @@
 
 #include "fov_system.hpp"
 #include <world/parts.hpp>
-#include <world/rules.hpp>
 
 using namespace std;
 
@@ -126,13 +125,13 @@ void Fov_System::do_fov() {
   const int radius = 8;
 
   clear_seen();
-  if (entities.as<Blob_Part>(get_player()).big) {
+  if (entities.as<Blob_Part>(spatial.get_player()).big) {
     // Big entities see with their edge cells too so that they're not completely
     // blind in a forest style terrain.
     for (auto i : hex_dirs)
-      do_fov(radius, spatial.location(get_player()) + i, i);
+      do_fov(radius, spatial.location(spatial.get_player()) + i, i);
   }
-  do_fov(radius, spatial.location(get_player()));
+  do_fov(radius, spatial.location(spatial.get_player()));
 }
 
 void Fov_System::prune() {

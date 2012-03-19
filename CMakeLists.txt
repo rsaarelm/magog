@@ -91,7 +91,6 @@ add_executable(${TARGETNAME}
   world/fov_system.cpp
   world/location.cpp
   world/cavegen.cpp
-  world/rules.cpp
 
   font_image.hpp
   font_data.hpp

@@ -44,6 +44,7 @@ public:
   std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location);
   std::vector<Entity> entities_on(const Footprint& footprint);
 
+  Entity get_player() const { return Entity(1); } // XXX: Hacked hardcoded id.
 private:
   Spatial_System(const Spatial_System&);
   Spatial_System& operator=(const Spatial_System&);

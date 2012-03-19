@@ -76,4 +76,10 @@ void seed_rand(int seed);
 /// Seed the default random number generator with the given string value.
 void seed_rand(const char* seed);
 
+/// Add results of four dice which can give -1, 0 or 1 with equal
+/// probabilities. Result is distributed in a crude approximation of a normal
+/// distribution. The name refers to the pen&paper RPG system that uses these
+/// type of rolls.
+int fudge_roll();
+
 #endif
