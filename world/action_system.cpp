@@ -44,7 +44,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
         // Crushing damages you.
         damage(entity, entities.as<Blob_Part>(a).armor / 2);
         msg("Crush!");
-        delete_entity(a);
+        entities.destroy(a);
       }
     }
     spatial.pop(entity, new_loc);
@@ -102,7 +102,7 @@ void Action_System::damage(Entity entity, int amount) {
     blob.armor -= amount;
     if (blob.armor <= 0) {
       explosion_fx(spatial.location(entity));
-      delete_entity(entity);
+      entities.destroy(entity);
     }
   }
 }
@@ -122,4 +122,23 @@ bool Action_System::can_crush(Entity entity, Entity crushee) {
 
 bool Action_System::blocks_movement(Entity entity) {
   return entities.has(entity, Blob_Kind);
+}
+
+Entity Action_System::active_entity() {
+  return entities.entity_after(previous_entity);
+}
+
+void Action_System::next_entity() {
+  previous_entity = entities.entity_after(previous_entity);
+
+  try {
+    start_turn_update(active_entity());
+  } catch (Entity_Not_Found &e) {}
+}
+
+void Action_System::start_turn_update(Entity entity) {
+  try {
+    auto& blob = entities.as<Blob_Part>(entity);
+    blob.energy += blob.power;
+  } catch (Part_Not_Found& e) {}
 }

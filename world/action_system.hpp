@@ -35,7 +35,9 @@ public:
   : entities(entities)
   , terrain(terrain)
   , spatial(spatial)
-  , fov(fov) {}
+  , fov(fov)
+
+  , previous_entity(-1) {}
 
   bool walk(Entity entity, const Vec2i& dir);
   bool melee(Entity entity, const Vec2i& dir);
@@ -49,11 +51,17 @@ public:
 
   bool can_crush(Entity entity, Entity crushee);
   bool blocks_movement(Entity entity);
+
+  Entity active_entity();
+  void next_entity();
+  void start_turn_update(Entity entity);
 private:
   Entities_System& entities;
   Terrain_System& terrain;
   Spatial_System& spatial;
   Fov_System& fov;
+
+  Entity previous_entity;
 };
 
 #endif

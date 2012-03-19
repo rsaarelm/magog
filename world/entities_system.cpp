@@ -26,7 +26,7 @@ Entities_System::Entities_System()
 }
 
 Entity Entities_System::create(Entity_Id id) {
-  auto result = Entity(this, id);
+  auto result = Entity(id);
   ASSERT(!assoc_contains(entities, result));
   entities[result];
   return result;
@@ -36,35 +36,32 @@ Entity Entities_System::create() {
   return create(next_entity_id++);
 }
 
+#include <ui/game_screen.hpp>
+#include <util/game_loop.hpp>
+
 void Entities_System::destroy(Entity entity) {
   // TODO: Notify components of removal
   // TODO: Systems might want notification too, eg. the spatial index.
+
+  // XXX HACKHACKHACK FIXME, use a listener system for this.
+  dynamic_cast<Game_Screen*>(Game_Loop::get().top_state())->spatial.push(entity);
+
   ASSERT(assoc_contains(entities, entity));
   entities.erase(entity);
 }
 
 bool Entities_System::exists(Entity entity) const {
-  // TODO: Remove old logic
-  return entity_exists(entity);
-
   return assoc_contains(entities, entity);
 }
 
 void Entities_System::add(Entity entity, std::unique_ptr<Part> part) {
-  // TODO: Use Entities_System store
-  add_part(entity, std::move(part));
-/*
   ASSERT(assoc_contains(entities, entity));
   Kind kind = part->get_kind();
   entities[entity][kind] = std::move(part);
-*/
 }
 
 bool Entities_System::has(Entity entity, Kind kind) const {
-  //ASSERT(assoc_contains(entities, entity));
-
-  // TODO remove dependency on old system.
-  return find_part(entity, kind) != nullptr;
+  ASSERT(assoc_contains(entities, entity));
 
   auto iter = entities.find(entity);
   if (iter == entities.end())
@@ -73,9 +70,6 @@ bool Entities_System::has(Entity entity, Kind kind) const {
 }
 
 Part* Entities_System::get(Entity entity, Kind kind) {
-  // TODO: Use Entities_System store
-  return find_part(entity, kind);
-/*
   ASSERT(assoc_contains(entities, entity));
 
   auto& parts = entities[entity];
@@ -84,10 +78,18 @@ Part* Entities_System::get(Entity entity, Kind kind) {
     return nullptr;
 
   return(part_iter->second.get());
-*/
 }
 
-// A forward-declarable wrapper for fetching parts
-Part* _find_part(Entities_System* entities_system, Entity entity, Kind kind) {
-  return entities_system->get(entity, kind);
+Entity Entities_System::entity_after(Entity previous) {
+  auto i = entities.upper_bound(previous);
+  if (i != entities.end())
+    return i->first;
+
+  // Nothing left after previous, loop to start.
+  i = entities.begin();
+  if (i != entities.end())
+    return i->first;
+
+  // No entities, period.
+  throw Entity_Not_Found();
 }

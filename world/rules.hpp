@@ -27,6 +27,4 @@ Entity get_player();
 
 bool has_entities(Location location);
 
-void start_turn_update(Entity entity);
-
 #endif

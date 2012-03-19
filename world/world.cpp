@@ -32,14 +32,6 @@ class World {
   Terrain get_terrain(Location location);
   void set_terrain(Location location, Terrain cell);
 
-  /// Return the entity whose turn it is to act now.
-  ///
-  /// Throws Entity_Not_Found if there are no entities that can act.
-  Entity active_entity();
-
-  /// Called when done with the current active entity to move to the next one.
-  void next_entity();
-
   // TODO: Use indexed lookup to a static terrain set instead of having
   // individual data here to compress the structure.
   std::map<Location, Terrain> terrain;
@@ -104,7 +96,7 @@ void clear_world() {
 
 World::World()
     : next_entity_id(256) // IDs below this are reserved for fixed stuff.
-    , previous_entity(nullptr, -1)
+    , previous_entity(-1)
 {}
 
 Terrain World::get_terrain(Location location) {
@@ -113,33 +105,6 @@ Terrain World::get_terrain(Location location) {
 
 void World::set_terrain(Location location, Terrain cell) {
   terrain[location] = cell;
-}
-
-Entity World::active_entity() {
-  auto i = entities.upper_bound(previous_entity);
-  if (i != entities.end())
-    return i->first;
-
-  // Nothing left after previous_entity, loop to start.
-  previous_entity = Entity(nullptr, -1);
-  i = entities.upper_bound(previous_entity);
-  if (i != entities.end())
-    return i->first;
-
-  // No entities, period.
-  throw Entity_Not_Found();
-}
-
-void World::next_entity() {
-  auto i = entities.upper_bound(previous_entity);
-  if (i != entities.end())
-    previous_entity = i->first;
-  else
-    previous_entity = Entity(nullptr, -1);
-
-  try {
-    start_turn_update(active_entity());
-  } catch (Entity_Not_Found &e) {}
 }
 
 Terrain get_terrain(Location location) {
@@ -168,7 +133,7 @@ void clear_portal(Location location) {
 }
 
 Entity new_entity(Entity_Id id) {
-  auto result = Entity(nullptr, id);
+  auto result = Entity(id);
   ASSERT(!entity_exists(result));
   World::get().entities[result] = std::map<Kind, std::unique_ptr<Part>>();
   return result;
@@ -191,14 +156,6 @@ void delete_entity(Entity entity) {
 
 bool entity_exists(Entity entity) {
   return assoc_contains(World::get().entities, entity);
-}
-
-Entity active_entity() {
-  return World::get().active_entity();
-}
-
-void next_entity() {
-  World::get().next_entity();
 }
 
 template <typename Archive>

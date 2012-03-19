@@ -77,28 +77,25 @@ class Part {
 // also rather reliant on the combined properties of the attacker and the
 // target entities.
 
-class Entities_System;
-
 class Entity {
  public:
-  Entity(): system(nullptr), uid(-1) {}
+  Entity(): uid(-1) {}
 
-  Entity(const Entity& rhs) : system(rhs.system), uid(rhs.uid) {}
-  Entity& operator=(const Entity& rhs) { system = rhs.system; uid = rhs.uid; }
+  Entity(const Entity& rhs) : uid(rhs.uid) {}
+  Entity& operator=(const Entity& rhs) { uid = rhs.uid; }
 
-  Entity(Entities_System* system, Entity_Id uid) : system(system), uid(uid) {}
+  Entity(Entity_Id uid) : uid(uid) {}
 
   bool operator<(const Entity& rhs) const {
-    ASSERT(system == rhs.system);
     return uid < rhs.uid;
   }
 
   bool operator==(const Entity& rhs) const {
-    return uid == rhs.uid && system == rhs.system;
+    return uid == rhs.uid;
   }
 
   bool operator!=(const Entity& rhs) const {
-    return uid != rhs.uid || system != rhs.system;
+    return uid != rhs.uid;
   }
 
   template <class T>
@@ -111,24 +108,7 @@ class Entity {
   Entity_Id id() const { return uid; }
 
  private:
-  Entities_System* system;
   Entity_Id uid;
 };
-
-Part* _find_part(Entities_System* entities_system, Entity entity, Kind kind);
-
-// XXX: Deprecated
-Part* find_part(Entity entity, Kind kind);
-
-template <class T>
-T& Entity::_as() const {
-  // TODO: Assert system != nullptr, use system to find the part.
-  Part* part = find_part(*this, T::s_get_kind());
-
-  T* result = dynamic_cast<T*>(part);
-  // If kind doesn't match to the actual object, there's been data corruption.
-  ASSERT(result != nullptr);
-  return *result;
-}
 
 #endif

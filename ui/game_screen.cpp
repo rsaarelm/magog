@@ -88,22 +88,22 @@ static GLuint load_tile_tex() {
 }
 
 Entity Game_Screen::spawn_infantry(Location location) {
-  auto entity = new_entity();
+  auto entity = entities.create();
   entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_infantry, 3, 6, 2)));
   if (spatial.can_pop(entity, location))
     spatial.pop(entity, location);
   else
-    delete_entity(entity);
+    entities.destroy(entity);
   return entity;
 }
 
 Entity Game_Screen::spawn_armor(Location location) {
-  auto entity = new_entity();
+  auto entity = entities.create();
   entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_tank, 5, 8, 4)));
   if (spatial.can_pop(entity, location))
     spatial.pop(entity, location);
   else
-    delete_entity(entity);
+    entities.destroy(entity);
   return entity;
 }
 
@@ -129,7 +129,7 @@ void Game_Screen::enter() {
   entity_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
 
   // XXX: Ensure player entity exists. Hacky magic number id.
-  new_entity(1);
+  entities.create(1);
 
   // Generate portals for a looping hex area.
   const int r = 16;
@@ -242,27 +242,27 @@ void Game_Screen::key_event(int keysym, int printable) {
       break;
     case 'u':
       action.shoot(get_player(), Vec2i(-1, 0));
-      next_entity();
+      action.next_entity();
       break;
     case 'i':
       action.shoot(get_player(), Vec2i(-1, -1));
-      next_entity();
+      action.next_entity();
       break;
     case 'o':
       action.shoot(get_player(), Vec2i(0, -1));
-      next_entity();
+      action.next_entity();
       break;
     case 'l':
       action.shoot(get_player(), Vec2i(1, 0));
-      next_entity();
+      action.next_entity();
       break;
     case 'k':
       action.shoot(get_player(), Vec2i(1, 1));
-      next_entity();
+      action.next_entity();
       break;
     case 'j':
       action.shoot(get_player(), Vec2i(0, 1));
-      next_entity();
+      action.next_entity();
       break;
     case 'b':
       {
@@ -278,11 +278,11 @@ void Game_Screen::key_event(int keysym, int printable) {
     default:
       break;
   }
-  if (active_entity() == get_player() && action.is_ready(get_player())) {
+  if (action.active_entity() == get_player() && action.is_ready(get_player())) {
     if (delta != Vec2i(0, 0)) {
       if (action.walk(get_player(), delta)) {
         fov.do_fov();
-        next_entity();
+        action.next_entity();
       } else {
         msg_buffer.add_msg("Bump!");
       }
@@ -294,7 +294,7 @@ void Game_Screen::update(float interval_seconds) {
   msg_buffer.update(interval_seconds);
   sprite.update(interval_seconds);
 
-  while (!(active_entity() == get_player() && action.is_ready(get_player()))) {
+  while (!(action.active_entity() == get_player() && action.is_ready(get_player()))) {
     do_ai();
     if (!entities.exists(get_player())) {
       // TODO: Some kind of message that the player acknowledges here instead of
@@ -306,7 +306,7 @@ void Game_Screen::update(float interval_seconds) {
 }
 
 void Game_Screen::do_ai() {
-  auto mob = active_entity();
+  auto mob = action.active_entity();
   if (action.is_ready(mob)) {
     auto& dir = *rand_choice(hex_dirs);
     // Stupid random fire
@@ -315,7 +315,7 @@ void Game_Screen::do_ai() {
     else
       action.walk(mob, dir);
   }
-  next_entity();
+  action.next_entity();
 }
 
 void Game_Screen::end_game() {

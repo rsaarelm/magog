@@ -40,13 +40,10 @@ void clear_world();
 // TODO variadics.
 void msg(const char* fmt);
 
-Entity new_entity(Entity_Id id);
-Entity new_entity();
-void delete_entity(Entity entity);
+//Entity new_entity(Entity_Id id);
+//Entity new_entity();
+//void delete_entity(Entity entity);
 bool entity_exists(Entity entity);
-Entity active_entity();
-void next_entity();
-Entity entity_after(Entity entity);
 
 template<typename Archive>
 void serialize_world(Archive& ar);

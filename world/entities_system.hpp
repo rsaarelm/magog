@@ -51,6 +51,7 @@ public:
     return as<C>(entity);
   }
 
+  Entity entity_after(Entity entity);
 private:
   Entity_Id next_entity_id;
   std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;

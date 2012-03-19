@@ -27,7 +27,7 @@ Entity get_player() {
 
   // XXX: Fixed ID is problematic if we want to switch the player entity
   // around.
-  return Entity(nullptr, 1);
+  return Entity(1);
 }
 
 /// Add results of four dice which can give -1, 0 or 1 with equal
@@ -38,11 +38,4 @@ int fudge_roll() {
   for (int i = 0; i < 4; i++)
     result += rand_int(3) - 1;
   return result;
-}
-
-void start_turn_update(Entity entity) {
-  try {
-    auto& blob = entity._as<Blob_Part>();
-    blob.energy += blob.power;
-  } catch (Part_Not_Found& e) {}
 }
