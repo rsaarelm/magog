@@ -19,7 +19,6 @@
 #ifndef UTIL_SURFACE_HPP
 #define UTIL_SURFACE_HPP
 
-#include "static_file.hpp"
 #include "color.hpp"
 #include "box.hpp"
 #include <GL/gl.h>
@@ -31,13 +30,11 @@ class Surface {
  public:
   Surface();
   Surface(const char* filename);
-  Surface(const Static_File* file);
   Surface(int width, int height);
   Surface(const Vec2i& dim);
   ~Surface();
 
   void load_image(const uint8_t* buffer, size_t buffer_len);
-  void load_image(const Static_File* file);
   void load_image(const char* filename);
 
   void init_image(int width, int height);

@@ -32,14 +32,6 @@ Surface::Surface()
     , width_(0)
     , height_(0) {}
 
-// XXX: Use delegating constructors when gcc supports them.
-Surface::Surface(const Static_File* file)
-    : data_(nullptr)
-    , width_(0)
-    , height_(0) {
-  load_image(file);
-}
-
 Surface::Surface(const char* filename)
     : data_(nullptr)
     , width_(0)
@@ -70,8 +62,6 @@ void Surface::load_image(const uint8_t* buffer, size_t buffer_len) {
   free(data_);
   data_ = stbi_load_from_memory(buffer, buffer_len, &width_, &height_, nullptr, 4);
 }
-
-void Surface::load_image(const Static_File* file) { load_image(file->get_data(), file->get_len()); }
 
 void Surface::load_image(const char* filename) {
   free(data_);

@@ -20,7 +20,6 @@
 #define UTIL_HPP
 
 #include <util/alg.hpp>
-#include <util/static_file.hpp>
 #include <util/box.hpp>
 #include <util/mtx.hpp>
 #include <util/transform.hpp>

@@ -68,7 +68,6 @@ add_executable(${TARGETNAME}
   util/gldraw.cpp
   util/font.cpp
   util/imgui.cpp
-  util/static_file.cpp
   util/transform.cpp
   util/geom_util.cpp
   util/wavefront.cpp
