@@ -81,7 +81,7 @@ add_executable(${TARGETNAME}
   ui/display_system.cpp
   ui/ui_fx_system.cpp
   ui/game_screen.cpp
-  ui/message_buffer.cpp
+  ui/hud_system.cpp
   ui/tile_drawable.cpp
   ui/sprite_system.cpp
   ui/registry.cpp

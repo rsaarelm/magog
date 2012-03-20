@@ -1,4 +1,4 @@
-/* message_buffer.cpp
+/* hud_system.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,33 +16,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "message_buffer.hpp"
-#include <GL/glew.h>
+#include "hud_system.hpp"
+#include <ui/registry.hpp>
+#include <world/parts.hpp>
 #include <util/vec.hpp>
 #include <util/game_loop.hpp>
+#include <GL/glew.h>
 
 using namespace std;
 
-void Message_Buffer::my_draw_text(const Vec2i& pos, const char* txt) {
-  edge_color.gl_color();
-  fonter.draw(pos + Vec2i(-1, 0), txt);
-  fonter.draw(pos + Vec2i(0, -1), txt);
-  fonter.draw(pos + Vec2i(1, 0), txt);
-  fonter.draw(pos + Vec2i(0, 1), txt);
-  text_color.gl_color();
-  fonter.draw(pos, txt);
-}
-
-Message_Buffer::Message_Buffer(Fonter_System& fonter)
-  : fonter(fonter)
-  , text_color("white")
-  , edge_color("black")
-  , clock(0)
-  , read_new_text_time(0)
-  , letter_read_duration(0.2)
-{}
-
-void Message_Buffer::update(float interval_seconds) {
+void Hud_System::update(float interval_seconds) {
   clock += interval_seconds;
   if (read_new_text_time < clock)
     read_new_text_time = clock;
@@ -58,7 +41,7 @@ void Message_Buffer::update(float interval_seconds) {
   }
 }
 
-void Message_Buffer::draw() {
+void Hud_System::draw() {
   Vec2f pos(0, 0);
   Vec2f offset(0, fonter.height());
   for (auto msg: messages) {
@@ -74,13 +57,17 @@ void Message_Buffer::draw() {
     // XXX: Recalculating TextWidth is expensive for every frame.
     my_draw_text(Vec2f(dim[0] / 2 - fonter.width(txt) / 2, dim[1] / 2), txt);
   }
+
+  // Draw the status line.
+  fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
+              entities.as<Blob_Part>(spatial.get_player()).armor);
 }
 
-void Message_Buffer::add_msg(std::string str) {
+void Hud_System::add_msg(std::string str) {
   messages.push_back(Message_String{str, time_read(str)});
 }
 
-void Message_Buffer::add_caption(std::string str) {
+void Hud_System::add_caption(std::string str) {
   if (captions.empty())
     captions.push(Message_String{str, time_read(str)});
   else
@@ -89,7 +76,17 @@ void Message_Buffer::add_caption(std::string str) {
     captions.push(Message_String{str, 0});
 }
 
-float Message_Buffer::time_read(std::string added_text) {
+void Hud_System::my_draw_text(const Vec2i& pos, const char* txt) {
+  edge_color.gl_color();
+  fonter.draw(pos + Vec2i(-1, 0), txt);
+  fonter.draw(pos + Vec2i(0, -1), txt);
+  fonter.draw(pos + Vec2i(1, 0), txt);
+  fonter.draw(pos + Vec2i(0, 1), txt);
+  text_color.gl_color();
+  fonter.draw(pos, txt);
+}
+
+float Hud_System::time_read(std::string added_text) {
   float result = read_new_text_time + letter_read_duration * added_text.size();
   read_new_text_time = result;
   return result;

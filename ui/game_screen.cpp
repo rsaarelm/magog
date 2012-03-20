@@ -149,7 +149,7 @@ void Game_Screen::enter() {
   }
   fov.do_fov();
 
-  msg_buffer.add_caption("Telos Unit online");
+  hud.add_caption("Telos Unit online");
 }
 
 void Game_Screen::exit() {
@@ -225,14 +225,14 @@ void Game_Screen::key_event(int keysym, int printable) {
         fov.do_fov();
         action.next_entity();
       } else {
-        msg_buffer.add_msg("Bump!");
+        hud.add_msg("Bump!");
       }
     }
   }
 }
 
 void Game_Screen::update(float interval_seconds) {
-  msg_buffer.update(interval_seconds);
+  hud.update(interval_seconds);
   sprite.update(interval_seconds);
 
   while (!(action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player()))) {
@@ -292,9 +292,6 @@ void Game_Screen::draw() {
     sprite.draw(draw_pos);
   }
 
-  msg_buffer.draw();
+  hud.draw();
 
-  Color("beige").gl_color();
-  fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
-              entities.as<Blob_Part>(spatial.get_player()).armor);
 }

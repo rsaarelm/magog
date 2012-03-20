@@ -1,4 +1,4 @@
-/* message_buffer.hpp
+/* hud_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,9 +16,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MESSAGE_BUFFER_HPP
-#define MESSAGE_BUFFER_HPP
+#ifndef HUD_SYSTEM_HPP
+#define HUD_SYSTEM_HPP
 
+#include <world/entities_system.hpp>
+#include <world/spatial_system.hpp>
 #include <util/color.hpp>
 #include <util/fonter_system.hpp>
 #include <string>
@@ -30,9 +32,21 @@ struct Message_String {
   float time_read;
 };
 
-class Message_Buffer {
+class Hud_System {
  public:
-  Message_Buffer(Fonter_System& fonter);
+  Hud_System(
+    Fonter_System& fonter,
+    Entities_System& entities,
+    Spatial_System& spatial)
+    : fonter(fonter)
+    , entities(entities)
+    , spatial(spatial)
+    , text_color("beige")
+    , edge_color("black")
+    , clock(0)
+    , read_new_text_time(0)
+    , letter_read_duration(0.2) {}
+
   void update(float interval_seconds);
   void draw();
   void add_msg(std::string str);
@@ -44,6 +58,8 @@ class Message_Buffer {
   void my_draw_text(const Vec2i& pos, const char* txt);
 
   Fonter_System& fonter;
+  Entities_System& entities;
+  Spatial_System& spatial;
 
   // Update the total time when texts will be read and return the time
   // the user should have read added_text.

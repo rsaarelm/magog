@@ -21,7 +21,6 @@
 #include <ui/drawable.hpp>
 #include <ui/game_screen.hpp>
 #include <util/num.hpp>
-#include <util/game_loop.hpp>
 #include <memory>
 #include <vector>
 
@@ -118,17 +117,8 @@ struct Particles_Drawable : public Drawable {
 };
 
 
-static Game_Screen* get_game_screen() {
-  // TODO Get rid of this.
-  Game_State* state = Game_Loop::get().top_state();
-  return dynamic_cast<Game_Screen*>(state);
-}
-
 void Ui_Fx_System::raw_msg(std::string str) {
-  Game_Screen* scr = get_game_screen();
-  if (scr) {
-    scr->msg_buffer.add_msg(str);
-  }
+  hud.add_msg(str);
 }
 
 void Ui_Fx_System::beam(Location location, const Vec2i& dir, int length, const Color& color) {
