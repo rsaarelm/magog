@@ -25,7 +25,8 @@ class Blob_Part : public Part {
 
   Blob_Part() {}
   Blob_Part(Entity_Icon icon, int power, int armor, int damage, bool big=false)
-    : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage) {}
+    : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage)
+    , base_facing(0), turret_facing(0) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
@@ -37,6 +38,10 @@ class Blob_Part : public Part {
   int armor;
   int damage;
   Plain_Location loc;
+
+  // TODO: Move these into separate Telos component or something.
+  int base_facing;
+  int turret_facing;
  private:
   Blob_Part(const Blob_Part&);
   Blob_Part& operator=(const Blob_Part&);

@@ -28,8 +28,6 @@ using namespace boost;
 using namespace boost::adaptors;
 using namespace std;
 
-const std::array<const Vec2i, 6> hex_dirs{{{-1, -1}, {0, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 0}}};
-
 Shaped_Wall hex_wall(int edge_mask) {
   // 0: Pillar, 1: x-axis wall, 2: y-axis wall, 3: xy-diagonal wall.
 
@@ -90,4 +88,13 @@ bool is_hex_dir(const Vec2i& dir) {
       return true;
   }
   return false;
+}
+
+int vec_to_hex_dir(const Vec2i& vec) {
+  // TODO: support longer than unit vecs.
+  for (int i = 0; i < 6; i++) {
+    if (vec == hex_dirs[i])
+      return i;
+  }
+  return 0;
 }

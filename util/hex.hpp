@@ -33,7 +33,7 @@
  * The canonical order starts at the point towards (-1, -1) and proceeds
  * clockwise from there.
  */
-extern const std::array<const Vec2i, 6> hex_dirs;
+const std::array<const Vec2i, 6> hex_dirs{{{-1, -1}, {0, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 0}}};
 
 enum Shaped_Wall {
   center_wall = 0,
@@ -143,5 +143,7 @@ Range<Vec2i>::T hex_area_points(int radius);
 int hex_dist(const Vec2i& vec);
 
 bool is_hex_dir(const Vec2i& dir);
+
+int vec_to_hex_dir(const Vec2i& vec);
 
 #endif

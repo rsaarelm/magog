@@ -49,8 +49,8 @@ Display_System::Display_System(
 }
 
 void Display_System::world_sprites(std::set<Sprite>& output) {
-  const int terrain_layer = 1;
-  const int entity_layer = 2;
+  const int terrain_layer = 0x10;
+  const int entity_layer = 0x20;
 
   for (int y = -8; y <= 8; y++) {
     for (int x = -8; x <= 8; x++) {
@@ -76,7 +76,17 @@ void Display_System::world_sprites(std::set<Sprite>& output) {
         for (auto& pair : spatial.entities_with_offsets_at(loc)) {
           Entity& entity = pair.second;
           auto& blob = entities.as<Blob_Part>(entity);
-          output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});
+          if (blob.icon == icon_telos) {
+            // TODO: Do this with components instead of a special case.
+            output.insert(Sprite{entity_layer, offset + pair.first,
+                  tile_drawable(27 + blob.base_facing % 3, "#88f", -tile_size)
+                  });
+            output.insert(Sprite{entity_layer + 1, offset + pair.first,
+                  tile_drawable(30 + blob.turret_facing, "#ccf", -tile_size)
+                  });
+          } else {
+            output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});
+          }
         }
       }
     }

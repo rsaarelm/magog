@@ -48,7 +48,9 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     spatial.pop(entity, new_loc);
     // Energy cost for movement.
     // TODO: account for terrain differences.
-    entities.as<Blob_Part>(entity).energy -= 100;
+    auto& blob = entities.as<Blob_Part>(entity);
+    blob.energy -= 100;
+    blob.base_facing = vec_to_hex_dir(dir);
     return true;
   } else {
     return false;
@@ -60,7 +62,14 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
   // TODO: Entities have multiple weapons. (The weapon could be the entity though.)
   const int range = 6; // TODO: Entities have different fire ranges.
   int dist = 0;
-  Location loc = spatial.location(entity);
+  Location start_loc = spatial.location(entity);
+
+  auto& blob = entities.as<Blob_Part>(entity);
+
+  if (blob.big)
+    start_loc = start_loc + dir;
+
+  Location loc = start_loc;
 
   for (loc = loc + dir; dist < range; loc = loc + dir) {
     dist++;
@@ -82,11 +91,12 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
       break;
   }
 
-  fx.beam(spatial.location(entity), dir, dist, Color("pink"));
+  fx.beam(start_loc, dir, dist, Color("pink"));
 
-  auto& blob = entities.as<Blob_Part>(entity);
   // Energy cost for shooting.
   blob.energy -= 100;
+
+  blob.turret_facing = vec_to_hex_dir(dir);
 }
 
 void Action_System::damage(Location location, int amount) {
