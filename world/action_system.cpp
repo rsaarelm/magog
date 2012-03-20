@@ -32,6 +32,11 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     }
 
     spatial.push(entity);
+    // Energy cost for movement.
+    // TODO: account for terrain differences.
+    auto& blob = entities.as<Blob_Part>(entity);
+    blob.energy -= 100;
+    blob.base_facing = vec_to_hex_dir(dir);
 
     // XXX Hacky. Player is tracked by the view space object.
     if (entity == spatial.get_player())
@@ -41,16 +46,14 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
       if (blocks_movement(a)) {
         // Crushing damages you.
         damage(entity, entities.as<Blob_Part>(a).armor / 2);
+        if (!entities.exists(entity)) {
+          return false;
+        }
         fx.msg("Crush!");
         entities.destroy(a);
       }
     }
     spatial.pop(entity, new_loc);
-    // Energy cost for movement.
-    // TODO: account for terrain differences.
-    auto& blob = entities.as<Blob_Part>(entity);
-    blob.energy -= 100;
-    blob.base_facing = vec_to_hex_dir(dir);
     return true;
   } else {
     return false;
