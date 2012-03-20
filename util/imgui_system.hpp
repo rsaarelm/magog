@@ -1,4 +1,4 @@
-/* imgui.hpp
+/* imgui_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,28 +15,38 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef UTIL_IMGUI_SYSTEM_HPP
+#define UTIL_IMGUI_SYSTEM_HPP
 
-#ifndef UTIL_IMGUI_HPP
-#define UTIL_IMGUI_HPP
-
-/** \file imgui.hpp
- * Immediate Mode GUI.
- */
-
-#include "vec.hpp"
-#include "box.hpp"
-#include "core.hpp"
+#include <util/fonter_system.hpp>
+#include <util/vec.hpp>
+#include <util/box.hpp>
+#include <util/core.hpp>
 
 #define GEN_ID (const_hash(__FILE__) + __LINE__)
 
-struct Imgui_State {
-  Imgui_State() : pos{0, 0}, button(0) {}
-  Vec2f pos;
-  int button;
+class Imgui_System {
+public:
+  Imgui_System(
+    Fonter_System& fonter)
+  : fonter(fonter) {}
+
+  void update(int mouse_x, int mouse_y, int mouse_buttons);
+
+  bool button(int id, const char* title, const Rectf& bounds);
+private:
+  Imgui_System(const Imgui_System&);
+  Imgui_System& operator=(const Imgui_System&);
+
+  Fonter_System& fonter;
+
+  struct State {
+    State() : pos(0, 0), button(0) {}
+    Vec2f pos;
+    int button;
+  };
+
+  State state;
 };
-
-extern Imgui_State imgui_state;
-
-bool im_button(int id, const char* title, const Rectf& bounds);
 
 #endif

@@ -21,6 +21,7 @@
 
 #include <util/game_state.hpp>
 #include <util/fonter_system.hpp>
+#include <util/imgui_system.hpp>
 
 class Intro_Screen : public Game_State {
  public:
@@ -31,11 +32,13 @@ class Intro_Screen : public Game_State {
   virtual void enter() {}
   virtual void exit() {}
   virtual void key_event(int keysym, int printable);
+  virtual void mouse_event(int x, int y, int buttons);
   virtual void update(float interval_seconds) {}
   virtual void draw();
 
  private:
   Fonter_System fonter;
+  Imgui_System imgui;
 };
 
 #endif

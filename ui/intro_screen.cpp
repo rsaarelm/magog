@@ -21,12 +21,12 @@
 #include <ui/registry.hpp>
 #include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
-#include <util/imgui.hpp>
 #include <util/font.hpp>
 #include <GL/glew.h>
 
 Intro_Screen::Intro_Screen()
-  : fonter(font_sheet, font_data, 13) {}
+  : fonter(font_sheet, font_data, 13)
+  , imgui(fonter) {}
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {
@@ -48,6 +48,10 @@ void Intro_Screen::key_event(int keysym, int printable) {
   }
 }
 
+void Intro_Screen::mouse_event(int x, int y, int buttons) {
+  imgui.update(x, y, buttons);
+}
+
 void Intro_Screen::draw() {
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -63,12 +67,12 @@ void Intro_Screen::draw() {
   fonter.draw(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
   glLoadIdentity();
 
-  if (im_button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
+  if (imgui.button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
     Game_Loop::get().pop_state();
     Game_Loop::get().push_state(new Game_Screen);
   }
 
-  if (im_button(GEN_ID, "Exit", Rectf(Vec2f(dim[0]/2, 280), Vec2f(96, 16))))
+  if (imgui.button(GEN_ID, "Exit", Rectf(Vec2f(dim[0]/2, 280), Vec2f(96, 16))))
     Game_Loop::get().quit();
 
 }

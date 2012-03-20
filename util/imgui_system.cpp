@@ -1,4 +1,4 @@
-/* imgui.cpp
+/* imgui_system.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,16 +16,19 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "imgui.hpp"
-#include <GL/glew.h>
-#include "color.hpp"
-#include "font.hpp"
-#include "gldraw.hpp"
+#include "imgui_system.hpp"
+#include <util/gldraw.hpp>
+#include <util/color.hpp>
 
-Imgui_State imgui_state;
+void Imgui_System::update(int mouse_x, int mouse_y, int mouse_buttons) {
+  state.pos = Vec2f(mouse_x, mouse_y);
+  state.button = mouse_buttons;
+}
 
-bool im_button(int id, const char* title, const Rectf& bounds) {
-  bool hit = bounds.contains(imgui_state.pos);
+bool Imgui_System::button(int id, const char* title, const Rectf& bounds) {
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  bool hit = bounds.contains(state.pos);
   if (hit) {
     glColor4f(0, .50, 0, 1);
   } else {
@@ -33,10 +36,10 @@ bool im_button(int id, const char* title, const Rectf& bounds) {
   }
   gl_rect(bounds);
 
-  Vec2f dim(text_width(title), font_height());
-  Vec2f centering_tweak = Vec2f(0, -font_height() / 5);
+  Vec2f dim(fonter.width(title), fonter.height());
+  Vec2f centering_tweak = Vec2f(0, -fonter.height() / 5);
   Vec2f pos = bounds.min() + (bounds.dim() - dim) / 2.f + centering_tweak;
   Color(255, 255, 255).gl_color();
-  draw_text(pos, title);
-  return hit && imgui_state.button;
+  fonter.draw(pos, title);
+  return hit && state.button;
 }

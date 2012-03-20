@@ -18,7 +18,6 @@
 
 #include "game_loop.hpp"
 #include <util/game_state.hpp>
-#include <util/imgui.hpp>
 #include <util/core.hpp>
 #include <cstdlib>
 #include <algorithm>
@@ -178,14 +177,10 @@ void Game_Loop::run() {
       case SDL_MOUSEBUTTONUP:
         if (top)
           top->mouse_event(event.button.x, event.button.y, mouse_button_mask());
-        imgui_state.pos = Vec2f(event.button.x, event.button.y);
-        imgui_state.button = mouse_button_mask();
         break;
       case SDL_MOUSEMOTION:
         if (top)
           top->mouse_event(event.motion.x, event.motion.y, mouse_button_mask());
-        imgui_state.pos = Vec2f(event.motion.x, event.motion.y);
-        imgui_state.button = mouse_button_mask();
         break;
       case SDL_QUIT:
         quit();
