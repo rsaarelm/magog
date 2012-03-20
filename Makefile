@@ -31,5 +31,8 @@ run: build
 xrun: xbuild
 	wine ./xbuild/telos $(ARGS)
 
+tags:
+	etags $$(find . -name "*.cpp" -or -name "*.hpp")
+
 clean:
-	rm -rf build/ xbuild/
+	rm -rf build/ xbuild/ TAGS
