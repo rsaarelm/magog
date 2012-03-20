@@ -19,14 +19,22 @@
 #define UI_UI_FX_SYSTEM_HPP
 
 #include <world/fx_system.hpp>
+#include <ui/sprite_system.hpp>
 
 class Ui_Fx_System : public Fx_System {
+public:
+  Ui_Fx_System(
+    Sprite_System& sprite)
+  : sprite(sprite) {}
+
   virtual void beam(Location location, const Vec2i& dir, int length, const Color& color);
 
   virtual void explosion(Location location, int intensity, const Color& color);
 
 private:
   virtual void raw_msg(std::string text);
+
+  Sprite_System& sprite;
 };
 
 #endif

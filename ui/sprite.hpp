@@ -19,10 +19,9 @@
 #ifndef UI_SPRITE_HPP
 #define UI_SPRITE_HPP
 
+#include <ui/drawable.hpp>
 #include <util/vec.hpp>
 #include <memory>
-
-class Drawable;
 
 /**
  * A lightweight handle for `Drawable` objects.

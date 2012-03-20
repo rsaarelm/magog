@@ -19,6 +19,7 @@
 #include "terrain_system.hpp"
 #include <world/location.hpp>
 #include <util/alg.hpp>
+#include <util/hex.hpp>
 
 Location Terrain_System::location(uint16_t area, const Vec2i& pos) {
   return Location(*this, area, pos[0], pos[1]);
@@ -79,5 +80,16 @@ std::vector<Location> Terrain_System::area_locations(uint16_t area) {
     result.push_back(location(i->first));
     ++i;
   }
+  return result;
+}
+
+bool Terrain_System::is_wall(Plain_Location loc) const {
+  return terrain_data[get(loc)].kind == wall_terrain;
+}
+
+int Terrain_System::wall_mask(Location loc) const {
+  int result = 0;
+  for (size_t i = 0; i < hex_dirs.size(); i++)
+    result += is_wall(loc + hex_dirs[i]) << i;
   return result;
 }

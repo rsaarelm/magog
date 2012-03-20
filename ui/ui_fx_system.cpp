@@ -119,6 +119,7 @@ struct Particles_Drawable : public Drawable {
 
 
 static Game_Screen* get_game_screen() {
+  // TODO Get rid of this.
   Game_State* state = Game_Loop::get().top_state();
   return dynamic_cast<Game_Screen*>(state);
 }
@@ -131,20 +132,14 @@ void Ui_Fx_System::raw_msg(std::string str) {
 }
 
 void Ui_Fx_System::beam(Location location, const Vec2i& dir, int length, const Color& color) {
-  Game_Screen* scr = get_game_screen();
-  if (scr) {
-    scr->sprite.add(
-      std::shared_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
-      location);
-  }
+  sprite.add(
+    std::shared_ptr<Drawable>(new Beam_Drawable(dir, length, color)),
+    location);
 }
 
 void Ui_Fx_System::explosion(Location location, int intensity, const Color& color) {
-  Game_Screen* scr = get_game_screen();
   // TODO: Add in intensity and color.
-  if (scr) {
-    scr->sprite.add(
-      std::shared_ptr<Drawable>(new Particles_Drawable()), location);
-  }
+  sprite.add(
+    std::shared_ptr<Drawable>(new Particles_Drawable()), location);
 }
 

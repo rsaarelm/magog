@@ -26,12 +26,12 @@
 #include <ui/sprite.hpp>
 #include <ui/sprite_system.hpp>
 #include <ui/font_data.hpp>
+#include <ui/display_system.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
-#include <util/mtx.hpp>
 #include <util/game_state.hpp>
 #include <util/fonter_system.hpp>
 #include <vector>
@@ -39,25 +39,19 @@
 #include <set>
 #include <functional>
 
-const Vec2f tile_size(16, 16);
-
-const Mtx<float, 2, 2> tile_projection{
-  tile_size[0],    -tile_size[0],
-  tile_size[1] / 2, tile_size[1] / 2};
-
 class Game_Screen : public Game_State {
  public:
   Game_Screen()
-      : tiletex(0)
-      , fonter(font_sheet, font_data, font_height)
-      , msg_buffer(fonter)
-      , entities()
-      , terrain()
-      , spatial(entities, terrain)
-      , fov(entities, terrain, spatial)
-      , sprite(fov)
-      , fx()
-      , action(entities, terrain, spatial, fov, fx) {}
+    : fonter(font_sheet, font_data, font_height)
+    , msg_buffer(fonter)
+    , entities()
+    , terrain()
+    , spatial(entities, terrain)
+    , fov(entities, terrain, spatial)
+    , sprite(fov)
+    , fx(sprite)
+    , display(entities, terrain, spatial, fov, sprite)
+    , action(entities, terrain, spatial, fov, fx) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -66,20 +60,14 @@ class Game_Screen : public Game_State {
   virtual void update(float interval_seconds);
   virtual void draw();
 
-  void generate_sprites(std::set<Sprite>& output);
-
   void do_ai();
   void end_game();
 
   void draw_tile(int idx, const Vec2f& pos);
   void draw_tile(int idx, const Vec2f& pos, const Color& color);
 
-  GLuint tiletex;
-
   Fonter_System fonter;
   Message_Buffer msg_buffer;
-
-  std::vector<std::shared_ptr<Drawable>> entity_drawables;
 
   Entities_System entities;
   Terrain_System terrain;
@@ -87,6 +75,7 @@ class Game_Screen : public Game_State {
   Fov_System fov;
   Sprite_System sprite;
   Ui_Fx_System fx;
+  Display_System display;
   Action_System action;
 
 private:

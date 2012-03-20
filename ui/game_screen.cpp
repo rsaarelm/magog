@@ -17,23 +17,12 @@
 */
 
 #include "game_screen.hpp"
-#include "intro_screen.hpp"
-#include "tile_drawable.hpp"
+#include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
-#include <world/cavegen.hpp>
 #include <world/parts.hpp>
-#include <util/color.hpp>
-#include <util/vec.hpp>
-#include <util/mtx.hpp>
-#include <util/surface.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
-#include <util/gldraw.hpp>
 #include <util/game_loop.hpp>
-#include <GL/gl.h>
-#include <vector>
-#include <sstream>
-#include <string>
 
 using namespace std;
 
@@ -61,38 +50,6 @@ private:
   float life;
 };
 
-
-Tile_Rect tile_rects[] = {
-#include <tile_rect.hpp>
-};
-
-uint8_t tiles_png[] = {
-#include <tile_atlas.hpp>
-};
-
-Surface g_tile_surface;
-
-#if 0
-// TODO: Move to Terrain_System0
-
-bool is_wall(Location loc) {
-  return terrain_data[terrain.get(loc)].kind == wall_terrain;
-}
-
-int wall_mask(Location loc) {
-  int result = 0;
-  for (size_t i = 0; i < hex_dirs.size(); i++)
-    result += is_wall(loc + hex_dirs[i]) << i;
-  return result;
-}
-#endif
-
-static GLuint load_tile_tex() {
-  // XXX: Expensive to call this more than once. Should have a media cache if I have more media.
-  g_tile_surface.load_image(tiles_png, sizeof(tiles_png));
-  return make_texture(g_tile_surface);
-}
-
 Entity Game_Screen::spawn_infantry(Location location) {
   auto entity = entities.create();
   entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_infantry, 3, 6, 2)));
@@ -113,27 +70,7 @@ Entity Game_Screen::spawn_armor(Location location) {
   return entity;
 }
 
-static shared_ptr<Drawable> tile_drawable(GLuint texture, int index, Color color,
-                                          Vec2f offset = Vec2f(0, 0)) {
-  return shared_ptr<Drawable>(
-    new Tile_Drawable(
-      texture,
-      color,
-      tile_rects[index],
-      g_tile_surface.get_dim(),
-      offset));
-}
-
 void Game_Screen::enter() {
-  tiletex = load_tile_tex();
-
-  // TODO: Less verbose data entry.
-  entity_drawables.clear();
-  entity_drawables.push_back(tile_drawable(tiletex, 8, "#f0f"));
-  entity_drawables.push_back(tile_drawable(tiletex, 22, "#0f7"));
-  entity_drawables.push_back(tile_drawable(tiletex, 24, "#fd0"));
-  entity_drawables.push_back(tile_drawable(tiletex, 27, "#88f", -tile_size));
-
   // XXX: Ensure player entity exists. Hacky magic number id.
   entities.create(1);
 
@@ -216,7 +153,6 @@ void Game_Screen::enter() {
 }
 
 void Game_Screen::exit() {
-  glDeleteTextures(1, &tiletex);
 }
 
 int from_colemak(int keysym) {
@@ -350,7 +286,7 @@ void Game_Screen::draw() {
   glClear(GL_COLOR_BUFFER_BIT);
 
   set<Sprite> sprites;
-  generate_sprites(sprites);
+  display.world_sprites(sprites);
   for (auto sprite : sprites) {
     auto draw_pos = Vec2f(projection * Vec3f(sprite.pos[0], sprite.pos[1], 1));
     sprite.draw(draw_pos);
@@ -361,45 +297,4 @@ void Game_Screen::draw() {
   Color("beige").gl_color();
   fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
               entities.as<Blob_Part>(spatial.get_player()).armor);
-}
-
-void Game_Screen::generate_sprites(std::set<Sprite>& output) {
-  const int terrain_layer = 1;
-  const int entity_layer = 2;
-
-  try {
-    auto loc = spatial.location(spatial.get_player());
-    for (int y = -8; y <= 8; y++) {
-      for (int x = -8; x <= 8; x++) {
-        Vec2i offset(x, y);
-        sprite.collect_sprites(offset, output);
-        auto loc = fov.view_location(offset);
-        if (loc.is_null())
-          continue;
-
-        bool in_fov = fov.is_seen(loc);
-
-        // TODO: Darken terrain out of fov.
-        auto ter = terrain_data[terrain.get(loc)];
-        auto color = ter.color;
-        if (!in_fov)
-          color = lerp(0.5, Color("black"), color.monochrome());
-        auto terrain_tile = tile_drawable(
-          tiletex,
-          ter.icon,
-          color);
-        output.insert(Sprite{terrain_layer, offset, std::move(terrain_tile)});
-
-        if (in_fov) {
-          for (auto& pair : spatial.entities_with_offsets_at(loc)) {
-            Entity& entity = pair.second;
-            auto& blob = entities.as<Blob_Part>(entity);
-            output.insert(Sprite{entity_layer, offset + pair.first, entity_drawables[blob.icon]});
-          }
-        }
-      }
-    }
-  } catch (Entity_Exception& e) {
-    // No player entity found or no valid Loction component in it.
-  }
 }

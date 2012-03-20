@@ -78,6 +78,7 @@ add_executable(${TARGETNAME}
 
   ui/main.cpp
   ui/intro_screen.cpp
+  ui/display_system.cpp
   ui/ui_fx_system.cpp
   ui/game_screen.cpp
   ui/message_buffer.cpp
