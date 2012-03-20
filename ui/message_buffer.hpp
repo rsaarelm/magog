@@ -20,6 +20,7 @@
 #define MESSAGE_BUFFER_HPP
 
 #include <util/color.hpp>
+#include <util/fonter_system.hpp>
 #include <string>
 #include <queue>
 #include <list>
@@ -31,7 +32,7 @@ struct Message_String {
 
 class Message_Buffer {
  public:
-  Message_Buffer();
+  Message_Buffer(Fonter_System& fonter);
   void update(float interval_seconds);
   void draw();
   void add_msg(std::string str);
@@ -40,6 +41,10 @@ class Message_Buffer {
   Color text_color;
   Color edge_color;
  private:
+  void my_draw_text(const Vec2i& pos, const char* txt);
+
+  Fonter_System& fonter;
+
   // Update the total time when texts will be read and return the time
   // the user should have read added_text.
   float time_read(std::string added_text);

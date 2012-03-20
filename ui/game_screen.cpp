@@ -25,7 +25,6 @@
 #include <util/color.hpp>
 #include <util/vec.hpp>
 #include <util/mtx.hpp>
-#include <util/font.hpp>
 #include <util/surface.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
@@ -40,7 +39,7 @@ using namespace std;
 
 class DemoThingie : public Drawable {
 public:
-  DemoThingie() : life(10) { }
+  DemoThingie(Fonter_System& fonter) : fonter(fonter), life(10) { }
   virtual ~DemoThingie() { }
 
   virtual bool update(float interval_sec) {
@@ -53,11 +52,12 @@ public:
     static char buf[256];
     snprintf(buf, sizeof(buf), "DemoThingie represent: %d", static_cast<int>(life));
     Color("white").gl_color();
-    draw_text(offset + Vec2f(-text_width(buf) / 2, -font_height()), buf);
+    fonter.draw(offset + Vec2f(-fonter.width(buf) / 2, -fonter.height()), buf);
   }
 
   virtual int get_z_layer() const { return 100; }
 private:
+  Fonter_System& fonter;
   float life;
 };
 
@@ -243,7 +243,7 @@ void Game_Screen::key_event(int keysym, int printable) {
     case 's': delta = Vec2i(1, 1); break;
     case 'd': delta = Vec2i(1, 0); break;
     case '1':
-      sprite.add(std::shared_ptr<Drawable>(new DemoThingie()), spatial.location(spatial.get_player()));
+      sprite.add(std::shared_ptr<Drawable>(new DemoThingie(fonter)), spatial.location(spatial.get_player()));
       break;
     case 'u':
       action.shoot(spatial.get_player(), Vec2i(-1, 0));
@@ -359,8 +359,8 @@ void Game_Screen::draw() {
   msg_buffer.draw();
 
   Color("beige").gl_color();
-  draw_text({0, Registry::window_h - 20.0f}, "Armor level: %d",
-            entities.as<Blob_Part>(spatial.get_player()).armor);
+  fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
+              entities.as<Blob_Part>(spatial.get_player()).armor);
 }
 
 void Game_Screen::generate_sprites(std::set<Sprite>& output) {

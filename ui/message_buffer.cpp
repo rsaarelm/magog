@@ -19,23 +19,23 @@
 #include "message_buffer.hpp"
 #include <GL/glew.h>
 #include <util/vec.hpp>
-#include <util/font.hpp>
 #include <util/game_loop.hpp>
 
 using namespace std;
 
-static void my_draw_text(const Message_Buffer& buffer, const Vec2i& pos, const char* txt) {
-  buffer.edge_color.gl_color();
-  draw_text(pos + Vec2i(-1, 0), txt);
-  draw_text(pos + Vec2i(0, -1), txt);
-  draw_text(pos + Vec2i(1, 0), txt);
-  draw_text(pos + Vec2i(0, 1), txt);
-  buffer.text_color.gl_color();
-  draw_text(pos, txt);
+void Message_Buffer::my_draw_text(const Vec2i& pos, const char* txt) {
+  edge_color.gl_color();
+  fonter.draw(pos + Vec2i(-1, 0), txt);
+  fonter.draw(pos + Vec2i(0, -1), txt);
+  fonter.draw(pos + Vec2i(1, 0), txt);
+  fonter.draw(pos + Vec2i(0, 1), txt);
+  text_color.gl_color();
+  fonter.draw(pos, txt);
 }
 
-Message_Buffer::Message_Buffer()
-  : text_color("white")
+Message_Buffer::Message_Buffer(Fonter_System& fonter)
+  : fonter(fonter)
+  , text_color("white")
   , edge_color("black")
   , clock(0)
   , read_new_text_time(0)
@@ -60,10 +60,10 @@ void Message_Buffer::update(float interval_seconds) {
 
 void Message_Buffer::draw() {
   Vec2f pos(0, 0);
-  Vec2f offset(0, font_height());
+  Vec2f offset(0, fonter.height());
   for (auto msg: messages) {
     // TODO: Support multiline messages
-    my_draw_text(*this, pos, msg.text.c_str());
+    my_draw_text(pos, msg.text.c_str());
     pos += offset;
   }
 
@@ -72,7 +72,7 @@ void Message_Buffer::draw() {
     auto txt = captions.front().text.c_str();
     auto dim = Game_Loop::get().get_dim();
     // XXX: Recalculating TextWidth is expensive for every frame.
-    my_draw_text(*this, Vec2f(dim[0] / 2 - text_width(txt) / 2, dim[1] / 2), txt);
+    my_draw_text(Vec2f(dim[0] / 2 - fonter.width(txt) / 2, dim[1] / 2), txt);
   }
 }
 

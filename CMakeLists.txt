@@ -67,7 +67,6 @@ add_executable(${TARGETNAME}
   util/surface.cpp
   util/gldraw.cpp
   util/gl_texture.cpp
-  util/font.cpp
   util/fonter_system.cpp
   util/format.cpp
   util/imgui_system.cpp

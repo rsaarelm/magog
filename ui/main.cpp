@@ -20,7 +20,6 @@
 #include <ui/registry.hpp>
 #include <GL/glew.h>
 #include <util/game_loop.hpp>
-#include <util/font.hpp>
 #include <util/winmain.hpp>
 #include <string.h>
 #include <stdio.h>
@@ -36,7 +35,6 @@ int main(int argc, char* argv[])
 
   Game_Loop& game = Game_Loop::init(Registry::window_w, Registry::window_h, "Telos");
 
-  init_font();
   game.push_state(new Intro_Screen);
   game.run();
   return 0;

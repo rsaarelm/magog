@@ -25,6 +25,7 @@
 #include <ui/ui_fx_system.hpp>
 #include <ui/sprite.hpp>
 #include <ui/sprite_system.hpp>
+#include <ui/font_data.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
@@ -32,6 +33,7 @@
 #include <world/action_system.hpp>
 #include <util/mtx.hpp>
 #include <util/game_state.hpp>
+#include <util/fonter_system.hpp>
 #include <vector>
 #include <memory>
 #include <set>
@@ -47,6 +49,8 @@ class Game_Screen : public Game_State {
  public:
   Game_Screen()
       : tiletex(0)
+      , fonter(font_sheet, font_data, font_height)
+      , msg_buffer(fonter)
       , entities()
       , terrain()
       , spatial(entities, terrain)
@@ -72,6 +76,7 @@ class Game_Screen : public Game_State {
 
   GLuint tiletex;
 
+  Fonter_System fonter;
   Message_Buffer msg_buffer;
 
   std::vector<std::shared_ptr<Drawable>> entity_drawables;

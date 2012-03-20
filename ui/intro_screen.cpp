@@ -21,11 +21,10 @@
 #include <ui/registry.hpp>
 #include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
-#include <util/font.hpp>
 #include <GL/glew.h>
 
 Intro_Screen::Intro_Screen()
-  : fonter(font_sheet, font_data, 13)
+  : fonter(font_sheet, font_data, font_height)
   , imgui(fonter) {}
 
 void Intro_Screen::key_event(int keysym, int printable) {

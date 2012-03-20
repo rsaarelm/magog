@@ -30,4 +30,6 @@ const std::vector<Fonter_System::Font_Data> font_data {
 #include <font_data.hpp>
 };
 
+const int font_height = 13;
+
 #endif
