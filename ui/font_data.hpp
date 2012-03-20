@@ -1,4 +1,4 @@
-/* intro_screen.hpp
+/* font_data.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,27 +15,19 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef UI_FONT_DATA_HPP
+#define UI_FONT_DATA_HPP
 
-#ifndef INTRO_SCREEN_HPP
-#define INTRO_SCREEN_HPP
-
-#include <util/game_state.hpp>
 #include <util/fonter_system.hpp>
+#include <util/surface.hpp>
+#include <vector>
 
-class Intro_Screen : public Game_State {
- public:
-  Intro_Screen();
+const Surface font_sheet {
+#include <font_image.hpp>
+};
 
-  virtual ~Intro_Screen() {}
-
-  virtual void enter() {}
-  virtual void exit() {}
-  virtual void key_event(int keysym, int printable);
-  virtual void update(float interval_seconds) {}
-  virtual void draw();
-
- private:
-  Fonter_System fonter;
+const std::vector<Fonter_System::Font_Data> font_data {
+#include <font_data.hpp>
 };
 
 #endif

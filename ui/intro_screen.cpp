@@ -19,10 +19,14 @@
 #include "intro_screen.hpp"
 #include <ui/game_screen.hpp>
 #include <ui/registry.hpp>
+#include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
 #include <util/imgui.hpp>
 #include <util/font.hpp>
 #include <GL/glew.h>
+
+Intro_Screen::Intro_Screen()
+  : fonter(font_sheet, font_data, 13) {}
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {
@@ -53,9 +57,10 @@ void Intro_Screen::draw() {
   glOrtho(0, dim[0], dim[1], 0, -1, 1);
 
   glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
   glScalef(4.0, 4.0, 1.0);
   Color(196, 255, 196).gl_color();
-  draw_text(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
+  fonter.draw(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
   glLoadIdentity();
 
   if (im_button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
