@@ -39,6 +39,13 @@ Surface::Surface(const char* filename)
   load_image(filename);
 }
 
+Surface::Surface(std::initializer_list<uint8_t> args)
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
+  load_image(args.begin(), args.size());
+}
+
 Surface::Surface(int width, int height)
     : data_(nullptr)
     , width_(0)

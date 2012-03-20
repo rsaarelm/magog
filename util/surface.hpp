@@ -25,11 +25,13 @@
 #include <cstdlib>
 #include <algorithm>
 #include <vector>
+#include <initializer_list>
 
 class Surface {
  public:
   Surface();
   Surface(const char* filename);
+  Surface(std::initializer_list<uint8_t> args);
   Surface(int width, int height);
   Surface(const Vec2i& dim);
   ~Surface();
