@@ -79,9 +79,9 @@ void process(
   Fov_Group group(local_origin, *begin);
   for (auto a = begin; a.is_below(end); ++a) {
     if (Fov_Group(local_origin, *a) != group) {
+      process(rfov, range, local_origin, a, end);
       if (!group.opaque)
         process(rfov, range, local_origin + group.portal, begin.extended(), a.extended());
-      process(rfov, range, local_origin, a, end);
       return;
     }
     rfov[*a] = local_origin + *a;
