@@ -312,6 +312,22 @@ T inner_product(const Vec<T, N>& lhs, const Vec<T, N>& rhs) {
   return result;
 }
 
+template<class T, int N>
+Vec<T, N> elem_min(const Vec<T, N>& lhs, const Vec<T, N>& rhs) {
+  Vec<T, N> result;
+  for (int i = 0; i < N; i++)
+    result[i] = std::min(lhs[i], rhs[i]);
+  return result;
+}
+
+template<class T, int N>
+Vec<T, N> elem_max(const Vec<T, N>& lhs, const Vec<T, N>& rhs) {
+  Vec<T, N> result;
+  for (int i = 0; i < N; i++)
+    result[i] = std::max(lhs[i], rhs[i]);
+  return result;
+}
+
 /// Complex product
 template<class T>
 Vec<T, 2> operator*(const Vec<T, 2>& lhs, const Vec<T, 2>& rhs) {

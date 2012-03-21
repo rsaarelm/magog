@@ -40,6 +40,17 @@ template<class T, int N> class Box {
     ASSERT(all_of(dim_vec, [](T x) { return x >= 0; }));
   }
 
+  template<class ForwardIterator>
+  static Box<T, N> smallest_containing(ForwardIterator first, ForwardIterator last) {
+    Vec<T, N> min = *first;
+    Vec<T, N> max = *first;
+    while (++first != last) {
+      min = elem_min(min, *first);
+      max = elem_max(max, *first);
+    }
+    return Box<T, N>(min, max - min);
+  }
+
   bool contains(const Vec<T, N>& pos) const {
     return pairwise_all_of(min_pt, pos, [](T a, T b) { return a <= b; }) &&
         pairwise_all_of(pos, max(), [](T a, T b) { return a < b; });
