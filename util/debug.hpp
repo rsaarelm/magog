@@ -19,8 +19,9 @@
 #ifndef UTIL_DEBUG_HPP
 #define UTIL_DEBUG_HPP
 
-#include <stdio.h>
+#include <util/format.hpp>
 #include <SDL/SDL.h>
+#include <stdio.h>
 
 class Print_Time {
 public:
@@ -33,5 +34,10 @@ private:
   const char* msg;
   long ms_ticks;
 };
+
+template<typename... Args>
+void log_print(const char* fmt, Args... args) {
+  printf("%s", format(fmt, args...).c_str());
+}
 
 #endif
