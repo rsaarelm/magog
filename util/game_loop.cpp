@@ -58,7 +58,7 @@ void Game_Loop::update_state_stack() {
 void init_gl() {
   GLenum err = glewInit();
   if (GLEW_OK != err) {
-    die("GLEW init failed: %d", err);
+    die("GLEW init failed: %s", err);
   }
   if (!GLEW_VERSION_2_0) {
     die("OpenGL 2.0 not available.\nMake sure your video drivers are up to date.");

@@ -35,9 +35,4 @@ private:
   long ms_ticks;
 };
 
-template<typename... Args>
-void log_print(const char* fmt, Args... args) {
-  printf("%s", format(fmt, args...).c_str());
-}
-
 #endif

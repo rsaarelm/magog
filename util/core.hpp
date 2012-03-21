@@ -22,6 +22,7 @@
 /// \file core.hpp \brief Low-level helper utilities.
 
 #include <cstddef>
+#include <util/format.hpp>
 
 template<size_t N, size_t I=0>
 struct _hash_calc {
@@ -47,12 +48,22 @@ constexpr size_t const_hash(const char (&s)[N]) {
 size_t hash(const char* s);
 
 /// Terminate program with an error message.
-void die(const char* format, ...);
+void die(const char* str);
+
+template<typename T, typename... Args>
+void die(const char* fmt, T value, Args... args) {
+  die(format(fmt, value, args...).c_str());
+}
 
 #ifdef NDEBUG
 #define ASSERT(expr) ((void)0)
 #else
-#define ASSERT(expr) ((expr) ? ((void)0) : die("Assertion %s failed at %s: %d", #expr, __FILE__, __LINE__))
+#define ASSERT(expr) ((expr) ? ((void)0) : die("Assertion %s failed at %s: %s", #expr, __FILE__, __LINE__))
 #endif
+
+template<typename... Args>
+void log_print(const char* fmt, Args... args) {
+  printf("%s", format(fmt, args...).c_str());
+}
 
 #endif

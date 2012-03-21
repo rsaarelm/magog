@@ -27,6 +27,8 @@ class Format_Exception : public std::exception {};
 
 std::string format(const char* fmt);
 
+void die(const char* str);
+
 template<typename T, typename... Args>
 std::string format(const char* fmt, T value, Args... args) {
   std::stringstream result;
@@ -34,7 +36,7 @@ std::string format(const char* fmt, T value, Args... args) {
   while (*fmt) {
     if (*fmt == '%' && *(++fmt) != '%') {
       if (*fmt++ != 's')
-        throw "format only supports %s";
+        die("format only supports %s");
       result << value;
       result << format(fmt, args...);
       return result.str();
@@ -43,7 +45,7 @@ std::string format(const char* fmt, T value, Args... args) {
     }
   }
 
-  throw "extra arguments given to format";
+  die("extra arguments given to format");
 }
 
 #endif

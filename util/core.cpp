@@ -24,18 +24,12 @@
 #include <windows.h>
 #endif
 
-void die(const char* format, ...) {
-  va_list ap;
-  va_start(ap, format);
+void die(const char* str) {
   #ifdef __WIN32__
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  MessageBox(NULL, buffer, "Error", MB_OK);
+  MessageBox(NULL, str, "Error", MB_OK);
   #else
-  vfprintf(stderr, format, ap);
-  fprintf(stderr, "\n");
+  fprintf(stderr, "%s\n", str);
   #endif
-  va_end(ap);
   exit(1);
 }
 

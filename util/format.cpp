@@ -23,7 +23,7 @@ std::string format(const char* fmt) {
 
   while (*fmt) {
     if (*fmt == '%' && *(++fmt) != '%')
-      throw "format missing arguments in fmt string";
+      die("format missing arguments in fmt string");
     result << *fmt++;
   }
 

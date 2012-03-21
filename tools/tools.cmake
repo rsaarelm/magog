@@ -14,6 +14,7 @@ if (NOT CMAKE_CROSSCOMPILING)
     tools/build-atlas.cpp
     util/surface.cpp
     util/core.cpp
+    util/format.cpp
     contrib/stb/stb_image.c
     )
   target_link_libraries(build-atlas ${M_LIBRARY})
