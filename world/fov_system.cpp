@@ -19,6 +19,7 @@
 #include "fov_system.hpp"
 #include <world/parts.hpp>
 #include <util/hex.hpp>
+#include <functional>
 
 using namespace std;
 
@@ -69,25 +70,25 @@ struct Angle {
 };
 
 void process(
-    Relative_Fov& rfov,
-    int range,
-    Location local_origin,
-    Angle begin = Angle{0, 1},
-    Angle end = Angle{6, 1}) {
+  std::function<void(const Vec2i&, Location)> callback,
+  int range,
+  Location local_origin,
+  Angle begin = Angle{0, 1},
+  Angle end = Angle{6, 1}) {
   if (begin.radius > range)
     return;
   Fov_Group group(local_origin, *begin);
   for (auto a = begin; a.is_below(end); ++a) {
     if (Fov_Group(local_origin, *a) != group) {
-      process(rfov, range, local_origin, a, end);
+      process(callback, range, local_origin, a, end);
       if (!group.opaque)
-        process(rfov, range, local_origin + group.portal, begin.extended(), a.extended());
+        process(callback, range, local_origin + group.portal, begin.extended(), a.extended());
       return;
     }
-    rfov[*a] = local_origin + *a;
+    callback(*a, local_origin + *a);
   }
   if (!group.opaque)
-    process(rfov, range, local_origin + group.portal, begin.extended(), end.extended());
+    process(callback, range, local_origin + group.portal, begin.extended(), end.extended());
 }
 
 Relative_Fov hex_field_of_view(
@@ -95,7 +96,7 @@ Relative_Fov hex_field_of_view(
     Location origin) {
   Relative_Fov result;
   result[Vec2i(0, 0)] = origin;
-  process(result, range, origin);
+  process([&](const Vec2i& pos, Location loc) { result[pos] = loc; }, range, origin);
   return result;
 }
 
