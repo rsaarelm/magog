@@ -19,7 +19,9 @@
 #include "display_system.hpp"
 #include <world/parts.hpp>
 #include <ui/tile_drawable.hpp>
+#include <ui/registry.hpp>
 #include <util/surface.hpp>
+#include <set>
 
 static const Tile_Rect tile_rects[] = {
 #include <tile_rect.hpp>
@@ -46,6 +48,35 @@ Display_System::Display_System(
   entity_drawables.push_back(tile_drawable(22, "#0f7"));
   entity_drawables.push_back(tile_drawable(24, "#fd0"));
   entity_drawables.push_back(tile_drawable(27, "#88f", -tile_size));
+}
+
+void Display_System::draw() {
+  // No player, no show.
+  // TODO Make this more decoupled from a locked player so we don't need hacks
+  // like this.
+  if (!entities.exists(spatial.get_player()))
+    return;
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  auto dim = Vec2i(Registry::window_w, Registry::window_h);
+  glOrtho(0, dim[0], dim[1], 0, -1, 1);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  Mtx<float, 3, 3> projection{
+    16, -16, static_cast<float>(dim[0]/2),
+    8,   8,  static_cast<float>(dim[1]/3),
+    0,   0,  1};
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  std::set<Sprite> sprites;
+  world_sprites(sprites);
+  for (auto sprite : sprites) {
+    auto draw_pos = Vec2f(projection * Vec3f(sprite.pos[0], sprite.pos[1], 1));
+    sprite.draw(draw_pos);
+  }
 }
 
 void Display_System::world_sprites(std::set<Sprite>& output) {

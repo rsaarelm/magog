@@ -265,33 +265,6 @@ void Game_Screen::end_game() {
 }
 
 void Game_Screen::draw() {
-  // No player, no show.
-  // TODO Make this more decoupled from a locked player so we don't need hacks
-  // like this.
-  if (!entities.exists(spatial.get_player()))
-    return;
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  auto dim = Game_Loop::get().get_dim();
-  glOrtho(0, dim[0], dim[1], 0, -1, 1);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  Mtx<float, 3, 3> projection{
-    16, -16, static_cast<float>(dim[0]/2),
-    8,   8,  static_cast<float>(dim[1]/3),
-    0,   0,  1};
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  set<Sprite> sprites;
-  display.world_sprites(sprites);
-  for (auto sprite : sprites) {
-    auto draw_pos = Vec2f(projection * Vec3f(sprite.pos[0], sprite.pos[1], 1));
-    sprite.draw(draw_pos);
-  }
-
+  display.draw();
   hud.draw();
-
 }

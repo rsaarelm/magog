@@ -47,6 +47,8 @@ public:
     Fov_System& fov,
     Sprite_System& sprite);
 
+  void draw();
+
   void world_sprites(std::set<Sprite>& output);
 
   std::shared_ptr<Drawable> tile_drawable(
