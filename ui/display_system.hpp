@@ -36,6 +36,8 @@ const Mtx<float, 2, 2> tile_projection{
   tile_size[0],    -tile_size[0],
   tile_size[1] / 2, tile_size[1] / 2};
 
+const Mtx<float, 2, 2> tile_projection_inv = inverse(tile_projection);
+
 class Display_System {
 public:
   Display_System(
