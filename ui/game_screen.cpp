@@ -209,7 +209,7 @@ void Game_Screen::key_event(int keysym, int printable) {
       {
         printf("Benchmarking lots of FOV\n");
         double t = Game_Loop::get().get_seconds();
-        int n = 1000;
+        int n = 100;
         for (int i = 0; i < n; i++)
           fov.do_fov();
         t = Game_Loop::get().get_seconds() - t;
