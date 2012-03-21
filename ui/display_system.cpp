@@ -19,9 +19,9 @@
 #include "display_system.hpp"
 #include <world/parts.hpp>
 #include <ui/tile_drawable.hpp>
-#include <ui/registry.hpp>
 #include <util/surface.hpp>
 #include <set>
+#include <algorithm>
 
 static const Tile_Rect tile_rects[] = {
 #include <tile_rect.hpp>
@@ -50,7 +50,7 @@ Display_System::Display_System(
   entity_drawables.push_back(tile_drawable(27, "#88f", -tile_size));
 }
 
-void Display_System::draw() {
+void Display_System::draw(const Rectf& screen_rect) {
   // No player, no show.
   // TODO Make this more decoupled from a locked player so we don't need hacks
   // like this.
@@ -59,32 +59,45 @@ void Display_System::draw() {
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  auto dim = Vec2i(Registry::window_w, Registry::window_h);
+  auto dim = screen_rect.dim();
   glOrtho(0, dim[0], dim[1], 0, -1, 1);
+
+  Vec2f offset = (dim - tile_size) * .5f;
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   Mtx<float, 3, 3> projection{
-    16, -16, static_cast<float>(dim[0]/2),
-    8,   8,  static_cast<float>(dim[1]/3),
+    16, -16, offset[0],
+    8,   8,  offset[1],
     0,   0,  1};
+
+  auto inv_projection = inverse(projection);
+
+  std::vector<Vec2f> fov_vertices;
+  for (auto& vtx : screen_rect.vertices())
+    fov_vertices.push_back((inv_projection * vtx.homogenize()).dehomogenize());
+
+  Rectf fov_sub_rect = Rectf::smallest_containing(fov_vertices.begin(), fov_vertices.end());
+  Vec2i fov_min(floor(fov_sub_rect.min()[0]), floor(fov_sub_rect.min()[1]));
+  Vec2i fov_max(ceil(fov_sub_rect.max()[0]), ceil(fov_sub_rect.max()[1]));
+
   glClear(GL_COLOR_BUFFER_BIT);
 
   std::set<Sprite> sprites;
-  world_sprites(sprites);
+  world_sprites(Recti(fov_min, fov_max - fov_min), sprites);
   for (auto sprite : sprites) {
     auto draw_pos = Vec2f(projection * Vec3f(sprite.pos[0], sprite.pos[1], 1));
     sprite.draw(draw_pos);
   }
 }
 
-void Display_System::world_sprites(std::set<Sprite>& output) {
+void Display_System::world_sprites(const Recti& fov_rect, std::set<Sprite>& output) {
   const int terrain_layer = 0x10;
   const int entity_layer = 0x20;
 
-  for (int y = -8; y <= 8; y++) {
-    for (int x = -8; x <= 8; x++) {
+  for (int y = fov_rect.min()[1]; y <= fov_rect.max()[1]; y++) {
+    for (int x = fov_rect.min()[0]; x <= fov_rect.max()[0]; x++) {
       Vec2i offset(x, y);
       sprite.collect_sprites(offset, output);
       auto loc = fov.view_location(offset);

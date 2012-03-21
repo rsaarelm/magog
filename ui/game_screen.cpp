@@ -265,6 +265,6 @@ void Game_Screen::end_game() {
 }
 
 void Game_Screen::draw() {
-  display.draw();
+  display.draw(Rectf(Vec2f(0, 0), Vec2f(Registry::window_w, Registry::window_h)));
   hud.draw();
 }

@@ -27,6 +27,7 @@
 #include <util/color.hpp>
 #include <util/vec.hpp>
 #include <util/mtx.hpp>
+#include <util/box.hpp>
 #include <set>
 #include <memory>
 
@@ -47,9 +48,9 @@ public:
     Fov_System& fov,
     Sprite_System& sprite);
 
-  void draw();
+  void draw(const Rectf& screen_rect);
 
-  void world_sprites(std::set<Sprite>& output);
+  void world_sprites(const Recti& fov_rect, std::set<Sprite>& output);
 
   std::shared_ptr<Drawable> tile_drawable(
     int index, const Color& color, const Vec2f& offset = Vec2f(0, 0));
