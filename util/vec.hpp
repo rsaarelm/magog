@@ -201,6 +201,21 @@ template<class T, int N> class Vec {
     (*this) /= abs();
   }
 
+  Vec<T, N+1> homogenize(T a=T(1)) const {
+    Vec<T, N+1> result;
+    for (int i = 0; i < N; i++)
+      result[i] = data[i]/a;
+    result[N] = a;
+    return result;
+  }
+
+  Vec<T, N-1> dehomogenize() const {
+    Vec<T, N-1> result;
+    for (int i = 0; i < N - 1; i++)
+      result[i] = data[i]/data[N-1];
+    return result;
+  }
+
 
   Mtx<T, 1, N>& as_matrix() {
     return *reinterpret_cast<Mtx<T, 1, N>*>(this);
