@@ -19,10 +19,11 @@
 #ifndef UTIL_BOX_HPP
 #define UTIL_BOX_HPP
 
-#include "alg.hpp"
-#include "vec.hpp"
-#include "core.hpp"
+#include <util/alg.hpp>
+#include <util/vec.hpp>
+#include <util/core.hpp>
 #include <algorithm>
+#include <vector>
 
 /// Axis-aligned variable-dimension box.
 template<class T, int N> class Box {
@@ -75,6 +76,25 @@ template<class T, int N> class Box {
     return std::accumulate(
         dim_vec.begin(), dim_vec.end(), T(1),
         [] (const T& a, const T& b) { return a * b; });
+  }
+
+  int num_vertices() const {
+    return 1 << N;
+  }
+
+  Vec<T, N> vertex(int idx) const {
+    ASSERT(idx >= 0 && idx < num_vertices());
+    Vec<T, N> result;
+    for (int i = 0; i < N; i++)
+      result[i] = (idx & (1 << i) ? min() : max())[i];
+    return result;
+  }
+
+  std::vector<Vec<T, N>> vertices() const {
+    std::vector<Vec<T, N>> result;
+    for (int i = 0; i < num_vertices(); i++)
+      result.push_back(vertex(i));
+    return result;
   }
 
  private:
