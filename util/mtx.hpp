@@ -100,6 +100,47 @@ Vec<T, C> operator*(const Mtx<T, C, R>& lhs, const Vec<T, C>& rhs) {
   return result.as_vector();
 }
 
+template<class T>
+constexpr T determinant(const Mtx<T, 2, 2>& mtx) {
+  return mtx[0][0] * mtx[1][1] - mtx[1][0] * mtx[0][1];
+}
+
+template<class T>
+constexpr T determinant(const Mtx<T, 3, 3>& mtx) {
+  return
+    mtx[0][0] * mtx[1][1] * mtx[2][2] +
+    mtx[1][0] * mtx[2][1] * mtx[0][2] +
+    mtx[2][0] * mtx[0][1] * mtx[1][2] -
+    mtx[2][0] * mtx[1][1] * mtx[0][2] -
+    mtx[1][0] * mtx[0][1] * mtx[2][2] -
+    mtx[0][0] * mtx[2][1] * mtx[1][2];
+}
+
+template<class T>
+constexpr Mtx<T, 2, 2> inverse(const Mtx<T, 2, 2>& mtx) {
+  T invdet = T(1) / determinant(mtx);
+  return Mtx<T, 2, 2> {
+    mtx[1][1] * invdet, -mtx[1][0] * invdet,
+   -mtx[0][1] * invdet,  mtx[0][0] * invdet};
+}
+
+template<class T>
+constexpr Mtx<T, 3, 3> inverse(const Mtx<T, 3, 3>& mtx) {
+  T invdet = T(1) / determinant(mtx);
+  return Mtx<T, 3, 3> {
+     (mtx[1][1] * mtx[2][2] - mtx[1][2] * mtx[2][1]) * invdet,
+    -(mtx[1][0] * mtx[2][2] - mtx[2][0] * mtx[1][2]) * invdet,
+     (mtx[1][0] * mtx[2][1] - mtx[2][0] * mtx[1][1]) * invdet,
+
+    -(mtx[0][1] * mtx[2][2] - mtx[2][1] * mtx[0][2]) * invdet,
+     (mtx[0][0] * mtx[2][2] - mtx[2][0] * mtx[0][2]) * invdet,
+    -(mtx[0][0] * mtx[2][1] - mtx[0][1] * mtx[2][0]) * invdet,
+
+     (mtx[0][1] * mtx[1][2] - mtx[0][2] * mtx[1][1]) * invdet,
+    -(mtx[0][0] * mtx[1][2] - mtx[0][2] * mtx[1][0]) * invdet,
+     (mtx[0][0] * mtx[1][1] - mtx[0][1] * mtx[1][0]) * invdet};
+}
+
 template<class T, int C, int R>
 std::ostream& operator<<(std::ostream& out, const Mtx<T, C, R>& mtx) {
   for (int i = 0; i < R; i++) {
