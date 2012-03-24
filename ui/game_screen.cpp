@@ -50,26 +50,6 @@ private:
   float life;
 };
 
-Entity Game_Screen::spawn_infantry(Location location) {
-  auto entity = entities.create();
-  entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_infantry, 3, 6, 2)));
-  if (spatial.can_pop(entity, location))
-    spatial.pop(entity, location);
-  else
-    entities.destroy(entity);
-  return entity;
-}
-
-Entity Game_Screen::spawn_armor(Location location) {
-  auto entity = entities.create();
-  entities.add(entity, unique_ptr<Part>(new Blob_Part(icon_tank, 5, 8, 4)));
-  if (spatial.can_pop(entity, location))
-    spatial.pop(entity, location);
-  else
-    entities.destroy(entity);
-  return entity;
-}
-
 void Game_Screen::enter() {
   // XXX: Ensure player entity exists. Hacky magic number id.
   entities.create(1);
@@ -115,14 +95,11 @@ void Game_Screen::enter() {
       terrain.set_portal(
         {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
 
+  factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1), spatial.get_player());
+
   for (int i = 0; i < 16; i++) {
-    // TODO: random location function
-    auto loc = terrain.location(1, Vec2i(rand_int(10), rand_int(10)));
-    // TODO: check if loc is occupied
-    if (one_chance_in(3))
-      spawn_armor(loc);
-    else
-      spawn_infantry(loc);
+    auto spec = one_chance_in(3) ? spec_armor : spec_infantry;
+    factory.spawn(spec, factory.random_spawn_point(spec, 1));
   }
 
   for (auto pos : hex_circle_points(r)) {
@@ -132,21 +109,6 @@ void Game_Screen::enter() {
     terrain.set({1, pos}, terrain_void);
   }
 
-  auto player = spatial.get_player();
-  entities.add(player, unique_ptr<Part>(new Blob_Part(icon_telos, 7, 40, 10, true)));
-
-  auto locations = terrain.area_locations(1);
-  int n_tries = 1024;
-  for (; n_tries; n_tries--) {
-    auto loc = rand_choice(locations);
-    if (spatial.can_pop(player, *loc)) {
-      spatial.pop(player, *loc);
-      break;
-    }
-  }
-  if (n_tries == 0) {
-    die("Couldn't find spawn point");
-  }
   fov.do_fov();
 
   hud.add_caption("Telos Unit online");

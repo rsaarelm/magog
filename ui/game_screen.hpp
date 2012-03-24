@@ -28,6 +28,7 @@
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
+#include <world/factory_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
 #include <util/game_state.hpp>
@@ -40,6 +41,7 @@ class Game_Screen : public Game_State {
     , entities()
     , terrain()
     , spatial(entities, terrain)
+    , factory(entities, terrain, spatial)
     , fov(entities, terrain, spatial)
     , sprite(fov)
     , hud(fonter, entities, spatial)
@@ -65,6 +67,7 @@ class Game_Screen : public Game_State {
   Entities_System entities;
   Terrain_System terrain;
   Spatial_System spatial;
+  Factory_System factory;
   Fov_System fov;
   Sprite_System sprite;
   Hud_System hud;
