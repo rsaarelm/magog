@@ -17,6 +17,7 @@
 */
 
 #include "spatial_system.hpp"
+#include <world/footprint.hpp>
 #include <world/parts.hpp>
 #include <util/hex.hpp>
 
@@ -60,14 +61,9 @@ Location Spatial_System::location(Entity entity) const {
 }
 
 Footprint Spatial_System::footprint(Entity entity, Location center) const {
-  Footprint result;
-  result[Vec2i(0, 0)] = center;
-  if (entities.as<Blob_Part>(entity).big) {
-    for (auto& i : hex_dirs) {
-      result[i] = center + i;
-    }
-  }
-  return result;
+  if (entities.as<Blob_Part>(entity).big)
+    return large_footprint(center);
+  return small_footprint(center);
 }
 
 Footprint Spatial_System::footprint(Entity entity) const {

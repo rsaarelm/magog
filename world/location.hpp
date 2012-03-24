@@ -22,6 +22,7 @@
 #include <util/core.hpp>
 #include <util/vec.hpp>
 #include <map>
+#include <functional>
 
 typedef uint16_t Area_Index;
 
@@ -152,5 +153,7 @@ private:
 typedef std::map<Vec2i, Plain_Location> Relative_Fov;
 
 typedef std::map<Vec2i, Plain_Location> Footprint;
+
+typedef std::function<Footprint(Location)> Footprint_Gen;
 
 #endif

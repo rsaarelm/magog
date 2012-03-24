@@ -91,6 +91,7 @@ add_executable(${TARGETNAME}
   world/spatial_system.cpp
   world/action_system.cpp
   world/fov_system.cpp
+  world/footprint.cpp
   world/location.cpp
   world/cavegen.cpp
 
