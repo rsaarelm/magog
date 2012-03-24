@@ -29,6 +29,10 @@ public:
     Entities_System& entities,
     Terrain_System& terrain);
 
+  bool is_open(
+    Plain_Location loc,
+    std::function<bool(Entity)> is_blocking_pred=[](Entity) { return true; }) const;
+
   bool can_pop(Entity entity, Location loc) const;
   void push(Entity entity);
   void pop(Entity entity);
@@ -38,9 +42,9 @@ public:
   Footprint footprint(Entity entity, Location center) const;
   Footprint footprint(Entity entity) const;
 
-  std::vector<Entity> entities_at(Location location);
-  std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location);
-  std::vector<Entity> entities_on(const Footprint& footprint);
+  std::vector<Entity> entities_at(Location location) const;
+  std::vector<std::pair<Vec2i, Entity>> entities_with_offsets_at(Location location) const;
+  std::vector<Entity> entities_on(const Footprint& footprint) const;
 
   Entity get_player() const { return Entity(1); } // XXX: Hacked hardcoded id.
 private:

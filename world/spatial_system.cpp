@@ -29,6 +29,17 @@ Spatial_System::Spatial_System(
   entities.destroy_hook([&](Entity e) { push(e); });
 }
 
+bool Spatial_System::is_open(
+  Plain_Location loc, std::function<bool(Entity)> is_blocking_pred) const {
+  auto kind = terrain_data[terrain.get(loc)].kind;
+  if (!(kind == open_terrain || kind == curtain_terrain))
+    return false;
+  for (auto& e : entities_at(terrain.location(loc))) {
+    if (is_blocking_pred(e))
+      return false;
+  }
+  return true;
+}
 
 bool Spatial_System::can_pop(Entity entity, Location loc) const {
   for (auto& pair : footprint(entity, loc)) {
@@ -70,7 +81,7 @@ Footprint Spatial_System::footprint(Entity entity) const {
   return footprint(entity, location(entity));
 }
 
-std::vector<Entity> Spatial_System::entities_at(Location location) {
+std::vector<Entity> Spatial_System::entities_at(Location location) const {
   std::vector<Entity> result;
   auto range = index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
@@ -80,7 +91,7 @@ std::vector<Entity> Spatial_System::entities_at(Location location) {
 }
 
 std::vector<std::pair<Vec2i, Entity>> Spatial_System::entities_with_offsets_at(
-  Location location) {
+  Location location) const {
   std::vector<std::pair<Vec2i, Entity>> result;
   auto range = index.equal_range(location);
   for (auto i = range.first; i != range.second; ++i) {
@@ -89,7 +100,7 @@ std::vector<std::pair<Vec2i, Entity>> Spatial_System::entities_with_offsets_at(
   return result;
 }
 
-std::vector<Entity> Spatial_System::entities_on(const Footprint& footprint) {
+std::vector<Entity> Spatial_System::entities_on(const Footprint& footprint) const {
   std::vector<Entity> result;
   for (auto& pair : footprint) {
     auto range = index.equal_range(pair.second);

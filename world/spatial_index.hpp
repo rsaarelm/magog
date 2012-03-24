@@ -27,6 +27,7 @@ template <class C>
 class Spatial_Index {
 public:
   typedef typename std::multimap<Plain_Location, std::pair<Vec2i, C>>::iterator iterator;
+  typedef typename std::multimap<Plain_Location, std::pair<Vec2i, C>>::const_iterator const_iterator;
 
   Spatial_Index() {}
 
@@ -70,6 +71,10 @@ public:
   }
 
   std::pair<iterator, iterator> equal_range(Plain_Location location) {
+    return contents.equal_range(location);
+  }
+
+  std::pair<const_iterator, const_iterator> equal_range(Plain_Location location) const {
     return contents.equal_range(location);
   }
 
