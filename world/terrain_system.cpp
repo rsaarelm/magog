@@ -21,7 +21,7 @@
 #include <util/alg.hpp>
 #include <util/hex.hpp>
 
-Location Terrain_System::location(uint16_t area, const Vec2i& pos) {
+Location Terrain_System::location(Area_Index area, const Vec2i& pos) {
   return Location(*this, area, pos[0], pos[1]);
 }
 
@@ -67,11 +67,11 @@ bool Terrain_System::blocks_sight(Plain_Location loc) {
   return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
 }
 
-std::vector<Location> Terrain_System::area_locations(uint16_t area) {
+std::vector<Location> Terrain_System::area_locations(Area_Index area) {
   ASSERT(area != 0);
   std::vector<Location> result;
-  auto i = terrain.upper_bound({static_cast<uint16_t>(area - 1), 0, 0}),
-    j = terrain.lower_bound({static_cast<uint16_t>(area + 1), 0, 0});
+  auto i = terrain.upper_bound({static_cast<Area_Index>(area - 1), 0, 0}),
+    j = terrain.lower_bound({static_cast<Area_Index>(area + 1), 0, 0});
 
   while (i->first.area < area) ++i;
   while (j->first.area > area) --j;

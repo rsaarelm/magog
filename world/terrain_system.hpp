@@ -30,7 +30,7 @@ public:
   bool contains(Location loc) const;
 
   /// Create a Location handle object that refers back to this system.
-  Location location(uint16_t area, const Vec2i& pos);
+  Location location(Area_Index area, const Vec2i& pos);
   Location location(Plain_Location loc);
   Location location();
 
@@ -46,7 +46,7 @@ public:
   bool blocks_shot(Plain_Location loc);
   bool blocks_sight(Plain_Location loc);
 
-  std::vector<Location> area_locations(uint16_t area);
+  std::vector<Location> area_locations(Area_Index area);
 
   bool is_wall(Plain_Location loc) const;
   int wall_mask(Location loc) const;

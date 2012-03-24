@@ -23,15 +23,17 @@
 #include <util/vec.hpp>
 #include <map>
 
+typedef uint16_t Area_Index;
+
 // By convention, area 0 is no-op. A default portal does nothing. A portal
 // with area 0 translates within the current area.
 
 struct Portal {
   Portal() : area(0), delta_x(0), delta_y(0) {}
 
-  Portal(uint16_t area, int8_t x, int8_t y) : area(area), delta_x(x), delta_y(y) {}
+  Portal(Area_Index area, int8_t x, int8_t y) : area(area), delta_x(x), delta_y(y) {}
 
-  Portal(uint16_t area, const Vec2i& pos) : area(area), delta_x(pos[0]), delta_y(pos[1]) {}
+  Portal(Area_Index area, const Vec2i& pos) : area(area), delta_x(pos[0]), delta_y(pos[1]) {}
 
   bool operator==(Portal rhs) const {
     return delta_x == rhs.delta_x && delta_y == rhs.delta_y && area == rhs.area;
@@ -41,7 +43,7 @@ struct Portal {
     return !((*this) == rhs);
   }
 
-  uint16_t area;
+  Area_Index area;
   int8_t delta_x, delta_y;
 };
 
@@ -51,8 +53,8 @@ struct Portal {
 class Plain_Location {
 public:
   Plain_Location() : area(0), x(0), y(0) {}
-  Plain_Location(uint16_t area, int8_t x, int8_t y) : area(area), x(x), y(y) {}
-  Plain_Location(uint16_t area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]) {}
+  Plain_Location(Area_Index area, int8_t x, int8_t y) : area(area), x(x), y(y) {}
+  Plain_Location(Area_Index area, const Vec2i& pos) : area(area), x(pos[0]), y(pos[1]) {}
 
   bool is_null() const {
     return area == 0 && x == 0 && y == 0;
@@ -88,7 +90,7 @@ public:
   };
 
   // Fit the whole thing into a 32-bit word.
-  uint16_t area;
+  Area_Index area;
   int8_t x, y;
 };
 
@@ -135,7 +137,7 @@ public:
   Portal get_portal() const;
 
 private:
-  Location(Terrain_System& terrain, uint16_t area, int8_t x, int8_t y)
+  Location(Terrain_System& terrain, Area_Index area, int8_t x, int8_t y)
     : Plain_Location(area, x, y), terrain(terrain) {}
 
   Location(Terrain_System& terrain, Plain_Location loc)
