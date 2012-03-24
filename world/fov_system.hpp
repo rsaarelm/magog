@@ -25,6 +25,7 @@
 #include <util/vec.hpp>
 #include <map>
 #include <set>
+#include <functional>
 
 class Fov_System {
 public:
@@ -39,7 +40,10 @@ public:
   bool is_seen(Location loc);
   Location view_location(const Vec2i& relative_pos);
 
-  void do_fov(int radius, Location loc, const Vec2i& offset=Vec2i(0, 0));
+  typedef std::function<void(const Vec2i&, Location)> Fov_Callback;
+
+  void run(int radius, Location origin, Fov_Callback callback);
+
   void do_fov();
 
   void move_pos(const Vec2i& delta) { subjective_pos += delta; }
@@ -50,6 +54,7 @@ private:
   Fov_System(const Fov_System&);
   Fov_System& operator=(const Fov_System&);
 
+  void do_fov(int radius, Location origin, const Vec2i& offset=Vec2i(0, 0));
   void prune();
 
   Entities_System& entities;

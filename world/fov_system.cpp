@@ -19,7 +19,6 @@
 #include "fov_system.hpp"
 #include <world/parts.hpp>
 #include <util/hex.hpp>
-#include <functional>
 
 using namespace std;
 
@@ -111,6 +110,10 @@ Location Fov_System::view_location(const Vec2i& relative_pos) {
     return terrain.location();
   else
     return terrain.location(iter->second);
+}
+
+void Fov_System::run(int radius, Location origin, Fov_Callback callback) {
+  process(callback, radius, origin);
 }
 
 void Fov_System::do_fov(int radius, Location origin, const Vec2i& offset) {
