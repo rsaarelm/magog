@@ -95,7 +95,9 @@ void Game_Screen::enter() {
       terrain.set_portal(
         {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
 
-  factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1), spatial.get_player());
+  Entity player =
+    factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1), spatial.get_player());
+  entities.as<Blob_Part>(player).faction = player_faction;
 
   for (int i = 0; i < 16; i++) {
     auto spec = one_chance_in(3) ? spec_armor : spec_infantry;

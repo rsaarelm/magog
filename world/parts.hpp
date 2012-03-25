@@ -20,6 +20,11 @@
 
 #include <world/entities_system.hpp>
 
+enum Faction {
+  player_faction,
+  npc_faction
+};
+
 /// A proto-kind as a precursor to a full-fledged parts system.
 class Blob_Part : public Part {
  public:
@@ -28,7 +33,7 @@ class Blob_Part : public Part {
   Blob_Part() {}
   Blob_Part(Entity_Icon icon, int power, int armor, int damage, bool big=false)
     : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage)
-    , base_facing(0), turret_facing(0) {}
+    , base_facing(0), turret_facing(0), faction(npc_faction) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
@@ -44,6 +49,8 @@ class Blob_Part : public Part {
   // TODO: Move these into separate Telos component or something.
   int base_facing;
   int turret_facing;
+
+  Faction faction;
  private:
   Blob_Part(const Blob_Part&);
   Blob_Part& operator=(const Blob_Part&);

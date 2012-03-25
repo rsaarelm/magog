@@ -153,3 +153,7 @@ void Action_System::start_turn_update(Entity entity) {
     blob.energy += blob.power;
   } catch (Part_Not_Found& e) {}
 }
+
+bool Action_System::is_player(Entity entity) {
+  return entities.as<Blob_Part>(entity).faction == player_faction;
+}
