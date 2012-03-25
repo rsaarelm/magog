@@ -96,3 +96,10 @@ Entity Entities_System::entity_after(Entity previous) const {
 void Entities_System::destroy_hook(Entities_System::Callback callback_fn) {
   destroy_observers.push_back(callback_fn);
 }
+
+std::vector<Entity> Entities_System::all() const {
+  std::vector<Entity> result;
+  for (auto& e : entities)
+    result.push_back(e.first);
+  return result;
+}

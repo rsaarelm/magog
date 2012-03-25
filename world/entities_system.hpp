@@ -106,6 +106,8 @@ public:
   typedef std::function<void(Entity)> Callback;
 
   void destroy_hook(Callback callback_fn);
+
+  std::vector<Entity> all() const;
 private:
   Entity_Id next_entity_id;
   std::map<Entity, std::map<Kind, std::unique_ptr<Part>>> entities;

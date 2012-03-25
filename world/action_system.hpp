@@ -23,6 +23,7 @@
 #include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/fx_system.hpp>
+#include <world/parts.hpp>
 #include <util/vec.hpp>
 
 class Action_System {
@@ -67,6 +68,8 @@ public:
 
   void kill(Entity entity);
   bool is_dead(Entity entity) const;
+
+  int count_aligned(Faction faction) const;
 private:
   Entities_System& entities;
   Terrain_System& terrain;

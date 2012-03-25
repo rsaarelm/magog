@@ -17,7 +17,6 @@
 */
 
 #include "action_system.hpp"
-#include <world/parts.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
 
@@ -51,7 +50,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
         if (!entities.exists(entity)) {
           return false;
         }
-        fx.msg("Crush!");
+        fx.msg("Unit crushed");
         fx.explosion(spatial.location(a), 10, Color("red"));
         kill(a);
       }
@@ -89,7 +88,6 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
     }
 
     if (hit_entity) {
-      fx.msg("Zap!");
       damage(loc, entities.as<Blob_Part>(entity).damage);
       break;
     }
@@ -120,6 +118,7 @@ void Action_System::damage(Entity entity, int amount) {
     blob.armor -= amount;
     if (blob.armor <= 0) {
       fx.explosion(spatial.location(entity), 10, Color("red"));
+      fx.msg("Unit destroyed");
       kill(entity);
     }
   }
@@ -226,4 +225,13 @@ bool Action_System::is_dead(Entity entity) const {
   if (!entities.exists(entity))
     return true;
   return entities.as<Blob_Part>(entity).is_dead;
+}
+
+int Action_System::count_aligned(Faction faction) const {
+  int result = 0;
+  for (auto& i : entities.all()) {
+    if (entities.as<Blob_Part>(i).faction == faction)
+      result++;
+  }
+  return result;
 }

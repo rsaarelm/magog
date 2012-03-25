@@ -49,7 +49,8 @@ class Game_Screen : public Game_State {
     , fx(sprite, hud)
     , display(entities, terrain, spatial, fov, sprite)
     , action(entities, terrain, spatial, fov, fx)
-    , cycler(entities, spatial, action) {}
+    , cycler(entities, spatial, action)
+    , state(state_playing) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -78,7 +79,15 @@ class Game_Screen : public Game_State {
   Cycler_System cycler;
 
 private:
+  enum State {
+    state_playing,
+    state_won,
+    state_lost
+  };
+
   void end_turn();
+
+  State state;
 };
 
 #endif

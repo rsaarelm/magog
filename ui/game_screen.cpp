@@ -217,16 +217,8 @@ void Game_Screen::update(float interval_seconds) {
   hud.update(interval_seconds);
   sprite.update(interval_seconds);
 
-  // TODO: Cycler-using game over sequence.
   if (!cycler.current_player())
-    cycler.run();
-
-//  if (!entities.exists(spatial.get_player())) {
-//    // TODO: Some kind of message that the player acknowledges here instead of
-//    // just a crude drop to intro.
-//    end_game();
-//    break;
-//  }
+    end_turn();
 }
 
 void Game_Screen::end_game() {
@@ -242,4 +234,17 @@ void Game_Screen::draw() {
 
 void Game_Screen::end_turn() {
   cycler.run();
+  if (state == state_playing) {
+    int n_player = action.count_aligned(player_faction);
+    int n_enemy = action.count_aligned(npc_faction);
+    if (n_player == 0) {
+      state = state_lost;
+      hud.add_caption("Unit contact lost");
+      hud.add_caption("Mission failed, press ESC to disengage");
+    } else if (n_enemy == 0) {
+      state = state_won;
+      hud.add_caption("Defending forces destroyed");
+      hud.add_caption("Mission successful, press ESC to disengage");
+    }
+  }
 }
