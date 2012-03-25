@@ -52,6 +52,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
           return false;
         }
         fx.msg("Crush!");
+        fx.explosion(spatial.location(a), 10, Color("red"));
         kill(a);
       }
     }
