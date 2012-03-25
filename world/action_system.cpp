@@ -51,7 +51,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
           return false;
         }
         fx.msg("Crush!");
-        entities.destroy(a);
+        kill(a);
       }
     }
     spatial.pop(entity, new_loc);
@@ -114,13 +114,16 @@ void Action_System::damage(Entity entity, int amount) {
     blob.armor -= amount;
     if (blob.armor <= 0) {
       fx.explosion(spatial.location(entity), 10, Color("red"));
-      entities.destroy(entity);
+      kill(entity);
     }
   }
 }
 
 bool Action_System::is_ready(Entity entity) {
   try {
+    if (is_dead(entity))
+      return false;
+
     return entities.as<Blob_Part>(entity).energy >= 0;
   } catch (Part_Not_Found& e) {
     return false;
@@ -169,4 +172,15 @@ void Action_System::update(Entity entity) {
     else
       walk(entity, dir);
   }
+}
+
+void Action_System::kill(Entity entity) {
+  spatial.push(entity);
+  entities.as<Blob_Part>(entity).is_dead = true;
+}
+
+bool Action_System::is_dead(Entity entity) const {
+  if (!entities.exists(entity))
+    return true;
+  return entities.as<Blob_Part>(entity).is_dead;
 }

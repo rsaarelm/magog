@@ -61,6 +61,9 @@ public:
   bool is_player(Entity entity);
 
   void update(Entity entity);
+
+  void kill(Entity entity);
+  bool is_dead(Entity entity) const;
 private:
   Entities_System& entities;
   Terrain_System& terrain;
