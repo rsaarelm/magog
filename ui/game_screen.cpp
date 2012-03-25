@@ -114,6 +114,9 @@ void Game_Screen::enter() {
   fov.do_fov();
 
   hud.add_caption("Telos Unit online");
+
+  // Prime the cycler.
+  cycler.run();
 }
 
 void Game_Screen::exit() {
@@ -132,65 +135,75 @@ void Game_Screen::key_event(int keysym, int printable) {
   Vec2i delta(0, 0);
   if (Registry::using_colemak)
     keysym = from_colemak(keysym);
+
   switch (keysym) {
-    case 27: // Escape
-      end_game();
-      break;
-    case 'q': delta = Vec2i(-1, 0); break;
-    case 'w': delta = Vec2i(-1, -1); break;
-    case 'e': delta = Vec2i(0, -1); break;
-    case 'a': delta = Vec2i(0, 1); break;
-    case 's': delta = Vec2i(1, 1); break;
-    case 'd': delta = Vec2i(1, 0); break;
-    case '1':
-      sprite.add(std::shared_ptr<Drawable>(new DemoThingie(fonter)), spatial.location(spatial.get_player()));
-      break;
-    case 'u':
-      action.shoot(spatial.get_player(), Vec2i(-1, 0));
-      action.next_entity();
-      break;
-    case 'i':
-      action.shoot(spatial.get_player(), Vec2i(-1, -1));
-      action.next_entity();
-      break;
-    case 'o':
-      action.shoot(spatial.get_player(), Vec2i(0, -1));
-      action.next_entity();
-      break;
-    case 'l':
-      action.shoot(spatial.get_player(), Vec2i(1, 0));
-      action.next_entity();
-      break;
-    case 'k':
-      action.shoot(spatial.get_player(), Vec2i(1, 1));
-      action.next_entity();
-      break;
-    case 'j':
-      action.shoot(spatial.get_player(), Vec2i(0, 1));
-      action.next_entity();
-      break;
-    case 'b':
-      {
-        printf("Benchmarking lots of FOV\n");
-        double t = Game_Loop::get().get_seconds();
-        int n = 100;
-        for (int i = 0; i < n; i++)
-          fov.do_fov();
-        t = Game_Loop::get().get_seconds() - t;
-        printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
-      }
-      break;
-    default:
-      break;
+  case 27: // Escape
+    end_game();
+    break;
+  case 'b':
+  {
+    printf("Benchmarking lots of FOV\n");
+    double t = Game_Loop::get().get_seconds();
+    int n = 100;
+    for (int i = 0; i < n; i++)
+      fov.do_fov();
+    t = Game_Loop::get().get_seconds() - t;
+    printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
   }
-  if (action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player())) {
-    if (delta != Vec2i(0, 0)) {
-      if (action.walk(spatial.get_player(), delta)) {
-        fov.do_fov();
-        action.next_entity();
-      } else {
-        hud.add_msg("Bump!");
-      }
+  break;
+  default:
+    break;
+  }
+
+  Entity player = cycler.current_player();
+  if (!player)
+    return;
+
+  ASSERT(action.is_ready(player));
+
+  switch (keysym) {
+  case 'q': delta = Vec2i(-1, 0); break;
+  case 'w': delta = Vec2i(-1, -1); break;
+  case 'e': delta = Vec2i(0, -1); break;
+  case 'a': delta = Vec2i(0, 1); break;
+  case 's': delta = Vec2i(1, 1); break;
+  case 'd': delta = Vec2i(1, 0); break;
+  case '1':
+    sprite.add(std::shared_ptr<Drawable>(new DemoThingie(fonter)), spatial.location(player));
+    break;
+  case 'u':
+    action.shoot(player, Vec2i(-1, 0));
+    end_turn();
+    break;
+  case 'i':
+    action.shoot(player, Vec2i(-1, -1));
+    end_turn();
+    break;
+  case 'o':
+    action.shoot(player, Vec2i(0, -1));
+    end_turn();
+    break;
+  case 'l':
+    action.shoot(player, Vec2i(1, 0));
+    end_turn();
+    break;
+  case 'k':
+    action.shoot(player, Vec2i(1, 1));
+    end_turn();
+    break;
+  case 'j':
+    action.shoot(player, Vec2i(0, 1));
+    end_turn();
+    break;
+  default:
+    break;
+  }
+  if (delta != Vec2i(0, 0)) {
+    if (action.walk(spatial.get_player(), delta)) {
+      fov.do_fov();
+      end_turn();
+    } else {
+      hud.add_msg("Bump!");
     }
   }
 }
@@ -199,16 +212,16 @@ void Game_Screen::update(float interval_seconds) {
   hud.update(interval_seconds);
   sprite.update(interval_seconds);
 
-  while (!(action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player()))) {
-    action.update(action.active_entity());
-    action.next_entity();
-    if (!entities.exists(spatial.get_player())) {
-      // TODO: Some kind of message that the player acknowledges here instead of
-      // just a crude drop to intro.
-      end_game();
-      break;
-    }
-  }
+  // TODO: Cycler-using game over sequence.
+  if (!cycler.current_player())
+    cycler.run();
+
+//  if (!entities.exists(spatial.get_player())) {
+//    // TODO: Some kind of message that the player acknowledges here instead of
+//    // just a crude drop to intro.
+//    end_game();
+//    break;
+//  }
 }
 
 void Game_Screen::end_game() {
@@ -219,4 +232,8 @@ void Game_Screen::end_game() {
 void Game_Screen::draw() {
   display.draw(Rectf(Vec2f(0, 0), Vec2f(Registry::window_w, Registry::window_h)));
   hud.draw();
+}
+
+void Game_Screen::end_turn() {
+  cycler.run();
 }

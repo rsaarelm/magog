@@ -31,6 +31,7 @@
 #include <world/factory_system.hpp>
 #include <world/fov_system.hpp>
 #include <world/action_system.hpp>
+#include <world/cycler_system.hpp>
 #include <util/game_state.hpp>
 #include <util/fonter_system.hpp>
 
@@ -47,7 +48,8 @@ class Game_Screen : public Game_State {
     , hud(fonter, entities, spatial)
     , fx(sprite, hud)
     , display(entities, terrain, spatial, fov, sprite)
-    , action(entities, terrain, spatial, fov, fx) {}
+    , action(entities, terrain, spatial, fov, fx)
+    , cycler(entities, spatial, action) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -73,10 +75,10 @@ class Game_Screen : public Game_State {
   Ui_Fx_System fx;
   Display_System display;
   Action_System action;
+  Cycler_System cycler;
 
 private:
-  Entity spawn_infantry(Location location);
-  Entity spawn_armor(Location location);
+  void end_turn();
 };
 
 #endif
