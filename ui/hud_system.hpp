@@ -45,7 +45,7 @@ class Hud_System {
     , edge_color("black")
     , clock(0)
     , read_new_text_time(0)
-    , letter_read_duration(0.2) {}
+    , letter_read_duration(0.1) {}
 
   void update(float interval_seconds);
   void draw(Entity player);
