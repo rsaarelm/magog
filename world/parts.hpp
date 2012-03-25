@@ -18,6 +18,8 @@
 #ifndef WORLD_PARTS_HPP
 #define WORLD_PARTS_HPP
 
+#include <world/entities_system.hpp>
+
 /// A proto-kind as a precursor to a full-fledged parts system.
 class Blob_Part : public Part {
  public:

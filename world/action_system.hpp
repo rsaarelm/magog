@@ -18,7 +18,6 @@
 #ifndef WORLD_ACTION_SYSTEM_HPP
 #define WORLD_ACTION_SYSTEM_HPP
 
-#include <world/entity.hpp>
 #include <world/entities_system.hpp>
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>

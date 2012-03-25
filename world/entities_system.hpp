@@ -18,11 +18,58 @@
 #ifndef WORLD_ENTITIES_SYSTEM_HPP
 #define WORLD_ENTITIES_SYSTEM_HPP
 
-#include <world/entity.hpp>
+#include <util/core.hpp>
 #include <map>
 #include <memory>
 #include <vector>
 #include <functional>
+#include <stdexcept>
+
+typedef long Entity_Id;
+
+typedef Entity_Id Entity;
+
+class Entity_Exception : public std::exception {
+};
+
+
+/// Exception thrown when a UID has no corresponding Entity.
+class Entity_Not_Found : public Entity_Exception {
+ public:
+  virtual const char* what() const throw() {
+    return "Entity not found";
+  }
+};
+
+
+/// Exception thrown when an Entity doesn't have an expected Part.
+class Part_Not_Found : public Entity_Exception {
+ public:
+  virtual const char* what() const throw() {
+    return "Part not found";
+  }
+};
+
+
+enum Entity_Icon {
+  icon_null,
+  icon_infantry,
+  icon_tank,
+  icon_telos,
+};
+
+enum Kind {
+  Blob_Kind,
+  num_kinds
+};
+
+
+class Part {
+ public:
+  virtual ~Part() {}
+
+  virtual Kind get_kind() = 0;
+};
 
 class Entities_System {
 public:

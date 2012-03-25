@@ -17,7 +17,6 @@
 */
 
 #include "entities_system.hpp"
-#include <util/core.hpp>
 #include <util/alg.hpp>
 
 Entities_System::Entities_System()
