@@ -46,6 +46,8 @@ public:
   bool bump(Entity entity, const Vec2i& dir);
   bool shoot(Entity entity, const Vec2i& dir);
 
+  void wait(Entity entity);
+
   void damage(Location location, int amount);
   void damage(Entity entity, int amount);
 
@@ -59,6 +61,7 @@ public:
   void start_turn_update(Entity entity);
 
   bool is_player(Entity entity);
+  bool is_enemy_of(Entity a, Entity b);
 
   void update(Entity entity);
 

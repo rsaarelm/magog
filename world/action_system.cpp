@@ -104,6 +104,10 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
   blob.turret_facing = vec_to_hex_dir(dir);
 }
 
+void Action_System::wait(Entity entity) {
+  entities.as<Blob_Part>(entity).energy -= 100;
+}
+
 void Action_System::damage(Location location, int amount) {
   for (auto a : spatial.entities_at(location))
     damage(a, amount);
@@ -163,15 +167,52 @@ bool Action_System::is_player(Entity entity) {
   return entities.as<Blob_Part>(entity).faction == player_faction;
 }
 
+bool Action_System::is_enemy_of(Entity a, Entity b) {
+  return entities.as<Blob_Part>(a).faction != entities.as<Blob_Part>(b).faction;
+}
+
 void Action_System::update(Entity entity) {
   // Brain-dead AI
   if (is_ready(entity)) {
-    auto& dir = *rand_choice(hex_dirs);
-    // Stupid random fire
-    if (one_chance_in(3))
-      shoot(entity, dir);
-    else
-      walk(entity, dir);
+    const int fov_radius = 5;
+
+    Entity enemy = 0;
+    Vec2i enemy_dir;
+    bool can_fire = false;
+
+    // XXX: Expensive. Should cache results instead of running this every frame.
+    fov.run(
+      fov_radius, spatial.location(entity),
+      [&](const Vec2i& offset, Location loc) {
+        for (auto& e : spatial.entities_at(loc)) {
+          if (is_enemy_of(entity, e)) {
+            if (!enemy) {
+              enemy = e;
+              enemy_dir = hex_dirs[vec_to_hex_dir(offset)];
+            }
+            if (on_hex_axis(offset) && !can_fire) {
+              can_fire = true;
+              enemy_dir = hex_dirs[vec_to_hex_dir(offset)];
+            }
+          }
+        }
+      });
+
+    auto& random_dir = *rand_choice(hex_dirs);
+
+    if (enemy) {
+      if (can_fire) {
+        shoot(entity, enemy_dir);
+      } else {
+        // TODO: Get into firing pos AI
+        walk(entity, random_dir);
+      }
+    } else {
+      if (one_chance_in(3))
+        walk(entity, random_dir);
+      else
+        wait(entity);
+    }
   }
 }
 
