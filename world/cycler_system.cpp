@@ -42,6 +42,9 @@ void Cycler_System::run() {
 
       current_entity = next;
 
+      if (action.is_dead(current_entity))
+        continue;
+
       action.start_turn_update(current_entity);
 
       if (action.is_player(current_entity)) {

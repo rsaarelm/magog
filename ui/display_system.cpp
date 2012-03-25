@@ -50,13 +50,9 @@ Display_System::Display_System(
   entity_drawables.push_back(tile_drawable(27, "#88f", -tile_size));
 }
 
-void Display_System::draw(const Rectf& screen_rect) {
-  // No player, no show.
-  // TODO Make this more decoupled from a locked player so we don't need hacks
-  // like this.
-  if (!entities.exists(spatial.get_player()))
-    return;
-
+void Display_System::draw(Entity player, const Rectf& screen_rect) {
+  // XXX: Currently fov is hardcoded to a single player entity, so the player
+  // parameter gets no use. In future, there may be support for multiple fovs.
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   auto dim = screen_rect.dim();

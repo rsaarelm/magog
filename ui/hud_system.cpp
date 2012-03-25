@@ -41,7 +41,7 @@ void Hud_System::update(float interval_seconds) {
   }
 }
 
-void Hud_System::draw() {
+void Hud_System::draw(Entity player) {
   Vec2f pos(0, 0);
   Vec2f offset(0, fonter.height());
   for (auto msg: messages) {
@@ -59,8 +59,10 @@ void Hud_System::draw() {
   }
 
   // Draw the status line.
-  fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
-              entities.as<Blob_Part>(spatial.get_player()).armor);
+  if (player) {
+    fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
+                entities.as<Blob_Part>(player).armor);
+  }
 }
 
 void Hud_System::add_msg(std::string str) {

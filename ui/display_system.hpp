@@ -48,7 +48,7 @@ public:
     Fov_System& fov,
     Sprite_System& sprite);
 
-  void draw(const Rectf& screen_rect);
+  void draw(Entity player, const Rectf& screen_rect);
 
   void world_sprites(const Recti& fov_rect, std::set<Sprite>& output);
 

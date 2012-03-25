@@ -39,8 +39,9 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     blob.energy -= 100;
     blob.base_facing = vec_to_hex_dir(dir);
 
-    // XXX Hacky. Player is tracked by the view space object.
-    if (entity == spatial.get_player())
+    // XXX Hacky. Player is tracked by the view space object. This needs to be
+    // changed if we want to support multiple FOVs.
+    if (is_player(entity))
       fov.move_pos(dir);
 
     for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {

@@ -51,9 +51,6 @@ private:
 };
 
 void Game_Screen::enter() {
-  // XXX: Ensure player entity exists. Hacky magic number id.
-  entities.create(1);
-
   // Generate portals for a looping hex area.
   const int r = 16;
 
@@ -96,7 +93,7 @@ void Game_Screen::enter() {
         {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
 
   Entity player =
-    factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1), spatial.get_player());
+    factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1));
   entities.as<Blob_Part>(player).faction = player_faction;
 
   for (int i = 0; i < 16; i++) {
@@ -111,7 +108,7 @@ void Game_Screen::enter() {
     terrain.set({1, pos}, terrain_void);
   }
 
-  fov.do_fov();
+  fov.do_fov(player);
 
   hud.add_caption("Telos Unit online");
 
@@ -140,16 +137,6 @@ void Game_Screen::key_event(int keysym, int printable) {
   case 27: // Escape
     end_game();
     break;
-  case 'b':
-  {
-    printf("Benchmarking lots of FOV\n");
-    double t = Game_Loop::get().get_seconds();
-    int n = 100;
-    for (int i = 0; i < n; i++)
-      fov.do_fov();
-    t = Game_Loop::get().get_seconds() - t;
-    printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
-  }
   break;
   default:
     break;
@@ -195,12 +182,26 @@ void Game_Screen::key_event(int keysym, int printable) {
     action.shoot(player, Vec2i(0, 1));
     end_turn();
     break;
+  case 'b':
+  {
+    printf("Benchmarking lots of FOV\n");
+    double t = Game_Loop::get().get_seconds();
+    int n = 100;
+    for (int i = 0; i < n; i++)
+      fov.do_fov(player);
+    t = Game_Loop::get().get_seconds() - t;
+    printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
+  }
+  case '2':
+    action.damage(player, 9999);
+    end_turn();
+    break;
   default:
     break;
   }
   if (delta != Vec2i(0, 0)) {
-    if (action.walk(spatial.get_player(), delta)) {
-      fov.do_fov();
+    if (action.walk(player, delta)) {
+      fov.do_fov(player);
       end_turn();
     } else {
       hud.add_msg("Bump!");
@@ -230,8 +231,9 @@ void Game_Screen::end_game() {
 }
 
 void Game_Screen::draw() {
-  display.draw(Rectf(Vec2f(0, 0), Vec2f(Registry::window_w, Registry::window_h)));
-  hud.draw();
+  Entity player = cycler.current_player();
+  display.draw(player, Rectf(Vec2f(0, 0), Vec2f(Registry::window_w, Registry::window_h)));
+  hud.draw(player);
 }
 
 void Game_Screen::end_turn() {

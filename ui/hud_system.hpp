@@ -48,7 +48,7 @@ class Hud_System {
     , letter_read_duration(0.2) {}
 
   void update(float interval_seconds);
-  void draw();
+  void draw(Entity player);
   void add_msg(std::string str);
   void add_caption(std::string str);
 

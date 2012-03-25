@@ -44,7 +44,7 @@ public:
 
   void run(int radius, Location origin, Fov_Callback callback);
 
-  void do_fov();
+  void do_fov(Entity player);
 
   void move_pos(const Vec2i& delta) { subjective_pos += delta; }
   Vec2i get_pos() const { return subjective_pos; }
