@@ -26,7 +26,7 @@ Spatial_System::Spatial_System(
   Terrain_System& terrain)
   : entities(entities)
   , terrain(terrain) {
-  entities.destroy_hook([&](Entity e) { push(e); pushed.erase(e); });
+  entities.destroy_hook([&](Entity e) { if (pushed.find(e) == pushed.end()) { push(e); pushed.erase(e); } });
 }
 
 bool Spatial_System::is_open(
