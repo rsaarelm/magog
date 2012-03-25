@@ -26,7 +26,7 @@ Spatial_System::Spatial_System(
   Terrain_System& terrain)
   : entities(entities)
   , terrain(terrain) {
-  entities.destroy_hook([&](Entity e) { push(e); });
+  entities.destroy_hook([&](Entity e) { push(e); pushed.erase(e); });
 }
 
 bool Spatial_System::is_open(
@@ -53,12 +53,15 @@ bool Spatial_System::can_pop(Entity entity, Location loc) const {
 }
 
 void Spatial_System::push(Entity entity) {
-  if (index.has(entity))
+  if (index.has(entity)) {
     index.remove(entity);
+    pushed.insert(entity);
+  }
 }
 
 void Spatial_System::pop(Entity entity) {
   ASSERT(!index.has(entity));
+  pushed.erase(entity);
   index.add(entity, footprint(entity));
 }
 
@@ -109,4 +112,11 @@ std::vector<Entity> Spatial_System::entities_on(const Footprint& footprint) cons
     }
   }
   return result;
+}
+
+void Spatial_System::destroy_pushed() {
+  for (auto& e : pushed) {
+    entities.destroy(e);
+  }
+  pushed.clear();
 }

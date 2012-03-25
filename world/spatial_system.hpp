@@ -22,6 +22,7 @@
 #include <world/terrain_system.hpp>
 #include <world/spatial_index.hpp>
 #include <vector>
+#include <set>
 
 class Spatial_System {
 public:
@@ -47,6 +48,8 @@ public:
   std::vector<Entity> entities_on(const Footprint& footprint) const;
 
   Entity get_player() const { return Entity(1); } // XXX: Hacked hardcoded id.
+
+  void destroy_pushed();
 private:
   Spatial_System(const Spatial_System&);
   Spatial_System& operator=(const Spatial_System&);
@@ -55,6 +58,7 @@ private:
   Terrain_System& terrain;
 
   Spatial_Index<Entity> index;
+  std::set<Entity> pushed;
 };
 
 #endif
