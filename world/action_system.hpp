@@ -59,6 +59,8 @@ public:
   void start_turn_update(Entity entity);
 
   bool is_player(Entity entity);
+
+  void update(Entity entity);
 private:
   Entities_System& entities;
   Terrain_System& terrain;

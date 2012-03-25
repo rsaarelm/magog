@@ -19,6 +19,7 @@
 #include "action_system.hpp"
 #include <world/parts.hpp>
 #include <util/hex.hpp>
+#include <util/num.hpp>
 
 bool Action_System::walk(Entity entity, const Vec2i& dir) {
   auto loc = spatial.location(entity);
@@ -156,4 +157,16 @@ void Action_System::start_turn_update(Entity entity) {
 
 bool Action_System::is_player(Entity entity) {
   return entities.as<Blob_Part>(entity).faction == player_faction;
+}
+
+void Action_System::update(Entity entity) {
+  // Brain-dead AI
+  if (is_ready(entity)) {
+    auto& dir = *rand_choice(hex_dirs);
+    // Stupid random fire
+    if (one_chance_in(3))
+      shoot(entity, dir);
+    else
+      walk(entity, dir);
+  }
 }

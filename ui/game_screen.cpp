@@ -200,7 +200,8 @@ void Game_Screen::update(float interval_seconds) {
   sprite.update(interval_seconds);
 
   while (!(action.active_entity() == spatial.get_player() && action.is_ready(spatial.get_player()))) {
-    do_ai();
+    action.update(action.active_entity());
+    action.next_entity();
     if (!entities.exists(spatial.get_player())) {
       // TODO: Some kind of message that the player acknowledges here instead of
       // just a crude drop to intro.
@@ -208,19 +209,6 @@ void Game_Screen::update(float interval_seconds) {
       break;
     }
   }
-}
-
-void Game_Screen::do_ai() {
-  auto mob = action.active_entity();
-  if (action.is_ready(mob)) {
-    auto& dir = *rand_choice(hex_dirs);
-    // Stupid random fire
-    if (one_chance_in(3))
-      action.shoot(mob, dir);
-    else
-      action.walk(mob, dir);
-  }
-  action.next_entity();
 }
 
 void Game_Screen::end_game() {

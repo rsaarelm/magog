@@ -56,7 +56,6 @@ class Game_Screen : public Game_State {
   virtual void update(float interval_seconds);
   virtual void draw();
 
-  void do_ai();
   void end_game();
 
   void draw_tile(int idx, const Vec2f& pos);
