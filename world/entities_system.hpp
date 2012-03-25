@@ -100,7 +100,8 @@ public:
     return as<C>(entity);
   }
 
-  Entity entity_after(Entity entity);
+  Entity first_entity() const;
+  Entity entity_after(Entity entity) const;
 
   typedef std::function<void(Entity)> Callback;
 

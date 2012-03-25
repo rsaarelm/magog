@@ -78,18 +78,19 @@ Part* Entities_System::get(Entity entity, Kind kind) {
   return(part_iter->second.get());
 }
 
-Entity Entities_System::entity_after(Entity previous) {
+Entity Entities_System::first_entity() const {
+  if (entities.empty())
+    throw Entity_Not_Found();
+  return entities.begin()->first;
+}
+
+Entity Entities_System::entity_after(Entity previous) const {
   auto i = entities.upper_bound(previous);
   if (i != entities.end())
     return i->first;
 
   // Nothing left after previous, loop to start.
-  i = entities.begin();
-  if (i != entities.end())
-    return i->first;
-
-  // No entities, period.
-  throw Entity_Not_Found();
+  return first_entity();
 }
 
 void Entities_System::destroy_hook(Entities_System::Callback callback_fn) {
