@@ -24,7 +24,35 @@
 #include <windows.h>
 #endif
 
+#ifdef __WIN32__
+// TODO: Windows version
+void print_trace(void) {}
+#else
+#include <execinfo.h>
+
+void print_trace(void) {
+  void *array[20];
+  size_t size;
+  char **strings;
+  size_t i;
+
+  size = backtrace(array, sizeof(array));
+  strings = backtrace_symbols (array, size);
+
+  printf ("Obtained %zd stack frames.\n", size);
+
+  for (i = 0; i < size; i++)
+    printf ("%s\n", strings[i]);
+
+  free (strings);
+}
+#endif
+
 void die(const char* str) {
+  #ifndef NDEBUG
+  print_trace();
+  #endif
+
   #ifdef __WIN32__
   MessageBox(NULL, str, "Error", MB_OK);
   #else
