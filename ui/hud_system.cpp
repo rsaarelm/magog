@@ -58,6 +58,23 @@ void Hud_System::draw(Entity player) {
     my_draw_text(Vec2f(dim[0] / 2 - fonter.width(txt) / 2, 2 * dim[1] / 5), txt);
   }
 
+  text_color.gl_color();
+
+  // Print keyboard help
+  for (int i = 0; i < 6; i++) {
+    string chr = format("%s", "QWEASD"[i]);
+    Vec2f pos(10 + 16 * (i % 3), Registry::window_h - 50 + 13 * (i / 3));
+    pos[0] -= fonter.width(chr.c_str()) / 2;
+    fonter.draw(pos, chr.c_str());
+  }
+
+  for (int i = 0; i < 6; i++) {
+    string chr = format("%s", "UIOJKL"[i]);
+    Vec2f pos(Registry::window_w - 60 + 16 * (i % 3), Registry::window_h - 50 + 13 * (i / 3));
+    pos[0] -= fonter.width(chr.c_str()) / 2;
+    fonter.draw(pos, chr.c_str());
+  }
+
   // Draw the status line.
   if (player) {
     fonter.draw({0, Registry::window_h - 20.0f}, "Armor level: %s",
