@@ -29,21 +29,15 @@ Intro_Screen::Intro_Screen()
 
 void Intro_Screen::key_event(int keysym, int printable) {
   switch (keysym) {
-    case 27: // Escape
-      Game_Loop::get().pop_state();
-      break;
-    case 'n':
-      Game_Loop::get().pop_state();
-      Game_Loop::get().push_state(new Game_Screen);
-      break;
-  case '1':
-    add_wave([](float t) { return sin(t * 5000) / 10.0; }, 2);
+  case 27: // Escape
+    Game_Loop::get().pop_state();
     break;
-  case '2':
-    add_wave([](float t) { return sin(t * 7000) / 10.0; }, 2);
+  case 'n':
+    Game_Loop::get().pop_state();
+    Game_Loop::get().push_state(new Game_Screen);
     break;
-    default:
-      break;
+  default:
+    break;
   }
 }
 

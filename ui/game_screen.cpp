@@ -155,9 +155,6 @@ void Game_Screen::key_event(int keysym, int printable) {
   case 'a': delta = Vec2i(0, 1); break;
   case 's': delta = Vec2i(1, 1); break;
   case 'd': delta = Vec2i(1, 0); break;
-  case '1':
-    sprite.add(std::shared_ptr<Drawable>(new DemoThingie(fonter)), spatial.location(player));
-    break;
   case 'u':
     action.shoot(player, Vec2i(-1, 0));
     end_turn();
@@ -184,20 +181,6 @@ void Game_Screen::key_event(int keysym, int printable) {
     break;
   case ' ':
     action.wait(player);
-    end_turn();
-    break;
-  case 'b':
-  {
-    printf("Benchmarking lots of FOV\n");
-    double t = Game_Loop::get().get_seconds();
-    int n = 100;
-    for (int i = 0; i < n; i++)
-      fov.do_fov(player);
-    t = Game_Loop::get().get_seconds() - t;
-    printf("Did %d fovs in %f seconds, one took %f seconds.\n", n, t, t/n);
-  }
-  case '2':
-    action.damage(player, 9999);
     end_turn();
     break;
   default:
