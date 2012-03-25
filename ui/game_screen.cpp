@@ -182,6 +182,10 @@ void Game_Screen::key_event(int keysym, int printable) {
     action.shoot(player, Vec2i(0, 1));
     end_turn();
     break;
+  case ' ':
+    action.wait(player);
+    end_turn();
+    break;
   case 'b':
   {
     printf("Benchmarking lots of FOV\n");
