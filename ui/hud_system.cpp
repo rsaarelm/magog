@@ -55,7 +55,7 @@ void Hud_System::draw(Entity player) {
     auto txt = captions.front().text.c_str();
     auto dim = Game_Loop::get().get_dim();
     // XXX: Recalculating TextWidth is expensive for every frame.
-    my_draw_text(Vec2f(dim[0] / 2 - fonter.width(txt) / 2, dim[1] / 2), txt);
+    my_draw_text(Vec2f(dim[0] / 2 - fonter.width(txt) / 2, 2 * dim[1] / 5), txt);
   }
 
   // Draw the status line.
