@@ -17,8 +17,8 @@
 */
 
 #include "hex.hpp"
-#include "num.hpp"
-#include "core.hpp"
+#include <util/num.hpp>
+#include <util/core.hpp>
 #include <boost/range/counting_range.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/join.hpp>
@@ -90,11 +90,43 @@ bool is_hex_dir(const Vec2i& dir) {
   return false;
 }
 
+int hexadecant(const Vec2f& vec) {
+  const float width = pi / 8;
+  auto radian = atan2(vec[0], -vec[1]);
+  if (radian < 0)
+    radian += 2 * pi;
+  return floor(radian / width);
+}
+
 int vec_to_hex_dir(const Vec2i& vec) {
-  // TODO: support longer than unit vecs.
-  for (int i = 0; i < 6; i++) {
-    if (vec == hex_dirs[i])
-      return i;
+  switch (hexadecant(vec)) {
+  case 14:
+  case 15:
+    return 0;
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+    return 1;
+  case 4:
+  case 5:
+    return 2;
+  case 6:
+  case 7:
+    return 3;
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+    return 4;
+  case 12:
+  case 13:
+    return 5;
+  default:
+    die("Bad hexadecant");
   }
-  return 0;
+}
+
+bool on_hex_axis(const Vec2i& vec) {
+  return vec[0] == 0 || vec[1] == 0 || vec[0] == vec[1];
 }

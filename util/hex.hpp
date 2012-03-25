@@ -142,8 +142,31 @@ Range<Vec2i>::T hex_area_points(int radius);
  */
 int hex_dist(const Vec2i& vec);
 
+/**
+ * Return whether the vec matches an unit length (in hex distance) hex dir
+ * vector.
+ */
 bool is_hex_dir(const Vec2i& dir);
 
+/**
+ * Determine the 1/16th sector of a circle a point in the XY plane points
+ * towards. Sector 0 is clockwise from the y-axis, and subsequent sectors are
+ * clockwise from there. The origin point is handled in the same way as in the
+ * atan2 library function.
+ *
+ * Mostly useful as a helper function for various vec-to-dir functions.
+ */
+int hexadecant(const Vec2f& vec);
+
+/**
+ * Convert a vec to the closest hex direction it is pointing towards.
+ */
 int vec_to_hex_dir(const Vec2i& vec);
+
+/**
+ * Return whether a vector is exactly on one of the three hex axes, defined as
+ * x = 0, y = 0 and x = y.
+ */
+bool on_hex_axis(const Vec2i& vec);
 
 #endif
