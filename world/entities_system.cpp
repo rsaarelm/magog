@@ -40,12 +40,12 @@ Entity Entities_System::create() {
 void Entities_System::destroy(Entity entity) {
   // TODO: Notify components of removal
 
-  ASSERT(assoc_contains(entities, entity));
+  if (assoc_contains(entities, entity)) {
+    for (auto& f : destroy_observers)
+      f(entity);
 
-  for (auto& f : destroy_observers)
-    f(entity);
-
-  entities.erase(entity);
+    entities.erase(entity);
+  }
 }
 
 bool Entities_System::exists(Entity entity) const {

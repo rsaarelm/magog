@@ -65,5 +65,7 @@ void Cycler_System::run() {
 }
 
 Entity Cycler_System::current_player() const {
+  if (action.is_dead(current_entity))
+    return Entity(0);
   return current_entity;
 }
