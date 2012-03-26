@@ -144,18 +144,6 @@ bool Action_System::blocks_movement(Entity entity) {
   return entities.has(entity, Blob_Kind);
 }
 
-Entity Action_System::active_entity() {
-  return entities.entity_after(previous_entity);
-}
-
-void Action_System::next_entity() {
-  previous_entity = entities.entity_after(previous_entity);
-
-  try {
-    start_turn_update(active_entity());
-  } catch (Entity_Not_Found &e) {}
-}
-
 void Action_System::start_turn_update(Entity entity) {
   try {
     auto& blob = entities.as<Blob_Part>(entity);
