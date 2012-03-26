@@ -1,6 +1,6 @@
 TARGET=telos
 
-.PHONY: tools build xbuild all run xrun clean
+.PHONY: tools build xbuild release all run xrun clean
 
 build: build/Makefile
 	cd build/; make
@@ -23,6 +23,9 @@ xbuild/Makefile: CMakeLists.txt tools
 xbuild: xbuild/Makefile
 	cd xbuild/; make
 
+release:
+	./release.sh
+
 all: build xbuild
 
 run: build
@@ -35,4 +38,4 @@ tags:
 	etags $$(find . -name "*.cpp" -or -name "*.hpp")
 
 clean:
-	rm -rf build/ xbuild/ TAGS
+	rm -rf build/ xbuild/ packages/ TAGS
