@@ -23,6 +23,10 @@
 #include <util/game_loop.hpp>
 #include <GL/glew.h>
 
+const char* buildname =
+#include <buildname.hpp>
+  ;
+
 Intro_Screen::Intro_Screen()
   : fonter(font_sheet, font_data, font_height)
   , imgui(fonter) {}

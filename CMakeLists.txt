@@ -102,6 +102,8 @@ add_executable(${TARGETNAME}
 
   tile_rect.hpp
   tile_atlas.hpp
+
+  buildname.hpp
 )
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
@@ -124,6 +126,14 @@ atlas(tile_rect.hpp tile_atlas.hpp
   -n 6 assets/tiles/036-6-missile.png
   -n 6 assets/tiles/042-6-armor.png
 )
+
+# Build identifier string
+
+add_custom_command(
+  OUTPUT buildname.hpp
+  COMMAND git log --pretty=format:\\"%h\\" -1 > ${CMAKE_CURRENT_BINARY_DIR}/buildname.hpp
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 # Documentation generation
 
 find_package(Doxygen)
