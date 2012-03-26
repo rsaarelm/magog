@@ -33,6 +33,9 @@ else ()
   include(${IMPORT_EXECUTABLES})
 endif ()
 
+add_custom_target(tools
+  DEPENDS render-font emit-chardata bake-data build-atlas)
+
 function(bake bake_source bake_target)
   add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/${bake_target}
