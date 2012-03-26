@@ -21,6 +21,7 @@
 #include <ui/registry.hpp>
 #include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
+#include <util/core.hpp>
 #include <GL/glew.h>
 
 const char* buildname =
@@ -61,8 +62,16 @@ void Intro_Screen::draw() {
   glLoadIdentity();
   glScalef(4.0, 4.0, 1.0);
   Color(196, 255, 196).gl_color();
-  fonter.draw(Vec2f(0, 0), "%s v%s", Registry::app_name, Registry::version);
+  fonter.draw(Vec2f(0, 0), "%s", Registry::app_name);
   glLoadIdentity();
+
+  fonter.draw(
+    Vec2f(2, Registry::window_h - fonter.height() - 2),
+    "build-%s %s %sbit %s",
+    buildname,
+    os_name(),
+    os_bits(),
+    debug_build_name());
 
   if (imgui.button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
     Game_Loop::get().pop_state();
