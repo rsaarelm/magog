@@ -43,19 +43,18 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     if (is_player(entity))
       fov.move_pos(dir);
 
+    spatial.pop(entity, new_loc);
+
     for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {
-      if (blocks_movement(a)) {
+      if (a != entity && blocks_movement(a)) {
         // Crushing damages you.
-        damage(entity, entities.as<Blob_Part>(a).armor / 2);
-        if (!entities.exists(entity)) {
-          return false;
-        }
+        damage(entity, entities.as<Blob_Part>(a).armor);
         fx.msg("Unit crushed");
         fx.explosion(spatial.location(a), 10, Color("red"));
         kill(a);
       }
     }
-    spatial.pop(entity, new_loc);
+
     return true;
   } else {
     return false;
