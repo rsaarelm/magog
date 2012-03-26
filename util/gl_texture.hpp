@@ -18,7 +18,7 @@
 #ifndef UTIL_GL_TEXTURE_HPP
 #define UTIL_GL_TEXTURE_HPP
 
-#include <GL/glew.h>
+#include <GL/gl.h>
 
 class Surface;
 

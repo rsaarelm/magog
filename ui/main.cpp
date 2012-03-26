@@ -18,7 +18,7 @@
 
 #include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
-#include <GL/glew.h>
+#include <GL/gl.h>
 #include <util/game_loop.hpp>
 #include <util/winmain.hpp>
 #include <string.h>

@@ -23,7 +23,7 @@
  * OpenGL shader utilities.
  */
 
-#include <GL/glew.h>
+#include <GL/gl.h>
 
 GLuint load_shader(const char* source, GLenum type);
 

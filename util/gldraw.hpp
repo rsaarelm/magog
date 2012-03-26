@@ -24,7 +24,7 @@
  */
 
 #include <util/box.hpp>
-#include <GL/glew.h>
+#include <GL/gl.h>
 
 class Surface;
 

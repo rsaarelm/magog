@@ -21,7 +21,7 @@
 #include <world/parts.hpp>
 #include <util/vec.hpp>
 #include <util/game_loop.hpp>
-#include <GL/glew.h>
+#include <GL/gl.h>
 
 using namespace std;
 

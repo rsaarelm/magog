@@ -17,9 +17,9 @@
 */
 
 #include "shader.hpp"
+#include <util/core.hpp>
 #include <iostream>
-#include <GL/glew.h>
-#include "core.hpp"
+#include <GL/gl.h>
 
 static std::string gl_info(
     GLuint object,

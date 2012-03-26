@@ -22,7 +22,7 @@
 #include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
 #include <util/core.hpp>
-#include <GL/glew.h>
+#include <GL/gl.h>
 
 const char* buildname =
 #include <buildname.hpp>

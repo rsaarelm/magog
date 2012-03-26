@@ -29,15 +29,11 @@ find_library(M_LIBRARY m)
 find_package(Boost)
 find_package(OpenGL REQUIRED)
 find_package(SDL REQUIRED)
-find_package(GLEW REQUIRED)
 
 if (CROSS_COMPILING_TO_WINDOWS)
   # Link SDL statically
   execute_process(COMMAND ${TARGET_SDL_CONFIG} --static-libs OUTPUT_VARIABLE SDL_LIBRARY OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(SDL_LIBRARY "-Wl,-Bstatic ${SDL_LIBRARY} -Wl,-Bdynamic")
-
-  # Link GLEW statically
-  add_definitions(-DGLEW_STATIC)
 
   # Link standard C and C++ libraries statically
   set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-static-libgcc -static-libstdc++")
@@ -47,7 +43,6 @@ endif (CROSS_COMPILING_TO_WINDOWS)
 # Helpful settings
 
 set(CORELIBS
-  ${GLEW_LIBRARY}
   ${SDL_LIBRARY}
   ${OPENGL_LIBRARY}
   ${M_LIBRARY}

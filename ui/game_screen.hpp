@@ -19,7 +19,7 @@
 #ifndef GAME_SCREEN_HPP
 #define GAME_SCREEN_HPP
 
-#include <GL/glew.h>
+#include <GL/gl.h>
 #include <ui/font_data.hpp>
 #include <ui/hud_system.hpp>
 #include <ui/ui_fx_system.hpp>

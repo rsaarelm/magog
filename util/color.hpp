@@ -20,7 +20,7 @@
 #define UTIL_COLOR_HPP
 
 #include "vec.hpp"
-#include <GL/glew.h>
+#include <GL/gl.h>
 #include <stdexcept>
 
 /// Color type.
