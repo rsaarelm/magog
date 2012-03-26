@@ -65,3 +65,33 @@ size_t hash(const char* s) {
   size_t next = *s ? hash(s + 1) : 2166136261u;
   return (next ^ *s) * 16777619u;
 }
+
+const char* os_name() {
+#ifdef __WIN32__
+  return "Windows";
+#elif defined __APPLE__
+  return "OS X";
+#elif defined __linux__
+  return "GNU/Linux";
+#elif defined UNIX
+  return "unknown Unix";
+#else
+  return "unknown";
+#endif
+}
+
+int os_bits() {
+#ifdef __LP64__
+  return 64;
+#else
+  return 32;
+#endif
+}
+
+const char* debug_build_name() {
+#ifdef NDEBUG
+  return "release";
+#else
+  return "debug";
+#endif
+}

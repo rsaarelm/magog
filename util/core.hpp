@@ -66,4 +66,12 @@ void log_print(const char* fmt, Args... args) {
   printf("%s", format(fmt, args...).c_str());
 }
 
+/// A descriptor string for the current operating system.
+const char* os_name();
+
+/// 32 for 32-bit OS and 64 for 64-bit OS
+int os_bits();
+
+const char* debug_build_name();
+
 #endif
