@@ -70,6 +70,7 @@ add_executable(${TARGETNAME}
   util/wavefront.cpp
   util/game_loop.cpp
   util/mixer.cpp
+  util/sdl_util.cpp
 
   ui/main.cpp
   ui/intro_screen.cpp
