@@ -120,9 +120,10 @@ void Game_Screen::enter() {
 void Game_Screen::exit() {
 }
 
-int from_colemak(int keysym) {
-  static const char* keymap =
-      " !\"#$%&'()*+,-./0123456789Pp<=>?@ABCGKETHLYNUMJ:RQSDFIVWXOZ[\\]^_`abcgkethlynumj;rqsdfivwxoz{|}~";
+const char* colemak_map = " !\"#$%&'()*+,-./0123456789Pp<=>?@ABCGKETHLYNUMJ:RQSDFIVWXOZ[\\]^_`abcgkethlynumj;rqsdfivwxoz{|}~";
+const char* dvorak_map = " !Q#$%&q()*}w'e[0123456789ZzW]E{@ANIHDYUJGCVPMLSRXO:KF><BT?/\\=^\"`anihdyujgcvpmlsrxo;kf.,bt/_|+~";
+
+int remap_key(int keysym, const char* keymap) {
   if (keysym >= 32 && keysym < 127)
     return keymap[keysym - 32];
   else
@@ -131,8 +132,17 @@ int from_colemak(int keysym) {
 
 void Game_Screen::key_event(int keysym, int printable) {
   Vec2i delta(0, 0);
-  if (Registry::using_colemak)
-    keysym = from_colemak(keysym);
+
+  switch (Registry::keyboard_layout) {
+  case colemak:
+    keysym = remap_key(keysym, colemak_map);
+    break;
+  case dvorak:
+    keysym = remap_key(keysym, dvorak_map);
+    break;
+  default:
+    break;
+  }
 
   switch (keysym) {
   case 27: // Escape

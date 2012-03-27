@@ -18,13 +18,19 @@
 #ifndef UI_REGISTRY_HPP
 #define UI_REGISTRY_HPP
 
+enum Keyboard_Layout {
+  qwerty,
+  dvorak,
+  colemak,
+};
+
 /// Application-wide configuration settings.
 struct Registry {
   static const char* app_name;
   static const char* version;
   static int window_w;
   static int window_h;
-  static bool using_colemak;
+  static Keyboard_Layout keyboard_layout;
 };
 
 #endif
