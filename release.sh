@@ -23,7 +23,7 @@ linux_build() {
   # flag, even though it's just a single file.
   tar -cjvf $2.tar.bz2 $2
 
-  mv $2 packages/
+  rm $2
   mv $2.tar.bz2 packages/
 }
 
