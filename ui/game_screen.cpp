@@ -22,6 +22,7 @@
 #include <world/parts.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
+#include <util/sdl_util.hpp>
 #include <util/game_loop.hpp>
 
 using namespace std;
@@ -183,6 +184,8 @@ void Game_Screen::key_event(int keysym, int printable) {
     action.wait(player);
     end_turn();
     break;
+  case SDLK_F12:
+    screenshot("/tmp/telos-");
   default:
     break;
   }

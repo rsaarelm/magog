@@ -22,6 +22,7 @@
 #include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
 #include <util/core.hpp>
+#include <util/sdl_util.hpp>
 #include <GL/gl.h>
 
 const char* buildname =
@@ -41,6 +42,8 @@ void Intro_Screen::key_event(int keysym, int printable) {
     Game_Loop::get().pop_state();
     Game_Loop::get().push_state(new Game_Screen);
     break;
+  case SDLK_F12:
+    screenshot("/tmp/telos-");
   default:
     break;
   }
