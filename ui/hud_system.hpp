@@ -26,6 +26,7 @@
 #include <string>
 #include <queue>
 #include <list>
+#include <functional>
 
 struct Message_String {
   std::string text;
@@ -52,9 +53,23 @@ class Hud_System {
   void add_msg(std::string str);
   void add_caption(std::string str);
 
+  // XXX: Miscellaneous future events don't really naturally fit into hud
+  // system, just put it here since the system already has a clock and an
+  // update method.
+
+  /// Add an event to happen at a future time.
+  void add_event(float delay_seconds, std::function<void(void)> event_fn);
+
   Color text_color;
   Color edge_color;
  private:
+  struct Event {
+    float time;
+    std::function<void(void)> fn;
+
+    bool operator<(const Event& rhs) const { return time < rhs.time; }
+  };
+
   void my_draw_text(const Vec2i& pos, const char* txt);
 
   Fonter_System& fonter;
@@ -73,6 +88,7 @@ class Hud_System {
   float letter_read_duration;
   std::list<Message_String> messages;
   std::queue<Message_String> captions;
+  std::queue<Event> events;
 };
 
 #endif

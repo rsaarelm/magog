@@ -218,16 +218,19 @@ void Game_Screen::draw() {
 void Game_Screen::end_turn() {
   cycler.run();
   if (state == state_playing) {
+    const float time_util_return_to_intro = 7;
     int n_player = action.count_aligned(player_faction);
     int n_enemy = action.count_aligned(npc_faction);
     if (n_player == 0) {
       state = state_lost;
       hud.add_caption("Unit contact lost");
       hud.add_caption("Mission failed, press ESC to disengage");
+      hud.add_event(time_util_return_to_intro, [&] { end_game(); });
     } else if (n_enemy == 0) {
       state = state_won;
       hud.add_caption("Defending forces destroyed");
       hud.add_caption("Mission successful, press ESC to disengage");
+      hud.add_event(time_util_return_to_intro, [&] { end_game(); });
     }
   }
 }

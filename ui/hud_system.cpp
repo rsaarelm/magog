@@ -39,6 +39,10 @@ void Hud_System::update(float interval_seconds) {
       // Update the time-read of the new caption since it's becoming visible just now.
       captions.front().time_read = time_read(captions.front().text);
   }
+  while (!events.empty() && events.front().time < clock) {
+    events.front().fn();
+    events.pop();
+  }
 }
 
 void Hud_System::draw(Entity player) {
@@ -109,4 +113,8 @@ float Hud_System::time_read(std::string added_text) {
   float result = read_new_text_time + letter_read_duration * added_text.size();
   read_new_text_time = result;
   return result;
+}
+
+void Hud_System::add_event(float delay_seconds, std::function<void(void)> event_fn) {
+  events.push(Event{clock + delay_seconds, event_fn});
 }
