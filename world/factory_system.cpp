@@ -27,14 +27,14 @@ Entity Factory_System::build(Spec spec, Entity entity) {
   }
 
   switch (spec) {
-  case spec_telos:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_telos, 7, 40, 10, true)));
+  case spec_player:
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_player, 7, 10, 5)));
     return entity;
-  case spec_infantry:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_infantry, 3, 6, 2)));
+  case spec_dreg:
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_dreg, 3, 6, 2)));
     return entity;
-  case spec_armor:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_tank, 5, 8, 4)));
+  case spec_thrall:
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_thrall, 5, 8, 4)));
     return entity;
   default:
     throw Spec_Exception();
@@ -42,9 +42,7 @@ Entity Factory_System::build(Spec spec, Entity entity) {
 }
 
 Footprint Factory_System::footprint(Spec spec, Location center) const {
-  // XXX: Extremely simple implementation for now.
-  if (spec == spec_telos)
-    return large_footprint(center);
+  // TODO: Make this data-driven
   return small_footprint(center);
 }
 

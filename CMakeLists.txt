@@ -117,10 +117,8 @@ atlas(tile_rect.hpp tile_atlas.hpp
   -n 8 assets/tiles/000-8-terrain.png
   -n 6 assets/tiles/008-6-slope.png
   -n 8 assets/tiles/014-8-wall.png
-  -n 5 assets/tiles/022-5-units.png
-  -n 9 assets/tiles/027-9-telos.png
-  -n 6 assets/tiles/036-6-missile.png
-  -n 6 assets/tiles/042-6-armor.png
+  -n 16 assets/tiles/022-16-creatures.png
+  -n 15 assets/tiles/038-15-anim-creatures.png
 )
 
 # Build identifier string

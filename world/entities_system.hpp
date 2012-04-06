@@ -53,9 +53,9 @@ class Part_Not_Found : public Entity_Exception {
 
 enum Entity_Icon {
   icon_null,
-  icon_infantry,
-  icon_tank,
-  icon_telos,
+  icon_dreg,
+  icon_thrall,
+  icon_player,
 };
 
 enum Kind {

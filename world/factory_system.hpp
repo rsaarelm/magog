@@ -26,9 +26,9 @@
 /// A spec is a type for specifying the entity created by the factory.
 /// It may end up very complex, but will be a simple enum for now.
 enum Spec {
-  spec_telos = 1,
-  spec_infantry,
-  spec_armor,
+  spec_player = 1,
+  spec_dreg,
+  spec_thrall,
   NUM_ENTITY_TYPES
 };
 

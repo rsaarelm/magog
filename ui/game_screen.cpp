@@ -94,11 +94,11 @@ void Game_Screen::enter() {
         {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
 
   Entity player =
-    factory.spawn(spec_telos, factory.random_spawn_point(spec_telos, 1));
+    factory.spawn(spec_player, factory.random_spawn_point(spec_player, 1));
   entities.as<Blob_Part>(player).faction = player_faction;
 
   for (int i = 0; i < 16; i++) {
-    auto spec = one_chance_in(3) ? spec_armor : spec_infantry;
+    auto spec = one_chance_in(3) ? spec_thrall : spec_dreg;
     factory.spawn(spec, factory.random_spawn_point(spec, 1));
   }
 
