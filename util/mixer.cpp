@@ -90,6 +90,10 @@ void Mixer::generate(int8_t* stream, int len) {
     stop();
 }
 
-void add_wave(Mixer::Wave wave, float duration_sec) {
+void add_wave(Wave wave, float duration_sec) {
   Game_Loop::get().mixer.add_wave(wave, duration_sec);
+}
+
+void add_wave(const Effect_Wave& effect) {
+  add_wave(effect, effect.duration);
 }

@@ -57,7 +57,7 @@ class Game_Loop {
 
   double get_seconds() const;
  private:
-  friend void add_wave(Mixer::Wave, float);
+  friend void add_wave(Wave, float);
 
   Game_Loop();
 

@@ -1,4 +1,4 @@
-/* mixer.hpp
+/* audio.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,40 +15,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef UTIL_MIXER_HPP
-#define UTIL_MIXER_HPP
+#ifndef UTIL_AUDIO_HPP
+#define UTIL_AUDIO_HPP
 
-#include <util/audio.hpp>
-#include <SDL/SDL.h>
-#include <list>
+#include <functional>
 
-const int sampling_rate = 11025;
-
-class Mixer {
-public:
-
-  Mixer();
-  void init();
-
-  void add_wave(Wave wave, float duration_sec);
-
-  void start();
-  void stop();
-private:
-  typedef int8_t Sample;
-
-  friend void mixer_dispatch(void *userdata, uint8_t* stream, int len);
-
-  void generate(int8_t* stream, int len);
-
-  long current_time;
-
-  struct Wave_Record { Wave wave; long start_t; long end_t; };
-
-  std::list<Wave_Record> waves;
+enum Waveform {
+  sine_wave,
+  saw_wave,
+  square_wave,
+  noise_wave,
 };
 
-void add_wave(Wave wave, float duration_sec);
-void add_wave(const Effect_Wave& effect);
+typedef std::function<float (float)> Wave;
+
+struct Sound_Effect {
+  Waveform waveform;
+  float attack;
+  float decay;
+  float sustain;
+  float release;
+  float frequency;
+};
+
+struct Effect_Wave {
+  float duration;
+  float volume;
+  Sound_Effect fx;
+  float operator()(float t) const;
+};
 
 #endif

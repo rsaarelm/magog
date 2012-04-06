@@ -69,6 +69,7 @@ add_executable(${TARGETNAME}
   util/geom_util.cpp
   util/wavefront.cpp
   util/game_loop.cpp
+  util/audio.cpp
   util/mixer.cpp
   util/sdl_util.cpp
 
