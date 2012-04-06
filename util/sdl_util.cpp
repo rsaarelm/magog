@@ -67,8 +67,8 @@ SDL_Surface* opengl_screen_to_surface() {
   // Reverse the lines for the SDL buffer.
   for (int y = 0; y < screen->h; y++)
     memcpy(
-      buffer->pixels + (y * buffer->pitch),
-      pixels.data() + (screen->h - y - 1) * pitch,
+      &static_cast<uint8_t*>(buffer->pixels)[y * buffer->pitch],
+      &pixels[(screen->h - y - 1) * pitch],
       pitch);
 
   return buffer;
