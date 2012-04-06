@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(TARGETNAME telos)
+set(TARGETNAME magog)
 project(${TARGETNAME})
 
 # Settings from this file propagate to CMakeLists.txt files in subdirectories.

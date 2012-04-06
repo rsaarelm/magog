@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TARGET=magog
+
 # This script assumes the current environment is a 64-bit Linux.
 
 mkdir -p packages/
@@ -15,7 +17,7 @@ linux_build() {
   cmake $1 $SRC_DIR
   make
   popd
-  mv $BUILD_DIR/telos $2
+  mv $BUILD_DIR/$TARGET $2
   rm -rf $BUILD_DIR
 
   strip $2
@@ -41,7 +43,7 @@ windows_build() {
   cmake $1 -DCMAKE_TOOLCHAIN_FILE=$SRC_DIR/cmake_scripts/Toolchain-mingw32.cmake $SRC_DIR
   make
   popd
-  mv $BUILD_DIR/xbuild/telos.exe $2
+  mv $BUILD_DIR/xbuild/$TARGET.exe $2
   rm -rf $BUILD_DIR
 
   strip $2
@@ -52,7 +54,7 @@ windows_build() {
   mv $2 packages/
 }
 
-linux_build "-DCMAKE_BUILD_TYPE=MinSizeRel" "telos-linux64-$BUILD_ID"
-linux_build "-DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" "telos-linux32-$BUILD_ID"
-windows_build "-DCMAKE_BUILD_TYPE=MinSizeRel" "telos-$BUILD_ID.exe"
+linux_build "-DCMAKE_BUILD_TYPE=MinSizeRel" "$TARGET-linux64-$BUILD_ID"
+linux_build "-DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" "$TARGET-linux32-$BUILD_ID"
+windows_build "-DCMAKE_BUILD_TYPE=MinSizeRel" "$TARGET-$BUILD_ID.exe"
 

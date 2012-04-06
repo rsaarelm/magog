@@ -1,4 +1,4 @@
-TARGET=telos
+TARGET=magog
 
 .PHONY: tools build xbuild release all run xrun clean
 
@@ -29,10 +29,10 @@ release:
 all: build xbuild
 
 run: build
-	./build/telos $(ARGS)
+	./build/magog $(ARGS)
 
 xrun: xbuild
-	wine ./xbuild/telos $(ARGS)
+	wine ./xbuild/magog $(ARGS)
 
 tags:
 	etags $$(find . -name "*.cpp" -or -name "*.hpp")

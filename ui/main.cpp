@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
       printf("Unknown command line option '%s'\n", argv[i]);
   }
 
-  Game_Loop& game = Game_Loop::init(Registry::window_w, Registry::window_h, "Telos");
+  Game_Loop& game = Game_Loop::init(Registry::window_w, Registry::window_h, Registry::app_name);
 
   game.push_state(new Intro_Screen);
   game.run();

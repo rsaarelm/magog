@@ -43,7 +43,8 @@ void Intro_Screen::key_event(int keysym, int printable) {
     Game_Loop::get().push_state(new Game_Screen);
     break;
   case SDLK_F12:
-    screenshot("/tmp/telos-");
+    screenshot(format("/tmp/%s-", Registry::app_name).c_str());
+    break;
   default:
     break;
   }

@@ -18,7 +18,7 @@
 
 #include "registry.hpp"
 
-const char* Registry::app_name = "Telos";
+const char* Registry::app_name = "Magog";
 const char* Registry::version = "000-pre";
 
 int Registry::window_w = 800;

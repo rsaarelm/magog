@@ -195,7 +195,8 @@ void Game_Screen::key_event(int keysym, int printable) {
     end_turn();
     break;
   case SDLK_F12:
-    screenshot("/tmp/telos-");
+    screenshot(format("/tmp/%s-", Registry::app_name).c_str());
+    break;
   default:
     break;
   }

@@ -1,16 +1,16 @@
 # Maintainer: Risto Saarelma <risto.saarelma@iki.fi>
-pkgname=telos-git
-pkgver=20120310
+pkgname=magog-git
+pkgver=20120406
 pkgrel=1
-pkgdesc="A turn-based death tank game"
+pkgdesc="A roguelike game"
 arch=('i686', 'x86_64')
-url="https://github.com/rsaarelm/telos"
+url="https://github.com/rsaarelm/magog"
 license=('GPL')
 depends=('mesa' 'sdl')
 makedepends=('boost' 'cmake' 'git')
 
-_gitroot=https://github.com/rsaarelm/telos.git
-_gitname=telos
+_gitroot=https://github.com/rsaarelm/magog.git
+_gitname=magog
 
 build() {
   cd "$srcdir"
@@ -37,7 +37,7 @@ build() {
 
 package() {
   cd "$srcdir/build"
-  install -Dm755 telos "$pkgdir/usr/bin/telos"
+  install -Dm755 magog "$pkgdir/usr/bin/magog"
 }
 
 # vim:set ts=2 sw=2 et:
