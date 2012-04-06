@@ -31,6 +31,11 @@ Spatial_System::Spatial_System(
 
 bool Spatial_System::is_open(
   Plain_Location loc, std::function<bool(Entity)> is_blocking_pred) const {
+  // Whatever is through a portal might be open, but the portal cell itself
+  // never is.
+  if (!terrain.get_portal(loc).is_null())
+    return false;
+
   auto kind = terrain_data[terrain.get(loc)].kind;
   if (!(kind == open_terrain || kind == curtain_terrain))
     return false;

@@ -44,6 +44,10 @@ struct Portal {
     return !((*this) == rhs);
   }
 
+  bool is_null() const {
+    return area == 0 && delta_x == 0 && delta_y == 0;
+  }
+
   Area_Index area;
   int8_t delta_x, delta_y;
 };
