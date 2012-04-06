@@ -27,30 +27,6 @@
 
 using namespace std;
 
-class DemoThingie : public Drawable {
-public:
-  DemoThingie(Fonter_System& fonter) : fonter(fonter), life(10) { }
-  virtual ~DemoThingie() { }
-
-  virtual bool update(float interval_sec) {
-    life -= interval_sec;
-    return life > 0;
-  }
-
-  virtual void draw(const Vec2f& offset) {
-    // TODO: Centered draw_text.
-    static char buf[256];
-    snprintf(buf, sizeof(buf), "DemoThingie represent: %d", static_cast<int>(life));
-    Color("white").gl_color();
-    fonter.draw(offset + Vec2f(-fonter.width(buf) / 2, -fonter.height()), buf);
-  }
-
-  virtual int get_z_layer() const { return 100; }
-private:
-  Fonter_System& fonter;
-  float life;
-};
-
 void Game_Screen::enter() {
   const int chunk_w = 32;
   const int chunk_h = 32;
