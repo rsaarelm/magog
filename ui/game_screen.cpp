@@ -101,8 +101,6 @@ void Game_Screen::enter() {
 
   fov.do_fov(player);
 
-  hud.add_caption("Telos Unit online");
-
   // Prime the cycler.
   cycler.run();
 }
@@ -230,13 +228,13 @@ void Game_Screen::end_turn() {
     int n_enemy = action.count_aligned(npc_faction);
     if (n_player == 0) {
       state = state_lost;
-      hud.add_caption("Unit contact lost");
-      hud.add_caption("Mission failed, press ESC to disengage");
+      hud.add_caption("You have died");
+      hud.add_caption("Press ESC to exit");
       hud.add_event(time_util_return_to_intro, [&] { end_game(); });
     } else if (n_enemy == 0) {
       state = state_won;
-      hud.add_caption("Defending forces destroyed");
-      hud.add_caption("Mission successful, press ESC to disengage");
+      hud.add_caption("They are dead");
+      hud.add_caption("Press ESC to exit");
       hud.add_event(time_util_return_to_intro, [&] { end_game(); });
     }
   }
