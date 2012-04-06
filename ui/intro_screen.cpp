@@ -33,7 +33,7 @@ Intro_Screen::Intro_Screen()
   : fonter(font_sheet, font_data, font_height)
   , imgui(fonter) {}
 
-void Intro_Screen::key_event(int keysym, int printable) {
+void Intro_Screen::key_event(int keysym, int printable, int scancode) {
   switch (keysym) {
   case 27: // Escape
     Game_Loop::get().pop_state();

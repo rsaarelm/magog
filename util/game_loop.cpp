@@ -159,11 +159,11 @@ void Game_Loop::run() {
       switch (event.type) {
       case SDL_KEYDOWN:
         if (top)
-          top->key_event(event.key.keysym.sym, event.key.keysym.unicode);
+          top->key_event(event.key.keysym.sym, event.key.keysym.unicode, event.key.keysym.scancode);
         break;
       case SDL_KEYUP:
         if (top)
-          top->key_event(-event.key.keysym.sym, -1);
+          top->key_event(-event.key.keysym.sym, -1, -event.key.keysym.scancode);
         break;
       case SDL_MOUSEBUTTONDOWN:
       case SDL_MOUSEBUTTONUP:

@@ -31,6 +31,7 @@ struct Registry {
   static int window_w;
   static int window_h;
   static Keyboard_Layout keyboard_layout;
+  static bool use_scancodes;
 };
 
 #endif

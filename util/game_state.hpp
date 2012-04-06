@@ -34,7 +34,7 @@ class Game_State {
 
   // Key release events get negative keycodes with the absolute value of the
   // released key's keycode.
-  virtual void key_event(int keycode, int printable) {}
+  virtual void key_event(int keycode, int printable, int scancode) {}
   virtual void mouse_event(int x, int y, int buttons) {}
   virtual void resize_event(int width, int height) {}
 

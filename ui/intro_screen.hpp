@@ -31,7 +31,7 @@ class Intro_Screen : public Game_State {
 
   virtual void enter() {}
   virtual void exit() {}
-  virtual void key_event(int keysym, int printable);
+  virtual void key_event(int keysym, int printable, int scancode);
   virtual void mouse_event(int x, int y, int buttons);
   virtual void update(float interval_seconds) {}
   virtual void draw();

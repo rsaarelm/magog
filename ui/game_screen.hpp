@@ -55,7 +55,7 @@ class Game_Screen : public Game_State {
 
   virtual void enter();
   virtual void exit();
-  virtual void key_event(int keycode, int printable);
+  virtual void key_event(int keycode, int printable, int scancode);
   virtual void update(float interval_seconds);
   virtual void draw();
 

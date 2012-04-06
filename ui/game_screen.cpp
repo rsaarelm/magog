@@ -130,7 +130,7 @@ int remap_key(int keysym, const char* keymap) {
     return keysym;
 }
 
-void Game_Screen::key_event(int keysym, int printable) {
+void Game_Screen::key_event(int keysym, int printable, int scancode) {
   Vec2i delta(0, 0);
 
   switch (Registry::keyboard_layout) {
@@ -159,7 +159,7 @@ void Game_Screen::key_event(int keysym, int printable) {
 
   ASSERT(action.is_ready(player));
 
-  switch (keysym) {
+  switch (Registry::use_scancodes ? keysym_for_scancode(scancode) : keysym) {
   case 'q': delta = Vec2i(-1, 0); break;
   case 'w': delta = Vec2i(-1, -1); break;
   case 'e': delta = Vec2i(0, -1); break;
@@ -190,6 +190,9 @@ void Game_Screen::key_event(int keysym, int printable) {
     action.shoot(player, Vec2i(0, 1));
     end_turn();
     break;
+  }
+
+  switch (keysym) {
   case ' ':
     action.wait(player);
     end_turn();

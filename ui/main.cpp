@@ -27,10 +27,17 @@
 int main(int argc, char* argv[])
 {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--colemak") == 0)
+    if (strcmp(argv[i], "--colemak") == 0) {
       Registry::keyboard_layout = colemak;
-    else if (strcmp(argv[i], "--dvorak") == 0)
+      Registry::use_scancodes = false;
+    }
+    else if (strcmp(argv[i], "--dvorak") == 0) {
       Registry::keyboard_layout = dvorak;
+      Registry::use_scancodes = false;
+    }
+    else if (strcmp(argv[i], "--no-scancodes") == 0) {
+      Registry::use_scancodes = false;
+    }
     else
       printf("Unknown command line option '%s'\n", argv[i]);
   }

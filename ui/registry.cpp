@@ -24,3 +24,4 @@ const char* Registry::version = "000-pre";
 int Registry::window_w = 800;
 int Registry::window_h = 600;
 Keyboard_Layout Registry::keyboard_layout = qwerty;
+bool Registry::use_scancodes = true;
