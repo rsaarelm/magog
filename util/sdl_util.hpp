@@ -18,9 +18,19 @@
 #ifndef UTIL_SDL_UTIL_HPP
 #define UTIL_SDL_UTIL_HPP
 
+/** \file sdl_util.hpp
+ * Helper functions for using the SDL library.
+ */
+
 #include <SDL/SDL.h>
 
 int write_png(const char* filename, SDL_Surface& surface);
 void screenshot(const char* prefix);
+
+/// Return a best guess for which key a keyboard scancode corresponds to on
+/// the current platform. Use when you want keyboard layout independent
+/// keyboard input, such as WASD movement keys that work even if the user has
+/// AZERTY or Dvorak layout.
+SDLKey keysym_for_scancode(int scancode);
 
 #endif
