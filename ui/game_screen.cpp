@@ -52,61 +52,75 @@ private:
 };
 
 void Game_Screen::enter() {
-  // Generate portals for a looping hex area.
-  const int r = 16;
+  const int chunk_w = 32;
+  const int chunk_h = 32;
+  static const char chunk[chunk_h][chunk_w + 1] = {
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,~~~,,,,#..........",
+    "#..#########,,,~~,,,,###########",
+    ",,,,,,,,,,,,,,,,~~~~,,,,,,,,,...",
+    ",,,,,,,,,,,,,,,,,~~~~~~~~~......",
+    ",,,,,,,,,,,,,,,,,,,~~~~~~~......",
+    ",.,,,,,,,,,,,,,,,,,,,,,,,~~~....",
+    ",,,,,,,,,,,,,,,I,,,,,,,,,~,~~~..",
+    "~~~~,,,,,,,,,,I..I,,,,,,,,,~~~~~",
+    "~~~~~,,,,,,,,,,,,..,,,,,,,,,,,~~",
+    ",,,,~~,,,,,,,,,I,.I.,,,,,,,,,,,,",
+    ",,,,~~,,,,,,,,,,,I,,.,,,,,,,,,,,",
+    ",,,,,~~,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,~~~~~,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,~~,~~~,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,~~~~,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,,,,~~~,,,,,,,,,,,,,,,,",
+    "############,,,~,,,,,###########",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,~~,,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,,~~,,,#..........",
+    "...........#,,,~~~,,,#..........",
+    "...........#,,,~~,,,,#..........",
+  };
 
-  for (auto pos : hex_area_points(r)) {
-    int n = rand_int(100);
-    if (n < 3)
-      terrain.set(Plain_Location(1, pos), terrain_wall_center);
-    else if (n < 6)
-      terrain.set(Plain_Location(1, pos), terrain_water);
-    else if (n < 12)
-      terrain.set(Plain_Location(1, pos), terrain_forest);
-    else if (n < 20)
-      terrain.set(Plain_Location(1, pos), terrain_sand);
-    else
-      terrain.set(Plain_Location(1, pos), terrain_grass);
+  for (int y = 0; y < chunk_h; y++) {
+    for (int x = 0; x < chunk_w; x++) {
+      auto loc = Plain_Location(1, x, y);
+      switch (chunk[y][x]) {
+      case ',':
+        terrain.set(loc, terrain_grass);
+        break;
+      case '.':
+        terrain.set(loc, terrain_floor);
+        break;
+      case '~':
+        terrain.set(loc, terrain_water);
+        break;
+      case 'I':
+        terrain.set(loc, terrain_menhir);
+        break;
+      case '#':
+        terrain.set(loc, terrain_wall_center);
+        break;
+      default:
+        break;
+      }
+    }
   }
 
-
-  const Vec2i start[]{
-    {-(r+1), -1},
-    {-(r+1), -(r+1)},
-    {0, -r},
-    {r, 0},
-    {r-1, r},
-    {-1, r}
-  };
-
-  const Vec2i offset[]{
-    {2*r, r},
-    {r, 2*r},
-    {-r, r},
-    {-2*r, -r},
-    {-r, -2*r},
-    {r, -r}
-  };
-
-  for (int sector = 0; sector < 6; sector++)
-    for (int i = 0; i < r + (sector % 2); i++)
-      terrain.set_portal(
-        {1, start[sector] + hex_dirs[(sector + 1) % 6] * i}, Portal(0, offset[sector]));
-
   Entity player =
-    factory.spawn(spec_player, factory.random_spawn_point(spec_player, 1));
+    factory.spawn(spec_player, terrain.location(1, Vec2i(16, 16)));
   entities.as<Blob_Part>(player).faction = player_faction;
 
   for (int i = 0; i < 16; i++) {
     auto spec = one_chance_in(3) ? spec_thrall : spec_dreg;
     factory.spawn(spec, factory.random_spawn_point(spec, 1));
-  }
-
-  for (auto pos : hex_circle_points(r)) {
-    terrain.set({1, pos}, terrain_floor);
-  }
-  for (auto pos : hex_circle_points(r+1)) {
-    terrain.set({1, pos}, terrain_void);
   }
 
   fov.do_fov(player);

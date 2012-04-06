@@ -36,8 +36,7 @@ bool Spatial_System::is_open(
   if (!terrain.get_portal(loc).is_null())
     return false;
 
-  auto kind = terrain_data[terrain.get(loc)].kind;
-  if (!(kind == open_terrain || kind == curtain_terrain))
+  if (terrain_data[terrain.get(loc)].kind & block_move_flag)
     return false;
   for (auto& e : entities_at(terrain.location(loc))) {
     if (is_blocking_pred(e))
@@ -49,8 +48,7 @@ bool Spatial_System::is_open(
 bool Spatial_System::can_pop(Entity entity, Location loc) const {
   for (auto& pair : footprint(entity, loc)) {
     auto& foot_loc = pair.second;
-    auto kind = terrain_data[terrain.get(foot_loc)].kind;
-    if (!(kind == open_terrain || kind == curtain_terrain))
+    if (terrain_data[terrain.get(foot_loc)].kind & block_move_flag)
       return false;
     // TODO: Handle entity collisions.
   }

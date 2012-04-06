@@ -58,13 +58,11 @@ void Terrain_System::clear_portal(Plain_Location loc) {
 }
 
 bool Terrain_System::blocks_shot(Plain_Location loc) {
-  auto kind = terrain_data[get(loc)].kind;
-  return kind == wall_terrain || kind == curtain_terrain;
+  return terrain_data[get(loc)].kind & block_shot_flag;
 }
 
 bool Terrain_System::blocks_sight(Plain_Location loc) {
-  auto kind = terrain_data[get(loc)].kind;
-  return kind == wall_terrain || kind == void_terrain || kind == curtain_terrain;
+  return terrain_data[get(loc)].kind & block_sight_flag;
 }
 
 std::vector<Location> Terrain_System::area_locations(Area_Index area) {
@@ -84,7 +82,7 @@ std::vector<Location> Terrain_System::area_locations(Area_Index area) {
 }
 
 bool Terrain_System::is_wall(Plain_Location loc) const {
-  return terrain_data[get(loc)].kind == wall_terrain;
+  return terrain_data[get(loc)].kind & wallform_flag;
 }
 
 int Terrain_System::wall_mask(Location loc) const {

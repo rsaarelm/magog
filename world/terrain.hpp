@@ -21,12 +21,21 @@
 
 #include <util/color.hpp>
 
+enum Terrain_Flag : uint8_t {
+  wallform_flag    = 1 << 1,
+  block_move_flag  = 1 << 2,
+  block_shot_flag  = 1 << 3,
+  block_sight_flag = 1 << 4,
+  void_flag        = 1 << 5,
+};
+
 enum Terrain_Kind : uint8_t {
-  void_terrain,
-  open_terrain,
-  wall_terrain,
-  water_terrain,
-  curtain_terrain,
+  open_terrain = 0,
+  void_terrain = block_move_flag | block_shot_flag | block_sight_flag | void_flag,
+  wall_terrain = wallform_flag | block_move_flag | block_shot_flag | block_sight_flag,
+  block_terrain = block_move_flag | block_shot_flag | block_sight_flag,
+  water_terrain  = block_move_flag,
+  curtain_terrain = block_shot_flag | block_sight_flag,
 };
 
 struct Terrain_Data {
@@ -48,7 +57,8 @@ struct Terrain_Data {
   X(terrain_wall_x,      15, "gray",         wall_terrain)          \
   X(terrain_wall_y,      16, "gray",         wall_terrain)          \
   X(terrain_wall_xy,     17, "gray",         wall_terrain)          \
-  X(terrain_forest,       7, "forest green", curtain_terrain)
+  X(terrain_forest,       7, "forest green", curtain_terrain)       \
+  X(terrain_menhir,       3, "gray",         block_terrain)         \
 
 #define X(a, b, c, d) a,
 enum Terrain : uint8_t {
