@@ -82,4 +82,11 @@ void seed_rand(const char* seed);
 /// type of rolls.
 int fudge_roll();
 
+template<class A, class C>
+C lerp(const C& a, const C& b, A x) {
+  return a + x * (b - a);
+}
+
+double int_noise(int seed);
+
 #endif

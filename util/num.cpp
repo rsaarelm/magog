@@ -51,3 +51,9 @@ int fudge_roll() {
     result += rand_int(3) - 1;
   return result;
 }
+
+double int_noise(int seed) {
+  seed = (seed >> 13) ^ seed;
+  int x = (seed * (seed * seed * 60493 + 19990303) + 1376312589) & 0x7fffffff;
+  return 1.0 - (static_cast<double>(x) / 1073741824.0);
+}
