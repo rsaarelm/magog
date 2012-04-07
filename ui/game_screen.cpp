@@ -41,17 +41,17 @@ void Game_Screen::enter() {
     "...........#,,,~~,,,,#..........",
     "...........#,,~~~,,,,#..........",
     "#..#########,,,~~,,,,###########",
-    ",,,,,,,,,,,,,,,,~~~~,,,,,,,,,...",
-    ",,,,,,,,,,,,,,,,,~~~~~~~~~......",
-    ",,,,,,,,,,,,,,,,,,,~~~~~~~......",
+    ",,,,,,,,T,,,,,,,~~~~,,,,,,,,,...",
+    ",,,,,T,,,,,,,,,,,~~~~~~~~~......",
+    ",,,,,,,,,T,,,,,,,,,~~~~~~~......",
     ",.,,,,,,,,,,,,,,,,,,,,,,,~~~....",
-    ",,,,,,,,,,,,,,,I,,,,,,,,,~,~~~..",
-    "~~~~,,,,,,,,,,I..I,,,,,,,,,~~~~~",
-    "~~~~~,,,,,,,,,,,,..,,,,,,,,,,,~~",
-    ",,,,~~,,,,,,,,,I,.I.,,,,,,,,,,,,",
-    ",,,,~~,,,,,,,,,,,I,,.,,,,,,,,,,,",
-    ",,,,,~~,,,,,,,,,,,,,,,,,,,,,,,,,",
-    ",,,,,,~~~~~,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,TT,,,,I,,,,,,,,,~,~~~..",
+    "~~~~,,,,TTT,,,I..I,,,,,,,,,~~~~~",
+    "~~~~~,,,,T,,,,,,,..,,,,,,,,,,,~~",
+    "____~~,,,,,T,,,I,.I.,,,,,,,,,,,,",
+    ",,__~~,,T,,,,,,,,I,,.,,,,,,,,,,,",
+    ",_,__~~,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,_~~~~~,,,,,,,,,,,,,,,,,,,,,",
     ",,,,,,,~~,~~~,,,,,,,,,,,,,,,,,,,",
     ",,,,,,,,,,~~~~,,,,,,,,,,,,,,,,,,",
     ",,,,,,,,,,,,,~~~,,,,,,,,,,,,,,,,",
@@ -75,14 +75,20 @@ void Game_Screen::enter() {
       case '.':
         terrain.set(loc, terrain_floor);
         break;
+      case '_':
+        terrain.set(loc, terrain_sand);
+        break;
       case '~':
         terrain.set(loc, terrain_water);
         break;
       case 'I':
         terrain.set(loc, terrain_menhir);
         break;
+      case 'T':
+        terrain.set(loc, terrain_tree);
+        break;
       case '#':
-        terrain.set(loc, terrain_wall_center);
+        terrain.set(loc, terrain_wall);
         break;
       case '<':
         terrain.set(loc, terrain_slope_nw);
@@ -123,11 +129,12 @@ void Game_Screen::enter() {
   terrain.set_portal({1, {chunk_w, chunk_h}}, Portal(0, {-chunk_h, -chunk_w}));
 
   // Downstairs
-  auto downstairs_entry = terrain.location(2, {0, 0});
   terrain.set_portal({1, {1, 1}}, Portal(2, {-1, -1}));
+  mapgen.cave(terrain.location(2, {0, 0}), Recti({-16, -16}, {32, 32}));
+  terrain.set(terrain.location(2, {0, 0}), terrain_slope_ne);
+  // Ensure the backportal cell is clear.
+  terrain.set(terrain.location(2, {0, 1}), terrain_floor);
   terrain.set_portal({2, {0, 1}}, Portal(1, {1, 1}));
-  mapgen.cave(downstairs_entry, Recti({-16, -16}, {32, 32}));
-  terrain.set(downstairs_entry, terrain_slope_n);
 
   // Entity spawns
   Entity player =
@@ -136,7 +143,7 @@ void Game_Screen::enter() {
 
   for (int i = 0; i < 16; i++) {
     auto spec = one_chance_in(3) ? spec_thrall : spec_dreg;
-    factory.spawn(spec, factory.random_spawn_point(spec, 1));
+    factory.spawn(spec, factory.random_spawn_point(spec, 2));
   }
 
   fov.do_fov(player);

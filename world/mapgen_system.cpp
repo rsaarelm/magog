@@ -32,6 +32,10 @@ void Mapgen_System::cave(Plain_Location start, const Recti& area) {
 
   Location origin = terrain.location(start);
 
+  // Fill the whole area plus edges with solid rock to ensure tunnel walls.
+  for (auto& p : points(Recti(area.min() - Vec2i(1, 1), area.dim() + Vec2i(2, 2))))
+    terrain.set(origin + p, terrain_cave_wall);
+
   dig(origin + pos);
   dug.insert(pos);
   for (auto a : hex_dirs) {

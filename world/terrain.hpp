@@ -34,7 +34,8 @@ enum Terrain_Kind : uint8_t {
   void_terrain = block_move_flag | block_shot_flag | block_sight_flag | void_flag,
   wall_terrain = wallform_flag | block_move_flag | block_shot_flag | block_sight_flag,
   block_terrain = block_move_flag | block_shot_flag | block_sight_flag,
-  water_terrain  = block_move_flag,
+  water_terrain  = block_move_flag, // XXX May be made different from window_terrain later
+  window_terrain  = block_move_flag,
   curtain_terrain = block_shot_flag | block_sight_flag,
 };
 
@@ -48,23 +49,21 @@ struct Terrain_Data {
 // (http://en.wikibooks.org/wiki/C_Programming/Preprocessor#X-Macros)
 
 #define TERRAIN_TABLE \
-  X(terrain_void,         8, "magenta",      void_terrain)          \
-  X(terrain_grass,        1, "olive drab",   open_terrain)          \
-  X(terrain_sand,         1, "khaki",        open_terrain)          \
-  X(terrain_floor,        1, "dim gray",     open_terrain)          \
-  X(terrain_water,        2, "royal blue",   water_terrain)         \
-  X(terrain_wall_center, 14, "gray",         wall_terrain)          \
-  X(terrain_wall_x,      15, "gray",         wall_terrain)          \
-  X(terrain_wall_y,      16, "gray",         wall_terrain)          \
-  X(terrain_wall_xy,     17, "gray",         wall_terrain)          \
-  X(terrain_forest,       7, "forest green", curtain_terrain)       \
-  X(terrain_menhir,       3, "gray",         block_terrain)         \
-  X(terrain_slope_nw,     8, "gray",         open_terrain)          \
-  X(terrain_slope_n,      9, "gray",         open_terrain)          \
-  X(terrain_slope_ne,    10, "gray",         open_terrain)          \
-  X(terrain_slope_se,    11, "gray",         open_terrain)          \
-  X(terrain_slope_s,     12, "gray",         open_terrain)          \
-  X(terrain_slope_sw,    13, "gray",         open_terrain)          \
+  X(terrain_void,         8, "magenta",        void_terrain)          \
+  X(terrain_grass,        1, "olive drab",     open_terrain)          \
+  X(terrain_sand,         1, "khaki",          open_terrain)          \
+  X(terrain_floor,        1, "dim gray",       open_terrain)          \
+  X(terrain_water,        2, "royal blue",     water_terrain)         \
+  X(terrain_wall,        14, "gray",           wall_terrain)          \
+  X(terrain_cave_wall,   18, "dark goldenrod", wall_terrain)          \
+  X(terrain_tree,         7, "forest green",   window_terrain)        \
+  X(terrain_menhir,       3, "gray",           block_terrain)         \
+  X(terrain_slope_nw,     8, "gray",           open_terrain)          \
+  X(terrain_slope_n,      9, "gray",           open_terrain)          \
+  X(terrain_slope_ne,    10, "gray",           open_terrain)          \
+  X(terrain_slope_se,    11, "gray",           open_terrain)          \
+  X(terrain_slope_s,     12, "gray",           open_terrain)          \
+  X(terrain_slope_sw,    13, "gray",           open_terrain)          \
 
 #define X(a, b, c, d) a,
 enum Terrain : uint8_t {
