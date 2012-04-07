@@ -187,9 +187,10 @@ void Action_System::update(Entity entity) {
 
     auto& random_dir = *rand_choice(hex_dirs);
 
+    // TODO: Melee combat
     if (enemy) {
       if (can_fire) {
-        shoot(entity, enemy_dir);
+        //shoot(entity, enemy_dir);
       } else {
         // TODO: Get into firing pos AI
         walk(entity, random_dir);
