@@ -120,4 +120,6 @@ typedef Box<int, 3> Cubei;
 typedef Box<float, 3> Cubef;
 typedef Box<double, 3> Cubed;
 
+std::vector<Vec2i> points(const Recti& rect);
+
 #endif

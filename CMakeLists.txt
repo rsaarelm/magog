@@ -57,6 +57,7 @@ add_executable(${TARGETNAME}
   util/core.cpp
   contrib/stb/stb_image.c
   util/num.cpp
+  util/box.cpp
   util/hex.cpp
   util/color.cpp
   util/surface.cpp
