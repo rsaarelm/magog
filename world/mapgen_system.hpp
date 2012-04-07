@@ -1,4 +1,4 @@
-/* cavegen.hpp
+/* mapgen_system.hpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,13 +15,30 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef WORLD_MAPGEN_SYSTEM_HPP
+#define WORLD_MAPGEN_SYSTEM_HPP
 
-#ifndef WORLD_CAVEGEN_HPP
-#define WORLD_CAVEGEN_HPP
-
-#include <world/location.hpp>
+#include <world/terrain_system.hpp>
+#include <world/factory_system.hpp>
 #include <util/box.hpp>
 
-void generate_cave(Location origin, const Recti& area);
+class Mapgen_System {
+public:
+  Mapgen_System(
+    Terrain_System& terrain,
+    Factory_System& factory)
+    : terrain(terrain)
+    , factory(factory) {}
+
+  void cave(Plain_Location start, const Recti& area);
+private:
+  Mapgen_System(const Mapgen_System&);
+  Mapgen_System& operator=(const Mapgen_System&);
+
+  void dig(Plain_Location loc);
+
+  Terrain_System& terrain;
+  Factory_System& factory;
+};
 
 #endif

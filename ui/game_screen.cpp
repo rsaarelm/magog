@@ -20,7 +20,6 @@
 #include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
 #include <world/parts.hpp>
-#include <world/cavegen.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
 #include <util/sdl_util.hpp>
@@ -127,7 +126,7 @@ void Game_Screen::enter() {
   auto downstairs_entry = terrain.location(2, {0, 0});
   terrain.set_portal({1, {1, 1}}, Portal(2, {-1, -1}));
   terrain.set_portal({2, {0, 1}}, Portal(1, {1, 1}));
-  generate_cave(downstairs_entry, Recti({-16, -16}, {32, 32}));
+  mapgen.cave(downstairs_entry, Recti({-16, -16}, {32, 32}));
   terrain.set(downstairs_entry, terrain_slope_n);
 
   // Entity spawns

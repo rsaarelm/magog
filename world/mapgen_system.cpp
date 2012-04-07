@@ -1,4 +1,4 @@
-/* cavegen.cpp
+/* mapgen_system.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,30 +16,21 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "cavegen.hpp"
-#include <world/terrain.hpp>
+#include "mapgen_system.hpp"
 #include <util/hex.hpp>
 #include <util/num.hpp>
-#include <set>
-#include <array>
 
 using namespace std;
 
-void dig(Location loc) {
-  // XXX: Move the hardcoded terrain data somewhere else.
-  // TODO: Figure out formatting the walls around the floor.
-
-  // TODO: Reactivate for systems code when cavegen is in use again.
-  //set_terrain(loc, terrain_floor);
-}
-
-void generate_cave(Location origin, const Recti& area) {
+void Mapgen_System::cave(Plain_Location start, const Recti& area) {
   set<Vec2i> dug;
   set<Vec2i> edge;
 
   Vec2i pos = area.min() + area.dim() / 2;
   const float floor_fraction = 0.5;
   size_t n = area.volume() * floor_fraction;
+
+  Location origin = terrain.location(start);
 
   dig(origin + pos);
   dug.insert(pos);
@@ -73,4 +64,8 @@ void generate_cave(Location origin, const Recti& area) {
       }
     }
   }
+}
+
+void Mapgen_System::dig(Plain_Location loc) {
+  terrain.set(loc, terrain_floor);
 }
