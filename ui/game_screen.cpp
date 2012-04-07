@@ -90,6 +90,21 @@ void Game_Screen::enter() {
     }
   }
 
+  // Loop portals
+  for (int y = 0; y < chunk_h; y++) {
+    terrain.set_portal({1, {-1, y}}, Portal(0, {chunk_w, 0}));
+    terrain.set_portal({1, {chunk_w, y}}, Portal(0, {-chunk_w, 0}));
+  }
+
+  for (int x = 0; x < chunk_w; x++) {
+    terrain.set_portal({1, {x, -1}}, Portal(0, {0, chunk_h}));
+    terrain.set_portal({1, {x, chunk_h}}, Portal(0, {0, -chunk_h}));
+  }
+
+  terrain.set_portal({1, {-1, -1}}, Portal(0, {chunk_h, chunk_w}));
+  terrain.set_portal({1, {chunk_w, chunk_h}}, Portal(0, {-chunk_h, -chunk_w}));
+
+  // Entity spawns
   Entity player =
     factory.spawn(spec_player, terrain.location(1, Vec2i(16, 16)));
   entities.as<Blob_Part>(player).faction = player_faction;
