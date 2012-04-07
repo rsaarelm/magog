@@ -38,7 +38,7 @@ public:
     , spatial(spatial) {}
 
   bool is_seen(Location loc);
-  Location view_location(const Vec2i& relative_pos);
+  Location view_location(const Vec2i& relative_pos) const;
 
   typedef std::function<void(const Vec2i&, Location)> Fov_Callback;
 
@@ -50,6 +50,8 @@ public:
   Vec2i get_pos() const { return subjective_pos; }
 
   void clear_seen() { visible.clear(); }
+
+  int wallform_mask(const Vec2i& relative_pos) const;
 private:
   Fov_System(const Fov_System&);
   Fov_System& operator=(const Fov_System&);

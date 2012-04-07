@@ -20,6 +20,7 @@
 #include <world/parts.hpp>
 #include <ui/tile_drawable.hpp>
 #include <util/surface.hpp>
+#include <util/hex.hpp>
 #include <set>
 #include <algorithm>
 
@@ -103,14 +104,16 @@ void Display_System::world_sprites(const Recti& fov_rect, std::set<Sprite>& outp
 
       bool in_fov = fov.is_seen(loc);
 
-      // TODO: Darken terrain out of fov.
       auto ter = terrain_data[terrain.get(loc)];
       auto color = ter.color;
-      if (!in_fov)
+      auto icon = ter.icon;
+
+      if (ter.kind & wallform_flag)
+        icon += hex_wall(fov.wallform_mask(offset));
+
+      if (!in_fov) // Darken terrain out of fov
         color = lerp(0.5, Color("black"), color.monochrome());
-      auto terrain_tile = tile_drawable(
-        ter.icon,
-        color);
+      auto terrain_tile = tile_drawable(icon, color);
       output.insert(Sprite{terrain_layer, offset, terrain_tile});
 
       if (in_fov) {

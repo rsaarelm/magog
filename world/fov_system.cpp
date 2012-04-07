@@ -104,7 +104,7 @@ bool Fov_System::is_seen(Location loc) {
   return assoc_contains(visible, loc);
 }
 
-Location Fov_System::view_location(const Vec2i& relative_pos) {
+Location Fov_System::view_location(const Vec2i& relative_pos) const {
   auto iter = view.find(relative_pos + subjective_pos);
   if (iter == view.end())
     return terrain.location();
@@ -153,4 +153,14 @@ void Fov_System::prune() {
       }
     }
   }
+}
+
+int Fov_System::wallform_mask(const Vec2i& relative_pos) const {
+  int result = 0;
+  for (int i = 0; i < 6; i++) {
+    auto loc = view_location(relative_pos + hex_dirs[i]);
+    if (!loc.is_null() && terrain_data[terrain.get(loc)].kind & wallform_flag)
+      result |= 1 << i;
+  }
+  return result;
 }

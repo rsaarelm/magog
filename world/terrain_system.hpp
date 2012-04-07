@@ -47,9 +47,6 @@ public:
   bool blocks_sight(Plain_Location loc);
 
   std::vector<Location> area_locations(Area_Index area);
-
-  bool is_wall(Plain_Location loc) const;
-  int wall_mask(Location loc) const;
 private:
   Terrain_System(const Terrain_System&);
   Terrain_System& operator=(const Terrain_System&);
