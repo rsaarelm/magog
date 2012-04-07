@@ -20,6 +20,7 @@
 #define WORLD_TERRAIN_HPP
 
 #include <util/color.hpp>
+#include <array>
 
 enum Terrain_Flag : uint8_t {
   wallform_flag    = 1 << 1,
@@ -79,5 +80,7 @@ const Terrain_Data terrain_data[] = {
 #undef X
 
 #undef TERRAIN_TABLE
+
+Terrain slope_terrain(int dir6);
 
 #endif

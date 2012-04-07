@@ -33,7 +33,7 @@ void Game_Screen::enter() {
   static const char chunk[chunk_h][chunk_w + 1] = {
     "###........#,,,~~,,,,#..........",
     "#.#........#,,,,~~,,,#..........",
-    "...........#,,,,~~,,,#..........",
+    "#A#........#,,,,~~,,,#..........",
     "...........#,,,,~~,,,#..........",
     "...........#,,,~~,,,,#..........",
     "...........#,,,~~,,,,#..........",
@@ -130,10 +130,7 @@ void Game_Screen::enter() {
 
   // Downstairs
   terrain.set_portal({1, {1, 1}}, Portal(2, {-1, -1}));
-  mapgen.cave(terrain.location(2, {0, 0}), Recti({-16, -16}, {32, 32}));
-  terrain.set(terrain.location(2, {0, 0}), terrain_slope_ne);
-  // Ensure the backportal cell is clear.
-  terrain.set(terrain.location(2, {0, 1}), terrain_floor);
+  mapgen.cave(terrain.location(2, {0, 0}), 1, Recti({-16, -16}, {32, 32}));
   terrain.set_portal({2, {0, 1}}, Portal(1, {1, 1}));
 
   // Entity spawns

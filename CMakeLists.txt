@@ -92,6 +92,7 @@ add_executable(${TARGETNAME}
   world/mapgen_system.cpp
   world/action_system.cpp
   world/cycler_system.cpp
+  world/terrain.cpp
   world/footprint.cpp
   world/location.cpp
 

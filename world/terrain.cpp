@@ -1,4 +1,4 @@
-/* mapgen_system.hpp
+/* terrain.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -15,28 +15,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef WORLD_MAPGEN_SYSTEM_HPP
-#define WORLD_MAPGEN_SYSTEM_HPP
 
-#include <world/terrain_system.hpp>
-#include <world/factory_system.hpp>
-#include <util/box.hpp>
+#include "terrain.hpp"
+#include <array>
 
-class Mapgen_System {
-public:
-  Mapgen_System(
-    Terrain_System& terrain,
-    Factory_System& factory)
-    : terrain(terrain)
-    , factory(factory) {}
-
-  void cave(Plain_Location start, int start_dir6, const Recti& area);
-private:
-  Mapgen_System(const Mapgen_System&);
-  Mapgen_System& operator=(const Mapgen_System&);
-
-  Terrain_System& terrain;
-  Factory_System& factory;
-};
-
-#endif
+Terrain slope_terrain(int dir6) {
+  static const std::array<Terrain, 6> slopes{
+    terrain_slope_nw,
+    terrain_slope_n,
+    terrain_slope_ne,
+    terrain_slope_se,
+    terrain_slope_s,
+    terrain_slope_sw};
+  return slopes.at(dir6);
+}
