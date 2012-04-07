@@ -127,7 +127,7 @@ void Fov_System::do_fov(int radius, Location origin, const Vec2i& offset) {
 }
 
 void Fov_System::do_fov(Entity player) {
-  const int radius = 8;
+  const int radius = 16;
 
   clear_seen();
   if (entities.as<Blob_Part>(player).big) {
