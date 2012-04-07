@@ -20,6 +20,7 @@
 #include <ui/intro_screen.hpp>
 #include <ui/registry.hpp>
 #include <world/parts.hpp>
+#include <world/cavegen.hpp>
 #include <util/hex.hpp>
 #include <util/num.hpp>
 #include <util/sdl_util.hpp>
@@ -31,8 +32,8 @@ void Game_Screen::enter() {
   const int chunk_w = 32;
   const int chunk_h = 32;
   static const char chunk[chunk_h][chunk_w + 1] = {
-    "...........#,,,~~,,,,#..........",
-    "...........#,,,,~~,,,#..........",
+    "###........#,,,~~,,,,#..........",
+    "#.#........#,,,,~~,,,#..........",
     "...........#,,,,~~,,,#..........",
     "...........#,,,,~~,,,#..........",
     "...........#,,,~~,,,,#..........",
@@ -84,6 +85,24 @@ void Game_Screen::enter() {
       case '#':
         terrain.set(loc, terrain_wall_center);
         break;
+      case '<':
+        terrain.set(loc, terrain_slope_nw);
+        break;
+      case 'P':
+        terrain.set(loc, terrain_slope_n);
+        break;
+      case 'A':
+        terrain.set(loc, terrain_slope_ne);
+        break;
+      case '>':
+        terrain.set(loc, terrain_slope_se);
+        break;
+      case 'J':
+        terrain.set(loc, terrain_slope_s);
+        break;
+      case 'V':
+        terrain.set(loc, terrain_slope_sw);
+        break;
       default:
         break;
       }
@@ -103,6 +122,13 @@ void Game_Screen::enter() {
 
   terrain.set_portal({1, {-1, -1}}, Portal(0, {chunk_h, chunk_w}));
   terrain.set_portal({1, {chunk_w, chunk_h}}, Portal(0, {-chunk_h, -chunk_w}));
+
+  // Downstairs
+  auto downstairs_entry = terrain.location(2, {0, 0});
+  terrain.set_portal({1, {1, 1}}, Portal(2, {-1, -1}));
+  terrain.set_portal({2, {0, 1}}, Portal(1, {1, 1}));
+  generate_cave(downstairs_entry, Recti({-16, -16}, {32, 32}));
+  terrain.set(downstairs_entry, terrain_slope_n);
 
   // Entity spawns
   Entity player =
