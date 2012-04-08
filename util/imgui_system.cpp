@@ -37,7 +37,7 @@ bool Imgui_System::button(int id, const char* title, const Rectf& bounds) {
   gl_rect(bounds);
 
   Vec2f dim(fonter.width(title), fonter.height());
-  Vec2f centering_tweak = Vec2f(0, -fonter.height() / 5);
+  Vec2f centering_tweak = Vec2f(0, -fonter.height() / 4);
   Vec2f pos = bounds.min() + (bounds.dim() - dim) / 2.f + centering_tweak;
   Color(255, 255, 255).gl_color();
   fonter.draw(pos, title);

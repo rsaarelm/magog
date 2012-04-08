@@ -39,6 +39,10 @@ int Fonter_System::width(const char* text) {
 }
 
 int Fonter_System::raw_draw(Vec2f pos, char ch) {
+  // Fractions can cause artifacts in font texture drawing. Round to closest
+  // integer.
+  pos = Vec2f(round(pos[0]), round(pos[1]));
+
   font_texture.bind();
   pos[1] += height();
   auto& data = font_data[ch - begin_char];
