@@ -22,6 +22,7 @@
 #include <util/format.hpp>
 #include <util/vec.hpp>
 #include <vector>
+#include <string>
 
 class Fonter_System {
 public:

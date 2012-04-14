@@ -21,14 +21,17 @@
 #include <world/fx_system.hpp>
 #include <ui/sprite_system.hpp>
 #include <ui/hud_system.hpp>
+#include <util/fonter_system.hpp>
 
 class Ui_Fx_System : public Fx_System {
 public:
   Ui_Fx_System(
+    Fonter_System& fonter,
     Sprite_System& sprite,
     Hud_System& hud)
-  : sprite(sprite)
-  , hud(hud){}
+    : fonter(fonter)
+    , sprite(sprite)
+    , hud(hud){}
 
   virtual void beam(Location location, const Vec2i& dir, int length, const Color& color);
 
@@ -36,7 +39,9 @@ public:
 
 private:
   virtual void raw_msg(std::string text);
+  virtual void raw_rising_msg(Location location, const Color& color, std::string text);
 
+  Fonter_System& fonter;
   Sprite_System& sprite;
   Hud_System& hud;
 };

@@ -35,8 +35,16 @@ public:
   void msg(const char* fmt, Args... args) {
     raw_msg(format(fmt, args...));
   }
+
+  /// A message that rises a location. Often a damage or other status effect indicator.
+  template<typename... Args>
+  void rising_msg(Location location, const Color& color, const char* fmt, Args... args) {
+    raw_rising_msg(location, color, format(fmt, args...));
+  }
+
 private:
   virtual void raw_msg(std::string text) = 0;
+  virtual void raw_rising_msg(Location location, const Color& color, std::string text) = 0;
 };
 
 #endif

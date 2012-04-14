@@ -117,6 +117,39 @@ struct Particles_Drawable : public Drawable {
 };
 
 
+struct Rising_Msg_Drawable : public Drawable {
+  Rising_Msg_Drawable(Fonter_System& fonter, const Color& color, std::string text)
+    : fonter(fonter)
+    , color(color)
+    , text(text)
+    , pos(0, 0) {
+    life = 0.5;
+  }
+
+  virtual bool update(float interval_sec) {
+    const Vec2f velocity(0, -64);
+    life -= interval_sec;
+    pos += interval_sec * velocity;
+    return life > 0;
+  }
+
+  virtual void draw(const Vec2f& offset) {
+    color.gl_color();
+    // TODO: Center text
+    fonter.draw(Vec2i(offset + pos), text.c_str());
+  }
+
+  virtual int get_z_layer() const { return 100; }
+
+  Fonter_System& fonter;
+
+  Color color;
+  std::string text;
+  float life;
+  Vec2f pos;
+};
+
+
 void Ui_Fx_System::raw_msg(std::string str) {
   hud.add_msg(str);
 }
@@ -133,3 +166,7 @@ void Ui_Fx_System::explosion(Location location, int intensity, const Color& colo
     std::shared_ptr<Drawable>(new Particles_Drawable()), location);
 }
 
+void Ui_Fx_System::raw_rising_msg(Location location, const Color& color, std::string text) {
+  sprite.add(
+    std::shared_ptr<Drawable>(new Rising_Msg_Drawable(fonter, color, text)), location);
+}

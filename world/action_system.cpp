@@ -153,6 +153,8 @@ void Action_System::damage(Entity entity, int amount) {
       fx.explosion(spatial.location(entity), 10, Color("red"));
       fx.msg("Unit destroyed");
       kill(entity);
+    } else {
+      fx.rising_msg(spatial.location(entity), Color("white"), "%s", amount);
     }
   }
 }

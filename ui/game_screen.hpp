@@ -48,7 +48,7 @@ class Game_Screen : public Game_State {
     , fov(entities, terrain, spatial)
     , sprite(fov)
     , hud(fonter, entities, spatial)
-    , fx(sprite, hud)
+    , fx(fonter, sprite, hud)
     , display(entities, terrain, spatial, fov, sprite)
     , action(entities, terrain, spatial, fov, fx)
     , cycler(entities, spatial, action)
