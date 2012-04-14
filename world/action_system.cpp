@@ -61,6 +61,40 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
   }
 }
 
+bool Action_System::melee(Entity entity, const Vec2i& dir) {
+  auto loc = spatial.location(entity);
+  auto target_loc = loc + dir;
+
+  Entity target = mob_at(target_loc);
+  if (target) {
+    // Default to-hit chance is against difficulty -2, connects most of the
+    // time but not always.
+    bool hit_connects = fudge_roll() >= -2;
+    if (hit_connects) {
+      // TODO: Support variable damage, not just always 1 hp.
+      // TODO: Formatted messages
+      fx.msg("Hit");
+      damage(target, 1);
+      return true;
+    } else {
+      fx.msg("Miss");
+      return false;
+    }
+  }
+  return false;
+}
+
+bool Action_System::bump(Entity entity, const Vec2i& dir) {
+  auto loc = spatial.location(entity);
+  auto target_loc = loc + dir;
+
+  Entity target = mob_at(target_loc);
+  if (target && is_enemy_of(entity, target))
+    return melee(entity, dir);
+  else
+    return walk(entity, dir);
+}
+
 bool Action_System::shoot(Entity entity, const Vec2i& dir) {
   ASSERT(is_hex_dir(dir));
   // TODO: Entities have multiple weapons. (The weapon could be the entity though.)
@@ -158,6 +192,14 @@ bool Action_System::is_enemy_of(Entity a, Entity b) {
   return entities.as<Blob_Part>(a).faction != entities.as<Blob_Part>(b).faction;
 }
 
+Entity Action_System::mob_at(Location location) {
+  for (auto& a : spatial.entities_at(location)) {
+    if (entities.has(a, Blob_Kind))
+      return a;
+  }
+  return Entity();
+}
+
 void Action_System::update(Entity entity) {
   // Brain-dead AI
   if (is_ready(entity)) {
@@ -193,11 +235,11 @@ void Action_System::update(Entity entity) {
         //shoot(entity, enemy_dir);
       } else {
         // TODO: Get into firing pos AI
-        walk(entity, random_dir);
+        bump(entity, random_dir);
       }
     } else {
       if (one_chance_in(3))
-        walk(entity, random_dir);
+        bump(entity, random_dir);
       else
         wait(entity);
     }

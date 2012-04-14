@@ -60,6 +60,8 @@ public:
   bool is_player(Entity entity);
   bool is_enemy_of(Entity a, Entity b);
 
+  Entity mob_at(Location location);
+
   void update(Entity entity);
 
   void kill(Entity entity);

@@ -236,7 +236,7 @@ void Game_Screen::key_event(int keysym, int printable, int scancode) {
     break;
   }
   if (delta != Vec2i(0, 0)) {
-    if (action.walk(player, delta)) {
+    if (action.bump(player, delta)) {
       fov.do_fov(player);
       end_turn();
     } else {
