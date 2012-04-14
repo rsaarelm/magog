@@ -68,15 +68,13 @@ void Hud_System::draw(Entity player) {
   for (int i = 0; i < 6; i++) {
     string chr = format("%s", "QWEASD"[i]);
     Vec2f pos(10 + 16 * (i % 3), Registry::window_h - 50 + 13 * (i / 3));
-    pos[0] -= fonter.width(chr.c_str()) / 2;
-    fonter.draw(pos, chr.c_str());
+    fonter.draw(pos, Fonter_System::CENTER, chr.c_str());
   }
 
   for (int i = 0; i < 6; i++) {
     string chr = format("%s", "UIOJKL"[i]);
     Vec2f pos(Registry::window_w - 60 + 16 * (i % 3), Registry::window_h - 50 + 13 * (i / 3));
-    pos[0] -= fonter.width(chr.c_str()) / 2;
-    fonter.draw(pos, chr.c_str());
+    fonter.draw(pos, Fonter_System::CENTER, chr.c_str());
   }
 
   // Draw the status line.

@@ -135,8 +135,8 @@ struct Rising_Msg_Drawable : public Drawable {
 
   virtual void draw(const Vec2f& offset) {
     color.gl_color();
-    // TODO: Center text
-    fonter.draw(Vec2i(offset + pos), text.c_str());
+    Vec2f o = offset + tile_size.elem_mul(Vec2f(0.5, 0.0));
+    fonter.draw(o + pos, Fonter_System::CENTER, text.c_str());
   }
 
   virtual int get_z_layer() const { return 100; }

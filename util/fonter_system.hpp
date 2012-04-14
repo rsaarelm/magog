@@ -32,6 +32,12 @@ public:
     float char_width;
   };
 
+  enum Align {
+    LEFT,
+    CENTER,
+    RIGHT
+  };
+
   Fonter_System(
     const Surface& font_sheet,
     std::vector<Font_Data> font_data,
@@ -44,7 +50,13 @@ public:
   template<typename... Args>
   int draw(const Vec2f& pos, const char* fmt, Args... args) {
     auto str = format(fmt, args...);
-    raw_draw(pos, str.c_str());
+    raw_draw(pos, LEFT, str.c_str());
+  }
+
+  template<typename... Args>
+  int draw(const Vec2f& pos, Align align, const char* fmt, Args... args) {
+    auto str = format(fmt, args...);
+    raw_draw(pos, align, str.c_str());
   }
 
 private:
@@ -52,7 +64,7 @@ private:
   Fonter_System& operator=(const Fonter_System&);
 
   int raw_draw(Vec2f pos, char ch);
-  int raw_draw(const Vec2f& pos, const char* text);
+  int raw_draw(const Vec2f& pos, Align align, const char* text);
 
   Vec2i tex_dim;
   Gl_Texture font_texture;

@@ -56,9 +56,22 @@ int Fonter_System::raw_draw(Vec2f pos, char ch) {
   return data.char_width;
 }
 
-int Fonter_System::raw_draw(const Vec2f& pos, const char* text) {
+int Fonter_System::raw_draw(const Vec2f& pos, Align align, const char* text) {
+  Vec2f real_pos = pos;
+
+  switch (align) {
+  case CENTER:
+    real_pos[0] -= width(text) / 2;
+    break;
+  case RIGHT:
+    real_pos[0] -= width(text);
+    break;
+  default:
+    break;
+  }
+
   int result = 0;
   for (const char* c = text; *c; c++)
-    result += raw_draw(pos + Vec2f(result, 0), *c);
+    result += raw_draw(real_pos + Vec2f(result, 0), *c);
   return result;
 }
