@@ -91,7 +91,7 @@ struct Digger {
 };
 
 void Mapgen_System::cave(Plain_Location start, int start_dir6, const Recti& area) {
-  const float floor_fraction = 0.5;
+  const float floor_fraction = 0.2;
   size_t n = area.volume() * floor_fraction;
 
   Digger state(terrain.location(start), terrain, area);
