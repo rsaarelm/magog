@@ -28,13 +28,13 @@ Entity Factory_System::build(Spec spec, Entity entity) {
 
   switch (spec) {
   case spec_player:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_player, 7, 10, 5)));
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_player, 1, 5, 5)));
     return entity;
   case spec_dreg:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_dreg, 3, 6, 2)));
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_dreg, 1, 1, 2)));
     return entity;
   case spec_thrall:
-    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_thrall, 5, 8, 4)));
+    entities.add(entity, std::unique_ptr<Part>(new Blob_Part(icon_thrall, 1, 2, 4)));
     return entity;
   default:
     throw Spec_Exception();
