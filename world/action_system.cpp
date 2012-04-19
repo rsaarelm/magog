@@ -207,8 +207,7 @@ void Action_System::update(Entity entity) {
     const int fov_radius = 5;
 
     Entity enemy = 0;
-    Vec2i enemy_dir;
-    bool can_fire = false;
+    Vec2i relative_enemy_pos;
 
     // XXX: Expensive. Should cache results instead of running this every frame.
     fov.run(
@@ -216,31 +215,26 @@ void Action_System::update(Entity entity) {
       [&](const Vec2i& offset, Location loc) {
         for (auto& e : spatial.entities_at(loc)) {
           if (is_enemy_of(entity, e)) {
-            if (!enemy) {
+            // Find the closest enemy as target.
+            if (!enemy || hex_dist(offset) < hex_dist(relative_enemy_pos)) {
               enemy = e;
-              enemy_dir = hex_dirs[vec_to_hex_dir(offset)];
-            }
-            if (on_hex_axis(offset) && !can_fire) {
-              can_fire = true;
-              enemy_dir = hex_dirs[vec_to_hex_dir(offset)];
+              relative_enemy_pos = offset;
             }
           }
         }
       });
 
-    auto& random_dir = *rand_choice(hex_dirs);
+    Vec2i movement_dir = hex_dirs[vec_to_hex_dir(relative_enemy_pos)];
+    Vec2i random_dir = *rand_choice(hex_dirs);
 
-    // TODO: Melee combat
     if (enemy) {
-      if (can_fire) {
-        //shoot(entity, enemy_dir);
-      } else {
-        // TODO: Get into firing pos AI
-        bump(entity, random_dir);
-      }
+      // Try to bump towards enemy, move randomly if that fails.
+      if (!bump(entity, movement_dir))
+        walk(entity, random_dir);
     } else {
+      // Mobs that don't see an enemy wander randomly.
       if (one_chance_in(3))
-        bump(entity, random_dir);
+        walk(entity, random_dir);
       else
         wait(entity);
     }
