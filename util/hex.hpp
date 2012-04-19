@@ -129,10 +129,10 @@ Shaped_Wall hex_wall(int edge_mask);
 Vec2i hex_circle_vec(int radius, int index);
 
 /// Return a sequence of all hex circle points for a given radius.
-Range<Vec2i>::T hex_circle_points(int radius);
+Range<Vec2i> hex_circle_points(int radius);
 
 /// Return all the points in a hex disk with the given radius.
-Range<Vec2i>::T hex_area_points(int radius);
+Range<Vec2i> hex_area_points(int radius);
 
 /**
  * Return the hex distance from origin to a point.

@@ -63,12 +63,12 @@ Vec2i hex_circle_vec(int radius, int index) {
   return hex_dirs[sector] * radius + offset * hex_dirs[(sector + 2) % 6];
 }
 
-Range<Vec2i>::T hex_circle_points(int radius) {
+Range<Vec2i> hex_circle_points(int radius) {
   return counting_range(0, hex_circumference(radius))
       | transformed([=](int i) { return hex_circle_vec(radius, i); });
 }
 
-Range<Vec2i>::T hex_area_points(int radius) {
+Range<Vec2i> hex_area_points(int radius) {
   if (radius == 0)
     return hex_circle_points(0);
   else
