@@ -41,7 +41,10 @@ public:
   , fx(fx) {}
 
   bool walk(Entity entity, const Vec2i& dir);
+
+  // Return whether an attack was made, not whether it was successful.
   bool melee(Entity entity, const Vec2i& dir);
+
   bool bump(Entity entity, const Vec2i& dir);
   bool shoot(Entity entity, const Vec2i& dir);
 

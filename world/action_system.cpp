@@ -49,7 +49,7 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
       if (a != entity && blocks_movement(a)) {
         // Crushing damages you.
         damage(entity, entities.as<Blob_Part>(a).armor);
-        fx.msg("Unit crushed");
+        fx.rising_msg(spatial.location(entity), Color("pink"), "*crush*");
         fx.explosion(spatial.location(a), 10, Color("red"));
         kill(a);
       }
@@ -75,14 +75,11 @@ bool Action_System::melee(Entity entity, const Vec2i& dir) {
     bool hit_connects = fudge_roll() >= -2;
     if (hit_connects) {
       // TODO: Support variable damage, not just always 1 hp.
-      // TODO: Formatted messages
-      fx.msg("Hit");
       damage(target, 1);
-      return true;
     } else {
-      fx.msg("Miss");
-      return false;
+      fx.rising_msg(spatial.location(entity), Color("light blue"), "miss");
     }
+    return true;
   }
   return false;
 }
@@ -154,7 +151,6 @@ void Action_System::damage(Entity entity, int amount) {
     blob.armor -= amount;
     if (blob.armor <= 0) {
       fx.explosion(spatial.location(entity), 10, Color("red"));
-      fx.msg("Unit destroyed");
       kill(entity);
     } else {
       fx.rising_msg(spatial.location(entity), Color("white"), "%s", amount);
