@@ -67,6 +67,9 @@ bool Action_System::melee(Entity entity, const Vec2i& dir) {
 
   Entity target = mob_at(target_loc);
   if (target) {
+    auto& blob = entities.as<Blob_Part>(entity);
+    blob.energy -= 100;
+
     // Default to-hit chance is against difficulty -2, connects most of the
     // time but not always.
     bool hit_connects = fudge_roll() >= -2;
