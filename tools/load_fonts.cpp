@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <vector>
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "../contrib/stb/stb_truetype.h"
+#include <contrib/stb/stb_truetype.h>
 
 using namespace std;
 
