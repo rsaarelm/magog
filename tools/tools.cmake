@@ -12,10 +12,10 @@ if (NOT CMAKE_CROSSCOMPILING)
 
   add_executable(build-atlas
     tools/build-atlas.cpp
-    util/surface.cpp
-    util/core.cpp
-    util/format.cpp
-    contrib/stb/stb_image.c
+    src/util/surface.cpp
+    src/util/core.cpp
+    src/util/format.cpp
+    src/contrib/stb/stb_image.c
     )
   target_link_libraries(build-atlas ${M_LIBRARY})
 

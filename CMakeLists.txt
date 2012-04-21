@@ -51,53 +51,17 @@ set(CORELIBS
 
 # Project definition
 
-include_directories("${PROJECT_SOURCE_DIR}/" "${PROJECT_BINARY_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/src" "${PROJECT_BINARY_DIR}/")
+
+file(GLOB_RECURSE APP_SOURCES src/*.cpp)
+message(${APP_SOURCES})
 
 add_executable(${TARGETNAME}
-  util/core.cpp
-  contrib/stb/stb_image.c
-  util/num.cpp
-  util/box.cpp
-  util/hex.cpp
-  util/color.cpp
-  util/surface.cpp
-  util/gldraw.cpp
-  util/gl_texture.cpp
-  util/fonter_system.cpp
-  util/format.cpp
-  util/imgui_system.cpp
-  util/transform.cpp
-  util/geom_util.cpp
-  util/wavefront.cpp
-  util/game_loop.cpp
-  util/audio.cpp
-  util/mixer.cpp
-  util/sdl_util.cpp
-
-  ui/main.cpp
-  ui/intro_screen.cpp
-  ui/display_system.cpp
-  ui/ui_fx_system.cpp
-  ui/game_screen.cpp
-  ui/hud_system.cpp
-  ui/tile_drawable.cpp
-  ui/sprite_system.cpp
-  ui/registry.cpp
-
-  world/entities_system.cpp
-  world/terrain_system.cpp
-  world/spatial_system.cpp
-  world/fov_system.cpp
-  world/factory_system.cpp
-  world/mapgen_system.cpp
-  world/action_system.cpp
-  world/cycler_system.cpp
-  world/terrain.cpp
-  world/footprint.cpp
-  world/location.cpp
+  ${APP_SOURCES}
+  src/contrib/stb/stb_image.c
 
   font_image.hpp
-  font_data.hpp
+  font_spec.hpp
 
   tile_rect.hpp
   tile_atlas.hpp
@@ -114,7 +78,7 @@ add_custom_target(run
   DEPENDS ${TARGETNAME}
 )
 
-bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_data.hpp)
+bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_spec.hpp)
 
 atlas(tile_rect.hpp tile_atlas.hpp
   -n 8 assets/tiles/000-8-terrain.png
