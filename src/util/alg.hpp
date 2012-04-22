@@ -33,9 +33,15 @@
  * Wrote this because I couldn't figure out how to nicely write return types for
  * functions that return Boost ranges otherwise. Uses the somewhat inefficient
  * `boost::any_range`.
+ *
+ * While we're waiting for gcc to get template aliasing working, will have to
+ * make do with the awkward struct typedef idiom for getting the partially
+ * specialized type.
  */
 template<class C>
-using Range = boost::any_range<C, boost::single_pass_traversal_tag, C, std::ptrdiff_t>;
+struct Range {
+  typedef boost::any_range<C, boost::single_pass_traversal_tag, C, std::ptrdiff_t> T;
+};
 
 /// Helper function to run all_of over a range without spelling out the begin/end.
 template<class Range, class Unary_Predicate>

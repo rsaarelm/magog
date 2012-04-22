@@ -2,4 +2,4 @@ A roguelike game.
 
 Dependencies: OpenGL, SDL 1.2.
 
-Build dependencies: Boost 1.49, GCC 4.7, CMake 2.8.
+Build dependencies: Boost 1.49, GCC 4.6, CMake 2.8.
