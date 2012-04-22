@@ -55,7 +55,9 @@ int Fonter_System::raw_draw(Vec2f pos, char ch) {
   Vec2f origin(data.x0, data.y0);
   Vec2f dim(data.x1 - data.x0, data.y1 - data.y0);
 
-  gl_tex_rect(Rectf(offset, dim), Rectf(origin.elem_div(tex_dim), dim.elem_div(tex_dim)));
+  gl_tex_rect(Rectf(offset, dim),
+              Rectf(origin.elem_div(font_texture.get_dim()),
+                    dim.elem_div(font_texture.get_dim())));
 
   return data.char_width;
 }
@@ -125,7 +127,6 @@ void Fonter_System::load_font(const char* filename, int height, int first, int n
   }
 
   font_texture = Gl_Texture(surf);
-  tex_dim = Vec2i(dim, dim);
 
   for (auto& a : chardata)
     font_data.push_back(Font_Data{a.x0, a.y0, a.x1, a.y1, a.xoff, a.yoff, a.xadvance});

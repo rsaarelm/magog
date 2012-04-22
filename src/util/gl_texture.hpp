@@ -18,6 +18,7 @@
 #ifndef UTIL_GL_TEXTURE_HPP
 #define UTIL_GL_TEXTURE_HPP
 
+#include <util/vec.hpp>
 #include <GL/gl.h>
 
 class Surface;
@@ -34,6 +35,7 @@ struct Gl_Texture {
   Gl_Texture& operator=(Gl_Texture&& rhs) {
     free();
     handle = rhs.handle;
+    dim = rhs.dim;
     rhs.handle = 0;
   }
 
@@ -41,6 +43,7 @@ struct Gl_Texture {
 
   void bind() { glBindTexture(GL_TEXTURE_2D, handle); }
 
+  Vec2i get_dim() const { return dim; }
 private:
   Gl_Texture(GLuint handle) : handle(handle) {}
   Gl_Texture(const Gl_Texture&);
@@ -52,6 +55,7 @@ private:
   }
 
   GLuint handle;
+  Vec2i dim;
 };
 
 #endif

@@ -72,7 +72,6 @@ private:
 
   File_System& file;
 
-  Vec2i tex_dim;
   Gl_Texture font_texture;
   std::vector<Font_Data> font_data;
   int font_height;

@@ -28,4 +28,6 @@ Gl_Texture::Gl_Texture(const Surface& surface) {
   glTexImage2D(
     GL_TEXTURE_2D, 0, GL_RGBA8, surface.width(), surface.height(),
     0, GL_RGBA, GL_UNSIGNED_BYTE, surface.data());
+
+  dim = surface.get_dim();
 }
