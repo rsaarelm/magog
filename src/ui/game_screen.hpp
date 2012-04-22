@@ -41,7 +41,7 @@ class Game_Screen : public Game_State {
  public:
   Game_Screen(File_System& file)
   : file(file)
-  , fonter(font_sheet, font_data, font_height)
+  , fonter(file, "pf_tempesta_seven_extended_bold.ttf", font_height)
   , entities()
   , terrain()
   , spatial(entities, terrain)

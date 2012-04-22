@@ -19,6 +19,7 @@
 #define UTIL_FONTER_SYSTEM_HPP
 
 #include <util/gl_texture.hpp>
+#include <util/file_system.hpp>
 #include <util/format.hpp>
 #include <util/vec.hpp>
 #include <vector>
@@ -39,10 +40,11 @@ public:
   };
 
   Fonter_System(
-    const Surface& font_sheet,
-    std::vector<Font_Data> font_data,
+    File_System& file,
+    const char* ttf_file,
     int font_height,
-    int begin_char = 32);
+    int first_char = 32,
+    int num_chars = 96);
 
   int width(const char* text);
   int height() { return font_height; }
@@ -66,11 +68,15 @@ private:
   int raw_draw(Vec2f pos, char ch);
   int raw_draw(const Vec2f& pos, Align align, const char* text);
 
+  void load_font(const char* filename, int height, int first, int num);
+
+  File_System& file;
+
   Vec2i tex_dim;
   Gl_Texture font_texture;
   std::vector<Font_Data> font_data;
   int font_height;
-  int begin_char;
+  int first_char;
 };
 
 #endif
