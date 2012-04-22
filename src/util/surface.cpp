@@ -94,16 +94,19 @@ void Surface::init_image(int width, int height) {
 }
 
 Recti Surface::crop_rect() const {
-  int x0 = width_, y0 = height_, x1 = 0, y1 = 0;
-  for (int i = 0; i < width_ * height_; i++) {
-    if ((*this)[i].a) {
-      int x = i % width_, y = i / width_;
-      if (x < x0) x0 = x;
-      if (y < y0) y0 = y;
-      if (x > x1) x1 = x;
-      if (y > y1) y1 = y;
-    }
-  }
+  return crop_rect(Recti(Vec2i(width_, height_)));
+}
+
+Recti Surface::crop_rect(const Recti& sub_rect) const {
+  int x0 = sub_rect.max()[0], y0 = sub_rect.max()[1], x1 = sub_rect.min()[0], y1 = sub_rect.min()[1];
+  for (int y = sub_rect.min()[1]; y < sub_rect.max()[1]; y++)
+    for (int x = sub_rect.min()[0]; x < sub_rect.max()[0]; x++)
+      if ((*this)[Vec2i(x, y)].a) {
+        if (x < x0) x0 = x;
+        if (y < y0) y0 = y;
+        if (x > x1) x1 = x;
+        if (y > y1) y1 = y;
+      }
 
   if (x0 < x1 && y0 < y1)
     return Recti(Vec2i(x0, y0), Vec2i(x1 - x0 + 1, y1 - y0 + 1));

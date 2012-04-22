@@ -68,6 +68,8 @@ class Surface {
   /// non-transparent pixels.
   Recti crop_rect() const;
 
+  Recti crop_rect(const Recti& sub_rect) const;
+
   void blit(const Recti& src_rect, Surface& dest, const Vec2i& dest_pos);
 
   bool contains(const Vec2i& pos) {
