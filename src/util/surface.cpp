@@ -67,6 +67,14 @@ Surface::Surface(const Vec2i& dim)
   init_image(dim);
 }
 
+Surface::Surface(Surface&& rhs) {
+  data_ = rhs.data_;
+  width_ = rhs.width_;
+  height_ = rhs.height_;
+
+  rhs.data_ = nullptr;
+}
+
 Surface::~Surface() {
   // Need to use free since data may come from C code which malloc's it.
   free(data_);

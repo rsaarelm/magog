@@ -41,7 +41,7 @@ struct Gl_Texture {
 
   GLuint get() const { return handle; }
 
-  void bind() { glBindTexture(GL_TEXTURE_2D, handle); }
+  void bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
 
   Vec2i get_dim() const { return dim; }
 private:

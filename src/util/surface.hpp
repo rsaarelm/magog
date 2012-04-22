@@ -35,6 +35,7 @@ class Surface {
   Surface(std::vector<uint8_t> data);
   Surface(int width, int height);
   Surface(const Vec2i& dim);
+  Surface(Surface&& rhs);
   ~Surface();
 
   void load_image(const uint8_t* buffer, size_t buffer_len);
