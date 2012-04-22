@@ -41,6 +41,7 @@ enum Terrain_Kind : uint8_t {
 };
 
 struct Terrain_Data {
+  const char* icon_set;
   int icon;
   Color color;
   Terrain_Kind kind;
@@ -50,30 +51,30 @@ struct Terrain_Data {
 // (http://en.wikibooks.org/wiki/C_Programming/Preprocessor#X-Macros)
 
 #define TERRAIN_TABLE \
-  X(terrain_void,         8, "magenta",        void_terrain)          \
-  X(terrain_grass,        1, "olive drab",     open_terrain)          \
-  X(terrain_sand,         1, "khaki",          open_terrain)          \
-  X(terrain_floor,        1, "dim gray",       open_terrain)          \
-  X(terrain_water,        2, "royal blue",     water_terrain)         \
-  X(terrain_wall,        14, "gray",           wall_terrain)          \
-  X(terrain_cave_wall,   18, "dark goldenrod", wall_terrain)          \
-  X(terrain_tree,         7, "forest green",   window_terrain)        \
-  X(terrain_menhir,       3, "gray",           block_terrain)         \
-  X(terrain_slope_nw,     8, "gray",           open_terrain)          \
-  X(terrain_slope_n,      9, "gray",           open_terrain)          \
-  X(terrain_slope_ne,    10, "gray",           open_terrain)          \
-  X(terrain_slope_se,    11, "gray",           open_terrain)          \
-  X(terrain_slope_s,     12, "gray",           open_terrain)          \
-  X(terrain_slope_sw,    13, "gray",           open_terrain)          \
+  X(terrain_void,       "terrain",   8, "magenta",        void_terrain)          \
+  X(terrain_grass,      "terrain",   1, "olive drab",     open_terrain)          \
+  X(terrain_sand,       "terrain",   1, "khaki",          open_terrain)          \
+  X(terrain_floor,      "terrain",   1, "dim gray",       open_terrain)          \
+  X(terrain_water,      "terrain",   2, "royal blue",     water_terrain)         \
+  X(terrain_tree,       "terrain",   7, "forest green",   window_terrain)        \
+  X(terrain_menhir,     "terrain",   3, "gray",           block_terrain)         \
+  X(terrain_wall,       "wall",      0, "gray",           wall_terrain)          \
+  X(terrain_cave_wall,  "wall",      4, "dark goldenrod", wall_terrain)          \
+  X(terrain_slope_nw,   "slope",     0, "gray",           open_terrain)          \
+  X(terrain_slope_n,    "slope",     1, "gray",           open_terrain)          \
+  X(terrain_slope_ne,   "slope",     2, "gray",           open_terrain)          \
+  X(terrain_slope_se,   "slope",     3, "gray",           open_terrain)          \
+  X(terrain_slope_s,    "slope",     4, "gray",           open_terrain)          \
+  X(terrain_slope_sw,   "slope",     5, "gray",           open_terrain)          \
 
-#define X(a, b, c, d) a,
+#define X(a, b, c, d, e) a,
 enum Terrain : uint8_t {
   TERRAIN_TABLE
   NUM_TERRAINS
 };
 #undef X
 
-#define X(a, b, c, d) {b, c, d},
+#define X(a, b, c, d, e) {b, c, d, e},
 const Terrain_Data terrain_data[] = {
   TERRAIN_TABLE
 };

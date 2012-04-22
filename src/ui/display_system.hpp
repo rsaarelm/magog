@@ -23,6 +23,8 @@
 #include <world/terrain_system.hpp>
 #include <world/spatial_system.hpp>
 #include <world/fov_system.hpp>
+#include <util/atlas.hpp>
+#include <util/file_system.hpp>
 #include <util/gl_texture.hpp>
 #include <util/color.hpp>
 #include <util/vec.hpp>
@@ -42,6 +44,7 @@ const Mtx<float, 2, 2> tile_projection_inv = inverse(tile_projection);
 class Display_System {
 public:
   Display_System(
+    File_System& file,
     Entities_System& entities,
     Terrain_System& terrain,
     Spatial_System& spatial,
@@ -53,7 +56,8 @@ public:
   void world_sprites(const Recti& fov_rect, std::set<Sprite>& output);
 
   std::shared_ptr<Drawable> tile_drawable(
-    int index, const Color& color, const Vec2f& offset = Vec2f(0, 0));
+    const char* frameset, int index, const Color& color,
+    const Vec2f& offset = Vec2f(0, 0));
 private:
 
   Entities_System& entities;
@@ -62,7 +66,7 @@ private:
   Fov_System& fov;
   Sprite_System& sprite;
 
-  Gl_Texture tile_texture;
+  Atlas atlas;
 
   std::vector<std::shared_ptr<Drawable>> entity_drawables;
 };

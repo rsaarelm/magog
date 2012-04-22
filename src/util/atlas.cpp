@@ -1,4 +1,4 @@
-/* build-atlas.cpp
+/* atlas.cpp
 
    Copyright (C) 2012 Risto Saarelma
 
@@ -16,19 +16,35 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "atlas.hpp"
 #include <util/surface.hpp>
-#include <util/box.hpp>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <contrib/stb/stb_image_write.h>
-#include <vector>
 #include <list>
 #include <memory>
 
-void usage(int argc, char* argv[]) {
-  fprintf(stderr, "Usage: %s [rectdata_output_file] [atlas_png_output_file] ([file] | -n [num_tiles])...\n", argv[0]);
-  exit(1);
+/// Load a bitmap and generate surfaces from its N subtiles.
+void process(
+  const File_System& file,
+  const char* filename,
+  int num_tiles,
+  std::vector<std::unique_ptr<Surface>>& output,
+  std::vector<Vec2i>& offsets) {
+  std::vector<uint8_t> png_file = file.read(filename);
+  Surface master(png_file);
+  int width = master.get_dim()[0] / num_tiles;
+  int height = master.get_dim()[1];
+  for (int i = 0; i < num_tiles; i++) {
+    Vec2i origin = Vec2i(0 + width * i, 0);
+    Recti crop = master.crop_rect(Recti(origin, {width, height}));
+    std::unique_ptr<Surface> result = std::unique_ptr<Surface>(new Surface(crop.dim()));
+    master.blit(crop, *result, Vec2i(0, 0));
+    output.push_back(std::move(result));
+    offsets.push_back(crop.min() - origin);
+  }
 }
 
+/// Pack rectangles, whose sizes are in dims, in current_area, output to
+/// inout_positions. Put indices of elements that didn't fit in
+/// inout_unplaced_indices.
 void pack(const std::vector<Vec2i>& dims, const Recti& current_area,
           std::vector<Vec2i>& inout_positions, std::list<size_t>& inout_unplaced_indices) {
   auto index = inout_unplaced_indices.begin();
@@ -78,53 +94,46 @@ void pack(const std::vector<Vec2i>& dims, const Recti& current_area,
   pack(dims, recurse2, inout_positions, inout_unplaced_indices);
 }
 
-int main(int argc, char* argv[]) {
-  if (argc < 4)
-    usage(argc, argv);
-  std::vector<std::unique_ptr<Surface>> images;
-  std::vector<Vec2i> dims;
-  std::vector<Vec2i> offsets;
-  long num_pixels = 0;
-  for (int i = 3; i < argc; i++) {
-    int n_tiles = 1;
-    const char* arg = argv[i];
-    if (arg[0] == '-') {
-      if (strcmp(arg, "-n") == 0) {
-        i++;
-        if (i >= argc)
-          usage(argc, argv);
-        n_tiles = atoi(argv[i]);
-        if (n_tiles < 1)
-          usage(argc, argv);
-        i++;
-        if (i >= argc)
-          break;
-      } else {
-        usage(argc, argv);
-      }
-    }
-    Surface tiles(argv[i]);
-    // Extract horizontal tile strips.
-    for (int j = 0; j < n_tiles; j++) {
-      int width = tiles.get_dim()[0] / n_tiles;
-      int height = tiles.get_dim()[1];
-      Surface* img = new Surface(width, height);
-      tiles.blit(
-        Recti(Vec2i(width * j, 0), Vec2i(width, height)),
-        *img,
-        Vec2i(0, 0));
-      Recti rect = img->crop_rect();
-      num_pixels += rect.volume();
-      images.push_back(std::unique_ptr<Surface>(img));
-      dims.push_back(rect.dim());
-      offsets.push_back(rect.min());
-    }
+void Atlas::init(File_System& file, const char* root_path) {
+  std::vector<std::unique_ptr<Surface>> surfaces;
+  int current_frameset_start = 0;
+
+  // Load individual tiles.
+  for (auto& a : file.list_files(root_path)) {
+    // Expect file name to start with the number of tiles, atoi will parse
+    // that. Default to 1 if parse fails.
+    int num_tiles = atoi(a.c_str());
+    if (num_tiles < 1)
+      num_tiles = 1;
+
+    // Extract the name from filenames of format "123-name.png"
+    std::string name;
+    int i = 0;
+    for (; i < a.size() && (isdigit(a[i]) || a[i] == '-'); i++) ;
+    while (i < a.size() && a[i] != '.')
+      name += a[i++];
+
+    // Store the frameset name.
+    framesets[name] = current_frameset_start;
+    current_frameset_start += num_tiles;
+
+    std::string path(root_path);
+    path += a;
+    process(file, path.c_str(), num_tiles, surfaces, offsets);
   }
 
   // Get the smallest power-of-two dimensional texture size that fits the
   // number of pixels seen.
+  std::vector<Vec2i> dims;
+
+  int pixel_count = 0;
+  for (auto& i : surfaces) {
+    pixel_count += i->width() * i->height();
+    dims.push_back(i->get_dim());
+  }
+
   int width = 1, height = 1;
-  while (width * height < num_pixels) {
+  while (width * height < pixel_count) {
     if (width > height)
       height <<= 1;
     else
@@ -132,6 +141,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::vector<Vec2i> packed;
+
   for (;;) {
     packed.clear();
     packed.resize(dims.size());
@@ -155,22 +165,13 @@ int main(int argc, char* argv[]) {
       break;
   }
 
-  FILE* rectdata = fopen(argv[1], "w");
-  for (int i = 0; i < packed.size(); i++) {
-    Vec2i p1 = packed[i];
-    Vec2i p2 = packed[i] + dims[i];
-    fprintf(rectdata, "{%d, %d, %d, %d, %d, %d},\n",
-            p1[0], p1[1], p2[0], p2[1], offsets[i][0], offsets[i][1]);
+  Surface atlas(width, height);
+
+  for (int i = 0; i < dims.size(); i++) {
+    Recti rect(packed[i], dims[i]);
+    frames.push_back(rect);
+    surfaces[i]->blit(Recti(dims[i]), atlas, packed[i]);
   }
-  fclose(rectdata);
 
-  Surface canvas(width, height);
-  for (int i = 0; i < packed.size(); i++)
-    images[i]->blit(Recti(offsets[i], dims[i]), canvas, packed[i]);
-
-  int result = stbi_write_png(argv[2], canvas.get_dim()[0], canvas.get_dim()[1], 4, canvas.data(), 0);
-  if (!result)
-    return 1;
-
-  return 0;
+  atlas_texture = Gl_Texture(atlas);
 }

@@ -62,32 +62,20 @@ add_executable(${TARGETNAME}
   ${APP_SOURCES}
   src/contrib/stb/stb_image.c
 
-  tile_rect.hpp
-  tile_atlas.hpp
-
   buildname.hpp
 )
 
 target_link_libraries(${TARGETNAME} ${CORELIBS})
-
-include(tools/tools.cmake)
 
 add_custom_target(run
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}
   DEPENDS ${TARGETNAME}
 )
 
-atlas(tile_rect.hpp tile_atlas.hpp
-  -n 8 assets/tiles/000-8-terrain.png
-  -n 6 assets/tiles/008-6-slope.png
-  -n 8 assets/tiles/014-8-wall.png
-  -n 16 assets/tiles/022-16-creatures.png
-  -n 15 assets/tiles/038-15-anim-creatures.png
-)
-
 # XXX: Currently no option not to strip the target binary.
 add_custom_command(TARGET ${TARGETNAME} POST_BUILD
-  COMMAND pushd ${CMAKE_SOURCE_DIR}/assets && zip -r ${CMAKE_CURRENT_BINARY_DIR}/assets.zip * && popd &&
+  COMMAND pushd ${CMAKE_SOURCE_DIR}/assets && rm ${CMAKE_CURRENT_BINARY_DIR}/assets.zip &&
+    zip -r ${CMAKE_CURRENT_BINARY_DIR}/assets.zip * && popd &&
     strip ${TARGETNAME} &&
     cat assets.zip >> ${TARGETNAME}
 )

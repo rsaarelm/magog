@@ -24,32 +24,25 @@
 #include <set>
 #include <algorithm>
 
-static const Tile_Rect tile_rects[] = {
-#include <tile_rect.hpp>
-};
-
-static const Surface tile_png {
-#include <tile_atlas.hpp>
-};
-
 Display_System::Display_System(
-    Entities_System& entities,
-    Terrain_System& terrain,
-    Spatial_System& spatial,
-    Fov_System& fov,
-    Sprite_System& sprite)
-    : entities(entities)
-    , terrain(terrain)
-    , spatial(spatial)
-    , fov(fov)
-    , sprite(sprite)
-    , tile_texture(tile_png) {
+  File_System& file,
+  Entities_System& entities,
+  Terrain_System& terrain,
+  Spatial_System& spatial,
+  Fov_System& fov,
+  Sprite_System& sprite)
+  : entities(entities)
+  , terrain(terrain)
+  , spatial(spatial)
+  , fov(fov)
+  , sprite(sprite)
+  , atlas(file, "tiles/") {
   // TODO: Less verbose data entry.
   // TODO: Make the match to icon enum more obvious.
-  entity_drawables.push_back(tile_drawable(8, "#f0f"));  // invalid
-  entity_drawables.push_back(tile_drawable(23, "#a70")); // dreg
-  entity_drawables.push_back(tile_drawable(24, "#088")); // thrall
-  entity_drawables.push_back(tile_drawable(22, "#ccc")); // player
+  entity_drawables.push_back(tile_drawable("terrain", 8, "#f0f"));  // invalid
+  entity_drawables.push_back(tile_drawable("creatures", 1, "#a70")); // dreg
+  entity_drawables.push_back(tile_drawable("creatures", 2, "#088")); // thrall
+  entity_drawables.push_back(tile_drawable("creatures", 0, "#ccc")); // player
 }
 
 void Display_System::draw(Entity player, const Rectf& screen_rect) {
@@ -113,7 +106,7 @@ void Display_System::world_sprites(const Recti& fov_rect, std::set<Sprite>& outp
 
       if (!in_fov) // Darken terrain out of fov
         color = lerp(0.5, Color("black"), color.monochrome());
-      auto terrain_tile = tile_drawable(icon, color);
+      auto terrain_tile = tile_drawable(ter.icon_set, icon, color);
       output.insert(Sprite{terrain_layer, offset, terrain_tile});
 
       if (in_fov) {
@@ -128,12 +121,18 @@ void Display_System::world_sprites(const Recti& fov_rect, std::set<Sprite>& outp
 }
 
 std::shared_ptr<Drawable> Display_System::tile_drawable(
-  int index, const Color& color, const Vec2f& offset) {
+  const char* set, int index, const Color& color, const Vec2f& offset) {
+  index += atlas.frameset_start(set);
+  Recti tile_rect = atlas.frame_rect(index);
+  Vec2i tile_offset = atlas.offset(index);
   return std::shared_ptr<Drawable>(
     new Tile_Drawable(
-      tile_texture.get(),
+      atlas.texture_id(),
       color,
-      tile_rects[index],
-      tile_png.get_dim(),
+      Tile_Rect{
+        tile_rect.min()[0], tile_rect.min()[1],
+        tile_rect.max()[0], tile_rect.max()[1],
+        tile_offset[0], tile_offset[1]},
+      atlas.get_dim(),
       offset));
 }
