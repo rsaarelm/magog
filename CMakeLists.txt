@@ -29,6 +29,7 @@ find_library(M_LIBRARY m)
 find_package(Boost)
 find_package(OpenGL REQUIRED)
 find_package(SDL REQUIRED)
+find_package(PhysFS REQUIRED)
 
 if (CROSS_COMPILING_TO_WINDOWS)
   # Link SDL statically
@@ -46,6 +47,7 @@ set(CORELIBS
   ${SDL_LIBRARY}
   ${OPENGL_LIBRARY}
   ${M_LIBRARY}
+  ${PHYSFS_LIBRARY}
 )
 
 

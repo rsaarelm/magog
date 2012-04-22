@@ -6,7 +6,7 @@ pkgdesc="A roguelike game"
 arch=('i686', 'x86_64')
 url="https://github.com/rsaarelm/magog"
 license=('GPL')
-depends=('mesa' 'sdl')
+depends=('mesa' 'sdl' 'physfs')
 makedepends=('boost' 'cmake' 'git')
 
 _gitroot=https://github.com/rsaarelm/magog.git
