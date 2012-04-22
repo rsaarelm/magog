@@ -19,7 +19,6 @@
 #include "intro_screen.hpp"
 #include <ui/game_screen.hpp>
 #include <ui/registry.hpp>
-#include <ui/font_data.hpp>
 #include <util/game_loop.hpp>
 #include <util/core.hpp>
 #include <util/sdl_util.hpp>
@@ -31,7 +30,7 @@ const char* buildname =
 
 Intro_Screen::Intro_Screen(File_System& file)
   : file(file)
-  , fonter(file, "pf_tempesta_seven_extended_bold.ttf", font_height)
+  , fonter(file, "pf_tempesta_seven_extended_bold.ttf", 13)
   , imgui(fonter) {}
 
 void Intro_Screen::key_event(int keysym, int printable, int scancode) {

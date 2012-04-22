@@ -20,7 +20,6 @@
 #define GAME_SCREEN_HPP
 
 #include <GL/gl.h>
-#include <ui/font_data.hpp>
 #include <ui/hud_system.hpp>
 #include <ui/ui_fx_system.hpp>
 #include <ui/sprite_system.hpp>
@@ -41,7 +40,7 @@ class Game_Screen : public Game_State {
  public:
   Game_Screen(File_System& file)
   : file(file)
-  , fonter(file, "pf_tempesta_seven_extended_bold.ttf", font_height)
+  , fonter(file, "pf_tempesta_seven_extended_bold.ttf", 13)
   , entities()
   , terrain()
   , spatial(entities, terrain)

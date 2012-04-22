@@ -62,9 +62,6 @@ add_executable(${TARGETNAME}
   ${APP_SOURCES}
   src/contrib/stb/stb_image.c
 
-  font_image.hpp
-  font_spec.hpp
-
   tile_rect.hpp
   tile_atlas.hpp
 
@@ -79,8 +76,6 @@ add_custom_target(run
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${TARGETNAME}
   DEPENDS ${TARGETNAME}
 )
-
-bake_font(assets/pf_tempesta_seven_extended_bold.ttf 13 32 96 font_image.hpp font_spec.hpp)
 
 atlas(tile_rect.hpp tile_atlas.hpp
   -n 8 assets/tiles/000-8-terrain.png
