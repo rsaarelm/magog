@@ -46,6 +46,13 @@ Surface::Surface(std::initializer_list<uint8_t> args)
   load_image(args.begin(), args.size());
 }
 
+Surface::Surface(std::vector<uint8_t> data)
+    : data_(nullptr)
+    , width_(0)
+    , height_(0) {
+  load_image(data.data(), data.size());
+}
+
 Surface::Surface(int width, int height)
     : data_(nullptr)
     , width_(0)

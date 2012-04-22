@@ -32,6 +32,7 @@ class Surface {
   Surface();
   Surface(const char* filename);
   Surface(std::initializer_list<uint8_t> args);
+  Surface(std::vector<uint8_t> data);
   Surface(int width, int height);
   Surface(const Vec2i& dim);
   ~Surface();
