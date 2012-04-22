@@ -24,21 +24,32 @@ class Surface;
 
 /// RAII wrapper for OpenGL textures
 struct Gl_Texture {
+  Gl_Texture() : handle(0) {}
   Gl_Texture(const Surface& surface);
 
-  ~Gl_Texture() {
-    glDeleteTextures(1, &handle);
+  ~Gl_Texture() { free(); }
+
+  Gl_Texture(Gl_Texture&& rhs) { *this = rhs; }
+
+  Gl_Texture& operator=(Gl_Texture&& rhs) {
+    free();
+    handle = rhs.handle;
+    rhs.handle = 0;
   }
 
   GLuint get() const { return handle; }
 
   void bind() { glBindTexture(GL_TEXTURE_2D, handle); }
 
-  private:
+private:
   Gl_Texture(GLuint handle) : handle(handle) {}
-
   Gl_Texture(const Gl_Texture&);
   Gl_Texture& operator=(const Gl_Texture&);
+
+  void free() {
+    if (handle)
+      glDeleteTextures(1, &handle);
+  }
 
   GLuint handle;
 };
