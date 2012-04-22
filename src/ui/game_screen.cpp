@@ -255,7 +255,7 @@ void Game_Screen::update(float interval_seconds) {
 
 void Game_Screen::end_game() {
   Game_Loop::get().pop_state();
-  Game_Loop::get().push_state(new Intro_Screen);
+  Game_Loop::get().push_state(new Intro_Screen(file));
 }
 
 void Game_Screen::draw() {

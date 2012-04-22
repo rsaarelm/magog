@@ -20,12 +20,13 @@
 #define INTRO_SCREEN_HPP
 
 #include <util/game_state.hpp>
+#include <util/file_system.hpp>
 #include <util/fonter_system.hpp>
 #include <util/imgui_system.hpp>
 
 class Intro_Screen : public Game_State {
  public:
-  Intro_Screen();
+  Intro_Screen(File_System& file);
 
   virtual ~Intro_Screen() {}
 
@@ -37,6 +38,8 @@ class Intro_Screen : public Game_State {
   virtual void draw();
 
  private:
+  File_System& file;
+
   Fonter_System fonter;
   Imgui_System imgui;
 };

@@ -20,6 +20,7 @@
 #include <ui/registry.hpp>
 #include <GL/gl.h>
 #include <util/game_loop.hpp>
+#include <util/file_system.hpp>
 #include <util/winmain.hpp>
 #include <string.h>
 #include <stdio.h>
@@ -43,8 +44,9 @@ int main(int argc, char* argv[])
   }
 
   Game_Loop& game = Game_Loop::init(Registry::window_w, Registry::window_h, Registry::app_name);
+  File_System file(argv[0]); // Read a zip catenated into the program binary into PhysFS.
 
-  game.push_state(new Intro_Screen);
+  game.push_state(new Intro_Screen(file));
   game.run();
   return 0;
 }

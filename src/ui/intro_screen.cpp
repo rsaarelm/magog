@@ -29,8 +29,9 @@ const char* buildname =
 #include <buildname.hpp>
   ;
 
-Intro_Screen::Intro_Screen()
-  : fonter(font_sheet, font_data, font_height)
+Intro_Screen::Intro_Screen(File_System& file)
+  : file(file)
+  , fonter(font_sheet, font_data, font_height)
   , imgui(fonter) {}
 
 void Intro_Screen::key_event(int keysym, int printable, int scancode) {
@@ -40,7 +41,7 @@ void Intro_Screen::key_event(int keysym, int printable, int scancode) {
     break;
   case 'n':
     Game_Loop::get().pop_state();
-    Game_Loop::get().push_state(new Game_Screen);
+    Game_Loop::get().push_state(new Game_Screen(file));
     break;
   case SDLK_F12:
     screenshot(format("/tmp/%s-", Registry::app_name).c_str());
@@ -79,7 +80,7 @@ void Intro_Screen::draw() {
 
   if (imgui.button(GEN_ID, "New Game", Rectf(Vec2f(dim[0]/2, 240), Vec2f(96, 16)))) {
     Game_Loop::get().pop_state();
-    Game_Loop::get().push_state(new Game_Screen);
+    Game_Loop::get().push_state(new Game_Screen(file));
   }
 
   if (imgui.button(GEN_ID, "Exit", Rectf(Vec2f(dim[0]/2, 280), Vec2f(96, 16))))

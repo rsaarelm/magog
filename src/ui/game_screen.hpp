@@ -34,25 +34,27 @@
 #include <world/action_system.hpp>
 #include <world/cycler_system.hpp>
 #include <util/game_state.hpp>
+#include <util/file_system.hpp>
 #include <util/fonter_system.hpp>
 
 class Game_Screen : public Game_State {
  public:
-  Game_Screen()
-    : fonter(font_sheet, font_data, font_height)
-    , entities()
-    , terrain()
-    , spatial(entities, terrain)
-    , factory(entities, terrain, spatial)
-    , mapgen(terrain, factory)
-    , fov(entities, terrain, spatial)
-    , sprite(fov)
-    , hud(fonter, entities, spatial)
-    , fx(fonter, sprite, hud)
-    , display(entities, terrain, spatial, fov, sprite)
-    , action(entities, terrain, spatial, fov, fx)
-    , cycler(entities, spatial, action)
-    , state(state_playing) {}
+  Game_Screen(File_System& file)
+  : file(file)
+  , fonter(font_sheet, font_data, font_height)
+  , entities()
+  , terrain()
+  , spatial(entities, terrain)
+  , factory(entities, terrain, spatial)
+  , mapgen(terrain, factory)
+  , fov(entities, terrain, spatial)
+  , sprite(fov)
+  , hud(fonter, entities, spatial)
+  , fx(fonter, sprite, hud)
+  , display(entities, terrain, spatial, fov, sprite)
+  , action(entities, terrain, spatial, fov, fx)
+  , cycler(entities, spatial, action)
+  , state(state_playing) {}
   virtual ~Game_Screen() {}
 
   virtual void enter();
@@ -66,8 +68,9 @@ class Game_Screen : public Game_State {
   void draw_tile(int idx, const Vec2f& pos);
   void draw_tile(int idx, const Vec2f& pos, const Color& color);
 
-  Fonter_System fonter;
+  File_System& file;
 
+  Fonter_System fonter;
   Entities_System entities;
   Terrain_System terrain;
   Spatial_System spatial;
