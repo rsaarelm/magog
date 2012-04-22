@@ -19,6 +19,7 @@
 #define UTIL_FILE_SYSTEM_HPP
 
 #include <vector>
+#include <string>
 #include <stdexcept>
 
 class File_System_Exception : public std::exception {};
@@ -31,7 +32,12 @@ public:
   bool exists(const char* filename) const;
 
   std::vector<uint8_t> read(const char* filename) const;
+
+  std::vector<std::string> list_files(const char* dir);
 private:
+  File_System(const File_System&);
+  File_System& operator=(const File_System&);
+
   // Variable to ensure that multiple fs instances aren't instantiated at the
   // same time.
   static int file_system_counter;

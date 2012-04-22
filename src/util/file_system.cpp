@@ -28,7 +28,6 @@ File_System::File_System(const char* rootfile) {
   file_system_counter++;
   PHYSFS_init(nullptr);
   PHYSFS_addToSearchPath(rootfile, 1);
-
 }
 
 File_System::~File_System() {
@@ -48,5 +47,21 @@ std::vector<uint8_t> File_System::read(const char* filename) const {
   size_t len = PHYSFS_fileLength(file);
   result.resize(len);
   PHYSFS_read(file, result.data(), 1, len);
+  return result;
+}
+
+std::vector<std::string> File_System::list_files(const char* dir) {
+  std::vector<std::string> result;
+
+  // Fun C++11 fact: A lambda expression that does no variable capture is
+  // substitutable for a C function callback.
+  PHYSFS_enumerateFilesCallback(
+    dir,
+    [](void* data, const char* dir, const char* fname) {
+      std::vector<std::string>* result = reinterpret_cast<std::vector<std::string>*>(data);
+      result->push_back(std::string(fname));
+    },
+    &result);
+
   return result;
 }
