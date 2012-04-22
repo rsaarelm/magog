@@ -20,7 +20,6 @@ linux_build() {
   mv $BUILD_DIR/$TARGET $2
   rm -rf $BUILD_DIR
 
-  strip $2
   # Package it so it can be made downloadable while retaining the executable
   # flag, even though it's just a single file.
   tar -cjvf $2.tar.bz2 $2
@@ -45,11 +44,6 @@ windows_build() {
   popd
   mv $BUILD_DIR/xbuild/$TARGET.exe $2
   rm -rf $BUILD_DIR
-
-  strip $2
-
-  # XXX: UPX'd binaries may trip virus scanners.
-  upx $2
 
   mv $2 packages/
 }

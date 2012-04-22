@@ -90,6 +90,13 @@ atlas(tile_rect.hpp tile_atlas.hpp
   -n 15 assets/tiles/038-15-anim-creatures.png
 )
 
+# XXX: Currently no option not to strip the target binary.
+add_custom_command(TARGET ${TARGETNAME} POST_BUILD
+  COMMAND pushd ${CMAKE_SOURCE_DIR}/assets && zip -r ${CMAKE_CURRENT_BINARY_DIR}/assets.zip * && popd &&
+    strip ${TARGETNAME} &&
+    cat assets.zip >> ${TARGETNAME}
+)
+
 # Build identifier string
 
 add_custom_command(
