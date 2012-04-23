@@ -1,4 +1,7 @@
-build/
-xbuild/
 packages/
 TAGS
+Makefile
+*.make
+assets/assets.zip
+magog
+obj/

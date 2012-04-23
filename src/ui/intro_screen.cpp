@@ -24,10 +24,6 @@
 #include <util/sdl_util.hpp>
 #include <GL/gl.h>
 
-const char* buildname =
-#include <buildname.hpp>
-  ;
-
 Intro_Screen::Intro_Screen(File_System& file)
   : file(file)
   , fonter(file, "pf_tempesta_seven_extended_bold.ttf", 13)
@@ -71,8 +67,8 @@ void Intro_Screen::draw() {
 
   fonter.draw(
     Vec2f(2, Registry::window_h - fonter.height() - 2),
-    "build-%s %s %sbit %s",
-    buildname,
+    "build %s %s %sbit %s",
+    BUILD_VERSION,
     os_name(),
     os_bits(),
     debug_build_name());

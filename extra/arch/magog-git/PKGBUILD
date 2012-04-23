@@ -7,7 +7,7 @@ arch=('i686', 'x86_64')
 url="https://github.com/rsaarelm/magog"
 license=('GPL')
 depends=('mesa' 'sdl' 'physfs')
-makedepends=('boost' 'cmake' 'git')
+makedepends=('boost' 'premake' 'git')
 
 _gitroot=https://github.com/rsaarelm/magog.git
 _gitname=magog
@@ -26,17 +26,12 @@ build() {
   msg "Git checkout done or server timeout"
   msg "Starting build..."
 
-  rm -rf "$srcdir/build"
-  # git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
-  mkdir -p "$srcdir/build"
-  cd "$srcdir/build"
-
-  cmake $srcdir/$_gitname
+  premake4 gmake
   make
 }
 
 package() {
-  cd "$srcdir/build"
+  cd "$srcdir"
   install -Dm755 magog "$pkgdir/usr/bin/magog"
 }
 
