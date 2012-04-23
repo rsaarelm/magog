@@ -74,7 +74,7 @@ add_custom_target(run
 
 # XXX: Currently no option not to strip the target binary.
 add_custom_command(TARGET ${TARGETNAME} POST_BUILD
-  COMMAND pushd ${CMAKE_SOURCE_DIR}/assets && rm ${CMAKE_CURRENT_BINARY_DIR}/assets.zip &&
+  COMMAND pushd ${CMAKE_SOURCE_DIR}/assets && rm -f ${CMAKE_CURRENT_BINARY_DIR}/assets.zip &&
     zip -r ${CMAKE_CURRENT_BINARY_DIR}/assets.zip * && popd &&
     strip ${TARGETNAME} &&
     cat assets.zip >> ${TARGETNAME}
