@@ -39,10 +39,10 @@ Display_System::Display_System(
   , atlas(file, "tiles/") {
   // TODO: Less verbose data entry.
   // TODO: Make the match to icon enum more obvious.
-  entity_drawables.push_back(tile_drawable("terrain", 8, "#f0f"));  // invalid
-  entity_drawables.push_back(tile_drawable("creatures", 1, "#a70")); // dreg
-  entity_drawables.push_back(tile_drawable("creatures", 2, "#088")); // thrall
-  entity_drawables.push_back(tile_drawable("creatures", 0, "#ccc")); // player
+  entity_drawables.push_back(tile_drawable("terrain", 8, "magenta"));  // invalid
+  entity_drawables.push_back(tile_drawable("creatures", 1, "indian red")); // dreg
+  entity_drawables.push_back(tile_drawable("creatures", 2, "dark cyan")); // thrall
+  entity_drawables.push_back(tile_drawable("creatures", 0, "gray")); // player
 }
 
 void Display_System::draw(Entity player, const Rectf& screen_rect) {
