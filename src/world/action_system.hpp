@@ -72,6 +72,9 @@ public:
 
   int count_aligned(Faction faction) const;
 private:
+  int heal_tick(Entity entity);
+  int saw_enemy(Entity entity, Entity enemy);
+
   Entities_System& entities;
   Terrain_System& terrain;
   Spatial_System& spatial;

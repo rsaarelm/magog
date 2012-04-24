@@ -36,19 +36,19 @@ bool Action_System::walk(Entity entity, const Vec2i& dir) {
     // TODO: account for terrain differences.
     auto& blob = entities.as<Blob_Part>(entity);
     blob.energy -= 100;
-    blob.base_facing = vec_to_hex_dir(dir);
 
     // XXX Hacky. Player is tracked by the view space object. This needs to be
     // changed if we want to support multiple FOVs.
-    if (is_player(entity))
+    if (is_player(entity)) {
       fov.move_pos(dir);
+    }
 
     spatial.pop(entity, new_loc);
 
     for (auto a : spatial.entities_on(spatial.footprint(entity, new_loc))) {
       if (a != entity && blocks_movement(a)) {
         // Crushing damages you.
-        damage(entity, entities.as<Blob_Part>(a).armor);
+        damage(entity, entities.as<Blob_Part>(a).health);
         fx.rising_msg(spatial.location(entity), Color("pink"), "*crush*");
         fx.explosion(spatial.location(a), 10, Color("red"));
         kill(a);
@@ -132,8 +132,6 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
 
   // Energy cost for shooting.
   blob.energy -= 100;
-
-  blob.turret_facing = vec_to_hex_dir(dir);
 }
 
 void Action_System::wait(Entity entity) {
@@ -148,8 +146,8 @@ void Action_System::damage(Location location, int amount) {
 void Action_System::damage(Entity entity, int amount) {
   if (entities.has(entity, Blob_Kind)) {
     auto& blob = entities.as<Blob_Part>(entity);
-    blob.armor -= amount;
-    if (blob.armor <= 0) {
+    blob.health -= amount;
+    if (blob.health <= 0) {
       fx.explosion(spatial.location(entity), 10, Color("red"));
       kill(entity);
     } else {
@@ -182,6 +180,30 @@ void Action_System::start_turn_update(Entity entity) {
   try {
     auto& blob = entities.as<Blob_Part>(entity);
     blob.energy += blob.power;
+
+    if (blob.energy >= 0) {
+      // XXX: Ties regeneration rate to speed, not necessarily what we want.
+
+      const int threat_fov_radius = 8;
+      // XXX: Bad expensive repeat of FOV run, just because the actual fov
+      // routine doesn't provide hooks for this.
+      fov.run(
+        threat_fov_radius, spatial.location(entity),
+        [&](const Vec2i& offset, Location loc) {
+          for (auto& e : spatial.entities_at(loc)) {
+            if (is_enemy_of(e, entity)) {
+              saw_enemy(entity, e);
+            }
+          }
+        });
+
+      // Regenerate when zero threat.
+      if (blob.threat <= 0) {
+        heal_tick(entity);
+      } else {
+        blob.threat--;
+      }
+    }
   } catch (Part_Not_Found& e) {}
 }
 
@@ -214,7 +236,8 @@ void Action_System::update(Entity entity) {
       fov_radius, spatial.location(entity),
       [&](const Vec2i& offset, Location loc) {
         for (auto& e : spatial.entities_at(loc)) {
-          if (is_enemy_of(entity, e)) {
+          if (is_enemy_of(e, entity)) {
+            saw_enemy(entity, e);
             // Find the closest enemy as target.
             if (!enemy || hex_dist(offset) < hex_dist(relative_enemy_pos)) {
               enemy = e;
@@ -259,4 +282,16 @@ int Action_System::count_aligned(Faction faction) const {
       result++;
   }
   return result;
+}
+
+int Action_System::heal_tick(Entity entity) {
+  auto& blob = entities.as<Blob_Part>(entity);
+  blob.health += std::min(1, blob.max_health / 5);
+  blob.health = std::min(blob.health, blob.max_health);
+}
+
+int Action_System::saw_enemy(Entity entity, Entity enemy) {
+  // Ramp up threat level whenever there are enemies visible.
+  auto& blob = entities.as<Blob_Part>(entity);
+  blob.threat = 9;
 }

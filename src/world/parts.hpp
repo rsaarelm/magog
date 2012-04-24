@@ -31,9 +31,11 @@ class Blob_Part : public Part {
   static Kind s_get_kind() { return Blob_Kind; }
 
   Blob_Part() {}
-  Blob_Part(Entity_Icon icon, int power, int armor, int damage, bool big=false)
-    : icon(icon), power(power), energy(0), big(big), armor(armor), damage(damage)
-    , base_facing(0), turret_facing(0), faction(npc_faction), is_dead(false) {}
+  Blob_Part(Entity_Icon icon, int power, int health, int damage, bool big=false)
+    : icon(icon), power(power), energy(0), big(big), threat(0),
+      health(health), max_health(health),
+      damage(damage), faction(npc_faction),
+      is_dead(false) {}
   ~Blob_Part() {}
 
   virtual Kind get_kind() { return s_get_kind(); }
@@ -42,13 +44,12 @@ class Blob_Part : public Part {
   int energy;
   bool big; // XXX: Very crude, should have a more complex size system.
 
-  int armor;
+  int threat;
+
+  int health;
+  int max_health;
   int damage;
   Plain_Location loc;
-
-  // TODO: Move these into separate Telos component or something.
-  int base_facing;
-  int turret_facing;
 
   Faction faction;
 

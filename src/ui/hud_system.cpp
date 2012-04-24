@@ -80,7 +80,7 @@ void Hud_System::draw(Entity player) {
   // Draw the status line.
   if (player) {
     fonter.draw({0, Registry::window_h - 20.0f}, "Health: %s",
-                entities.as<Blob_Part>(player).armor);
+                entities.as<Blob_Part>(player).health);
   }
 }
 
