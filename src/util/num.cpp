@@ -26,7 +26,7 @@ using namespace std;
 static mt19937 g_rng(static_cast<unsigned>(std::time(0)));
 
 int rand_int(int max) {
-  return uniform_int_distribution<int>(0, max)(g_rng);
+  return uniform_int_distribution<int>(0, max - 1)(g_rng);
 }
 
 float uniform_rand() {
