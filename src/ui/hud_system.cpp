@@ -108,7 +108,7 @@ void Hud_System::my_draw_text(const Vec2i& pos, const char* txt) {
 }
 
 float Hud_System::time_read(std::string added_text) {
-  float result = read_new_text_time + letter_read_duration * added_text.size();
+  float result = read_new_text_time + letter_read_duration * max(16, (int)added_text.size());
   read_new_text_time = result;
   return result;
 }
