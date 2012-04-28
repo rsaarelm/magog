@@ -18,8 +18,7 @@ links(TOOLS)
 defines { "BOOST_RESULT_OF_USE_DECLTYPE" } -- Black magic for Boost ranges
 links { "SDL", "GL", "physfs" }
 
-local VERSION = os.outputof("git log --pretty=format:%h -1")
-defines { 'BUILD_VERSION=\\"git:'..VERSION..'\\"' }
+defines { 'BUILD_VERSION=\\"git:`git log --pretty=format:%h -1`\\"' }
 
 postbuildcommands {
   "strip " .. TITLE,
