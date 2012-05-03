@@ -25,7 +25,7 @@ void Imgui_System::update(int mouse_x, int mouse_y, int mouse_buttons) {
   state.button = mouse_buttons;
 }
 
-bool Imgui_System::button(int id, const char* title, const Rectf& bounds) {
+bool Imgui_System::button(long id, const char* title, const Rectf& bounds) {
   glBindTexture(GL_TEXTURE_2D, 0);
 
   bool hit = bounds.contains(state.pos);

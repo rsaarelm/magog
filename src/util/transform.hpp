@@ -26,8 +26,8 @@
 #include "vec.hpp"
 #include "mtx.hpp"
 
-template<class C, int N> class Vec;
-template<class C, int C, int R> class Mtx;
+template<class T, int N> class Vec;
+template<class T, int C, int R> class Mtx;
 
 typedef Mtx<float, 4, 4> Gl_Matrix;
 

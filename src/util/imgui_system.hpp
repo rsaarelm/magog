@@ -33,7 +33,7 @@ public:
 
   void update(int mouse_x, int mouse_y, int mouse_buttons);
 
-  bool button(int id, const char* title, const Rectf& bounds);
+  bool button(long id, const char* title, const Rectf& bounds);
 private:
   Imgui_System(const Imgui_System&);
   Imgui_System& operator=(const Imgui_System&);

@@ -20,12 +20,12 @@
 #include <array>
 
 Terrain slope_terrain(int dir6) {
-  static const std::array<Terrain, 6> slopes{
+  static const std::array<Terrain, 6> slopes{{
     terrain_slope_nw,
     terrain_slope_n,
     terrain_slope_ne,
     terrain_slope_se,
     terrain_slope_s,
-    terrain_slope_sw};
+    terrain_slope_sw}};
   return slopes.at(dir6);
 }

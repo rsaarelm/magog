@@ -33,7 +33,9 @@
  * The canonical order starts at the point towards (-1, -1) and proceeds
  * clockwise from there.
  */
-const std::array<const Vec2i, 6> hex_dirs{{{-1, -1}, {0, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 0}}};
+const std::array<const Vec2i, 6> hex_dirs{{
+    Vec2i(-1, -1), Vec2i(0, -1), Vec2i(1, 0),
+    Vec2i(1, 1), Vec2i(0, 1), Vec2i(-1, 0)}};
 
 enum Shaped_Wall {
   center_wall = 0,

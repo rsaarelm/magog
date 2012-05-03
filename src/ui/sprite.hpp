@@ -51,7 +51,7 @@ struct Sprite {
     if (rhs.pos < pos) return false;
 
     // Finally use memory address of drawable as tie-breaker.
-    if (drawable < rhs.drawable) return true;
+    if (drawable.get() < rhs.drawable.get()) return true;
 
     return false;
   }
