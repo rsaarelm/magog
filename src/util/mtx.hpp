@@ -117,7 +117,7 @@ constexpr T determinant(const Mtx<T, 3, 3>& mtx) {
 }
 
 template<class T>
-constexpr Mtx<T, 2, 2> inverse(const Mtx<T, 2, 2>& mtx) {
+Mtx<T, 2, 2> inverse(const Mtx<T, 2, 2>& mtx) {
   T invdet = T(1) / determinant(mtx);
   return Mtx<T, 2, 2> {
     mtx[1][1] * invdet, -mtx[1][0] * invdet,
@@ -125,7 +125,7 @@ constexpr Mtx<T, 2, 2> inverse(const Mtx<T, 2, 2>& mtx) {
 }
 
 template<class T>
-constexpr Mtx<T, 3, 3> inverse(const Mtx<T, 3, 3>& mtx) {
+Mtx<T, 3, 3> inverse(const Mtx<T, 3, 3>& mtx) {
   T invdet = T(1) / determinant(mtx);
   return Mtx<T, 3, 3> {
      (mtx[1][1] * mtx[2][2] - mtx[1][2] * mtx[2][1]) * invdet,
