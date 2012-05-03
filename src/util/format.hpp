@@ -46,6 +46,8 @@ std::string format(const char* fmt, T value, Args... args) {
   }
 
   die("extra arguments given to format");
+  // Won't get here, but have it anyway to keep the compiler happy.
+  return result.str();
 }
 
 #endif

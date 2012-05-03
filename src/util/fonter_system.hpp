@@ -52,13 +52,13 @@ public:
   template<typename... Args>
   int draw(const Vec2f& pos, const char* fmt, Args... args) {
     auto str = format(fmt, args...);
-    raw_draw(pos, LEFT, str.c_str());
+    return raw_draw(pos, LEFT, str.c_str());
   }
 
   template<typename... Args>
   int draw(const Vec2f& pos, Align align, const char* fmt, Args... args) {
     auto str = format(fmt, args...);
-    raw_draw(pos, align, str.c_str());
+    return raw_draw(pos, align, str.c_str());
   }
 
 private:

@@ -37,6 +37,7 @@ struct Gl_Texture {
     handle = rhs.handle;
     dim = rhs.dim;
     rhs.handle = 0;
+    return *this;
   }
 
   GLuint get() const { return handle; }

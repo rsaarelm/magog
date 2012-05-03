@@ -132,6 +132,7 @@ bool Action_System::shoot(Entity entity, const Vec2i& dir) {
 
   // Energy cost for shooting.
   blob.energy -= 100;
+  return true;
 }
 
 void Action_System::wait(Entity entity) {
@@ -284,13 +285,13 @@ int Action_System::count_aligned(Faction faction) const {
   return result;
 }
 
-int Action_System::heal_tick(Entity entity) {
+void Action_System::heal_tick(Entity entity) {
   auto& blob = entities.as<Blob_Part>(entity);
   blob.health += std::min(1, blob.max_health / 5);
   blob.health = std::min(blob.health, blob.max_health);
 }
 
-int Action_System::saw_enemy(Entity entity, Entity enemy) {
+void Action_System::saw_enemy(Entity entity, Entity enemy) {
   // Ramp up threat level whenever there are enemies visible.
   auto& blob = entities.as<Blob_Part>(entity);
   blob.threat = 9;
