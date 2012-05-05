@@ -109,7 +109,12 @@ void Atlas::init(File_System& file, const char* root_path) {
     // Extract the name from filenames of format "123-name.png"
     std::string name;
     int i = 0;
-    for (; i < a.size() && (isdigit(a[i]) || a[i] == '-'); i++) ;
+    for (; i < a.size() && isdigit(a[i]); i++) ;
+
+    // Handle separator char.
+    ASSERT(a[i] == '-'); // TODO: Use io exception instead of assert
+    i++;
+
     while (i < a.size() && a[i] != '.')
       name += a[i++];
 
