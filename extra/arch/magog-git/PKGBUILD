@@ -7,7 +7,7 @@ arch=('i686', 'x86_64')
 url="https://github.com/rsaarelm/magog"
 license=('GPL')
 depends=('mesa' 'sdl' 'physfs')
-makedepends=('boost' 'premake' 'git')
+makedepends=('boost' 'premake' 'git' 'zip')
 
 _gitroot=https://github.com/rsaarelm/magog.git
 _gitname=magog
