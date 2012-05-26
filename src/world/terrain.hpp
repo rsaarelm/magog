@@ -60,12 +60,12 @@ struct Terrain_Data {
   X(terrain_menhir,     "terrain",   3, "gray",           block_terrain)         \
   X(terrain_wall,       "wall",      0, "gray",           wall_terrain)          \
   X(terrain_cave_wall,  "wall",      4, "dark goldenrod", wall_terrain)          \
-  X(terrain_slope_nw,   "slope",     0, "gray",           open_terrain)          \
-  X(terrain_slope_n,    "slope",     1, "gray",           open_terrain)          \
-  X(terrain_slope_ne,   "slope",     2, "gray",           open_terrain)          \
-  X(terrain_slope_se,   "slope",     3, "gray",           open_terrain)          \
-  X(terrain_slope_s,    "slope",     4, "gray",           open_terrain)          \
-  X(terrain_slope_sw,   "slope",     5, "gray",           open_terrain)          \
+  X(terrain_slope_n,    "slope",     0, "gray",           open_terrain)          \
+  X(terrain_slope_ne,   "slope",     1, "gray",           open_terrain)          \
+  X(terrain_slope_se,   "slope",     2, "gray",           open_terrain)          \
+  X(terrain_slope_s,    "slope",     3, "gray",           open_terrain)          \
+  X(terrain_slope_sw,   "slope",     4, "gray",           open_terrain)          \
+  X(terrain_slope_nw,   "slope",     5, "gray",           open_terrain)          \
 
 #define X(a, b, c, d, e) a,
 enum Terrain : uint8_t {
