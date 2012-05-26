@@ -57,6 +57,10 @@ void Terrain_System::clear_portal(Plain_Location loc) {
   portals.erase(loc);
 }
 
+bool Terrain_System::blocks_movement(Plain_Location loc) {
+  return terrain_data[get(loc)].kind & block_move_flag;
+}
+
 bool Terrain_System::blocks_shot(Plain_Location loc) {
   return terrain_data[get(loc)].kind & block_shot_flag;
 }

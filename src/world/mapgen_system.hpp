@@ -31,6 +31,12 @@ public:
     , factory(factory) {}
 
   void cave(Plain_Location start, int start_dir6, const Recti& area);
+
+  bool find_portal_enclosure(
+    Plain_Location start,
+    const Recti& area,
+    Plain_Location& loc_out,
+    int& dir6_out);
 private:
   Mapgen_System(const Mapgen_System&);
   Mapgen_System& operator=(const Mapgen_System&);

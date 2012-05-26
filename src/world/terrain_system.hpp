@@ -46,6 +46,11 @@ public:
   bool blocks_shot(Plain_Location loc);
   bool blocks_sight(Plain_Location loc);
 
+  bool is_wall(Plain_Location loc)
+  {
+    return blocks_movement(loc) && blocks_sight(loc) && blocks_shot(loc);
+  }
+
   std::vector<Location> area_locations(Area_Index area);
 private:
   Terrain_System(const Terrain_System&);

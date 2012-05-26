@@ -114,3 +114,56 @@ void Mapgen_System::cave(Plain_Location start, int start_dir6, const Recti& area
 
   state.fill_edges();
 }
+
+bool Mapgen_System::find_portal_enclosure(
+  Plain_Location start,
+  const Recti& area,
+  Plain_Location& loc_out,
+  int& dir6_out)
+{
+  auto origin = terrain.location(start);
+  std::vector<std::pair<Plain_Location, int>> enclosures;
+  for (auto& vec : points(area))
+  {
+    auto loc = origin.raw_offset(vec);
+    if (!loc.get_portal().is_null())
+      continue;
+    int wall_count = 0;
+    int open_dir = -1;
+    for (int i = 0; i < 6; i++)
+    {
+      if (terrain.get(loc.raw_offset(hex_dirs[i])) == terrain_void)
+      {
+        wall_count = -1;
+        break;
+      }
+      if (terrain.is_wall(loc.raw_offset(hex_dirs[i])))
+      {
+        wall_count++;
+        continue;
+      }
+      else if (loc.raw_offset(hex_dirs[i]).get_portal().is_null() &&
+               !terrain.blocks_movement(loc + hex_dirs[i]))
+      {
+        open_dir = i;
+        continue;
+      }
+      else
+      {
+        // Invalid spot for whatever reason. Make the state invalid and break
+        // iteration.
+        wall_count = -1;
+        break;
+      }
+    }
+    if (wall_count == 5)
+      enclosures.push_back(std::make_pair(loc, open_dir));
+  }
+  if (enclosures.size() == 0)
+    return false;
+
+  auto result = *rand_choice(enclosures);
+  loc_out = result.first;
+  dir6_out = result.second;
+  return true;
+}

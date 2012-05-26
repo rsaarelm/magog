@@ -133,6 +133,26 @@ void Game_Screen::enter() {
   mapgen.cave(terrain.location(2, {0, 0}), 1, Recti({-16, -16}, {32, 32}));
   terrain.set_portal({2, {0, 1}}, Portal(1, {1, 1}));
 
+  Plain_Location stair_loc;
+  int exit_dir = -1;
+  if (mapgen.find_portal_enclosure(
+        terrain.location(2, {0, 0}),
+        Recti({-16, -16}, {32, 32}),
+        stair_loc,
+        exit_dir))
+  {
+    Location loc = terrain.location(stair_loc);
+    int entry_dir = (exit_dir + 3) % 6;
+
+    terrain.set_portal(loc, Portal(3, Vec2i(-loc.x, -loc.y)));
+    terrain.set(loc + hex_dirs[exit_dir], slope_terrain(entry_dir));
+    mapgen.cave(terrain.location(3, {0, 0}), entry_dir,
+                Recti({-16, -16}, {32, 32}));
+    terrain.set_portal(
+      {3, Vec2i(0, 0) + hex_dirs[exit_dir]},
+      Portal(2, {loc.x, loc.y}));
+  }
+
   // Entity spawns
   Entity player =
     factory.spawn(spec_player, terrain.location(1, Vec2i(16, 16)));
