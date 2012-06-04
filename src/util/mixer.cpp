@@ -34,7 +34,13 @@ Mixer::Mixer()
 }
 
 void Mixer::add_wave(Wave wave, float duration_sec) {
-  waves.push_back({wave, current_time, current_time + sec_to_sample_time(duration_sec)});
+  Wave_Record wave_record{wave, current_time, current_time + sec_to_sample_time(duration_sec)};
+  waves.push_back(wave_record);
+
+  // FIXME llvm bug http://llvm.org/bugs/show_bug.cgi?id=13015 prevents use of
+  // below code when using clang.
+
+  // waves.push_back({wave, current_time, current_time + sec_to_sample_time(duration_sec)});
   start();
 }
 
