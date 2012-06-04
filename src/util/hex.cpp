@@ -124,6 +124,7 @@ int vec_to_hex_dir(const Vec2i& vec) {
     return 5;
   default:
     die("Bad hexadecant");
+    return 0;
   }
 }
 
