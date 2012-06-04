@@ -26,7 +26,7 @@ postbuildcommands {
   "cat assets/assets.zip >> " .. TITLE
 }
 
-files { "src/**.hpp", "src/**.cpp", "src/contrib/stb/stb_image.c" }
+files { "src/**.hpp", "src/**.cpp" }
 
 configuration "Debug"
 defines { "DEBUG" }

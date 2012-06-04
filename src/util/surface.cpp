@@ -17,15 +17,8 @@
 */
 
 #include "surface.hpp"
+#include <contrib/stb/stb_image.hpp>
 #include <cstdlib>
-
-extern "C" {
-  extern uint8_t* stbi_load_from_memory(
-    uint8_t const *buffer, int len, int *x, int *y, int *comp, int req_comp);
-
-  extern uint8_t* stbi_load(
-    char const *filename, int *x, int *y, int *comp, int req_comp);
-}
 
 Surface::Surface()
     : data_(nullptr)
