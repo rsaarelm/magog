@@ -16,7 +16,7 @@ kind "ConsoleApp"
 language "C++"
 links(TOOLS)
 defines { "BOOST_RESULT_OF_USE_DECLTYPE" } -- Black magic for Boost ranges
-links { "SDL", "GL", "physfs" }
+links { "SDL", "GL", "physfs", "stdc++", "m" }
 
 defines { 'BUILD_VERSION=\\"git:`git log --pretty=format:%h -1`\\"' }
 
