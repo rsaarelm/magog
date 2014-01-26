@@ -1,5 +1,8 @@
 extern mod calx;
+extern mod stb;
 extern mod sdl2;
+
+use std::io::File;
 
 use sdl2::event;
 use sdl2::keycode;
@@ -13,7 +16,18 @@ pub fn main() {
         Err(err) => fail!(err)
     };
 
-    app.pixels[1] = 0xff;
+    let font = stb::truetype::Font::new(
+        File::open(&Path::new("assets/pf_tempesta_seven_extended_bold.ttf")).read_to_end())
+        .unwrap();
+
+    let glyph = font.glyph(80, 13.0).unwrap();
+
+    for y in range(0, glyph.height) {
+        for x in range(0, glyph.width) {
+            app.pixels[x * 4 + y * 4 * 800 + 1] = glyph.pixels[x + y * glyph.width];
+        }
+    }
+
     app.render();
 
     loop {
@@ -31,4 +45,3 @@ pub fn main() {
         }
     }
 }
-

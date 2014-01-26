@@ -1,6 +1,6 @@
 RUSTPKG = RUST_PATH=$(PWD)/.rust:$(PWD)/lib/sdl2 rustpkg
 
-TARGET=crunchy
+TARGET=shiny
 
 all: shiny roamy crunchy
 
