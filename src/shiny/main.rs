@@ -1,20 +1,20 @@
-extern mod calx;
 extern mod stb;
-extern mod sdl2;
 
-use std::io::File;
+extern mod glfw;
 
-use sdl2::event;
-use sdl2::keycode;
-use calx::app::App;
+//use std::io::File;
 
 pub fn main() {
     println!("Shiny: A prototype user interface.");
-    let mut app = match App::new(~"Shiny!", 800, 600) {
-        Ok(app) => app,
-        Err(err) => fail!(err)
-    };
-
+    do glfw::start {
+        let window = glfw::Window::create(800, 600, "Shiny!", glfw::Windowed)
+            .expect("Failed to create window.");
+        window.make_context_current();
+        while !window.should_close() {
+            glfw::poll_events();
+        }
+    }
+    /*
     let font = stb::truetype::Font::new(
         File::open(&Path::new("assets/pf_tempesta_seven_extended_bold.ttf")).read_to_end())
         .unwrap();
@@ -26,21 +26,5 @@ pub fn main() {
             app.pixels[x * 4 + y * 4 * 800 + 1] = glyph.pixels[x + y * glyph.width];
         }
     }
-
-    app.render();
-
-    loop {
-        match event::poll_event() {
-            event::QuitEvent(_) => break,
-            event::KeyDownEvent(_, _, key, _, _) => {
-                if key == keycode::EscapeKey {
-                    break
-                }
-            },
-            event::WindowEvent(_, _, _, _, _) => {
-                app.render();
-            }
-            _ => {}
-        }
-    }
+    */
 }
