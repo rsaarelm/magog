@@ -1,3 +1,6 @@
 [submodule "lib/sdl2"]
 	path = lib/sdl2
 	url = https://github.com/AngryLawyer/rust-sdl2.git
+[submodule "lib/glfw"]
+	path = lib/glfw
+	url = https://github.com/bjz/glfw-rs.git
