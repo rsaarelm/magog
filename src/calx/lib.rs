@@ -7,7 +7,3 @@ extern mod extra;
 
 pub mod text;
 pub mod app;
-
-pub fn hello() {
-    println!("Hello, world!");
-}

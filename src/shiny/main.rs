@@ -9,7 +9,6 @@ use sdl2::keycode;
 use calx::app::App;
 
 pub fn main() {
-    calx::hello();
     println!("Shiny: A prototype user interface.");
     let mut app = match App::new(~"Shiny!", 800, 600) {
         Ok(app) => app,
