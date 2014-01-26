@@ -2,7 +2,6 @@ use std::libc::*;
 use std::unstable::intrinsics;
 use std::vec;
 
-
 struct stbtt_fontinfo {
     userdata: *c_void,
     data: *c_uchar,
@@ -18,6 +17,7 @@ struct stbtt_fontinfo {
     indexToLocFormat: c_int
 }
 
+#[link(name="stb")]
 extern {
     fn stbtt_InitFont(
         info: *stbtt_fontinfo, data: *c_uchar, offset: c_int) -> c_int;

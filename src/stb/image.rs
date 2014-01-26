@@ -2,6 +2,7 @@ use std::libc::*;
 use std::ptr::{is_null, to_mut_unsafe_ptr};
 use std::vec::raw::from_buf_raw;
 
+#[link(name="stb")]
 extern {
     fn stbi_load_from_memory(
         buffer: *c_uchar, len: c_int, x: *mut c_int, y: *mut c_int,
