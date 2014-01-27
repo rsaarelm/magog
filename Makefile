@@ -20,9 +20,13 @@ PA_LINKARGS = --link-args "-lasound -ljack"
 
 # Build binary with "-Z lto" to make it smaller. Slows down build.
 
-bin/shiny: src/shiny/main.rs $(LIBSTB) $(LIBGLFW) $(LIBCALX) $(LIBGLES) $(LIBPA)
+bin/shiny: src/shiny/main.rs $(LIBSTB) $(LIBGLFW) $(LIBCALX) $(LIBGLES) $(LIBCGMATH)
 	@mkdir -p bin/
-	rustc $(RUSTFLAGS) $(GLFW_LINKARGS) $(PA_LINKARGS) -o $@ $<
+	rustc $(RUSTFLAGS) $(GLFW_LINKARGS) -o $@ $<
+
+bin/synth: src/synth/main.rs $(LIBPA)
+	@mkdir -p bin/
+	rustc $(RUSTFLAGS) $(PA_LINKARGS) -o $@ $<
 
 $(LIBCALX): src/calx/lib.rs
 	@mkdir -p build/
