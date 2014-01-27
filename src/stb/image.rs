@@ -1,5 +1,5 @@
 use std::libc::*;
-use std::ptr::{is_null, to_mut_unsafe_ptr};
+use std::ptr::is_null;
 use std::vec::raw::from_buf_raw;
 
 #[link(name="stb")]
@@ -24,11 +24,8 @@ impl Image {
             let mut bpp = 0 as c_int;
 
             let buffer = stbi_load_from_memory(
-                data.as_ptr() as *c_uchar, data.len() as c_int,
-                to_mut_unsafe_ptr(&mut w),
-                to_mut_unsafe_ptr(&mut h),
-                to_mut_unsafe_ptr(&mut bpp),
-                0);
+                data.as_ptr(), data.len() as c_int,
+                &mut w, &mut h, &mut bpp, 0);
 
             if is_null(buffer) {
                 return None

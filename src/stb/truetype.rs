@@ -27,18 +27,19 @@ extern {
         info: *stbtt_fontinfo, unicode_codepoint: c_int) -> c_int;
     fn stbtt_GetGlyphHMetrics(
         info: *stbtt_fontinfo, glyph_index: c_int,
-        advanceWidth: *c_int, leftSideBearing: *c_int);
+        advanceWidth: *mut c_int, leftSideBearing: *mut c_int);
     fn stbtt_GetGlyphBitmapBox(
         info: *stbtt_fontinfo, glyph: c_int,
         scale_x: c_float, scale_y: c_float,
-        ix0: *c_int, iy0: *c_int, ix1: *c_int, iy1: *c_int);
-    fn stbtt_MakeGlyphBitmap(info: *stbtt_fontinfo, output: *c_uchar,
+        ix0: *mut c_int, iy0: *mut c_int, ix1: *mut c_int, iy1: *mut c_int);
+    fn stbtt_MakeGlyphBitmap(info: *stbtt_fontinfo, output: *mut c_uchar,
         out_w: c_int, out_h: c_int, out_stride: c_int,
         scale_x: c_float, scale_y: c_float, glyph: c_int);
 }
 
 pub struct Font {
-    priv info: stbtt_fontinfo
+    priv info: stbtt_fontinfo,
+    priv data: ~[u8],
 }
 
 pub struct Glyph {
@@ -51,13 +52,14 @@ pub struct Glyph {
 }
 
 impl Font {
-    pub fn new(data: &[u8]) -> Option<Font> {
+    pub fn new(data: ~[u8]) -> Option<Font> {
         unsafe {
             let ret = Font {
                 info: intrinsics::uninit(),
+                data: data,
             };
             let status = stbtt_InitFont(
-                &ret.info, data.as_ptr() as *c_uchar, 0 as c_int);
+                &ret.info, ret.data.as_ptr(), 0 as c_int);
             if status == 0 {
                 return None
             }
@@ -75,24 +77,24 @@ impl Font {
             let scale = stbtt_ScaleForPixelHeight(
                 &self.info, height as c_float);
 
-            let x0: c_int = 0;
-            let y0: c_int = 0;
-            let x1: c_int = 0;
-            let y1: c_int = 0;
+            let mut x0 = 0 as c_int;
+            let mut y0 = 0 as c_int;
+            let mut x1 = 0 as c_int;
+            let mut y1 = 0 as c_int;
             stbtt_GetGlyphBitmapBox(
-                &self.info, g, scale as c_float, scale,
-                &x0, &y0, &x1, &y1);
+                &self.info, g, scale, scale,
+                &mut x0, &mut y0, &mut x1, &mut y1);
 
-            let advance: c_int = 0;
-            let lsb: c_int = 0;
-            stbtt_GetGlyphHMetrics(&self.info, g, &advance, &lsb);
+            let mut advance = 0 as c_int;
+            let mut lsb = 0 as c_int;
+            stbtt_GetGlyphHMetrics(&self.info, g, &mut advance, &mut lsb);
 
             let width = (x1 - x0) as int;
             let height = (y1 - y0) as int;
 
-            let pixels = vec::from_elem((width * height) as uint, 0u8);
+            let mut pixels = vec::from_elem((width * height) as uint, 0u8);
             stbtt_MakeGlyphBitmap(
-                &self.info, pixels.as_ptr() as *c_uchar,
+                &self.info, pixels.as_mut_ptr(),
                 width as c_int, height as c_int,
                 width as c_int, scale, scale, g);
 
