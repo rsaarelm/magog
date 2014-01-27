@@ -11,6 +11,7 @@ LIBSTB := build/$(shell rustc --crate-file-name src/stb/lib.rs)
 LIBGLFW := build/$(shell rustc --crate-file-name lib/glfw-rs/src/lib.rs)
 LIBGLES := build/$(shell rustc --crate-file-name lib/rust-opengles/lib.rs)
 LIBPA := build/$(shell rustc --crate-file-name lib/portaudio-rs/src/portaudio/lib.rs)
+LIBCGMATH := build/$(shell rustc --crate-file-name lib/cgmath-rs/src/cgmath/lib.rs)
 
 TARGET = shiny
 
@@ -41,6 +42,10 @@ $(LIBGLFW): lib/glfw-rs/src/lib.rs build/libglfw3.a
 	rustc $(RUSTFLAGS) --out-dir build/ $<
 
 $(LIBGLES): lib/rust-opengles/lib.rs
+	@mkdir -p build/
+	rustc $(RUSTFLAGS) --out-dir build/ --rlib $<
+
+$(LIBCGMATH): lib/cgmath-rs/src/cgmath/lib.rs
 	@mkdir -p build/
 	rustc $(RUSTFLAGS) --out-dir build/ --rlib $<
 
