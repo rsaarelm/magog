@@ -10,3 +10,6 @@
 [submodule "lib/portaudio-rs"]
 	path = lib/portaudio-rs
 	url = https://github.com/JeremyLetang/rust-portaudio.git
+[submodule "lib/cgmath-rs"]
+	path = lib/cgmath-rs
+	url = https://github.com/bjz/cgmath-rs.git
