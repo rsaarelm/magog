@@ -48,11 +48,12 @@ build/libstb.a: cbuild/libstb.a
 	@mkdir -p build/
 	cp $< $@
 
-cbuild/libstb.a: src/stb/stb_image.c src/stb/stb_truetype.c
+cbuild/libstb.a: src/stb/stb_image.c src/stb/stb_truetype.h src/stb/stb_image_write.h
 	@mkdir -p cbuild/
 	$(CC) -fPIC -c -o cbuild/stb_image.o src/stb/stb_image.c
 	$(CC) -fPIC -c -o cbuild/stb_truetype.o src/stb/stb_truetype.c
-	$(AR) crs cbuild/libstb.a cbuild/stb_image.o cbuild/stb_truetype.o
+	$(CC) -fPIC -c -o cbuild/stb_image_write.o src/stb/stb_image_write.c
+	$(AR) crs cbuild/libstb.a cbuild/stb_image.o cbuild/stb_truetype.o cbuild/stb_image_write.o
 
 build/libglfw3.a: cbuild/glfw/src/libglfw3.a
 	@mkdir -p build/
