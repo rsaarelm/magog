@@ -13,21 +13,29 @@ LIBGLES := build/$(shell rustc --crate-file-name lib/rust-opengles/lib.rs)
 LIBPA := build/$(shell rustc --crate-file-name lib/portaudio-rs/src/portaudio/lib.rs)
 LIBCGMATH := build/$(shell rustc --crate-file-name lib/cgmath-rs/src/cgmath/lib.rs)
 
-TARGET = shiny
-
 # Linux version.
 GLFW_LINKARGS = --link-args "-lglfw3 -lGL -lX11 -lXxf86vm -lXrandr -lXi"
 PA_LINKARGS = --link-args "-lasound -ljack"
 
-# Build binary with "-Z lto" to make it smaller. Slows down build.
+# Build with "make RELEASE=1" to enable some slow extra optimizations.
+ifeq ($(RELEASE),1)
+    # Binary compressing flags.
+    RUSTBINFLAGS += -Z lto
+endif
+
+all: bin/shiny bin/synth bin/atlas
 
 bin/shiny: src/shiny/main.rs $(LIBSTB) $(LIBGLFW) $(LIBCALX) $(LIBGLES) $(LIBCGMATH)
 	@mkdir -p bin/
-	rustc $(RUSTFLAGS) $(GLFW_LINKARGS) -o $@ $<
+	rustc $(RUSTFLAGS) $(GLFW_LINKARGS) $(RUSTBINFLAGS) -o $@ $<
 
 bin/synth: src/synth/main.rs $(LIBPA)
 	@mkdir -p bin/
-	rustc $(RUSTFLAGS) $(PA_LINKARGS) -o $@ $<
+	rustc $(RUSTFLAGS) $(PA_LINKARGS) $(RUSTBINFLAGS) -o $@ $<
+
+bin/atlas: src/atlas/main.rs $(LIBSTB) $(LIBCGMATH)
+	@mkdir -p bin/
+	rustc $(RUSTFLAGS) $(RUSTBINFLAGS) -o $@ $<
 
 $(LIBCALX): src/calx/lib.rs
 	@mkdir -p build/

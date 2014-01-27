@@ -1,5 +1,3 @@
-extern mod stb;
-
 extern mod glfw;
 extern mod opengles;
 
