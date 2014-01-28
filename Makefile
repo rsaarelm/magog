@@ -21,6 +21,9 @@ PA_LINKARGS = --link-args "-lasound -ljack"
 ifeq ($(RELEASE),1)
     # Binary compressing flags.
     RUSTBINFLAGS += -Z lto
+else
+    # Runtime checks
+    RUSTBINFLAGS += --cfg check_gl
 endif
 
 all: bin/shiny bin/synth bin/atlas

@@ -1,9 +1,42 @@
-extern mod glfw;
-extern mod opengles;
-
-use opengles::gl2;
+#[feature(macro_rules)];
 
 //use std::io::File;
+extern mod glfw;
+extern mod opengles;
+extern mod cgmath;
+
+use opengles::gl2;
+use shader::Shader;
+use mesh::Mesh;
+use cgmath::point::Point3;
+
+#[macro_escape]
+mod gl_check;
+mod shader;
+mod mesh;
+
+static VERTEX_SHADER: &'static str =
+    "#version 120
+    attribute vec2 v_coord;
+    uniform sampler2D texture;
+    varying vec2 texcoord;
+
+    void main(void) {
+	gl_Position = vec4(v_coord, 0.0, 1.0);
+	texcoord = (v_coord + 1.0) / 2.0;
+    }
+    ";
+
+static FRAGMENT_SHADER: &'static str =
+    "#version 120
+    uniform sampler2D texture;
+    varying vec2 texcoord;
+
+    void main(void) {
+	gl_FragColor = texture2D(texture, texcoord);
+    }
+    ";
+
 
 pub fn main() {
     println!("Shiny: A prototype user interface.");
@@ -12,9 +45,21 @@ pub fn main() {
             .expect("Failed to create window.");
         window.make_context_current();
 
+	let shader = Shader::new(VERTEX_SHADER, FRAGMENT_SHADER);
+	let mesh = Mesh::new(
+	    ~[Point3::new(0.0f32, 0.0f32, 0.0f32),
+	      Point3::new(1.0f32, 0.0f32, 0.0f32),
+	      Point3::new(0.0f32, 1.0f32, 0.0f32),
+	     ],
+	    ~[0, 1, 2]);
+
 	gl2::viewport(0, 0, 800, 600);
 	gl2::clear_color(0.0, 0.8, 0.8, 1.0);
 	gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+
+	shader.bind();
+	mesh.render();
+
 	gl2::flush();
 
 	window.swap_buffers();
@@ -23,17 +68,4 @@ pub fn main() {
             glfw::poll_events();
         }
     }
-    /*
-    let font = stb::truetype::Font::new(
-        File::open(&Path::new("assets/pf_tempesta_seven_extended_bold.ttf")).read_to_end())
-        .unwrap();
-
-    let glyph = font.glyph(80, 13.0).unwrap();
-
-    for y in range(0, glyph.height) {
-        for x in range(0, glyph.width) {
-            app.pixels[x * 4 + y * 4 * 800 + 1] = glyph.pixels[x + y * glyph.width];
-        }
-    }
-    */
 }
