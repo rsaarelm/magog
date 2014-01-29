@@ -1,7 +1,7 @@
-use opengles::gl2;
 
 #[cfg(check_gl)]
 pub fn gl_check_and_fail(site: &str) {
+    use opengles::gl2;
     let err = gl2::get_error();
     if err != gl2::NO_ERROR {
 	fail!("OpenGL error at '{}': {}", site, err);
