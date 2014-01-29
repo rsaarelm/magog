@@ -4,7 +4,7 @@ include_rules
 : lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake ../lib/glfw; make; cp src/libglfw3.a ..; cd ..; rm -rf glfw-build/ |> libglfw3.a
 : lib/portaudio/configure |> cp -r lib/portaudio pa-build; cd pa-build; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a ../; cd ..; rm -rf pa-build |> libportaudio.a
 
-: foreach src/stb/*.c |> !cc |> %B.o
+: foreach lib/stb/*.c |> !cc |> %B.o
 : stb_image.o stb_image_write.o stb_truetype.o |> !ar |> libstb.a
 
 # Use dummy library target names since the actual names have the hash value I
