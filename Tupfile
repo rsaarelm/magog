@@ -17,6 +17,6 @@ include_rules
 : src/calx/lib.rs |> !rustlib |> calx.dummy
 : src/stb/lib.rs |> !rustlib |> stb.dummy
 
-: src/shiny/main.rs | cgmath.dummy glfw.dummy opengles.dummy libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
+: src/shiny/main.rs | cgmath.dummy glfw.dummy opengles.dummy stb.dummy libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
 : src/synth/main.rs | portaudio.dummy libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
 : src/atlas/main.rs | cgmath.dummy stb.dummy libstb.a |> !rustbin |> atlas

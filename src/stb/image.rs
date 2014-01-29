@@ -2,6 +2,7 @@ use std::libc::*;
 use std::ptr::is_null;
 use std::vec::raw::from_buf_raw;
 use std::vec;
+use std::io::File;
 
 #[link(name="stb")]
 extern {
@@ -22,7 +23,14 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn load(data: &[u8]) -> Option<Image> {
+    pub fn load(path: &str, force_channels: uint) -> Option<Image> {
+        let path = Path::new(path);
+        if !path.exists() { return None; }
+        let data = File::open(&path).read_to_end();
+        Image::load_from_memory(data, force_channels)
+    }
+
+    pub fn load_from_memory(data: &[u8], force_channels: uint) -> Option<Image> {
         unsafe {
             let mut w = 0 as c_int;
             let mut h = 0 as c_int;
@@ -30,17 +38,19 @@ impl Image {
 
             let buffer = stbi_load_from_memory(
                 data.as_ptr(), data.len() as c_int,
-                &mut w, &mut h, &mut bpp, 0);
+                &mut w, &mut h, &mut bpp, force_channels as c_int);
 
             if is_null(buffer) {
                 return None
             }
 
+            let bpp = if force_channels != 0 { force_channels } else { bpp as uint };
+
             let ret = Some(Image{
                 width: w as uint,
                 height: h as uint,
-                bpp: bpp as uint,
-                pixels: from_buf_raw(buffer, (w * h * bpp) as uint)
+                bpp: bpp,
+                pixels: from_buf_raw(buffer, (w * h) as uint * bpp)
             });
             free(buffer as *mut c_void);
             ret

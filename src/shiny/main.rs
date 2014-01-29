@@ -1,36 +1,42 @@
 #[feature(macro_rules)];
 
-//use std::io::File;
 extern mod glfw;
 extern mod opengles;
 extern mod cgmath;
+extern mod stb;
 
 use opengles::gl2;
+use cgmath::point::{Point2, Point3};
+
 use shader::Shader;
 use mesh::Mesh;
-use cgmath::point::Point3;
+use texture::Texture;
+use stb::image::Image;
 
 #[macro_escape]
 mod gl_check;
 mod shader;
 mod mesh;
+mod texture;
 
 static VERTEX_SHADER: &'static str =
-    "#version 120
-    attribute vec2 v_coord;
+    "#version 130
+    in vec3 in_pos;
+    in vec2 in_texcoord;
+
     uniform sampler2D texture;
-    varying vec2 texcoord;
+    out vec2 texcoord;
 
     void main(void) {
-	gl_Position = vec4(v_coord, 0.0, 1.0);
-	texcoord = (v_coord + 1.0) / 2.0;
+        texcoord = in_texcoord;
+	gl_Position = vec4(in_pos, 1.0);
     }
     ";
 
 static FRAGMENT_SHADER: &'static str =
-    "#version 120
+    "#version 130
     uniform sampler2D texture;
-    varying vec2 texcoord;
+    in vec2 texcoord;
 
     void main(void) {
 	gl_FragColor = texture2D(texture, texcoord);
@@ -45,20 +51,31 @@ pub fn main() {
             .expect("Failed to create window.");
         window.make_context_current();
 
+        let bitmap = Image::load("assets/texture.png", 4).unwrap();
+        let texture = Texture::new_rgba(bitmap.width, bitmap.height, bitmap.pixels);
+        texture.bind();
+
 	let shader = Shader::new(VERTEX_SHADER, FRAGMENT_SHADER);
 	let mesh = Mesh::new(
 	    ~[Point3::new(0.0f32, 0.0f32, 0.0f32),
 	      Point3::new(1.0f32, 0.0f32, 0.0f32),
 	      Point3::new(0.0f32, 1.0f32, 0.0f32),
+	      Point3::new(1.0f32, 1.0f32, 0.0f32),
 	     ],
-	    ~[0, 1, 2]);
+            ~[Point2::new(0.0f32, 1.0f32),
+              Point2::new(1.0f32, 1.0f32),
+              Point2::new(0.0f32, 0.0f32),
+              Point2::new(1.0f32, 0.0f32),
+             ],
+	    ~[0, 1, 3, 0, 2, 3]);
 
 	gl2::viewport(0, 0, 800, 600);
 	gl2::clear_color(0.0, 0.8, 0.8, 1.0);
 	gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
 
 	shader.bind();
-	mesh.render();
+        gl2::uniform_1i(shader.uniform("texture").unwrap() as i32, 0);
+	mesh.render(&shader);
 
 	gl2::flush();
 

@@ -66,6 +66,22 @@ impl Shader {
     pub fn bind(&self) {
 	gl_check!(gl2::use_program(self.program));
     }
+
+    pub fn attrib(&self, name: &str) -> Option<GLuint> {
+        let result = gl_check!(gl2::get_attrib_location(self.program, name));
+        if result < 0 {
+            return None;
+        }
+        Some(result as GLuint)
+    }
+
+    pub fn uniform(&self, name: &str) -> Option<GLuint> {
+        let result = gl_check!(gl2::get_uniform_location(self.program, name));
+        if result < 0 {
+            return None;
+        }
+        Some(result as GLuint)
+    }
 }
 
 impl Drop for Shader {
