@@ -10,6 +10,6 @@ PA_LINKARGS = --link-args '-lasound -ljack -lportaudio'
 # strange file business as long as it goes on outside the project directory
 # tree.
 !rustlib = |> mkdir -p ~/.rust/; rustc %f --out-dir ~/.rust/ $(RUSTFLAGS) --rlib; touch %o |>
-!rustbin = |> mkdir -p ~/.rust/; rustc %f -o %o $(RUSTFLAGS) |>
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) |>
 
 .gitignore
