@@ -1,0 +1,22 @@
+include_rules
+
+# XXX: These ones are nasty.
+: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake ../lib/glfw; make; cp src/libglfw3.a ..; cd ..; rm -rf glfw-build/ |> libglfw3.a
+: lib/portaudio/configure |> cp -r lib/portaudio pa-build; cd pa-build; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a ../; cd ..; rm -rf pa-build |> libportaudio.a
+
+: foreach src/stb/*.c |> !cc |> %B.o
+: stb_image.o stb_image_write.o stb_truetype.o |> !ar |> libstb.a
+
+# Use dummy library target names since the actual names have the hash value I
+# haven't figured out how to get into tup patterns nicely.
+: lib/cgmath-rs/src/cgmath/lib.rs |> !rustlib |> cgmath.dummy
+: lib/glfw-rs/src/lib.rs | libglfw3.a |> !rustlib |> glfw.dummy
+: lib/portaudio-rs/src/portaudio/lib.rs | libportaudio.a |> !rustlib |> portaudio.dummy
+: lib/rust-opengles/lib.rs |> !rustlib |> opengles.dummy
+
+: src/calx/lib.rs |> !rustlib |> calx.dummy
+: src/stb/lib.rs |> !rustlib |> stb.dummy
+
+: src/shiny/main.rs | cgmath.dummy glfw.dummy opengles.dummy libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
+: src/synth/main.rs | portaudio.dummy libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
+: src/atlas/main.rs | cgmath.dummy stb.dummy libstb.a |> !rustbin |> atlas

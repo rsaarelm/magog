@@ -1,0 +1,15 @@
+RUSTFLAGS = --opt-level 3 -L ~/.rust/ --cfg check-gl
+GLFW_LINKARGS = --link-args '-lglfw3 -lGL -lX11 -lXxf86vm -lXrandr -lXi'
+PA_LINKARGS = --link-args '-lasound -ljack -lportaudio'
+
+!cc = |> clang -Wall -O3 -c %f -o %o |>
+!ar = |> ar crs %o %f |>
+
+# Use ~/.rust/ as library output directory to stop tup from complaining about
+# the files with the magic names that are being output. Rust is fine with
+# strange file business as long as it goes on outside the project directory
+# tree.
+!rustlib = |> mkdir -p ~/.rust/; rustc %f --out-dir ~/.rust/ $(RUSTFLAGS) --rlib; touch %o |>
+!rustbin = |> mkdir -p ~/.rust/; rustc %f -o %o $(RUSTFLAGS) |>
+
+.gitignore
