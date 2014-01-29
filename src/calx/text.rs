@@ -4,15 +4,15 @@ use extra::ringbuf::RingBuf;
 
 struct WrapLineIterator<T> {
     /// Input iterator
-    priv iter: T,
+    iter: T,
     /// Maximum line length
-    priv line_len: uint,
+    line_len: uint,
     /// Characters output since last newline
-    priv current_line_len: uint,
+    current_line_len: uint,
     /// Incoming elements
-    priv buffer: RingBuf<char>,
+    buffer: RingBuf<char>,
     /// Peek window
-    priv peek: Option<char>,
+    peek: Option<char>,
 }
 
 impl<T: Iterator<char>> WrapLineIterator<T> {
@@ -143,9 +143,9 @@ pub fn to_cp437(c: char) -> Option<u8> {
 
 struct Map2DIterator<T> {
     /// Input iterator
-    priv iter: T,
-    priv x: int,
-    priv y: int,
+    iter: T,
+    x: int,
+    y: int,
 }
 
 impl<T: Iterator<char>> Iterator<(char, int, int)> for Map2DIterator<T> {
