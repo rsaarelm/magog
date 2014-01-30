@@ -1,6 +1,6 @@
 #[crate_id = "calx"];
 #[desc = "Shared gamelib"];
-#[license = "GPLv3"];
+#[license = "MIT"];
 #[feature(globs)];
 #[crate_type = "rlib"];
 
