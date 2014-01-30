@@ -1,1 +1,3 @@
-How to build: Get tup, run "tup upd".
+Rust multimedia programming scratch space.
+
+Build by running "tup" from http://gittup.org/tup/.
