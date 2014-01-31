@@ -1,4 +1,4 @@
-RUSTFLAGS = --opt-level 3 -L ~/.rust/ --cfg check-gl
+RUSTFLAGS = --opt-level 3 -L . --cfg check-gl
 GLFW_LINKARGS = --link-args '-lglfw3 -lGL -lX11 -lXxf86vm -lXrandr -lXi'
 PA_LINKARGS = --link-args '-lasound -ljack -lportaudio'
 
