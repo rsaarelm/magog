@@ -13,12 +13,12 @@ run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 run ./rust-rule.sh lib/glfw-rs/src/lib.rs {libglfw}
 run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
 run ./rust-rule.sh lib/rust-opengles/lib.rs {libgles}
-run ./rust-rule.sh src/calx/lib.rs {libcalx}
+run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
 
 : src/shiny/main.rs | {libcgmath} {libglfw} {libgles} {libstb} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
-: src/atlas/main.rs | {libcgmath} {libstb} libstb.a |> !rustbin |> atlas
+: src/atlas/main.rs | {libcgmath} {libstb} {libcalx} libstb.a |> !rustbin |> atlas
 : src/runtests/main.rs |> !rustbin |> runtests
 
 # Testing. All unit test runners are expected to start with 'test_'.
