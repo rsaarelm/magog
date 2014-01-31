@@ -27,7 +27,13 @@ impl Texture {
     }
 
     pub fn new_rgba(width: uint, height: uint, data: &[u8]) -> Texture {
+        assert!(data.len() == width * height * 4);
         Texture::new(width, height, data, gl2::RGBA)
+    }
+
+    pub fn new_alpha(width: uint, height: uint, data: &[u8]) -> Texture {
+        assert!(data.len() == width * height);
+        Texture::new(width, height, data, gl2::ALPHA)
     }
 
     pub fn bind(&self) {

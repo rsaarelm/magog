@@ -67,7 +67,7 @@ impl Font {
         }
     }
 
-    pub fn glyph(&self, codepoint: int, height: f64) -> Option<Glyph> {
+    pub fn glyph(&self, codepoint: uint, height: f64) -> Option<Glyph> {
         unsafe {
             let g = stbtt_FindGlyphIndex(&self.info, codepoint as c_int);
             if g == 0 {
