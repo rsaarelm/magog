@@ -22,4 +22,6 @@ run ./rust-rule.sh src/stb/lib.rs {libstb}
 : src/runtests/main.rs |> !rustbin |> runtests
 
 # Testing. All unit test runners are expected to start with 'test_'.
-: src/calx/lib.rs |> !rustbin --test |> test_calx
+: src/calx/lib.rs | {libcalx} |> !rustbin --test |> test_calx
+
+: lib/cgmath-rs/src/test/test.rs | {libcgmath} |> !rustbin --test |> test_cgmath
