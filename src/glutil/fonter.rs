@@ -1,19 +1,28 @@
 use std::vec;
 use std::char;
 use std::iter::AdditiveIterator;
+use std::hashmap::HashMap;
 
 use stb::truetype::Font;
 
 use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::point::Point2;
+use cgmath::point::{Point, Point2};
 use cgmath::vector::Vec2;
 
 use calx::pack_rect::pack_rects;
 
 use texture::Texture;
+use shader::Shader;
+use mesh;
 
-pub struct Fonter<M> {
-    priv lookup: ~M,
+struct FontRect {
+    texture_rect: Aabb2<f32>,
+    pos_rect: Aabb2<f32>,
+    xadvance: f32,
+}
+
+pub struct Fonter {
+    priv lookup: ~HashMap<char, FontRect>,
     priv texture: ~Texture,
 }
 
@@ -39,8 +48,8 @@ fn scale_rect(tex_rect: &Aabb2<int>, int_rect: &Aabb2<int>) -> Aabb2<f32> {
             int_rect.max().y as f32 / dim.y as f32))
 }
 
-impl<M: FromIterator<(char, Aabb2<f32>)> + Map<char, Aabb2<f32>>> Fonter<M> {
-    pub fn new(font: &Font, height: f64, start_char: uint, num_chars: uint) -> Fonter<M> {
+impl Fonter {
+    pub fn new(font: &Font, height: f32, start_char: uint, num_chars: uint) -> Fonter {
         let glyphs = vec::build(None, |push| {
             for c in range(start_char, start_char + num_chars) {
                 match font.glyph(c, height) {
@@ -69,8 +78,16 @@ impl<M: FromIterator<(char, Aabb2<f32>)> + Map<char, Aabb2<f32>>> Fonter<M> {
             }
         }
 
-        // Scale into texture coordinates in [0.0, 1.0].
-        let pack = pack.map(|int_rect| scale_rect(&base, int_rect));
+        // Scale rects into texture coordinates in [0.0, 1.0], add the rest of font data.
+        let pack : ~[FontRect] = pack.iter().enumerate().map(
+            |(i, int_rect)| FontRect {
+                texture_rect: scale_rect(&base, int_rect),
+                pos_rect: Aabb2::new(
+                    &Point2::new(0f32, 0f32),
+                    &Point2::new((int_rect.dim().x - 1) as f32, (int_rect.dim().y - 1) as f32))
+                    .add_v(&Vec2::new(glyphs[i].xOffset as f32, glyphs[i].yOffset as f32)),
+                xadvance: glyphs[i].xAdvance,
+            }).collect();
 
         Fonter {
             lookup: ~range(0, dims.len()).map(
@@ -81,5 +98,11 @@ impl<M: FromIterator<(char, Aabb2<f32>)> + Map<char, Aabb2<f32>>> Fonter<M> {
 
     pub fn bind(&self) {
         self.texture.bind();
+    }
+
+    pub fn test(&self, shader: &Shader) {
+        self.bind();
+        let glyph = self.lookup.find(&'A').unwrap();
+        mesh::draw_texture_rect(shader, &glyph.pos_rect.mul_s(0.01f32), &glyph.texture_rect);
     }
 }

@@ -13,8 +13,8 @@ impl Texture {
         let ret = Texture{ id: ids[0] };
 
         ret.bind();
-        gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_MIN_FILTER, gl2::LINEAR as gl2::GLint));
-        gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_MAG_FILTER, gl2::LINEAR as gl2::GLint));
+        gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_MIN_FILTER, gl2::NEAREST as gl2::GLint));
+        gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_MAG_FILTER, gl2::NEAREST as gl2::GLint));
         gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_WRAP_S, gl2::CLAMP_TO_EDGE as gl2::GLint));
         gl_check!(gl2::tex_parameter_i(gl2::TEXTURE_2D, gl2::TEXTURE_WRAP_T, gl2::CLAMP_TO_EDGE as gl2::GLint));
         gl_check!(gl2::tex_image_2d(

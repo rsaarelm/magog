@@ -1,6 +1,7 @@
 use opengles::gl2;
 use opengles::gl2::{GLuint};
 use cgmath::point::{Point2, Point3};
+use cgmath::aabb::{Aabb, Aabb2};
 use std::mem;
 
 use gl_check;
@@ -62,4 +63,20 @@ impl Drop for Mesh {
     fn drop(&mut self) {
 	gl_check!(gl2::delete_buffers(&[self.vertices, self.indices]));
     }
+}
+
+pub fn draw_texture_rect(shader: &Shader, area: &Aabb2<f32>, texcoord: &Aabb2<f32>) {
+   let mesh = Mesh::new(
+       ~[Point3::new(area.min().x, area.min().y, 0.0f32),
+         Point3::new(area.max().x, area.min().y, 0.0f32),
+         Point3::new(area.min().x, area.max().y, 0.0f32),
+         Point3::new(area.max().x, area.max().y, 0.0f32),
+       ],
+       ~[Point2::new(texcoord.min().x, texcoord.max().y),
+         Point2::new(texcoord.max().x, texcoord.max().y),
+         Point2::new(texcoord.min().x, texcoord.min().y),
+         Point2::new(texcoord.max().x, texcoord.min().y),
+       ],
+       ~[0, 1, 3, 0, 2, 3]);
+   mesh.render(shader);
 }

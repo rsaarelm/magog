@@ -45,9 +45,9 @@ pub struct Font {
 pub struct Glyph {
     width: int,
     height: int,
-    xOffset: f64,
-    yOffset: f64,
-    xAdvance: f64,
+    xOffset: f32,
+    yOffset: f32,
+    xAdvance: f32,
     pixels: ~[u8]
 }
 
@@ -67,7 +67,7 @@ impl Font {
         }
     }
 
-    pub fn glyph(&self, codepoint: uint, height: f64) -> Option<Glyph> {
+    pub fn glyph(&self, codepoint: uint, height: f32) -> Option<Glyph> {
         unsafe {
             let g = stbtt_FindGlyphIndex(&self.info, codepoint as c_int);
             if g == 0 {
@@ -101,9 +101,9 @@ impl Font {
             Some(Glyph{
                 width: width,
                 height: height,
-                xOffset: x0 as f64,
-                yOffset: y0 as f64,
-                xAdvance: advance as f64 * scale as f64,
+                xOffset: x0 as f32,
+                yOffset: y0 as f32,
+                xAdvance: advance as f32 * scale as f32,
                 pixels: pixels,
             })
         }
