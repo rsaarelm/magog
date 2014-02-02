@@ -37,7 +37,7 @@ static FRAGMENT_SHADER: &'static str =
 
 
 pub fn main() {
-    do glfw::start {
+    glfw::start(proc() {
         let window = glfw::Window::create(800, 600, "Shiny!", glfw::Windowed)
             .expect("Failed to create window.");
         window.make_context_current();
@@ -69,5 +69,5 @@ pub fn main() {
         while !window.should_close() {
             glfw::poll_events();
         }
-    }
+    })
 }

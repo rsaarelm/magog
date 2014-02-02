@@ -22,7 +22,7 @@ fn sinewave() {
 
     let isr = 1.0 / info_output.default_sample_rate as f32;
 
-    do spawn {
+    spawn(proc() {
         let stream_params_out = types::PaStreamParameters {
             device : def_output,
             channel_count : 1,
@@ -48,7 +48,7 @@ fn sinewave() {
             });
             stream.write(buf, bufsize as u32);
         }
-    }
+    })
 }
 
 pub fn main() {
