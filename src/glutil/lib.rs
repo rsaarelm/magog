@@ -9,6 +9,7 @@ extern mod opengles;
 extern mod calx;
 extern mod stb;
 extern mod cgmath;
+extern mod glfw;
 
 #[macro_escape]
 pub mod gl_check;
@@ -17,3 +18,4 @@ pub mod mesh;
 pub mod shader;
 pub mod texture;
 pub mod fonter;
+pub mod app;
