@@ -7,6 +7,10 @@ include_rules
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
 
+# Code generation.
+# XXX: Tup doesn't seem to add files generated under src/ dir in .gitignore.
+: assets/pf_tempesta_seven_extended_bold.ttf |> !databake |> gen/font_data.rs
+
 # Need to use generated rules to manage Rust's crate output name mangling. Grab
 # the outputs into named bins so we can refer to them later as dependencies.
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
@@ -15,7 +19,7 @@ run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio
 run ./rust-rule.sh lib/rust-opengles/lib.rs {libgles}
 run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
-run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgles} {libcgmath} {libglfw}
+run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgles} {libcgmath} {libglfw} gen/font_data.rs
 
 : src/shiny/main.rs | {libcgmath} {libglfw} {libgles} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth

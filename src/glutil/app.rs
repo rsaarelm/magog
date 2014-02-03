@@ -31,6 +31,11 @@ static FRAGMENT_SHADER: &'static str =
     }
     ";
 
+static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
+static FONT_SIZE: f32 = 13.0;
+static FONT_START_CHAR: uint = 32;
+static FONT_NUM_CHARS: uint = 95;
+
 // TODO: Make a proper type.
 type Color = Vec4<u8>;
 
@@ -39,7 +44,7 @@ pub struct App {
     draw_color: Color,
     window: ~glfw::Window,
     alive: bool,
-    fonter: Option<~Fonter>,
+    fonter: ~Fonter,
     texture: Option<~Texture>,
     shader: ~Shader,
 }
@@ -60,12 +65,14 @@ impl App {
         gl2::viewport(0, 0, width as i32, height as i32);
         gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
 
+        let truetype = stb::truetype::Font::new(FONT_DATA.to_owned()).expect("Bad FONT_DATA.");
+
         let ret = App {
             resolution: Vec2::new(width as f32, height as f32),
             draw_color: Vec4::new(0u8, 0u8, 0u8, 255u8),
             window: ~window,
             alive: true,
-            fonter: None,
+            fonter: ~Fonter::new(&truetype, FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS),
             texture: None,
             shader: ~Shader::new(VERTEX_SHADER, FRAGMENT_SHADER),
         };
@@ -75,22 +82,12 @@ impl App {
         ret
     }
 
-    // Will fail if data is bad. Expected to be only called with internal data,
-    // not random stuff from user.
-    pub fn init_font(&mut self, ttf_data: ~[u8], size: f32, start_char: uint, num_chars: uint) {
-        let truetype = stb::truetype::Font::new(ttf_data).expect("Error loading font data");
-        self.fonter = Some(~Fonter::new(&truetype, size, start_char, num_chars));
-    }
-
     pub fn set_color(&mut self, color: &Color) {
         self.draw_color = *color;
     }
 
     pub fn draw_string(&mut self, _pos: Vec2<f32>, _text: &str) {
-        if self.fonter.is_none() { return; }
-        let fonter = self.fonter.get_ref();
-
-        fonter.test(self.shader);
+        self.fonter.test(self.shader);
         // TODO: This is where we'd add rectangles of the characters to the
         // rect renderer.
     }

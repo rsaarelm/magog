@@ -8,4 +8,6 @@ PA_LINKARGS = --link-args '-lasound -ljack -lportaudio'
 !rustlib = |> rustc %f --out-dir ./ $(RUSTFLAGS) --rlib |>
 !rustbin = |> rustc %f -o %o $(RUSTFLAGS) |>
 
+!databake = |> echo "&[" > %o; cat %f | xxd -i >> %o; echo "]" >> %o |>
+
 .gitignore
