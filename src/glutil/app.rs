@@ -4,10 +4,8 @@ use cgmath::vector::{Vec2, Vec4};
 use cgmath::point::{Point2, Point3};
 use cgmath::aabb::{Aabb, Aabb2};
 use glfw;
-use texture::Texture;
+use atlas::{Sprite, Atlas};
 use shader::Shader;
-use fonter::Fonter;
-use stb;
 
 use gl_check;
 
@@ -135,8 +133,7 @@ pub struct App {
     draw_color: Color,
     window: ~glfw::Window,
     alive: bool,
-    fonter: ~Fonter,
-    texture: Option<~Texture>,
+    atlas: ~Atlas,
     shader: ~Shader,
     recter: Recter,
 }
@@ -157,20 +154,22 @@ impl App {
         gl2::viewport(0, 0, width as i32, height as i32);
         gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
 
-        let truetype = stb::truetype::Font::new(FONT_DATA.to_owned()).expect("Bad FONT_DATA.");
+        //let truetype = stb::truetype::Font::new(FONT_DATA.to_owned()).expect("Bad FONT_DATA.");
 
-        let ret = App {
+        let mut ret = App {
             resolution: Vec2::new(width as f32, height as f32),
             draw_color: Vec4::new(0u8, 0u8, 0u8, 255u8),
             window: ~window,
             alive: true,
-            fonter: ~Fonter::new(&truetype, FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS),
-            texture: None,
+            atlas: ~Atlas::new(),
             shader: ~Shader::new(VERTEX_SHADER, FRAGMENT_SHADER),
             recter: Recter::new(),
         };
 
+        ret.atlas.push_ttf(FONT_DATA.to_owned(), FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
+
         ret.shader.bind();
+        ret.atlas.bind();
 
         ret
     }
@@ -185,13 +184,12 @@ impl App {
             &Aabb2::new(&Point2::new(0.0f32, 0.0f32), &Point2::new(1.0f32, 1.0f32)),
             &Aabb2::new(&Point2::new(0.0f32, 0.0f32), &Point2::new(1.0f32, 1.0f32)),
             &Vec4::new(255u8, 0u8, 0u8, 255u8));
-        self.fonter.bind();
+        self.atlas.bind();
         self.recter.render(self.shader);
         // TODO: This is where we'd add rectangles of the characters to the
         // rect renderer.
     }
 
-    // TODO: Init texture
     // TODO: Draw texture rect
     // TODO: Draw filled rect
 

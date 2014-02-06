@@ -19,3 +19,4 @@ pub mod shader;
 pub mod texture;
 pub mod fonter;
 pub mod app;
+pub mod atlas;
