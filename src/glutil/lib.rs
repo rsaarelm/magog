@@ -9,7 +9,7 @@ extern mod opengles;
 extern mod calx;
 extern mod stb;
 extern mod cgmath;
-extern mod glfw;
+extern mod glfw = "glfw-rs";
 
 #[macro_escape]
 pub mod gl_check;

@@ -1,4 +1,4 @@
-extern mod glfw;
+extern mod glfw = "glfw-rs";
 extern mod opengles;
 extern mod cgmath;
 extern mod stb;

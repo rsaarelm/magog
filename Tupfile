@@ -14,7 +14,7 @@ include_rules
 # Need to use generated rules to manage Rust's crate output name mangling. Grab
 # the outputs into named bins so we can refer to them later as dependencies.
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
-run ./rust-rule.sh lib/glfw-rs/src/lib.rs {libglfw}
+run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
 run ./rust-rule.sh lib/rust-opengles/lib.rs {libgles}
 run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath}

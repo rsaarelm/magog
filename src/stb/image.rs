@@ -26,7 +26,7 @@ impl Image {
     pub fn load(path: &str, force_channels: uint) -> Option<Image> {
         let path = Path::new(path);
         if !path.exists() { return None; }
-        let data = File::open(&path).read_to_end();
+        let data = File::open(&path).read_to_end().unwrap();
         Image::load_from_memory(data, force_channels)
     }
 
