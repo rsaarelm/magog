@@ -19,11 +19,11 @@ fn compile_shader(src: &str, kind: GLuint) -> Result<GLuint, ~str> {
 
     let result = gl_check!(gl2::get_shader_iv(shader, gl2::COMPILE_STATUS));
     if result == 0 {
-	let err = gl_check!(gl2::get_shader_info_log(shader));
-	gl_check!(gl2::delete_shader(shader));
-	Err(err)
+        let err = gl_check!(gl2::get_shader_info_log(shader));
+        gl_check!(gl2::delete_shader(shader));
+        Err(err)
     } else {
-	Ok(shader)
+        Ok(shader)
     }
 }
 
@@ -35,36 +35,36 @@ fn link_program(vshader: GLuint, fshader: GLuint) -> Result<GLuint, ~str> {
 
     let result = gl_check!(gl2::get_program_iv(prog, gl2::LINK_STATUS));
     if result == 0 {
-	let err = gl_check!(gl2::get_program_info_log(prog));
-	gl_check!(gl2::delete_program(prog));
-	Err(err)
+        let err = gl_check!(gl2::get_program_info_log(prog));
+        gl_check!(gl2::delete_program(prog));
+        Err(err)
     } else {
-	Ok(prog)
+        Ok(prog)
     }
 }
 
 impl Shader {
     pub fn new(vert_src: &str, frag_src: &str) -> Shader {
-	let vshader = match compile_shader(vert_src, gl2::VERTEX_SHADER) {
-	    Ok(s) => s,
-	    Err(e) => fail!(e)
-	};
-	let fshader = match compile_shader(frag_src, gl2::FRAGMENT_SHADER) {
-	    Ok(s) => s,
-	    Err(e) => fail!(e)
-	};
-	Shader{
-	    vshader: vshader,
-	    fshader: fshader,
-	    program: match link_program(vshader, fshader) {
-		Ok(p) => p,
-		Err(e) => fail!(e)
-	    },
-	}
+        let vshader = match compile_shader(vert_src, gl2::VERTEX_SHADER) {
+            Ok(s) => s,
+            Err(e) => fail!(e)
+        };
+        let fshader = match compile_shader(frag_src, gl2::FRAGMENT_SHADER) {
+            Ok(s) => s,
+            Err(e) => fail!(e)
+        };
+        Shader{
+            vshader: vshader,
+            fshader: fshader,
+            program: match link_program(vshader, fshader) {
+                Ok(p) => p,
+                Err(e) => fail!(e)
+            },
+        }
     }
 
     pub fn bind(&self) {
-	gl_check!(gl2::use_program(self.program));
+        gl_check!(gl2::use_program(self.program));
     }
 
     pub fn attrib(&self, name: &str) -> Option<GLuint> {
@@ -86,8 +86,8 @@ impl Shader {
 
 impl Drop for Shader {
     fn drop(&mut self) {
-	gl_check!(gl2::delete_program(self.program));
-	gl_check!(gl2::delete_shader(self.vshader));
-	gl_check!(gl2::delete_shader(self.fshader));
+        gl_check!(gl2::delete_program(self.program));
+        gl_check!(gl2::delete_shader(self.vshader));
+        gl_check!(gl2::delete_shader(self.fshader));
     }
 }

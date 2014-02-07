@@ -47,6 +47,6 @@ impl Texture {
 
 impl Drop for Texture {
     fn drop(&mut self) {
-	gl_check!(gl2::delete_textures(&[self.id]));
+        gl_check!(gl2::delete_textures(&[self.id]));
     }
 }

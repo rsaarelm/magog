@@ -4,7 +4,7 @@ pub fn gl_check_and_fail(site: &str) {
     use opengles::gl2;
     let err = gl2::get_error();
     if err != gl2::NO_ERROR {
-	fail!("OpenGL error at '{}': {}", site, err);
+        fail!("OpenGL error at '{}': {}", site, err);
     }
 }
 
@@ -15,8 +15,8 @@ macro_rules! gl_check
 (
     ($func:expr) =>
     ({
-	let ret = $func;
-	gl_check::gl_check_and_fail(stringify!($func));
-	ret
+        let ret = $func;
+        gl_check::gl_check_and_fail(stringify!($func));
+        ret
     });
 )

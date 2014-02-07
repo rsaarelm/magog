@@ -11,8 +11,8 @@ extern {
         comp: *mut c_int, req_comp: c_int) -> *c_uchar;
 
     fn stbi_write_png(
-	filename: *c_char, w: c_int, h: c_int, comp: c_int,
-	data: *c_void, stride_in_bytes: c_int);
+        filename: *c_char, w: c_int, h: c_int, comp: c_int,
+        data: *c_void, stride_in_bytes: c_int);
 }
 
 pub struct Image {
@@ -58,22 +58,22 @@ impl Image {
     }
 
     pub fn new(width: uint, height: uint, bpp: uint) -> Image {
-	assert!(bpp <= 4);
-	Image{
-	    width: width,
-	    height: height,
-	    bpp: bpp,
-	    pixels: vec::from_elem(width * height * bpp, 0u8),
-	}
+        assert!(bpp <= 4);
+        Image{
+            width: width,
+            height: height,
+            bpp: bpp,
+            pixels: vec::from_elem(width * height * bpp, 0u8),
+        }
     }
 
     pub fn save_png(&self, path: &str) {
-	unsafe {
-	    path.to_c_str().with_ref(|bytes| {
-		stbi_write_png(
-		    bytes, self.width as c_int, self.height as c_int,
-		    self.bpp as c_int, self.pixels.as_ptr() as *c_void, 0);
-	    })
-	}
+        unsafe {
+            path.to_c_str().with_ref(|bytes| {
+                stbi_write_png(
+                    bytes, self.width as c_int, self.height as c_int,
+                    self.bpp as c_int, self.pixels.as_ptr() as *c_void, 0);
+            })
+        }
     }
 }

@@ -16,6 +16,6 @@ pub fn randomDb<R: Rng>(rng: &mut R) -> f64 {
 
 pub fn main() {
     println!("{}\n",
-	text::wrap_lines(20, "Crunchy: A program for testing rules and object interactions."));
+        text::wrap_lines(20, "Crunchy: A program for testing rules and object interactions."));
     println!("{}\n", randomDb(&mut rand::task_rng()));
 }
