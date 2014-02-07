@@ -9,3 +9,4 @@ extern mod cgmath;
 
 pub mod text;
 pub mod pack_rect;
+pub mod rectutil;
