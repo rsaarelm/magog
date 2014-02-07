@@ -78,7 +78,6 @@ impl AtlasRect {
         tex_intrect: &Aabb2<int>,
         tex_dim: &Vec2<int>) -> AtlasRect {
         let tex_scale = Vec2::new(1f32 / tex_dim.x as f32, 1f32 / tex_dim.y as f32);
-
         return AtlasRect {
             bounds: to_float_rect(bounds_intrect, &Vec2::new(1f32, 1f32)),
             texcoords: to_float_rect(tex_intrect, &tex_scale),

@@ -1,4 +1,3 @@
-use std::mem;
 use opengles::gl2;
 use cgmath::vector::{Vec2, Vec4};
 use cgmath::point::{Point2, Point3};
@@ -13,34 +12,38 @@ static VERTEX_SHADER: &'static str =
     "#version 130
     in vec3 in_pos;
     in vec2 in_texcoord;
+    in vec4 in_color;
 
-    uniform sampler2D texture;
     out vec2 texcoord;
+    out vec4 color;
 
     void main(void) {
         texcoord = in_texcoord;
+        color = in_color;
         gl_Position = vec4(in_pos, 1.0);
     }
     ";
 
 static FRAGMENT_SHADER: &'static str =
     "#version 130
-    uniform sampler2D texture;
+    uniform sampler2D textureUnit;
     in vec2 texcoord;
+    in vec4 color;
 
     void main(void) {
-        vec4 col = texture2D(texture, texcoord);
-        gl_FragColor = vec4(1, 1, 1, col.w);
+        gl_FragColor = vec4(
+            color.x, color.y, color.z,
+            color.w * texture(textureUnit, texcoord).w);
     }
     ";
 
 static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
 static FONT_SIZE: f32 = 13.0;
-static FONT_START_CHAR: uint = 32;
-static FONT_NUM_CHARS: uint = 95;
+static FONT_START_CHAR: uint = 33;
+static FONT_NUM_CHARS: uint = 94;
 
 // TODO: Make a proper type.
-type Color = Vec4<u8>;
+type Color = Vec4<f32>;
 
 struct Recter {
     vertices: ~[Point3<f32>],
@@ -70,6 +73,7 @@ impl Recter {
         self.texcoords.push(Point2::new(texcoords.max().x, texcoords.min().y));
         self.colors.push(*color);
 
+
         self.vertices.push(Point3::new(area.min().x, area.min().y, 0.0));
         self.texcoords.push(Point2::new(texcoords.min().x, texcoords.max().y));
         self.colors.push(*color);
@@ -81,6 +85,7 @@ impl Recter {
         self.vertices.push(Point3::new(area.max().x, area.min().y, 0.0));
         self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
         self.colors.push(*color);
+
     }
 
     fn clear(&mut self) {
@@ -90,6 +95,9 @@ impl Recter {
     }
 
     fn render(&mut self, shader: &Shader) {
+        if self.vertices.len() == 0 {
+            return;
+        }
         // Generate buffers.
         // TODO: Wrap STREAM_DRAW buffers into RAII handles.
 	let gen = gl_check!(gl2::gen_buffers(3));
@@ -108,18 +116,22 @@ impl Recter {
 
         // Bind shader vars.
         let in_pos = shader.attrib("in_pos").unwrap();
-	gl_check!(gl2::enable_vertex_attrib_array(in_pos));
 	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
-	gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, mem::size_of::<Point3<f32>>() as i32, 0));
+	gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, 0, 0));
+	gl_check!(gl2::enable_vertex_attrib_array(in_pos));
         let in_texcoord = shader.attrib("in_texcoord").unwrap();
-	gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
 	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
-	gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, mem::size_of::<Point2<f32>>() as i32, 0));
-        // TODO: Color in shader
+	gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
+	gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
+        let in_color = shader.attrib("in_color").unwrap();
+	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
+	gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
+	gl_check!(gl2::enable_vertex_attrib_array(in_color));
 
 	gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
 	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
 
+	gl_check!(gl2::disable_vertex_attrib_array(in_color));
 	gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
 	gl_check!(gl2::disable_vertex_attrib_array(in_pos));
 
@@ -158,7 +170,7 @@ impl App {
 
         let mut ret = App {
             resolution: Vec2::new(width as f32, height as f32),
-            draw_color: Vec4::new(0u8, 0u8, 0u8, 255u8),
+            draw_color: Vec4::new(0.5f32, 1.0f32, 0.5f32, 1.0f32),
             window: ~window,
             alive: true,
             atlas: ~Atlas::new(),
@@ -166,6 +178,11 @@ impl App {
             recter: Recter::new(),
         };
 
+        // Hack for solid rectangles, push a solid single-pixel sprite in.
+        // Assume this'll end up as position 0.
+        ret.atlas.push(~Sprite::new_alpha(
+                &Aabb2::new(&Point2::new(0, 0), &Point2::new(1, 1)),
+                ~[255u8]));
         ret.atlas.push_ttf(FONT_DATA.to_owned(), FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
 
         ret.shader.bind();
@@ -179,22 +196,33 @@ impl App {
     }
 
     pub fn draw_string(&mut self, _pos: Vec2<f32>, _text: &str) {
-        //self.fonter.test(self.shader);
+        // TODO: Draw an actual string here.
+        let spr = self.atlas.get(33);
         self.recter.add(
-            &Aabb2::new(&Point2::new(0.0f32, 0.0f32), &Point2::new(1.0f32, 1.0f32)),
-            &Aabb2::new(&Point2::new(0.0f32, 0.0f32), &Point2::new(1.0f32, 1.0f32)),
-            &Vec4::new(255u8, 0u8, 0u8, 255u8));
-        self.atlas.bind();
-        self.recter.render(self.shader);
-        // TODO: This is where we'd add rectangles of the characters to the
-        // rect renderer.
+            //&spr.bounds,
+            &Aabb2::new(&Point2::new(0f32, 0f32), &Point2::new(1f32, 1f32)),
+            &spr.texcoords,
+            &self.draw_color);
     }
 
-    // TODO: Draw texture rect
-    // TODO: Draw filled rect
+    pub fn fill_rect(&mut self, rect: &Aabb2<f32>) {
+        let magic_solid_texture_index = 0;
+        self.recter.add(
+            rect,
+            &self.atlas.get(magic_solid_texture_index).texcoords,
+            &self.draw_color);
+    }
+
+    pub fn draw_sprite(&mut self, idx: uint, offset: &Vec2<f32>) {
+        let spr = self.atlas.get(idx);
+        self.recter.add(
+            &spr.bounds.add_v(offset),
+            &spr.texcoords,
+            &self.draw_color);
+    }
 
     pub fn flush(&mut self) {
-        // TODO: Recter gets rendered here.
+        self.recter.render(self.shader);
         self.window.swap_buffers();
         if self.window.should_close() {
             self.alive = false
