@@ -1,5 +1,5 @@
 use opengles::gl2;
-use opengles::gl2::{GLuint};
+use opengles::gl2::{GLint, GLuint};
 
 use gl_check;
 
@@ -75,12 +75,12 @@ impl Shader {
         Some(result as GLuint)
     }
 
-    pub fn uniform(&self, name: &str) -> Option<GLuint> {
+    pub fn uniform(&self, name: &str) -> Option<GLint> {
         let result = gl_check!(gl2::get_uniform_location(self.program, name));
         if result < 0 {
             return None;
         }
-        Some(result as GLuint)
+        Some(result as GLint)
     }
 }
 

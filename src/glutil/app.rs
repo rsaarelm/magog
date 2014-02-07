@@ -1,5 +1,6 @@
+use std::num::min;
 use opengles::gl2;
-use cgmath::vector::{Vec2, Vec4};
+use cgmath::vector::{Vector, Vec2, Vec4};
 use cgmath::point::{Point2, Point3};
 use cgmath::aabb::{Aabb, Aabb2};
 use glfw;
@@ -13,6 +14,7 @@ static VERTEX_SHADER: &'static str =
     in vec3 in_pos;
     in vec2 in_texcoord;
     in vec4 in_color;
+    uniform mat4 transform;
 
     out vec2 texcoord;
     out vec4 color;
@@ -20,7 +22,7 @@ static VERTEX_SHADER: &'static str =
     void main(void) {
         texcoord = in_texcoord;
         color = in_color;
-        gl_Position = vec4(in_pos, 1.0);
+        gl_Position = transform * vec4(in_pos, 1.0);
     }
     ";
 
@@ -43,7 +45,7 @@ static FONT_START_CHAR: uint = 33;
 static FONT_NUM_CHARS: uint = 94;
 
 // TODO: Make a proper type.
-type Color = Vec4<f32>;
+pub type Color = Vec4<f32>;
 
 struct Recter {
     vertices: ~[Point3<f32>],
@@ -62,28 +64,28 @@ impl Recter {
 
     fn add(&mut self, area: &Aabb2<f32>, texcoords: &Aabb2<f32>, color: &Color) {
         self.vertices.push(Point3::new(area.min().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.max().y));
-        self.colors.push(*color);
-
-        self.vertices.push(Point3::new(area.min().x, area.max().y, 0.0));
         self.texcoords.push(Point2::new(texcoords.min().x, texcoords.min().y));
         self.colors.push(*color);
 
+        self.vertices.push(Point3::new(area.min().x, area.max().y, 0.0));
+        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.max().y));
+        self.colors.push(*color);
+
         self.vertices.push(Point3::new(area.max().x, area.max().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.min().y));
+        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
         self.colors.push(*color);
 
 
         self.vertices.push(Point3::new(area.min().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.max().y));
+        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.min().y));
         self.colors.push(*color);
 
         self.vertices.push(Point3::new(area.max().x, area.max().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.min().y));
+        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
         self.colors.push(*color);
 
         self.vertices.push(Point3::new(area.max().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
+        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.min().y));
         self.colors.push(*color);
 
     }
@@ -94,7 +96,10 @@ impl Recter {
         self.colors = ~[];
     }
 
-    fn render(&mut self, shader: &Shader) {
+    fn render(
+        &mut self,
+        shader: &Shader, scale: &Vec2<f32>,
+        offset: &Vec2<f32>) {
         if self.vertices.len() == 0 {
             return;
         }
@@ -128,6 +133,22 @@ impl Recter {
 	gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
 	gl_check!(gl2::enable_vertex_attrib_array(in_color));
 
+        let x = 2f32 / scale.x;
+        let y = -2f32 / scale.y;
+        let dx = -1f32 + 2.0 * offset.x / scale.x;
+        let dy = 1f32 - 2.0 * offset.y / scale.y;
+        let transform = &[
+            x,    0f32, 0f32, 0f32,
+            0f32, y,    0f32, 0f32,
+            0f32, 0f32, 1f32, 0f32,
+            dx,   dy,   0f32, 1f32,
+            ];
+        gl_check!(gl2::uniform_matrix_4fv(
+                shader.uniform("transform").unwrap(),
+                false,
+                transform));
+
+        // Draw!
 	gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
 	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
 
@@ -183,7 +204,8 @@ impl App {
         ret.atlas.push(~Sprite::new_alpha(
                 &Aabb2::new(&Point2::new(0, 0), &Point2::new(1, 1)),
                 ~[255u8]));
-        ret.atlas.push_ttf(FONT_DATA.to_owned(), FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
+        ret.atlas.push_ttf(FONT_DATA.to_owned(),
+            FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
 
         ret.shader.bind();
         ret.atlas.bind();
@@ -195,12 +217,11 @@ impl App {
         self.draw_color = *color;
     }
 
-    pub fn draw_string(&mut self, _pos: Vec2<f32>, _text: &str) {
+    pub fn draw_string(&mut self, offset: &Vec2<f32>, _text: &str) {
         // TODO: Draw an actual string here.
         let spr = self.atlas.get(33);
         self.recter.add(
-            //&spr.bounds,
-            &Aabb2::new(&Point2::new(0f32, 0f32), &Point2::new(1f32, 1f32)),
+            &spr.bounds.add_v(offset),
             &spr.texcoords,
             &self.draw_color);
     }
@@ -222,7 +243,23 @@ impl App {
     }
 
     pub fn flush(&mut self) {
-        self.recter.render(self.shader);
+        gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+        let (width, height) = self.window.get_size();
+        gl2::viewport(0, 0, width, height);
+        let mut scale = min(
+            width as f32 / self.resolution.x,
+            height as f32 / self.resolution.y);
+        if scale > 1.0 {
+            scale = scale.floor();
+        }
+
+        let offset = Vec2::new(width as f32, height as f32)
+            .sub_v(&self.resolution.mul_s(scale))
+            .div_s(2.0 * scale);
+
+        self.recter.render(
+            self.shader, &Vec2::new(width as f32 / scale, height as f32 / scale),
+            &offset);
         self.window.swap_buffers();
         if self.window.should_close() {
             self.alive = false

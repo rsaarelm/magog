@@ -47,14 +47,14 @@ impl Sprite {
     }
 
     pub fn crop(&mut self) {
-        let (mut min_x, mut min_y) = (self.bounds.max().x - 1, self.bounds.max().y - 1);
-        let (mut max_x, mut max_y) = (self.bounds.min().x, self.bounds.min().y);
+        let (mut min_x, mut min_y) = (self.bounds.max().x, self.bounds.max().y);
+        let (mut max_x, mut max_y) = (self.bounds.min().x - 1, self.bounds.min().y - 1);
         for p in self.bounds.points() {
             if self.at(&p) > 0u8 {
                 min_x = min(min_x, p.x);
                 min_y = min(min_y, p.y);
-                max_x = max(max_x, p.x);
-                max_y = max(max_y, p.y);
+                max_x = max(max_x, p.x + 1);
+                max_y = max(max_y, p.y + 1);
             }
         }
         if min_x >= max_x || min_y >= max_y {
