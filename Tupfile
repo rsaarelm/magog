@@ -27,5 +27,6 @@ run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgles}
 
 # Testing. All unit test runners are expected to start with 'test_'.
 : src/calx/lib.rs | {libcalx} |> !rustbin --test |> test_calx
+: src/test/test_glfill.rs | {libcgmath} {libglutil} {libcalx} libglfw3.a libstb.a |> !rustbin --test $(GLFW_LINKARGS) |> test_glfill
 
 : lib/cgmath-rs/src/test/test.rs | {libcgmath} |> !rustbin --test |> test_cgmath

@@ -1,7 +1,4 @@
-extern mod glfw = "glfw-rs";
-extern mod opengles;
 extern mod cgmath;
-extern mod stb;
 extern mod glutil;
 extern mod calx;
 
@@ -14,7 +11,6 @@ use calx::rectutil::RectUtil;
 pub fn main() {
     let mut app = App::new(640, 360, "Shiny!");
     while app.alive {
-        glfw::poll_events();
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
         app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));

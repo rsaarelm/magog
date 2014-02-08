@@ -275,6 +275,8 @@ impl App {
             self.shader, &Vec2::new(width as f32 / scale, height as f32 / scale),
             &offset);
         self.window.swap_buffers();
+
+        glfw::poll_events();
         if self.window.should_close() {
             self.alive = false
         }
