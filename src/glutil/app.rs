@@ -105,33 +105,33 @@ impl Recter {
         }
         // Generate buffers.
         // TODO: Wrap STREAM_DRAW buffers into RAII handles.
-	let gen = gl_check!(gl2::gen_buffers(3));
-	let vert = gen[0];
-	let tex = gen[1];
-	let col = gen[2];
+        let gen = gl_check!(gl2::gen_buffers(3));
+        let vert = gen[0];
+        let tex = gen[1];
+        let col = gen[2];
 
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
-	gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.vertices, gl2::STREAM_DRAW));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
+        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.vertices, gl2::STREAM_DRAW));
 
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
-	gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.texcoords, gl2::STREAM_DRAW));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
+        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.texcoords, gl2::STREAM_DRAW));
 
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
-	gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.colors, gl2::STREAM_DRAW));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
+        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.colors, gl2::STREAM_DRAW));
 
         // Bind shader vars.
         let in_pos = shader.attrib("in_pos").unwrap();
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
-	gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, 0, 0));
-	gl_check!(gl2::enable_vertex_attrib_array(in_pos));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
+        gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, 0, 0));
+        gl_check!(gl2::enable_vertex_attrib_array(in_pos));
         let in_texcoord = shader.attrib("in_texcoord").unwrap();
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
-	gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
-	gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
+        gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
+        gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
         let in_color = shader.attrib("in_color").unwrap();
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
-	gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
-	gl_check!(gl2::enable_vertex_attrib_array(in_color));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
+        gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
+        gl_check!(gl2::enable_vertex_attrib_array(in_color));
 
         let x = 2f32 / scale.x;
         let y = -2f32 / scale.y;
@@ -149,12 +149,12 @@ impl Recter {
                 transform));
 
         // Draw!
-	gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
-	gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
+        gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
+        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
 
-	gl_check!(gl2::disable_vertex_attrib_array(in_color));
-	gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
-	gl_check!(gl2::disable_vertex_attrib_array(in_pos));
+        gl_check!(gl2::disable_vertex_attrib_array(in_color));
+        gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
+        gl_check!(gl2::disable_vertex_attrib_array(in_pos));
 
         self.clear();
         gl2::delete_buffers(gen);
@@ -217,13 +217,26 @@ impl App {
         self.draw_color = *color;
     }
 
-    pub fn draw_string(&mut self, offset: &Vec2<f32>, _text: &str) {
-        // TODO: Draw an actual string here.
-        let spr = self.atlas.get(33);
-        self.recter.add(
-            &spr.bounds.add_v(offset),
-            &spr.texcoords,
-            &self.draw_color);
+    pub fn draw_string(&mut self, offset: &Vec2<f32>, text: &str) {
+        let first_font_idx = 1;
+
+        let mut offset = *offset;
+        for c in text.chars() {
+            let i = c as u32;
+            if i == 32 {
+                // XXX: Space hack.
+                offset.add_self_v(&Vec2::new((FONT_SIZE / 2.0).floor(), 0.0));
+            } else if i >= FONT_START_CHAR as u32
+                && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
+                let spr = self.atlas.get(
+                    (first_font_idx + i) as uint - FONT_START_CHAR);
+                self.recter.add(
+                    &spr.bounds.add_v(&offset),
+                    &spr.texcoords,
+                    &self.draw_color);
+                offset.add_self_v(&Vec2::new(spr.bounds.dim().x + 1.0, 0.0));
+            }
+        }
     }
 
     pub fn fill_rect(&mut self, rect: &Aabb2<f32>) {
