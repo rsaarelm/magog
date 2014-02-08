@@ -4,8 +4,8 @@ use std::os;
 use std::run::{Process, ProcessOptions};
 
 pub fn main() {
-    for i in fs::readdir(&os::getcwd()).iter() {
-        let stat = i.stat();
+    for i in fs::readdir(&os::getcwd()).unwrap().iter() {
+        let stat = i.stat().unwrap();
         if stat.kind == io::TypeFile && (stat.perm & io::UserExecute != 0) {
             let name = i.filename_str().unwrap();
             if name.starts_with("test_") {
