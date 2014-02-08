@@ -217,6 +217,10 @@ impl App {
         ret
     }
 
+    pub fn add_sprite(&mut self, sprite: ~Sprite) -> uint {
+        self.atlas.push(sprite)
+    }
+
     pub fn set_color(&mut self, color: &Color) {
         self.draw_color = *color;
     }
@@ -261,6 +265,7 @@ impl App {
 
     pub fn flush(&mut self) {
         gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+        self.atlas.bind();
         let (width, height) = self.window.get_size();
         gl2::viewport(0, 0, width, height);
         let mut scale = min(

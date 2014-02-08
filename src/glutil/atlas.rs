@@ -5,7 +5,7 @@ use std::iter::Iterator;
 
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
-use cgmath::vector::Vec2;
+use cgmath::vector::{Vector, Vec2};
 
 use calx::pack_rect::pack_rects;
 use calx::rectutil::RectUtil;
@@ -29,6 +29,28 @@ impl Sprite {
             data: data
         };
         ret.crop();
+        ret
+    }
+
+    // Split a large image into small sprites.
+    pub fn new_alpha_set(
+        sprite_dim: &Vec2<int>, sheet_dim: &Vec2<int>,
+        data: ~[u8], offset: &Vec2<int>) -> ~[Sprite] {
+        let mut ret = ~[];
+        for r in range(0, sheet_dim.y / sprite_dim.y) {
+            for c in range(0, sheet_dim.x / sprite_dim.x) {
+                let mut sprite_data = vec::from_elem((sprite_dim.x * sprite_dim.y) as uint, 0u8);
+                let p1 : Point2<int> = Point::from_vec(offset);
+                let p2 : Point2<int> = Point::from_vec(&offset.add_v(sprite_dim));
+                let bounds = Aabb2::new(&p1, &p2);
+                for p in bounds.points() {
+                    let data_offset = c * sprite_dim.x + p.x - offset.x + sheet_dim.x *
+                        (r * sprite_dim.y + p.y - offset.y);
+                    sprite_data[bounds.scan_pos(&p)] = data[data_offset];
+                }
+                ret.push(Sprite::new_alpha(&bounds, sprite_data));
+            }
+        }
         ret
     }
 
@@ -164,9 +186,10 @@ impl Atlas {
         }
     }
 
-    pub fn push(&mut self, sprite: ~Sprite) {
+    pub fn push(&mut self, sprite: ~Sprite) -> uint {
         self.dirty();
         self.sprites.push(sprite);
+        self.sprites.len() - 1
     }
 
     pub fn push_ttf(
