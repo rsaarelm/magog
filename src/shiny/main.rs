@@ -7,7 +7,7 @@ extern mod calx;
 
 use glutil::app::App;
 use cgmath::aabb::{Aabb2};
-use cgmath::point::{Point, Point2};
+use cgmath::point::{Point};
 use cgmath::vector::{Vec2, Vec4};
 use calx::rectutil::RectUtil;
 
@@ -16,11 +16,10 @@ pub fn main() {
     while app.alive {
         glfw::poll_events();
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
-        app.fill_rect(&Aabb2::new(
-                &Point2::new(0.0f32, 0.0f32),
-                &Point2::new(640.0f32, 360.0f32)));
+        app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
         app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
-        for p in Aabb2::new(&Point2::new(0f32, 0f32), &Point2::new(213f32, 120f32)).points() {
+        let area : Aabb2<f32> = RectUtil::new(0.0f32, 0.0f32, 213.0f32, 120.0f32);
+        for p in area.points() {
             app.fill_rect(&Aabb2::new(
                     &p.mul_s(3f32),
                     &p.mul_s(3f32).add_v(&Vec2::new(2f32, 2f32))));

@@ -3,8 +3,13 @@ use cgmath::aabb::{Aabb, Aabb2};
 use std::num::{one};
 
 pub trait RectUtil<S: Primitive, I: Iterator<Point2<S>>> {
+    // Iterate all integer points inside the rectangle.
     fn points(&self) -> I;
+    // Get the scanline position (0 at top left corner, increasing along
+    // positive x-axis) for a point inside the rectangle.
     fn scan_pos(&self, pos: &Point2<S>) -> int;
+    // Convenience constructor with naked coordinates.
+    fn new(x1: S, y1: S, x2: S, y2: S) -> Self;
 }
 
 pub struct RectIter<S> {
@@ -53,5 +58,9 @@ impl<S: Primitive> RectUtil<S, RectIter<S>> for Aabb2<S> {
         let delta_y = pos.y - self.min().y;
         let pitch = self.max().x - self.min().x;
         (delta_x + pitch * delta_y).to_int().unwrap()
+    }
+
+    fn new(x1: S, y1: S, x2: S, y2: S) -> Aabb2<S> {
+        Aabb2::new(&Point2::new(x1, y1), &Point2::new(x2, y2))
     }
 }

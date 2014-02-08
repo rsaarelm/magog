@@ -60,7 +60,7 @@ impl Sprite {
         if min_x >= max_x || min_y >= max_y {
             // Empty area.
             self.data = ~[];
-            self.bounds = Aabb2::new(&Point2::new(0, 0), &Point2::new(0, 0));
+            self.bounds = RectUtil::new(0, 0, 0, 0);
             return;
         }
         // TODO: Shrink bounds, create new data array.
@@ -84,13 +84,9 @@ impl AtlasRect {
         };
 
         fn to_float_rect(rect: &Aabb2<int>, scale: &Vec2<f32>) -> Aabb2<f32> {
-            Aabb2::new(
-                &Point2::new(
-                    rect.min().x as f32 * scale.x,
-                    rect.min().y as f32 * scale.y),
-                &Point2::new(
-                    rect.max().x as f32 * scale.x,
-                    rect.max().y as f32 * scale.y))
+            RectUtil::new(
+                rect.min().x as f32 * scale.x, rect.min().y as f32 * scale.y,
+                rect.max().x as f32 * scale.x, rect.max().y as f32 * scale.y)
         }
     }
 }
@@ -125,7 +121,7 @@ impl Atlas {
         let total_volume = dims.iter().map(|&v| v.x * v.y).sum();
         let atlas_dim = next_power_of_two(sqrt(total_volume as f64) as uint) as int;
 
-        let base = Aabb2::new(&Point2::new(0, 0), &Point2::new(atlas_dim, atlas_dim));
+        let base = RectUtil::new(0, 0, atlas_dim, atlas_dim);
         let (base, pack) = pack_rects(&base, dims);
         // Cut off the extra padding
         let pack : ~[Aabb2<int>] = pack.iter().map(|&rect| Aabb2::new(

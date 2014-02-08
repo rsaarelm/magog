@@ -3,6 +3,7 @@ use opengles::gl2;
 use cgmath::vector::{Vector, Vec2, Vec4};
 use cgmath::point::{Point2, Point3};
 use cgmath::aabb::{Aabb, Aabb2};
+use calx::rectutil::RectUtil;
 use glfw;
 use atlas::{Sprite, Atlas};
 use shader::Shader;
@@ -202,7 +203,7 @@ impl App {
         // Hack for solid rectangles, push a solid single-pixel sprite in.
         // Assume this'll end up as position 0.
         ret.atlas.push(~Sprite::new_alpha(
-                &Aabb2::new(&Point2::new(0, 0), &Point2::new(1, 1)),
+                &RectUtil::new(0, 0, 1, 1),
                 ~[255u8]));
         ret.atlas.push_ttf(FONT_DATA.to_owned(),
             FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
