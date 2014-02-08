@@ -22,6 +22,7 @@ run ./rust-rule.sh src/stb/lib.rs {libstb}
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgles} {libcgmath} {libglfw} gen/font_data.rs
 
 : src/shiny/main.rs | {libcgmath} {libglfw} {libgles} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
+: src/roamy/main.rs | {libcgmath} {libglfw} {libgles} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> roamy
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
 : src/runtests/main.rs |> !rustbin |> runtests
 
