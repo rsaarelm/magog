@@ -63,7 +63,21 @@ impl Sprite {
             self.bounds = RectUtil::new(0, 0, 0, 0);
             return;
         }
-        // TODO: Shrink bounds, create new data array.
+        let new_bounds : Aabb2<int> = RectUtil::new(min_x, min_y, max_x, max_y);
+        if new_bounds != self.bounds {
+            assert!(
+                new_bounds.min().x > self.bounds.min().x ||
+                new_bounds.min().y > self.bounds.min().y ||
+                new_bounds.max().x < self.bounds.max().x ||
+                new_bounds.max().y < self.bounds.max().y);
+            let mut new_data = vec::from_elem(new_bounds.volume() as uint, 0u8);
+            for p in new_bounds.points() {
+                new_data[new_bounds.scan_pos(&p)] =
+                    self.data[self.bounds.scan_pos(&p)];
+            }
+            self.data = new_data;
+            self.bounds = new_bounds;
+        }
     }
 }
 
