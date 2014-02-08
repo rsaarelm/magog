@@ -27,6 +27,8 @@ static VERTEX_SHADER: &'static str =
     }
     ";
 
+// Allow opaque shading: All nonzero alpha values are treated as opaque, but
+// they also modulate RGB luminance so low alpha means a darker shade.
 static FRAGMENT_SHADER: &'static str =
     "#version 130
     uniform sampler2D textureUnit;
@@ -34,9 +36,10 @@ static FRAGMENT_SHADER: &'static str =
     in vec4 color;
 
     void main(void) {
+        float a = texture(textureUnit, texcoord).w;
         gl_FragColor = vec4(
-            color.x, color.y, color.z,
-            color.w * texture(textureUnit, texcoord).w);
+            color.x * a, color.y * a, color.z * a,
+            a > 0 ? 1.0 : 0.0);
     }
     ";
 
