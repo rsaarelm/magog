@@ -4,7 +4,7 @@
 #[feature(globs)];
 #[crate_type = "rlib"];
 
-extern mod extra;
+extern mod collections;
 extern mod cgmath;
 
 pub mod text;

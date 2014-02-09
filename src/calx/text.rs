@@ -1,6 +1,6 @@
 use std::str;
-use extra::container::Deque;
-use extra::ringbuf::RingBuf;
+use collections::Deque;
+use collections::ringbuf::RingBuf;
 
 struct WrapLineIterator<T> {
     /// Input iterator
