@@ -18,6 +18,7 @@ use calx::text::Map2DUtil;
 enum TerrainType {
     Wall,
     Floor,
+    Water,
 }
 
 struct Area {
@@ -31,17 +32,17 @@ impl Area {
         };
         static TERRAIN: &'static str = "
 ################################
-#....###########################
-#...........#############.....##
+#~~..###########################
+#~..........#############.....##
 #....##.###.####....##....###.##
 #....##.###......##.##.##..#..##
-#######.########.##....##.###.##
-#######.########....#####.....##
+#######~########.##....##.###.##
+#######~########....#####.....##
 ###........######.#######.######
-###..####..##...........#.######
-##...####...#...........#.######
-##...####...#................###
-###..####..##...........##.#####
+###..####..##~~~........#.######
+##...####...#~~~........#.######
+##...####...#~~~.............###
+###..####..##.~.........##.#####
 ###.......###...........##..####
 ######.#########.#########.#####
 ######...........#########.#####
@@ -49,6 +50,9 @@ impl Area {
         for (c, x, y) in TERRAIN.chars().map2d() {
             if c == '.' {
                 ret.set.insert(Point2::new(x as i8, y as i8), Floor);
+            }
+            if c == '~' {
+                ret.set.insert(Point2::new(x as i8, y as i8), Water);
             }
         }
         ret
@@ -77,21 +81,34 @@ pub fn main() {
     app.add_sprite(~sprites[4].clone());
     app.add_sprite(~sprites[5].clone());
     app.add_sprite(~sprites[6].clone());
+    app.add_sprite(~sprites[7].clone());
     let area = Area::new();
     while app.alive {
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
         app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
+        // XXX: Horrible prototype code, figure out cleaning.
         let rect : Aabb2<i8> = RectUtil::new(0i8, 0i8, 16i8, 16i8);
+        // Draw floors
         for p in rect.points() {
             let offset = Vec2::new(
                 320.0 + 16.0 * (p.x as f32) - 16.0 * (p.y as f32),
                 24.0 + 8.0 * (p.x as f32) + 8.0 * (p.y as f32));
-            app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
-            // Floor
-            app.draw_sprite(idx, &offset);
+            if area.get(&p) == Water {
+                app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
+                app.draw_sprite(idx + 7, &offset);
+            } else {
+                app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
+                app.draw_sprite(idx, &offset);
+            }
+        }
+
+        // Draw walls
+        for p in rect.points() {
+            let offset = Vec2::new(
+                320.0 + 16.0 * (p.x as f32) - 16.0 * (p.y as f32),
+                24.0 + 8.0 * (p.x as f32) + 8.0 * (p.y as f32));
             if area.get(&p) == Wall {
-                // XXX: Horrible prototype code, figure out cleaning.
                 app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
                 let left = area.get(&p.add_v(&Vec2::new(-1i8, 0i8))) == Wall;
                 let rear = area.get(&p.add_v(&Vec2::new(-1i8, -1i8))) == Wall;
