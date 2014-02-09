@@ -12,8 +12,7 @@ use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2, Vec4};
 use calx::rectutil::RectUtil;
 use stb::image::Image;
-
-use std::rand::random;
+use calx::text::Map2DUtil;
 
 #[deriving(Eq)]
 enum TerrainType {
@@ -30,10 +29,27 @@ impl Area {
         let mut ret = Area {
             set: HashMap::new(),
         };
-        for _i in range(0, 256) {
-            let x : i8 = random();
-            let y : i8 = random();
-            ret.set.insert(Point2::new(x % 16, y % 16), Floor);
+        static TERRAIN: &'static str = "
+################################
+#....###########################
+#...........#############.....##
+#....##.###.####....##....###.##
+#....##.###......##.##.##..#..##
+#######.########.##....##.###.##
+#######.########....#####.....##
+###........######.#######.######
+###..####..##...........#.######
+##...####...#...........#.######
+##...####...#................###
+###..####..##...........##.#####
+###.......###...........##..####
+######.#########.#########.#####
+######...........#########.#####
+################################";
+        for (c, x, y) in TERRAIN.chars().map2d() {
+            if c == '.' {
+                ret.set.insert(Point2::new(x as i8, y as i8), Floor);
+            }
         }
         ret
     }
@@ -60,20 +76,12 @@ pub fn main() {
     app.add_sprite(~sprites[3].clone());
     app.add_sprite(~sprites[4].clone());
     app.add_sprite(~sprites[5].clone());
+    app.add_sprite(~sprites[6].clone());
     let area = Area::new();
-    // TODO: Draw a map view on screen with tiles.
     while app.alive {
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
         app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
-        /*
-        let area : Aabb2<f32> = RectUtil::new(0.0f32, 0.0f32, 213.0f32, 120.0f32);
-        for p in area.points() {
-            app.fill_rect(&Aabb2::new(
-                    &p.mul_s(2f32),
-                    &p.mul_s(2f32).add_v(&Vec2::new(1f32, 1f32))));
-        }
-        */
         let rect : Aabb2<i8> = RectUtil::new(0i8, 0i8, 16i8, 16i8);
         for p in rect.points() {
             let offset = Vec2::new(
@@ -110,6 +118,11 @@ pub fn main() {
                 } else {
                     app.draw_sprite(idx + 5, &offset);
                 };
+            }
+
+            if p == Point2::new(8i8, 8i8) {
+                app.set_color(&Vec4::new(0.9f32, 0.9f32, 1.0f32, 1f32));
+                app.draw_sprite(idx + 6, &offset);
             }
         }
 
