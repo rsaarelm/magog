@@ -267,6 +267,11 @@ impl App {
         gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
         self.atlas.bind();
         let (width, height) = self.window.get_size();
+
+        // XXX: The pixel scaling routine doesn't seem to like odd window
+        // dimensions. Zero the lowest bits to make them even.
+        let (width, height) = (width ^ 1, height ^ 1);
+
         gl2::viewport(0, 0, width, height);
         let mut scale = min(
             width as f32 / self.resolution.x,
