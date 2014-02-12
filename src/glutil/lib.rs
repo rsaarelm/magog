@@ -20,3 +20,4 @@ pub mod texture;
 pub mod fonter;
 pub mod app;
 pub mod atlas;
+pub mod recter;
