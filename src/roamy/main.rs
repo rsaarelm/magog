@@ -6,6 +6,7 @@ extern mod stb;
 use std::hashmap::HashMap;
 
 use glutil::app::App;
+use glutil::app::key;
 use glutil::atlas::Sprite;
 use cgmath::aabb::{Aabb2};
 use cgmath::point::{Point, Point2};
@@ -144,5 +145,11 @@ pub fn main() {
         }
 
         app.flush();
+
+        for key in app.key_buffer().iter() {
+            if key.code == key::ESC {
+                return;
+            }
+        }
     }
 }
