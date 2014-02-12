@@ -17,8 +17,8 @@ pub fn main() {
         let area : Aabb2<f32> = RectUtil::new(0.0f32, 0.0f32, 213.0f32, 120.0f32);
         for p in area.points() {
             app.fill_rect(&Aabb2::new(
-                    &p.mul_s(3f32),
-                    &p.mul_s(3f32).add_v(&Vec2::new(2f32, 2f32))));
+                    p.mul_s(3f32),
+                    p.mul_s(3f32).add_v(&Vec2::new(2f32, 2f32))));
         }
         app.set_color(&Vec4::new(0.5f32, 1f32, 0.5f32, 1f32));
         app.draw_string(&Vec2::new(0f32, 8f32), "The quick brown fox jumps over the lazy dog.");

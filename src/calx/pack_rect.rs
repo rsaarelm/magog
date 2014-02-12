@@ -15,7 +15,7 @@ fn pack_into<S: Primitive>(dim: &Vec2<S>, rect: &Aabb2<S>) ->
     (Aabb2<S>, (Aabb2<S>, Aabb2<S>)) {
     assert!(fits(dim, rect));
 
-    let fit = Aabb2::new(rect.min(), &rect.min().add_v(dim));
+    let fit = Aabb2::new(rect.min().clone(), rect.min().add_v(dim));
     let rect_dim = rect.dim();
 
     // Choose between making a vertical or a horizontal split
@@ -33,22 +33,22 @@ fn pack_into<S: Primitive>(dim: &Vec2<S>, rect: &Aabb2<S>) ->
         // BBBBBBB
         // BBBBBBB
         (fit, (Aabb2::new(
-                &rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
-                &rect.min().add_v(&Vec2::new(rect_dim.x, dim.y.clone()))),
+                rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
+                rect.min().add_v(&Vec2::new(rect_dim.x, dim.y.clone()))),
             Aabb2::new(
-                &rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
-                rect.max())))
+                rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
+                rect.max().clone())))
     } else {
         // fit |BB
         // ----+BB
         // AAAA|BB
         // AAAA|BB
         (fit, (Aabb2::new(
-                &rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
-                &rect.min().add_v(&Vec2::new(dim.x.clone(), rect_dim.y))),
+                rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
+                rect.min().add_v(&Vec2::new(dim.x.clone(), rect_dim.y))),
             Aabb2::new(
-                &rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
-                rect.max())))
+                rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
+                rect.max().clone())))
     }
 }
 
@@ -86,8 +86,8 @@ pub fn try_pack_rects<S: Primitive + TotalOrd>(
     indexed.sort_by(|&(_i, v1), &(_j, v2)| (v2.x * v2.y).cmp(&(v1.x * v1.y)));
     let mut packer = Packing::new(rect);
     let mut ret = vec::from_elem(sizes.len(), Aabb2::new(
-            &Point2::new(zero(), zero()),
-            &Point2::new(zero(), zero())));
+            Point2::new(zero(), zero()),
+            Point2::new(zero(), zero())));
 
     for &(i, d) in indexed.iter() {
         match packer.fit(d) {
@@ -101,7 +101,7 @@ pub fn try_pack_rects<S: Primitive + TotalOrd>(
 pub fn pack_rects<S: Primitive + TotalOrd>(
     rect: &Aabb2<S>, sizes: &[Vec2<S>]) -> (Aabb2<S>, ~[Aabb2<S>]) {
     let next_rect = Aabb2::new(
-        rect.min(), &rect.min().add_v(&(rect.dim() + rect.dim())));
+        rect.min().clone(), rect.min().add_v(&(rect.dim() + rect.dim())));
     match try_pack_rects(rect, sizes) {
         Some(ret) => (rect.clone(), ret),
         None => pack_rects(&next_rect, sizes)

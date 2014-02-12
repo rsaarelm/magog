@@ -20,12 +20,12 @@ pub struct Sprite {
 
 impl Sprite {
     // Only supporting alpha channel for now.
-    pub fn new_alpha(bounds: &Aabb2<int>, data: ~[u8]) -> Sprite {
+    pub fn new_alpha(bounds: Aabb2<int>, data: ~[u8]) -> Sprite {
         let bpp = 1;
         assert!(data.len() / bpp == bounds.volume() as uint);
 
         let mut ret = Sprite {
-            bounds: *bounds,
+            bounds: bounds,
             data: data
         };
         ret.crop();
@@ -42,13 +42,13 @@ impl Sprite {
                 let mut sprite_data = vec::from_elem((sprite_dim.x * sprite_dim.y) as uint, 0u8);
                 let p1 : Point2<int> = Point::from_vec(offset);
                 let p2 : Point2<int> = Point::from_vec(&offset.add_v(sprite_dim));
-                let bounds = Aabb2::new(&p1, &p2);
+                let bounds = Aabb2::new(p1, p2);
                 for p in bounds.points() {
                     let data_offset = c * sprite_dim.x + p.x - offset.x + sheet_dim.x *
                         (r * sprite_dim.y + p.y - offset.y);
                     sprite_data[bounds.scan_pos(&p)] = data[data_offset];
                 }
-                ret.push(Sprite::new_alpha(&bounds, sprite_data));
+                ret.push(Sprite::new_alpha(bounds, sprite_data));
             }
         }
         ret
@@ -161,7 +161,7 @@ impl Atlas {
         let (base, pack) = pack_rects(&base, dims);
         // Cut off the extra padding
         let pack : ~[Aabb2<int>] = pack.iter().map(|&rect| Aabb2::new(
-                rect.min(), &rect.max().add_v(&Vec2::new(-1, -1)))).collect();
+                *rect.min(), rect.max().add_v(&Vec2::new(-1, -1)))).collect();
 
         let mut tex_data = vec::from_elem(base.volume() as uint, 0u8);
 
@@ -200,7 +200,7 @@ impl Atlas {
             let glyph = font.glyph(i, size).expect("Font missing expected char");
             let min = Point2::new(glyph.xOffset as int, glyph.yOffset as int);
             let max = min.add_v(&Vec2::new(glyph.width, glyph.height));
-            self.push(~Sprite::new_alpha(&Aabb2::new(&min, &max), glyph.pixels));
+            self.push(~Sprite::new_alpha(Aabb2::new(min, max), glyph.pixels));
         }
     }
 

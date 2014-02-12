@@ -61,6 +61,6 @@ impl<S: Primitive> RectUtil<S, RectIter<S>> for Aabb2<S> {
     }
 
     fn new(x1: S, y1: S, x2: S, y2: S) -> Aabb2<S> {
-        Aabb2::new(&Point2::new(x1, y1), &Point2::new(x2, y2))
+        Aabb2::new(Point2::new(x1, y1), Point2::new(x2, y2))
     }
 }

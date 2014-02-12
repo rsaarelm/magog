@@ -40,10 +40,10 @@ pub fn guesstimate_atlas_dim(dims: &[Vec2<int>]) -> int {
 fn scale_rect(tex_rect: &Aabb2<int>, int_rect: &Aabb2<int>) -> Aabb2<f32> {
     let dim = tex_rect.dim();
     Aabb2::new(
-        &Point2::new(
+        Point2::new(
             int_rect.min().x as f32 / dim.x as f32,
             int_rect.min().y as f32 / dim.y as f32),
-        &Point2::new(
+        Point2::new(
             int_rect.max().x as f32 / dim.x as f32,
             int_rect.max().y as f32 / dim.y as f32))
 }
@@ -63,7 +63,7 @@ impl Fonter {
         let dims = glyphs.map(|g| Vec2::new(g.width + 1, g.height + 1));
 
         let size = guesstimate_atlas_dim(dims);
-        let base = Aabb2::new(&Point2::new(0, 0), &Point2::new(size, size));
+        let base = Aabb2::new(Point2::new(0, 0), Point2::new(size, size));
         let (base, pack) = pack_rects(&base, dims);
         let mut data = vec::from_elem(base.volume() as uint, 0u8);
 
@@ -83,8 +83,8 @@ impl Fonter {
             |(i, int_rect)| FontRect {
                 texture_rect: scale_rect(&base, int_rect),
                 pos_rect: Aabb2::new(
-                    &Point2::new(0f32, 0f32),
-                    &Point2::new((int_rect.dim().x - 1) as f32, (int_rect.dim().y - 1) as f32))
+                    Point2::new(0f32, 0f32),
+                    Point2::new((int_rect.dim().x - 1) as f32, (int_rect.dim().y - 1) as f32))
                     .add_v(&Vec2::new(glyphs[i].xOffset as f32, glyphs[i].yOffset as f32)),
                 xadvance: glyphs[i].xAdvance,
             }).collect();

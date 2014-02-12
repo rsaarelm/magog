@@ -206,7 +206,7 @@ impl App {
         // Hack for solid rectangles, push a solid single-pixel sprite in.
         // Assume this'll end up as position 0.
         ret.atlas.push(~Sprite::new_alpha(
-                &RectUtil::new(0, 0, 1, 1),
+                RectUtil::new(0, 0, 1, 1),
                 ~[255u8]));
         ret.atlas.push_ttf(FONT_DATA.to_owned(),
             FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
