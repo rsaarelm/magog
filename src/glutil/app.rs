@@ -2,7 +2,7 @@ use std::mem::swap;
 use std::num::min;
 use opengles::gl2;
 use cgmath::vector::{Vector, Vec2, Vec4};
-use cgmath::point::{Point2};
+use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use calx::rectutil::RectUtil;
 use glfw;
@@ -343,10 +343,10 @@ impl App {
             &self.draw_color);
     }
 
-    pub fn draw_sprite(&mut self, idx: uint, offset: &Vec2<f32>) {
+    pub fn draw_sprite(&mut self, idx: uint, pos: &Point2<f32>) {
         let spr = self.atlas.get(idx);
         self.recter.add(
-            &spr.bounds.add_v(offset),
+            &spr.bounds.add_v(&pos.to_vec()),
             &spr.texcoords,
             &self.draw_color);
     }

@@ -8,7 +8,7 @@ use std::hashmap::HashMap;
 use glutil::app::App;
 use glutil::app::key;
 use glutil::atlas::Sprite;
-use cgmath::aabb::{Aabb2};
+use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2, Vec4};
 use calx::rectutil::RectUtil;
@@ -20,6 +20,10 @@ enum TerrainType {
     Wall,
     Floor,
     Water,
+}
+
+pub fn solid(t: TerrainType) -> bool {
+    t == Wall
 }
 
 struct Area {
@@ -65,6 +69,14 @@ impl Area {
             Some(&t) => t
         }
     }
+
+    pub fn dig(&mut self, p: &Point2<i8>) {
+        self.set.insert(*p, Floor);
+    }
+
+    pub fn fill(&mut self, p: &Point2<i8>) {
+        self.set.insert(*p, Wall);
+    }
 }
 
 pub fn main() {
@@ -76,72 +88,97 @@ pub fn main() {
         tiles.pixels,
         &Vec2::new(-16, -16));
     let idx = app.add_sprite(~sprites[0].clone());
-    app.add_sprite(~sprites[1].clone());
-    app.add_sprite(~sprites[2].clone());
-    app.add_sprite(~sprites[3].clone());
-    app.add_sprite(~sprites[4].clone());
-    app.add_sprite(~sprites[5].clone());
-    app.add_sprite(~sprites[6].clone());
-    app.add_sprite(~sprites[7].clone());
-    let area = Area::new();
+    for i in range(1,16) {
+        app.add_sprite(~sprites[i].clone());
+    }
+    let FLOOR = idx;
+    let CUBE = idx + 1;
+    let XWALL = idx + 2;
+    let YWALL = idx + 3;
+    let XYWALL = idx + 4;
+    let OWALL = idx + 5;
+    let AVATAR = idx + 6;
+    let WATER = idx + 7;
+    let CURSOR = idx + 8;
+
+    let mut area = Area::new();
     while app.alive {
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
         app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
         // XXX: Horrible prototype code, figure out cleaning.
-        let rect : Aabb2<i8> = RectUtil::new(0i8, 0i8, 16i8, 16i8);
+
+        let origin = Vec2::new(320.0f32, 24.0f32);
+
+        let mut rect = Aabb2::new(
+            screen_to_chart(&Point2::new(0f32, 0f32).add_v(&origin.neg())),
+            screen_to_chart(&Point2::new(640f32, 360f32).add_v(&origin.neg())));
+        rect = rect.grow(&screen_to_chart(&Point2::new(640f32, 0f32).add_v(&origin.neg())));
+        rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 360f32).add_v(&origin.neg())));
+
         // Draw floors
         for p in rect.points() {
-            let offset = Vec2::new(
-                320.0 + 16.0 * (p.x as f32) - 16.0 * (p.y as f32),
-                24.0 + 8.0 * (p.x as f32) + 8.0 * (p.y as f32));
+            let offset = chart_to_screen(&p).add_v(&origin);
             if area.get(&p) == Water {
                 app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
-                app.draw_sprite(idx + 7, &offset);
+                app.draw_sprite(WATER, &offset);
             } else {
                 app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
-                app.draw_sprite(idx, &offset);
+                app.draw_sprite(FLOOR, &offset);
             }
         }
 
         // Draw walls
         for p in rect.points() {
-            let offset = Vec2::new(
-                320.0 + 16.0 * (p.x as f32) - 16.0 * (p.y as f32),
-                24.0 + 8.0 * (p.x as f32) + 8.0 * (p.y as f32));
+            let offset = chart_to_screen(&p).add_v(&origin);
+            app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
             if area.get(&p) == Wall {
-                app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
-                let left = area.get(&p.add_v(&Vec2::new(-1i8, 0i8))) == Wall;
-                let rear = area.get(&p.add_v(&Vec2::new(-1i8, -1i8))) == Wall;
-                let right = area.get(&p.add_v(&Vec2::new(0i8, -1i8))) == Wall;
+                let left = solid(area.get(&p.add_v(&Vec2::new(-1i8, 0i8))));
+                let rear = solid(area.get(&p.add_v(&Vec2::new(-1i8, -1i8))));
+                let right = solid(area.get(&p.add_v(&Vec2::new(0i8, -1i8))));
+
                 if left && right && rear {
-                    app.draw_sprite(idx + 1, &offset);
-                    if area.get(&p.add_v(&Vec2::new(1i8, -1i8))) != Wall ||
-                       area.get(&p.add_v(&Vec2::new(1i8, 0i8))) != Wall {
-                        app.draw_sprite(idx + 3, &offset);
+                    app.draw_sprite(CUBE, &offset);
+                    if !solid(area.get(&p.add_v(&Vec2::new(1i8, -1i8)))) ||
+                       !solid(area.get(&p.add_v(&Vec2::new(1i8, 0i8)))) {
+                        app.draw_sprite(YWALL, &offset);
                     }
-                    if area.get(&p.add_v(&Vec2::new(-1i8, 1i8))) != Wall ||
-                       area.get(&p.add_v(&Vec2::new(0i8, 1i8))) != Wall {
-                        app.draw_sprite(idx + 2, &offset);
+                    if !solid(area.get(&p.add_v(&Vec2::new(-1i8, 1i8)))) ||
+                       !solid(area.get(&p.add_v(&Vec2::new(0i8, 1i8)))) {
+                        app.draw_sprite(XWALL, &offset);
                     }
-                    if area.get(&p.add_v(&Vec2::new(1i8, 1i8))) != Wall {
-                        app.draw_sprite(idx + 5, &offset);
+                    if !solid(area.get(&p.add_v(&Vec2::new(1i8, 1i8)))) {
+                        app.draw_sprite(OWALL, &offset);
                     }
                 } else if left && right {
-                    app.draw_sprite(idx + 4, &offset);
+                    app.draw_sprite(XYWALL, &offset);
                 } else if left {
-                    app.draw_sprite(idx + 2, &offset);
+                    app.draw_sprite(XWALL, &offset);
                 } else if right {
-                    app.draw_sprite(idx + 3, &offset);
+                    app.draw_sprite(YWALL, &offset);
                 } else {
-                    app.draw_sprite(idx + 5, &offset);
+                    app.draw_sprite(OWALL, &offset);
                 };
             }
 
             if p == Point2::new(8i8, 8i8) {
                 app.set_color(&Vec4::new(0.9f32, 0.9f32, 1.0f32, 1f32));
-                app.draw_sprite(idx + 6, &offset);
+                app.draw_sprite(AVATAR, &offset);
             }
+        }
+
+        // Mouse cursoring
+        let mouse = app.get_mouse();
+        app.set_color(&Vec4::new(1.0f32, 0.4f32, 0.4f32, 1f32));
+        let chart_pos = screen_to_chart(&mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
+        app.draw_sprite(CURSOR, &chart_to_screen(&chart_pos).add_v(&origin));
+
+        if mouse.left {
+            area.dig(&chart_pos);
+        }
+
+        if mouse.right {
+            area.fill(&chart_pos);
         }
 
         app.flush();
@@ -152,4 +189,16 @@ pub fn main() {
             }
         }
     }
+}
+
+pub fn chart_to_screen(map_pos: &Point2<i8>) -> Point2<f32> {
+    Point2::new(
+        16.0 * (map_pos.x as f32) - 16.0 * (map_pos.y as f32),
+        8.0 * (map_pos.x as f32) + 8.0 * (map_pos.y as f32))
+}
+
+pub fn screen_to_chart(screen_pos: &Point2<f32>) -> Point2<i8> {
+    let column = (screen_pos.x / 16.0).floor();
+    let row = ((screen_pos.y - column * 8.0) / 16.0).floor();
+    Point2::new((column + row) as i8, row as i8)
 }
