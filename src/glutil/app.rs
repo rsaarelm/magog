@@ -1,4 +1,4 @@
-use std::util::swap;
+use std::mem::swap;
 use std::num::min;
 use opengles::gl2;
 use cgmath::vector::{Vector, Vec2, Vec4};
@@ -447,10 +447,4 @@ impl App {
             right: self.window.get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
         }
     }
-}
-
-impl Drop for App {
-   fn drop(&mut self) {
-        glfw::terminate();
-   }
 }

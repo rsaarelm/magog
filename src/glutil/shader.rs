@@ -14,7 +14,7 @@ pub struct Shader {
 fn compile_shader(src: &str, kind: GLuint) -> Result<GLuint, ~str> {
     let shader = gl_check!(gl2::create_shader(kind));
     assert!(shader != 0);
-    gl_check!(gl2::shader_source(shader, [src.as_bytes().to_owned()]));
+    gl_check!(gl2::shader_source(shader, [src.as_bytes()]));
     gl_check!(gl2::compile_shader(shader));
 
     let result = gl_check!(gl2::get_shader_iv(shader, gl2::COMPILE_STATUS));

@@ -1,5 +1,5 @@
 use std::libc::*;
-use std::ptr::is_null;
+use std::ptr::RawPtr;
 use std::vec::raw::from_buf_raw;
 use std::vec;
 use std::io::File;
@@ -40,7 +40,7 @@ impl Image {
                 data.as_ptr(), data.len() as c_int,
                 &mut w, &mut h, &mut bpp, force_channels as c_int);
 
-            if is_null(buffer) {
+            if buffer.is_null() {
                 return None
             }
 
