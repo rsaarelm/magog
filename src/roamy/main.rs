@@ -6,7 +6,7 @@ extern mod stb;
 use std::hashmap::HashMap;
 
 use glutil::app::App;
-use glutil::app::key;
+use glutil::key;
 use glutil::atlas::Sprite;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
