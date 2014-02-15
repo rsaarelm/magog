@@ -5,7 +5,9 @@ use std::iter::Iterator;
 
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
-use cgmath::vector::{Vector, Vec2};
+// cgmath Vector shadows std::vec::Vector and breaks as_slice...
+use cgVector = cgmath::vector::Vector;
+use cgmath::vector::Vec2;
 
 use calx::pack_rect::pack_rects;
 use calx::rectutil::RectUtil;
@@ -140,7 +142,7 @@ impl Atlas {
             sprites: ~[],
             rects: ~[],
             is_dirty: true,
-            texture: ~Texture::new_alpha(0, 0, []),
+            texture: ~Texture::new_alpha(0, 0, None),
         }
     }
 
@@ -175,7 +177,9 @@ impl Atlas {
                     &self.sprites[i].bounds, &pack[i], &base.dim()));
         }
 
-        self.texture = ~Texture::new_alpha(base.dim().x as uint, base.dim().y as uint, tex_data);
+        self.texture = ~Texture::new_alpha(
+            base.dim().x as uint, base.dim().y as uint, Some(tex_data.as_slice()));
+
         self.is_dirty = false;
 
         fn paint_sprite(sprite: &Sprite, tex_data: &mut [u8], offset: &Vec2<int>, tex_pitch: int) {

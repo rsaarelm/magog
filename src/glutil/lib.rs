@@ -20,3 +20,4 @@ pub mod app;
 pub mod atlas;
 pub mod recter;
 pub mod key;
+pub mod buffer;

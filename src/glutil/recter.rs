@@ -1,9 +1,13 @@
+use std::num::min;
 use opengles::gl2;
-use cgmath::vector::{Vec2};
 use cgmath::point::{Point2, Point3};
+use cgVector = cgmath::vector::Vector;
+use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
 use shader::Shader;
 use app::Color;
+use buffer;
+use buffer::Buffer;
 
 use gl_check;
 
@@ -56,57 +60,30 @@ impl Recter {
         self.colors = ~[];
     }
 
-    pub fn render(
-        &mut self,
-        shader: &Shader, scale: &Vec2<f32>,
-        offset: &Vec2<f32>) {
+    pub fn render(&mut self, shader: &Shader) {
         if self.vertices.len() == 0 {
             return;
         }
-        // Generate buffers.
-        // TODO: Wrap STREAM_DRAW buffers into RAII handles.
-        let gen = gl_check!(gl2::gen_buffers(3));
-        let vert = gen[0];
-        let tex = gen[1];
-        let col = gen[2];
-
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
-        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.vertices, gl2::STREAM_DRAW));
-
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
-        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.texcoords, gl2::STREAM_DRAW));
-
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
-        gl_check!(gl2::buffer_data(gl2::ARRAY_BUFFER, self.colors, gl2::STREAM_DRAW));
+        let vert = Buffer::new_array();
+        let tex = Buffer::new_array();
+        let col = Buffer::new_array();
 
         // Bind shader vars.
-        let in_pos = shader.attrib("in_pos").unwrap();
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, vert));
+        let in_pos = shader.attrib("in_pos");
+        vert.bind();
+        vert.load_data(self.vertices, buffer::StreamDraw);
         gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, 0, 0));
         gl_check!(gl2::enable_vertex_attrib_array(in_pos));
-        let in_texcoord = shader.attrib("in_texcoord").unwrap();
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, tex));
+        let in_texcoord = shader.attrib("in_texcoord");
+        tex.bind();
+        tex.load_data(self.texcoords, buffer::StreamDraw);
         gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
         gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
-        let in_color = shader.attrib("in_color").unwrap();
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, col));
+        let in_color = shader.attrib("in_color");
+        col.bind();
+        col.load_data(self.colors, buffer::StreamDraw);
         gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
         gl_check!(gl2::enable_vertex_attrib_array(in_color));
-
-        let x = 2f32 / scale.x;
-        let y = -2f32 / scale.y;
-        let dx = -1f32 + 2.0 * offset.x / scale.x;
-        let dy = 1f32 - 2.0 * offset.y / scale.y;
-        let transform = &[
-            x,    0f32, 0f32, 0f32,
-            0f32, y,    0f32, 0f32,
-            0f32, 0f32, 1f32, 0f32,
-            dx,   dy,   0f32, 1f32,
-            ];
-        gl_check!(gl2::uniform_matrix_4fv(
-                shader.uniform("transform").unwrap(),
-                false,
-                transform));
 
         // Draw!
         gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
@@ -117,7 +94,61 @@ impl Recter {
         gl_check!(gl2::disable_vertex_attrib_array(in_pos));
 
         self.clear();
-        gl2::delete_buffers(gen);
     }
 }
 
+pub fn screen_bound(dim: &Vec2<f32>, area: &Vec2<f32>) -> Aabb2<f32> {
+    let mut scale = min(
+        area.x / dim.x,
+        area.y / dim.y);
+    if scale > 1.0 {
+        scale = scale.floor();
+    }
+
+    let dim = Point2::new(dim.x * 2f32 * scale / area.x, dim.y * 2f32 * scale / area.y);
+    let bound = Aabb2::new(Point2::new(0f32, 0f32), dim);
+    bound.add_v(&Vec2::new(-dim.x / 2f32, -dim.y / 2f32))
+}
+
+pub fn draw_screen_texture(bound: &Aabb2<f32>, shader: &Shader) {
+    let vertices = ~[
+        Point2::new(bound.min.x, bound.min.y),
+        Point2::new(bound.max.x, bound.min.y),
+        Point2::new(bound.min.x, bound.max.y),
+
+        Point2::new(bound.max.x, bound.min.y),
+        Point2::new(bound.max.x, bound.max.y),
+        Point2::new(bound.min.x, bound.max.y),
+    ];
+
+    let texcoords = ~[
+        Point2::new(0f32, 1f32),
+        Point2::new(1f32, 1f32),
+        Point2::new(0f32, 0f32),
+
+        Point2::new(1f32, 1f32),
+        Point2::new(1f32, 0f32),
+        Point2::new(0f32, 0f32),
+    ];
+
+    let vert = Buffer::new_array();
+    let tex = Buffer::new_array();
+
+    let in_pos = shader.attrib("in_pos");
+    vert.bind();
+    vert.load_data(vertices, buffer::StreamDraw);
+    gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 2, false, 0, 0));
+    gl_check!(gl2::enable_vertex_attrib_array(in_pos));
+    let in_texcoord = shader.attrib("in_texcoord");
+    tex.bind();
+    tex.load_data(texcoords, buffer::StreamDraw);
+    gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
+    gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
+
+    // Draw!
+    gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, vertices.len() as i32));
+    gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
+
+    gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
+    gl_check!(gl2::disable_vertex_attrib_array(in_pos));
+}

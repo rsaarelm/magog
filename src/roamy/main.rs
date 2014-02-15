@@ -127,9 +127,9 @@ pub fn main() {
 
         let mut rect = Aabb2::new(
             screen_to_chart(&Point2::new(0f32, 0f32).add_v(&origin.neg())),
-            screen_to_chart(&Point2::new(640f32, 360f32).add_v(&origin.neg())));
+            screen_to_chart(&Point2::new(640f32, 380f32).add_v(&origin.neg())));
         rect = rect.grow(&screen_to_chart(&Point2::new(640f32, 0f32).add_v(&origin.neg())));
-        rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 360f32).add_v(&origin.neg())));
+        rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 380f32).add_v(&origin.neg())));
 
         // Draw floors
         for p in rect.points() {

@@ -1,7 +1,8 @@
 use std::mem::swap;
-use std::num::min;
+use std::vec;
 use opengles::gl2;
-use cgmath::vector::{Vector, Vec2, Vec4};
+use cgVector = cgmath::vector::Vector;
+use cgmath::vector::{Vec2, Vec4};
 use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use calx::rectutil::RectUtil;
@@ -9,14 +10,15 @@ use glfw;
 use atlas::{Sprite, Atlas};
 use shader::Shader;
 use recter::Recter;
+use recter;
+use texture::Texture;
 use key;
 
-static VERTEX_SHADER: &'static str =
+static COLORED_V: &'static str =
     "#version 130
     in vec3 in_pos;
     in vec2 in_texcoord;
     in vec4 in_color;
-    uniform mat4 transform;
 
     out vec2 texcoord;
     out vec4 color;
@@ -24,13 +26,13 @@ static VERTEX_SHADER: &'static str =
     void main(void) {
         texcoord = in_texcoord;
         color = in_color;
-        gl_Position = transform * vec4(in_pos, 1.0);
+        gl_Position = vec4(in_pos, 1.0);
     }
     ";
 
 // Allow opaque shading: All nonzero alpha values are treated as opaque, but
 // they also modulate RGB luminance so low alpha means a darker shade.
-static FRAGMENT_SHADER: &'static str =
+static ALPHA_SPRITE_F: &'static str =
     "#version 130
     uniform sampler2D textureUnit;
     in vec2 texcoord;
@@ -41,6 +43,29 @@ static FRAGMENT_SHADER: &'static str =
         gl_FragColor = vec4(
             color.x * a, color.y * a, color.z * a,
             a > 0 ? 1.0 : 0.0);
+    }
+    ";
+
+static BLIT_V: &'static str =
+    "#version 130
+    in vec2 in_pos;
+    in vec2 in_texcoord;
+
+    out vec2 texcoord;
+
+    void main(void) {
+        texcoord = in_texcoord;
+        gl_Position = vec4(in_pos, 0.0, 1.0);
+    }
+    ";
+
+static BLIT_F: &'static str =
+    "#version 130
+    uniform sampler2D textureUnit;
+    in vec2 texcoord;
+
+    void main(void) {
+        gl_FragColor = texture(textureUnit, texcoord);
     }
     ";
 
@@ -75,7 +100,8 @@ pub struct App {
     window: ~glfw::Window,
     alive: bool,
     atlas: ~Atlas,
-    shader: ~Shader,
+    sprite_shader: ~Shader,
+    blit_shader: ~Shader,
     recter: Recter,
     key_buffer: ~[KeyEvent],
     // Key input hack flag.
@@ -106,7 +132,8 @@ impl App {
             window: ~window,
             alive: true,
             atlas: ~Atlas::new(),
-            shader: ~Shader::new(VERTEX_SHADER, FRAGMENT_SHADER),
+            sprite_shader: ~Shader::new(COLORED_V, ALPHA_SPRITE_F),
+            blit_shader: ~Shader::new(BLIT_V, BLIT_F),
             recter: Recter::new(),
             key_buffer: ~[],
             unknown_key: false,
@@ -119,9 +146,6 @@ impl App {
                 ~[255u8]));
         ret.atlas.push_ttf(FONT_DATA.to_owned(),
             FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
-
-        ret.shader.bind();
-        ret.atlas.bind();
 
         ret
     }
@@ -148,7 +172,7 @@ impl App {
                 let spr = self.atlas.get(
                     (first_font_idx + i) as uint - FONT_START_CHAR);
                 self.recter.add(
-                    &spr.bounds.add_v(&offset),
+                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)),
                     &spr.texcoords,
                     &self.draw_color);
                 offset.add_self_v(&Vec2::new(spr.bounds.dim().x + 1.0, 0.0));
@@ -159,7 +183,7 @@ impl App {
     pub fn fill_rect(&mut self, rect: &Aabb2<f32>) {
         let magic_solid_texture_index = 0;
         self.recter.add(
-            rect,
+            &transform_pixel_rect(&self.resolution, rect),
             &self.atlas.get(magic_solid_texture_index).texcoords,
             &self.draw_color);
     }
@@ -167,39 +191,42 @@ impl App {
     pub fn draw_sprite(&mut self, idx: uint, pos: &Point2<f32>) {
         let spr = self.atlas.get(idx);
         self.recter.add(
-            &spr.bounds.add_v(&pos.to_vec()),
+            &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())),
             &spr.texcoords,
             &self.draw_color);
     }
 
-    fn scale_params(&self) -> (f32, Vec2<f32>, Vec2<f32>) {
-        let (width, height) = self.window.get_size();
-
-        // XXX: The pixel scaling routine doesn't seem to like odd window
-        // dimensions. Zero the lowest bits to make them even.
-        let (width, height) = (width ^ 1, height ^ 1);
-
-        gl2::viewport(0, 0, width, height);
-        let mut scale = min(
-            width as f32 / self.resolution.x,
-            height as f32 / self.resolution.y);
-        if scale > 1.0 {
-            scale = scale.floor();
-        }
-
-        let offset = Vec2::new(width as f32, height as f32)
-            .sub_v(&self.resolution.mul_s(scale))
-            .div_s(2.0 * scale);
-        (scale, offset, Vec2::new(width as f32 / scale, height as f32 / scale))
-    }
-
     pub fn flush(&mut self) {
         gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
-        self.atlas.bind();
 
-        let (_scale, offset, dim) = self.scale_params();
+        // Render-to-texture.
 
-        self.recter.render(self.shader, &dim, &offset);
+        let screen_tex = Texture::new_rgba(
+            self.resolution.x as uint, self.resolution.y as uint,
+            Some(vec::from_elem(
+                    (self.resolution.x * self.resolution.y) as uint * 4, 128u8)
+                .as_slice()));
+        screen_tex.render_to(|| {
+            gl2::viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
+            gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+
+            self.atlas.bind();
+            self.sprite_shader.bind();
+            self.recter.render(self.sprite_shader);
+        });
+
+        let (width, height) = self.window.get_size();
+        // XXX Odd dimensions are bad mojo for pixel perfection.
+        let (width, height) = (width & !1, height & !1);
+        gl2::viewport(0, 0, width, height);
+
+        screen_tex.bind();
+        self.blit_shader.bind();
+        recter::draw_screen_texture(
+            &recter::screen_bound(&self.resolution, &Vec2::new(width as f32, height as f32)),
+            self.blit_shader);
+        //self.recter.render(selfblit_shader);
+
         self.window.swap_buffers();
 
         glfw::poll_events();
@@ -259,10 +286,19 @@ impl App {
 
     pub fn get_mouse(&self) -> MouseState {
         let (cx, cy) = self.window.get_cursor_pos();
-        let (scale, offset, _dim) = self.scale_params();
+        // XXX: overly complex juggling back and forth the coordinate systems.
+        let (width, height) = self.window.get_size();
+        let area = Vec2::new(width as f32, height as f32);
+        let bounds =
+            recter::screen_bound(&self.resolution, &area)
+            .add_v(&Vec2::new(1f32, 1f32))
+            .mul_s(0.5f32)
+            .mul_v(&area);
 
         MouseState {
-            pos: Point2::new(cx as f32 / scale - offset.x, cy as f32 / scale - offset.y),
+            pos: Point2::new(
+                     (cx as f32 - bounds.min.x) * (self.resolution.x / bounds.dim().x),
+                     (cy as f32 - bounds.min.y) * (self.resolution.y / bounds.dim().y)),
             left: self.window.get_mouse_button(glfw::MouseButtonLeft) != glfw::Release,
             middle: self.window.get_mouse_button(glfw::MouseButtonMiddle) != glfw::Release,
             right: self.window.get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
@@ -270,6 +306,16 @@ impl App {
     }
 
     pub fn screen_area(&self) -> Aabb2<f32> {
-        RectUtil::new(0f32, 0f32, 640f32, 360f32)
+        RectUtil::new(0f32, 0f32, self.resolution.x as f32, self.resolution.y as f32)
     }
+}
+
+fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
+    Aabb2::new(
+        Point2::new(
+            rect.min.x / dim.x * 2.0f32 - 1.0f32,
+            rect.min.y / dim.y * 2.0f32 - 1.0f32),
+        Point2::new(
+            rect.max.x / dim.x * 2.0f32 - 1.0f32,
+            rect.max.y / dim.y * 2.0f32 - 1.0f32))
 }
