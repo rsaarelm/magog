@@ -14,7 +14,6 @@ extern mod glfw = "glfw-rs";
 #[macro_escape]
 pub mod gl_check;
 
-pub mod mesh;
 pub mod shader;
 pub mod texture;
 pub mod app;
