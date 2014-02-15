@@ -268,4 +268,8 @@ impl App {
             right: self.window.get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
         }
     }
+
+    pub fn screen_area(&self) -> Aabb2<f32> {
+        RectUtil::new(0f32, 0f32, 640f32, 360f32)
+    }
 }

@@ -99,7 +99,8 @@ pub fn main() {
     let OWALL = idx + 5;
     let AVATAR = idx + 6;
     let WATER = idx + 7;
-    let CURSOR = idx + 8;
+    let CURSOR_BOTTOM = idx + 8;
+    let CURSOR_TOP = idx + 9;
 
     let mut area = Area::new();
     while app.alive {
@@ -109,6 +110,20 @@ pub fn main() {
         // XXX: Horrible prototype code, figure out cleaning.
 
         let origin = Vec2::new(320.0f32, 24.0f32);
+
+        // Mouse cursoring
+        let mouse = app.get_mouse();
+        let cursor_chart_pos = screen_to_chart(&mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
+
+        if app.screen_area().contains(&mouse.pos) {
+            if mouse.left {
+                area.dig(&cursor_chart_pos);
+            }
+
+            if mouse.right {
+                area.fill(&cursor_chart_pos);
+            }
+        }
 
         let mut rect = Aabb2::new(
             screen_to_chart(&Point2::new(0f32, 0f32).add_v(&origin.neg())),
@@ -127,6 +142,10 @@ pub fn main() {
                 app.draw_sprite(FLOOR, &offset);
             }
         }
+
+        // Draw cursor back under the protruding geometry.
+        app.set_color(&Vec4::new(1.0f32, 0.4f32, 0.4f32, 1f32));
+        app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin));
 
         // Draw walls
         for p in rect.points() {
@@ -167,19 +186,8 @@ pub fn main() {
             }
         }
 
-        // Mouse cursoring
-        let mouse = app.get_mouse();
         app.set_color(&Vec4::new(1.0f32, 0.4f32, 0.4f32, 1f32));
-        let chart_pos = screen_to_chart(&mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
-        app.draw_sprite(CURSOR, &chart_to_screen(&chart_pos).add_v(&origin));
-
-        if mouse.left {
-            area.dig(&chart_pos);
-        }
-
-        if mouse.right {
-            area.fill(&chart_pos);
-        }
+        app.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin));
 
         app.flush();
 
