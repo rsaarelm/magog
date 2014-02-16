@@ -1,5 +1,6 @@
 use std::iter::AdditiveIterator;
-use std::num::{min, max, sqrt, next_power_of_two};
+use std::num::{sqrt, next_power_of_two};
+use std::cmp::{min, max};
 use std::vec;
 use std::iter::Iterator;
 

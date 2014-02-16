@@ -5,11 +5,11 @@
 
 #[feature(macro_rules)];
 
-extern mod opengles;
-extern mod calx;
-extern mod stb;
-extern mod cgmath;
-extern mod glfw = "glfw-rs";
+extern crate opengles;
+extern crate calx;
+extern crate stb;
+extern crate cgmath;
+extern crate glfw = "glfw-rs";
 
 #[macro_escape]
 pub mod gl_check;

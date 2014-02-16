@@ -1,7 +1,7 @@
-extern mod extra;
-extern mod cgmath;
-extern mod glutil;
-extern mod calx;
+extern crate extra;
+extern crate cgmath;
+extern crate glutil;
+extern crate calx;
 
 use glutil::app::App;
 use cgmath::aabb::{Aabb2};

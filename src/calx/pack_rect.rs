@@ -1,12 +1,13 @@
-extern mod cgmath;
+extern crate cgmath;
 
-use std::num::{max, zero};
+use std::num::zero;
+use std::cmp::max;
 use std::vec;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::vector::Vec2;
 use cgmath::point::{Point, Point2};
 
-fn fits<S: Primitive + Num + Orderable>(dim: &Vec2<S>, rect: &Aabb2<S>) -> bool {
+fn fits<S: Primitive + Num>(dim: &Vec2<S>, rect: &Aabb2<S>) -> bool {
     let rect_dim = rect.dim();
     dim.x <= rect_dim.x && dim.y <= rect_dim.y
 }

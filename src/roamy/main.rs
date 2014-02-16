@@ -1,7 +1,7 @@
-extern mod cgmath;
-extern mod glutil;
-extern mod calx;
-extern mod stb;
+extern crate cgmath;
+extern crate glutil;
+extern crate calx;
+extern crate stb;
 
 use std::hashmap::HashMap;
 use std::hashmap::HashSet;

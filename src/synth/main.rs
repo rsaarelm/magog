@@ -1,6 +1,6 @@
 #[feature(globs)];
 
-extern mod portaudio;
+extern crate portaudio;
 
 use portaudio::*;
 

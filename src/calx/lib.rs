@@ -4,8 +4,8 @@
 #[feature(globs)];
 #[crate_type = "rlib"];
 
-extern mod collections;
-extern mod cgmath;
+extern crate collections;
+extern crate cgmath;
 
 pub mod text;
 pub mod pack_rect;

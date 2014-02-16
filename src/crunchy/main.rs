@@ -1,4 +1,4 @@
-extern mod calx;
+extern crate calx;
 use calx::text;
 use std::num::log10;
 use std::rand::Rng;

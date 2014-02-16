@@ -1,4 +1,4 @@
-use std::num::min;
+use std::cmp::min;
 use opengles::gl2;
 use cgmath::point::{Point2, Point3};
 use cgVector = cgmath::vector::Vector;
