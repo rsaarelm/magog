@@ -1,8 +1,10 @@
 use cgmath::point::{Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use std::num::{one};
+use std::rand::{Rng};
+use std::rand::distributions::range::SampleRange;
 
-pub trait RectUtil<S: Primitive, I: Iterator<Point2<S>>> {
+pub trait RectUtil<S: Primitive + SampleRange, I: Iterator<Point2<S>>> {
     // Iterate all integer points inside the rectangle.
     fn points(&self) -> I;
     // Get the scanline position (0 at top left corner, increasing along
@@ -10,6 +12,8 @@ pub trait RectUtil<S: Primitive, I: Iterator<Point2<S>>> {
     fn scan_pos(&self, pos: &Point2<S>) -> int;
     // Convenience constructor with naked coordinates.
     fn new(x1: S, y1: S, x2: S, y2: S) -> Self;
+
+    fn random<R: Rng>(&self, rng: &mut R) -> Point2<S>;
 }
 
 pub struct RectIter<S> {
@@ -40,7 +44,7 @@ impl<S: Primitive> Iterator<Point2<S>> for RectIter<S> {
 
 }
 
-impl<S: Primitive> RectUtil<S, RectIter<S>> for Aabb2<S> {
+impl<S: Primitive + SampleRange> RectUtil<S, RectIter<S>> for Aabb2<S> {
     #[inline]
     fn points(&self) -> RectIter<S> {
         RectIter {
@@ -62,5 +66,11 @@ impl<S: Primitive> RectUtil<S, RectIter<S>> for Aabb2<S> {
 
     fn new(x1: S, y1: S, x2: S, y2: S) -> Aabb2<S> {
         Aabb2::new(Point2::new(x1, y1), Point2::new(x2, y2))
+    }
+
+    fn random<R: Rng>(&self, rng: &mut R) -> Point2<S> {
+        Point2::new(
+            rng.gen_range(self.min.x.clone(), self.max.x.clone()),
+            rng.gen_range(self.min.y.clone(), self.max.y.clone()))
     }
 }
