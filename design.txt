@@ -1,0 +1,26 @@
+# vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
+
+* Obvious stuff
+
+* Non-critical stuff
+	These don't make new features.
+	* TODO Switch GL bindings from opengles to gl-rs
+		Seems to be becoming the defacto Rust OpenGL bindings.
+	* TODO Offline image processing
+		Drop image and ttf loading from the end result binaries, make them
+		smaller and faster to start up.
+
+		Write an external utility that builds atlas textures from images and
+		rasterized fonts and converts these into bitmap data. Compress
+		texture data bytes with crate flate and bake into the binary as
+		embedded data. Will also need to emit a metadata structure to list
+		the sprite bounds. Static struct literals should work.
+
+		Can add additional image processing steps instead of just turning
+		the images as is into sprites as is done now. One example would be
+		using a bright color as the transparent one for the sprites, which
+		end up having #000000 as the transparent color as end result
+		textures.
+	* TODO Use color-rs for the colors
+	* TODO Use hgl-rs, replace parts of glutil with it
+		It's using gl-rs, so I'd need to transition to that.
