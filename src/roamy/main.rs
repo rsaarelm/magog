@@ -3,7 +3,6 @@ extern crate glutil;
 extern crate calx;
 extern crate stb;
 
-use std::hashmap::HashMap;
 use std::hashmap::HashSet;
 use std::rand;
 use std::rand::Rng;
@@ -17,89 +16,34 @@ use cgmath::vector::{Vec2, Vec4};
 use calx::rectutil::RectUtil;
 use stb::image::Image;
 use calx::text::Map2DUtil;
+use area::Area;
+use area::{is_solid, DIRECTIONS, Location};
 
-#[deriving(Eq)]
-enum TerrainType {
-    Wall,
-    Floor,
-    Water,
-}
-
-pub fn solid(t: TerrainType) -> bool {
-    t == Wall
-}
-
-pub struct Area {
-    set: HashMap<Point2<i8>, TerrainType>,
-}
-
-impl Area {
-    pub fn new() -> Area {
-        Area {
-            set: HashMap::new(),
-        }
-    }
-
-    pub fn get(&self, p: &Point2<i8>) -> TerrainType {
-        match self.set.find(p) {
-            None => Wall,
-            Some(&t) => t
-        }
-    }
-
-    pub fn defined(&self, p: &Point2<i8>) -> bool {
-        self.set.contains_key(p)
-    }
-
-    pub fn remove(&mut self, p: &Point2<i8>) {
-        self.set.remove(p);
-    }
-
-    pub fn dig(&mut self, p: &Point2<i8>) {
-        self.set.insert(*p, Floor);
-    }
-
-    pub fn fill(&mut self, p: &Point2<i8>) {
-        self.set.insert(*p, Wall);
-    }
-
-    pub fn is_open(&mut self, p: &Point2<i8>) -> bool {
-        match self.get(p) {
-            Floor | Water => true,
-            _ => false
-        }
-    }
-}
+pub mod fov;
+pub mod area;
+pub mod areaview;
+pub mod dijkstra;
 
 pub trait MapGen {
     fn gen_cave<R: Rng>(&mut self, rng: &mut R);
     fn gen_prefab(&mut self, prefab: &str);
 }
 
-pub fn neighbors(p: &Point2<i8>) -> ~[Point2<i8>] {
-    ~[p.add_v(&Vec2::new(-1i8, -1i8)),
-      p.add_v(&Vec2::new( 0i8, -1i8)),
-      p.add_v(&Vec2::new( 1i8,  0i8)),
-      p.add_v(&Vec2::new( 1i8,  1i8)),
-      p.add_v(&Vec2::new( 0i8,  1i8)),
-      p.add_v(&Vec2::new(-1i8,  0i8))]
-}
-
 impl MapGen for Area {
     fn gen_cave<R: Rng>(&mut self, rng: &mut R) {
-        let center = Point2::new(0i8, 0i8);
+        let center = Location(Point2::new(0i8, 0i8));
         let mut edge = HashSet::new();
         let bounds = Aabb2::new(Point2::new(-16i8, -16i8), Point2::new(16i8, 16i8));
         let mut dug = 1;
         self.dig(&center);
-        for i in neighbors(&center).iter() {
-            edge.insert(*i);
+        for &v in DIRECTIONS.iter() {
+            edge.insert(center + v);
         }
 
         for _itercount in range(0, 10000) {
             let pick = *rng.sample(edge.iter(), 1)[0];
-            let n = neighbors(&pick);
-            let nfloor = n.iter().count(|p| self.is_open(p));
+            let nfloor = DIRECTIONS.iter().count(|&v| self.is_open(&(pick + v)));
+            assert!(nfloor > 0);
 
             // Weight digging towards narrow corners.
             if rng.gen_range(0, nfloor * nfloor) != 0 {
@@ -109,9 +53,10 @@ impl MapGen for Area {
             self.dig(&pick);
             dug += 1;
 
-            for i in neighbors(&pick).iter() {
-                if !self.defined(i) && bounds.contains(i) {
-                    edge.insert(*i);
+            for &v in DIRECTIONS.iter() {
+                let p = pick + v;
+                if !self.defined(&p) && bounds.contains(p.p()) {
+                    edge.insert(p);
                 }
             }
 
@@ -122,10 +67,10 @@ impl MapGen for Area {
     fn gen_prefab(&mut self, prefab: &str) {
         for (c, x, y) in prefab.chars().map2d() {
             if c == '.' {
-                self.set.insert(Point2::new(x as i8, y as i8), Floor);
+                self.set.insert(Location(Point2::new(x as i8, y as i8)), area::Floor);
             }
             if c == '~' {
-                self.set.insert(Point2::new(x as i8, y as i8), Water);
+                self.set.insert(Location(Point2::new(x as i8, y as i8)), area::Water);
             }
         }
 
@@ -179,6 +124,19 @@ pub fn main() {
     let mut rng = rand::rng();
     area.gen_cave(&mut rng);
 
+    let test_map = dijkstra::build_map(
+        ~[Location(Point2::new(0i8, 0i8))], |n| area.walk_neighbors(n), 666);
+    for y in range(-16, 17) {
+        for x in range(-16, 17) {
+            let p = Location(Point2::new(x as i8, y as i8));
+            match test_map.find(&p) {
+                Some(&n) => print!("{:3u} ", n),
+                _ => print!("{:3u} ", 999u),
+            };
+        }
+        println!("");
+    }
+
     while app.alive {
         app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
@@ -193,11 +151,11 @@ pub fn main() {
 
         if app.screen_area().contains(&mouse.pos) {
             if mouse.left {
-                area.dig(&cursor_chart_pos);
+                area.dig(&Location(cursor_chart_pos));
             }
 
             if mouse.right {
-                area.fill(&cursor_chart_pos);
+                area.fill(&Location(cursor_chart_pos));
             }
         }
 
@@ -208,9 +166,10 @@ pub fn main() {
         rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 392f32).add_v(&origin.neg())));
 
         // Draw floors
-        for p in rect.points() {
-            let offset = chart_to_screen(&p).add_v(&origin);
-            if area.get(&p) == Water {
+        for pt in rect.points() {
+            let p = Location(pt);
+            let offset = chart_to_screen(&pt).add_v(&origin);
+            if area.get(&p) == area::Water {
                 app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
                 app.draw_sprite(WATER, &offset);
             } else {
@@ -224,25 +183,26 @@ pub fn main() {
         app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin));
 
         // Draw walls
-        for p in rect.points() {
-            let offset = chart_to_screen(&p).add_v(&origin);
+        for pt in rect.points() {
+            let p = Location(pt);
+            let offset = chart_to_screen(&pt).add_v(&origin);
             app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
-            if area.get(&p) == Wall {
-                let left = solid(area.get(&p.add_v(&Vec2::new(-1i8, 0i8))));
-                let rear = solid(area.get(&p.add_v(&Vec2::new(-1i8, -1i8))));
-                let right = solid(area.get(&p.add_v(&Vec2::new(0i8, -1i8))));
+            if area.get(&p) == area::Wall {
+                let left = is_solid(area.get(&(p + Vec2::new(-1, 0))));
+                let rear = is_solid(area.get(&(p + Vec2::new(-1, -1))));
+                let right = is_solid(area.get(&(p + Vec2::new(0, -1))));
 
                 if left && right && rear {
                     app.draw_sprite(CUBE, &offset);
-                    if !solid(area.get(&p.add_v(&Vec2::new(1i8, -1i8)))) ||
-                       !solid(area.get(&p.add_v(&Vec2::new(1i8, 0i8)))) {
+                    if !is_solid(area.get(&(p + Vec2::new(1, -1)))) ||
+                       !is_solid(area.get(&(p + Vec2::new(1, 0)))) {
                         app.draw_sprite(YWALL, &offset);
                     }
-                    if !solid(area.get(&p.add_v(&Vec2::new(-1i8, 1i8)))) ||
-                       !solid(area.get(&p.add_v(&Vec2::new(0i8, 1i8)))) {
+                    if !is_solid(area.get(&(p + Vec2::new(-1, 1)))) ||
+                       !is_solid(area.get(&(p + Vec2::new(0, 1)))) {
                         app.draw_sprite(XWALL, &offset);
                     }
-                    if !solid(area.get(&p.add_v(&Vec2::new(1i8, 1i8)))) {
+                    if !is_solid(area.get(&(p + Vec2::new(1, 1)))) {
                         app.draw_sprite(OWALL, &offset);
                     }
                 } else if left && right {
@@ -256,7 +216,7 @@ pub fn main() {
                 };
             }
 
-            if p == Point2::new(0i8, 0i8) {
+            if p == Location(Point2::new(0i8, 0i8)) {
                 app.set_color(&Vec4::new(0.9f32, 0.9f32, 1.0f32, 1f32));
                 app.draw_sprite(AVATAR, &offset);
             }
