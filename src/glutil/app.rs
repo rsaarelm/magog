@@ -74,6 +74,8 @@ static FONT_SIZE: f32 = 13.0;
 static FONT_START_CHAR: uint = 33;
 static FONT_NUM_CHARS: uint = 94;
 
+pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
+
 // TODO: Make a proper type.
 pub type Color = Vec4<f32>;
 
