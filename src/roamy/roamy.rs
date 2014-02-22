@@ -1,4 +1,5 @@
 use std::rand;
+use std::mem;
 
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2};
@@ -7,6 +8,7 @@ use area::{Location, Area};
 use areaview;
 use glutil::app::App;
 use fov::Fov;
+use fov;
 use mapgen::MapGen;
 
 pub struct Roamy {
@@ -40,6 +42,10 @@ impl Roamy {
         let mouse = app.get_mouse();
         let cursor_chart_pos = areaview::screen_to_chart(
             &mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
+
+        let mut tmp_seen = ~fov::fov(self.area, &self.pos, 12);
+        mem::swap(self.seen, tmp_seen);
+        self.remembered.add(tmp_seen);
 
         if app.screen_area().contains(&mouse.pos) {
             if mouse.left {

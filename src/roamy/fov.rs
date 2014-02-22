@@ -1,13 +1,12 @@
-use std::hashmap::HashMap;
-use cgmath::point::{Point, Point2};
+use std::hashmap::HashSet;
 
 use area::Area;
 use area::{Location, DIRECTIONS};
 
-pub struct Fov(HashMap<Point2<int>, Location>);
+pub struct Fov(HashSet<Location>);
 
 impl Fov {
-    pub fn new() -> Fov { Fov(HashMap::new()) }
+    pub fn new() -> Fov { Fov(HashSet::new()) }
 
     pub fn add(&mut self, other: ~Fov) {
         let &Fov(ref mut h) = self;
@@ -15,25 +14,19 @@ impl Fov {
         h.extend(&mut o.move_iter());
     }
 
-    pub fn find(&self, loc: &Point2<int>) -> Option<Location> {
+    pub fn contains(&self, loc: &Location) -> bool {
         let &Fov(ref h) = self;
-        h.find_copy(loc)
+        h.contains(loc)
     }
-}
-
-pub enum Type {
-    Unknown,
-    Remembered,
-    Visible,
 }
 
 pub fn fov(_a: &Area, center: &Location, _radius: uint) -> Fov {
     let Fov(mut h) = Fov::new();
     // Dummy fov, just cover the immediate surrounding tiles.
     // TODO: Proper fov
-    h.insert(Point2::new(0, 0), *center);
+    h.insert(*center);
     for &v in DIRECTIONS.iter() {
-        h.insert(Point2::new(0, 0).add_v(&v), center + v);
+        h.insert(center + v);
     }
     Fov(h)
 }

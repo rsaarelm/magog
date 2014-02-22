@@ -21,8 +21,7 @@ pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
 
 pub fn draw_area(
     area: &Area, app: &mut App, center: &Location,
-    _seen: &Fov, _remembered: &Fov) {
-    // TODO: Handle fov. (Will need to change coordinates)
+    seen: &Fov, remembered: &Fov) {
     app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
     // XXX: Horrible prototype code, figure out cleaning.
 
@@ -46,10 +45,16 @@ pub fn draw_area(
         let p = Location(pt);
 
         let offset = chart_to_screen(&pt).add_v(&origin);
-        if area.get(&p) == area::Water {
-            app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
+        if seen.contains(&p) {
+            if area.get(&p) == area::Water {
+                app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
+            } else {
+                app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
+            }
+        } else if remembered.contains(&p) {
+            app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
         } else {
-            app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
+            continue;
         }
 
         if area.get(&p) == area::Water {
@@ -67,7 +72,14 @@ pub fn draw_area(
     for pt in rect.points() {
         let p = Location(pt);
         let offset = chart_to_screen(&pt).add_v(&origin);
-        app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
+        if seen.contains(&p) {
+            app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
+        } else if remembered.contains(&p) {
+            app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
+        } else {
+            continue;
+        }
+
         if area.get(&p) == area::Wall {
             let left = is_solid(area.get(&(p + Vec2::new(-1, 0))));
             let rear = is_solid(area.get(&(p + Vec2::new(-1, -1))));
