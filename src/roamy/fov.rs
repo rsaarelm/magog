@@ -1,7 +1,7 @@
 use std::hashmap::HashSet;
 
 use area::Area;
-use area::{Location, DIRECTIONS};
+use area::{Location, DIRECTIONS8};
 
 pub struct Fov(HashSet<Location>);
 
@@ -25,7 +25,11 @@ pub fn fov(_a: &Area, center: &Location, _radius: uint) -> Fov {
     // Dummy fov, just cover the immediate surrounding tiles.
     // TODO: Proper fov
     h.insert(*center);
-    for &v in DIRECTIONS.iter() {
+    // Use dir8 to make walls look nice.
+
+    // XXX: Should only show the degenerate directions (-1, 1) and (1, -1) if
+    // there's a wall there.
+    for &v in DIRECTIONS8.iter() {
         h.insert(center + v);
     }
     Fov(h)

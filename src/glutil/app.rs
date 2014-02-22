@@ -310,6 +310,10 @@ impl App {
     pub fn screen_area(&self) -> Aabb2<f32> {
         RectUtil::new(0f32, 0f32, self.resolution.x as f32, self.resolution.y as f32)
     }
+
+    pub fn quit(&mut self) {
+        self.alive = false;
+    }
 }
 
 fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {

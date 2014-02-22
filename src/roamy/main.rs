@@ -26,9 +26,7 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    let idx = app.add_sprite(~sprites[0].clone());
-    println!("{}", idx);
-    for i in range(1,16) {
+    for i in range(0,16) {
         app.add_sprite(~sprites[i].clone());
     }
 

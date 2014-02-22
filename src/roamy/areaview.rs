@@ -17,7 +17,7 @@ pub static AVATAR : uint = SPRITE_INDEX_START + 6;
 pub static WATER : uint = SPRITE_INDEX_START + 7;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 8;
 pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
-
+pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 10;
 
 pub fn draw_area(
     area: &Area, app: &mut App, center: &Location,
@@ -38,11 +38,11 @@ pub fn draw_area(
     rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 392f32).add_v(&origin.neg())));
 
     let &Location(ref offset) = center;
-    rect = rect.add_v(&offset.to_vec());
+    let pos_offset = Vec2::new(offset.x as int, offset.y as int);
 
     // Draw floors
     for pt in rect.points() {
-        let p = Location(pt);
+        let p = Location(pt) + pos_offset;
 
         let offset = chart_to_screen(&pt).add_v(&origin);
         if seen.contains(&p) {
@@ -54,11 +54,15 @@ pub fn draw_area(
         } else if remembered.contains(&p) {
             app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
         } else {
-            continue;
+            // DEBUG: Visualize the unseen map as well.
+            app.set_color(&Vec4::new(0.2f32, 0.0f32, 0.0f32, 1f32));
+            //continue;
         }
 
         if area.get(&p) == area::Water {
             app.draw_sprite(WATER, &offset);
+        } else if area.get(&p) == area::Downstairs {
+            app.draw_sprite(DOWNSTAIRS, &offset);
         } else {
             app.draw_sprite(FLOOR, &offset);
         }
@@ -70,14 +74,15 @@ pub fn draw_area(
 
     // Draw walls
     for pt in rect.points() {
-        let p = Location(pt);
+        let p = Location(pt) + pos_offset;
         let offset = chart_to_screen(&pt).add_v(&origin);
         if seen.contains(&p) {
             app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
         } else if remembered.contains(&p) {
             app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
         } else {
-            continue;
+            app.set_color(&Vec4::new(0.2f32, 0.0f32, 0.0f32, 1f32));
+            //continue;
         }
 
         if area.get(&p) == area::Wall {
@@ -109,7 +114,7 @@ pub fn draw_area(
             };
         }
 
-        if p == Location(Point2::new(0i8, 0i8)) {
+        if &p == center {
             app.set_color(&Vec4::new(0.9f32, 0.9f32, 1.0f32, 1f32));
             app.draw_sprite(AVATAR, &offset);
         }

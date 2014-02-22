@@ -5,6 +5,7 @@ use std::hashmap::HashSet;
 /// function to define the graph to up to limit distance.
 pub fn build_map<N: IterBytes + Eq + Clone>(
     goals: ~[N], neighbors: |&N| -> ~[N], limit: uint) -> HashMap<N, uint> {
+    assert!(goals.len() > 0);
     let mut ret = HashMap::new();
 
     // Init goal nodes to zero score.
