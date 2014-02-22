@@ -14,6 +14,11 @@ impl Fov {
         let ~Fov(o) = other;
         h.extend(&mut o.move_iter());
     }
+
+    pub fn find(&self, loc: &Point2<int>) -> Option<Location> {
+        let &Fov(ref h) = self;
+        h.find_copy(loc)
+    }
 }
 
 pub enum Type {
