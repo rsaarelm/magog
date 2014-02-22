@@ -2,13 +2,14 @@ extern crate extra;
 extern crate cgmath;
 extern crate glutil;
 extern crate calx;
+extern crate test;
 
 use glutil::app::App;
 use cgmath::aabb::{Aabb2};
 use cgmath::point::{Point};
 use cgmath::vector::{Vec2, Vec4};
 use calx::rectutil::RectUtil;
-use extra::test::BenchHarness;
+use test::BenchHarness;
 
 // Have a global app instance to keep the benchmark function from doing
 // horrible window flickering.
