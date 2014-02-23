@@ -1,99 +1,124 @@
 use std::cmp::min;
-use opengles::gl2;
-use cgmath::point::{Point2, Point3};
+use std::mem::size_of;
+use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
-use shader::Shader;
-use app::Color;
-use buffer;
-use buffer::Buffer;
+use hgl::{Program, Vao, Vbo};
+use hgl;
+use color::{RGB, ToRGB};
 
-use gl_check;
+struct Vertex {
+    px: f32,
+    py: f32,
+    pz: f32,
+
+    u: f32,
+    v: f32,
+
+    r: f32,
+    g: f32,
+    b: f32,
+    a: f32,
+}
+
+impl Vertex {
+    pub fn new(
+        px: f32, py: f32, pz: f32,
+        u: f32, v: f32,
+        color: &RGB<f32>, a: f32) -> Vertex {
+        Vertex {
+            px: px,
+            py: py,
+            pz: pz,
+            u: u,
+            v: v,
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: a
+        }
+    }
+
+    pub fn stride() -> i32 { size_of::<Vertex>() as i32 }
+    pub fn pos_offset() -> uint { 0 }
+    pub fn tex_offset() -> uint { 3 * size_of::<f32>() }
+    pub fn color_offset() -> uint { 5 * size_of::<f32>() }
+}
 
 pub struct Recter {
-    vertices: ~[Point3<f32>],
-    texcoords: ~[Point2<f32>],
-    colors: ~[Color],
+    vertices: ~[Vertex],
 }
 
 impl Recter {
     pub fn new() -> Recter {
         Recter {
             vertices: ~[],
-            texcoords: ~[],
-            colors: ~[],
         }
     }
 
-    pub fn add(&mut self, area: &Aabb2<f32>, texcoords: &Aabb2<f32>, color: &Color) {
-        self.vertices.push(Point3::new(area.min().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.min().y));
-        self.colors.push(*color);
+    pub fn add<C: ToRGB>(
+        &mut self, area: &Aabb2<f32>, z: f32, texcoords: &Aabb2<f32>, color: &C, alpha: f32) {
+        let c = color.to_rgb::<f32>();
 
-        self.vertices.push(Point3::new(area.min().x, area.max().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.max().y));
-        self.colors.push(*color);
+        self.vertices.push(Vertex::new(
+                area.min().x, area.min().y, z,
+                texcoords.min().x, texcoords.min().y,
+                &c, alpha));
 
-        self.vertices.push(Point3::new(area.max().x, area.max().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
-        self.colors.push(*color);
+        self.vertices.push(Vertex::new(
+                area.min().x, area.max().y, z,
+                texcoords.min().x, texcoords.max().y,
+                &c, alpha));
+
+        self.vertices.push(Vertex::new(
+                area.max().x, area.max().y, z,
+                texcoords.max().x, texcoords.max().y,
+                &c, alpha));
 
 
-        self.vertices.push(Point3::new(area.min().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.min().x, texcoords.min().y));
-        self.colors.push(*color);
+        self.vertices.push(Vertex::new(
+                area.min().x, area.min().y, z,
+                texcoords.min().x, texcoords.min().y,
+                &c, alpha));
 
-        self.vertices.push(Point3::new(area.max().x, area.max().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.max().y));
-        self.colors.push(*color);
+        self.vertices.push(Vertex::new(
+                area.max().x, area.max().y, z,
+                texcoords.max().x, texcoords.max().y,
+                &c, alpha));
 
-        self.vertices.push(Point3::new(area.max().x, area.min().y, 0.0));
-        self.texcoords.push(Point2::new(texcoords.max().x, texcoords.min().y));
-        self.colors.push(*color);
-
+        self.vertices.push(Vertex::new(
+                area.max().x, area.min().y, z,
+                texcoords.max().x, texcoords.min().y,
+                &c, alpha));
     }
 
     pub fn clear(&mut self) {
         self.vertices = ~[];
-        self.texcoords = ~[];
-        self.colors = ~[];
     }
 
-    pub fn render(&mut self, shader: &Shader) {
+    pub fn render(&self, program: &Program) {
         if self.vertices.len() == 0 {
             return;
         }
-        let vert = Buffer::new_array();
-        let tex = Buffer::new_array();
-        let col = Buffer::new_array();
+        let vao = Vao::new();
+        let vbo = Vbo::from_data(self.vertices, hgl::StreamDraw).unwrap();
 
-        // Bind shader vars.
-        let in_pos = shader.attrib("in_pos");
-        vert.bind();
-        vert.load_data(self.vertices, buffer::StreamDraw);
-        gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 3, false, 0, 0));
-        gl_check!(gl2::enable_vertex_attrib_array(in_pos));
-        let in_texcoord = shader.attrib("in_texcoord");
-        tex.bind();
-        tex.load_data(self.texcoords, buffer::StreamDraw);
-        gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
-        gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
-        let in_color = shader.attrib("in_color");
-        col.bind();
-        col.load_data(self.colors, buffer::StreamDraw);
-        gl_check!(gl2::vertex_attrib_pointer_f32(in_color, 4, false, 0, 0));
-        gl_check!(gl2::enable_vertex_attrib_array(in_color));
+        program.activate();
+        vao.activate();
+        vbo.activate();
 
-        // Draw!
-        gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, self.vertices.len() as i32));
-        gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
+        vao.enable_attrib(
+            program, "in_pos", 3,
+            Vertex::stride(), Vertex::pos_offset());
+        vao.enable_attrib(
+            program, "in_texcoord", 2,
+            Vertex::stride(), Vertex::tex_offset());
+        vao.enable_attrib(
+            program, "in_color", 4,
+            Vertex::stride(), Vertex::color_offset());
 
-        gl_check!(gl2::disable_vertex_attrib_array(in_color));
-        gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
-        gl_check!(gl2::disable_vertex_attrib_array(in_pos));
-
-        self.clear();
+        vao.draw_array(hgl::Triangles, 0, self.vertices.len() as i32);
     }
 }
 
@@ -108,47 +133,4 @@ pub fn screen_bound(dim: &Vec2<f32>, area: &Vec2<f32>) -> Aabb2<f32> {
     let dim = Point2::new(dim.x * 2f32 * scale / area.x, dim.y * 2f32 * scale / area.y);
     let bound = Aabb2::new(Point2::new(0f32, 0f32), dim);
     bound.add_v(&Vec2::new(-dim.x / 2f32, -dim.y / 2f32))
-}
-
-pub fn draw_screen_texture(bound: &Aabb2<f32>, shader: &Shader) {
-    let vertices = ~[
-        Point2::new(bound.min.x, bound.min.y),
-        Point2::new(bound.max.x, bound.min.y),
-        Point2::new(bound.min.x, bound.max.y),
-
-        Point2::new(bound.max.x, bound.min.y),
-        Point2::new(bound.max.x, bound.max.y),
-        Point2::new(bound.min.x, bound.max.y),
-    ];
-
-    let texcoords = ~[
-        Point2::new(0f32, 1f32),
-        Point2::new(1f32, 1f32),
-        Point2::new(0f32, 0f32),
-
-        Point2::new(1f32, 1f32),
-        Point2::new(1f32, 0f32),
-        Point2::new(0f32, 0f32),
-    ];
-
-    let vert = Buffer::new_array();
-    let tex = Buffer::new_array();
-
-    let in_pos = shader.attrib("in_pos");
-    vert.bind();
-    vert.load_data(vertices, buffer::StreamDraw);
-    gl_check!(gl2::vertex_attrib_pointer_f32(in_pos, 2, false, 0, 0));
-    gl_check!(gl2::enable_vertex_attrib_array(in_pos));
-    let in_texcoord = shader.attrib("in_texcoord");
-    tex.bind();
-    tex.load_data(texcoords, buffer::StreamDraw);
-    gl_check!(gl2::vertex_attrib_pointer_f32(in_texcoord, 2, false, 0, 0));
-    gl_check!(gl2::enable_vertex_attrib_array(in_texcoord));
-
-    // Draw!
-    gl_check!(gl2::draw_arrays(gl2::TRIANGLES, 0, vertices.len() as i32));
-    gl_check!(gl2::bind_buffer(gl2::ARRAY_BUFFER, 0));
-
-    gl_check!(gl2::disable_vertex_attrib_array(in_texcoord));
-    gl_check!(gl2::disable_vertex_attrib_array(in_pos));
 }

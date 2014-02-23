@@ -1,13 +1,14 @@
+#[feature(globs)];
 extern crate cgmath;
 extern crate glutil;
+extern crate color;
 extern crate calx;
 extern crate stb;
 
 use glutil::app::App;
 use glutil::key;
 use glutil::atlas::Sprite;
-use cgmath::vector::{Vec2, Vec4};
-use calx::rectutil::RectUtil;
+use cgmath::vector::{Vec2};
 use stb::image::Image;
 use roamy::Roamy;
 
@@ -33,9 +34,6 @@ pub fn main() {
     let mut state = Roamy::new();
 
     while app.alive {
-        app.set_color(&Vec4::new(0.0f32, 0.1f32, 0.2f32, 1f32));
-        app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
-
         state.draw(&mut app);
 
         app.flush();

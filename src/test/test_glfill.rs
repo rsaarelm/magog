@@ -1,13 +1,15 @@
 extern crate extra;
 extern crate cgmath;
 extern crate glutil;
+extern crate color;
 extern crate calx;
 extern crate test;
 
 use glutil::app::App;
 use cgmath::aabb::{Aabb2};
 use cgmath::point::{Point};
-use cgmath::vector::{Vec2, Vec4};
+use cgmath::vector::{Vec2};
+use color::rgb;
 use calx::rectutil::RectUtil;
 use test::BenchHarness;
 
@@ -25,9 +27,9 @@ fn bench_fill(b: &mut BenchHarness) {
     }
     let app = unsafe { g_app.get_mut_ref() };
     b.iter(|| {
-        app.set_color(&Vec4::new(0.4f32, 0.0f32, 0.0f32, 1f32));
+        app.set_color(&rgb::consts::DARKVIOLET);
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32));
-        app.set_color(&Vec4::new(0.8f32, 0.3f32, 0.3f32, 1f32));
+        app.set_color(&rgb::consts::MEDIUMVIOLETRED);
         let area : Aabb2<f32> = RectUtil::new(0.0f32, 0.0f32, 213.0f32, 120.0f32);
         for p in area.points() {
             app.fill_rect(&Aabb2::new(

@@ -16,16 +16,15 @@ include_rules
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
-run ./rust-rule.sh lib/rust-opengles/lib.rs {libgles}
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/lib.rs {libhgl} \| {libgl}
 run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
-run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgles} {libcgmath} {libglfw} gen/font_data.rs
+run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw} gen/font_data.rs
 
-: src/shiny/main.rs | {libcgmath} {libglfw} {libgles} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
-: src/roamy/main.rs | {libcgmath} {libglfw} {libgles} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> roamy
+: src/shiny/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> shiny
+: src/roamy/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> roamy
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
 : src/runtests/main.rs |> !rustbin |> runtests
 

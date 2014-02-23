@@ -1,6 +1,7 @@
 use cgmath::point::{Point, Point2};
-use cgmath::vector::{Vec2, Vec4};
+use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
+use color::rgb::consts::*;
 use calx::rectutil::RectUtil;
 use area;
 use area::{Location, Area, is_solid};
@@ -22,7 +23,7 @@ pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 10;
 pub fn draw_area(
     area: &Area, app: &mut App, center: &Location,
     seen: &Fov, remembered: &Fov) {
-    app.set_color(&Vec4::new(0.1f32, 0.3f32, 0.6f32, 1f32));
+    app.set_color(&DARKSLATEGRAY);
     // XXX: Horrible prototype code, figure out cleaning.
 
     let origin = Vec2::new(320.0f32, 180.0f32);
@@ -47,15 +48,15 @@ pub fn draw_area(
         let offset = chart_to_screen(&pt).add_v(&origin);
         if seen.contains(&p) {
             if area.get(&p) == area::Water {
-                app.set_color(&Vec4::new(0.0f32, 0.5f32, 1.0f32, 1f32));
+                app.set_color(&MEDIUMSLATEBLUE);
             } else {
-                app.set_color(&Vec4::new(0.7f32, 0.7f32, 0.8f32, 1f32));
+                app.set_color(&SLATEGRAY);
             }
         } else if remembered.contains(&p) {
-            app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
+            app.set_color(&DARKSLATEGRAY);
         } else {
             // DEBUG: Visualize the unseen map as well.
-            app.set_color(&Vec4::new(0.2f32, 0.0f32, 0.0f32, 1f32));
+            app.set_color(&MAROON);
             //continue;
         }
 
@@ -69,7 +70,7 @@ pub fn draw_area(
     }
 
     // Draw cursor back under the protruding geometry.
-    app.set_color(&Vec4::new(1.0f32, 0.4f32, 0.4f32, 1f32));
+    app.set_color(&FIREBRICK);
     app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin));
 
     // Draw walls
@@ -77,11 +78,11 @@ pub fn draw_area(
         let p = Location(pt) + pos_offset;
         let offset = chart_to_screen(&pt).add_v(&origin);
         if seen.contains(&p) {
-            app.set_color(&Vec4::new(0.6f32, 0.5f32, 0.1f32, 1f32));
+            app.set_color(&DARKGOLDENROD);
         } else if remembered.contains(&p) {
-            app.set_color(&Vec4::new(0.2f32, 0.2f32, 0.2f32, 1f32));
+            app.set_color(&DARKSLATEGRAY);
         } else {
-            app.set_color(&Vec4::new(0.2f32, 0.0f32, 0.0f32, 1f32));
+            app.set_color(&MAROON);
             //continue;
         }
 
@@ -115,12 +116,12 @@ pub fn draw_area(
         }
 
         if &p == center {
-            app.set_color(&Vec4::new(0.9f32, 0.9f32, 1.0f32, 1f32));
+            app.set_color(&AZURE);
             app.draw_sprite(AVATAR, &offset);
         }
     }
 
-    app.set_color(&Vec4::new(1.0f32, 0.4f32, 0.4f32, 1f32));
+    app.set_color(&FIREBRICK);
     app.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin));
 }
 

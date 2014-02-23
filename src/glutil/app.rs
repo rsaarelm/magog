@@ -1,14 +1,17 @@
 use std::mem::swap;
 use std::vec;
-use opengles::gl2;
+use gl;
+use color::rgb;
+use color::rgb::{RGB, ToRGB};
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::{Vec2, Vec4};
 use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
+use hgl::{Program};
+use hgl;
 use calx::rectutil::RectUtil;
 use glfw;
 use atlas::{Sprite, Atlas};
-use shader::Shader;
 use recter::Recter;
 use recter;
 use texture::Texture;
@@ -98,12 +101,12 @@ pub struct MouseState {
 
 pub struct App {
     resolution: Vec2<f32>,
-    draw_color: Color,
+    draw_color: RGB<u8>,
     window: ~glfw::Window,
     alive: bool,
     atlas: ~Atlas,
-    sprite_shader: ~Shader,
-    blit_shader: ~Shader,
+    sprite_shader: ~Program,
+    blit_shader: ~Program,
     recter: Recter,
     key_buffer: ~[KeyEvent],
     // Key input hack flag.
@@ -122,20 +125,29 @@ impl App {
         window.set_key_polling(true);
         window.set_char_polling(true);
 
-        gl2::enable(gl2::BLEND);
-        gl2::blend_func(gl2::SRC_ALPHA, gl2::ONE_MINUS_SRC_ALPHA);
+        gl::load_with(glfw::get_proc_address);
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
-        gl2::viewport(0, 0, width as i32, height as i32);
-        gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+        gl::Viewport(0, 0, width as i32, height as i32);
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
         let mut ret = App {
             resolution: Vec2::new(width as f32, height as f32),
-            draw_color: Vec4::new(0.5f32, 1.0f32, 0.5f32, 1.0f32),
+            draw_color: rgb::consts::WHITE,
             window: ~window,
             alive: true,
             atlas: ~Atlas::new(),
-            sprite_shader: ~Shader::new(COLORED_V, ALPHA_SPRITE_F),
-            blit_shader: ~Shader::new(BLIT_V, BLIT_F),
+            sprite_shader:
+                ~Program::link(
+                    [hgl::Shader::compile(COLORED_V, hgl::VertexShader).unwrap(),
+                     hgl::Shader::compile(ALPHA_SPRITE_F, hgl::FragmentShader).unwrap()]
+                 ).unwrap(),
+            blit_shader:
+                ~Program::link(
+                    [hgl::Shader::compile(BLIT_V, hgl::VertexShader).unwrap(),
+                     hgl::Shader::compile(BLIT_F, hgl::FragmentShader).unwrap()]
+                 ).unwrap(),
             recter: Recter::new(),
             key_buffer: ~[],
             unknown_key: false,
@@ -156,8 +168,8 @@ impl App {
         self.atlas.push(sprite)
     }
 
-    pub fn set_color(&mut self, color: &Color) {
-        self.draw_color = *color;
+    pub fn set_color<C: ToRGB>(&mut self, color: &C) {
+        self.draw_color = color.to_rgb::<u8>();
     }
 
     pub fn draw_string(&mut self, offset: &Vec2<f32>, text: &str) {
@@ -174,9 +186,8 @@ impl App {
                 let spr = self.atlas.get(
                     (first_font_idx + i) as uint - FONT_START_CHAR);
                 self.recter.add(
-                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)),
-                    &spr.texcoords,
-                    &self.draw_color);
+                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
+                    &spr.texcoords, &self.draw_color, 1f32);
                 offset.add_self_v(&Vec2::new(spr.bounds.dim().x + 1.0, 0.0));
             }
         }
@@ -185,21 +196,20 @@ impl App {
     pub fn fill_rect(&mut self, rect: &Aabb2<f32>) {
         let magic_solid_texture_index = 0;
         self.recter.add(
-            &transform_pixel_rect(&self.resolution, rect),
+            &transform_pixel_rect(&self.resolution, rect), 0f32,
             &self.atlas.get(magic_solid_texture_index).texcoords,
-            &self.draw_color);
+            &self.draw_color, 1f32);
     }
 
     pub fn draw_sprite(&mut self, idx: uint, pos: &Point2<f32>) {
         let spr = self.atlas.get(idx);
         self.recter.add(
-            &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())),
-            &spr.texcoords,
-            &self.draw_color);
+            &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())), 0f32,
+            &spr.texcoords, &self.draw_color, 1f32);
     }
 
     pub fn flush(&mut self) {
-        gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
         // Render-to-texture.
 
@@ -209,25 +219,28 @@ impl App {
                     (self.resolution.x * self.resolution.y) as uint * 4, 128u8)
                 .as_slice()));
         screen_tex.render_to(|| {
-            gl2::viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
-            gl2::clear(gl2::COLOR_BUFFER_BIT | gl2::DEPTH_BUFFER_BIT);
+            gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
             self.atlas.bind();
-            self.sprite_shader.bind();
             self.recter.render(self.sprite_shader);
+            self.recter.clear();
         });
 
         let (width, height) = self.window.get_size();
         // XXX Odd dimensions are bad mojo for pixel perfection.
         let (width, height) = (width & !1, height & !1);
-        gl2::viewport(0, 0, width, height);
+        gl::Viewport(0, 0, width, height);
 
         screen_tex.bind();
-        self.blit_shader.bind();
-        recter::draw_screen_texture(
-            &recter::screen_bound(&self.resolution, &Vec2::new(width as f32, height as f32)),
-            self.blit_shader);
-        //self.recter.render(selfblit_shader);
+
+        let mut screen_draw = Recter::new();
+        let mut bound = recter::screen_bound(&self.resolution, &Vec2::new(width as f32, height as f32));
+        // XXX: Degenerate the rectangle to flip y-axis.
+        swap(&mut bound.min.y, &mut bound.max.y);
+        screen_draw.add(
+            &bound, 0f32, &RectUtil::new(0f32, 0f32, 1f32, 1f32), &rgb::consts::WHITE, 1f32);
+        screen_draw.render(self.blit_shader);
 
         self.window.swap_buffers();
 

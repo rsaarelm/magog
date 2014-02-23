@@ -4,8 +4,6 @@
 
 * Non-critical stuff
 	These don't make new features.
-	* TODO Switch GL bindings from opengles to gl-rs
-		Seems to be becoming the defacto Rust OpenGL bindings.
 	* TODO Offline image processing
 		Drop image and ttf loading from the end result binaries, make them
 		smaller and faster to start up.
@@ -21,6 +19,3 @@
 		using a bright color as the transparent one for the sprites, which
 		end up having #000000 as the transparent color as end result
 		textures.
-	* TODO Use color-rs for the colors
-	* TODO Use hgl-rs, replace parts of glutil with it
-		It's using gl-rs, so I'd need to transition to that.

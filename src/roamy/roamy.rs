@@ -2,8 +2,9 @@ use std::rand;
 use std::mem;
 
 use cgmath::point::{Point, Point2};
-use cgmath::vector::{Vec2, Vec4};
+use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb};
+use color::rgb::consts::*;
 use area::{Location, Area, uphill};
 use area;
 use areaview;
@@ -75,7 +76,7 @@ impl Roamy {
                 None => (),
             }
         } else {
-            app.set_color(&Vec4::new(1.0f32, 0.5f32, 0.5f32, 1.0f32));
+            app.set_color(&FIREBRICK);
             app.draw_string(&Vec2::new(32f32, 32f32), "Done exploring");
         }
 
