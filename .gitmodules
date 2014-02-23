@@ -13,3 +13,12 @@
 [submodule "lib/cgmath-rs"]
 	path = lib/cgmath-rs
 	url = https://github.com/bjz/cgmath-rs.git
+[submodule "lib/gl-rs"]
+	path = lib/gl-rs
+	url = https://github.com/bjz/gl-rs.git
+[submodule "lib/hgl-rs"]
+	path = lib/hgl-rs
+	url = https://github.com/cmr/hgl-rs.git
+[submodule "lib/color-rs"]
+	path = lib/color-rs
+	url = https://github.com/bjz/color-rs.git
