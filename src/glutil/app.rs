@@ -85,7 +85,7 @@ pub type Color = Vec4<f32>;
 #[deriving(Clone, Eq, ToStr)]
 pub struct KeyEvent {
     // Scancode (ignores local layout)
-    code: key::KeyCode,
+    code: uint,
     // Printable character (if any)
     ch: Option<char>,
 }

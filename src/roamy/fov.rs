@@ -1,4 +1,4 @@
-use std::hashmap::HashSet;
+use collections::hashmap::HashSet;
 
 use area::Area;
 use area::{Location, DIRECTIONS8};

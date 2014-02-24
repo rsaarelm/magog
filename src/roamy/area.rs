@@ -1,5 +1,5 @@
-use std::hashmap::HashMap;
-use std::hashmap::HashSet;
+use collections::hashmap::HashMap;
+use collections::hashmap::HashSet;
 use std::cast;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
@@ -152,7 +152,7 @@ pub static DIRECTIONS8: &'static [Vec2<int>] = &[
     Vec2 { x: -1, y:  0 },
 ];
 // Add third dimension for levels.
-#[deriving(Eq, IterBytes, Clone, ToStr)]
+#[deriving(Eq, Clone, Hash, ToStr)]
 pub struct Location(Point2<i8>);
 
 impl<'a> Location {

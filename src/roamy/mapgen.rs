@@ -1,5 +1,5 @@
 use std::rand::Rng;
-use std::hashmap::HashSet;
+use collections::hashmap::HashSet;
 
 use calx::text::Map2DUtil;
 use cgmath::aabb::{Aabb, Aabb2};

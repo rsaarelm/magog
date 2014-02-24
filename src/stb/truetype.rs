@@ -1,8 +1,8 @@
 use std::libc::*;
-use std::unstable::intrinsics;
+use std::intrinsics;
 use std::vec;
 
-struct stbtt_fontinfo {
+struct StbttFontinfo {
     userdata: *c_void,
     data: *c_uchar,
     fontstart: c_int,
@@ -20,25 +20,25 @@ struct stbtt_fontinfo {
 #[link(name="stb")]
 extern {
     fn stbtt_InitFont(
-        info: *stbtt_fontinfo, data: *c_uchar, offset: c_int) -> c_int;
+        info: *StbttFontinfo, data: *c_uchar, offset: c_int) -> c_int;
     fn stbtt_ScaleForPixelHeight(
-        info: *stbtt_fontinfo, pixels: c_float) -> c_float;
+        info: *StbttFontinfo, pixels: c_float) -> c_float;
     fn stbtt_FindGlyphIndex(
-        info: *stbtt_fontinfo, unicode_codepoint: c_int) -> c_int;
+        info: *StbttFontinfo, unicode_codepoint: c_int) -> c_int;
     fn stbtt_GetGlyphHMetrics(
-        info: *stbtt_fontinfo, glyph_index: c_int,
+        info: *StbttFontinfo, glyph_index: c_int,
         advanceWidth: *mut c_int, leftSideBearing: *mut c_int);
     fn stbtt_GetGlyphBitmapBox(
-        info: *stbtt_fontinfo, glyph: c_int,
+        info: *StbttFontinfo, glyph: c_int,
         scale_x: c_float, scale_y: c_float,
         ix0: *mut c_int, iy0: *mut c_int, ix1: *mut c_int, iy1: *mut c_int);
-    fn stbtt_MakeGlyphBitmap(info: *stbtt_fontinfo, output: *mut c_uchar,
+    fn stbtt_MakeGlyphBitmap(info: *StbttFontinfo, output: *mut c_uchar,
         out_w: c_int, out_h: c_int, out_stride: c_int,
         scale_x: c_float, scale_y: c_float, glyph: c_int);
 }
 
 pub struct Font {
-    priv info: stbtt_fontinfo,
+    priv info: StbttFontinfo,
     priv data: ~[u8],
 }
 
