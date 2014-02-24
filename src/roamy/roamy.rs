@@ -76,8 +76,7 @@ impl Roamy {
                 None => (),
             }
         } else {
-            app.set_color(&FIREBRICK);
-            app.draw_string(&Vec2::new(32f32, 32f32), "Done exploring");
+            app.draw_string(&Vec2::new(32f32, 32f32), &FIREBRICK, "Done exploring");
         }
 
         if self.area.get(&self.pos) == area::Downstairs {

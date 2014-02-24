@@ -102,7 +102,6 @@ pub struct MouseState {
 
 pub struct App {
     resolution: Vec2<f32>,
-    draw_color: RGB<u8>,
     window: ~glfw::Window,
     alive: bool,
     atlas: ~Atlas,
@@ -135,7 +134,6 @@ impl App {
 
         let mut ret = App {
             resolution: Vec2::new(width as f32, height as f32),
-            draw_color: rgb::consts::WHITE,
             window: ~window,
             alive: true,
             atlas: ~Atlas::new(),
@@ -169,11 +167,7 @@ impl App {
         self.atlas.push(sprite)
     }
 
-    pub fn set_color<C: ToRGB>(&mut self, color: &C) {
-        self.draw_color = color.to_rgb::<u8>();
-    }
-
-    pub fn draw_string(&mut self, offset: &Vec2<f32>, text: &str) {
+    pub fn draw_string<C: ToRGB>(&mut self, offset: &Vec2<f32>, color: &C, text: &str) {
         let first_font_idx = 1;
 
         let mut offset = *offset;
@@ -188,7 +182,7 @@ impl App {
                     (first_font_idx + i) as uint - FONT_START_CHAR);
                 self.recter.add(
                     &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
-                    &spr.texcoords, &self.draw_color, 1f32);
+                    &spr.texcoords, color, 1f32);
                 offset.add_self_v(&Vec2::new(spr.bounds.dim().x + 1.0, 0.0));
             }
         }
@@ -214,19 +208,19 @@ impl App {
             RectUtil::new(0f32, 0f32, w, -FONT_HEIGHT)
     }
 
-    pub fn fill_rect(&mut self, rect: &Aabb2<f32>) {
+    pub fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, color: &C) {
         let magic_solid_texture_index = 0;
         self.recter.add(
             &transform_pixel_rect(&self.resolution, rect), 0f32,
             &self.atlas.get(magic_solid_texture_index).texcoords,
-            &self.draw_color, 1f32);
+            color, 1f32);
     }
 
-    pub fn draw_sprite(&mut self, idx: uint, pos: &Point2<f32>) {
+    pub fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, color: &C) {
         let spr = self.atlas.get(idx);
         self.recter.add(
             &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())), 0f32,
-            &spr.texcoords, &self.draw_color, 1f32);
+            &spr.texcoords, color, 1f32);
     }
 
     pub fn flush(&mut self) {
