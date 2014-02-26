@@ -2,15 +2,16 @@ use std::mem::swap;
 use std::vec;
 use gl;
 use color::rgb;
-use color::rgb::{RGB, ToRGB};
+use color::rgb::{ToRGB};
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::{Vec2, Vec4};
 use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use hgl::{Program};
 use hgl;
-use calx::rectutil::RectUtil;
 use glfw;
+use calx::rectutil::RectUtil;
+use stb::image::Image;
 use atlas::{Sprite, Atlas};
 use recter::Recter;
 use recter;
@@ -223,11 +224,7 @@ impl App {
             &spr.texcoords, color, 1f32);
     }
 
-    pub fn flush(&mut self) {
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-
-        // Render-to-texture.
-
+    fn render_screen_tex(&mut self) -> Texture {
         let screen_tex = Texture::new_rgba(
             self.resolution.x as uint, self.resolution.y as uint,
             Some(vec::from_elem(
@@ -239,8 +236,16 @@ impl App {
 
             self.atlas.bind();
             self.recter.render(self.sprite_shader);
-            self.recter.clear();
         });
+        screen_tex
+    }
+
+    pub fn flush(&mut self) {
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+
+        // Render-to-texture.
+        let screen_tex = ~self.render_screen_tex();
+        self.recter.clear();
 
         let (width, height) = self.window.get_size();
         // XXX Odd dimensions are bad mojo for pixel perfection.
@@ -273,6 +278,14 @@ impl App {
         if self.window.should_close() {
             self.alive = false
         }
+    }
+
+    pub fn screenshot(&mut self, path: &str) {
+        let screen_tex = ~self.render_screen_tex();
+        let bytes = screen_tex.get_bytes();
+        let mut img = Image::new(self.resolution.x as uint, self.resolution.y as uint, 4);
+        img.pixels = bytes;
+        img.save_png(path);
     }
 
     fn handle_event(&mut self, (_time, event): (f64, glfw::WindowEvent)) {

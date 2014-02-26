@@ -1,14 +1,18 @@
 use std::cast;
+use std::vec;
 use gl;
 use gl::types::{GLuint, GLint, GLenum};
 
 pub struct Texture {
     priv id: GLuint,
+    priv width: uint,
+    priv height: uint,
+    priv bpp: uint,
 }
 
 impl Texture {
     fn new_data(width: uint, height: uint, data: Option<&[u8]>, format: GLenum) -> Texture {
-        let ret = Texture::new();
+        let mut ret = Texture::new();
 
         ret.bind();
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
@@ -23,6 +27,17 @@ impl Texture {
                     format, gl::UNSIGNED_BYTE, cast::transmute(&d[0]));
             },
             _ => ()
+        }
+
+        ret.width = width;
+        ret.height = height;
+        if format == gl::ALPHA {
+            ret.bpp = 1;
+        }
+        else if format == gl::RGBA {
+            ret.bpp = 4;
+        } else {
+            fail!("Unknown format");
         }
 
         ret.unbind();
@@ -48,7 +63,12 @@ impl Texture {
     pub fn new() -> Texture {
         let mut id: GLuint = 0;
         unsafe { gl::GenTextures(1, &mut id); }
-        Texture{ id: id }
+        Texture {
+            id: id,
+            width: 0,
+            height: 0,
+            bpp: 1,
+        }
     }
 
     pub fn bind(&self) {
@@ -79,6 +99,17 @@ impl Texture {
         unsafe {
             gl::DeleteFramebuffers(1, &fb);
         }
+    }
+
+    pub fn get_bytes(&self) -> ~[u8] {
+        let mut ret = vec::from_elem(self.width * self.height * 4, 0u8);
+        self.bind();
+        unsafe {
+            gl::GetTexImage(
+                gl::TEXTURE_2D, 0, gl::RGBA, gl::UNSIGNED_BYTE,
+                cast::transmute(&mut ret[0]));
+        }
+        ret
     }
 }
 

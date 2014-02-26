@@ -37,13 +37,17 @@ pub fn main() {
     while app.alive {
         state.draw(&mut app);
 
-        app.flush();
-
         for key in app.key_buffer().iter() {
             if key.code == key::ESC {
                 return;
             }
+
+            if key.code == key::F12 {
+                app.screenshot("/tmp/shot.png");
+            }
         }
+
+        app.flush();
     }
 }
 
