@@ -83,7 +83,7 @@ pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
 // TODO: Make a proper type.
 pub type Color = Vec4<f32>;
 
-#[deriving(Clone, Eq, ToStr)]
+#[deriving(Clone, Eq)]
 pub struct KeyEvent {
     // Scancode (ignores local layout)
     code: uint,
@@ -92,7 +92,7 @@ pub struct KeyEvent {
 }
 
 
-#[deriving(Eq, Clone, ToStr)]
+#[deriving(Eq, Clone)]
 pub struct MouseState {
     pos: Point2<f32>,
     left: bool,

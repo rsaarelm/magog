@@ -152,7 +152,7 @@ pub static DIRECTIONS8: &'static [Vec2<int>] = &[
     Vec2 { x: -1, y:  0 },
 ];
 // Add third dimension for levels.
-#[deriving(Eq, Clone, Hash, ToStr)]
+#[deriving(Eq, Clone, Hash)]
 pub struct Location(Point2<i8>);
 
 impl<'a> Location {
