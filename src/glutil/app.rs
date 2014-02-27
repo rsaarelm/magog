@@ -82,12 +82,11 @@ static BLIT_F: &'static str =
     }
     ";
 
-static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
-static FONT_SIZE: f32 = 13.0;
-static FONT_START_CHAR: uint = 33;
-static FONT_NUM_CHARS: uint = 94;
-pub static FONT_HEIGHT: f32 = 10.0;
-pub static FONT_SPACE: f32 = 5.0;
+static FIXED_FONT_WIDTH: f32 = 8.0;
+static FONT_START_CHAR: uint = 32;
+static FONT_NUM_CHARS: uint = 96;
+pub static FONT_HEIGHT: f32 = 12.0;
+pub static FONT_SPACE: f32 = 8.0;
 
 pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
 
@@ -171,8 +170,16 @@ impl App {
         ret.atlas.push(~Sprite::new_alpha(
                 RectUtil::new(0, 0, 1, 1),
                 ~[255u8]));
-        ret.atlas.push_ttf(FONT_DATA.to_owned(),
-            FONT_SIZE, FONT_START_CHAR, FONT_NUM_CHARS);
+
+        let font = Image::load("assets/font.png", 1).unwrap();
+        let sprites = Sprite::new_alpha_set(
+            &Vec2::new(8, 12),
+            &Vec2::new(font.width as int, font.height as int),
+            font.pixels,
+            &Vec2::new(0, -12));
+        for i in range(0, FONT_NUM_CHARS) {
+            ret.add_sprite(~sprites[i].clone());
+        }
 
         ret
     }
@@ -187,38 +194,20 @@ impl App {
         let mut offset = *offset;
         for c in text.chars() {
             let i = c as u32;
-            if i == 32 {
-                // XXX: Space hack.
-                offset.add_self_v(&Vec2::new(FONT_SPACE, 0.0));
-            } else if i >= FONT_START_CHAR as u32
+            if i >= FONT_START_CHAR as u32
                 && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
                 let spr = self.atlas.get(
                     (first_font_idx + i) as uint - FONT_START_CHAR);
                 self.recter.add(
                     &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
                     &spr.texcoords, color, 1f32);
-                offset.add_self_v(&Vec2::new(spr.bounds.dim().x + 1.0, 0.0));
+                offset.add_self_v(&Vec2::new(FIXED_FONT_WIDTH, 0.0));
             }
         }
     }
 
     pub fn string_bounds(&mut self, text: &str) -> Aabb2<f32> {
-        let first_font_idx = 1;
-
-        let mut w = 0f32;
-        for c in text.chars() {
-            let i = c as u32;
-            if i == 32 {
-                // XXX: Space hack.
-                w = w + FONT_SPACE;
-            } else if i >= FONT_START_CHAR as u32
-                && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
-                let spr = self.atlas.get(
-                    (first_font_idx + i) as uint - FONT_START_CHAR);
-                w = w + spr.bounds.dim().x + 1.0;
-            }
-        }
-        RectUtil::new(0f32, 0f32, w, -FONT_HEIGHT)
+        RectUtil::new(0f32, 0f32, text.len() as f32 * FIXED_FONT_WIDTH, -FONT_HEIGHT)
     }
 
     pub fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, color: &C) {
