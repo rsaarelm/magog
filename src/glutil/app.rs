@@ -75,9 +75,9 @@ static BLIT_F: &'static str =
 
 static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
 static FONT_SIZE: f32 = 13.0;
-static FONT_HEIGHT: f32 = 10.0;
 static FONT_START_CHAR: uint = 33;
 static FONT_NUM_CHARS: uint = 94;
+pub static FONT_HEIGHT: f32 = 10.0;
 
 pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
 
