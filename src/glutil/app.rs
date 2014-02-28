@@ -78,6 +78,7 @@ static FONT_SIZE: f32 = 13.0;
 static FONT_START_CHAR: uint = 33;
 static FONT_NUM_CHARS: uint = 94;
 pub static FONT_HEIGHT: f32 = 10.0;
+pub static FONT_SPACE: f32 = 5.0;
 
 pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
 
@@ -176,7 +177,7 @@ impl App {
             let i = c as u32;
             if i == 32 {
                 // XXX: Space hack.
-                offset.add_self_v(&Vec2::new((FONT_SIZE / 2.0).floor(), 0.0));
+                offset.add_self_v(&Vec2::new(FONT_SPACE, 0.0));
             } else if i >= FONT_START_CHAR as u32
                 && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
                 let spr = self.atlas.get(
@@ -197,7 +198,7 @@ impl App {
             let i = c as u32;
             if i == 32 {
                 // XXX: Space hack.
-                w = w + (FONT_SIZE / 2.0).floor();
+                w = w + FONT_SPACE;
             } else if i >= FONT_START_CHAR as u32
                 && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
                 let spr = self.atlas.get(
