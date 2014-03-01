@@ -54,19 +54,27 @@ pub fn draw_area(
         let p = Location(pt) + pos_offset;
 
         let offset = chart_to_screen(&pt).add_v(&origin);
-        let color = 
-            if seen.contains(&p) {
-                if area.get(&p) == area::Water {
-                    WATER_COL
-                } else {
-                    FLOOR_COL
-                }
-            } else if remembered.contains(&p) {
-                REMEMBER_COL
+        let mut color =
+            if area.get(&p) == area::Water {
+                WATER_COL
             } else {
-                // DEBUG: Visualize the unseen map as well.
-                UNSEEN_COL
+                FLOOR_COL
             };
+
+        /*
+        if !seen.contains(&p) {
+            if remembered.contains(&p) {
+                color = REMEMBER_COL;
+            } else {
+                continue;
+            }
+        }
+        */
+        if !seen.contains(&p) {
+            if !remembered.contains(&p) {
+                color = REMEMBER_COL;
+            }
+        }
 
         if color == UNSEEN_COL { continue; } // Don't display debug stuff.
         if area.get(&p) == area::Water {
@@ -85,16 +93,22 @@ pub fn draw_area(
     for pt in rect.points() {
         let p = Location(pt) + pos_offset;
         let offset = chart_to_screen(&pt).add_v(&origin);
-        let color =
-            if seen.contains(&p) {
-                WALL_COL
-            } else if remembered.contains(&p) {
-                REMEMBER_COL
-            } else {
-                UNSEEN_COL
-            };
+        let mut color = WALL_COL;
 
-        if color == UNSEEN_COL { continue; } // Don't display debug stuff.
+        /*
+        if !seen.contains(&p) {
+            if remembered.contains(&p) {
+                color = REMEMBER_COL;
+            } else {
+                continue;
+            }
+        }
+        */
+        if !seen.contains(&p) {
+            if !remembered.contains(&p) {
+                color = REMEMBER_COL;
+            }
+        }
 
         if area.get(&p) == area::Wall {
             let left = is_solid(area.get(&(p + Vec2::new(-1, 0))));
