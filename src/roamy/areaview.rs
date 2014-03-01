@@ -9,7 +9,7 @@ use area::{Location, Area, is_solid};
 use fov::Fov;
 use glutil::app::{App, SPRITE_INDEX_START};
 
-pub static FLOOR : uint = SPRITE_INDEX_START + 14;
+pub static FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static CUBE : uint = SPRITE_INDEX_START + 1;
 pub static XWALL : uint = SPRITE_INDEX_START + 16;
 pub static YWALL : uint = SPRITE_INDEX_START + 17;
@@ -19,7 +19,7 @@ pub static AVATAR : uint = SPRITE_INDEX_START + 26;
 pub static WATER : uint = SPRITE_INDEX_START + 12;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 8;
 pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
-pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 10;
+pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 14;
 
 static REMEMBER_COL: &'static RGB<u8> = &DARKSLATEGRAY;
 static UNSEEN_COL: &'static RGB<u8> = &MAROON;
