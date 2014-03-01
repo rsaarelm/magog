@@ -15,6 +15,8 @@ use calx::rectutil::RectUtil;
 use texture::Texture;
 use stb;
 
+pub static SPRITE_ALPHA: u8 = 0x80;
+
 #[deriving(Clone)]
 pub struct Sprite {
     priv bounds: Aabb2<int>,
@@ -75,7 +77,7 @@ impl Sprite {
         let (mut min_x, mut min_y) = (self.bounds.max().x, self.bounds.max().y);
         let (mut max_x, mut max_y) = (self.bounds.min().x - 1, self.bounds.min().y - 1);
         for p in self.bounds.points() {
-            if self.at(&p) > 0u8 {
+            if self.at(&p) != SPRITE_ALPHA {
                 min_x = min(min_x, p.x);
                 min_y = min(min_y, p.y);
                 max_x = max(max_x, p.x + 1);
@@ -202,7 +204,15 @@ impl Atlas {
         start_char: uint, num_chars: uint) {
         let font = stb::truetype::Font::new(ttf_data).expect("Bad ttf data.");
         for i in range(start_char, start_char + num_chars) {
-            let glyph = font.glyph(i, size).expect("Font missing expected char");
+            let mut glyph = font.glyph(i, size).expect("Font missing expected char");
+
+            // Convert black alpha from STB to our SPRITE_ALPHA.
+            for i in range(0, glyph.pixels.len()) {
+                if glyph.pixels[i] == 0 {
+                    glyph.pixels[i] = SPRITE_ALPHA;
+                }
+            }
+
             let min = Point2::new(glyph.xOffset as int, glyph.yOffset as int);
             let max = min.add_v(&Vec2::new(glyph.width, glyph.height));
             self.push(~Sprite::new_alpha(Aabb2::new(min, max), glyph.pixels));

@@ -46,7 +46,15 @@ static ALPHA_SPRITE_F: &'static str =
         float a = texture(textureUnit, texcoord).w;
         gl_FragColor = vec4(
             color.x * a, color.y * a, color.z * a,
-            a > 0 ? 1.0 : 0.0);
+
+            // Color key is gray value 128. This lets us
+            // use both blacks and whites in the actual sprites,
+            // and keeps the sprite bitmaps easy to read visually.
+            // XXX: Looks like I can't do exact compare
+            // with colors converted to float.
+            // XXX: Also hardcoding this right into the
+            // shader is a bit gross.
+            abs(a * 255 - 128.0) <= 0.1 ? 0.0 : 1.0);
     }
     ";
 
