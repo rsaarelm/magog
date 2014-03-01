@@ -13,19 +13,10 @@ use color::rgb;
 use calx::rectutil::RectUtil;
 use test::BenchHarness;
 
-// Have a global app instance to keep the benchmark function from doing
-// horrible window flickering.
-static mut g_app: Option<App> = None;
-
 // Run the binary with --bench command line option to run benchmark.
 #[bench]
 fn bench_fill(b: &mut BenchHarness) {
-    unsafe {
-        if g_app.is_none() {
-            g_app = Some(App::new(640, 360, "fill benchmark"));
-        }
-    }
-    let app = unsafe { g_app.get_mut_ref() };
+    let mut app = App::new(640, 360, "fill benchmark");
     b.iter(|| {
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32), &rgb::consts::DARKVIOLET);
         let area : Aabb2<f32> = RectUtil::new(0.0f32, 0.0f32, 213.0f32, 120.0f32);

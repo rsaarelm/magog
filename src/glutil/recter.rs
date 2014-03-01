@@ -47,7 +47,7 @@ impl Vertex {
 }
 
 pub struct Recter {
-    vertices: ~[Vertex],
+    priv vertices: ~[Vertex],
 }
 
 impl Recter {

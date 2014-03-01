@@ -18,7 +18,7 @@ pub struct Area {
     set: HashMap<Location, TerrainType>,
 }
 
-type DijkstraMap = HashMap<Location, uint>;
+pub type DijkstraMap = HashMap<Location, uint>;
 
 pub fn uphill(map: &DijkstraMap, loc: &Location) -> Option<Location> {
     let mut ret = None;

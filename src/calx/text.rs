@@ -2,7 +2,7 @@ use std::str;
 use collections::Deque;
 use collections::ringbuf::RingBuf;
 
-struct WrapLineIterator<T> {
+pub struct WrapLineIterator<T> {
     /// Input iterator
     iter: T,
     /// Maximum line length
@@ -141,7 +141,7 @@ pub fn to_cp437(c: char) -> Option<u8> {
     None
 }
 
-struct Map2DIterator<T> {
+pub struct Map2DIterator<T> {
     /// Input iterator
     iter: T,
     x: int,
