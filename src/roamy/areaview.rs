@@ -11,21 +11,23 @@ use glutil::app::{App, SPRITE_INDEX_START};
 
 pub static FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static CUBE : uint = SPRITE_INDEX_START + 1;
-pub static XWALL : uint = SPRITE_INDEX_START + 16;
-pub static YWALL : uint = SPRITE_INDEX_START + 17;
-pub static XYWALL : uint = SPRITE_INDEX_START + 18;
-pub static OWALL : uint = SPRITE_INDEX_START + 19;
+pub static XWALL : uint = SPRITE_INDEX_START + 20;
+pub static YWALL : uint = SPRITE_INDEX_START + 21;
+pub static XYWALL : uint = SPRITE_INDEX_START + 22;
+pub static OWALL : uint = SPRITE_INDEX_START + 23;
 pub static AVATAR : uint = SPRITE_INDEX_START + 26;
 pub static WATER : uint = SPRITE_INDEX_START + 12;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 8;
 pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
 pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 14;
+pub static BLOCK : uint = SPRITE_INDEX_START + 27;
 
 static REMEMBER_COL: &'static RGB<u8> = &DARKSLATEGRAY;
 static UNSEEN_COL: &'static RGB<u8> = &MAROON;
 static WATER_COL: &'static RGB<u8> = &MEDIUMSLATEBLUE;
 static FLOOR_COL: &'static RGB<u8> = &SLATEGRAY;
-static WALL_COL: &'static RGB<u8> = &DARKGOLDENROD;
+static WALL_COL: &'static RGB<u8> = &LIGHTSLATEGRAY;
+static ROCK_COL: &'static RGB<u8> = &DARKGOLDENROD;
 static AVATAR_COL: &'static RGB<u8> = &AZURE;
 static CURSOR_COL: &'static RGB<u8> = &FIREBRICK;
 
@@ -92,8 +94,10 @@ pub fn draw_area(
     // Draw walls
     for pt in rect.points() {
         let p = Location(pt) + pos_offset;
+        let Location(pt2) = p;
+        let wall_mode = pt2.x < 0;
         let offset = chart_to_screen(&pt).add_v(&origin);
-        let mut color = WALL_COL;
+        let mut color = if wall_mode { WALL_COL } else { ROCK_COL };
 
         /*
         if !seen.contains(&p) {
@@ -115,28 +119,35 @@ pub fn draw_area(
             let rear = is_solid(area.get(&(p + Vec2::new(-1, -1))));
             let right = is_solid(area.get(&(p + Vec2::new(0, -1))));
 
-            if left && right && rear {
-                app.draw_sprite(CUBE, &offset, color);
-                if !is_solid(area.get(&(p + Vec2::new(1, -1)))) ||
-                   !is_solid(area.get(&(p + Vec2::new(1, 0)))) {
-                    app.draw_sprite(YWALL, &offset, color);
-                }
-                if !is_solid(area.get(&(p + Vec2::new(-1, 1)))) ||
-                   !is_solid(area.get(&(p + Vec2::new(0, 1)))) {
+            if wall_mode {
+                if left && right && rear {
+                    app.draw_sprite(CUBE, &offset, color);
+                    if !is_solid(area.get(&(p + Vec2::new(1, -1)))) ||
+                        !is_solid(area.get(&(p + Vec2::new(1, 0)))) {
+                            app.draw_sprite(YWALL, &offset, color);
+                        }
+                    if !is_solid(area.get(&(p + Vec2::new(-1, 1)))) ||
+                        !is_solid(area.get(&(p + Vec2::new(0, 1)))) {
+                            app.draw_sprite(XWALL, &offset, color);
+                        }
+                    if !is_solid(area.get(&(p + Vec2::new(1, 1)))) {
+                        app.draw_sprite(OWALL, &offset, color);
+                    }
+                } else if left && right {
+                    app.draw_sprite(XYWALL, &offset, color);
+                } else if left {
                     app.draw_sprite(XWALL, &offset, color);
-                }
-                if !is_solid(area.get(&(p + Vec2::new(1, 1)))) {
+                } else if right {
+                    app.draw_sprite(YWALL, &offset, color);
+                } else {
                     app.draw_sprite(OWALL, &offset, color);
-                }
-            } else if left && right {
-                app.draw_sprite(XYWALL, &offset, color);
-            } else if left {
-                app.draw_sprite(XWALL, &offset, color);
-            } else if right {
-                app.draw_sprite(YWALL, &offset, color);
+                };
             } else {
-                app.draw_sprite(OWALL, &offset, color);
-            };
+                app.draw_sprite(BLOCK, &offset, color);
+                if !left { app.draw_sprite(BLOCK + 1, &offset, color); }
+                if !rear { app.draw_sprite(BLOCK + 2, &offset, color); }
+                if !right { app.draw_sprite(BLOCK + 3, &offset, color); }
+            }
         }
 
         if &p == center {
