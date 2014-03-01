@@ -9,14 +9,14 @@ use area::{Location, Area, is_solid};
 use fov::Fov;
 use glutil::app::{App, SPRITE_INDEX_START};
 
-pub static FLOOR : uint = SPRITE_INDEX_START;
+pub static FLOOR : uint = SPRITE_INDEX_START + 14;
 pub static CUBE : uint = SPRITE_INDEX_START + 1;
-pub static XWALL : uint = SPRITE_INDEX_START + 2;
-pub static YWALL : uint = SPRITE_INDEX_START + 3;
-pub static XYWALL : uint = SPRITE_INDEX_START + 4;
-pub static OWALL : uint = SPRITE_INDEX_START + 5;
-pub static AVATAR : uint = SPRITE_INDEX_START + 6;
-pub static WATER : uint = SPRITE_INDEX_START + 7;
+pub static XWALL : uint = SPRITE_INDEX_START + 16;
+pub static YWALL : uint = SPRITE_INDEX_START + 17;
+pub static XYWALL : uint = SPRITE_INDEX_START + 18;
+pub static OWALL : uint = SPRITE_INDEX_START + 19;
+pub static AVATAR : uint = SPRITE_INDEX_START + 26;
+pub static WATER : uint = SPRITE_INDEX_START + 12;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 8;
 pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
 pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 10;
@@ -66,9 +66,9 @@ pub fn draw_area(
             } else {
                 // DEBUG: Visualize the unseen map as well.
                 UNSEEN_COL
-                    //continue;
             };
 
+        if color == UNSEEN_COL { continue; } // Don't display debug stuff.
         if area.get(&p) == area::Water {
             app.draw_sprite(WATER, &offset, color);
         } else if area.get(&p) == area::Downstairs {
@@ -92,8 +92,9 @@ pub fn draw_area(
                 REMEMBER_COL
             } else {
                 UNSEEN_COL
-                    //continue;
             };
+
+        if color == UNSEEN_COL { continue; } // Don't display debug stuff.
 
         if area.get(&p) == area::Wall {
             let left = is_solid(area.get(&(p + Vec2::new(-1, 0))));

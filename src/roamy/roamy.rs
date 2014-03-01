@@ -19,6 +19,7 @@ pub struct Roamy {
     seen: ~Fov,
     remembered: ~Fov,
     rng: rand::StdRng,
+    stop: bool,
 }
 
 impl Roamy {
@@ -29,6 +30,7 @@ impl Roamy {
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
             rng: rand::rng(),
+            stop: false,
         };
         ret.next_level();
         ret
@@ -69,14 +71,16 @@ impl Roamy {
 
         areaview::draw_area(self.area, app, &self.pos, self.seen, self.remembered);
 
-        if !self.area.fully_explored(self.remembered) {
-            let map = self.area.explore_map(self.remembered);
-            match uphill(&map, &self.pos) {
-                Some(p) => { if self.area.is_walkable(&p) { self.pos = p; } },
-                None => (),
+        if !self.stop {
+            if !self.area.fully_explored(self.remembered) {
+                let map = self.area.explore_map(self.remembered);
+                match uphill(&map, &self.pos) {
+                    Some(p) => { if self.area.is_walkable(&p) { self.pos = p; } },
+                    None => (),
+                }
+            } else {
+                app.draw_string(&Vec2::new(32f32, 32f32), &FIREBRICK, "Done exploring");
             }
-        } else {
-            app.draw_string(&Vec2::new(32f32, 32f32), &FIREBRICK, "Done exploring");
         }
 
         if self.area.get(&self.pos) == area::Downstairs {

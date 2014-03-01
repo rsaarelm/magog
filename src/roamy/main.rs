@@ -28,7 +28,7 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    for i in range(0,16) {
+    for i in range(0,32) {
         app.add_sprite(~sprites[i].clone());
     }
 
@@ -40,6 +40,10 @@ pub fn main() {
         for key in app.key_buffer().iter() {
             if key.code == key::ESC {
                 return;
+            }
+
+            if key.code == key::SPACE {
+                state.stop = !state.stop;
             }
 
             if key.code == key::F12 {
