@@ -12,6 +12,7 @@ use glutil::atlas::Sprite;
 use cgmath::vector::{Vec2};
 use stb::image::Image;
 use roamy::Roamy;
+use area::DIRECTIONS6;
 
 pub mod fov;
 pub mod area;
@@ -28,7 +29,7 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    for i in range(0,32) {
+    for i in range(0,48) {
         app.add_sprite(~sprites[i].clone());
     }
 
@@ -46,12 +47,28 @@ pub fn main() {
                 state.stop = !state.stop;
             }
 
+            if key.code == key::W { step(&mut state, 0); }
+            if key.code == key::E { step(&mut state, 1); }
+            if key.code == key::D { step(&mut state, 2); }
+            if key.code == key::S { step(&mut state, 3); }
+            if key.code == key::A { step(&mut state, 4); }
+            if key.code == key::Q { step(&mut state, 5); }
+
             if key.code == key::F12 {
                 app.screenshot("/tmp/shot.png");
             }
         }
 
         app.flush();
+    }
+
+    fn step(state: &mut Roamy, dir: uint) {
+        // Steer to the sides if bump.
+        if !state.step(&DIRECTIONS6[dir]) {
+            if !state.step(&DIRECTIONS6[(dir + 1) % 6]) {
+                state.step(&DIRECTIONS6[(dir + 5) % 6]);
+            }
+        }
     }
 }
 

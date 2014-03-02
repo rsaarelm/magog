@@ -29,11 +29,18 @@ impl MapGen for Area {
             assert!(nfloor > 0);
 
             // Weight digging towards narrow corners.
-            if rng.gen_range(0, nfloor * nfloor) != 0 {
+            if rng.gen_range(0, nfloor) != 0 {
                 continue;
             }
 
             self.dig(pick);
+            if rng.gen::<uint>() % 10 == 0 {
+                self.set(pick, area::Magma);
+            } else if rng.gen::<uint>() % 10 == 0 {
+                self.set(pick, area::Water);
+            } else if rng.gen::<uint>() % 10 == 0 {
+                self.set(pick, area::Grass);
+            }
             dug += 1;
 
             for &v in DIRECTIONS6.iter() {

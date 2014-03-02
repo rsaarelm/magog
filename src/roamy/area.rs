@@ -8,10 +8,23 @@ use fov::Fov;
 
 #[deriving(Eq)]
 pub enum TerrainType {
-    Wall,
     Floor,
     Water,
+    Magma,
     Downstairs,
+    Wall,
+    Rock,
+    Tree,
+    Grass,
+}
+
+impl TerrainType {
+    pub fn is_wall(&self) -> bool {
+        match *self {
+            Wall | Rock => true,
+            _ => false
+        }
+    }
 }
 
 pub struct Area {
@@ -43,7 +56,7 @@ impl Area {
 
     pub fn get(&self, p: Location) -> TerrainType {
         match self.set.find(&p) {
-            None => Wall,
+            None => Rock,
             Some(&t) => t
         }
     }
@@ -70,14 +83,14 @@ impl Area {
 
     pub fn is_open(&self, p: Location) -> bool {
         match self.get(p) {
-            Floor | Water | Downstairs => true,
+            Floor | Water | Magma | Grass | Downstairs => true,
             _ => false
         }
     }
 
     pub fn is_walkable(&self, p: Location) -> bool {
         match self.get(p) {
-            Floor | Downstairs => true,
+            Floor | Grass | Downstairs => true,
             _ => false
         }
     }
