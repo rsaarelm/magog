@@ -61,11 +61,11 @@ impl Roamy {
 
         if app.screen_area().contains(&mouse.pos) {
             if mouse.left {
-                self.area.dig(&Location(cursor_chart_pos));
+                self.area.dig(Location(cursor_chart_pos));
             }
 
             if mouse.right {
-                self.area.fill(&Location(cursor_chart_pos));
+                self.area.fill(Location(cursor_chart_pos));
             }
         }
 
@@ -74,8 +74,8 @@ impl Roamy {
         if !self.stop {
             if !self.area.fully_explored(self.remembered) {
                 let map = self.area.explore_map(self.remembered);
-                match uphill(&map, &self.pos) {
-                    Some(p) => { if self.area.is_walkable(&p) { self.pos = p; } },
+                match uphill(&map, self.pos) {
+                    Some(p) => { if self.area.is_walkable(p) { self.pos = p; } },
                     None => (),
                 }
             } else {
@@ -83,7 +83,7 @@ impl Roamy {
             }
         }
 
-        if self.area.get(&self.pos) == area::Downstairs {
+        if self.area.get(self.pos) == area::Downstairs {
             self.next_level();
         }
     }

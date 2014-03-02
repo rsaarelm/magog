@@ -63,7 +63,7 @@ pub fn draw_area(
         let offset = chart_to_screen(&pt).add_v(&origin);
 
         let mut color =
-            if area.get(&p) == area::Water {
+            if area.get(p) == area::Water {
                 WATER_COL
             } else {
                 FLOOR_COL
@@ -84,9 +84,9 @@ pub fn draw_area(
             }
         }
 
-        if area.get(&p) == area::Water {
+        if area.get(p) == area::Water {
             app.draw_sprite(WATER, &offset, floor_z, color);
-        } else if area.get(&p) == area::Downstairs {
+        } else if area.get(p) == area::Downstairs {
             app.draw_sprite(DOWNSTAIRS, &offset, floor_z, color);
         } else {
             app.draw_sprite(FLOOR, &offset, floor_z, color);
@@ -99,23 +99,23 @@ pub fn draw_area(
             }
         }
 
-        if area.get(&p) == area::Wall {
-            let left = is_solid(area.get(&(p + Vec2::new(-1, 0))));
-            let rear = is_solid(area.get(&(p + Vec2::new(-1, -1))));
-            let right = is_solid(area.get(&(p + Vec2::new(0, -1))));
+        if area.get(p) == area::Wall {
+            let left = is_solid(area.get(p + Vec2::new(-1, 0)));
+            let rear = is_solid(area.get(p + Vec2::new(-1, -1)));
+            let right = is_solid(area.get(p + Vec2::new(0, -1)));
 
             if wall_mode {
                 if left && right && rear {
                     app.draw_sprite(CUBE, &offset, wall_z, color);
-                    if !is_solid(area.get(&(p + Vec2::new(1, -1)))) ||
-                        !is_solid(area.get(&(p + Vec2::new(1, 0)))) {
+                    if !is_solid(area.get(p + Vec2::new(1, -1))) ||
+                        !is_solid(area.get(p + Vec2::new(1, 0))) {
                             app.draw_sprite(YWALL, &offset, wall_z, color);
                         }
-                    if !is_solid(area.get(&(p + Vec2::new(-1, 1)))) ||
-                        !is_solid(area.get(&(p + Vec2::new(0, 1)))) {
+                    if !is_solid(area.get(p + Vec2::new(-1, 1))) ||
+                        !is_solid(area.get(p + Vec2::new(0, 1))) {
                             app.draw_sprite(XWALL, &offset, wall_z, color);
                         }
-                    if !is_solid(area.get(&(p + Vec2::new(1, 1)))) {
+                    if !is_solid(area.get(p + Vec2::new(1, 1))) {
                         app.draw_sprite(OWALL, &offset, wall_z, color);
                     }
                 } else if left && right {

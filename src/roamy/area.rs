@@ -20,7 +20,7 @@ pub struct Area {
 
 pub type DijkstraMap = HashMap<Location, uint>;
 
-pub fn uphill(map: &DijkstraMap, loc: &Location) -> Option<Location> {
+pub fn uphill(map: &DijkstraMap, loc: Location) -> Option<Location> {
     let mut ret = None;
     let mut score = 0;
     for p in DIRECTIONS6.iter().map(|&d| loc + d) {
@@ -41,51 +41,51 @@ impl Area {
         }
     }
 
-    pub fn get(&self, p: &Location) -> TerrainType {
-        match self.set.find(p) {
+    pub fn get(&self, p: Location) -> TerrainType {
+        match self.set.find(&p) {
             None => Wall,
             Some(&t) => t
         }
     }
 
-    pub fn set(&mut self, p: &Location, t: TerrainType) {
-        self.set.insert(*p, t);
+    pub fn set(&mut self, p: Location, t: TerrainType) {
+        self.set.insert(p, t);
     }
 
-    pub fn defined(&self, p: &Location) -> bool {
-        self.set.contains_key(p)
+    pub fn defined(&self, p: Location) -> bool {
+        self.set.contains_key(&p)
     }
 
-    pub fn remove(&mut self, p: &Location) {
-        self.set.remove(p);
+    pub fn remove(&mut self, p: Location) {
+        self.set.remove(&p);
     }
 
-    pub fn dig(&mut self, p: &Location) {
-        self.set.insert(*p, Floor);
+    pub fn dig(&mut self, p: Location) {
+        self.set.insert(p, Floor);
     }
 
-    pub fn fill(&mut self, p: &Location) {
-        self.set.insert(*p, Wall);
+    pub fn fill(&mut self, p: Location) {
+        self.set.insert(p, Wall);
     }
 
-    pub fn is_open(&self, p: &Location) -> bool {
+    pub fn is_open(&self, p: Location) -> bool {
         match self.get(p) {
             Floor | Water | Downstairs => true,
             _ => false
         }
     }
 
-    pub fn is_walkable(&self, p: &Location) -> bool {
+    pub fn is_walkable(&self, p: Location) -> bool {
         match self.get(p) {
             Floor | Downstairs => true,
             _ => false
         }
     }
 
-    pub fn walk_neighbors(&self, p: &Location) -> ~[Location] {
+    pub fn walk_neighbors(&self, p: Location) -> ~[Location] {
         let mut ret = ~[];
         for &v in DIRECTIONS6.iter() {
-            if self.is_walkable(&(p + v)) {
+            if self.is_walkable(p + v) {
                ret.push(p + v);
             }
         }
@@ -124,7 +124,7 @@ impl Area {
             }
         }
 
-        dijkstra::build_map(goals, |loc| self.walk_neighbors(loc), 256)
+        dijkstra::build_map(goals, |&loc| self.walk_neighbors(loc), 256)
     }
 }
 
