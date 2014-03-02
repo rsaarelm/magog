@@ -44,17 +44,17 @@ static ALPHA_SPRITE_F: &'static str =
 
     void main(void) {
         float a = texture(textureUnit, texcoord).w;
-        gl_FragColor = vec4(
-            color.x * a, color.y * a, color.z * a,
 
-            // Color key is gray value 128. This lets us
-            // use both blacks and whites in the actual sprites,
-            // and keeps the sprite bitmaps easy to read visually.
-            // XXX: Looks like I can't do exact compare
-            // with colors converted to float.
-            // XXX: Also hardcoding this right into the
-            // shader is a bit gross.
-            abs(a * 255 - 128.0) <= 0.1 ? 0.0 : 1.0);
+        // Color key is gray value 128. This lets us
+        // use both blacks and whites in the actual sprites,
+        // and keeps the sprite bitmaps easy to read visually.
+        // XXX: Looks like I can't do exact compare
+        // with colors converted to float.
+        // XXX: Also hardcoding this right into the
+        // shader is a bit gross.
+        if (abs(a * 255 - 128.0) <= 0.1) discard;
+
+        gl_FragColor = vec4(color.x * a, color.y * a, color.z * a, 1.0);
     }
     ";
 
@@ -139,6 +139,9 @@ impl App {
         gl::Enable(gl::BLEND);
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
+        gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LEQUAL);
+
         gl::Viewport(0, 0, width as i32, height as i32);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
@@ -214,8 +217,7 @@ impl App {
                 w = w + spr.bounds.dim().x + 1.0;
             }
         }
-            //Aabb2::new(Point2::new(0f32, 0f32), Point2::new(w, -FONT_HEIGHT))
-            RectUtil::new(0f32, 0f32, w, -FONT_HEIGHT)
+        RectUtil::new(0f32, 0f32, w, -FONT_HEIGHT)
     }
 
     pub fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, color: &C) {
@@ -226,10 +228,10 @@ impl App {
             color, 1f32);
     }
 
-    pub fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, color: &C) {
+    pub fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
         let spr = self.atlas.get(idx);
         self.recter.add(
-            &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())), 0f32,
+            &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())), z,
             &spr.texcoords, color, 1f32);
     }
 

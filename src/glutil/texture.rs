@@ -93,11 +93,19 @@ impl Texture {
             gl::CheckFramebufferStatus(gl::FRAMEBUFFER) ==
             gl::FRAMEBUFFER_COMPLETE);
 
+        // Make a depth buffer.
+        let mut db: GLuint = 0;
+        unsafe { gl::GenRenderbuffers(1, &mut db); }
+        gl::BindRenderbuffer(gl::RENDERBUFFER, db);
+        gl::RenderbufferStorage(gl::RENDERBUFFER, gl::DEPTH_COMPONENT, self.width as i32, self.height as i32);
+        gl::FramebufferRenderbuffer(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::RENDERBUFFER, db);
+
         f();
 
         gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
         unsafe {
             gl::DeleteFramebuffers(1, &fb);
+            gl::DeleteRenderbuffers(1, &db);
         }
     }
 

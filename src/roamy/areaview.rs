@@ -23,7 +23,6 @@ pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 14;
 pub static BLOCK : uint = SPRITE_INDEX_START + 27;
 
 static REMEMBER_COL: &'static RGB<u8> = &DARKSLATEGRAY;
-static UNSEEN_COL: &'static RGB<u8> = &MAROON;
 static WATER_COL: &'static RGB<u8> = &MEDIUMSLATEBLUE;
 static FLOOR_COL: &'static RGB<u8> = &SLATEGRAY;
 static WALL_COL: &'static RGB<u8> = &LIGHTSLATEGRAY;
@@ -51,11 +50,18 @@ pub fn draw_area(
     let &Location(ref offset) = center;
     let pos_offset = Vec2::new(offset.x as int, offset.y as int);
 
-    // Draw floors
+    let wall_z = 0.0f32;
+    let floor_z = 0.1f32;
+
+    // Draw cursor back under the protruding geometry.
+    app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin), floor_z, CURSOR_COL);
+
     for pt in rect.points() {
         let p = Location(pt) + pos_offset;
-
+        let Location(pt2) = p;
+        let wall_mode = pt2.x < 0;
         let offset = chart_to_screen(&pt).add_v(&origin);
+
         let mut color =
             if area.get(&p) == area::Water {
                 WATER_COL
@@ -78,36 +84,15 @@ pub fn draw_area(
             }
         }
 
-        if color == UNSEEN_COL { continue; } // Don't display debug stuff.
         if area.get(&p) == area::Water {
-            app.draw_sprite(WATER, &offset, color);
+            app.draw_sprite(WATER, &offset, floor_z, color);
         } else if area.get(&p) == area::Downstairs {
-            app.draw_sprite(DOWNSTAIRS, &offset, color);
+            app.draw_sprite(DOWNSTAIRS, &offset, floor_z, color);
         } else {
-            app.draw_sprite(FLOOR, &offset, color);
+            app.draw_sprite(FLOOR, &offset, floor_z, color);
         }
-    }
-
-    // Draw cursor back under the protruding geometry.
-    app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin), CURSOR_COL);
-
-    // Draw walls
-    for pt in rect.points() {
-        let p = Location(pt) + pos_offset;
-        let Location(pt2) = p;
-        let wall_mode = pt2.x < 0;
-        let offset = chart_to_screen(&pt).add_v(&origin);
         let mut color = if wall_mode { WALL_COL } else { ROCK_COL };
 
-        /*
-        if !seen.contains(&p) {
-            if remembered.contains(&p) {
-                color = REMEMBER_COL;
-            } else {
-                continue;
-            }
-        }
-        */
         if !seen.contains(&p) {
             if !remembered.contains(&p) {
                 color = REMEMBER_COL;
@@ -121,41 +106,41 @@ pub fn draw_area(
 
             if wall_mode {
                 if left && right && rear {
-                    app.draw_sprite(CUBE, &offset, color);
+                    app.draw_sprite(CUBE, &offset, wall_z, color);
                     if !is_solid(area.get(&(p + Vec2::new(1, -1)))) ||
                         !is_solid(area.get(&(p + Vec2::new(1, 0)))) {
-                            app.draw_sprite(YWALL, &offset, color);
+                            app.draw_sprite(YWALL, &offset, wall_z, color);
                         }
                     if !is_solid(area.get(&(p + Vec2::new(-1, 1)))) ||
                         !is_solid(area.get(&(p + Vec2::new(0, 1)))) {
-                            app.draw_sprite(XWALL, &offset, color);
+                            app.draw_sprite(XWALL, &offset, wall_z, color);
                         }
                     if !is_solid(area.get(&(p + Vec2::new(1, 1)))) {
-                        app.draw_sprite(OWALL, &offset, color);
+                        app.draw_sprite(OWALL, &offset, wall_z, color);
                     }
                 } else if left && right {
-                    app.draw_sprite(XYWALL, &offset, color);
+                    app.draw_sprite(XYWALL, &offset, wall_z, color);
                 } else if left {
-                    app.draw_sprite(XWALL, &offset, color);
+                    app.draw_sprite(XWALL, &offset, wall_z, color);
                 } else if right {
-                    app.draw_sprite(YWALL, &offset, color);
+                    app.draw_sprite(YWALL, &offset, wall_z, color);
                 } else {
-                    app.draw_sprite(OWALL, &offset, color);
+                    app.draw_sprite(OWALL, &offset, wall_z, color);
                 };
             } else {
-                app.draw_sprite(BLOCK, &offset, color);
-                if !left { app.draw_sprite(BLOCK + 1, &offset, color); }
-                if !rear { app.draw_sprite(BLOCK + 2, &offset, color); }
-                if !right { app.draw_sprite(BLOCK + 3, &offset, color); }
+                app.draw_sprite(BLOCK, &offset, wall_z, color);
+                if !left { app.draw_sprite(BLOCK + 1, &offset, wall_z, color); }
+                if !rear { app.draw_sprite(BLOCK + 2, &offset, wall_z, color); }
+                if !right { app.draw_sprite(BLOCK + 3, &offset, wall_z, color); }
             }
         }
 
         if &p == center {
-            app.draw_sprite(AVATAR, &offset, AVATAR_COL);
+            app.draw_sprite(AVATAR, &offset, wall_z, AVATAR_COL);
         }
     }
 
-    app.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin), CURSOR_COL);
+    app.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin), wall_z, CURSOR_COL);
 }
 
 pub fn chart_to_screen(map_pos: &Point2<i8>) -> Point2<f32> {
