@@ -87,9 +87,7 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             ret.push(Sprite { idx: WATER, pos: *pos, z: FLOOR_Z, color: ROYALBLUE });
         },
         area::Magma => {
-            // A two-tone tile, made using two sprites.
-            ret.push(Sprite { idx: MAGMA, pos: *pos, z: FLOOR_Z, color: CRIMSON });
-            ret.push(Sprite { idx: MAGMA_2, pos: *pos, z: FLOOR_Z, color: YELLOW });
+            ret.push(Sprite { idx: MAGMA, pos: *pos, z: FLOOR_Z, color: DARKRED });
         },
         area::Tree => {
             // A two-toner, with floor, using two z-layers
