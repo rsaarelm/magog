@@ -34,8 +34,9 @@ static COLORED_V: &'static str =
     }
     ";
 
-// Allow opaque shading: All nonzero alpha values are treated as opaque, but
-// they also modulate RGB luminance so low alpha means a darker shade.
+// Allow opaque shading: All alpha values except the color key are treated as
+// opaque, but they also modulate RGB luminance so low alpha means a darker
+// shade.
 static ALPHA_SPRITE_F: &'static str =
     "#version 130
     uniform sampler2D textureUnit;
