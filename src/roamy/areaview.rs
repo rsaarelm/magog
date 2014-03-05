@@ -9,23 +9,25 @@ use area::{TerrainType, Location, Area};
 use fov::Fov;
 use glutil::app::{App, SPRITE_INDEX_START};
 
-pub static FLOOR : uint = SPRITE_INDEX_START + 10;
-pub static CUBE : uint = SPRITE_INDEX_START + 1;
+pub static CUBE : uint = SPRITE_INDEX_START + 0;
+pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
+pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 2;
+pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
+pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
+pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
+pub static FLOOR : uint = SPRITE_INDEX_START + 11;
+pub static GRASS : uint = SPRITE_INDEX_START + 12;
+pub static WATER : uint = SPRITE_INDEX_START + 13;
+pub static MAGMA : uint = SPRITE_INDEX_START + 14;
+pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 15;
 pub static XWALL : uint = SPRITE_INDEX_START + 20;
-pub static YWALL : uint = SPRITE_INDEX_START + 21;
-pub static XYWALL : uint = SPRITE_INDEX_START + 22;
-pub static OWALL : uint = SPRITE_INDEX_START + 23;
-pub static AVATAR : uint = SPRITE_INDEX_START + 26;
-pub static WATER : uint = SPRITE_INDEX_START + 12;
-pub static MAGMA : uint = SPRITE_INDEX_START + 13;
-pub static MAGMA_2 : uint = SPRITE_INDEX_START + 7;
-pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 8;
-pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 9;
-pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 14;
-pub static BLOCK : uint = SPRITE_INDEX_START + 27;
-pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 24;
-pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 32;
-pub static GRASS : uint = SPRITE_INDEX_START + 11;
+pub static YWALL : uint = XWALL + 1;
+pub static XYWALL : uint = XWALL + 2;
+pub static OWALL : uint = XWALL + 3;
+pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
+pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
+pub static AVATAR : uint = SPRITE_INDEX_START + 51;
+pub static BLOCK : uint = SPRITE_INDEX_START + 52;
 
 static WALL_COL: &'static RGB<u8> = &LIGHTSLATEGRAY;
 static ROCK_COL: &'static RGB<u8> = &DARKGOLDENROD;
@@ -108,20 +110,29 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             ret.push(Sprite { idx: BLOCK, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
-                ret.push(Sprite { idx: BLOCK + 1, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
+                ret.push(Sprite { idx: BLOCK_NW, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
             }
             if !k.n.is_wall() {
-                ret.push(Sprite { idx: BLOCK + 2, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
+                ret.push(Sprite { idx: BLOCK_N, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
             }
             if !k.ne.is_wall() {
-                ret.push(Sprite { idx: BLOCK + 3, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
+                ret.push(Sprite { idx: BLOCK_NE, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
             }
         }
         area::Wall => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
-                ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
+                // TODO: See-through walls should be drawn differently, don't show the blocked
+                // innards, just an expanse of XYWALL.
+                //   The logic's in place below, but this doesn't make sense until areaview
+                // is expanded to handle multiple wall types.
+                if area::Wall.is_opaque() {
+                    ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
+                } else {
+                    ret.push(Sprite { idx: XYWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
+                    return ret;
+                }
             }
             if left_wall && right_wall {
                 ret.push(Sprite { idx: XYWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });

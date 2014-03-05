@@ -29,7 +29,7 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    for i in range(0,48) {
+    for i in range(0, 64) {
         app.add_sprite(~sprites[i].clone());
     }
 

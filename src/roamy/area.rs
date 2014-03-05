@@ -19,8 +19,15 @@ pub enum TerrainType {
 }
 
 impl TerrainType {
-    pub fn is_wall(&self) -> bool {
-        match *self {
+    pub fn is_wall(self) -> bool {
+        match self {
+            Wall | Rock => true,
+            _ => false
+        }
+    }
+
+    pub fn is_opaque(self) -> bool {
+        match self {
             Wall | Rock => true,
             _ => false
         }
