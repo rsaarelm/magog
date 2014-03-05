@@ -4,8 +4,9 @@ use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
-use hgl::{Program, Vao, Vbo};
 use hgl;
+use hgl::{Program, Vao, Vbo};
+use hgl::buffer;
 use color::{RGB, ToRGB};
 
 struct Vertex {
@@ -102,11 +103,11 @@ impl Recter {
             return;
         }
         let vao = Vao::new();
-        let vbo = Vbo::from_data(self.vertices, hgl::StreamDraw).unwrap();
+        let vbo = Vbo::from_data(self.vertices, buffer::StreamDraw).unwrap();
 
-        program.activate();
-        vao.activate();
-        vbo.activate();
+        program.bind();
+        vao.bind();
+        vbo.bind();
 
         vao.enable_attrib(
             program, "in_pos", 3,
