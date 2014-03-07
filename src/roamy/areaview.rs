@@ -15,6 +15,7 @@ pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 2;
 pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
 pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
 pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
+pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static FLOOR : uint = SPRITE_INDEX_START + 11;
 pub static GRASS : uint = SPRITE_INDEX_START + 12;
 pub static WATER : uint = SPRITE_INDEX_START + 13;
@@ -171,7 +172,6 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
 pub fn draw_area(
     area: &Area, app: &mut App, center: &Location,
     seen: &Fov, remembered: &Fov) {
-    // XXX: Horrible prototype code, figure out cleaning.
 
     let origin = Vec2::new(320.0f32, 180.0f32);
 
@@ -192,11 +192,19 @@ pub fn draw_area(
         let p = Location(pt) + pos_offset;
         let offset = chart_to_screen(&pt).add_v(&origin);
 
-        let seen = seen.contains(&p) || remembered.contains(&p);
         let kernel = Kernel::new(|p| area.get(p), p);
         let mut sprites = terrain_sprites(&kernel, &offset);
-        for s in sprites.mut_iter() {
-            if !seen { s.color = DARKSLATEGRAY; }
+        if !seen.contains(p) {
+            if remembered.contains(p) {
+                for s in sprites.mut_iter() {
+                    s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
+                }
+            } else {
+                continue;
+            }
+        }
+
+        for s in sprites.iter() {
             s.draw(app);
         }
 

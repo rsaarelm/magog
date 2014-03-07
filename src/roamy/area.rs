@@ -88,6 +88,8 @@ impl Area {
         self.set.insert(p, Wall);
     }
 
+    pub fn is_opaque(&self, p: Location) -> bool { self.get(p).is_opaque() }
+
     pub fn is_open(&self, p: Location) -> bool {
         match self.get(p) {
             Floor | Water | Magma | Grass | Downstairs => true,
@@ -115,7 +117,7 @@ impl Area {
     pub fn fully_explored(&self, remembered: &Fov) -> bool {
         // XXX: This won't show maps that have unreachable wall structures
         // buried within other wall tiles as fully explored.
-        for loc in self.cover().iter() {
+        for &loc in self.cover().iter() {
             if !remembered.contains(loc) {
                 return false
             }
@@ -139,7 +141,7 @@ impl Area {
     pub fn explore_map(&self, remembered: &Fov) -> DijkstraMap {
         let mut goals = ~[];
         for &loc in self.cover().iter() {
-            if !remembered.contains(&loc) {
+            if !remembered.contains(loc) {
                 goals.push(loc);
             }
         }

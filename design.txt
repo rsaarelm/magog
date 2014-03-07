@@ -32,8 +32,6 @@
 		the source code into an unique identifier. Then just wrap the pair
 		in a type that supports equality checks, and imgui focus checking
 		should be good to go.
-	* TODO Proper hex FOV code
-		Port over from C++.
 	* TODO Test simple dynamic lighting
 		Add light values and light sources to the area data. Have a zone of
 		improved visibility around the player when it's dim. Have a cutoff

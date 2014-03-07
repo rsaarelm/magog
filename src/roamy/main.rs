@@ -5,6 +5,7 @@ extern crate color;
 extern crate calx;
 extern crate stb;
 extern crate collections;
+extern crate num;
 
 use glutil::app::App;
 use glutil::key;

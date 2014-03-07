@@ -84,7 +84,7 @@ impl Roamy {
         cursor_chart_pos.x += offset.x;
         cursor_chart_pos.y += offset.y;
 
-        let mut tmp_seen = ~fov::fov(self.area, &self.pos, 12);
+        let mut tmp_seen = ~fov::fov(self.area, self.pos, 12);
         mem::swap(self.seen, tmp_seen);
         // Move old fov to map memory.
         self.remembered.add(tmp_seen);
