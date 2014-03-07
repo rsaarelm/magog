@@ -1,9 +1,53 @@
 # vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
 
-* Obvious stuff
+* Stuff
+	* TODO Multiple terrain types in runtime editing
+		Paint terrain with mouse, using all available terrain types. Need
+		UI for switching between brushes.
+	* TODO Save edited maps
+		Bonus points for saving them as ASCII art that can be embedded into
+		the source code later as prefab vault source.
+	* TODO Edit and play
+		Switch to game from an edited scenario, see how it plays out. Then
+		rewind back to the editor with the changes that happend during
+		gameplay rolled back.
+	* TODO Command-line interface
+		The ultimate tool for custom UI. Use an imgui idiom, have a text
+		buffer widget that edits a mutable string while it's being polled
+		and returns true when the user pressed enter.
+	* TODO Stop batching everything in rendering
+		Using the exact same shader program and vertex signature for
+		everything that gets drawn is too limiting. For example, the font
+		would be better drawn with an alpha blending shader rather than the
+		sprite shader.
+	* TODO App module refactoring
+		Rename current minimal-functionality App type to "Rendering". Write
+		a new higher-level type App in crate calx that performs all OpenGL
+		operations through the interface in Rendering and that can have less
+		minimal state stuff. Move the fontering to App. App can also have a
+		separately set draw color and imgui state keeping.
+	* TODO gen_id! macro for imgui widgets
+		Rust currently has (undocumented) file!(), line!() and
+		indirect_line!() macros, which should serve to turn the location in
+		the source code into an unique identifier. Then just wrap the pair
+		in a type that supports equality checks, and imgui focus checking
+		should be good to go.
+	* TODO Proper hex FOV code
+		Port over from C++.
+	* TODO Test simple dynamic lighting
+		Add light values and light sources to the area data. Have a zone of
+		improved visibility around the player when it's dim. Have a cutoff
+		into blinding total darkness in the visuals when there is absolutely
+		no light.
 
 * Non-critical stuff
 	These don't make new features.
+	* TODO Start using hgl::texture
+	* TODO Complete set of terrain predicates in the terrain cell type
+		Will still want to keep predicates that can depend on more than just
+		the cell in a place that can access everything in the space. For
+		example, mobs block paths, sometimes move so little you can count
+		them as stable obstacles, and some might block FOV.
 	* TODO Offline image processing
 		Drop image and ttf loading from the end result binaries, make them
 		smaller and faster to start up.
