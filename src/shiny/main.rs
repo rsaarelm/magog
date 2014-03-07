@@ -6,6 +6,7 @@ extern crate calx;
 use std::cmp::max;
 use glutil::app::App;
 use glutil::app;
+use glutil::key;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2};
@@ -91,6 +92,16 @@ pub fn main() {
         outline_print(&mut app, &Aabb2::new(Point2::new(560.0f32, 0.0f32), Point2::new(640.0f32, 16.0f32)),
             &consts::LIGHTSLATEGRAY, Right,
             "Area Name");
+
+        for key in app.key_buffer().iter() {
+            if key.code == key::ESC {
+                return;
+            }
+
+            if key.code == key::F12 {
+                app.screenshot("/tmp/shot.png");
+            }
+        }
 
         app.flush();
     }
