@@ -1,5 +1,4 @@
 use std::mem::swap;
-use std::vec;
 use gl;
 use color::rgb;
 use color::rgb::{ToRGB};
@@ -15,7 +14,7 @@ use stb::image::Image;
 use atlas::{Sprite, Atlas};
 use recter::Recter;
 use recter;
-use texture::Texture;
+use framebuffer::Framebuffer;
 use key;
 
 static COLORED_V: &'static str =
@@ -44,7 +43,7 @@ static ALPHA_SPRITE_F: &'static str =
     in vec4 color;
 
     void main(void) {
-        float a = texture(textureUnit, texcoord).w;
+        float a = texture(textureUnit, texcoord).x;
 
         // Color key is gray value 128. This lets us
         // use both blacks and whites in the actual sprites,
@@ -118,6 +117,7 @@ pub struct App {
     sprite_shader: ~Program,
     blit_shader: ~Program,
     recter: Recter,
+    framebuffer: Framebuffer,
     key_buffer: ~[KeyEvent],
     // Key input hack flag.
     unknown_key: bool,
@@ -161,6 +161,7 @@ impl App {
                      hgl::Shader::compile(BLIT_F, hgl::FragmentShader).unwrap()]
                  ).unwrap(),
             recter: Recter::new(),
+            framebuffer: Framebuffer::new(width, height),
             key_buffer: ~[],
             unknown_key: false,
         };
@@ -225,27 +226,20 @@ impl App {
             &spr.texcoords, color, 1f32);
     }
 
-    fn render_screen_tex(&mut self) -> Texture {
-        let screen_tex = Texture::new_rgba(
-            self.resolution.x as uint, self.resolution.y as uint,
-            Some(vec::from_elem(
-                    (self.resolution.x * self.resolution.y) as uint * 4, 128u8)
-                .as_slice()));
-        screen_tex.render_to(|| {
-            gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-
-            self.atlas.bind();
-            self.recter.render(self.sprite_shader);
-        });
-        screen_tex
+    fn render_screen(&mut self) {
+        // Render-to-texture.
+        self.framebuffer.bind();
+        gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        self.atlas.bind();
+        self.recter.render(self.sprite_shader);
+        self.framebuffer.unbind();
     }
 
     pub fn flush(&mut self) {
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        // Render-to-texture.
-        let screen_tex = ~self.render_screen_tex();
+        self.render_screen();
         self.recter.clear();
 
         let (width, height) = self.window.get_size();
@@ -253,8 +247,7 @@ impl App {
         let (width, height) = (width & !1, height & !1);
         gl::Viewport(0, 0, width, height);
 
-        screen_tex.bind();
-
+        self.framebuffer.texture.bind();
         let mut screen_draw = Recter::new();
         let mut bound = recter::screen_bound(&self.resolution, &Vec2::new(width as f32, height as f32));
         // XXX: Degenerate the rectangle to flip y-axis.
@@ -282,8 +275,8 @@ impl App {
     }
 
     pub fn screenshot(&mut self, path: &str) {
-        let screen_tex = ~self.render_screen_tex();
-        let bytes = screen_tex.get_bytes();
+        self.render_screen();
+        let bytes = self.framebuffer.get_bytes();
         let mut img = Image::new(self.resolution.x as uint, self.resolution.y as uint, 4);
         img.pixels = bytes;
         img.save_png(path);

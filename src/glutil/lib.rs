@@ -13,8 +13,8 @@ extern crate color;
 extern crate calx;
 extern crate stb;
 
-pub mod texture;
 pub mod app;
 pub mod atlas;
 pub mod recter;
 pub mod key;
+pub mod framebuffer;

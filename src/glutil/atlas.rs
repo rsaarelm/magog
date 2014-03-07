@@ -9,10 +9,13 @@ use cgmath::point::{Point, Point2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::Vec2;
+use hgl::texture::{Texture, ImageInfo};
+use hgl::texture;
+use hgl::texture::pixel;
+use gl::types::{GLint};
 
 use calx::pack_rect::pack_rects;
 use calx::rectutil::RectUtil;
-use texture::Texture;
 use stb;
 
 pub static SPRITE_ALPHA: u8 = 0x80;
@@ -136,16 +139,19 @@ pub struct Atlas {
     sprites: ~[~Sprite],
     rects: ~[AtlasRect],
     is_dirty: bool,
-    texture: ~Texture,
+    texture: Texture,
 }
 
 impl Atlas {
     pub fn new() -> Atlas {
+        let tex = Texture::new_raw(texture::Texture2D);
+        tex.filter(texture::Nearest);
+        tex.wrap(texture::ClampToEdge);
         Atlas {
             sprites: ~[],
             rects: ~[],
             is_dirty: true,
-            texture: ~Texture::new_alpha(0, 0, None),
+            texture: tex,
         }
     }
 
@@ -180,8 +186,13 @@ impl Atlas {
                     &self.sprites[i].bounds, &pack[i], &base.dim()));
         }
 
-        self.texture = ~Texture::new_alpha(
-            base.dim().x as uint, base.dim().y as uint, Some(tex_data.as_slice()));
+        let info = ImageInfo::new()
+            .width(base.dim().x as GLint)
+            .height(base.dim().y as GLint)
+            .pixel_format(pixel::RED)
+            .pixel_type(pixel::UNSIGNED_BYTE)
+            ;
+        self.texture.load_image(info, &tex_data[0]);
 
         self.is_dirty = false;
 

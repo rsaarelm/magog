@@ -4,6 +4,7 @@ use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
+use gl;
 use hgl;
 use hgl::{Program, Vao, Vbo};
 use hgl::buffer;
@@ -103,20 +104,20 @@ impl Recter {
             return;
         }
         let vao = Vao::new();
-        let vbo = Vbo::from_data(self.vertices, buffer::StreamDraw).unwrap();
+        let vbo = Vbo::from_data(self.vertices, buffer::StreamDraw);
 
         program.bind();
         vao.bind();
         vbo.bind();
 
         vao.enable_attrib(
-            program, "in_pos", 3,
+            program, "in_pos", gl::FLOAT, 3,
             Vertex::stride(), Vertex::pos_offset());
         vao.enable_attrib(
-            program, "in_texcoord", 2,
+            program, "in_texcoord", gl::FLOAT, 2,
             Vertex::stride(), Vertex::tex_offset());
         vao.enable_attrib(
-            program, "in_color", 4,
+            program, "in_color", gl::FLOAT, 4,
             Vertex::stride(), Vertex::color_offset());
 
         vao.draw_array(hgl::Triangles, 0, self.vertices.len() as i32);

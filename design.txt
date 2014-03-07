@@ -42,7 +42,6 @@
 
 * Non-critical stuff
 	These don't make new features.
-	* TODO Start using hgl::texture
 	* TODO Complete set of terrain predicates in the terrain cell type
 		Will still want to keep predicates that can depend on more than just
 		the cell in a place that can access everything in the space. For
