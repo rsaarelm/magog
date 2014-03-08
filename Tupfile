@@ -22,7 +22,7 @@ run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
-run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath}
+run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
@@ -33,6 +33,5 @@ run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {
 
 # Testing. All unit test runners are expected to start with 'test_'.
 : src/calx/lib.rs | {libcalx} |> !rustbin --test |> test_calx
-: src/test/test_glfill.rs | {libcgmath} {libglutil} {libcalx} libglfw3.a libstb.a |> !rustbin --test $(GLFW_LINKARGS) |> test_glfill
 
 : lib/cgmath-rs/src/test/test.rs | {libcgmath} |> !rustbin --test |> test_cgmath

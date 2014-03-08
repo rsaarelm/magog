@@ -3,19 +3,21 @@ use gl;
 use color::rgb;
 use color::rgb::{ToRGB};
 use cgVector = cgmath::vector::Vector;
-use cgmath::vector::{Vec2, Vec4};
+use cgmath::vector::{Vec2};
 use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use hgl::{Program};
 use hgl;
 use glfw;
 use calx::rectutil::RectUtil;
+use calx::renderer::{Renderer, KeyEvent, MouseState, DrawMode};
+use calx::key;
+use calx::sprite::Sprite;
 use stb::image::Image;
-use atlas::{Sprite, Atlas};
+use atlas::{Atlas};
 use recter::Recter;
 use recter;
 use framebuffer::Framebuffer;
-use key;
 
 static COLORED_V: &'static str =
     "#version 130
@@ -89,27 +91,7 @@ pub static FONT_SPACE: f32 = FONT_WIDTH;
 
 pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
 
-// TODO: Make a proper type.
-pub type Color = Vec4<f32>;
-
-#[deriving(Clone, Eq)]
-pub struct KeyEvent {
-    // Scancode (ignores local layout)
-    code: uint,
-    // Printable character (if any)
-    ch: Option<char>,
-}
-
-
-#[deriving(Eq, Clone)]
-pub struct MouseState {
-    pos: Point2<f32>,
-    left: bool,
-    middle: bool,
-    right: bool,
-}
-
-pub struct App {
+pub struct GlRenderer {
     resolution: Vec2<f32>,
     window: ~glfw::Window,
     alive: bool,
@@ -123,8 +105,76 @@ pub struct App {
     unknown_key: bool,
 }
 
-impl App {
-    pub fn new(width: uint, height: uint, title: &str) -> App {
+impl GlRenderer {
+    pub fn draw_string<C: ToRGB>(&mut self, offset: &Vec2<f32>, color: &C, text: &str) {
+        let first_font_idx = 1;
+
+        let mut offset = *offset;
+        for c in text.chars() {
+            let i = c as u32;
+            if i >= FONT_START_CHAR as u32
+                && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
+                let spr = self.atlas.get(
+                    (first_font_idx + i) as uint - FONT_START_CHAR);
+                self.recter.add(
+                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
+                    &spr.texcoords, color, 1f32);
+                offset.add_self_v(&Vec2::new(FONT_WIDTH, 0.0));
+            }
+        }
+    }
+
+    pub fn string_bounds(&mut self, text: &str) -> Aabb2<f32> {
+        RectUtil::new(0f32, 0f32, text.len() as f32 * FONT_WIDTH, -FONT_HEIGHT)
+    }
+
+    fn render_screen(&mut self) {
+        // Render-to-texture.
+        self.framebuffer.bind();
+        gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        self.atlas.bind();
+        self.recter.render(self.sprite_shader);
+        self.framebuffer.unbind();
+    }
+
+    fn handle_event(&mut self, (_time, event): (f64, glfw::WindowEvent)) {
+        match event {
+            glfw::CharEvent(ch) => {
+                if !self.unknown_key {
+                    if self.key_buffer.len() > 0 {
+                        self.key_buffer[self.key_buffer.len() - 1].ch = Some(ch);
+                    } else {
+                        println!("WARNING: Received char event with no preceding key down event");
+                    }
+                } else {
+                    // Char emitted from a key which App did not recognize.
+                    // Emit the print event with code UNKNOWN.
+                    self.key_buffer.push(
+                        KeyEvent{ code: key::UNKNOWN, ch: Some(ch) });
+                }
+            },
+            glfw::KeyEvent(key, _scan, action, _mods) => {
+                if action == glfw::Press || action == glfw::Repeat {
+                    match translate_glfw_key(key) {
+                        Some(key) => {
+                            self.key_buffer.push(KeyEvent{ code: key, ch: None });
+                            self.unknown_key = false;
+                        },
+                        None => {
+                            self.unknown_key = true;
+                        }
+                    };
+                }
+            },
+            _ => ()
+        };
+    }
+
+}
+
+impl Renderer for GlRenderer {
+    fn new(width: uint, height: uint, title: &str) -> GlRenderer {
         if !glfw::init().is_ok() {
             fail!("Failed to initialize GLFW");
         }
@@ -145,7 +195,7 @@ impl App {
         gl::Viewport(0, 0, width as i32, height as i32);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        let mut ret = App {
+        let mut ret = GlRenderer {
             resolution: Vec2::new(width as f32, height as f32),
             window: ~window,
             alive: true,
@@ -185,58 +235,27 @@ impl App {
         ret
     }
 
-    pub fn add_sprite(&mut self, sprite: ~Sprite) -> uint {
+    fn add_sprite(&mut self, sprite: ~Sprite) -> uint {
         self.atlas.push(sprite)
     }
 
-    pub fn draw_string<C: ToRGB>(&mut self, offset: &Vec2<f32>, color: &C, text: &str) {
-        let first_font_idx = 1;
-
-        let mut offset = *offset;
-        for c in text.chars() {
-            let i = c as u32;
-            if i >= FONT_START_CHAR as u32
-                && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
-                let spr = self.atlas.get(
-                    (first_font_idx + i) as uint - FONT_START_CHAR);
-                self.recter.add(
-                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
-                    &spr.texcoords, color, 1f32);
-                offset.add_self_v(&Vec2::new(FONT_WIDTH, 0.0));
-            }
-        }
-    }
-
-    pub fn string_bounds(&mut self, text: &str) -> Aabb2<f32> {
-        RectUtil::new(0f32, 0f32, text.len() as f32 * FONT_WIDTH, -FONT_HEIGHT)
-    }
-
-    pub fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, color: &C) {
+    fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, z: f32, color: &C) {
         let magic_solid_texture_index = 0;
         self.recter.add(
-            &transform_pixel_rect(&self.resolution, rect), 0f32,
+            &transform_pixel_rect(&self.resolution, rect), z,
             &self.atlas.get(magic_solid_texture_index).texcoords,
             color, 1f32);
     }
 
-    pub fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
+    fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C, _mode: DrawMode) {
+        // TODO: Handle mode
         let spr = self.atlas.get(idx);
         self.recter.add(
             &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&pos.to_vec())), z,
             &spr.texcoords, color, 1f32);
     }
 
-    fn render_screen(&mut self) {
-        // Render-to-texture.
-        self.framebuffer.bind();
-        gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        self.atlas.bind();
-        self.recter.render(self.sprite_shader);
-        self.framebuffer.unbind();
-    }
-
-    pub fn flush(&mut self) {
+    fn flush(&mut self) {
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
         self.render_screen();
@@ -274,7 +293,7 @@ impl App {
         }
     }
 
-    pub fn screenshot(&mut self, path: &str) {
+    fn screenshot(&mut self, path: &str) {
         self.render_screen();
         let bytes = self.framebuffer.get_bytes();
         let mut img = Image::new(self.resolution.x as uint, self.resolution.y as uint, 4);
@@ -282,46 +301,11 @@ impl App {
         img.save_png(path);
     }
 
-    fn handle_event(&mut self, (_time, event): (f64, glfw::WindowEvent)) {
-        match event {
-            glfw::CharEvent(ch) => {
-                if !self.unknown_key {
-                    if self.key_buffer.len() > 0 {
-                        self.key_buffer[self.key_buffer.len() - 1].ch = Some(ch);
-                    } else {
-                        println!("WARNING: Received char event with no preceding key down event");
-                    }
-                } else {
-                    // Char emitted from a key which App did not recognize.
-                    // Emit the print event with code UNKNOWN.
-                    self.key_buffer.push(
-                        KeyEvent{ code: key::UNKNOWN, ch: Some(ch) });
-                }
-            },
-            glfw::KeyEvent(key, _scan, action, _mods) => {
-                if action == glfw::Press || action == glfw::Repeat {
-                    match key::translate_glfw_key(key) {
-                        Some(key) => {
-                            self.key_buffer.push(KeyEvent{ code: key, ch: None });
-                            self.unknown_key = false;
-                        },
-                        None => {
-                            self.unknown_key = true;
-                        }
-                    };
-                }
-            },
-            _ => ()
-        };
+    fn pop_key(&mut self) -> Option<KeyEvent> {
+        self.key_buffer.remove(0)
     }
 
-    pub fn key_buffer(&mut self) -> ~[KeyEvent] {
-        let mut ret : ~[KeyEvent] = ~[];
-        swap(&mut ret, &mut self.key_buffer);
-        ret
-    }
-
-    pub fn get_mouse(&self) -> MouseState {
+    fn get_mouse(&self) -> MouseState {
         let (cx, cy) = self.window.get_cursor_pos();
         // XXX: overly complex juggling back and forth the coordinate systems.
         let (width, height) = self.window.get_size();
@@ -341,14 +325,6 @@ impl App {
             right: self.window.get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
         }
     }
-
-    pub fn screen_area(&self) -> Aabb2<f32> {
-        RectUtil::new(0f32, 0f32, self.resolution.x as f32, self.resolution.y as f32)
-    }
-
-    pub fn quit(&mut self) {
-        self.alive = false;
-    }
 }
 
 fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
@@ -359,4 +335,101 @@ fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
         Point2::new(
             rect.max.x / dim.x * 2.0f32 - 1.0f32,
             rect.max.y / dim.y * 2.0f32 - 1.0f32))
+}
+
+fn translate_glfw_key(k: glfw::Key) -> Option<uint> {
+    match k {
+        glfw::KeySpace => Some(key::SPACE),
+        glfw::KeyApostrophe => Some(key::QUOTE),
+        glfw::KeyComma => Some(key::COMMA),
+        glfw::KeyMinus => Some(key::MINUS),
+        glfw::KeyPeriod => Some(key::PERIOD),
+        glfw::KeySlash => Some(key::SLASH),
+        glfw::Key0 => Some(key::NUM_0),
+        glfw::Key1 => Some(key::NUM_1),
+        glfw::Key2 => Some(key::NUM_2),
+        glfw::Key3 => Some(key::NUM_3),
+        glfw::Key4 => Some(key::NUM_4),
+        glfw::Key5 => Some(key::NUM_5),
+        glfw::Key6 => Some(key::NUM_6),
+        glfw::Key7 => Some(key::NUM_7),
+        glfw::Key8 => Some(key::NUM_8),
+        glfw::Key9 => Some(key::NUM_9),
+        glfw::KeySemicolon => Some(key::SEMICOLON),
+        glfw::KeyEqual => Some(key::EQUALS),
+        glfw::KeyA => Some(key::A),
+        glfw::KeyB => Some(key::B),
+        glfw::KeyC => Some(key::C),
+        glfw::KeyD => Some(key::D),
+        glfw::KeyE => Some(key::E),
+        glfw::KeyF => Some(key::F),
+        glfw::KeyG => Some(key::G),
+        glfw::KeyH => Some(key::H),
+        glfw::KeyI => Some(key::I),
+        glfw::KeyJ => Some(key::J),
+        glfw::KeyK => Some(key::K),
+        glfw::KeyL => Some(key::L),
+        glfw::KeyM => Some(key::M),
+        glfw::KeyN => Some(key::N),
+        glfw::KeyO => Some(key::O),
+        glfw::KeyP => Some(key::P),
+        glfw::KeyQ => Some(key::Q),
+        glfw::KeyR => Some(key::R),
+        glfw::KeyS => Some(key::S),
+        glfw::KeyT => Some(key::T),
+        glfw::KeyU => Some(key::U),
+        glfw::KeyV => Some(key::V),
+        glfw::KeyW => Some(key::W),
+        glfw::KeyX => Some(key::X),
+        glfw::KeyY => Some(key::Y),
+        glfw::KeyZ => Some(key::Z),
+        glfw::KeyLeftBracket => Some(key::LEFT_BRACKET),
+        glfw::KeyBackslash => Some(key::BACKSLASH),
+        glfw::KeyRightBracket => Some(key::RIGHT_BRACKET),
+        glfw::KeyGraveAccent => Some(key::BACKQUOTE),
+        glfw::KeyEscape => Some(key::ESC),
+        glfw::KeyEnter => Some(key::ENTER),
+        glfw::KeyTab => Some(key::TAB),
+        glfw::KeyBackspace => Some(key::BACKSPACE),
+        glfw::KeyInsert => Some(key::INSERT),
+        glfw::KeyDelete => Some(key::DEL),
+        glfw::KeyRight => Some(key::RIGHT),
+        glfw::KeyLeft => Some(key::LEFT),
+        glfw::KeyDown => Some(key::DOWN),
+        glfw::KeyUp => Some(key::UP),
+        glfw::KeyPageUp => Some(key::PAGEUP),
+        glfw::KeyPageDown => Some(key::PAGEDOWN),
+        glfw::KeyHome => Some(key::HOME),
+        glfw::KeyEnd => Some(key::END),
+        glfw::KeyF1 => Some(key::F1),
+        glfw::KeyF2 => Some(key::F2),
+        glfw::KeyF3 => Some(key::F3),
+        glfw::KeyF4 => Some(key::F4),
+        glfw::KeyF5 => Some(key::F5),
+        glfw::KeyF6 => Some(key::F6),
+        glfw::KeyF7 => Some(key::F7),
+        glfw::KeyF8 => Some(key::F8),
+        glfw::KeyF9 => Some(key::F9),
+        glfw::KeyF10 => Some(key::F10),
+        glfw::KeyF11 => Some(key::F11),
+        glfw::KeyF12 => Some(key::F12),
+        glfw::KeyKp0 => Some(key::INSERT),
+        glfw::KeyKp1 => Some(key::END),
+        glfw::KeyKp2 => Some(key::DOWN),
+        glfw::KeyKp3 => Some(key::PAGEDOWN),
+        glfw::KeyKp4 => Some(key::LEFT),
+        glfw::KeyKp5 => Some(key::KP5),
+        glfw::KeyKp6 => Some(key::RIGHT),
+        glfw::KeyKp7 => Some(key::HOME),
+        glfw::KeyKp8 => Some(key::UP),
+        glfw::KeyKp9 => Some(key::PAGEUP),
+        glfw::KeyKpDecimal => Some(key::COMMA),
+        glfw::KeyKpDivide => Some(key::SLASH),
+        glfw::KeyKpMultiply => Some(key::ASTERISK),
+        glfw::KeyKpSubtract => Some(key::MINUS),
+        glfw::KeyKpAdd => Some(key::PLUS),
+        glfw::KeyKpEnter => Some(key::ENTER),
+        glfw::KeyKpEqual => Some(key::EQUALS),
+        _ => None
+    }
 }

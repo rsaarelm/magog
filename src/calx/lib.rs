@@ -7,8 +7,13 @@
 
 extern crate collections;
 extern crate cgmath;
+extern crate color;
 
 pub mod text;
 pub mod pack_rect;
 pub mod rectutil;
 pub mod gen_id;
+pub mod app;
+pub mod renderer;
+pub mod sprite;
+pub mod key;

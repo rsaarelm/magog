@@ -4,10 +4,13 @@ use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::RGB;
 use color::rgb::consts::*;
 use calx::rectutil::RectUtil;
+use calx::app::App;
+use calx::renderer::Renderer;
+use calx::renderer;
 use area;
 use area::{TerrainType, Location, Area};
 use fov::Fov;
-use glutil::app::{App, SPRITE_INDEX_START};
+use glutil::glrenderer::{SPRITE_INDEX_START};
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
@@ -74,9 +77,9 @@ pub struct Sprite {
     color: RGB<u8>,
 }
 
-impl Sprite {
-    pub fn draw(&self, app: &mut App) {
-        app.draw_sprite(self.idx, &self.pos, self.z, &self.color);
+impl<R: Renderer> Sprite {
+    pub fn draw(&self, app: &mut App<R>) {
+        app.r.draw_sprite(self.idx, &self.pos, self.z, &self.color, renderer::ColorKeyDraw);
     }
 }
 
@@ -169,14 +172,14 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     ret
 }
 
-pub fn draw_area(
-    area: &Area, app: &mut App, center: &Location,
+pub fn draw_area<R: Renderer>(
+    area: &Area, app: &mut App<R>, center: &Location,
     seen: &Fov, remembered: &Fov) {
 
     let origin = Vec2::new(320.0f32, 180.0f32);
 
     // Mouse cursoring
-    let mouse = app.get_mouse();
+    let mouse = app.r.get_mouse();
     let cursor_chart_pos = screen_to_chart(&mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
 
     let mut rect = Aabb2::new(
@@ -209,13 +212,12 @@ pub fn draw_area(
         }
 
         if &p == center {
-            app.draw_sprite(AVATAR, &offset, BLOCK_Z, &AZURE);
+            app.r.draw_sprite(AVATAR, &offset, BLOCK_Z, &AZURE, renderer::ColorKeyDraw);
         }
     }
 
-    app.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin), FLOOR_Z, CURSOR_COL);
-    app.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin), BLOCK_Z, CURSOR_COL);
-
+    app.r.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
+    app.r.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
 }
 
 pub fn chart_to_screen(map_pos: &Point2<i8>) -> Point2<f32> {

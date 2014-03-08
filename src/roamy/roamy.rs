@@ -5,12 +5,12 @@ use std::mem;
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
-use color::rgb::consts::*;
 use area::{Location, Area, uphill};
 use area;
 use areaview;
 use calx::rectutil::RectUtil;
-use glutil::app::App;
+use calx::app::App;
+use calx::renderer::Renderer;
 use fov::Fov;
 use fov;
 use mapgen::MapGen;
@@ -75,9 +75,9 @@ impl Roamy {
         true
     }
 
-    pub fn draw(&mut self, app: &mut App) {
+    pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
         let origin = Vec2::new(320.0f32, 180.0f32);
-        let mouse = app.get_mouse();
+        let mouse = app.r.get_mouse();
         let mut cursor_chart_pos = areaview::screen_to_chart(
             &mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
         let Location(offset) = self.pos;
@@ -108,8 +108,6 @@ impl Roamy {
                     Some(p) => { if self.area.is_walkable(p) { self.pos = p; } },
                     None => (),
                 }
-            } else {
-                app.draw_string(&Vec2::new(32f32, 32f32), &FIREBRICK, "Done exploring");
             }
         }
 
