@@ -2,6 +2,7 @@
 #[desc = "Shared gamelib"];
 #[license = "MIT"];
 #[feature(globs)];
+#[feature(macro_rules)];
 #[crate_type = "rlib"];
 
 extern crate collections;
@@ -10,3 +11,4 @@ extern crate cgmath;
 pub mod text;
 pub mod pack_rect;
 pub mod rectutil;
+pub mod gen_id;

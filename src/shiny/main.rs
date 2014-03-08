@@ -1,6 +1,8 @@
+#[feature(phase)];
 extern crate cgmath;
 extern crate color;
 extern crate glutil;
+#[phase(syntax, link)]
 extern crate calx;
 
 use std::cmp::max;
@@ -12,6 +14,7 @@ use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2};
 use color::rgb::{ToRGB, consts};
 use calx::rectutil::RectUtil;
+use calx::gen_id;
 
 static PANGRAM: &'static str =
 "how quickly daft jumping zebras vex. \
