@@ -13,10 +13,11 @@ use cgmath::vector::{Vec2};
 use color::rgb::{ToRGB, consts};
 use calx::rectutil::RectUtil;
 
-static WHAT_DO_YOU_THINK_NIGHTMARE_DOG: &'static str =
-"This is of no consequence, the new Tower of Babel nears completion. All \
-humanity will be made whole again, a nightmare god of flesh and bone, singing \
-one chorus with its million mouths.";
+static PANGRAM: &'static str =
+"how quickly daft jumping zebras vex. \
+SPHINX OF BLACK QUARTZ: JUDGE MY VOW. \
+12345 67890 !@#$%^ &*()_+-= []{};: \"'\\ \
+,./ <>?";
 
 enum Align {
     Left,
@@ -80,10 +81,10 @@ pub fn main() {
     while app.alive {
         app.fill_rect(&RectUtil::new(0.0f32, 0.0f32, 640.0f32, 360.0f32), &consts::MIDNIGHTBLUE);
 
-        let text_zone = Aabb2::new(Point2::new(4.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
+        let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         outline_print(&mut app, &text_zone,
             &consts::LIGHTSLATEGRAY, Left,
-            WHAT_DO_YOU_THINK_NIGHTMARE_DOG);
+            PANGRAM);
 
         outline_print(&mut app, &Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
             &consts::CORNFLOWERBLUE, Center,
