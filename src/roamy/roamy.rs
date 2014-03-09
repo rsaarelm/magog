@@ -5,12 +5,16 @@ use std::mem;
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
+use color::rgb::consts::*;
+
+use calx::rectutil::RectUtil;
+use calx::app::App;
+use calx::app;
+use calx::renderer::Renderer;
+
 use area::{Location, Area, uphill};
 use area;
 use areaview;
-use calx::rectutil::RectUtil;
-use calx::app::App;
-use calx::renderer::Renderer;
 use fov::Fov;
 use fov;
 use mapgen::MapGen;
@@ -100,6 +104,18 @@ impl Roamy {
         }
 
         areaview::draw_area(self.area, app, &self.pos, self.seen, self.remembered);
+
+        let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
+        app.set_color(&LIGHTSLATEGRAY);
+        app.print_words(&text_zone, app::Left, "Hello, player. This is a friendly status message.");
+
+        app.set_color(&CORNFLOWERBLUE);
+        app.print_words(&Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
+            app::Center, format!("cell {} {}", cursor_chart_pos.x, cursor_chart_pos.y));
+
+        app.set_color(&LIGHTSLATEGRAY);
+        app.print_words(&Aabb2::new(Point2::new(560.0f32, 0.0f32), Point2::new(640.0f32, 16.0f32)),
+            app::Right, "Area Name");
 
         if !self.stop {
             if !self.area.fully_explored(self.remembered) {
