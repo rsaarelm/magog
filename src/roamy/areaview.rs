@@ -5,12 +5,12 @@ use color::rgb::RGB;
 use color::rgb::consts::*;
 use calx::rectutil::RectUtil;
 use calx::app::App;
+use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
 use calx::renderer;
 use area;
 use area::{TerrainType, Location, Area};
 use fov::Fov;
-use glutil::glrenderer::{SPRITE_INDEX_START};
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;

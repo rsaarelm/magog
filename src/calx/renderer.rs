@@ -35,4 +35,5 @@ pub trait Renderer {
     fn screenshot(&mut self, path: &str);
     fn pop_key(&mut self) -> Option<KeyEvent>;
     fn get_mouse(&self) -> MouseState;
+    fn is_alive(&self) -> bool;
 }

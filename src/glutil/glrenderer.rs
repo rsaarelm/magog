@@ -83,14 +83,6 @@ static BLIT_F: &'static str =
     }
     ";
 
-static FONT_WIDTH: f32 = 8.0;
-static FONT_START_CHAR: uint = 32;
-static FONT_NUM_CHARS: uint = 96;
-pub static FONT_HEIGHT: f32 = 8.0;
-pub static FONT_SPACE: f32 = FONT_WIDTH;
-
-pub static SPRITE_INDEX_START: uint = FONT_NUM_CHARS + 1;
-
 pub struct GlRenderer {
     resolution: Vec2<f32>,
     window: ~glfw::Window,
@@ -106,28 +98,6 @@ pub struct GlRenderer {
 }
 
 impl GlRenderer {
-    pub fn draw_string<C: ToRGB>(&mut self, offset: &Vec2<f32>, color: &C, text: &str) {
-        let first_font_idx = 1;
-
-        let mut offset = *offset;
-        for c in text.chars() {
-            let i = c as u32;
-            if i >= FONT_START_CHAR as u32
-                && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
-                let spr = self.atlas.get(
-                    (first_font_idx + i) as uint - FONT_START_CHAR);
-                self.recter.add(
-                    &transform_pixel_rect(&self.resolution, &spr.bounds.add_v(&offset)), 0f32,
-                    &spr.texcoords, color, 1f32);
-                offset.add_self_v(&Vec2::new(FONT_WIDTH, 0.0));
-            }
-        }
-    }
-
-    pub fn string_bounds(&mut self, text: &str) -> Aabb2<f32> {
-        RectUtil::new(0f32, 0f32, text.len() as f32 * FONT_WIDTH, -FONT_HEIGHT)
-    }
-
     fn render_screen(&mut self) {
         // Render-to-texture.
         self.framebuffer.bind();
@@ -222,15 +192,6 @@ impl Renderer for GlRenderer {
                 RectUtil::new(0, 0, 1, 1),
                 ~[255u8]));
 
-        let font = Image::load("assets/font.png", 1).unwrap();
-        let sprites = Sprite::new_alpha_set(
-            &Vec2::new(FONT_WIDTH as int, FONT_HEIGHT as int),
-            &Vec2::new(font.width as int, font.height as int),
-            font.pixels,
-            &Vec2::new(0, -FONT_HEIGHT as int));
-        for i in range(0, FONT_NUM_CHARS) {
-            ret.add_sprite(~sprites[i].clone());
-        }
 
         ret
     }
@@ -325,6 +286,8 @@ impl Renderer for GlRenderer {
             right: self.window.get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
         }
     }
+
+    fn is_alive(&self) -> bool { self.alive }
 }
 
 fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
