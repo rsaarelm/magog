@@ -10,7 +10,14 @@ include_rules
 # Need to use generated rules to manage Rust's crate output name mangling. Grab
 # the outputs into named bins so we can refer to them later as dependencies.
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
-run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
+
+# XXX: Add the code-generation bit from glfw-rs's Makefile. Just calling the Makefile
+# would create a mess of output files that made Tup complain.
+# Could use the tempdir hack used above for portaudio, but then I'd also need to re-do
+# the output filename inference part.
+: lib/glfw-rs/etc/link-rs.sh |> sh lib/glfw-rs/etc/link-rs.sh "`sh lib/glfw-rs/etc/glfw-link-args.sh`" > %o |> lib/glfw-rs/src/lib/link.rs
+run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw} \| lib/glfw-rs/src/lib/link.rs
+
 run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
