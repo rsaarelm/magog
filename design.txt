@@ -20,18 +20,6 @@
 		everything that gets drawn is too limiting. For example, the font
 		would be better drawn with an alpha blending shader rather than the
 		sprite shader.
-	* TODO App module refactoring
-		Rename current minimal-functionality App type to "Rendering". Write
-		a new higher-level type App in crate calx that performs all OpenGL
-		operations through the interface in Rendering and that can have less
-		minimal state stuff. Move the fontering to App. App can also have a
-		separately set draw color and imgui state keeping.
-	* TODO gen_id! macro for imgui widgets
-		Rust currently has (undocumented) file!(), line!() and
-		indirect_line!() macros, which should serve to turn the location in
-		the source code into an unique identifier. Then just wrap the pair
-		in a type that supports equality checks, and imgui focus checking
-		should be good to go.
 	* TODO Test simple dynamic lighting
 		Add light values and light sources to the area data. Have a zone of
 		improved visibility around the player when it's dim. Have a cutoff
