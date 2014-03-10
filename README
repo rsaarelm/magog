@@ -1,7 +1,0 @@
-Rust multimedia programming scratch space.
-
-To get the submodule repositories:
-$ git submodule update --init
-
-To build, you need tup from http://gittup.org/tup/:
-$ tup
