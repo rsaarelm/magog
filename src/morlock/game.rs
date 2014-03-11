@@ -1,5 +1,4 @@
 use std::rand;
-use std::rand::Rng;
 use std::mem;
 
 use cgmath::point::{Point, Point2};
@@ -7,7 +6,6 @@ use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::consts::*;
 
-use calx::rectutil::RectUtil;
 use calx::app::App;
 use calx::app;
 use calx::renderer::Renderer;
@@ -47,18 +45,6 @@ impl Game {
         self.area.gen_cave(&mut self.rng);
 
         self.pos = Location(Point2::new(0i8, 0i8));
-
-        // Make the map more interesting, add some walls.
-        for pt in Aabb2::new(Point2::new(-7i8, -7i8), Point2::new(8i8, 8i8)).points() {
-            let loc = Location(pt);
-            if self.area.get(loc) == area::Rock {
-                if self.rng.gen::<uint>() % 10 == 0 {
-                    self.area.set(loc, area::Tree);
-                } else {
-                    self.area.set(loc, area::Wall);
-                }
-            }
-        }
 
         self.seen = ~Fov::new();
         self.remembered = ~Fov::new();

@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::rand::Rng;
 use collections::hashmap::HashSet;
 
@@ -24,35 +25,41 @@ impl MapGen for Area {
         }
 
         for _itercount in range(0, 10000) {
-            let pick = *rng.sample(edge.iter(), 1)[0];
-            let nfloor = DIRECTIONS6.iter().count(|&v| self.is_open(pick + v));
+            let loc = *rng.sample(edge.iter(), 1)[0];
+            let nfloor = DIRECTIONS6.iter().count(|&v| self.is_open(loc + v));
             assert!(nfloor > 0);
 
             // Weight digging towards narrow corners.
-            if rng.gen_range(0, nfloor) != 0 {
+            if rng.gen_range(0, max(1, nfloor)) != 0 {
                 continue;
             }
 
-            self.dig(pick);
-            if rng.gen::<uint>() % 10 == 0 {
-                self.set(pick, area::Magma);
-            } else if rng.gen::<uint>() % 10 == 0 {
-                self.set(pick, area::Water);
-            } else if rng.gen::<uint>() % 10 == 0 {
-                self.set(pick, area::Grass);
-            }
+            self.dig(loc);
+            edge.remove(&loc);
             dug += 1;
 
             for &v in DIRECTIONS6.iter() {
-                let p = pick + v;
-                if !self.defined(p) && bounds.contains(p.p()) {
+                let p = loc + v;
+                if self.get(p) == area::Rock && bounds.contains(p.p()) {
                     edge.insert(p);
                 }
             }
 
             if dug > 384 { break; }
         }
-        self.set(*rng.sample(edge.iter(), 1)[0], area::Downstairs);
+
+        let down_pos = *rng.sample(edge.iter(), 1)[0];
+        self.set(down_pos, area::Downstairs);
+        edge.remove(&down_pos);
+
+        // Depillar
+        for &loc in edge.iter() {
+            let nfloor = DIRECTIONS6.iter().count(|&v| self.is_open(loc + v));
+            assert!(nfloor > 0);
+            if nfloor == 6 {
+                self.set(loc, area::Stalagmite);
+            }
+        }
     }
 
     fn gen_prefab(&mut self, prefab: &str) {

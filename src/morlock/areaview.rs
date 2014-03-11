@@ -32,6 +32,7 @@ pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
 pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
 pub static AVATAR : uint = SPRITE_INDEX_START + 51;
 pub static BLOCK : uint = SPRITE_INDEX_START + 52;
+pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
 
 static WALL_COL: &'static RGB<u8> = &LIGHTSLATEGRAY;
 static ROCK_COL: &'static RGB<u8> = &DARKGOLDENROD;
@@ -149,6 +150,10 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
                 // handled by wall_flags_lrb.
                 ret.push(Sprite { idx: OWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
             }
+        },
+        area::Stalagmite => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
         },
     }
 

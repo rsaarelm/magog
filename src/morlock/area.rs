@@ -16,6 +16,7 @@ pub enum TerrainType {
     Rock,
     Tree,
     Grass,
+    Stalagmite,
 }
 
 impl TerrainType {
