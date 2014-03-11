@@ -19,7 +19,7 @@ use fov::Fov;
 use fov;
 use mapgen::MapGen;
 
-pub struct Roamy {
+pub struct Game {
     area: ~Area,
     pos: Location,
     seen: ~Fov,
@@ -28,9 +28,9 @@ pub struct Roamy {
     stop: bool,
 }
 
-impl Roamy {
-    pub fn new() -> Roamy {
-        let mut ret = Roamy {
+impl Game {
+    pub fn new() -> Game {
+        let mut ret = Game {
             area: ~Area::new(),
             pos: Location(Point2::new(0i8, 0i8)),
             seen: ~Fov::new(),

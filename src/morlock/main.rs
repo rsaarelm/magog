@@ -14,18 +14,18 @@ use calx::renderer::Renderer;
 use calx::app::App;
 use cgmath::vector::{Vec2};
 use stb::image::Image;
-use roamy::Roamy;
+use game::Game;
 use area::DIRECTIONS6;
 
 pub mod fov;
 pub mod area;
 pub mod areaview;
 pub mod dijkstra;
-pub mod roamy;
+pub mod game;
 pub mod mapgen;
 
 pub fn main() {
-    let mut app : App<GlRenderer> = App::new(640, 360, "Mapgen demo");
+    let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
     let tiles = Image::load("assets/tile.png", 1).unwrap();
     let sprites = Sprite::new_alpha_set(
         &Vec2::new(32, 32),
@@ -36,10 +36,10 @@ pub fn main() {
         app.r.add_sprite(~sprites[i].clone());
     }
 
-    let mut state = Roamy::new();
+    let mut game = Game::new();
 
     while app.r.alive {
-        state.draw(&mut app);
+        game.draw(&mut app);
 
         loop {
             match app.r.pop_key() {
@@ -49,15 +49,15 @@ pub fn main() {
                     }
 
                     if key.code == key::SPACE {
-                        state.stop = !state.stop;
+                        game.stop = !game.stop;
                     }
 
-                    if key.code == key::W { step(&mut state, 0); }
-                    if key.code == key::E { step(&mut state, 1); }
-                    if key.code == key::D { step(&mut state, 2); }
-                    if key.code == key::S { step(&mut state, 3); }
-                    if key.code == key::A { step(&mut state, 4); }
-                    if key.code == key::Q { step(&mut state, 5); }
+                    if key.code == key::W { step(&mut game, 0); }
+                    if key.code == key::E { step(&mut game, 1); }
+                    if key.code == key::D { step(&mut game, 2); }
+                    if key.code == key::S { step(&mut game, 3); }
+                    if key.code == key::A { step(&mut game, 4); }
+                    if key.code == key::Q { step(&mut game, 5); }
 
                     if key.code == key::F12 {
                         app.r.screenshot("/tmp/shot.png");
@@ -70,11 +70,11 @@ pub fn main() {
         app.r.flush();
     }
 
-    fn step(state: &mut Roamy, dir: uint) {
+    fn step(game: &mut Game, dir: uint) {
         // Steer to the sides if bump.
-        if !state.step(&DIRECTIONS6[dir]) {
-            if !state.step(&DIRECTIONS6[(dir + 1) % 6]) {
-                state.step(&DIRECTIONS6[(dir + 5) % 6]);
+        if !game.step(&DIRECTIONS6[dir]) {
+            if !game.step(&DIRECTIONS6[(dir + 1) % 6]) {
+                game.step(&DIRECTIONS6[(dir + 5) % 6]);
             }
         }
     }
