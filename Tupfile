@@ -2,7 +2,6 @@ include_rules
 
 # XXX: These ones are nasty.
 : lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake ../lib/glfw; make; cp src/libglfw3.a ..; cd ..; rm -rf glfw-build/ |> libglfw3.a
-: lib/portaudio/configure |> cp -r lib/portaudio pa-build; cd pa-build; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a ../; cd ..; rm -rf pa-build |> libportaudio.a
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
@@ -18,7 +17,6 @@ run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 : lib/glfw-rs/etc/link-rs.sh |> sh lib/glfw-rs/etc/link-rs.sh "`sh lib/glfw-rs/etc/glfw-link-args.sh`" > %o |> lib/glfw-rs/src/lib/link.rs
 run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw} \| lib/glfw-rs/src/lib/link.rs
 
-run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
@@ -27,7 +25,6 @@ run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb}
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : src/roamy/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> roamy
-: src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
 : src/runtests/main.rs |> !rustbin |> runtests
 
 # Testing. All unit test runners are expected to start with 'test_'.
