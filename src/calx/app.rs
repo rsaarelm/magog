@@ -1,4 +1,3 @@
-use std::cmp::max;
 use std::default::Default;
 use color::RGB;
 use color::rgb::{ToRGB};
@@ -12,6 +11,7 @@ use renderer;
 use renderer::{Renderer};
 use gen_id::CodeId;
 use sprite::Sprite;
+use text;
 
 static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
 static FONT_WIDTH: f32 = 8.0;
@@ -104,46 +104,24 @@ impl <R: Renderer> App<R> {
     }
 
     pub fn print_words(&mut self, area: &Aabb2<f32>, align: Align, text: &str) {
-        let words: ~[&str] = text.split(' ').collect();
-        let bounds = words.map(|&w| self.string_bounds(w).dim().x as uint);
-        let mut i = 0;
+        let w = area.dim().x;
+        if w < FONT_WIDTH { return; }
         let origin = area.min().add_v(&Vec2::new(0.0, FONT_HEIGHT));
-        let width = area.dim().x;
-        let max_lines = (area.dim().y / FONT_HEIGHT) as uint;
+
         let mut pos = origin;
-        let mut line = 0;
-        while i < words.len() && line < max_lines {
-            let (n, len) = num_fitting_words(width as uint, FONT_SPACE as uint, bounds.slice(i, bounds.len()));
-            let n = max(1, n);
-
-            let diff = area.dim().x - len as f32;
-            match align {
-                Left => (),
-                Center => { pos.x += diff / 2.0; },
-                Right => { pos.x += diff; },
-            }
-            for j in range(i, i + n) {
-                // XXX: Always using outline print.
-                self.outline_string(&pos, words[j]);
-                pos.x += bounds[j] as f32 + FONT_SPACE;
-            }
-            i += n;
+        let wrapped = text::wrap_lines((w / FONT_WIDTH) as uint, text);
+        for line in wrapped.split('\n') {
             pos.x = origin.x;
+            let diff = w - line.len() as f32 * FONT_WIDTH;
+            let halfdiff = w - (line.len() / 2) as f32 * FONT_WIDTH;
+            pos.x = match align {
+                Left => origin.x,
+                Center => origin.x + halfdiff,
+                Right => origin.x + diff,
+            };
+            // XXX: Always using outline print.
+            self.outline_string(&pos, line);
             pos.y += FONT_HEIGHT;
-            line += 1;
-        }
-
-        fn num_fitting_words(span: uint, space: uint, lengths: &[uint]) -> (uint, uint) {
-            if lengths.len() == 0 { return (0, 0) }
-            let mut total = lengths[0];
-            for i in range(1, lengths.len()) {
-                let new_total = total + space + lengths[i];
-                if new_total > span {
-                    return (i, total);
-                }
-                total = new_total;
-            }
-            return (lengths.len(), total);
         }
     }
 
