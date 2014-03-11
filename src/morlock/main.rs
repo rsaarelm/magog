@@ -24,9 +24,11 @@ pub mod dijkstra;
 pub mod game;
 pub mod mapgen;
 
+static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
+
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
-    let tiles = Image::load("assets/tile.png", 1).unwrap();
+    let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
     let sprites = Sprite::new_alpha_set(
         &Vec2::new(32, 32),
         &Vec2::new(tiles.width as int, tiles.height as int),

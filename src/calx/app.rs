@@ -13,6 +13,7 @@ use renderer::{Renderer};
 use gen_id::CodeId;
 use sprite::Sprite;
 
+static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
 static FONT_WIDTH: f32 = 8.0;
 static FONT_START_CHAR: uint = 32;
 static FONT_NUM_CHARS: uint = 96;
@@ -54,7 +55,7 @@ impl <R: Renderer> App<R> {
         };
 
         // Load font.
-        let font = Image::load("assets/font.png", 1).unwrap();
+        let font = Image::load_from_memory(FONT_DATA, 1).unwrap();
         let sprites = Sprite::new_alpha_set(
             &Vec2::new(FONT_WIDTH as int, FONT_HEIGHT as int),
             &Vec2::new(font.width as int, font.height as int),

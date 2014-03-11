@@ -21,10 +21,12 @@ run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
-run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb}
+: assets/font.png |> !databake |> gen/font_data.rs
+run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb} gen/font_data.rs
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
-: src/morlock/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a |> !rustbin $(GLFW_LINKARGS) |> morlock
+: assets/tile.png |> !databake |> gen/tile_data.rs
+: src/morlock/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a gen/tile_data.rs |> !rustbin $(GLFW_LINKARGS) |> morlock
 
 # Testing. All unit test runners are expected to start with 'test_'.
 : src/runtests/main.rs |> !rustbin |> runtests
