@@ -42,7 +42,7 @@ static CURSOR_COL: &'static RGB<u8> = &FIREBRICK;
 static FLOOR_Z: f32 = 0.500f32;
 static BLOCK_Z: f32 = 0.400f32;
 
-/// 3x3 grid of terrain cells. Use this as the input for terrain sprite
+/// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
 pub struct Kernel<C> {
     n: C,
@@ -81,7 +81,7 @@ pub struct Sprite {
 
 impl<R: Renderer> Sprite {
     pub fn draw(&self, app: &mut App<R>) {
-        app.r.draw_sprite(self.idx, &self.pos, self.z, &self.color, renderer::ColorKeyDraw);
+        app.r.draw_tile(self.idx, &self.pos, self.z, &self.color, renderer::ColorKeyDraw);
     }
 }
 
@@ -218,10 +218,10 @@ pub fn draw_area<R: Renderer>(
         }
 
         if p == center {
-            app.r.draw_sprite(AVATAR, &offset, BLOCK_Z, &AZURE, renderer::ColorKeyDraw);
+            app.r.draw_tile(AVATAR, &offset, BLOCK_Z, &AZURE, renderer::ColorKeyDraw);
         }
     }
 
-    app.r.draw_sprite(CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
-    app.r.draw_sprite(CURSOR_TOP, &xf.to_screen(cursor_chart_pos), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
+    app.r.draw_tile(CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
+    app.r.draw_tile(CURSOR_TOP, &xf.to_screen(cursor_chart_pos), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
 }

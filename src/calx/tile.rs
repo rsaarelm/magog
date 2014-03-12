@@ -7,21 +7,21 @@ use cgmath::vector::{Vec2};
 use cgmath::point::{Point, Point2};
 use rectutil::RectUtil;
 
-pub static SPRITE_ALPHA: u8 = 0x80;
+pub static TILE_ALPHA: u8 = 0x80;
 
 #[deriving(Clone)]
-pub struct Sprite {
+pub struct Tile {
     bounds: Aabb2<int>,
     data: ~[u8],
 }
 
-impl Sprite {
+impl Tile {
     // Only supporting alpha channel for now.
-    pub fn new_alpha(bounds: Aabb2<int>, data: ~[u8]) -> Sprite {
+    pub fn new_alpha(bounds: Aabb2<int>, data: ~[u8]) -> Tile {
         let bpp = 1;
         assert!(data.len() / bpp == bounds.volume() as uint);
 
-        let mut ret = Sprite {
+        let mut ret = Tile {
             bounds: bounds,
             data: data
         };
@@ -29,23 +29,23 @@ impl Sprite {
         ret
     }
 
-    // Split a large image into small sprites.
+    // Split a large image into small tiles.
     pub fn new_alpha_set(
-        sprite_dim: &Vec2<int>, sheet_dim: &Vec2<int>,
-        data: ~[u8], offset: &Vec2<int>) -> ~[Sprite] {
+        tile_dim: &Vec2<int>, sheet_dim: &Vec2<int>,
+        data: ~[u8], offset: &Vec2<int>) -> ~[Tile] {
         let mut ret = ~[];
-        for r in range(0, sheet_dim.y / sprite_dim.y) {
-            for c in range(0, sheet_dim.x / sprite_dim.x) {
-                let mut sprite_data = vec::from_elem((sprite_dim.x * sprite_dim.y) as uint, 0u8);
+        for r in range(0, sheet_dim.y / tile_dim.y) {
+            for c in range(0, sheet_dim.x / tile_dim.x) {
+                let mut tile_data = vec::from_elem((tile_dim.x * tile_dim.y) as uint, 0u8);
                 let p1 : Point2<int> = Point::from_vec(offset);
-                let p2 : Point2<int> = Point::from_vec(&offset.add_v(sprite_dim));
+                let p2 : Point2<int> = Point::from_vec(&offset.add_v(tile_dim));
                 let bounds = Aabb2::new(p1, p2);
                 for p in bounds.points() {
-                    let data_offset = c * sprite_dim.x + p.x - offset.x + sheet_dim.x *
-                        (r * sprite_dim.y + p.y - offset.y);
-                    sprite_data[bounds.scan_pos(&p)] = data[data_offset];
+                    let data_offset = c * tile_dim.x + p.x - offset.x + sheet_dim.x *
+                        (r * tile_dim.y + p.y - offset.y);
+                    tile_data[bounds.scan_pos(&p)] = data[data_offset];
                 }
-                ret.push(Sprite::new_alpha(bounds, sprite_data));
+                ret.push(Tile::new_alpha(bounds, tile_data));
             }
         }
         ret
@@ -69,7 +69,7 @@ impl Sprite {
         let (mut min_x, mut min_y) = (self.bounds.max().x, self.bounds.max().y);
         let (mut max_x, mut max_y) = (self.bounds.min().x - 1, self.bounds.min().y - 1);
         for p in self.bounds.points() {
-            if self.at(&p) != SPRITE_ALPHA {
+            if self.at(&p) != TILE_ALPHA {
                 min_x = min(min_x, p.x);
                 min_y = min(min_y, p.y);
                 max_x = max(max_x, p.x + 1);

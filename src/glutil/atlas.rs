@@ -16,7 +16,7 @@ use gl::types::{GLint};
 
 use calx::pack_rect::pack_rects;
 use calx::rectutil::RectUtil;
-use calx::sprite::{Sprite, SPRITE_ALPHA};
+use calx::tile::{Tile, TILE_ALPHA};
 use stb;
 
 pub struct AtlasRect {
@@ -44,7 +44,7 @@ impl AtlasRect {
 }
 
 pub struct Atlas {
-    sprites: ~[~Sprite],
+    tiles: ~[~Tile],
     rects: ~[AtlasRect],
     is_dirty: bool,
     texture: Texture,
@@ -56,7 +56,7 @@ impl Atlas {
         tex.filter(texture::Nearest);
         tex.wrap(texture::ClampToEdge);
         Atlas {
-            sprites: ~[],
+            tiles: ~[],
             rects: ~[],
             is_dirty: true,
             texture: tex,
@@ -71,8 +71,8 @@ impl Atlas {
         // Already good?
         if !self.is_dirty { return; }
 
-        // Create gaps between the sprites to prevent edge artifacts.
-        let dims = self.sprites.map(|s| s.bounds.dim() + Vec2::new(1, 1));
+        // Create gaps between the tiles to prevent edge artifacts.
+        let dims = self.tiles.map(|s| s.bounds.dim() + Vec2::new(1, 1));
         let total_volume = dims.iter().map(|&v| v.x * v.y).sum();
         let atlas_dim = next_power_of_two(sqrt(total_volume as f64) as uint) as int;
 
@@ -84,14 +84,14 @@ impl Atlas {
 
         let mut tex_data = vec::from_elem(base.volume() as uint, 0u8);
 
-        assert!(pack.len() == self.sprites.len());
+        assert!(pack.len() == self.tiles.len());
         self.rects = ~[];
 
-        for i in range(0, self.sprites.len()) {
-            paint_sprite(
-                self.sprites[i], tex_data, &pack[i].min().to_vec(), base.dim().x);
+        for i in range(0, self.tiles.len()) {
+            paint_tile(
+                self.tiles[i], tex_data, &pack[i].min().to_vec(), base.dim().x);
             self.rects.push(AtlasRect::new(
-                    &self.sprites[i].bounds, &pack[i], &base.dim()));
+                    &self.tiles[i].bounds, &pack[i], &base.dim()));
         }
 
         let info = ImageInfo::new()
@@ -104,18 +104,18 @@ impl Atlas {
 
         self.is_dirty = false;
 
-        fn paint_sprite(sprite: &Sprite, tex_data: &mut [u8], offset: &Vec2<int>, tex_pitch: int) {
-            let offset = offset - sprite.bounds.min().to_vec();
-            for p in sprite.bounds.points() {
-                tex_data[p.x + offset.x + (p.y + offset.y) * tex_pitch] = sprite.at(&p);
+        fn paint_tile(tile: &Tile, tex_data: &mut [u8], offset: &Vec2<int>, tex_pitch: int) {
+            let offset = offset - tile.bounds.min().to_vec();
+            for p in tile.bounds.points() {
+                tex_data[p.x + offset.x + (p.y + offset.y) * tex_pitch] = tile.at(&p);
             }
         }
     }
 
-    pub fn push(&mut self, sprite: ~Sprite) -> uint {
+    pub fn push(&mut self, tile: ~Tile) -> uint {
         self.dirty();
-        self.sprites.push(sprite);
-        self.sprites.len() - 1
+        self.tiles.push(tile);
+        self.tiles.len() - 1
     }
 
     pub fn push_ttf(
@@ -125,21 +125,21 @@ impl Atlas {
         for i in range(start_char, start_char + num_chars) {
             let mut glyph = font.glyph(i, size).expect("Font missing expected char");
 
-            // Convert black alpha from STB to our SPRITE_ALPHA.
+            // Convert black alpha from STB to our TILE_ALPHA.
             for i in range(0, glyph.pixels.len()) {
                 if glyph.pixels[i] == 0 {
-                    glyph.pixels[i] = SPRITE_ALPHA;
+                    glyph.pixels[i] = TILE_ALPHA;
                 }
             }
 
             let min = Point2::new(glyph.xOffset as int, glyph.yOffset as int);
             let max = min.add_v(&Vec2::new(glyph.width, glyph.height));
-            self.push(~Sprite::new_alpha(Aabb2::new(min, max), glyph.pixels));
+            self.push(~Tile::new_alpha(Aabb2::new(min, max), glyph.pixels));
         }
     }
 
     pub fn len(&self) -> uint {
-        self.sprites.len()
+        self.tiles.len()
     }
 
     pub fn get(&mut self, i: uint) -> AtlasRect {

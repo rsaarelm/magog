@@ -9,7 +9,7 @@ extern crate num;
 
 use glutil::glrenderer::GlRenderer;
 use calx::key;
-use calx::sprite::Sprite;
+use calx::tile::Tile;
 use calx::renderer::Renderer;
 use calx::app::App;
 use cgmath::vector::{Vec2};
@@ -31,13 +31,13 @@ static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
     let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
-    let sprites = Sprite::new_alpha_set(
+    let tiles = Tile::new_alpha_set(
         &Vec2::new(32, 32),
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
     for i in range(0, 64) {
-        app.r.add_sprite(~sprites[i].clone());
+        app.r.add_tile(~tiles[i].clone());
     }
 
     let mut game = Game::new();

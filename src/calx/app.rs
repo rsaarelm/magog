@@ -10,7 +10,7 @@ use color::rgb::consts::*;
 use renderer;
 use renderer::{Renderer};
 use gen_id::CodeId;
-use sprite::Sprite;
+use tile::Tile;
 use text;
 
 static FONT_DATA: &'static [u8] = include!("../../gen/font_data.rs");
@@ -56,13 +56,13 @@ impl <R: Renderer> App<R> {
 
         // Load font.
         let font = Image::load_from_memory(FONT_DATA, 1).unwrap();
-        let sprites = Sprite::new_alpha_set(
+        let tiles = Tile::new_alpha_set(
             &Vec2::new(FONT_WIDTH as int, FONT_HEIGHT as int),
             &Vec2::new(font.width as int, font.height as int),
             font.pixels,
             &Vec2::new(0, -FONT_HEIGHT as int));
         for i in range(0, FONT_NUM_CHARS) {
-            ret.r.add_sprite(~sprites[i].clone());
+            ret.r.add_tile(~tiles[i].clone());
         }
 
         ret
@@ -84,8 +84,8 @@ impl <R: Renderer> App<R> {
         self.draw_layer = z;
     }
 
-    pub fn draw_sprite(&mut self, idx: uint, pos: &Point2<f32>) {
-        self.r.draw_sprite(idx, pos, self.draw_layer, &self.draw_color, renderer::ColorKeyDraw);
+    pub fn draw_tile(&mut self, idx: uint, pos: &Point2<f32>) {
+        self.r.draw_tile(idx, pos, self.draw_layer, &self.draw_color, renderer::ColorKeyDraw);
     }
 
     pub fn _draw_string<C: ToRGB>(&mut self, pos: &Point2<f32>, color: &C, text: &str) {
@@ -96,7 +96,7 @@ impl <R: Renderer> App<R> {
             let i = c as u32;
             if i >= FONT_START_CHAR as u32
                 && i < (FONT_START_CHAR + FONT_NUM_CHARS) as u32 {
-                self.r.draw_sprite(i as uint - FONT_START_CHAR + first_font_idx, &pos,
+                self.r.draw_tile(i as uint - FONT_START_CHAR + first_font_idx, &pos,
                     self.draw_layer, color, renderer::ColorKeyDraw);
             }
             pos = pos.add_v(&Vec2::new(FONT_WIDTH, 0.0));

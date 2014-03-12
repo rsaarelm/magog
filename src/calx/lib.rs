@@ -16,5 +16,5 @@ pub mod rectutil;
 pub mod gen_id;
 pub mod app;
 pub mod renderer;
-pub mod sprite;
+pub mod tile;
 pub mod key;

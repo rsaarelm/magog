@@ -12,7 +12,7 @@ use glfw;
 use calx::rectutil::RectUtil;
 use calx::renderer::{Renderer, KeyEvent, MouseState, DrawMode};
 use calx::key;
-use calx::sprite::Sprite;
+use calx::tile::Tile;
 use stb::image::Image;
 use atlas::{Atlas};
 use recter::Recter;
@@ -38,7 +38,7 @@ static COLORED_V: &'static str =
 // Allow opaque shading: All alpha values except the color key are treated as
 // opaque, but they also modulate RGB luminance so low alpha means a darker
 // shade.
-static ALPHA_SPRITE_F: &'static str =
+static ALPHA_TILE_F: &'static str =
     "#version 130
     uniform sampler2D textureUnit;
     in vec2 texcoord;
@@ -48,8 +48,8 @@ static ALPHA_SPRITE_F: &'static str =
         float a = texture(textureUnit, texcoord).x;
 
         // Color key is gray value 128. This lets us
-        // use both blacks and whites in the actual sprites,
-        // and keeps the sprite bitmaps easy to read visually.
+        // use both blacks and whites in the actual tiles,
+        // and keeps the tile bitmaps easy to read visually.
         // XXX: Looks like I can't do exact compare
         // with colors converted to float.
         // XXX: Also hardcoding this right into the
@@ -88,7 +88,7 @@ pub struct GlRenderer {
     window: ~glfw::Window,
     alive: bool,
     atlas: ~Atlas,
-    sprite_shader: ~Program,
+    tile_shader: ~Program,
     blit_shader: ~Program,
     recter: Recter,
     framebuffer: Framebuffer,
@@ -104,7 +104,7 @@ impl GlRenderer {
         gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         self.atlas.bind();
-        self.recter.render(self.sprite_shader);
+        self.recter.render(self.tile_shader);
         self.framebuffer.unbind();
     }
 
@@ -170,10 +170,10 @@ impl Renderer for GlRenderer {
             window: ~window,
             alive: true,
             atlas: ~Atlas::new(),
-            sprite_shader:
+            tile_shader:
                 ~Program::link(
                     [hgl::Shader::compile(COLORED_V, hgl::VertexShader).unwrap(),
-                     hgl::Shader::compile(ALPHA_SPRITE_F, hgl::FragmentShader).unwrap()]
+                     hgl::Shader::compile(ALPHA_TILE_F, hgl::FragmentShader).unwrap()]
                  ).unwrap(),
             blit_shader:
                 ~Program::link(
@@ -186,9 +186,9 @@ impl Renderer for GlRenderer {
             unknown_key: false,
         };
 
-        // Hack for solid rectangles, push a solid single-pixel sprite in.
+        // Hack for solid rectangles, push a solid single-pixel tile in.
         // Assume this'll end up as position 0.
-        ret.atlas.push(~Sprite::new_alpha(
+        ret.atlas.push(~Tile::new_alpha(
                 RectUtil::new(0, 0, 1, 1),
                 ~[255u8]));
 
@@ -196,8 +196,8 @@ impl Renderer for GlRenderer {
         ret
     }
 
-    fn add_sprite(&mut self, sprite: ~Sprite) -> uint {
-        self.atlas.push(sprite)
+    fn add_tile(&mut self, tile: ~Tile) -> uint {
+        self.atlas.push(tile)
     }
 
     fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, z: f32, color: &C) {
@@ -208,7 +208,7 @@ impl Renderer for GlRenderer {
             color, 1f32);
     }
 
-    fn draw_sprite<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C, _mode: DrawMode) {
+    fn draw_tile<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C, _mode: DrawMode) {
         // TODO: Handle mode
         let spr = self.atlas.get(idx);
         self.recter.add(
