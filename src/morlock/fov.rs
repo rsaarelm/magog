@@ -107,5 +107,33 @@ pub fn fov(a: &Area, center: Location, range: uint) -> Fov {
         }
     }
 
+    // Post-processing hack to make acute corner wall tiles in fake-isometric
+    // rooms visible.
+    {
+        let Fov(ref mut h) = ret;
+        let mut queue = ~[];
+        for &loc in h.iter() {
+            //    above
+            //  left right
+            //     loc
+            //
+            // If both loc and above are visible, left and right will
+            // be made visible if they are opaque.
+            let above = loc + Vec2::new(-1, -1);
+            let left = loc + Vec2::new(-1, 0);
+            let right = loc + Vec2::new(0, -1);
+            if h.contains(&above) {
+               if a.is_opaque(left) {
+                   queue.push(left);
+               }
+               if a.is_opaque(right) {
+                   queue.push(right);
+               }
+            }
+        }
+
+        for &loc in queue.iter() { h.insert(loc); }
+    }
+
     ret
 }
