@@ -24,6 +24,7 @@ pub mod dijkstra;
 pub mod game;
 pub mod mapgen;
 pub mod mob;
+pub mod transform;
 
 static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
 

@@ -1,4 +1,4 @@
-use cgmath::point::{Point, Point2};
+use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::RGB;
@@ -11,6 +11,7 @@ use calx::renderer;
 use area;
 use area::{TerrainType, Location, Area};
 use fov::Fov;
+use transform::Transform;
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
@@ -179,27 +180,26 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
 }
 
 pub fn draw_area<R: Renderer>(
-    area: &Area, app: &mut App<R>, center: &Location,
+    area: &Area, app: &mut App<R>, center: Location,
     seen: &Fov, remembered: &Fov) {
-
-    let origin = Vec2::new(320.0f32, 180.0f32);
 
     // Mouse cursoring
     let mouse = app.r.get_mouse();
-    let cursor_chart_pos = screen_to_chart(&mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
+    let xf = Transform::new(center);
 
+    let cursor_chart_pos = xf.to_chart(&mouse.pos);
     let mut rect = Aabb2::new(
-        screen_to_chart(&Point2::new(0f32, 0f32).add_v(&origin.neg())),
-        screen_to_chart(&Point2::new(640f32, 392f32).add_v(&origin.neg())));
-    rect = rect.grow(&screen_to_chart(&Point2::new(640f32, 0f32).add_v(&origin.neg())));
-    rect = rect.grow(&screen_to_chart(&Point2::new(0f32, 392f32).add_v(&origin.neg())));
+        *xf.to_chart(&Point2::new(0f32, 0f32)).p(),
+        *xf.to_chart(&Point2::new(640f32, 392f32)).p());
+    rect = rect.grow(xf.to_chart(&Point2::new(640f32, 0f32)).p());
+    rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
 
-    let &Location(ref offset) = center;
+    let Location(ref offset) = center;
     let pos_offset = Vec2::new(offset.x as int, offset.y as int);
 
     for pt in rect.points() {
         let p = Location(pt) + pos_offset;
-        let offset = chart_to_screen(&pt).add_v(&origin);
+        let offset = xf.to_screen(p);
 
         let kernel = Kernel::new(|p| area.get(p), p);
         let mut sprites = terrain_sprites(&kernel, &offset);
@@ -217,23 +217,11 @@ pub fn draw_area<R: Renderer>(
             s.draw(app);
         }
 
-        if &p == center {
+        if p == center {
             app.r.draw_sprite(AVATAR, &offset, BLOCK_Z, &AZURE, renderer::ColorKeyDraw);
         }
     }
 
-    app.r.draw_sprite(CURSOR_BOTTOM, &chart_to_screen(&cursor_chart_pos).add_v(&origin), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
-    app.r.draw_sprite(CURSOR_TOP, &chart_to_screen(&cursor_chart_pos).add_v(&origin), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
-}
-
-pub fn chart_to_screen(map_pos: &Point2<i8>) -> Point2<f32> {
-    Point2::new(
-        16.0 * (map_pos.x as f32) - 16.0 * (map_pos.y as f32),
-        8.0 * (map_pos.x as f32) + 8.0 * (map_pos.y as f32))
-}
-
-pub fn screen_to_chart(screen_pos: &Point2<f32>) -> Point2<i8> {
-    let column = (screen_pos.x / 16.0).floor();
-    let row = ((screen_pos.y - column * 8.0) / 16.0).floor();
-    Point2::new((column + row) as i8, row as i8)
+    app.r.draw_sprite(CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
+    app.r.draw_sprite(CURSOR_TOP, &xf.to_screen(cursor_chart_pos), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
 }

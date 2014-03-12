@@ -1,7 +1,7 @@
 use std::rand;
 use std::mem;
 
-use cgmath::point::{Point, Point2};
+use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::consts::*;
@@ -17,6 +17,7 @@ use fov::Fov;
 use fov;
 use mapgen::MapGen;
 use mob::Mob;
+use transform::Transform;
 
 // XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
@@ -72,13 +73,9 @@ impl Game {
     }
 
     pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
-        let origin = Vec2::new(320.0f32, 180.0f32);
         let mouse = app.r.get_mouse();
-        let mut cursor_chart_pos = areaview::screen_to_chart(
-            &mouse.pos.add_v(&origin.neg()).add_v(&Vec2::new(8.0f32, 0.0f32)));
-        let Location(offset) = self.pos;
-        cursor_chart_pos.x += offset.x;
-        cursor_chart_pos.y += offset.y;
+        let xf = Transform::new(self.pos);
+        let cursor_chart_loc = xf.to_chart(&mouse.pos);
 
         let mut tmp_seen = ~fov::fov(self.area, self.pos, 12);
         mem::swap(self.seen, tmp_seen);
@@ -87,15 +84,15 @@ impl Game {
 
         if app.screen_area().contains(&mouse.pos) {
             if mouse.left {
-                self.area.dig(Location(cursor_chart_pos));
+                self.area.dig(cursor_chart_loc);
             }
 
             if mouse.right {
-                self.area.fill(Location(cursor_chart_pos));
+                self.area.fill(cursor_chart_loc);
             }
         }
 
-        areaview::draw_area(self.area, app, &self.pos, self.seen, self.remembered);
+        areaview::draw_area(self.area, app, self.pos, self.seen, self.remembered);
 
         let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         app.set_color(&LIGHTSLATEGRAY);
@@ -103,7 +100,7 @@ impl Game {
 
         app.set_color(&CORNFLOWERBLUE);
         app.print_words(&Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
-            app::Center, format!("cell {} {}", cursor_chart_pos.x, cursor_chart_pos.y));
+            app::Center, format!("cell {} {}", cursor_chart_loc.p().x, cursor_chart_loc.p().y));
 
         app.set_color(&LIGHTSLATEGRAY);
         app.print_words(&Aabb2::new(Point2::new(560.0f32, 0.0f32), Point2::new(640.0f32, 16.0f32)),
