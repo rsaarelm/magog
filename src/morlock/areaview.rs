@@ -25,18 +25,14 @@ pub static GRASS : uint = SPRITE_INDEX_START + 12;
 pub static WATER : uint = SPRITE_INDEX_START + 13;
 pub static MAGMA : uint = SPRITE_INDEX_START + 14;
 pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 15;
-pub static XWALL : uint = SPRITE_INDEX_START + 20;
-pub static YWALL : uint = XWALL + 1;
-pub static XYWALL : uint = XWALL + 2;
-pub static OWALL : uint = XWALL + 3;
+pub static ROCKWALL : uint = SPRITE_INDEX_START + 16;
+pub static WALL : uint = SPRITE_INDEX_START + 20;
 pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
 pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
 pub static AVATAR : uint = SPRITE_INDEX_START + 51;
 pub static BLOCK : uint = SPRITE_INDEX_START + 52;
 pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
 
-static WALL_COL: &'static RGB<u8> = &LIGHTSLATEGRAY;
-static ROCK_COL: &'static RGB<u8> = &DARKGOLDENROD;
 static CURSOR_COL: &'static RGB<u8> = &FIREBRICK;
 
 static FLOOR_Z: f32 = 0.500f32;
@@ -114,49 +110,61 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
         },
         area::Rock => {
-            ret.push(Sprite { idx: BLOCK, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
-            // Back lines for blocks with open floor behind them.
-            if !k.nw.is_wall() {
-                ret.push(Sprite { idx: BLOCK_NW, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
-            }
-            if !k.n.is_wall() {
-                ret.push(Sprite { idx: BLOCK_N, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
-            }
-            if !k.ne.is_wall() {
-                ret.push(Sprite { idx: BLOCK_NE, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
-            }
+            blockform(k, &mut ret, pos, BLOCK, &DARKGOLDENROD);
         }
         area::Wall => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            let (left_wall, right_wall, block) = wall_flags_lrb(k);
-            if block {
-                // TODO: See-through walls should be drawn differently, don't show the blocked
-                // innards, just an expanse of XYWALL.
-                //   The logic's in place below, but this doesn't make sense until areaview
-                // is expanded to handle multiple wall types.
-                if area::Wall.is_opaque() {
-                    ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-                } else {
-                    ret.push(Sprite { idx: XYWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-                    return ret;
-                }
-            }
-            if left_wall && right_wall {
-                ret.push(Sprite { idx: XYWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-            } else if left_wall {
-                ret.push(Sprite { idx: XWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-            } else if right_wall {
-                ret.push(Sprite { idx: YWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-            } else if !block || !k.s.is_wall() {
-                // NB: This branch has some actual local kernel logic not
-                // handled by wall_flags_lrb.
-                ret.push(Sprite { idx: OWALL, pos: *pos, z: BLOCK_Z, color: *WALL_COL });
-            }
+            wallform(k, &mut ret, pos, WALL, &LIGHTSLATEGRAY);
+        },
+        area::RockWall => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            wallform(k, &mut ret, pos, ROCKWALL, &LIGHTSLATEGRAY);
         },
         area::Stalagmite => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
+            ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: DARKGOLDENROD });
         },
+    }
+
+    fn blockform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+        ret.push(Sprite { idx: idx, pos: *pos, z: BLOCK_Z, color: *color });
+        // Back lines for blocks with open floor behind them.
+        if !k.nw.is_wall() {
+            ret.push(Sprite { idx: BLOCK_NW, pos: *pos, z: BLOCK_Z, color: *color });
+        }
+        if !k.n.is_wall() {
+            ret.push(Sprite { idx: BLOCK_N, pos: *pos, z: BLOCK_Z, color: *color });
+        }
+        if !k.ne.is_wall() {
+            ret.push(Sprite { idx: BLOCK_NE, pos: *pos, z: BLOCK_Z, color: *color });
+        }
+    }
+
+    fn wallform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+        let (left_wall, right_wall, block) = wall_flags_lrb(k);
+        if block {
+            // TODO: See-through walls should be drawn differently, don't show the blocked
+            // innards, just an expanse of XYWALL.
+            //   The logic's in place below, but this doesn't make sense until areaview
+            // is expanded to handle multiple wall types.
+            if area::Wall.is_opaque() {
+                ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *color });
+            } else {
+                ret.push(Sprite { idx: idx + 2, pos: *pos, z: BLOCK_Z, color: *color });
+                return;
+            }
+        }
+        if left_wall && right_wall {
+            ret.push(Sprite { idx: idx + 2, pos: *pos, z: BLOCK_Z, color: *color });
+        } else if left_wall {
+            ret.push(Sprite { idx: idx, pos: *pos, z: BLOCK_Z, color: *color });
+        } else if right_wall {
+            ret.push(Sprite { idx: idx + 1, pos: *pos, z: BLOCK_Z, color: *color });
+        } else if !block || !k.s.is_wall() {
+            // NB: This branch has some actual local kernel logic not
+            // handled by wall_flags_lrb.
+            ret.push(Sprite { idx: idx + 3, pos: *pos, z: BLOCK_Z, color: *color });
+        }
     }
 
     // Return code:

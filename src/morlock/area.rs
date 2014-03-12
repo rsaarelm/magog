@@ -13,6 +13,7 @@ pub enum TerrainType {
     Magma,
     Downstairs,
     Wall,
+    RockWall,
     Rock,
     Tree,
     Grass,
@@ -22,20 +23,21 @@ pub enum TerrainType {
 impl TerrainType {
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | Rock => true,
+            Wall | RockWall | Rock => true,
             _ => false
         }
     }
 
     pub fn is_opaque(self) -> bool {
         match self {
-            Wall | Rock => true,
+            Wall | RockWall | Rock => true,
             _ => false
         }
     }
 }
 
 pub struct Area {
+    default: TerrainType,
     set: HashMap<Location, TerrainType>,
 }
 
@@ -56,15 +58,16 @@ pub fn uphill(map: &DijkstraMap, loc: Location) -> Option<Location> {
 }
 
 impl Area {
-    pub fn new() -> Area {
+    pub fn new(default: TerrainType) -> Area {
         Area {
+            default: default,
             set: HashMap::new(),
         }
     }
 
     pub fn get(&self, p: Location) -> TerrainType {
         match self.set.find(&p) {
-            None => Rock,
+            None => self.default,
             Some(&t) => t
         }
     }
@@ -86,7 +89,7 @@ impl Area {
     }
 
     pub fn fill(&mut self, p: Location) {
-        self.set.insert(p, Wall);
+        self.set.insert(p, self.default);
     }
 
     pub fn is_opaque(&self, p: Location) -> bool { self.get(p).is_opaque() }
@@ -149,10 +152,6 @@ impl Area {
 
         dijkstra::build_map(goals, |&loc| self.walk_neighbors(loc), 256)
     }
-}
-
-pub fn is_solid(t: TerrainType) -> bool {
-    t == Wall
 }
 
 pub static DIRECTIONS6: &'static [Vec2<int>] = &[

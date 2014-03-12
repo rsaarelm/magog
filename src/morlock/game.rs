@@ -34,7 +34,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Game {
         let mut ret = Game {
-            area: ~Area::new(),
+            area: ~Area::new(area::Rock),
             pos: Location(Point2::new(0i8, 0i8)),
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
@@ -48,7 +48,7 @@ impl Game {
     }
 
     pub fn next_level(&mut self) {
-        self.area = ~Area::new();
+        self.area = ~Area::new(area::Rock);
         self.area.gen_cave(&mut self.rng);
 
         self.pos = Location(Point2::new(0i8, 0i8));

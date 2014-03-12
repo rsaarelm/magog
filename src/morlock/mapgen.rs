@@ -40,7 +40,7 @@ impl MapGen for Area {
 
             for &v in DIRECTIONS6.iter() {
                 let p = loc + v;
-                if self.get(p) == area::Rock && bounds.contains(p.p()) {
+                if self.get(p) == self.default && bounds.contains(p.p()) {
                     edge.insert(p);
                 }
             }
