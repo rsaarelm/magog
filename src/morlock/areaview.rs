@@ -109,7 +109,8 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             ret.push(Sprite { idx: GRASS, pos: *pos, z: FLOOR_Z, color: DARKGREEN });
         },
         area::Downstairs => {
-            ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
         },
         area::Rock => {
             ret.push(Sprite { idx: BLOCK, pos: *pos, z: BLOCK_Z, color: *ROCK_COL });
