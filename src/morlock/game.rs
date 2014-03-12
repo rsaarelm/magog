@@ -10,18 +10,22 @@ use calx::app::App;
 use calx::app;
 use calx::renderer::Renderer;
 
-use area::{Location, Area, uphill};
+use area::{Location, Area, uphill, DijkstraMap};
 use area;
 use areaview;
 use fov::Fov;
 use fov;
 use mapgen::MapGen;
+use mob::Mob;
 
+// XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
     area: ~Area,
     pos: Location,
     seen: ~Fov,
     remembered: ~Fov,
+    mobs: ~[Mob],
+    player_dijkstra: Option<DijkstraMap>,
     rng: rand::StdRng,
     stop: bool,
 }
@@ -33,6 +37,8 @@ impl Game {
             pos: Location(Point2::new(0i8, 0i8)),
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
+            mobs: ~[],
+            player_dijkstra: None,
             rng: rand::rng(),
             stop: true,
         };
