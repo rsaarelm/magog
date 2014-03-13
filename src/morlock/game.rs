@@ -9,6 +9,7 @@ use color::rgb::consts::*;
 use calx::app::App;
 use calx::app;
 use calx::renderer::Renderer;
+use calx::renderer;
 
 use area::{Location, Area, uphill, DijkstraMap};
 use area;
@@ -16,8 +17,10 @@ use areaview;
 use fov::Fov;
 use fov;
 use mapgen::MapGen;
+use mob;
 use mob::Mob;
 use transform::Transform;
+use sprite;
 
 // XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
@@ -43,8 +46,37 @@ impl Game {
             rng: rand::rng(),
             stop: true,
         };
+        ret.mobs.push(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
+        ret.mobs.push(Mob::new(mob::Morlock, Location(Point2::new(4i8, 4i8))));
         ret.next_level();
         ret
+    }
+
+    pub fn player<'a>(&'a mut self) -> &'a mut Mob {
+        for i in self.mobs.mut_iter() {
+            if i.t == mob::Player {
+                return i;
+            }
+        }
+        fail!("No player mob");
+    }
+
+    pub fn has_player(&self) -> bool {
+        for i in self.mobs.iter() {
+            if i.t == mob::Player {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn mob_at<'a>(&'a mut self, loc: Location) -> Option<&'a mut Mob> {
+        for i in self.mobs.mut_iter() {
+            if i.loc == loc {
+                return Some(i);
+            }
+        }
+        None
     }
 
     pub fn next_level(&mut self) {
@@ -58,21 +90,29 @@ impl Game {
     }
 
     pub fn step(&mut self, d: &Vec2<int>) -> bool {
-        let new_loc = self.pos + *d;
+        let new_loc = self.player().loc + *d;
         if self.area.is_walkable(new_loc) {
-            self.pos = new_loc;
+            self.player().loc = new_loc;
         } else {
             return false;
         }
 
-        if self.area.get(self.pos) == area::Downstairs {
+        if self.area.get(new_loc) == area::Downstairs {
             self.next_level();
         }
 
         true
     }
 
+    pub fn update(&mut self) {
+        // TODO: Run all mobs' AI
+    }
+
     pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
+        if self.has_player() {
+            self.pos = self.player().loc;
+        }
+
         let mouse = app.r.get_mouse();
         let xf = Transform::new(self.pos);
         let cursor_chart_loc = xf.to_chart(&mouse.pos);
@@ -92,7 +132,9 @@ impl Game {
             }
         }
 
-        areaview::draw_area(self.area, app, self.pos, self.seen, self.remembered);
+        areaview::draw_area(self, app);
+        app.r.draw_tile(areaview::CURSOR_BOTTOM, &xf.to_screen(cursor_chart_loc), sprite::FLOOR_Z, &FIREBRICK, renderer::ColorKeyDraw);
+        app.r.draw_tile(areaview::CURSOR_TOP, &xf.to_screen(cursor_chart_loc), sprite::BLOCK_Z, &FIREBRICK, renderer::ColorKeyDraw);
 
         let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         app.set_color(&LIGHTSLATEGRAY);

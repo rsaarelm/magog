@@ -1,10 +1,11 @@
-use color::rgb::RGB;
 use color::rgb::consts::*;
 
-use calx::app::{SPRITE_INDEX_START};
-
 use area::Location;
+use transform::Transform;
+use sprite::{Sprite, tile};
+use sprite;
 
+#[deriving(Eq, Clone)]
 pub enum MobType {
     Player,
     Morlock,
@@ -14,12 +15,11 @@ pub enum MobType {
 }
 
 pub struct MobData {
-    sprite: uint,
     max_hits: uint,
-    color: RGB<u8>,
     name: ~str,
 }
 
+#[deriving(Clone)]
 pub struct Mob {
     t: MobType,
     loc: Location,
@@ -43,13 +43,36 @@ impl Mob {
     // boilerplate or using macros.
     pub fn type_data(t: MobType) -> MobData {
         match t {
-            Player =>       MobData { sprite: SPRITE_INDEX_START + 51, max_hits: 5, color: AZURE, name: ~"you" },
-            Morlock =>      MobData { sprite: SPRITE_INDEX_START + 59, max_hits: 1, color: LIGHTSLATEGRAY, name: ~"morlock" },
-            BigMorlock =>   MobData { sprite: SPRITE_INDEX_START + 60, max_hits: 3, color: GOLD, name: ~"big morlock" },
-            Centipede =>    MobData { sprite: SPRITE_INDEX_START + 61, max_hits: 2, color: DARKCYAN, name: ~"centipede" },
-            TimeEater =>    MobData { sprite: SPRITE_INDEX_START + 62, max_hits: 6, color: CRIMSON, name: ~"time eater" },
+            Player =>       MobData { max_hits: 5, name: ~"you" },
+            Morlock =>      MobData { max_hits: 1, name: ~"morlock" },
+            BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
+            Centipede =>    MobData { max_hits: 2, name: ~"centipede" },
+            TimeEater =>    MobData { max_hits: 6, name: ~"time eater" },
         }
     }
 
     pub fn data(&self) -> MobData { Mob::type_data(self.t) }
+
+    pub fn sprites(&self, xf: &Transform) -> ~[Sprite] {
+        let mut ret : ~[Sprite] = ~[];
+
+        match self.t {
+            Player => {
+                ret.push(Sprite::new(tile(51), xf.to_screen(self.loc), sprite::BLOCK_Z, AZURE));
+            },
+            Morlock => {
+                ret.push(Sprite::new(tile(59), xf.to_screen(self.loc), sprite::BLOCK_Z, LIGHTSLATEGRAY));
+            },
+            BigMorlock => {
+                ret.push(Sprite::new(tile(60), xf.to_screen(self.loc), sprite::BLOCK_Z, GOLD));
+            },
+            Centipede => {
+                ret.push(Sprite::new(tile(61), xf.to_screen(self.loc), sprite::BLOCK_Z, DARKCYAN));
+            },
+            TimeEater => {
+                ret.push(Sprite::new(tile(62), xf.to_screen(self.loc), sprite::BLOCK_Z, CRIMSON));
+            },
+        };
+        ret
+    }
 }

@@ -7,11 +7,11 @@ use calx::rectutil::RectUtil;
 use calx::app::App;
 use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
-use calx::renderer;
 use area;
-use area::{TerrainType, Location, Area};
-use fov::Fov;
+use area::{TerrainType, Location};
+use game::Game;
 use transform::Transform;
+use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
@@ -32,11 +32,6 @@ pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
 pub static AVATAR : uint = SPRITE_INDEX_START + 51;
 pub static BLOCK : uint = SPRITE_INDEX_START + 52;
 pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
-
-static CURSOR_COL: &'static RGB<u8> = &FIREBRICK;
-
-static FLOOR_Z: f32 = 0.500f32;
-static BLOCK_Z: f32 = 0.400f32;
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
@@ -65,19 +60,6 @@ impl<C> Kernel<C> {
             sw: get(loc + Vec2::new(0, 1)),
             s: get(loc + Vec2::new(1, 1)),
         }
-    }
-}
-
-pub struct Sprite {
-    idx: uint,
-    pos: Point2<f32>,
-    z: f32,
-    color: RGB<u8>,
-}
-
-impl<R: Renderer> Sprite {
-    pub fn draw(&self, app: &mut App<R>) {
-        app.r.draw_tile(self.idx, &self.pos, self.z, &self.color, renderer::ColorKeyDraw);
     }
 }
 
@@ -187,32 +169,27 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     ret
 }
 
-pub fn draw_area<R: Renderer>(
-    area: &Area, app: &mut App<R>, center: Location,
-    seen: &Fov, remembered: &Fov) {
+pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
 
-    // Mouse cursoring
-    let mouse = app.r.get_mouse();
-    let xf = Transform::new(center);
+    let xf = Transform::new(game.pos);
 
-    let cursor_chart_pos = xf.to_chart(&mouse.pos);
     let mut rect = Aabb2::new(
         *xf.to_chart(&Point2::new(0f32, 0f32)).p(),
         *xf.to_chart(&Point2::new(640f32, 392f32)).p());
     rect = rect.grow(xf.to_chart(&Point2::new(640f32, 0f32)).p());
     rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
 
-    let Location(ref offset) = center;
+    let Location(offset) = game.pos;
     let pos_offset = Vec2::new(offset.x as int, offset.y as int);
 
     for pt in rect.points() {
         let p = Location(pt) + pos_offset;
         let offset = xf.to_screen(p);
 
-        let kernel = Kernel::new(|p| area.get(p), p);
+        let kernel = Kernel::new(|p| game.area.get(p), p);
         let mut sprites = terrain_sprites(&kernel, &offset);
-        if !seen.contains(p) {
-            if remembered.contains(p) {
+        if !game.seen.contains(p) {
+            if game.remembered.contains(p) {
                 for s in sprites.mut_iter() {
                     s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
                 }
@@ -225,11 +202,13 @@ pub fn draw_area<R: Renderer>(
             s.draw(app);
         }
 
-        if p == center {
-            app.r.draw_tile(AVATAR, &offset, BLOCK_Z, &AZURE, renderer::ColorKeyDraw);
-        }
+        match game.mob_at(p) {
+            Some(mob) => {
+                for s in mob.sprites(&xf).iter() {
+                    s.draw(app);
+                }
+            }
+            _ => ()
+        };
     }
-
-    app.r.draw_tile(CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), FLOOR_Z, CURSOR_COL, renderer::ColorKeyDraw);
-    app.r.draw_tile(CURSOR_TOP, &xf.to_screen(cursor_chart_pos), BLOCK_Z, CURSOR_COL, renderer::ColorKeyDraw);
 }
