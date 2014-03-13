@@ -55,22 +55,23 @@ impl Mob {
 
     pub fn sprites(&self, xf: &Transform) -> ~[Sprite] {
         let mut ret : ~[Sprite] = ~[];
+        let pos = xf.to_screen(self.loc);
 
         match self.t {
             Player => {
-                ret.push(Sprite::new(tile(51), xf.to_screen(self.loc), sprite::BLOCK_Z, AZURE));
+                ret.push(Sprite::new(tile(51), pos, sprite::BLOCK_Z, AZURE));
             },
             Morlock => {
-                ret.push(Sprite::new(tile(59), xf.to_screen(self.loc), sprite::BLOCK_Z, LIGHTSLATEGRAY));
+                ret.push(Sprite::new(tile(59), pos, sprite::BLOCK_Z, LIGHTSLATEGRAY));
             },
             BigMorlock => {
-                ret.push(Sprite::new(tile(60), xf.to_screen(self.loc), sprite::BLOCK_Z, GOLD));
+                ret.push(Sprite::new(tile(60), pos, sprite::BLOCK_Z, GOLD));
             },
             Centipede => {
-                ret.push(Sprite::new(tile(61), xf.to_screen(self.loc), sprite::BLOCK_Z, DARKCYAN));
+                ret.push(Sprite::new(tile(61), pos, sprite::BLOCK_Z, DARKCYAN));
             },
             TimeEater => {
-                ret.push(Sprite::new(tile(62), xf.to_screen(self.loc), sprite::BLOCK_Z, CRIMSON));
+                ret.push(Sprite::new(tile(62), pos, sprite::BLOCK_Z, CRIMSON));
             },
         };
         ret

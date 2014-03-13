@@ -202,13 +202,15 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
             s.draw(app);
         }
 
-        match game.mob_at(p) {
-            Some(mob) => {
-                for s in mob.sprites(&xf).iter() {
-                    s.draw(app);
+        if game.seen.contains(p) {
+            match game.mob_at(p) {
+                Some(mob) => {
+                    for s in mob.sprites(&xf).iter() {
+                        s.draw(app);
+                    }
                 }
-            }
-            _ => ()
-        };
+                _ => ()
+            };
+        }
     }
 }
