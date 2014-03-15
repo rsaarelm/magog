@@ -10,6 +10,7 @@ pub enum MobType {
     Player,
     Morlock,
     BigMorlock,
+    BurrowingMorlock,
     Centipede,
     TimeEater,
 }
@@ -46,6 +47,7 @@ impl Mob {
             Player =>       MobData { max_hits: 5, name: ~"you" },
             Morlock =>      MobData { max_hits: 1, name: ~"morlock" },
             BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
+            BurrowingMorlock =>   MobData { max_hits: 2, name: ~"burrowing morlock" },
             Centipede =>    MobData { max_hits: 2, name: ~"centipede" },
             TimeEater =>    MobData { max_hits: 6, name: ~"time eater" },
         }
@@ -66,6 +68,9 @@ impl Mob {
             },
             BigMorlock => {
                 ret.push(Sprite::new(tile(60), pos, sprite::BLOCK_Z, GOLD));
+            },
+            BurrowingMorlock => {
+                ret.push(Sprite::new(tile(59), pos, sprite::BLOCK_Z, DARKSALMON));
             },
             Centipede => {
                 ret.push(Sprite::new(tile(61), pos, sprite::BLOCK_Z, DARKCYAN));

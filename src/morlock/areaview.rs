@@ -19,6 +19,7 @@ pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 2;
 pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
 pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
 pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
+pub static BLOCK_DARK : uint = SPRITE_INDEX_START + 6;
 pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static FLOOR : uint = SPRITE_INDEX_START + 11;
 pub static GRASS : uint = SPRITE_INDEX_START + 12;
@@ -179,11 +180,8 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
     rect = rect.grow(xf.to_chart(&Point2::new(640f32, 0f32)).p());
     rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
 
-    let Location(offset) = game.pos;
-    let pos_offset = Vec2::new(offset.x as int, offset.y as int);
-
     for pt in rect.points() {
-        let p = Location(pt) + pos_offset;
+        let p = Location(pt);
         let offset = xf.to_screen(p);
 
         let kernel = Kernel::new(|p| game.area.get(p), p);
@@ -194,7 +192,8 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
                     s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
                 }
             } else {
-                continue;
+                // Solid blocks for unseen areas, cover stuff in front.
+                sprites = ~[Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK }];
             }
         }
 

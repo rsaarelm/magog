@@ -83,6 +83,7 @@ impl Game {
     }
 
     pub fn next_level(&mut self) {
+        self.mobs = ~[*self.player()];
         self.area = ~Area::new(area::Rock);
         self.area.gen_cave(&mut self.rng);
 
