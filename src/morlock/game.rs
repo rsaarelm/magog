@@ -32,6 +32,7 @@ pub struct Game {
     player_dijkstra: Option<DijkstraMap>,
     rng: rand::StdRng,
     stop: bool,
+    depth: uint,
 }
 
 impl Game {
@@ -45,6 +46,7 @@ impl Game {
             player_dijkstra: None,
             rng: rand::rng(),
             stop: true,
+            depth: 0,
         };
         ret.mobs.push(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
         ret.mobs.push(Mob::new(mob::Morlock, Location(Point2::new(4i8, 4i8))));
@@ -70,6 +72,7 @@ impl Game {
         false
     }
 
+    // TODO: Should have an immutable version.
     pub fn mob_at<'a>(&'a mut self, loc: Location) -> Option<&'a mut Mob> {
         for i in self.mobs.mut_iter() {
             if i.loc == loc {
@@ -83,10 +86,22 @@ impl Game {
         self.area = ~Area::new(area::Rock);
         self.area.gen_cave(&mut self.rng);
 
-        self.pos = Location(Point2::new(0i8, 0i8));
+        self.player().loc = Location(Point2::new(0i8, 0i8));
 
         self.seen = ~Fov::new();
         self.remembered = ~Fov::new();
+        self.depth += 1;
+    }
+
+    pub fn area_name(&self) -> ~str {
+        format!("Floor {}", self.depth)
+    }
+
+    pub fn object_name(&mut self, loc: Location) -> ~str {
+        match self.mob_at(loc) {
+            Some(mob) => mob.data().name,
+            None => ~"",
+        }
     }
 
     pub fn step(&mut self, d: &Vec2<int>) -> bool {
@@ -142,11 +157,11 @@ impl Game {
 
         app.set_color(&CORNFLOWERBLUE);
         app.print_words(&Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
-            app::Center, format!("cell {} {}", cursor_chart_loc.p().x, cursor_chart_loc.p().y));
+            app::Center, self.object_name(cursor_chart_loc));
 
         app.set_color(&LIGHTSLATEGRAY);
         app.print_words(&Aabb2::new(Point2::new(560.0f32, 0.0f32), Point2::new(640.0f32, 16.0f32)),
-            app::Right, "Area Name");
+            app::Right, self.area_name());
 
         if !self.stop {
             if !self.area.fully_explored(self.remembered) {
