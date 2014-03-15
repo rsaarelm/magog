@@ -6,6 +6,7 @@ extern crate calx;
 extern crate stb;
 extern crate collections;
 extern crate num;
+extern crate time;
 
 use glutil::glrenderer::GlRenderer;
 use calx::key;
@@ -26,6 +27,7 @@ pub mod mapgen;
 pub mod mob;
 pub mod transform;
 pub mod sprite;
+pub mod misc;
 
 static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
 
@@ -54,7 +56,7 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    for i in range(0, 64) {
+    for i in range(0, 72) {
         app.r.add_tile(~tiles[i].clone());
     }
 

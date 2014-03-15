@@ -1,3 +1,4 @@
+use time;
 use std::rand;
 use std::rand::Rng;
 use std::mem;
@@ -131,7 +132,7 @@ impl Game {
             // TODO: Minimal depth consideration.
             // TODO: Special spawn logic for the boss.
             let kind = self.rng.choose(
-                &[mob::Morlock, mob::BigMorlock, mob::BurrowingMorlock, mob::Centipede, mob::TimeEater]);
+                &[mob::Morlock, mob::BigMorlock, mob::BurrowingMorlock, mob::Centipede]);
             self.mobs.push(Mob::new(kind, *spawn_loc));
         }
 
@@ -167,7 +168,15 @@ impl Game {
 
     pub fn attack(&mut self, _agent_idx: uint, target_idx: uint) {
         // TODO: More interesting logic.
-        self.mobs.remove(target_idx);
+        //self.mobs.remove(target_idx);
+        let mob = &mut self.mobs[target_idx];
+        mob.hits -= 1;
+
+        if mob.hits > 0 {
+            mob.anim_state = mob::Hurt(time::precise_time_s());
+        } else {
+            mob.anim_state = mob::Dying(time::precise_time_s());
+        }
     }
 
     pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
@@ -177,9 +186,10 @@ impl Game {
             let new_loc = self.player().loc + d;
             match self.mob_idx_at(new_loc) {
                 Some(mob_idx) => {
-                    // TODO: Make this pass the borrow checker.
-                    self.attack(player_idx, mob_idx);
-                    return true;
+                    if self.mobs[mob_idx].alive() {
+                        self.attack(player_idx, mob_idx);
+                        return true;
+                    }
                 },
                 _ => (),
             };
@@ -220,6 +230,10 @@ impl Game {
             if mouse.right {
                 self.area.fill(cursor_chart_loc);
             }
+        }
+
+        for mob in self.mobs.mut_iter() {
+            mob.update_anim();
         }
 
         areaview::draw_area(self, app);
