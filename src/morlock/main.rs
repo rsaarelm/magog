@@ -29,6 +29,23 @@ pub mod sprite;
 
 static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
 
+static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
+    &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
+    &[DIRECTIONS6[1], DIRECTIONS6[0], DIRECTIONS6[2]],
+    &[DIRECTIONS6[2], DIRECTIONS6[1], DIRECTIONS6[3]],
+    &[DIRECTIONS6[3], DIRECTIONS6[2], DIRECTIONS6[4]],
+    &[DIRECTIONS6[4], DIRECTIONS6[3], DIRECTIONS6[5]],
+    &[DIRECTIONS6[5], DIRECTIONS6[4], DIRECTIONS6[0]],
+
+    // Sideways move left, right, even column.
+    &[DIRECTIONS6[5], DIRECTIONS6[4]],
+    &[DIRECTIONS6[1], DIRECTIONS6[2]],
+
+    // Sideways move left, right, odd column.
+    &[DIRECTIONS6[4], DIRECTIONS6[5]],
+    &[DIRECTIONS6[2], DIRECTIONS6[1]],
+];
+
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
     let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
@@ -47,25 +64,33 @@ pub fn main() {
         game.draw(&mut app);
 
         loop {
+            // Player's gone, assume we're running an attract mode or something.
+            if !game.has_player() { break; }
+            let mut column;
+
+            {
+                let player = game.player();
+                // For the hacked sideways move.
+                column = player.loc.p().x - player.loc.p().y;
+            }
+
             match app.r.pop_key() {
                 Some(key) => {
-                    if key.code == key::ESC {
-                        return;
-                    }
+                    match key.code {
+                        key::ESC => { return; },
 
-                    if key.code == key::SPACE {
-                        game.stop = !game.stop;
-                    }
+                        key::Q | key::HOME => { game.smart_move(SMART_MOVE_6[5]); },
+                        key::W | key::UP => { game.smart_move(SMART_MOVE_6[0]); },
+                        key::E | key::PAGEUP => { game.smart_move(SMART_MOVE_6[1]); },
+                        key::A | key::END => { game.smart_move(SMART_MOVE_6[4]); },
+                        key::S | key::DOWN => { game.smart_move(SMART_MOVE_6[3]); },
+                        key::D | key::PAGEDOWN => { game.smart_move(SMART_MOVE_6[2]); },
 
-                    if key.code == key::W { step(&mut game, 0); }
-                    if key.code == key::E { step(&mut game, 1); }
-                    if key.code == key::D { step(&mut game, 2); }
-                    if key.code == key::S { step(&mut game, 3); }
-                    if key.code == key::A { step(&mut game, 4); }
-                    if key.code == key::Q { step(&mut game, 5); }
+                        key::LEFT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
+                        key::RIGHT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
 
-                    if key.code == key::F12 {
-                        app.r.screenshot("/tmp/shot.png");
+                        key::F12 => { app.r.screenshot("/tmp/shot.png"); },
+                        _ => (),
                     }
                 },
                 None => { break; }
@@ -73,14 +98,5 @@ pub fn main() {
         }
 
         app.r.flush();
-    }
-
-    fn step(game: &mut Game, dir: uint) {
-        // Steer to the sides if bump.
-        if !game.step(&DIRECTIONS6[dir]) {
-            if !game.step(&DIRECTIONS6[(dir + 1) % 6]) {
-                game.step(&DIRECTIONS6[(dir + 5) % 6]);
-            }
-        }
     }
 }

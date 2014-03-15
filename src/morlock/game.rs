@@ -63,6 +63,15 @@ impl Game {
         fail!("No player mob");
     }
 
+    pub fn player_idx(&self) -> uint {
+        for (i, mob) in self.mobs.iter().enumerate() {
+            if mob.t == mob::Player {
+                return i;
+            }
+        }
+        fail!("No player mob");
+    }
+
     pub fn open_cells(&self) -> ~[Location] {
         let mut ret = ~[];
         for &loc in self.area.iter() {
@@ -80,6 +89,15 @@ impl Game {
             }
         }
         false
+    }
+
+    pub fn mob_idx_at<'a>(&'a self, loc: Location) -> Option<uint> {
+        for (i, mob) in self.mobs.iter().enumerate() {
+            if mob.loc == loc {
+                return Some(i);
+            }
+        }
+        None
     }
 
     pub fn mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
@@ -145,6 +163,35 @@ impl Game {
         }
 
         true
+    }
+
+    pub fn attack(&mut self, _agent_idx: uint, target_idx: uint) {
+        // TODO: More interesting logic.
+        self.mobs.remove(target_idx);
+    }
+
+    pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
+        let player_idx = self.player_idx();
+
+        for &d in dirs.iter() {
+            let new_loc = self.player().loc + d;
+            match self.mob_idx_at(new_loc) {
+                Some(mob_idx) => {
+                    // TODO: Make this pass the borrow checker.
+                    self.attack(player_idx, mob_idx);
+                    return true;
+                },
+                _ => (),
+            };
+            if self.area.is_walkable(new_loc) {
+                self.player().loc = new_loc;
+                if self.area.get(new_loc) == area::Downstairs {
+                    self.next_level();
+                }
+                return true;
+            }
+        }
+        false
     }
 
     pub fn update(&mut self) {
