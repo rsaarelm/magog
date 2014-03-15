@@ -1,4 +1,4 @@
-use collections::hashmap::HashMap;
+use collections::hashmap::{HashMap, Keys};
 use collections::hashmap::HashSet;
 use std::cast;
 use cgmath::point::{Point2};
@@ -106,6 +106,10 @@ impl Area {
             Floor | Grass | Downstairs => true,
             _ => false
         }
+    }
+
+    pub fn iter<'a>(&'a self) -> Keys<'a, Location, TerrainType> {
+        self.set.keys()
     }
 
     pub fn walk_neighbors(&self, p: Location) -> ~[Location] {

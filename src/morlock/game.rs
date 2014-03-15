@@ -1,4 +1,5 @@
 use std::rand;
+use std::rand::Rng;
 use std::mem;
 
 use cgmath::point::{Point2};
@@ -49,7 +50,6 @@ impl Game {
             depth: 0,
         };
         ret.mobs.push(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
-        ret.mobs.push(Mob::new(mob::Morlock, Location(Point2::new(4i8, 4i8))));
         ret.next_level();
         ret
     }
@@ -63,6 +63,16 @@ impl Game {
         fail!("No player mob");
     }
 
+    pub fn open_cells(&self) -> ~[Location] {
+        let mut ret = ~[];
+        for &loc in self.area.iter() {
+            if self.area.is_walkable(loc) && self.mob_at(loc).is_none() {
+                ret.push(loc);
+            }
+        }
+        ret
+    }
+
     pub fn has_player(&self) -> bool {
         for i in self.mobs.iter() {
             if i.t == mob::Player {
@@ -72,8 +82,16 @@ impl Game {
         false
     }
 
-    // TODO: Should have an immutable version.
-    pub fn mob_at<'a>(&'a mut self, loc: Location) -> Option<&'a mut Mob> {
+    pub fn mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
+        for i in self.mobs.iter() {
+            if i.loc == loc {
+                return Some(i);
+            }
+        }
+        None
+    }
+
+    pub fn mob_at_mut<'a>(&'a mut self, loc: Location) -> Option<&'a mut Mob> {
         for i in self.mobs.mut_iter() {
             if i.loc == loc {
                 return Some(i);
@@ -86,19 +104,28 @@ impl Game {
         self.mobs = ~[*self.player()];
         self.area = ~Area::new(area::Rock);
         self.area.gen_cave(&mut self.rng);
+        self.depth += 1;
 
         self.player().loc = Location(Point2::new(0i8, 0i8));
 
+        let sites = self.open_cells();
+        for &spawn_loc in self.rng.sample(sites.iter(), 6 + self.depth).iter() {
+            // TODO: Minimal depth consideration.
+            // TODO: Special spawn logic for the boss.
+            let kind = self.rng.choose(
+                &[mob::Morlock, mob::BigMorlock, mob::BurrowingMorlock, mob::Centipede, mob::TimeEater]);
+            self.mobs.push(Mob::new(kind, *spawn_loc));
+        }
+
         self.seen = ~Fov::new();
         self.remembered = ~Fov::new();
-        self.depth += 1;
     }
 
     pub fn area_name(&self) -> ~str {
         format!("Floor {}", self.depth)
     }
 
-    pub fn object_name(&mut self, loc: Location) -> ~str {
+    pub fn object_name(&self, loc: Location) -> ~str {
         match self.mob_at(loc) {
             Some(mob) => mob.data().name,
             None => ~"",
