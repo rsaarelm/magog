@@ -9,6 +9,8 @@ game-agnostic framework.
 Building
 --------
 
+Built using Rustc 0.10-pre 62f1d68
+
 Check out the submodule repositories:
 $ git submodule update --init
 
