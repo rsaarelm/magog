@@ -171,7 +171,6 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
 }
 
 pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
-
     let xf = Transform::new(game.pos);
 
     let mut rect = Aabb2::new(
@@ -202,7 +201,7 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
         }
 
         if game.seen.contains(p) {
-            match game.mob_at(p) {
+            match game.drawable_mob_at(p) {
                 Some(mob) => {
                     for s in mob.sprites(&xf).iter() {
                         s.draw(app);

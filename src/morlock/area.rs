@@ -205,3 +205,11 @@ impl Add<Vec2<int>, Location> for Location {
                 (p.y as int + other.y) as i8))
     }
 }
+
+impl Sub<Location, Vec2<int>> for Location {
+    fn sub(&self, other: &Location) -> Vec2<int> {
+        let &Location(p) = self;
+        let &Location(p2) = other;
+        Vec2::new((p.x - p2.x) as int, (p.y - p2.y) as int)
+    }
+}

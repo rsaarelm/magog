@@ -17,6 +17,8 @@ use cgmath::vector::{Vec2};
 use stb::image::Image;
 use game::Game;
 use area::DIRECTIONS6;
+use transform::Transform;
+use misc::Ticker;
 
 pub mod fov;
 pub mod area;
@@ -62,12 +64,32 @@ pub fn main() {
 
     let mut game = Game::new();
 
+    let mut standalone_anim = Ticker::new(0.2f64);
+
     while app.r.alive {
         game.draw(&mut app);
+
+        let xf = Transform::new(game.pos);
+        let mouse = app.r.get_mouse();
+        let cursor_chart_loc = xf.to_chart(&mouse.pos);
+        if game.has_player() {
+            let _vec = cursor_chart_loc - game.pos;
+            // TODO: Convert mouse clicks to player input. This needs a
+            // slowdown feature to make it work like the keyboard repeat thing,
+            // otherwise pressing the mouse button will make the inputs repeat
+            // at top speed and make the game unplayable.
+        }
+
 
         loop {
             // Player's gone, assume we're running an attract mode or something.
             if !game.has_player() { break; }
+            if !game.player().is_alive() {
+                if standalone_anim.get() {
+                    game.update();
+                }
+            }
+
             let mut column;
 
             {
@@ -78,20 +100,24 @@ pub fn main() {
 
             match app.r.pop_key() {
                 Some(key) => {
+                    if game.player().is_alive() {
+                        match key.code {
+
+                            key::Q | key::HOME => { game.smart_move(SMART_MOVE_6[5]); },
+                            key::W | key::UP => { game.smart_move(SMART_MOVE_6[0]); },
+                            key::E | key::PAGEUP => { game.smart_move(SMART_MOVE_6[1]); },
+                            key::A | key::END => { game.smart_move(SMART_MOVE_6[4]); },
+                            key::S | key::DOWN => { game.smart_move(SMART_MOVE_6[3]); },
+                            key::D | key::PAGEDOWN => { game.smart_move(SMART_MOVE_6[2]); },
+
+                            key::LEFT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
+                            key::RIGHT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
+                            key::SPACE => { game.pass(); },
+                            _ => (),
+                        }
+                    }
                     match key.code {
                         key::ESC => { return; },
-
-                        key::Q | key::HOME => { game.smart_move(SMART_MOVE_6[5]); },
-                        key::W | key::UP => { game.smart_move(SMART_MOVE_6[0]); },
-                        key::E | key::PAGEUP => { game.smart_move(SMART_MOVE_6[1]); },
-                        key::A | key::END => { game.smart_move(SMART_MOVE_6[4]); },
-                        key::S | key::DOWN => { game.smart_move(SMART_MOVE_6[3]); },
-                        key::D | key::PAGEDOWN => { game.smart_move(SMART_MOVE_6[2]); },
-
-                        key::LEFT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
-                        key::RIGHT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
-                        key::SPACE => { game.pass(); },
-
                         key::F12 => { app.r.screenshot("/tmp/shot.png"); },
                         _ => (),
                     }

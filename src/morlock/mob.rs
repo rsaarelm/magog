@@ -43,7 +43,6 @@ pub struct Mob {
     t: MobType,
     loc: Location,
     hits: int,
-    moved: bool,
     anim_state: AnimState,
     // Player only.
     ammo: uint,
@@ -55,7 +54,6 @@ impl Mob {
            t: t,
            loc: loc,
            hits: Mob::type_data(t).max_hits as int,
-           moved: false,
            anim_state: Awake,
            ammo: 6,
        }

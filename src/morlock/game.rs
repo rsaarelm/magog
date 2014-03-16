@@ -5,7 +5,7 @@ use std::mem;
 
 use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
-use cgmath::aabb::{Aabb, Aabb2};
+use cgmath::aabb::{Aabb2};
 use color::rgb::consts::*;
 
 use calx::app::App;
@@ -14,7 +14,8 @@ use calx::renderer::Renderer;
 use calx::renderer;
 use calx::rectutil::RectUtil;
 
-use area::{Location, Area, uphill, DijkstraMap};
+use area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
+use dijkstra;
 use area;
 use areaview;
 use fov::Fov;
@@ -65,7 +66,6 @@ impl Game {
             stop: true,
             depth: 0,
         };
-        ret.mobs.push(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
         ret.next_level();
         ret
     }
@@ -116,6 +116,19 @@ impl Game {
         None
     }
 
+    pub fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
+        let mut ret = None;
+        for i in self.mobs.iter() {
+            if i.loc == loc {
+                // Make sure you show up the live mob if there's a live
+                // one and corpses here.
+                if i.is_alive() || ret.is_none() { ret = Some(i); }
+            }
+        }
+        ret
+    }
+
+
     pub fn mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
         for i in self.mobs.iter() {
             if i.loc == loc && i.is_alive() {
@@ -135,7 +148,8 @@ impl Game {
     }
 
     pub fn next_level(&mut self) {
-        self.mobs = ~[*self.player()];
+        // Player state doesn't persist level-to-level.
+        self.mobs = ~[Mob::new(mob::Player, Location(Point2::new(0i8, 0i8)))];
         self.area = ~Area::new(area::Rock);
         self.area.gen_cave(&mut self.rng);
         self.depth += 1;
@@ -177,6 +191,26 @@ impl Game {
         } else {
             mob.anim_state = mob::Dying(time::precise_time_s());
         }
+    }
+
+    pub fn is_walkable(&self, loc: Location) -> bool {
+        self.area.get(loc).is_walkable() && self.mob_idx_at(loc).is_none()
+    }
+
+    pub fn melee_probe_dir(&self, mob_idx: uint, dir: &Vec2<int>) -> ProbeResult {
+        let loc = self.mobs[mob_idx].loc + *dir;
+        let mut walk_state = Move;
+
+        match self.mob_idx_at(loc) {
+            Some(mob_idx) => { return Melee(mob_idx); },
+            _ => ()
+        };
+
+        if !self.area.get(loc).is_walkable() {
+            walk_state = Blocked;
+        }
+
+        walk_state
     }
 
     pub fn probe_dir(&self, dir: &Vec2<int>) -> ProbeResult {
@@ -222,7 +256,7 @@ impl Game {
         ret
     }
 
-    pub fn msg(&mut self, txt: &str) {
+    pub fn msg(&mut self, _txt: &str) {
         // TODO
     }
 
@@ -271,11 +305,61 @@ impl Game {
         false
     }
 
+    pub fn mob_move(&mut self, mob_idx: uint, dir: &Vec2<int>) -> bool {
+        match self.melee_probe_dir(mob_idx, dir) {
+            Blocked => { return false; },
+            Move => {
+                self.mobs[mob_idx].loc = self.mobs[mob_idx].loc + *dir;
+                return true;
+            }
+            Melee(target_idx) => {
+                if self.mobs[target_idx].t == mob::Player {
+                    self.attack(mob_idx, target_idx);
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            _ => { return false; }
+        };
+    }
+
     pub fn update(&mut self) {
-        if self.has_player() {
+        if self.has_player() && self.player().is_alive() {
             self.pos = self.player().loc;
+            self.player_dijkstra = Some(dijkstra::build_map(
+                    ~[self.pos], |&loc| self.walk_neighbors(loc), 256));
+        } else {
+            self.player_dijkstra = None;
         }
-        // TODO: Run all mobs' AI
+
+        for i in range(0, self.mobs.len()) {
+            if !self.mobs[i].is_alive() || self.mobs[i].t == mob::Player { continue; }
+
+            // Wander around randomly if there's no player to hunt.
+            if self.player_dijkstra.is_none() {
+                let dir = self.rng.choose(area::DIRECTIONS6);
+                self.mob_move(i, &dir);
+                continue;
+            }
+
+            match uphill(self.player_dijkstra.get_ref(), self.mobs[i].loc) {
+                Some(new_loc) => {
+                    // TODO: Attack if close enough.
+                    match self.mob_idx_at(new_loc) {
+                        Some(mob_idx) => {
+                            if self.mobs[mob_idx].t == mob::Player {
+                                self.attack(i, mob_idx);
+                            }
+                        },
+                        None => {
+                            self.mobs[i].loc = new_loc;
+                        },
+                    };
+                },
+                None => (),
+            }
+        }
     }
 
     pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
@@ -287,16 +371,6 @@ impl Game {
         mem::swap(self.seen, tmp_seen);
         // Move old fov to map memory.
         self.remembered.add(tmp_seen);
-
-        if app.screen_area().contains(&mouse.pos) {
-            if mouse.left {
-                self.area.dig(cursor_chart_loc);
-            }
-
-            if mouse.right {
-                self.area.fill(cursor_chart_loc);
-            }
-        }
 
         for mob in self.mobs.mut_iter() {
             mob.update_anim();
