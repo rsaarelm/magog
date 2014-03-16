@@ -382,7 +382,9 @@ impl Game {
 
         let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         app.set_color(&LIGHTSLATEGRAY);
-        app.print_words(&text_zone, app::Left, "Hello, player. This is a friendly status message.");
+        app.print_words(&text_zone, app::Left, "Morlock Hunter\n\ncontrols\n--------\n\
+                        QWE\nASD to move and shoot\nSPACE to rest and reload\n\
+                        ESC to exit");
 
         app.set_color(&CRIMSON);
         let mut health_str = ~"hits: ";
