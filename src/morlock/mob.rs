@@ -45,6 +45,8 @@ pub struct Mob {
     hits: int,
     moved: bool,
     anim_state: AnimState,
+    // Player only.
+    ammo: uint,
 }
 
 impl Mob {
@@ -55,6 +57,7 @@ impl Mob {
            hits: Mob::type_data(t).max_hits as int,
            moved: false,
            anim_state: Awake,
+           ammo: 6,
        }
     }
 
@@ -75,7 +78,7 @@ impl Mob {
 
     pub fn data(&self) -> MobData { Mob::type_data(self.t) }
 
-    pub fn alive(&self) -> bool { self.hits > 0 }
+    pub fn is_alive(&self) -> bool { self.hits > 0 }
 
     pub fn update_anim(&mut self) {
         match self.anim_state {

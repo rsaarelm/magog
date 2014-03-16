@@ -12,6 +12,7 @@ use calx::app::App;
 use calx::app;
 use calx::renderer::Renderer;
 use calx::renderer;
+use calx::rectutil::RectUtil;
 
 use area::{Location, Area, uphill, DijkstraMap};
 use area;
@@ -35,6 +36,20 @@ pub struct Game {
     rng: rand::StdRng,
     stop: bool,
     depth: uint,
+}
+
+static GUN_RANGE: uint = 8;
+
+// Smart action in a given direction
+pub enum ProbeResult {
+    // Free to walk, nothing to attack.
+    Move,
+    // Can't walk nor attack.
+    Blocked,
+    // Something next to you, melee attack.
+    Melee(uint),
+    // Something in the distance, can shoot it.
+    Ranged(uint),
 }
 
 impl Game {
@@ -76,7 +91,7 @@ impl Game {
     pub fn open_cells(&self) -> ~[Location] {
         let mut ret = ~[];
         for &loc in self.area.iter() {
-            if self.area.is_walkable(loc) && self.mob_at(loc).is_none() {
+            if self.area.get(loc).is_walkable() && self.mob_at(loc).is_none() {
                 ret.push(loc);
             }
         }
@@ -94,7 +109,7 @@ impl Game {
 
     pub fn mob_idx_at<'a>(&'a self, loc: Location) -> Option<uint> {
         for (i, mob) in self.mobs.iter().enumerate() {
-            if mob.loc == loc {
+            if mob.loc == loc && mob.is_alive() {
                 return Some(i);
             }
         }
@@ -103,7 +118,7 @@ impl Game {
 
     pub fn mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
         for i in self.mobs.iter() {
-            if i.loc == loc {
+            if i.loc == loc && i.is_alive() {
                 return Some(i);
             }
         }
@@ -151,21 +166,6 @@ impl Game {
         }
     }
 
-    pub fn step(&mut self, d: &Vec2<int>) -> bool {
-        let new_loc = self.player().loc + *d;
-        if self.area.is_walkable(new_loc) {
-            self.player().loc = new_loc;
-        } else {
-            return false;
-        }
-
-        if self.area.get(new_loc) == area::Downstairs {
-            self.next_level();
-        }
-
-        true
-    }
-
     pub fn attack(&mut self, _agent_idx: uint, target_idx: uint) {
         // TODO: More interesting logic.
         //self.mobs.remove(target_idx);
@@ -179,40 +179,106 @@ impl Game {
         }
     }
 
+    pub fn probe_dir(&self, dir: &Vec2<int>) -> ProbeResult {
+        let mut loc = self.mobs[self.player_idx()].loc + *dir;
+        let mut walk_state = Move;
+
+        match self.mob_idx_at(loc) {
+            Some(mob_idx) => { return Melee(mob_idx); },
+            _ => ()
+        };
+
+        if !self.area.get(loc).is_walkable() {
+            walk_state = Blocked;
+        }
+
+        if self.area.get(loc).blocks_shot() {
+            return walk_state;
+        }
+
+        for _ in range(1, GUN_RANGE) {
+            loc = loc + *dir;
+
+            match self.mob_idx_at(loc) {
+                Some(mob_idx) => { return Ranged(mob_idx); },
+                _ => ()
+            };
+
+            if self.area.get(loc).blocks_shot() {
+                return walk_state;
+            }
+        }
+
+        walk_state
+    }
+
+    pub fn walk_neighbors(&self, loc: Location) -> ~[Location] {
+        let mut ret = ~[];
+        for &v in DIRECTIONS6.iter() {
+            if self.is_walkable(loc + v) {
+               ret.push(loc + v);
+            }
+        }
+        ret
+    }
+
+    pub fn msg(&mut self, txt: &str) {
+        // TODO
+    }
+
+    pub fn pass(&mut self) {
+        let player_idx = self.player_idx();
+        if self.mobs[player_idx].ammo < 6 {
+            self.msg("reload");
+            self.mobs[player_idx].ammo += 1;
+        }
+        self.update();
+    }
+
     pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
         let player_idx = self.player_idx();
 
-        for &d in dirs.iter() {
-            let new_loc = self.player().loc + d;
-            match self.mob_idx_at(new_loc) {
-                Some(mob_idx) => {
-                    if self.mobs[mob_idx].alive() {
-                        self.attack(player_idx, mob_idx);
-                        return true;
+        for d in dirs.iter() {
+            match self.probe_dir(d) {
+                Blocked => { continue; },
+                Move => {
+                    let new_loc = self.player().loc + *d;
+                    self.player().loc = new_loc;
+                    if self.area.get(new_loc) == area::Downstairs {
+                        self.next_level();
                     }
+                    self.update();
+                    return true;
                 },
-                _ => (),
-            };
-            if self.area.is_walkable(new_loc) {
-                self.player().loc = new_loc;
-                if self.area.get(new_loc) == area::Downstairs {
-                    self.next_level();
-                }
-                return true;
+                Melee(mob_idx) => {
+                    self.attack(player_idx, mob_idx);
+                    self.update();
+                    return true;
+                },
+                Ranged(mob_idx) => {
+                    if self.mobs[player_idx].ammo > 0 {
+                        self.attack(player_idx, mob_idx);
+                        self.mobs[player_idx].ammo -= 1;
+                    } else {
+                        self.msg("reload");
+                        self.mobs[player_idx].ammo += 1;
+                    }
+                    self.update();
+                    return true;
+                },
             }
         }
         false
     }
 
     pub fn update(&mut self) {
+        if self.has_player() {
+            self.pos = self.player().loc;
+        }
         // TODO: Run all mobs' AI
     }
 
     pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
-        if self.has_player() {
-            self.pos = self.player().loc;
-        }
-
         let mouse = app.r.get_mouse();
         let xf = Transform::new(self.pos);
         let cursor_chart_loc = xf.to_chart(&mouse.pos);
@@ -244,6 +310,16 @@ impl Game {
         app.set_color(&LIGHTSLATEGRAY);
         app.print_words(&text_zone, app::Left, "Hello, player. This is a friendly status message.");
 
+        app.set_color(&CRIMSON);
+        let mut health_str = ~"hits: ";
+        for _ in range(0, self.player().hits) { health_str = health_str + "o"; }
+        app.print_words(&RectUtil::new(0f32, 0f32, 120f32, 8f32), app::Left, health_str);
+
+        app.set_color(&ROYALBLUE);
+        let mut ammo_str = ~"ammo: ";
+        for _ in range(0, self.player().ammo) { ammo_str = ammo_str + "|"; }
+        app.print_words(&RectUtil::new(0f32, 8f32, 120f32, 16f32), app::Left, ammo_str);
+
         app.set_color(&CORNFLOWERBLUE);
         app.print_words(&Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
             app::Center, self.object_name(cursor_chart_loc));
@@ -256,7 +332,7 @@ impl Game {
             if !self.area.fully_explored(self.remembered) {
                 let map = self.area.explore_map(self.remembered);
                 match uphill(&map, self.pos) {
-                    Some(p) => { if self.area.is_walkable(p) { self.pos = p; } },
+                    Some(p) => { if self.area.get(p).is_walkable() { self.pos = p; } },
                     None => (),
                 }
             }

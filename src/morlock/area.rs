@@ -34,6 +34,21 @@ impl TerrainType {
             _ => false
         }
     }
+
+    pub fn blocks_shot(self) -> bool {
+        match self {
+            Wall | RockWall | Rock | Tree | Stalagmite => true,
+            _ => false
+        }
+    }
+
+    pub fn is_walkable(self) -> bool {
+        match self {
+            Floor | Grass | Downstairs => true,
+            _ => false
+        }
+
+    }
 }
 
 pub struct Area {
@@ -101,13 +116,6 @@ impl Area {
         }
     }
 
-    pub fn is_walkable(&self, p: Location) -> bool {
-        match self.get(p) {
-            Floor | Grass | Downstairs => true,
-            _ => false
-        }
-    }
-
     pub fn iter<'a>(&'a self) -> Keys<'a, Location, TerrainType> {
         self.set.keys()
     }
@@ -115,7 +123,7 @@ impl Area {
     pub fn walk_neighbors(&self, p: Location) -> ~[Location] {
         let mut ret = ~[];
         for &v in DIRECTIONS6.iter() {
-            if self.is_walkable(p + v) {
+            if self.get(p + v).is_walkable() {
                ret.push(p + v);
             }
         }

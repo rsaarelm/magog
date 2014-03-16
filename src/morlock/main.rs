@@ -90,6 +90,7 @@ pub fn main() {
 
                         key::LEFT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
                         key::RIGHT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
+                        key::SPACE => { game.pass(); },
 
                         key::F12 => { app.r.screenshot("/tmp/shot.png"); },
                         _ => (),
