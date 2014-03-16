@@ -40,6 +40,7 @@ pub struct Game {
 }
 
 static GUN_RANGE: uint = 8;
+static END_LEVEL: uint = 9;
 
 // Smart action in a given direction
 pub enum ProbeResult {
@@ -151,18 +152,34 @@ impl Game {
         // Player state doesn't persist level-to-level.
         self.mobs = ~[Mob::new(mob::Player, Location(Point2::new(0i8, 0i8)))];
         self.area = ~Area::new(area::Rock);
-        self.area.gen_cave(&mut self.rng);
         self.depth += 1;
+        let make_exit = self.depth < END_LEVEL;
+        self.area.gen_cave(&mut self.rng, make_exit);
 
         self.player().loc = Location(Point2::new(0i8, 0i8));
 
         let sites = self.open_cells();
+
+        let mut spawns = ~[mob::Morlock];
+        if self.depth > 3 {
+            spawns.push(mob::Centipede);
+        }
+        if self.depth > 6 {
+            spawns.push(mob::BigMorlock);
+        }
+
         for &spawn_loc in self.rng.sample(sites.iter(), 6 + self.depth).iter() {
             // TODO: Minimal depth consideration.
             // TODO: Special spawn logic for the boss.
-            let kind = self.rng.choose(
-                &[mob::Morlock, mob::BigMorlock, mob::BurrowingMorlock, mob::Centipede]);
+            let kind = self.rng.choose(spawns);
             self.mobs.push(Mob::new(kind, *spawn_loc));
+        }
+
+        if self.depth == END_LEVEL {
+            let cells = self.open_cells();
+            let site = self.rng.choose(cells);
+
+            self.mobs.push(Mob::new(mob::TimeEater, site));
         }
 
         self.seen = ~Fov::new();

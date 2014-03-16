@@ -27,9 +27,8 @@ pub enum AnimState {
 pub enum MobType {
     Player,
     Morlock,
-    BigMorlock,
-    BurrowingMorlock,
     Centipede,
+    BigMorlock,
     TimeEater,
 }
 
@@ -67,10 +66,9 @@ impl Mob {
         match t {
             Player =>       MobData { max_hits: 5, name: ~"you" },
             Morlock =>      MobData { max_hits: 1, name: ~"morlock" },
-            BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
-            BurrowingMorlock =>   MobData { max_hits: 2, name: ~"burrowing morlock" },
             Centipede =>    MobData { max_hits: 2, name: ~"centipede" },
-            TimeEater =>    MobData { max_hits: 6, name: ~"time eater" },
+            BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
+            TimeEater =>    MobData { max_hits: 4, name: ~"time eater" },
         }
     }
 
@@ -109,14 +107,11 @@ impl Mob {
             Morlock => {
                 ret.push(Sprite::new(tile(59), pos, sprite::BLOCK_Z, LIGHTSLATEGRAY));
             },
-            BigMorlock => {
-                ret.push(Sprite::new(tile(60), pos, sprite::BLOCK_Z, GOLD));
-            },
-            BurrowingMorlock => {
-                ret.push(Sprite::new(tile(59), pos, sprite::BLOCK_Z, DARKSALMON));
-            },
             Centipede => {
                 ret.push(Sprite::new(tile(61), pos, sprite::BLOCK_Z, DARKCYAN));
+            },
+            BigMorlock => {
+                ret.push(Sprite::new(tile(60), pos, sprite::BLOCK_Z, GOLD));
             },
             TimeEater => {
                 ret.push(Sprite::new(tile(62), pos, sprite::BLOCK_Z, CRIMSON));

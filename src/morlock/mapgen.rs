@@ -9,12 +9,12 @@ use area::{Area, DIRECTIONS6, Location};
 use area;
 
 pub trait MapGen {
-    fn gen_cave<R: Rng>(&mut self, rng: &mut R);
+    fn gen_cave<R: Rng>(&mut self, rng: &mut R, make_exit: bool);
     fn gen_prefab(&mut self, prefab: &str);
 }
 
 impl MapGen for Area {
-    fn gen_cave<R: Rng>(&mut self, rng: &mut R) {
+    fn gen_cave<R: Rng>(&mut self, rng: &mut R, make_exit: bool) {
         let center = Location(Point2::new(0i8, 0i8));
         let mut edge = HashSet::new();
         let bounds = Aabb2::new(Point2::new(-16i8, -16i8), Point2::new(16i8, 16i8));
@@ -48,9 +48,11 @@ impl MapGen for Area {
             if dug > 384 { break; }
         }
 
-        let down_pos = *rng.sample(edge.iter(), 1)[0];
-        self.set(down_pos, area::Downstairs);
-        edge.remove(&down_pos);
+        if make_exit {
+            let down_pos = *rng.sample(edge.iter(), 1)[0];
+            self.set(down_pos, area::Downstairs);
+            edge.remove(&down_pos);
+        }
 
         // Depillar
         for &loc in edge.iter() {
