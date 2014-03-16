@@ -18,6 +18,7 @@ pub enum TerrainType {
     Tree,
     Grass,
     Stalagmite,
+    Portal,
 }
 
 impl TerrainType {
@@ -44,7 +45,7 @@ impl TerrainType {
 
     pub fn is_walkable(self) -> bool {
         match self {
-            Floor | Grass | Downstairs => true,
+            Floor | Grass | Downstairs | Portal => true,
             _ => false
         }
 
@@ -111,7 +112,7 @@ impl Area {
 
     pub fn is_open(&self, p: Location) -> bool {
         match self.get(p) {
-            Floor | Water | Magma | Grass | Downstairs => true,
+            Floor | Water | Magma | Grass | Downstairs | Portal => true,
             _ => false
         }
     }

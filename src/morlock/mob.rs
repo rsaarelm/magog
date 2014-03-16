@@ -21,6 +21,7 @@ pub enum AnimState {
     Hurt(f64),
     Dying(f64),
     Dead,
+    Invisible,
 }
 
 #[deriving(Eq, Clone)]
@@ -126,7 +127,7 @@ impl Mob {
                         s.pos = s.pos.add_v(&bob);
                     }
                 }
-            },
+            }
             Hurt(_) => {
                 for s in ret.mut_iter() {
                     s.color = *cycle_anim(0.05f64, &[BLACK, WHITE]);
@@ -140,7 +141,10 @@ impl Mob {
             Dead => {
                 ret = ~[Sprite::new(tile(68), pos, sprite::FLOOR_Z, MAROON)];
             }
-            _ => (),
+            Invisible => {
+                ret = ~[]
+            }
+            _ => ()
         }
         ret
     }

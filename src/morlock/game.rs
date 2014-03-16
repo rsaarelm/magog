@@ -207,6 +207,10 @@ impl Game {
             mob.anim_state = mob::Hurt(time::precise_time_s());
         } else {
             mob.anim_state = mob::Dying(time::precise_time_s());
+            if mob.t == mob::TimeEater {
+                // Killed the end boss! Create a portal.
+                self.area.set(mob.loc, area::Portal);
+            }
         }
     }
 
@@ -286,6 +290,12 @@ impl Game {
         self.update();
     }
 
+    pub fn win_game(&mut self) {
+        self.update();
+        self.mobs[self.player_idx()].hits = -666;
+        self.mobs[self.player_idx()].anim_state = mob::Invisible;
+    }
+
     pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
         let player_idx = self.player_idx();
 
@@ -297,6 +307,9 @@ impl Game {
                     self.player().loc = new_loc;
                     if self.area.get(new_loc) == area::Downstairs {
                         self.next_level();
+                    }
+                    if self.area.get(new_loc) == area::Portal {
+                        self.win_game();
                     }
                     self.update();
                     return true;
@@ -399,9 +412,14 @@ impl Game {
 
         let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         app.set_color(&LIGHTSLATEGRAY);
-        app.print_words(&text_zone, app::Left, "Morlock Hunter\n\ncontrols\n--------\n\
-                        QWE\nASD to move and shoot\nSPACE to rest and reload\n\
-                        ESC to exit");
+
+        if self.mobs[self.player_idx()].hits == -666 {
+            app.print_words(&text_zone, app::Left, "Morlock Hunter\n\nYou win!");
+        } else {
+            app.print_words(&text_zone, app::Left, "Morlock Hunter\n\ncontrols\n--------\n\
+                            QWE\nASD to move and shoot\nSPACE to rest and reload\n\
+                            ESC to exit\n\n7DRL 2014 RC1");
+        }
 
         app.set_color(&CRIMSON);
         let mut health_str = ~"hits: ";

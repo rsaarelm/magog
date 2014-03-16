@@ -1,3 +1,5 @@
+use std::f64::sin;
+use time;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
@@ -20,6 +22,7 @@ pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
 pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
 pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
 pub static BLOCK_DARK : uint = SPRITE_INDEX_START + 6;
+pub static PORTAL : uint = SPRITE_INDEX_START + 9;
 pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static FLOOR : uint = SPRITE_INDEX_START + 11;
 pub static GRASS : uint = SPRITE_INDEX_START + 12;
@@ -91,6 +94,11 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         area::Downstairs => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+        },
+        area::Portal => {
+            let glow = (127.0 *(1.0 + sin(time::precise_time_s()))) as u8;
+            let portal_col = RGB::new(glow, glow, 255);
+            ret.push(Sprite { idx: PORTAL, pos: *pos, z: BLOCK_Z, color: portal_col });
         },
         area::Rock => {
             blockform(k, &mut ret, pos, BLOCK, &DARKGOLDENROD);
