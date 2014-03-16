@@ -418,7 +418,7 @@ impl Game {
         } else {
             app.print_words(&text_zone, app::Left, "Morlock Hunter\n\ncontrols\n--------\n\
                             QWE\nASD to move and shoot\nSPACE to rest and reload\n\
-                            ESC to exit\n\n7DRL 2014 RC1");
+                            ESC to exit\n\n7DRL 2014 release");
         }
 
         app.set_color(&CRIMSON);

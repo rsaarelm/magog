@@ -6,7 +6,8 @@ PA_LINKARGS = -C link-args='-lasound -ljack -lportaudio'
 !ar = |> ar crs %o %f |>
 
 !rustlib = |> rustc %f --out-dir ./ $(RUSTFLAGS) --crate-type rlib |>
-!rustbin = |> rustc %f -o %o $(RUSTFLAGS) |>
+# XXX: Probably want to remove the -Z lto for non-release builds.
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) -Z lto |>
 
 !databake = |> echo "&[" > %o; cat %f | xxd -i >> %o; echo "]" >> %o |>
 

@@ -51,6 +51,9 @@ static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
 ];
 
 pub fn main() {
+    println!("Morlock Hunter");
+    println!("A tech demo game programmed in Rust for the 2014 7-Day Roguelike Challenge");
+    println!("Copyright (C) Risto Saarelma 2014");
     let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
     let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
