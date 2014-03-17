@@ -30,7 +30,3 @@ run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {
 : assets/tile.png |> !databake |> gen/tile_data.rs
 : src/morlock/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} libstb.a libglfw3.a gen/tile_data.rs |> !rustbin $(GLFW_LINKARGS) |> morlock
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
-
-# Testing. All unit test runners are expected to start with 'test_'.
-: src/runtests/main.rs |> !rustbin |> runtests
-: src/calx/lib.rs | {libcalx} libstb.a |> !rustbin --test |> test_calx
