@@ -1,5 +1,5 @@
 use std::cmp::max;
-use std::rand::Rng;
+use rand::Rng;
 use collections::hashmap::HashSet;
 
 use calx::text::Map2DUtil;

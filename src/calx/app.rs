@@ -62,7 +62,7 @@ impl <R: Renderer> App<R> {
             font.pixels,
             &Vec2::new(0, -FONT_HEIGHT as int));
         for i in range(0, FONT_NUM_CHARS) {
-            ret.r.add_tile(~tiles[i].clone());
+            ret.r.add_tile(~tiles.get(i).clone());
         }
 
         ret

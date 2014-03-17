@@ -1,7 +1,7 @@
+use std::vec_ng::Vec;
 use std::libc::*;
 use std::ptr::RawPtr;
 use std::vec::raw::from_buf_raw;
-use std::vec;
 use std::io::File;
 
 #[link(name="stb")]
@@ -19,7 +19,7 @@ pub struct Image {
     width: uint,
     height: uint,
     bpp: uint,
-    pixels: ~[u8],
+    pixels: Vec<u8>,
 }
 
 impl Image {
@@ -50,7 +50,7 @@ impl Image {
                 width: w as uint,
                 height: h as uint,
                 bpp: bpp,
-                pixels: from_buf_raw(buffer, (w * h) as uint * bpp)
+                pixels: Vec::from_slice(from_buf_raw(buffer, (w * h) as uint * bpp)),
             });
             free(buffer as *mut c_void);
             ret
@@ -63,7 +63,7 @@ impl Image {
             width: width,
             height: height,
             bpp: bpp,
-            pixels: vec::from_elem(width * height * bpp, 0u8),
+            pixels: Vec::from_elem(width * height * bpp, 0u8),
         }
     }
 

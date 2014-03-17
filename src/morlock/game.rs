@@ -1,6 +1,6 @@
 use time;
-use std::rand;
-use std::rand::Rng;
+use rand;
+use rand::Rng;
 use std::mem;
 
 use cgmath::point::{Point2};
@@ -63,7 +63,7 @@ impl Game {
             remembered: ~Fov::new(),
             mobs: ~[],
             player_dijkstra: None,
-            rng: rand::rng(),
+            rng: rand::StdRng::new(),
             stop: true,
             depth: 0,
         };

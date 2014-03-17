@@ -1,6 +1,7 @@
+use std::vec_ng::Vec;
 use std::libc::*;
 use std::intrinsics;
-use std::vec;
+use std::cast::transmute;
 
 struct StbttFontinfo {
     userdata: *c_void,
@@ -39,7 +40,7 @@ extern {
 
 pub struct Font {
     priv info: StbttFontinfo,
-    priv data: ~[u8],
+    priv data: Vec<u8>,
 }
 
 pub struct Glyph {
@@ -48,11 +49,11 @@ pub struct Glyph {
     xOffset: f32,
     yOffset: f32,
     xAdvance: f32,
-    pixels: ~[u8]
+    pixels: Vec<u8>
 }
 
 impl Font {
-    pub fn new(data: ~[u8]) -> Option<Font> {
+    pub fn new(data: Vec<u8>) -> Option<Font> {
         unsafe {
             let ret = Font {
                 info: intrinsics::uninit(),
@@ -92,9 +93,9 @@ impl Font {
             let width = (x1 - x0) as int;
             let height = (y1 - y0) as int;
 
-            let mut pixels = vec::from_elem((width * height) as uint, 0u8);
+            let pixels = Vec::from_elem((width * height) as uint, 0u8);
             stbtt_MakeGlyphBitmap(
-                &self.info, pixels.as_mut_ptr(),
+                &self.info, transmute(pixels.get(0)),
                 width as c_int, height as c_int,
                 width as c_int, scale, scale, g);
 

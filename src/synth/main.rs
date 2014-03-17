@@ -1,3 +1,5 @@
+// TODO: Migrate to vec_ng whenever crate portaudio does.
+#[allow(deprecated_owned_vector)];
 #[feature(globs)];
 
 extern crate portaudio;

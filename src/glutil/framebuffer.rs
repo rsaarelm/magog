@@ -1,5 +1,5 @@
+use std::vec_ng::Vec;
 use std::cast;
-use std::vec;
 use hgl::texture::{Texture, ImageInfo};
 use hgl::texture;
 use hgl::texture::pixel;
@@ -22,8 +22,8 @@ impl Framebuffer {
             .pixel_format(texture::pixel::RGBA)
             .pixel_type(pixel::UNSIGNED_BYTE)
             ;
-        let pixels = vec::from_elem(width * height * 4, 0u8);
-        let texture = Texture::new(texture::Texture2D, info, &pixels[0]);
+        let pixels = Vec::from_elem(width * height * 4, 0u8);
+        let texture = Texture::new(texture::Texture2D, info, pixels.get(0));
         texture.filter(texture::Nearest);
         texture.wrap(texture::ClampToEdge);
 
@@ -71,13 +71,13 @@ impl Framebuffer {
         gl::BindRenderbuffer(gl::RENDERBUFFER, 0);
     }
 
-    pub fn get_bytes(&self) -> ~[u8] {
-        let mut ret = vec::from_elem(self.width * self.height * 4, 0u8);
+    pub fn get_bytes(&self) -> Vec<u8> {
+        let ret = Vec::from_elem(self.width * self.height * 4, 0u8);
         self.texture.bind();
         unsafe {
             gl::GetTexImage(
                 gl::TEXTURE_2D, 0, gl::RGBA, gl::UNSIGNED_BYTE,
-                cast::transmute(&mut ret[0]));
+                cast::transmute(ret.get(0)));
         }
         gl::BindTexture(gl::TEXTURE_2D, 0);
         ret

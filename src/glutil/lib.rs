@@ -8,7 +8,7 @@
 extern crate gl;
 extern crate hgl;
 extern crate cgmath;
-extern crate glfw = "glfw-rs";
+extern crate glfw;
 extern crate color;
 extern crate calx;
 extern crate stb;

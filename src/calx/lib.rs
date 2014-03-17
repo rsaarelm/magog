@@ -9,6 +9,7 @@ extern crate collections;
 extern crate cgmath;
 extern crate color;
 extern crate stb;
+extern crate rand;
 
 pub mod text;
 pub mod pack_rect;

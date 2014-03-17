@@ -1,8 +1,9 @@
 use cgmath::point::{Point2};
 use cgmath::aabb::{Aabb, Aabb2};
+use cgmath::partial_ord::PartOrdPrim;
 use std::num::{one};
-use std::rand::{Rng};
-use std::rand::distributions::range::SampleRange;
+use rand::{Rng};
+use rand::distributions::range::SampleRange;
 
 pub trait RectUtil<S: Primitive + SampleRange, I: Iterator<Point2<S>>> {
     // Iterate all integer points inside the rectangle.
@@ -44,7 +45,7 @@ impl<S: Primitive> Iterator<Point2<S>> for RectIter<S> {
 
 }
 
-impl<S: Primitive + SampleRange> RectUtil<S, RectIter<S>> for Aabb2<S> {
+impl<S: Primitive + SampleRange + PartOrdPrim> RectUtil<S, RectIter<S>> for Aabb2<S> {
     #[inline]
     fn points(&self) -> RectIter<S> {
         RectIter {

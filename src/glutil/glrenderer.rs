@@ -1,3 +1,4 @@
+use std::vec_ng::Vec;
 use std::mem::swap;
 use gl;
 use color::rgb;
@@ -92,7 +93,7 @@ pub struct GlRenderer {
     blit_shader: ~Program,
     recter: Recter,
     framebuffer: Framebuffer,
-    key_buffer: ~[KeyEvent],
+    key_buffer: Vec<KeyEvent>,
     // Key input hack flag.
     unknown_key: bool,
 }
@@ -113,7 +114,8 @@ impl GlRenderer {
             glfw::CharEvent(ch) => {
                 if !self.unknown_key {
                     if self.key_buffer.len() > 0 {
-                        self.key_buffer[self.key_buffer.len() - 1].ch = Some(ch);
+                        let last_idx = self.key_buffer.len() - 1;
+                        self.key_buffer.get_mut(last_idx).ch = Some(ch);
                     } else {
                         println!("WARNING: Received char event with no preceding key down event");
                     }
@@ -182,7 +184,7 @@ impl Renderer for GlRenderer {
                  ).unwrap(),
             recter: Recter::new(),
             framebuffer: Framebuffer::new(width, height),
-            key_buffer: ~[],
+            key_buffer: vec!(),
             unknown_key: false,
         };
 
@@ -190,7 +192,7 @@ impl Renderer for GlRenderer {
         // Assume this'll end up as position 0.
         ret.atlas.push(~Tile::new_alpha(
                 RectUtil::new(0, 0, 1, 1),
-                ~[255u8]));
+                vec!(255u8)));
 
 
         ret
@@ -241,7 +243,7 @@ impl Renderer for GlRenderer {
         glfw::poll_events();
 
         // XXX: Dance around the borrow checker...
-        let mut queue = ~[];
+        let mut queue = vec!();
         for event in self.window.flush_events() {
             queue.push(event);
         }
@@ -263,7 +265,11 @@ impl Renderer for GlRenderer {
     }
 
     fn pop_key(&mut self) -> Option<KeyEvent> {
-        self.key_buffer.remove(0)
+        // XXX: swap_remove seems to crash if len is 0?
+        if self.key_buffer.len() == 0 {
+            return None;
+        }
+        self.key_buffer.swap_remove(0)
     }
 
     fn get_mouse(&self) -> MouseState {

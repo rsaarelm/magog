@@ -1,7 +1,7 @@
+use std::vec_ng::Vec;
 use std::iter::AdditiveIterator;
 use std::num::{sqrt, next_power_of_two};
 use std::cmp::{min, max};
-use std::vec;
 use std::iter::Iterator;
 
 use cgmath::aabb::{Aabb, Aabb2};
@@ -44,8 +44,8 @@ impl AtlasRect {
 }
 
 pub struct Atlas {
-    tiles: ~[~Tile],
-    rects: ~[AtlasRect],
+    tiles: Vec<~Tile>,
+    rects: Vec<AtlasRect>,
     is_dirty: bool,
     texture: Texture,
 }
@@ -56,8 +56,8 @@ impl Atlas {
         tex.filter(texture::Nearest);
         tex.wrap(texture::ClampToEdge);
         Atlas {
-            tiles: ~[],
-            rects: ~[],
+            tiles: vec!(),
+            rects: vec!(),
             is_dirty: true,
             texture: tex,
         }
@@ -72,26 +72,26 @@ impl Atlas {
         if !self.is_dirty { return; }
 
         // Create gaps between the tiles to prevent edge artifacts.
-        let dims = self.tiles.map(|s| s.bounds.dim() + Vec2::new(1, 1));
+        let dims = self.tiles.iter().map(|s| s.bounds.dim() + Vec2::new(1, 1)).collect::<Vec<Vec2<int>>>();
         let total_volume = dims.iter().map(|&v| v.x * v.y).sum();
         let atlas_dim = next_power_of_two(sqrt(total_volume as f64) as uint) as int;
 
         let base = RectUtil::new(0, 0, atlas_dim, atlas_dim);
-        let (base, pack) = pack_rects(&base, dims);
+        let (base, pack) = pack_rects(&base, dims.as_slice());
         // Cut off the extra padding
-        let pack : ~[Aabb2<int>] = pack.iter().map(|&rect| Aabb2::new(
+        let pack : Vec<Aabb2<int>> = pack.iter().map(|&rect| Aabb2::new(
                 *rect.min(), rect.max().add_v(&Vec2::new(-1, -1)))).collect();
 
-        let mut tex_data = vec::from_elem(base.volume() as uint, 0u8);
+        let mut tex_data = Vec::from_elem(base.volume() as uint, 0u8);
 
         assert!(pack.len() == self.tiles.len());
-        self.rects = ~[];
+        self.rects = vec!();
 
         for i in range(0, self.tiles.len()) {
             paint_tile(
-                self.tiles[i], tex_data, &pack[i].min().to_vec(), base.dim().x);
+                *self.tiles.get(i), &mut tex_data, &pack.get(i).min().to_vec(), base.dim().x);
             self.rects.push(AtlasRect::new(
-                    &self.tiles[i].bounds, &pack[i], &base.dim()));
+                    &self.tiles.get(i).bounds, pack.get(i), &base.dim()));
         }
 
         let info = ImageInfo::new()
@@ -100,14 +100,18 @@ impl Atlas {
             .pixel_format(pixel::RED)
             .pixel_type(pixel::UNSIGNED_BYTE)
             ;
-        self.texture.load_image(info, &tex_data[0]);
+        self.texture.load_image(info, tex_data.get(0));
 
         self.is_dirty = false;
 
-        fn paint_tile(tile: &Tile, tex_data: &mut [u8], offset: &Vec2<int>, tex_pitch: int) {
+        fn paint_tile(
+            tile: &Tile, tex_data: &mut Vec<u8>,
+            offset: &Vec2<int>, tex_pitch: int) {
             let offset = offset - tile.bounds.min().to_vec();
             for p in tile.bounds.points() {
-                tex_data[p.x + offset.x + (p.y + offset.y) * tex_pitch] = tile.at(&p);
+                tex_data.grow_set(
+                    (p.x + offset.x + (p.y + offset.y) * tex_pitch) as uint,
+                    &0, tile.at(&p));
             }
         }
     }
@@ -119,7 +123,7 @@ impl Atlas {
     }
 
     pub fn push_ttf(
-        &mut self, ttf_data: ~[u8], size: f32,
+        &mut self, ttf_data: Vec<u8>, size: f32,
         start_char: uint, num_chars: uint) {
         let font = stb::truetype::Font::new(ttf_data).expect("Bad ttf data.");
         for i in range(start_char, start_char + num_chars) {
@@ -127,8 +131,8 @@ impl Atlas {
 
             // Convert black alpha from STB to our TILE_ALPHA.
             for i in range(0, glyph.pixels.len()) {
-                if glyph.pixels[i] == 0 {
-                    glyph.pixels[i] = TILE_ALPHA;
+                if *glyph.pixels.get(i) == 0 {
+                    glyph.pixels.grow_set(i, &0, TILE_ALPHA);
                 }
             }
 
@@ -144,7 +148,7 @@ impl Atlas {
 
     pub fn get(&mut self, i: uint) -> AtlasRect {
         self.clean();
-        self.rects[i]
+        *self.rects.get(i)
     }
 
     pub fn bind(&mut self) {

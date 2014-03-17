@@ -1,4 +1,5 @@
 #[feature(globs)];
+#[allow(deprecated_owned_vector)];
 extern crate cgmath;
 extern crate glutil;
 extern crate color;
@@ -7,6 +8,7 @@ extern crate stb;
 extern crate collections;
 extern crate num;
 extern crate time;
+extern crate rand;
 
 use glutil::glrenderer::GlRenderer;
 use calx::key;
@@ -61,8 +63,8 @@ pub fn main() {
         &Vec2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vec2::new(-16, -16));
-    for i in range(0, 72) {
-        app.r.add_tile(~tiles[i].clone());
+    for i in range(0u, 72u) {
+        app.r.add_tile(~tiles.get(i).clone());
     }
 
     let mut game = Game::new();

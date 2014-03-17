@@ -1,3 +1,4 @@
+use std::vec_ng::Vec;
 use std::str;
 use collections::Deque;
 use collections::ringbuf::RingBuf;
@@ -110,7 +111,7 @@ impl<T: Iterator<char>> WrapUtil for T {
 }
 
 pub fn wrap_lines(line_len: uint, s: &str) -> ~str {
-    str::from_chars(s.chars().wrap(line_len).collect::<~[char]>())
+    str::from_chars(s.chars().wrap(line_len).collect::<Vec<char>>().as_slice())
 }
 
 /// Try to convert a char into the IBM PC code page 437 character set.

@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::vec_ng::Vec;
 use std::mem::size_of;
 use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;
@@ -49,13 +49,13 @@ impl Vertex {
 }
 
 pub struct Recter {
-    priv vertices: ~[Vertex],
+    priv vertices: Vec<Vertex>,
 }
 
 impl Recter {
     pub fn new() -> Recter {
         Recter {
-            vertices: ~[],
+            vertices: vec!(),
         }
     }
 
@@ -96,7 +96,7 @@ impl Recter {
     }
 
     pub fn clear(&mut self) {
-        self.vertices = ~[];
+        self.vertices = vec!();
     }
 
     pub fn render(&self, program: &Program) {
@@ -104,7 +104,7 @@ impl Recter {
             return;
         }
         let vao = Vao::new();
-        let vbo = Vbo::from_data(self.vertices, buffer::StreamDraw);
+        let vbo = Vbo::from_data(self.vertices.as_slice(), buffer::StreamDraw);
 
         program.bind();
         vao.bind();
@@ -125,9 +125,7 @@ impl Recter {
 }
 
 pub fn screen_bound(dim: &Vec2<f32>, area: &Vec2<f32>) -> Aabb2<f32> {
-    let mut scale = min(
-        area.x / dim.x,
-        area.y / dim.y);
+    let mut scale = (area.x / dim.x).min(area.y / dim.y);
     if scale > 1.0 {
         scale = scale.floor();
     }
