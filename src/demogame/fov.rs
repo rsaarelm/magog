@@ -5,7 +5,7 @@ use collections::hashmap::HashSet;
 use cgmath::vector::{Vector, Vec2};
 
 use area::Area;
-use area::{Location, DIRECTIONS6, DIRECTIONS8};
+use area::{Location, DIRECTIONS6};
 
 pub struct Fov(HashSet<Location>);
 
@@ -67,16 +67,7 @@ impl Fov {
 
 pub fn fov(a: &Area, center: Location, range: uint) -> Fov {
     let mut ret = Fov::new();
-    // Dummy fov, just cover the immediate surrounding tiles.
-    // TODO: Proper fov
     ret.insert(center);
-    // Use dir8 to make walls look nice.
-
-    // XXX: Should only show the degenerate directions (-1, 1) and (1, -1) if
-    // there's a wall there.
-    for &v in DIRECTIONS8.iter() {
-        ret.insert(center + v);
-    }
 
     process(a, &mut ret, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
 
