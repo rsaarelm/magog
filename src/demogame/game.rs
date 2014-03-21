@@ -26,6 +26,8 @@ use mob::Mob;
 use transform::Transform;
 use sprite;
 
+static VERSION: &'static str = include!("../../gen/git_version.inc");
+
 // XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
     area: ~Area,
@@ -416,9 +418,10 @@ impl Game {
         if self.mobs[self.player_idx()].hits == -666 {
             app.print_words(&text_zone, app::Left, "Morlock Hunter\n\nYou win!");
         } else {
-            app.print_words(&text_zone, app::Left, "Morlock Hunter\n\ncontrols\n--------\n\
-                            QWE\nASD to move and shoot\nSPACE to rest and reload\n\
-                            ESC to exit\n\n7DRL 2014 release");
+            app.print_words(
+                &text_zone, app::Left, format!("Morlock Hunter\n\ncontrols\n--------\n\
+                QWE\nASD to move and shoot\nSPACE to rest and reload\n\
+                ESC to exit\n\nversion {}", VERSION));
         }
 
         app.set_color(&CRIMSON);

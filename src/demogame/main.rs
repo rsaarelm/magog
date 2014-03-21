@@ -33,7 +33,7 @@ pub mod transform;
 pub mod sprite;
 pub mod misc;
 
-static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.rs");
+static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.inc");
 
 static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
     &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
@@ -53,10 +53,7 @@ static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
 ];
 
 pub fn main() {
-    println!("Morlock Hunter");
-    println!("A tech demo game programmed in Rust for the 2014 7-Day Roguelike Challenge");
-    println!("Copyright (C) Risto Saarelma 2014");
-    let mut app : App<GlRenderer> = App::new(640, 360, "Morlock Hunter");
+    let mut app : App<GlRenderer> = App::new(640, 360, "Demogame");
     let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
         &Vec2::new(32, 32),
