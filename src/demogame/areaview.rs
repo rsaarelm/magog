@@ -10,8 +10,9 @@ use calx::app::App;
 use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
 use world::area;
-use world::area::{TerrainType, Location};
-use game::Game;
+use world::area::{Area, TerrainType, Location};
+use world::fov::Fov;
+use mob::Mob;
 use transform::Transform;
 use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
 
@@ -178,8 +179,16 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     ret
 }
 
-pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
-    let xf = Transform::new(game.pos);
+pub trait World {
+    fn transform(&self) -> Transform;
+    fn seen_fov<'a>(&'a self) -> &'a Fov;
+    fn remembered_fov<'a>(&'a self) -> &'a Fov;
+    fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob>;
+    fn area<'a>(&'a self) -> &'a Area;
+}
+
+pub fn draw_area<R: Renderer, W: World>(game: &W, app: &mut App<R>) {
+    let xf = game.transform();
 
     let mut rect = Aabb2::new(
         *xf.to_chart(&Point2::new(0f32, 0f32)).p(),
@@ -191,10 +200,10 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
         let p = Location(pt);
         let offset = xf.to_screen(p);
 
-        let kernel = Kernel::new(|p| game.area.get(p), p);
+        let kernel = Kernel::new(|p| game.area().get(p), p);
         let mut sprites = terrain_sprites(&kernel, &offset);
-        if !game.seen.contains(p) {
-            if game.remembered.contains(p) {
+        if !game.seen_fov().contains(p) {
+            if game.remembered_fov().contains(p) {
                 for s in sprites.mut_iter() {
                     s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
                 }
@@ -208,7 +217,7 @@ pub fn draw_area<R: Renderer>(game: &mut Game, app: &mut App<R>) {
             s.draw(app);
         }
 
-        if game.seen.contains(p) {
+        if game.seen_fov().contains(p) {
             match game.drawable_mob_at(p) {
                 Some(mob) => {
                     for s in mob.sprites(&xf).iter() {

@@ -20,6 +20,7 @@ use world::area;
 use world::fov::Fov;
 use world::fov;
 use areaview;
+use areaview::World;
 use mapgen::MapGen;
 use mob;
 use mob::Mob;
@@ -118,19 +119,6 @@ impl Game {
         }
         None
     }
-
-    pub fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
-        let mut ret = None;
-        for i in self.mobs.iter() {
-            if i.loc == loc {
-                // Make sure you show up the live mob if there's a live
-                // one and corpses here.
-                if i.is_alive() || ret.is_none() { ret = Some(i); }
-            }
-        }
-        ret
-    }
-
 
     pub fn mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
         for i in self.mobs.iter() {
@@ -457,4 +445,24 @@ impl Game {
             self.next_level();
         }
     }
+}
+
+impl World for Game {
+    fn transform(&self) -> Transform { Transform::new(self.pos) }
+    fn seen_fov<'a>(&'a self) -> &'a Fov { &*self.seen }
+    fn remembered_fov<'a>(&'a self) -> &'a Fov { &*self.remembered }
+
+    fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
+        let mut ret = None;
+        for i in self.mobs.iter() {
+            if i.loc == loc {
+                // Make sure you show up the live mob if there's a live
+                // one and corpses here.
+                if i.is_alive() || ret.is_none() { ret = Some(i); }
+            }
+        }
+        ret
+    }
+
+    fn area<'a>(&'a self) -> &'a Area { &*self.area }
 }
