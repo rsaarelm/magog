@@ -1,7 +1,5 @@
 #[feature(globs)];
 
-// TODO: Remove this
-#[allow(deprecated_owned_vector)];
 extern crate cgmath;
 extern crate glutil;
 extern crate color;

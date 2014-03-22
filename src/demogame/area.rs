@@ -121,8 +121,8 @@ impl Area {
         self.set.keys()
     }
 
-    pub fn walk_neighbors(&self, p: Location) -> ~[Location] {
-        let mut ret = ~[];
+    pub fn walk_neighbors(&self, p: Location) -> Vec<Location> {
+        let mut ret = vec!();
         for &v in DIRECTIONS6.iter() {
             if self.get(p + v).is_walkable() {
                ret.push(p + v);
@@ -156,7 +156,7 @@ impl Area {
     }
 
     pub fn explore_map(&self, remembered: &Fov) -> DijkstraMap {
-        let mut goals = ~[];
+        let mut goals = vec!();
         for &loc in self.cover().iter() {
             if !remembered.contains(loc) {
                 goals.push(loc);

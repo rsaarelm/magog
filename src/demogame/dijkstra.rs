@@ -5,7 +5,7 @@ use collections::hashmap::HashSet;
 /// Build a Dijkstra map starting from the goal nodes and using the neighbors
 /// function to define the graph to up to limit distance.
 pub fn build_map<N: Hash + Eq + Clone>(
-    goals: ~[N], neighbors: |&N| -> ~[N], limit: uint) -> HashMap<N, uint> {
+    goals: Vec<N>, neighbors: |&N| -> Vec<N>, limit: uint) -> HashMap<N, uint> {
     assert!(goals.len() > 0);
     let mut ret = HashMap::new();
 

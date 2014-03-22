@@ -34,7 +34,7 @@ pub struct Game {
     pos: Location,
     seen: ~Fov,
     remembered: ~Fov,
-    mobs: ~[Mob],
+    mobs: Vec<Mob>,
     player_dijkstra: Option<DijkstraMap>,
     rng: rand::StdRng,
     stop: bool,
@@ -63,7 +63,7 @@ impl Game {
             pos: Location(Point2::new(0i8, 0i8)),
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
-            mobs: ~[],
+            mobs: vec!(),
             player_dijkstra: None,
             rng: rand::StdRng::new(),
             stop: true,
@@ -91,8 +91,8 @@ impl Game {
         fail!("No player mob");
     }
 
-    pub fn open_cells(&self) -> ~[Location] {
-        let mut ret = ~[];
+    pub fn open_cells(&self) -> Vec<Location> {
+        let mut ret = vec!();
         for &loc in self.area.iter() {
             if self.area.get(loc).is_walkable() && self.mob_at(loc).is_none() {
                 ret.push(loc);
@@ -152,7 +152,7 @@ impl Game {
 
     pub fn next_level(&mut self) {
         // Player state doesn't persist level-to-level.
-        self.mobs = ~[Mob::new(mob::Player, Location(Point2::new(0i8, 0i8)))];
+        self.mobs = vec!(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
         self.area = ~Area::new(area::Rock);
         self.depth += 1;
         let make_exit = self.depth < END_LEVEL;
@@ -162,7 +162,7 @@ impl Game {
 
         let sites = self.open_cells();
 
-        let mut spawns = ~[mob::Morlock];
+        let mut spawns = vec!(mob::Morlock);
         if self.depth > 3 {
             spawns.push(mob::Centipede);
         }
@@ -173,13 +173,13 @@ impl Game {
         for &spawn_loc in self.rng.sample(sites.iter(), 6 + self.depth).iter() {
             // TODO: Minimal depth consideration.
             // TODO: Special spawn logic for the boss.
-            let kind = self.rng.choose(spawns);
+            let kind = self.rng.choose(spawns.as_slice());
             self.mobs.push(Mob::new(kind, *spawn_loc));
         }
 
         if self.depth == END_LEVEL {
             let cells = self.open_cells();
-            let site = self.rng.choose(cells);
+            let site = self.rng.choose(cells.as_slice());
 
             self.mobs.push(Mob::new(mob::TimeEater, site));
         }
@@ -202,7 +202,7 @@ impl Game {
     pub fn attack(&mut self, _agent_idx: uint, target_idx: uint) {
         // TODO: More interesting logic.
         //self.mobs.remove(target_idx);
-        let mob = &mut self.mobs[target_idx];
+        let mob = self.mobs.get_mut(target_idx);
         mob.hits -= 1;
 
         if mob.hits > 0 {
@@ -221,7 +221,7 @@ impl Game {
     }
 
     pub fn melee_probe_dir(&self, mob_idx: uint, dir: &Vec2<int>) -> ProbeResult {
-        let loc = self.mobs[mob_idx].loc + *dir;
+        let loc = self.mobs.get(mob_idx).loc + *dir;
         let mut walk_state = Move;
 
         match self.mob_idx_at(loc) {
@@ -237,7 +237,7 @@ impl Game {
     }
 
     pub fn probe_dir(&self, dir: &Vec2<int>) -> ProbeResult {
-        let mut loc = self.mobs[self.player_idx()].loc + *dir;
+        let mut loc = self.mobs.get(self.player_idx()).loc + *dir;
         let mut walk_state = Move;
 
         match self.mob_idx_at(loc) {
@@ -269,8 +269,8 @@ impl Game {
         walk_state
     }
 
-    pub fn walk_neighbors(&self, loc: Location) -> ~[Location] {
-        let mut ret = ~[];
+    pub fn walk_neighbors(&self, loc: Location) -> Vec<Location> {
+        let mut ret = vec!();
         for &v in DIRECTIONS6.iter() {
             if self.is_walkable(loc + v) {
                ret.push(loc + v);
@@ -285,17 +285,18 @@ impl Game {
 
     pub fn pass(&mut self) {
         let player_idx = self.player_idx();
-        if self.mobs[player_idx].ammo < 6 {
+        if self.mobs.get(player_idx).ammo < 6 {
             self.msg("reload");
-            self.mobs[player_idx].ammo += 1;
+            self.mobs.get_mut(player_idx).ammo += 1;
         }
         self.update();
     }
 
     pub fn win_game(&mut self) {
         self.update();
-        self.mobs[self.player_idx()].hits = -666;
-        self.mobs[self.player_idx()].anim_state = mob::Invisible;
+        let idx = self.player_idx();
+        self.mobs.get_mut(idx).hits = -666;
+        self.mobs.get_mut(idx).anim_state = mob::Invisible;
     }
 
     pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
@@ -322,12 +323,12 @@ impl Game {
                     return true;
                 },
                 Ranged(mob_idx) => {
-                    if self.mobs[player_idx].ammo > 0 {
+                    if self.mobs.get(player_idx).ammo > 0 {
                         self.attack(player_idx, mob_idx);
-                        self.mobs[player_idx].ammo -= 1;
+                        self.mobs.get_mut(player_idx).ammo -= 1;
                     } else {
                         self.msg("reload");
-                        self.mobs[player_idx].ammo += 1;
+                        self.mobs.get_mut(player_idx).ammo += 1;
                     }
                     self.update();
                     return true;
@@ -341,11 +342,11 @@ impl Game {
         match self.melee_probe_dir(mob_idx, dir) {
             Blocked => { return false; },
             Move => {
-                self.mobs[mob_idx].loc = self.mobs[mob_idx].loc + *dir;
+                self.mobs.get_mut(mob_idx).loc = self.mobs.get(mob_idx).loc + *dir;
                 return true;
             }
             Melee(target_idx) => {
-                if self.mobs[target_idx].t == mob::Player {
+                if self.mobs.get(target_idx).t == mob::Player {
                     self.attack(mob_idx, target_idx);
                     return true;
                 } else {
@@ -360,13 +361,13 @@ impl Game {
         if self.has_player() && self.player().is_alive() {
             self.pos = self.player().loc;
             self.player_dijkstra = Some(dijkstra::build_map(
-                    ~[self.pos], |&loc| self.walk_neighbors(loc), 256));
+                    vec!(self.pos), |&loc| self.walk_neighbors(loc), 256));
         } else {
             self.player_dijkstra = None;
         }
 
         for i in range(0, self.mobs.len()) {
-            if !self.mobs[i].is_alive() || self.mobs[i].t == mob::Player { continue; }
+            if !self.mobs.get(i).is_alive() || self.mobs.get(i).t == mob::Player { continue; }
 
             // Wander around randomly if there's no player to hunt.
             if self.player_dijkstra.is_none() {
@@ -375,17 +376,17 @@ impl Game {
                 continue;
             }
 
-            match uphill(self.player_dijkstra.get_ref(), self.mobs[i].loc) {
+            match uphill(self.player_dijkstra.get_ref(), self.mobs.get(i).loc) {
                 Some(new_loc) => {
                     // TODO: Attack if close enough.
                     match self.mob_idx_at(new_loc) {
                         Some(mob_idx) => {
-                            if self.mobs[mob_idx].t == mob::Player {
+                            if self.mobs.get(mob_idx).t == mob::Player {
                                 self.attack(i, mob_idx);
                             }
                         },
                         None => {
-                            self.mobs[i].loc = new_loc;
+                            self.mobs.get_mut(i).loc = new_loc;
                         },
                     };
                 },
@@ -415,7 +416,7 @@ impl Game {
         let text_zone = Aabb2::new(Point2::new(0.0f32, 200.0f32), Point2::new(240.0f32, 360.0f32));
         app.set_color(&LIGHTSLATEGRAY);
 
-        if self.mobs[self.player_idx()].hits == -666 {
+        if self.mobs.get(self.player_idx()).hits == -666 {
             app.print_words(&text_zone, app::Left, "Morlock Hunter\n\nYou win!");
         } else {
             app.print_words(
