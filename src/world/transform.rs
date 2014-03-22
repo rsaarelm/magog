@@ -1,4 +1,4 @@
-use world::area::Location;
+use area::Location;
 use cgmath::point::{Point2};
 
 pub struct Transform {

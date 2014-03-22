@@ -6,6 +6,7 @@
 #[crate_type = "rlib"];
 
 extern crate collections;
+extern crate time;
 extern crate cgmath;
 extern crate color;
 extern crate stb;
@@ -19,3 +20,4 @@ pub mod app;
 pub mod renderer;
 pub mod tile;
 pub mod key;
+pub mod timing;

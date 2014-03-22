@@ -19,13 +19,13 @@ use world::area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
 use world::area;
 use world::fov::Fov;
 use world::fov;
-use areaview;
-use areaview::World;
-use mapgen::MapGen;
-use mob;
-use mob::Mob;
-use transform::Transform;
-use sprite;
+use world::areaview;
+use world::areaview::World;
+use world::mapgen::MapGen;
+use world::mob;
+use world::mob::Mob;
+use world::transform::Transform;
+use world::sprite;
 
 static VERSION: &'static str = include!("../../gen/git_version.inc");
 

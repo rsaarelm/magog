@@ -5,8 +5,6 @@ extern crate glutil;
 extern crate color;
 extern crate calx;
 extern crate stb;
-extern crate collections;
-extern crate num;
 extern crate time;
 extern crate rand;
 extern crate world;
@@ -16,20 +14,14 @@ use calx::key;
 use calx::tile::Tile;
 use calx::renderer::Renderer;
 use calx::app::App;
+use calx::timing::Ticker;
 use cgmath::vector::{Vec2};
 use stb::image::Image;
 use world::area::DIRECTIONS6;
+use world::transform::Transform;
 use game::Game;
-use transform::Transform;
-use misc::Ticker;
 
-pub mod areaview;
 pub mod game;
-pub mod mapgen;
-pub mod mob;
-pub mod transform;
-pub mod sprite;
-pub mod misc;
 
 static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.inc");
 

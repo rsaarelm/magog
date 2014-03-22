@@ -4,11 +4,11 @@ use color::rgb::consts::*;
 use cgmath::vector::{Vec2};
 use cgmath::point::{Point};
 
-use world::area::Location;
+use calx::timing::{cycle_anim, single_anim};
+use area::Location;
 use transform::Transform;
 use sprite::{Sprite, tile};
 use sprite;
-use misc::{cycle_anim, single_anim};
 
 // How many seconds to show the hurt blink.
 static HURT_TIME_S : f64 = 0.2;
