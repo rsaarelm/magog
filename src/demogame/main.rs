@@ -9,6 +9,7 @@ extern crate collections;
 extern crate num;
 extern crate time;
 extern crate rand;
+extern crate world;
 
 use glutil::glrenderer::GlRenderer;
 use calx::key;
@@ -25,7 +26,6 @@ use misc::Ticker;
 pub mod fov;
 pub mod area;
 pub mod areaview;
-pub mod dijkstra;
 pub mod game;
 pub mod mapgen;
 pub mod mob;

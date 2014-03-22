@@ -14,8 +14,8 @@ use calx::renderer::Renderer;
 use calx::renderer;
 use calx::rectutil::RectUtil;
 
+use world::dijkstra;
 use area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
-use dijkstra;
 use area;
 use areaview;
 use fov::Fov;

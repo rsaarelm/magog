@@ -3,7 +3,7 @@ use collections::hashmap::HashSet;
 use std::cast;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
-use dijkstra;
+use world::dijkstra;
 use fov::Fov;
 
 #[deriving(Eq)]
