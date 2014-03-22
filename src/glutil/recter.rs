@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::mem::size_of;
 use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;

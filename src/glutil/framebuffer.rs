@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::cast;
 use hgl::texture::{Texture, ImageInfo};
 use hgl::texture;

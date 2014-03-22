@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::str;
 use collections::Deque;
 use collections::ringbuf::RingBuf;

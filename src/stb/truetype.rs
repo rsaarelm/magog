@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::libc::*;
 use std::intrinsics;
 use std::cast::transmute;

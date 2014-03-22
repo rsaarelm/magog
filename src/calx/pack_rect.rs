@@ -1,6 +1,6 @@
 extern crate cgmath;
 
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::num::zero;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::vector::Vec2;

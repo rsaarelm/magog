@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::cmp::{min, max};
 use cgmath::aabb::{Aabb, Aabb2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...

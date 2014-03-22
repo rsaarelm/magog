@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::mem::swap;
 use gl;
 use color::rgb;

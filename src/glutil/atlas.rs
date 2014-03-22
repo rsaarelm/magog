@@ -1,4 +1,4 @@
-use std::vec_ng::Vec;
+use std::vec::Vec;
 use std::iter::AdditiveIterator;
 use std::num::{sqrt, next_power_of_two};
 use std::cmp::{min, max};
