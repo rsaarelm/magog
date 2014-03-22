@@ -26,7 +26,6 @@ run ./rust-rule.sh src/stb/lib.rs {libstb}
 : assets/font.png |> !databake |> gen/font_data.inc
 run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb} gen/font_data.inc
 run ./rust-rule.sh src/world/lib.rs {libworld} \| {libcgmath}
-run ./rust-rule.sh src/view/lib.rs {libview}
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
