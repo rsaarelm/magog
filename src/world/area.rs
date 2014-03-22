@@ -167,7 +167,7 @@ impl Area {
     }
 }
 
-pub static DIRECTIONS6: &'static [Vec2<int>] = &[
+pub static DIRECTIONS6: [Vec2<int>, ..6] = [
     Vec2 { x: -1, y: -1 },
     Vec2 { x:  0, y: -1 },
     Vec2 { x:  1, y:  0 },
@@ -176,7 +176,7 @@ pub static DIRECTIONS6: &'static [Vec2<int>] = &[
     Vec2 { x: -1, y:  0 },
 ];
 
-pub static DIRECTIONS8: &'static [Vec2<int>] = &[
+pub static DIRECTIONS8: [Vec2<int>, ..8] = [
     Vec2 { x: -1, y: -1 },
     Vec2 { x:  0, y: -1 },
     Vec2 { x:  1, y: -1 },
