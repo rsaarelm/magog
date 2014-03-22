@@ -6,7 +6,7 @@ PA_LINKARGS = -C link-args='-lasound -ljack -lportaudio'
 !ar = |> ar crs %o %f |>
 
 !rustlib = |> rustc %f --out-dir ./ $(RUSTFLAGS) --crate-type rlib |>
-!rustbin = |> rustc %f -o %o $(RUSTFLAGS) |>
+!rustbin = |> RUST_BACKTRACE=1 rustc %f -o %o $(RUSTFLAGS) |>
 
 !databake = |> echo "&[" > %o; cat %f | xxd -i >> %o; echo "]" >> %o |>
 

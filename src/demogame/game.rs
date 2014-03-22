@@ -15,11 +15,11 @@ use calx::renderer;
 use calx::rectutil::RectUtil;
 
 use world::dijkstra;
-use area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
-use area;
+use world::area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
+use world::area;
+use world::fov::Fov;
+use world::fov;
 use areaview;
-use fov::Fov;
-use fov;
 use mapgen::MapGen;
 use mob;
 use mob::Mob;

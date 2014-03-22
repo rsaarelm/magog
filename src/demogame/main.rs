@@ -18,13 +18,11 @@ use calx::renderer::Renderer;
 use calx::app::App;
 use cgmath::vector::{Vec2};
 use stb::image::Image;
+use world::area::DIRECTIONS6;
 use game::Game;
-use area::DIRECTIONS6;
 use transform::Transform;
 use misc::Ticker;
 
-pub mod fov;
-pub mod area;
 pub mod areaview;
 pub mod game;
 pub mod mapgen;

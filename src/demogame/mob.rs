@@ -4,7 +4,7 @@ use color::rgb::consts::*;
 use cgmath::vector::{Vec2};
 use cgmath::point::{Point};
 
-use area::Location;
+use world::area::Location;
 use transform::Transform;
 use sprite::{Sprite, tile};
 use sprite;

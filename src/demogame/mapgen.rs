@@ -5,8 +5,8 @@ use collections::hashmap::HashSet;
 use calx::text::Map2DUtil;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point2};
-use area::{Area, DIRECTIONS6, Location};
-use area;
+use world::area::{Area, DIRECTIONS6, Location};
+use world::area;
 
 pub trait MapGen {
     fn gen_cave<R: Rng>(&mut self, rng: &mut R, make_exit: bool);
