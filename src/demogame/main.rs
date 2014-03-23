@@ -4,26 +4,22 @@ extern crate cgmath;
 extern crate glutil;
 extern crate color;
 extern crate calx;
-extern crate stb;
 extern crate time;
 extern crate rand;
 extern crate world;
 
 use glutil::glrenderer::GlRenderer;
 use calx::key;
-use calx::tile::Tile;
 use calx::renderer::Renderer;
 use calx::app::App;
 use calx::timing::Ticker;
 use cgmath::vector::{Vec2};
-use stb::image::Image;
 use world::area::DIRECTIONS6;
 use world::transform::Transform;
+use world::areaview;
 use game::Game;
 
 pub mod game;
-
-static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.inc");
 
 static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
     &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
@@ -44,15 +40,7 @@ static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
 
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, "Demogame");
-    let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
-    let tiles = Tile::new_alpha_set(
-        &Vec2::new(32, 32),
-        &Vec2::new(tiles.width as int, tiles.height as int),
-        tiles.pixels,
-        &Vec2::new(-16, -16));
-    for i in range(0u, 72u) {
-        app.r.add_tile(~tiles.get(i).clone());
-    }
+    areaview::init_tiles(&mut app);
 
     let mut game = Game::new();
 

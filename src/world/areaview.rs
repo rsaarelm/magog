@@ -5,15 +5,19 @@ use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::RGB;
 use color::rgb::consts::*;
+use stb::image::Image;
 use calx::rectutil::RectUtil;
 use calx::app::App;
 use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
+use calx::tile::Tile;
 use area;
 use area::{TerrainType, Location};
 use fov;
 use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
 use state::State;
+
+static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.inc");
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
@@ -176,6 +180,20 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     }
 
     ret
+}
+
+// TODO: Set up invariants so that draw_area cannot be called unless the tile
+// set is set up.
+pub fn init_tiles<R: Renderer>(app: &mut App<R>) {
+    let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
+    let tiles = Tile::new_alpha_set(
+        &Vec2::new(32, 32),
+        &Vec2::new(tiles.width as int, tiles.height as int),
+        tiles.pixels,
+        &Vec2::new(-16, -16));
+    for i in range(0u, 72u) {
+        app.r.add_tile(~tiles.get(i).clone());
+    }
 }
 
 pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {

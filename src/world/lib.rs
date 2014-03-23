@@ -10,6 +10,7 @@ extern crate rand;
 extern crate cgmath;
 extern crate color;
 extern crate calx;
+extern crate stb;
 
 pub mod dijkstra;
 pub mod area;
