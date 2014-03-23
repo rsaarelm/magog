@@ -10,11 +10,10 @@ use calx::app::App;
 use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
 use area;
-use area::{Area, TerrainType, Location};
-use fov::Fov;
-use mob::Mob;
-use transform::Transform;
+use area::{TerrainType, Location};
+use fov;
 use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
+use state::State;
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
@@ -179,16 +178,8 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     ret
 }
 
-pub trait World {
-    fn transform(&self) -> Transform;
-    fn seen_fov<'a>(&'a self) -> &'a Fov;
-    fn remembered_fov<'a>(&'a self) -> &'a Fov;
-    fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob>;
-    fn area<'a>(&'a self) -> &'a Area;
-}
-
-pub fn draw_area<R: Renderer, W: World>(game: &W, app: &mut App<R>) {
-    let xf = game.transform();
+pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
+    let xf = state.transform();
 
     let mut rect = Aabb2::new(
         *xf.to_chart(&Point2::new(0f32, 0f32)).p(),
@@ -200,25 +191,25 @@ pub fn draw_area<R: Renderer, W: World>(game: &W, app: &mut App<R>) {
         let p = Location(pt);
         let offset = xf.to_screen(p);
 
-        let kernel = Kernel::new(|p| game.area().get(p), p);
+        let kernel = Kernel::new(|p| state.area().get(p), p);
         let mut sprites = terrain_sprites(&kernel, &offset);
-        if !game.seen_fov().contains(p) {
-            if game.remembered_fov().contains(p) {
-                for s in sprites.mut_iter() {
-                    s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
-                }
-            } else {
-                // Solid blocks for unseen areas, cover stuff in front.
-                sprites = ~[Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK }];
+        let fov = state.fov(p);
+
+        if fov == fov::Remembered {
+            for s in sprites.mut_iter() {
+                s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
             }
+        } else if fov == fov::Unknown {
+            // Solid blocks for unseen areas, cover stuff in front.
+            sprites = ~[Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK }];
         }
 
         for s in sprites.iter() {
             s.draw(app);
         }
 
-        if game.seen_fov().contains(p) {
-            match game.drawable_mob_at(p) {
+        if fov == fov::Seen {
+            match state.drawable_mob_at(p) {
                 Some(mob) => {
                     for s in mob.sprites(&xf).iter() {
                         s.draw(app);

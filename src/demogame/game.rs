@@ -20,7 +20,7 @@ use world::area;
 use world::fov::Fov;
 use world::fov;
 use world::areaview;
-use world::areaview::World;
+use world::state;
 use world::mapgen::MapGen;
 use world::mob;
 use world::mob::Mob;
@@ -447,10 +447,14 @@ impl Game {
     }
 }
 
-impl World for Game {
+impl state::State for Game {
     fn transform(&self) -> Transform { Transform::new(self.pos) }
-    fn seen_fov<'a>(&'a self) -> &'a Fov { &*self.seen }
-    fn remembered_fov<'a>(&'a self) -> &'a Fov { &*self.remembered }
+
+    fn fov(&self, loc: Location) -> fov::FovStatus {
+        if self.seen.contains(loc) { return fov::Seen; }
+        if self.remembered.contains(loc) { return fov::Remembered; }
+        fov::Unknown
+    }
 
     fn drawable_mob_at<'a>(&'a self, loc: Location) -> Option<&'a Mob> {
         let mut ret = None;

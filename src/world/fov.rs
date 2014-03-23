@@ -10,6 +10,13 @@ use area::{Location, DIRECTIONS6};
 pub struct Fov(HashSet<Location>);
 
 #[deriving(Eq)]
+pub enum FovStatus {
+    Seen,
+    Remembered,
+    Unknown,
+}
+
+#[deriving(Eq)]
 struct Angle {
     pos: f32,
     radius: uint

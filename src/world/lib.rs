@@ -19,3 +19,4 @@ pub mod mapgen;
 pub mod transform;
 pub mod sprite;
 pub mod mob;
+pub mod state;
