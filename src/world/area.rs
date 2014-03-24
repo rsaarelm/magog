@@ -6,8 +6,9 @@ use cgmath::vector::{Vec2};
 use dijkstra;
 use fov::Fov;
 
-#[deriving(Eq)]
+#[deriving(Eq, Clone)]
 pub enum TerrainType {
+    Void,
     Floor,
     Water,
     Magma,

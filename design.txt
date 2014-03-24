@@ -1,9 +1,6 @@
 # vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
 
 * Stuff
-	* TODO Multiple terrain types in runtime editing
-		Paint terrain with mouse, using all available terrain types. Need
-		UI for switching between brushes.
 	* TODO Save edited maps
 		Bonus points for saving them as ASCII art that can be embedded into
 		the source code later as prefab vault source.
@@ -25,7 +22,8 @@
 		improved visibility around the player when it's dim. Have a cutoff
 		into blinding total darkness in the visuals when there is absolutely
 		no light.
-
+	* TODO Test map behavior at the looping edges of i8
+		Does it loop around like I'm assuming it should?
 * Non-critical stuff
 	These don't make new features.
 	* TODO Complete set of terrain predicates in the terrain cell type

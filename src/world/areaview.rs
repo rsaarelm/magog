@@ -55,7 +55,7 @@ pub struct Kernel<C> {
     s: C,
 }
 
-impl<C> Kernel<C> {
+impl<C: Clone> Kernel<C> {
     pub fn new(get: |Location| -> C, loc: Location) -> Kernel<C> {
         Kernel {
             n: get(loc + Vec2::new(-1, -1)),
@@ -69,6 +69,20 @@ impl<C> Kernel<C> {
             s: get(loc + Vec2::new(1, 1)),
         }
     }
+
+    pub fn new_default(center: C, edge: C) -> Kernel<C> {
+        Kernel {
+            n: edge.clone(),
+            ne: edge.clone(),
+            e: edge.clone(),
+            nw: edge.clone(),
+            center: center,
+            se: edge.clone(),
+            w: edge.clone(),
+            sw: edge.clone(),
+            s: edge.clone(),
+        }
+    }
 }
 
 pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] {
@@ -77,6 +91,9 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
     // TODO: Make this thing more data-driven once the data schema needed by
     // different types of terrain becomes clearer.
     match k.center {
+        area::Void => {
+            ret.push(Sprite { idx: BLANK_FLOOR, pos: *pos, z: FLOOR_Z, color: BLACK });
+        },
         area::Water => {
             ret.push(Sprite { idx: WATER, pos: *pos, z: FLOOR_Z, color: ROYALBLUE });
         },
