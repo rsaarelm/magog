@@ -187,9 +187,19 @@ pub static DIRECTIONS8: [Vec2<int>, ..8] = [
     Vec2 { x: -1, y:  1 },
     Vec2 { x: -1, y:  0 },
 ];
-// Add third dimension for levels.
-#[deriving(Eq, Clone, Hash)]
-pub struct Location(Point2<i8>);
+
+// TODO: Add third dimension for multiple persistent levels.
+#[deriving(Eq, TotalEq, Clone, Hash)]
+pub struct Location {
+    x: i8,
+    y: i8,
+}
+
+impl Location {
+    pub fn new(x: i8, y: i8) -> Location {
+        Location { x: x, y: y }
+    }
+}
 
 impl<'a> Location {
     pub fn p(&'a self) -> &'a Point2<i8> {
@@ -201,17 +211,14 @@ impl<'a> Location {
 
 impl Add<Vec2<int>, Location> for Location {
     fn add(&self, other: &Vec2<int>) -> Location {
-        let &Location(p) = self;
-        Location(Point2::new(
-                (p.x as int + other.x) as i8,
-                (p.y as int + other.y) as i8))
+        Location::new(
+            (self.x as int + other.x) as i8,
+            (self.y as int + other.y) as i8)
     }
 }
 
 impl Sub<Location, Vec2<int>> for Location {
     fn sub(&self, other: &Location) -> Vec2<int> {
-        let &Location(p) = self;
-        let &Location(p2) = other;
-        Vec2::new((p.x - p2.x) as int, (p.y - p2.y) as int)
+        Vec2::new((self.x - other.x) as int, (self.y - other.y) as int)
     }
 }

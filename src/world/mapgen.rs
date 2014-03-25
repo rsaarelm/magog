@@ -15,7 +15,7 @@ pub trait MapGen {
 
 impl MapGen for Area {
     fn gen_cave<R: Rng>(&mut self, rng: &mut R, make_exit: bool) {
-        let center = Location(Point2::new(0i8, 0i8));
+        let center = Location::new(0i8, 0i8);
         let mut edge = HashSet::new();
         let bounds = Aabb2::new(Point2::new(-16i8, -16i8), Point2::new(16i8, 16i8));
         let mut dug = 1;
@@ -67,10 +67,10 @@ impl MapGen for Area {
     fn gen_prefab(&mut self, prefab: &str) {
         for (c, x, y) in prefab.chars().map2d() {
             if c == '.' {
-                self.set.insert(Location(Point2::new(x as i8, y as i8)), area::Floor);
+                self.set.insert(Location::new(x as i8, y as i8), area::Floor);
             }
             if c == '~' {
-                self.set.insert(Location(Point2::new(x as i8, y as i8)), area::Water);
+                self.set.insert(Location::new(x as i8, y as i8), area::Water);
             }
         }
 

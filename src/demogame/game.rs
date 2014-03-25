@@ -61,7 +61,7 @@ impl Game {
     pub fn new() -> Game {
         let mut ret = Game {
             area: ~Area::new(area::Rock),
-            pos: Location(Point2::new(0i8, 0i8)),
+            pos: Location::new(0i8, 0i8),
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
             mobs: vec!(),
@@ -140,13 +140,13 @@ impl Game {
 
     pub fn next_level(&mut self) {
         // Player state doesn't persist level-to-level.
-        self.mobs = vec!(Mob::new(mob::Player, Location(Point2::new(0i8, 0i8))));
+        self.mobs = vec!(Mob::new(mob::Player, Location::new(0i8, 0i8)));
         self.area = ~Area::new(area::Rock);
         self.depth += 1;
         let make_exit = self.depth < END_LEVEL;
         self.area.gen_cave(&mut self.rng, make_exit);
 
-        self.player().loc = Location(Point2::new(0i8, 0i8));
+        self.player().loc = Location::new(0i8, 0i8);
 
         let sites = self.open_cells();
 

@@ -46,7 +46,7 @@ impl State {
     pub fn new() -> State {
         State {
             area: ~Area::new(area::Void),
-            pos: Location(Point2::new(0i8, 0i8)),
+            pos: Location::new(0i8, 0i8),
         }
     }
 }
@@ -77,7 +77,7 @@ pub fn main() {
     let mut state = State::new();
     let mut brush = 0;
 
-    state.area.set(Location(Point2::new(0i8, 0i8)), area::Floor);
+    state.area.set(Location::new(0i8, 0i8), area::Floor);
 
     while app.r.alive {
         loop {

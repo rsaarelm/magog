@@ -223,7 +223,7 @@ pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
     rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
 
     for pt in rect.points() {
-        let p = Location(pt);
+        let p = Location::new(pt.x, pt.y);
         let offset = xf.to_screen(p);
 
         let kernel = Kernel::new(|p| state.area().get(p), p);
