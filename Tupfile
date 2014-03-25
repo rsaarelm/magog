@@ -22,6 +22,7 @@ run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
+run ./rust-rule.sh lib/rust-toml/src/toml/lib.rs {libtoml}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
 : assets/font.png |> !databake |> gen/font_data.inc
 run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb} gen/font_data.inc

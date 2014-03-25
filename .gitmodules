@@ -19,3 +19,6 @@
 [submodule "lib/hgl-rs"]
 	path = lib/hgl-rs
 	url = https://github.com/cmr/hgl-rs
+[submodule "lib/rust-toml"]
+	path = lib/rust-toml
+	url = https://github.com/rsaarelm/rust-toml.git
