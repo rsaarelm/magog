@@ -1,12 +1,21 @@
-RUSTFLAGS = --opt-level 3 -L . --cfg check-gl
+RUSTFLAGS = --opt-level 3 -L .
+ifeq (@(TUP_RELEASE),y)
+RUSTFLAGS = $(RUSTFLAGS) --cfg ndebug
+RUSTBINFLAGS = -Z lto
+endif
+
 GLFW_LINKARGS = -C link-args='-lglfw -lGL -lX11 -lXxf86vm -lXrandr -lXi -lXcursor'
 PA_LINKARGS = -C link-args='-lasound -ljack -lportaudio'
 
-!cc = |> clang -Wall -O3 -c %f -o %o |>
+!cc = |> cc -Wall -Os -DNDEBUG -c %f -o %o |>
 !ar = |> ar crs %o %f |>
 
 !rustlib = |> rustc %f --out-dir ./ $(RUSTFLAGS) --crate-type rlib |>
-!rustbin = |> RUST_BACKTRACE=1 rustc %f -o %o $(RUSTFLAGS) |>
+ifeq (@(TUP_RELEASE),y)
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS) $(PA_LINKARGS); strip %o |>
+else
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS) $(PA_LINKARGS) |>
+endif
 
 !databake = |> echo "&[" > %o; cat %f | xxd -i >> %o; echo "]" >> %o |>
 

@@ -1,10 +1,10 @@
 include_rules
 
 # XXX: These ones are nasty.
-: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake -DCMAKE_C_FLAGS="-fPIC" ../lib/glfw; make; cp src/libglfw3.a ../libglfw.a; cd ..; rm -rf glfw-build/ |> libglfw.a
+: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake -DCMAKE_C_FLAGS="-fPIC -Os -DNDEBUG" ../lib/glfw; make; cp src/libglfw3.a ../libglfw.a; cd ..; rm -rf glfw-build/ |> libglfw.a
 # XXX: The particularly nasty tar hack is because something goes very wonky
 # with recursive copying when using tup variants.
-: lib/portaudio/configure |> ODIR=`pwd`; TDIR=`mktemp -d`; tar cf $TDIR/pa.tar lib/portaudio; cd $TDIR; tar xf pa.tar; cd lib/portaudio; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a $ODIR/; cd $ODIR; rm -rf $TDIR |> libportaudio.a
+: lib/portaudio/configure |> ODIR=`pwd`; TDIR=`mktemp -d`; tar cf $TDIR/pa.tar lib/portaudio; cd $TDIR; tar xf pa.tar; cd lib/portaudio; ./configure CFLAGS="-fPIC -Os -DNDEBUG"; make; cp ./lib/.libs/libportaudio.a $ODIR/; cd $ODIR; rm -rf $TDIR |> libportaudio.a
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
@@ -33,6 +33,6 @@ run ./rust-rule.sh src/world/lib.rs {libworld} \| {libcgmath} {libcolor} {libcal
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
-: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/tile_data.inc gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> demogame
-: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> mapedit
-: src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
+: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/tile_data.inc gen/git_version.inc |> !rustbin |> demogame
+: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/git_version.inc |> !rustbin |> mapedit
+: src/synth/main.rs | {libpa} libportaudio.a libglfw.a |> !rustbin |> synth

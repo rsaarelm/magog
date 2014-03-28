@@ -5,3 +5,6 @@ $ git submodule update --init
 
 To build, you need tup from http://gittup.org/tup/:
 $ tup
+
+To activate a variant build, eg. release build, do
+$ tup variant configs/release.config
