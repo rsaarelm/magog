@@ -1,5 +1,5 @@
 RUSTFLAGS = --opt-level 3 -L . --cfg check-gl
-GLFW_LINKARGS = -C link-args='-lglfw3 -lGL -lX11 -lXxf86vm -lXrandr -lXi'
+GLFW_LINKARGS = -C link-args='-lglfw -lGL -lX11 -lXxf86vm -lXrandr -lXi -lXcursor'
 PA_LINKARGS = -C link-args='-lasound -ljack -lportaudio'
 
 !cc = |> clang -Wall -O3 -c %f -o %o |>

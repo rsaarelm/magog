@@ -1,7 +1,7 @@
 include_rules
 
 # XXX: These ones are nasty.
-: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake ../lib/glfw; make; cp src/libglfw3.a ..; cd ..; rm -rf glfw-build/ |> libglfw3.a
+: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake -DCMAKE_C_FLAGS="-fPIC" ../lib/glfw; make; cp src/libglfw3.a ../libglfw.a; cd ..; rm -rf glfw-build/ |> libglfw.a
 : lib/portaudio/configure |> cp -r lib/portaudio pa-build; cd pa-build; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a ../; cd ..; rm -rf pa-build |> libportaudio.a
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
@@ -16,7 +16,7 @@ run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 # Could use the tempdir hack used above for portaudio, but then I'd also need to re-do
 # the output filename inference part.
 : lib/glfw-rs/etc/link-rs.sh |> sh lib/glfw-rs/etc/link-rs.sh "`sh lib/glfw-rs/etc/glfw-link-args.sh`" > %o |> lib/glfw-rs/src/lib/link.rs
-run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw} \| lib/glfw-rs/src/lib/link.rs
+run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw} \| lib/glfw-rs/src/lib/link.rs libglfw.a
 
 run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
@@ -31,6 +31,6 @@ run ./rust-rule.sh src/world/lib.rs {libworld} \| {libcgmath} {libcolor} {libcal
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
-: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw3.a gen/tile_data.inc gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> demogame
-: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw3.a gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> mapedit
+: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/tile_data.inc gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> demogame
+: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin $(GLFW_LINKARGS) |> mapedit
 : src/synth/main.rs | {libpa} libportaudio.a |> !rustbin $(PA_LINKARGS) |> synth
