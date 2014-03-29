@@ -2,7 +2,9 @@ include_rules
 
 # XXX: These ones are nasty.
 : lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake -DCMAKE_C_FLAGS="-fPIC" ../lib/glfw; make; cp src/libglfw3.a ../libglfw.a; cd ..; rm -rf glfw-build/ |> libglfw.a
-: lib/portaudio/configure |> cp -r lib/portaudio pa-build; cd pa-build; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a ../; cd ..; rm -rf pa-build |> libportaudio.a
+# XXX: The particularly nasty tar hack is because something goes very wonky
+# with recursive copying when using tup variants.
+: lib/portaudio/configure |> ODIR=`pwd`; TDIR=`mktemp -d`; tar cf $TDIR/pa.tar lib/portaudio; cd $TDIR; tar xf pa.tar; cd lib/portaudio; ./configure CFLAGS=-fPIC; make; cp ./lib/.libs/libportaudio.a $ODIR/; cd $ODIR; rm -rf $TDIR |> libportaudio.a
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
