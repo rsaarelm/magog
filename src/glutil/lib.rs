@@ -1,9 +1,9 @@
-#[crate_id = "glutil"];
-#[desc = "OpenGL rendering utilities"];
-#[license = "MIT"];
-#[crate_type = "rlib"];
+#![crate_id = "glutil"]
+#![desc = "OpenGL rendering utilities"]
+#![license = "MIT"]
+#![crate_type = "rlib"]
 
-#[feature(macro_rules)];
+#![feature(macro_rules)]
 
 extern crate gl;
 extern crate hgl;

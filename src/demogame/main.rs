@@ -1,4 +1,4 @@
-#[feature(globs)];
+#![feature(globs)]
 
 extern crate cgmath;
 extern crate glutil;

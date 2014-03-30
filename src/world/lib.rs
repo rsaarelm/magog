@@ -1,7 +1,7 @@
-#[crate_id = "world"];
-#[desc = "Game world logic"];
-#[crate_type = "rlib"];
-#[feature(globs)];
+#![crate_id = "world"]
+#![desc = "Game world logic"]
+#![crate_type = "rlib"]
+#![feature(globs)]
 
 extern crate collections;
 extern crate num;

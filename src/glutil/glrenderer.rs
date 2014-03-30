@@ -1,5 +1,6 @@
 use std::vec::Vec;
 use std::mem::swap;
+use std::comm::{Receiver};
 use gl;
 use color::rgb;
 use color::rgb::{ToRGB};
@@ -10,6 +11,7 @@ use cgmath::aabb::{Aabb, Aabb2};
 use hgl::{Program};
 use hgl;
 use glfw;
+use glfw::{Glfw};
 use calx::rectutil::RectUtil;
 use calx::renderer::{Renderer, KeyEvent, MouseState, DrawMode};
 use calx::key;
@@ -86,8 +88,9 @@ static BLIT_F: &'static str =
 
 pub struct GlRenderer {
     resolution: Vec2<f32>,
+    glfw_state: ~glfw::Glfw,
     window: ~glfw::Window,
-    receiver: ~glfw::EventReceiver,
+    receiver: ~Receiver<(f64, glfw::WindowEvent)>,
     alive: bool,
     atlas: ~Atlas,
     tile_shader: ~Program,
@@ -148,18 +151,16 @@ impl GlRenderer {
 
 impl Renderer for GlRenderer {
     fn new(width: uint, height: uint, title: &str) -> GlRenderer {
-        if !glfw::init().is_ok() {
-            fail!("Failed to initialize GLFW");
-        }
+        let (glfw_state, _) = glfw::init().unwrap();
 
-        let (window, receiver) = glfw::Window::create(
+        let (window, receiver) = glfw_state.create_window(
             width as u32, height as u32, title, glfw::Windowed)
             .expect("Failed to create GLFW window.");
         window.make_context_current();
         window.set_key_polling(true);
         window.set_char_polling(true);
 
-        gl::load_with(glfw::get_proc_address);
+        gl::load_with(|s| glfw_state.get_proc_address(s));
         gl::Enable(gl::BLEND);
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
@@ -171,6 +172,7 @@ impl Renderer for GlRenderer {
 
         let mut ret = GlRenderer {
             resolution: Vec2::new(width as f32, height as f32),
+            glfw_state: ~glfw_state,
             window: ~window,
             receiver: ~receiver,
             alive: true,
@@ -243,11 +245,11 @@ impl Renderer for GlRenderer {
 
         self.window.swap_buffers();
 
-        glfw::poll_events();
+        self.glfw_state.poll_events();
 
         // XXX: Dance around the borrow checker...
         let mut queue = vec!();
-        for event in self.receiver.flush_events() {
+        for event in glfw::flush_messages(self.receiver) {
             queue.push(event);
         }
         for &event in queue.iter() {

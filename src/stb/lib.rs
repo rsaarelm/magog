@@ -1,9 +1,9 @@
-#[crate_id = "stb"];
-#[desc = "Static STB library integration"];
-#[license = "MIT"];
-#[crate_type = "rlib"];
+#![crate_id = "stb"]
+#![desc = "Static STB library integration"]
+#![license = "MIT"]
+#![crate_type = "rlib"]
 
-#[feature(globs)];
+#![feature(globs)]
 
 pub mod image;
 pub mod truetype;

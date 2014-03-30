@@ -1,9 +1,9 @@
-#[crate_id = "calx"];
-#[desc = "Shared gamelib"];
-#[license = "MIT"];
-#[feature(globs)];
-#[feature(macro_rules)];
-#[crate_type = "rlib"];
+#![crate_id = "calx"]
+#![desc = "Shared gamelib"]
+#![license = "MIT"]
+#![feature(globs)]
+#![feature(macro_rules)]
+#![crate_type = "rlib"]
 
 extern crate collections;
 extern crate time;
