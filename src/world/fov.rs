@@ -58,7 +58,7 @@ impl Fov {
     pub fn add(&mut self, other: ~Fov) {
         let &Fov(ref mut h) = self;
         let ~Fov(o) = other;
-        h.extend(&mut o.move_iter());
+        h.extend(o.move_iter());
     }
 
     pub fn contains(&self, loc: Location) -> bool {

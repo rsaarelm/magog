@@ -87,6 +87,7 @@ static BLIT_F: &'static str =
 pub struct GlRenderer {
     resolution: Vec2<f32>,
     window: ~glfw::Window,
+    receiver: ~glfw::EventReceiver,
     alive: bool,
     atlas: ~Atlas,
     tile_shader: ~Program,
@@ -151,7 +152,8 @@ impl Renderer for GlRenderer {
             fail!("Failed to initialize GLFW");
         }
 
-        let window = glfw::Window::create(width as u32, height as u32, title, glfw::Windowed)
+        let (window, receiver) = glfw::Window::create(
+            width as u32, height as u32, title, glfw::Windowed)
             .expect("Failed to create GLFW window.");
         window.make_context_current();
         window.set_key_polling(true);
@@ -170,6 +172,7 @@ impl Renderer for GlRenderer {
         let mut ret = GlRenderer {
             resolution: Vec2::new(width as f32, height as f32),
             window: ~window,
+            receiver: ~receiver,
             alive: true,
             atlas: ~Atlas::new(),
             tile_shader:
@@ -244,7 +247,7 @@ impl Renderer for GlRenderer {
 
         // XXX: Dance around the borrow checker...
         let mut queue = vec!();
-        for event in self.window.flush_events() {
+        for event in self.receiver.flush_events() {
             queue.push(event);
         }
         for &event in queue.iter() {
