@@ -53,3 +53,13 @@
 		- Give the Dijkstra map type a method "slope" for returning a vector
 			of the neighbors of a cell, sorted by their score. Downhill and
 			uphill values are now the first and last elements of this vector.
+	* TODO Sleep when out of focus
+		The app constantly updates the screen, which eats a lot of processor
+		power. The player should be able to switch to other applications and
+		have full processing power available to them, so make the event
+		system detect focus events and switch to sleep mode.
+
+		Also possibly make the screen updates less intesive? Rule of thumb
+		is that we don't do anything with screen refresh rates below 30 ms,
+		since that's the key repeat rate you get when leaning on keys,
+		there's no twitch gameplay, and the animations are very low-fi.
