@@ -34,5 +34,5 @@ run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
 : src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/tile_data.inc gen/git_version.inc |> !rustbin |> demogame
-: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/git_version.inc |> !rustbin |> mapedit
+: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libtoml} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/git_version.inc |> !rustbin |> mapedit
 : src/synth/main.rs | {libpa} libportaudio.a libglfw.a |> !rustbin |> synth

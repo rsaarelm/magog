@@ -6,10 +6,16 @@ extern crate color;
 extern crate calx;
 extern crate stb;
 extern crate collections;
+extern crate serialize;
 extern crate num;
 extern crate rand;
 extern crate world;
+extern crate toml;
 
+use std::io;
+use std::path::Path;
+use std::fmt;
+use std::fmt::{Show, Formatter};
 use glutil::glrenderer::GlRenderer;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
@@ -51,6 +57,57 @@ impl State {
     }
 }
 
+// TODO: Conversion between State and StateSerialize.
+
+// Simplified data for State that can be easily stored in TOML
+// XXX: Using untyped arrays for data for brevity. Should these be subtables instead?
+#[deriving(Decodable)]
+struct StateSerialize {
+    // Expecting exactly two elements.
+    pos: ~[i8],
+    // Expecting exactly two elements.
+    origin: ~[i8],
+    ascii_map: ~[~str],
+    // Expecting exactly two elements for each legend element, with
+    // the first one being exactly 1 characters long and the second
+    // one being 1 or more characters.
+    legend: ~[~[~str]],
+}
+
+// XXX: This is just boilerplate, would be better if TOML had Encode
+// implementation and we could use that.
+impl Show for StateSerialize {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        assert!(self.pos.len() == 2);
+        assert!(self.origin.len() == 2);
+        try!(writeln!(f.buf, "pos = [{}, {}]", self.pos[0], self.pos[1]));
+        try!(writeln!(f.buf, "origin = [{}, {}]", self.origin[0], self.origin[1]));
+        try!(writeln!(f.buf, "ascii_map = ["));
+        for line in self.ascii_map.iter() {
+            try!(writeln!(f.buf, "  \"{}\"", line));
+        }
+        try!(writeln!(f.buf, "]\nlegend = ["));
+        for item in self.legend.iter() {
+            assert!(item.len() == 2);
+            assert!(item[0].len() == 1);
+            assert!(item[1].len() > 0);
+            try!(writeln!(f.buf, "  [{}, {}],", item.get(0), item.get(1)));
+        }
+        try!(writeln!(f.buf, "]"));
+        Ok(())
+    }
+}
+
+impl StateSerialize {
+    pub fn decode<B: io::Buffer>(input: &mut B) -> Result<StateSerialize, toml::Error> {
+        let value = match toml::parse_from_buffer(input) {
+            Ok(v) => v,
+            Err(e) => return Err(e)
+        };
+        toml::from_toml(value)
+    }
+}
+
 // XXX: Data repetition from the terrain enum.
 //
 // TODO: Make a terrain data system that generates both the enum and a loopable
@@ -70,11 +127,20 @@ static TERRAIN_LIST: &'static [TerrainType] = &[
     area::Portal,
 ];
 
+
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, format!("Map editor ({})", VERSION));
     areaview::init_tiles(&mut app);
 
     let mut state = State::new();
+
+    let mut rd = io::BufferedReader::new(io::File::open(&Path::new("map.txt")));
+    let load = StateSerialize::decode(&mut rd);
+    match load {
+        Ok(s) => println!("{}", s),
+        Err(_) => println!("Couldn't load map.txt")
+    };
+
     let mut brush = 0;
 
     state.area.set(Location::new(0i8, 0i8), area::Floor);

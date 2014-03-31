@@ -1,8 +1,12 @@
+use std::num::Bounded;
+use std::cmp::{min, max};
 use collections::hashmap::{HashMap, Keys};
 use collections::hashmap::HashSet;
 use std::cast;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
+use cgmath::aabb::{Aabb2};
+use calx::rectutil::RectUtil;
 use dijkstra;
 use fov::Fov;
 
@@ -154,6 +158,20 @@ impl Area {
             }
         }
         ret
+    }
+
+    pub fn get_bounds(&self) -> Aabb2<int> {
+        let mut min_x = Bounded::max_value();
+        let mut min_y = Bounded::max_value();
+        let mut max_x = Bounded::min_value();
+        let mut max_y = Bounded::min_value();
+        for &loc in self.iter() {
+            min_x = min(min_x, loc.x as int);
+            min_y = min(min_y, loc.y as int);
+            max_x = max(max_x, loc.x as int);
+            max_y = max(max_y, loc.x as int);
+        }
+        RectUtil::new(min_x, min_y, max_x, max_y)
     }
 
     pub fn explore_map(&self, remembered: &Fov) -> DijkstraMap {
