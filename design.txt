@@ -1,9 +1,10 @@
 # vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
 
 * Stuff
-	* TODO Save edited maps
-		Bonus points for saving them as ASCII art that can be embedded into
-		the source code later as prefab vault source.
+	* TODO Conversion between live map state and serializable state
+		In particular, a conversion from live area data to ASCII art that
+		uses a sensible legend. This should get us saving and restoring maps
+		in a human-editable format.
 	* TODO Edit and play
 		Switch to game from an edited scenario, see how it plays out. Then
 		rewind back to the editor with the changes that happend during
@@ -23,7 +24,8 @@
 		into blinding total darkness in the visuals when there is absolutely
 		no light.
 	* TODO Test map behavior at the looping edges of i8
-		Does it loop around like I'm assuming it should?
+		Does it loop around like I'm assuming it should? I think quick
+		mapedit tests were showing artifacts.
 * Non-critical stuff
 	These don't make new features.
 	* TODO Complete set of terrain predicates in the terrain cell type
@@ -31,6 +33,7 @@
 		the cell in a place that can access everything in the space. For
 		example, mobs block paths, sometimes move so little you can count
 		them as stable obstacles, and some might block FOV.
+	* TODO A way to iterate through all terrain types
 	* TODO Offline image processing
 		Drop image and ttf loading from the end result binaries, make them
 		smaller and faster to start up.
