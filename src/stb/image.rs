@@ -16,10 +16,10 @@ extern {
 }
 
 pub struct Image {
-    width: uint,
-    height: uint,
-    bpp: uint,
-    pixels: Vec<u8>,
+    pub width: uint,
+    pub height: uint,
+    pub bpp: uint,
+    pub pixels: Vec<u8>,
 }
 
 impl Image {

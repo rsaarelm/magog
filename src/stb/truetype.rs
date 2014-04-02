@@ -40,16 +40,16 @@ extern {
 
 pub struct Font {
     priv info: StbttFontinfo,
-    priv data: Vec<u8>,
+    data: Vec<u8>,
 }
 
 pub struct Glyph {
-    width: int,
-    height: int,
-    xOffset: f32,
-    yOffset: f32,
-    xAdvance: f32,
-    pixels: Vec<u8>
+    pub width: int,
+    pub height: int,
+    pub xOffset: f32,
+    pub yOffset: f32,
+    pub xAdvance: f32,
+    pub pixels: Vec<u8>
 }
 
 impl Font {

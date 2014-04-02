@@ -11,7 +11,7 @@ use cgmath::aabb::{Aabb, Aabb2};
 use hgl::{Program};
 use hgl;
 use glfw;
-use glfw::{Glfw};
+use glfw::{Glfw, Context};
 use calx::rectutil::RectUtil;
 use calx::renderer::{Renderer, KeyEvent, MouseState, DrawMode};
 use calx::key;
@@ -156,7 +156,7 @@ impl Renderer for GlRenderer {
         let (window, receiver) = glfw_state.create_window(
             width as u32, height as u32, title, glfw::Windowed)
             .expect("Failed to create GLFW window.");
-        window.make_context_current();
+        window.make_current();
         window.set_key_polling(true);
         window.set_char_polling(true);
 
