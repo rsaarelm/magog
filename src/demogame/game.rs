@@ -15,7 +15,7 @@ use calx::renderer;
 use calx::rectutil::RectUtil;
 
 use world::dijkstra;
-use world::area::{Location, Area, uphill, DijkstraMap, DIRECTIONS6};
+use world::area::{Location, ChartPos, Area, uphill, DijkstraMap, DIRECTIONS6};
 use world::area;
 use world::fov::Fov;
 use world::fov;
@@ -385,7 +385,7 @@ impl Game {
 
     pub fn draw<R: Renderer>(&mut self, app: &mut App<R>) {
         let mouse = app.r.get_mouse();
-        let xf = Transform::new(self.pos);
+        let xf = Transform::new(ChartPos::from_location(self.pos));
         let cursor_chart_loc = xf.to_chart(&mouse.pos);
 
         let mut tmp_seen = ~fov::fov(self.area, self.pos, 12);
@@ -425,7 +425,7 @@ impl Game {
 
         app.set_color(&CORNFLOWERBLUE);
         app.print_words(&Aabb2::new(Point2::new(260.0f32, 0.0f32), Point2::new(380.0f32, 16.0f32)),
-            app::Center, self.object_name(cursor_chart_loc));
+            app::Center, self.object_name(cursor_chart_loc.to_location()));
 
         app.set_color(&LIGHTSLATEGRAY);
         app.print_words(&Aabb2::new(Point2::new(560.0f32, 0.0f32), Point2::new(640.0f32, 16.0f32)),
@@ -448,7 +448,7 @@ impl Game {
 }
 
 impl state::State for Game {
-    fn transform(&self) -> Transform { Transform::new(self.pos) }
+    fn transform(&self) -> Transform { Transform::new(ChartPos::from_location(self.pos)) }
 
     fn fov(&self, loc: Location) -> fov::FovStatus {
         if self.seen.contains(loc) { return fov::Seen; }

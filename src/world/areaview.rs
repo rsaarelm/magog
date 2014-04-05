@@ -12,7 +12,7 @@ use calx::app::{SPRITE_INDEX_START};
 use calx::renderer::Renderer;
 use calx::tile::Tile;
 use area;
-use area::{TerrainType, Location};
+use area::{TerrainType, Location, ChartPos};
 use fov;
 use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
 use state::State;
@@ -223,12 +223,13 @@ pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
     rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
 
     for pt in rect.points() {
-        let p = Location::new(pt.x, pt.y);
+        let p = ChartPos::new(pt.x, pt.y);
         let offset = xf.to_screen(p);
 
-        let kernel = Kernel::new(|p| state.area().get(p), p);
+        let loc = p.to_location();
+        let kernel = Kernel::new(|p| state.area().get(p), loc);
         let mut sprites = terrain_sprites(&kernel, &offset);
-        let fov = state.fov(p);
+        let fov = state.fov(loc);
 
         if fov == fov::Remembered {
             for s in sprites.mut_iter() {
@@ -244,7 +245,7 @@ pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
         }
 
         if fov == fov::Seen {
-            match state.drawable_mob_at(p) {
+            match state.drawable_mob_at(loc) {
                 Some(mob) => {
                     for s in mob.sprites(&xf).iter() {
                         s.draw(app);

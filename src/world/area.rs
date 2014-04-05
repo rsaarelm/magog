@@ -283,14 +283,12 @@ pub static DIRECTIONS8: [Vec2<int>, ..8] = [
 // TODO: Add third dimension for multiple persistent levels.
 #[deriving(Eq, TotalEq, Clone, Hash)]
 pub struct Location {
-    x: i8,
-    y: i8,
+    pub x: i8,
+    pub y: i8,
 }
 
 impl Location {
-    pub fn new(x: i8, y: i8) -> Location {
-        Location { x: x, y: y }
-    }
+    pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 }
 
 impl<'a> Location {
@@ -312,5 +310,31 @@ impl Add<Vec2<int>, Location> for Location {
 impl Sub<Location, Vec2<int>> for Location {
     fn sub(&self, other: &Location) -> Vec2<int> {
         Vec2::new((self.x - other.x) as int, (self.y - other.y) as int)
+    }
+}
+
+// Positions on a virtual infinite 2D chart, which may map to different actual
+// Locations.
+#[deriving(Eq, TotalEq, Clone, Hash)]
+pub struct ChartPos {
+    pub x: int,
+    pub y: int,
+}
+
+impl<'a> ChartPos {
+    pub fn new(x: int, y: int) -> ChartPos { ChartPos { x: x, y: y } }
+
+    pub fn from_location(loc: Location) -> ChartPos {
+        ChartPos::new(loc.x as int, loc.y as int)
+    }
+
+    pub fn to_location(self) -> Location {
+        Location::new(self.x as i8, self.y as i8)
+    }
+
+    pub fn p(&'a self) -> &'a Point2<int> {
+        unsafe {
+            cast::transmute(self)
+        }
     }
 }

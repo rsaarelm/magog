@@ -30,9 +30,6 @@
 		improved visibility around the player when it's dim. Have a cutoff
 		into blinding total darkness in the visuals when there is absolutely
 		no light.
-	* TODO Test map behavior at the looping edges of i8
-		Does it loop around like I'm assuming it should? I think quick
-		mapedit tests were showing artifacts.
 	* TODO Data-driven terrain types
 		Terrain types are specified in a data structure that's set up at
 		runtime, not hardcoded into the source.

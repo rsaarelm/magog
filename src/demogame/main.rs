@@ -14,7 +14,7 @@ use calx::renderer::Renderer;
 use calx::app::App;
 use calx::timing::Ticker;
 use cgmath::vector::{Vec2};
-use world::area::DIRECTIONS6;
+use world::area::{ChartPos, DIRECTIONS6};
 use world::transform::Transform;
 use world::areaview;
 use game::Game;
@@ -49,11 +49,11 @@ pub fn main() {
     while app.r.alive {
         game.draw(&mut app);
 
-        let xf = Transform::new(game.pos);
+        let xf = Transform::new(ChartPos::from_location(game.pos));
         let mouse = app.r.get_mouse();
         let cursor_chart_loc = xf.to_chart(&mouse.pos);
         if game.has_player() {
-            let _vec = cursor_chart_loc - game.pos;
+            let _vec = cursor_chart_loc.to_location() - game.pos;
             // TODO: Convert mouse clicks to player input. This needs a
             // slowdown feature to make it work like the keyboard repeat thing,
             // otherwise pressing the mouse button will make the inputs repeat

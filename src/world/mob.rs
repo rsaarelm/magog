@@ -5,7 +5,7 @@ use cgmath::vector::{Vec2};
 use cgmath::point::{Point};
 
 use calx::timing::{cycle_anim, single_anim};
-use area::Location;
+use area::{Location, ChartPos};
 use transform::Transform;
 use sprite::{Sprite, tile};
 use sprite;
@@ -97,7 +97,7 @@ impl Mob {
 
     pub fn sprites(&self, xf: &Transform) -> ~[Sprite] {
         let mut ret : ~[Sprite] = ~[];
-        let pos = xf.to_screen(self.loc);
+        let pos = xf.to_screen(ChartPos::from_location(self.loc));
 
         let bob = Vec2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, -1.0f32]));
 
