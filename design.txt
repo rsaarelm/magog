@@ -1,6 +1,7 @@
 # vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
 
-* Stuff TODO Conversion between live map state and serializable state
+* Stuff
+	* TODO Conversion between live map state and serializable state
 		In particular, a conversion from live area data to ASCII art that
 		uses a sensible legend. This should get us saving and restoring maps
 		in a human-editable format.
@@ -51,6 +52,9 @@
 		is that we don't do anything with screen refresh rates below 30 ms,
 		since that's the key repeat rate you get when leaning on keys,
 		there's no twitch gameplay, and the animations are very low-fi.
+	* TODO Basic unintrusive audio support
+		Something like a click sound for acknowlegdging input. Mostly to see
+		how to get an audio mixer and a simple waveform synth set up.
 * Non-critical stuff
 	These don't make new features.
 	* TODO Complete set of terrain predicates in the terrain cell type
@@ -81,6 +85,4 @@
 		  of the neighbors of a cell, sorted by their score. Downhill and
 		  uphill values are now the first and last elements of this vector.
 	* TODO Use include_bin!() to bake in binary assets
-	* TODO Basic unintrusive audio support
-		Something like a click sound for acknowlegdging input. Mostly to see
-		how to get an audio mixer and a simple waveform synth set up.
+	* TODO Doc comments, document generation
