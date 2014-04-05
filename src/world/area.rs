@@ -10,21 +10,46 @@ use calx::rectutil::RectUtil;
 use dijkstra;
 use fov::Fov;
 
+// TODO: Figure out how to not require explicit element count.
+macro_rules! terrain_data {
+    {
+        count: $count:expr;
+        $($symbol:ident, $name:expr;)*
+    } => {
 #[deriving(Eq, Clone)]
-pub enum TerrainType {
-    Void,
-    Floor,
-    Water,
-    Magma,
-    Downstairs,
-    Wall,
-    RockWall,
-    Rock,
-    Tree,
-    Grass,
-    Stalagmite,
-    Portal,
+        pub enum TerrainType {
+            $($symbol,)*
+        }
+
+        fn terrain_name(t: TerrainType) -> &'static str {
+            match t {
+                $($symbol => $name,)*
+            }
+        }
+
+        pub static TERRAINS: [TerrainType, ..$count] = [
+            $($symbol,)*
+            ];
+
+    }
 }
+
+terrain_data! {
+    count: 12;
+    Void, "void";
+    Floor, "floor";
+    Water, "water";
+    Magma, "magma";
+    Downstairs, "stairs down";
+    Wall, "wall";
+    RockWall, "rock wall";
+    Rock, "rock";
+    Tree, "tree";
+    Grass, "grass";
+    Stalagmite, "stalagmite";
+    Portal, "portal";
+}
+
 
 impl TerrainType {
     pub fn is_wall(self) -> bool {
@@ -53,8 +78,9 @@ impl TerrainType {
             Floor | Grass | Downstairs | Portal => true,
             _ => false
         }
-
     }
+
+    pub fn name(self) -> &'static str { terrain_name(self) }
 }
 
 pub struct Area {

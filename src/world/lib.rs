@@ -2,6 +2,7 @@
 #![desc = "Game world logic"]
 #![crate_type = "rlib"]
 #![feature(globs)]
+#![feature(macro_rules)]
 
 extern crate collections;
 extern crate num;

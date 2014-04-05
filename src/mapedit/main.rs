@@ -24,7 +24,7 @@ use calx::app::App;
 use calx::key;
 use calx::renderer::Renderer;
 use calx::renderer;
-use world::area::{Area, Location, TerrainType};
+use world::area::{Area, Location};
 use world::area;
 use world::transform::Transform;
 use world::fov;
@@ -108,26 +108,6 @@ impl StateSerialize {
     }
 }
 
-// XXX: Data repetition from the terrain enum.
-//
-// TODO: Make a terrain data system that generates both the enum and a loopable
-// array from the same single terrain source. (Also the terrain properties.)
-static TERRAIN_LIST: &'static [TerrainType] = &[
-    area::Void,
-    area::Floor,
-    area::Water,
-    area::Magma,
-    area::Downstairs,
-    area::Wall,
-    area::RockWall,
-    area::Rock,
-    area::Tree,
-    area::Grass,
-    area::Stalagmite,
-    area::Portal,
-];
-
-
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, format!("Map editor ({})", VERSION));
     areaview::init_tiles(&mut app);
@@ -152,8 +132,8 @@ pub fn main() {
                     match key.code {
                         key::ESC => { return; }
                         key::F12 => { app.r.screenshot("/tmp/shot.png"); }
-                        key::NUM_1 => { brush += TERRAIN_LIST.len() - 1; brush %= TERRAIN_LIST.len(); }
-                        key::NUM_2 => { brush += 1; brush %= TERRAIN_LIST.len(); }
+                        key::NUM_1 => { brush += area::TERRAINS.len() - 1; brush %= area::TERRAINS.len(); }
+                        key::NUM_2 => { brush += 1; brush %= area::TERRAINS.len(); }
                         key::UP => { state.pos = state.pos + Vec2::new(-1, -1); }
                         key::DOWN => { state.pos = state.pos + Vec2::new(1, 1); }
                         key::LEFT => { state.pos = state.pos + Vec2::new(-1, 1); }
@@ -169,7 +149,7 @@ pub fn main() {
 
         for spr in
             areaview::terrain_sprites(
-                &Kernel::new_default(TERRAIN_LIST[brush], area::Void),
+                &Kernel::new_default(area::TERRAINS[brush], area::Void),
                 &Point2::new(32f32, 32f32)).iter() {
             spr.draw(&mut app);
         }
@@ -180,7 +160,7 @@ pub fn main() {
         app.r.draw_tile(areaview::CURSOR_BOTTOM, &xf.to_screen(cursor_chart_loc), sprite::FLOOR_Z, &FIREBRICK, renderer::ColorKeyDraw);
         app.r.draw_tile(areaview::CURSOR_TOP, &xf.to_screen(cursor_chart_loc), sprite::BLOCK_Z, &FIREBRICK, renderer::ColorKeyDraw);
         if mouse.left {
-            state.area.set(cursor_chart_loc, TERRAIN_LIST[brush]);
+            state.area.set(cursor_chart_loc, area::TERRAINS[brush]);
         }
         if mouse.right {
             state.area.set(cursor_chart_loc, area::Void);
