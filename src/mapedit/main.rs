@@ -12,10 +12,8 @@ extern crate rand;
 extern crate world;
 extern crate toml;
 
-use std::io;
+use std::io::{IoResult, File, Open, Write, BufferedReader, BufferedWriter};
 use std::path::Path;
-use std::fmt;
-use std::fmt::{Show, Formatter};
 use glutil::glrenderer::GlRenderer;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
@@ -55,56 +53,29 @@ impl State {
             pos: Location::new(0i8, 0i8),
         }
     }
-}
 
-// TODO: Conversion between State and StateSerialize.
-
-// Simplified data for State that can be easily stored in TOML
-// XXX: Using untyped arrays for data for brevity. Should these be subtables instead?
-#[deriving(Decodable)]
-struct StateSerialize {
-    // Expecting exactly two elements.
-    pos: ~[i8],
-    // Expecting exactly two elements.
-    origin: ~[i8],
-    ascii_map: ~[~str],
-    // Expecting exactly two elements for each legend element, with
-    // the first one being exactly 1 characters long and the second
-    // one being 1 or more characters.
-    legend: ~[~[~str]],
-}
-
-// XXX: This is just boilerplate, would be better if TOML had Encode
-// implementation and we could use that.
-impl Show for StateSerialize {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        assert!(self.pos.len() == 2);
-        assert!(self.origin.len() == 2);
-        try!(writeln!(f.buf, "pos = [{}, {}]", self.pos[0], self.pos[1]));
-        try!(writeln!(f.buf, "origin = [{}, {}]", self.origin[0], self.origin[1]));
-        try!(writeln!(f.buf, "ascii_map = ["));
-        for line in self.ascii_map.iter() {
-            try!(writeln!(f.buf, "  \"{}\"", line));
-        }
-        try!(writeln!(f.buf, "]\nlegend = ["));
-        for item in self.legend.iter() {
-            assert!(item.len() == 2);
-            assert!(item[0].len() == 1);
-            assert!(item[1].len() > 0);
-            try!(writeln!(f.buf, "  [{}, {}],", item.get(0), item.get(1)));
-        }
-        try!(writeln!(f.buf, "]"));
-        Ok(())
-    }
-}
-
-impl StateSerialize {
-    pub fn decode<B: io::Buffer>(input: &mut B) -> Result<StateSerialize, toml::Error> {
-        let value = match toml::parse_from_buffer(input) {
+    pub fn from_file(path: &str) -> Option<State> {
+        let mut rd = BufferedReader::new(File::open(&Path::new(path)));
+        let toml_value: toml::Value = match toml::parse_from_buffer(&mut rd) {
             Ok(v) => v,
-            Err(e) => return Err(e)
+            Err(e) => { println!("Toml parse error {}", e.to_str()); return None; }
         };
-        toml::from_toml(value)
+        let ascii_map = match toml::from_toml(toml_value) {
+            Ok(s) => s,
+            Err(e) => { println!("Toml decode error {}", e.to_str()); return None; }
+        };
+        Some(State {
+            area: ~Area::from_ascii_map(&ascii_map),
+            pos: Location::new(0i8, 0i8),
+        })
+    }
+
+    pub fn save(&self, path: &str) -> IoResult<()> {
+        let file = File::open_mode(&Path::new(path), Open, Write).unwrap();
+        let mut wr = BufferedWriter::new(file);
+        let obj = self.area.build_asciimap();
+        try!(writeln!(&mut wr, "{}", obj.to_str()));
+        Ok(())
     }
 }
 
@@ -112,25 +83,21 @@ pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, format!("Map editor ({})", VERSION));
     areaview::init_tiles(&mut app);
 
-    let mut state = State::new();
-
-    let mut rd = io::BufferedReader::new(io::File::open(&Path::new("map.txt")));
-    let load = StateSerialize::decode(&mut rd);
-    match load {
-        Ok(s) => println!("{}", s),
-        Err(_) => println!("Couldn't load map.txt")
+    let mut state = match State::from_file("map.txt") {
+        Some(s) => s,
+        None => State::new()
     };
 
     let mut brush = 0;
 
     state.area.set(Location::new(0i8, 0i8), area::Floor);
 
-    while app.r.alive {
+    while app.alive {
         loop {
             match app.r.pop_key() {
                 Some(key) => {
                     match key.code {
-                        key::ESC => { return; }
+                        key::ESC => { app.quit(); }
                         key::F12 => { app.r.screenshot("/tmp/shot.png"); }
                         key::NUM_1 => { brush += area::TERRAINS.len() - 1; brush %= area::TERRAINS.len(); }
                         key::NUM_2 => { brush += 1; brush %= area::TERRAINS.len(); }
@@ -163,9 +130,10 @@ pub fn main() {
             state.area.set(cursor_chart_loc, area::TERRAINS[brush]);
         }
         if mouse.right {
-            state.area.set(cursor_chart_loc, area::Void);
+            state.area.set(cursor_chart_loc, state.area.default);
         }
 
         app.r.flush();
     }
+    state.save("map.txt");
 }

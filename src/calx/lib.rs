@@ -7,11 +7,13 @@
 
 extern crate collections;
 extern crate time;
+extern crate serialize;
 extern crate cgmath;
 extern crate color;
 extern crate stb;
 extern crate rand;
 
+pub mod asciimap;
 pub mod text;
 pub mod pack_rect;
 pub mod rectutil;

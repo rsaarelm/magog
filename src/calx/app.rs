@@ -150,4 +150,8 @@ impl <R: Renderer> App<R> {
             self.alive = false;
         }
     }
+
+    pub fn quit(&mut self) {
+        self.alive = false;
+    }
 }

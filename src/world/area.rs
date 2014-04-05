@@ -7,6 +7,7 @@ use cgmath::point::{Point2};
 use cgmath::vector::{Vec2};
 use cgmath::aabb::{Aabb2};
 use calx::rectutil::RectUtil;
+use calx::asciimap::{AsciiMap, Cell};
 use dijkstra;
 use fov::Fov;
 
@@ -52,6 +53,13 @@ terrain_data! {
 
 
 impl TerrainType {
+    pub fn from_name(name: &str) -> Option<TerrainType> {
+        for &t in TERRAINS.iter() {
+            if t.name() == name { return Some(t); }
+        }
+        None
+    }
+
     pub fn is_wall(self) -> bool {
         match self {
             Wall | RockWall | Rock => true,
@@ -84,7 +92,7 @@ impl TerrainType {
 }
 
 pub struct Area {
-    default: TerrainType,
+    pub default: TerrainType,
     set: HashMap<Location, TerrainType>,
 }
 
@@ -112,6 +120,38 @@ impl Area {
         }
     }
 
+    pub fn from_ascii_map(ascii_map: &AsciiMap) -> Area {
+        let mut ret = Area::new(
+            TerrainType::from_name(ascii_map.default_terrain).unwrap());
+        let mut legend = HashMap::new();
+        for e in ascii_map.legend.iter() {
+            let t = match TerrainType::from_name(e.terrain_type) {
+                Some(val) => val,
+                None => {
+                    println!("Unknown terrain {}", e.terrain_type);
+                    continue;
+                }
+            };
+            legend.insert(e.glyph, t);
+        }
+
+        for y in range(0, ascii_map.terrain.len()) {
+            for (x, glyph) in ascii_map.terrain.get(y).chars().enumerate() {
+                let loc = Location::new(
+                    (x as int + ascii_map.offset_x) as i8,
+                    (y as int + ascii_map.offset_y) as i8);
+                match legend.find(&glyph) {
+                    Some(&t) => ret.set(loc, t),
+                    _ => ()
+                };
+            }
+        }
+        // TODO: Spawn handling. (Will probably need to migrate the whole load
+        // code to another module eventually, since Area probably won't be
+        // doing spawns in any case.)
+        ret
+    }
+
     pub fn get(&self, p: Location) -> TerrainType {
         match self.set.find(&p) {
             None => self.default,
@@ -120,15 +160,15 @@ impl Area {
     }
 
     pub fn set(&mut self, p: Location, t: TerrainType) {
-        self.set.insert(p, t);
+        if t == self.default {
+            self.set.remove(&p);
+        } else {
+            self.set.insert(p, t);
+        }
     }
 
     pub fn defined(&self, p: Location) -> bool {
         self.set.contains_key(&p)
-    }
-
-    pub fn remove(&mut self, p: Location) {
-        self.set.remove(&p);
     }
 
     pub fn dig(&mut self, p: Location) {
@@ -136,7 +176,7 @@ impl Area {
     }
 
     pub fn fill(&mut self, p: Location) {
-        self.set.insert(p, self.default);
+        self.set(p, self.default);
     }
 
     pub fn is_opaque(&self, p: Location) -> bool { self.get(p).is_opaque() }
@@ -209,6 +249,14 @@ impl Area {
         }
 
         dijkstra::build_map(goals, |&loc| self.walk_neighbors(loc), 256)
+    }
+
+    pub fn build_asciimap(&self) -> AsciiMap {
+        // XXX: Spawns will never be added in this version, since Area type
+        // doesn't contain dynamic object information at the present.
+        AsciiMap::new(self.default.name().to_owned(), self.set.iter().map(
+                |(loc, t)|
+                (Point2::new(loc.x as int, loc.y as int), Cell::new(t.name().to_owned(), vec!()))))
     }
 }
 
