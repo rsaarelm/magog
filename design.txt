@@ -1,10 +1,6 @@
 # vim:ts=2:sw=2:sts=2:tw=72:noet:ai:foldmethod=indent
 
 * Stuff
-	* TODO Conversion between live map state and serializable state
-		In particular, a conversion from live area data to ASCII art that
-		uses a sensible legend. This should get us saving and restoring maps
-		in a human-editable format.
 	* TODO Edit and play
 		Switch to game from an edited scenario, see how it plays out. Then
 		rewind back to the editor with the changes that happend during
@@ -30,15 +26,6 @@
 		improved visibility around the player when it's dim. Have a cutoff
 		into blinding total darkness in the visuals when there is absolutely
 		no light.
-	* TODO Data-driven terrain types
-		Terrain types are specified in a data structure that's set up at
-		runtime, not hardcoded into the source.
-
-		New things that become possible:
-		- Enumerate over the list of all terrain types in code.
-		- Look up terrain type by name string.
-		- Provide the terrain data in an external data file instead of just
-		  having it hardcoded in the source code.
 	* TODO Sleep when out of focus
 		The app constantly updates the screen, which eats a lot of processor
 		power. The player should be able to switch to other applications and
@@ -52,6 +39,11 @@
 	* TODO Basic unintrusive audio support
 		Something like a click sound for acknowlegdging input. Mostly to see
 		how to get an audio mixer and a simple waveform synth set up.
+	* FIXME GUI terrain tiles need to have higher Z layer than terrain
+		Currently a GUI element floor terrain will get overwritten by actual
+		map display block terrain. The fix will probably tie making the
+		renderer non-batching. Then we can just use regular draw order
+		tricks and wiping the depth buffer after map draw for the GUI stuff.
 * Non-critical stuff
 	These don't make new features.
 	* TODO Complete set of terrain predicates in the terrain cell type
