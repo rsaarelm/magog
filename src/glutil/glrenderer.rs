@@ -5,7 +5,7 @@ use gl;
 use color::rgb;
 use color::rgb::{ToRGB};
 use cgVector = cgmath::vector::Vector;
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::point::{Point, Point2};
 use cgmath::aabb::{Aabb, Aabb2};
 use hgl::{Program};
@@ -87,7 +87,7 @@ static BLIT_F: &'static str =
     ";
 
 pub struct GlRenderer {
-    resolution: Vec2<f32>,
+    pub resolution: Vector2<f32>,
     glfw_state: ~glfw::Glfw,
     window: ~glfw::Window,
     receiver: ~Receiver<(f64, glfw::WindowEvent)>,
@@ -171,7 +171,7 @@ impl Renderer for GlRenderer {
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
         let mut ret = GlRenderer {
-            resolution: Vec2::new(width as f32, height as f32),
+            resolution: Vector2::new(width as f32, height as f32),
             glfw_state: ~glfw_state,
             window: ~window,
             receiver: ~receiver,
@@ -236,7 +236,7 @@ impl Renderer for GlRenderer {
 
         self.framebuffer.texture.bind();
         let mut screen_draw = Recter::new();
-        let mut bound = recter::screen_bound(&self.resolution, &Vec2::new(width as f32, height as f32));
+        let mut bound = recter::screen_bound(&self.resolution, &Vector2::new(width as f32, height as f32));
         // XXX: Degenerate the rectangle to flip y-axis.
         swap(&mut bound.min.y, &mut bound.max.y);
         screen_draw.add(
@@ -281,10 +281,10 @@ impl Renderer for GlRenderer {
         let (cx, cy) = self.window.get_cursor_pos();
         // XXX: overly complex juggling back and forth the coordinate systems.
         let (width, height) = self.window.get_size();
-        let area = Vec2::new(width as f32, height as f32);
+        let area = Vector2::new(width as f32, height as f32);
         let bounds =
             recter::screen_bound(&self.resolution, &area)
-            .add_v(&Vec2::new(1f32, 1f32))
+            .add_v(&Vector2::new(1f32, 1f32))
             .mul_s(0.5f32)
             .mul_v(&area);
 
@@ -301,7 +301,7 @@ impl Renderer for GlRenderer {
     fn is_alive(&self) -> bool { self.alive }
 }
 
-fn transform_pixel_rect(dim: &Vec2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
+fn transform_pixel_rect(dim: &Vector2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
     Aabb2::new(
         Point2::new(
             rect.min.x / dim.x * 2.0f32 - 1.0f32,

@@ -2,7 +2,7 @@ use std::vec::Vec;
 use std::mem::size_of;
 use cgmath::point::{Point2};
 use cgVector = cgmath::vector::Vector;
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
 use gl;
 use hgl;
@@ -124,7 +124,7 @@ impl Recter {
     }
 }
 
-pub fn screen_bound(dim: &Vec2<f32>, area: &Vec2<f32>) -> Aabb2<f32> {
+pub fn screen_bound(dim: &Vector2<f32>, area: &Vector2<f32>) -> Aabb2<f32> {
     let mut scale = (area.x / dim.x).min(area.y / dim.y);
     if scale > 1.0 {
         scale = scale.floor();
@@ -132,5 +132,5 @@ pub fn screen_bound(dim: &Vec2<f32>, area: &Vec2<f32>) -> Aabb2<f32> {
 
     let dim = Point2::new(dim.x * 2f32 * scale / area.x, dim.y * 2f32 * scale / area.y);
     let bound = Aabb2::new(Point2::new(0f32, 0f32), dim);
-    bound.add_v(&Vec2::new(-dim.x / 2f32, -dim.y / 2f32))
+    bound.add_v(&Vector2::new(-dim.x / 2f32, -dim.y / 2f32))
 }

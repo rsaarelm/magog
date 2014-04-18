@@ -4,7 +4,7 @@ use rand::Rng;
 use std::mem;
 
 use cgmath::point::{Point2};
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb2};
 use color::rgb::consts::*;
 
@@ -208,7 +208,7 @@ impl Game {
         self.area.get(loc).is_walkable() && self.mob_idx_at(loc).is_none()
     }
 
-    pub fn melee_probe_dir(&self, mob_idx: uint, dir: &Vec2<int>) -> ProbeResult {
+    pub fn melee_probe_dir(&self, mob_idx: uint, dir: &Vector2<int>) -> ProbeResult {
         let loc = self.mobs.get(mob_idx).loc + *dir;
         let mut walk_state = Move;
 
@@ -224,7 +224,7 @@ impl Game {
         walk_state
     }
 
-    pub fn probe_dir(&self, dir: &Vec2<int>) -> ProbeResult {
+    pub fn probe_dir(&self, dir: &Vector2<int>) -> ProbeResult {
         let mut loc = self.mobs.get(self.player_idx()).loc + *dir;
         let mut walk_state = Move;
 
@@ -287,7 +287,7 @@ impl Game {
         self.mobs.get_mut(idx).anim_state = mob::Invisible;
     }
 
-    pub fn smart_move(&mut self, dirs: &[Vec2<int>]) -> bool {
+    pub fn smart_move(&mut self, dirs: &[Vector2<int>]) -> bool {
         let player_idx = self.player_idx();
 
         for d in dirs.iter() {
@@ -326,7 +326,7 @@ impl Game {
         false
     }
 
-    pub fn mob_move(&mut self, mob_idx: uint, dir: &Vec2<int>) -> bool {
+    pub fn mob_move(&mut self, mob_idx: uint, dir: &Vector2<int>) -> bool {
         match self.melee_probe_dir(mob_idx, dir) {
             Blocked => { return false; },
             Move => {

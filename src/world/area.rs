@@ -4,7 +4,7 @@ use collections::hashmap::{HashMap, Keys};
 use collections::hashmap::HashSet;
 use std::cast;
 use cgmath::point::{Point2};
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb2};
 use calx::rectutil::RectUtil;
 use calx::asciimap::{AsciiMap, Cell};
@@ -260,24 +260,24 @@ impl Area {
     }
 }
 
-pub static DIRECTIONS6: [Vec2<int>, ..6] = [
-    Vec2 { x: -1, y: -1 },
-    Vec2 { x:  0, y: -1 },
-    Vec2 { x:  1, y:  0 },
-    Vec2 { x:  1, y:  1 },
-    Vec2 { x:  0, y:  1 },
-    Vec2 { x: -1, y:  0 },
+pub static DIRECTIONS6: [Vector2<int>, ..6] = [
+    Vector2 { x: -1, y: -1 },
+    Vector2 { x:  0, y: -1 },
+    Vector2 { x:  1, y:  0 },
+    Vector2 { x:  1, y:  1 },
+    Vector2 { x:  0, y:  1 },
+    Vector2 { x: -1, y:  0 },
 ];
 
-pub static DIRECTIONS8: [Vec2<int>, ..8] = [
-    Vec2 { x: -1, y: -1 },
-    Vec2 { x:  0, y: -1 },
-    Vec2 { x:  1, y: -1 },
-    Vec2 { x:  1, y:  0 },
-    Vec2 { x:  1, y:  1 },
-    Vec2 { x:  0, y:  1 },
-    Vec2 { x: -1, y:  1 },
-    Vec2 { x: -1, y:  0 },
+pub static DIRECTIONS8: [Vector2<int>, ..8] = [
+    Vector2 { x: -1, y: -1 },
+    Vector2 { x:  0, y: -1 },
+    Vector2 { x:  1, y: -1 },
+    Vector2 { x:  1, y:  0 },
+    Vector2 { x:  1, y:  1 },
+    Vector2 { x:  0, y:  1 },
+    Vector2 { x: -1, y:  1 },
+    Vector2 { x: -1, y:  0 },
 ];
 
 // TODO: Add third dimension for multiple persistent levels.
@@ -299,17 +299,17 @@ impl<'a> Location {
     }
 }
 
-impl Add<Vec2<int>, Location> for Location {
-    fn add(&self, other: &Vec2<int>) -> Location {
+impl Add<Vector2<int>, Location> for Location {
+    fn add(&self, other: &Vector2<int>) -> Location {
         Location::new(
             (self.x as int + other.x) as i8,
             (self.y as int + other.y) as i8)
     }
 }
 
-impl Sub<Location, Vec2<int>> for Location {
-    fn sub(&self, other: &Location) -> Vec2<int> {
-        Vec2::new((self.x - other.x) as int, (self.y - other.y) as int)
+impl Sub<Location, Vector2<int>> for Location {
+    fn sub(&self, other: &Location) -> Vector2<int> {
+        Vector2::new((self.x - other.x) as int, (self.y - other.y) as int)
     }
 }
 

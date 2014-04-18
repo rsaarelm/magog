@@ -3,16 +3,16 @@ extern crate cgmath;
 use std::vec::Vec;
 use std::num::zero;
 use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::vector::Vec2;
+use cgmath::vector::Vector2;
 use cgmath::partial_ord::PartOrdPrim;
 use cgmath::point::{Point, Point2};
 
-fn fits<S: Primitive + Num + PartOrdPrim>(dim: &Vec2<S>, rect: &Aabb2<S>) -> bool {
+fn fits<S: Primitive + Num + PartOrdPrim>(dim: &Vector2<S>, rect: &Aabb2<S>) -> bool {
     let rect_dim = rect.dim();
     dim.x <= rect_dim.x && dim.y <= rect_dim.y
 }
 
-fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vec2<S>, rect: &Aabb2<S>) ->
+fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vector2<S>, rect: &Aabb2<S>) ->
     (Aabb2<S>, (Aabb2<S>, Aabb2<S>)) {
     assert!(fits(dim, rect));
 
@@ -32,10 +32,10 @@ fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vec2<S>, rect: &Aabb2<S>) ->
         // BBBBBBB
         // BBBBBBB
         (fit, (Aabb2::new(
-                rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
-                rect.min().add_v(&Vec2::new(rect_dim.x, dim.y.clone()))),
+                rect.min().add_v(&Vector2::new(dim.x.clone(), zero::<S>())),
+                rect.min().add_v(&Vector2::new(rect_dim.x, dim.y.clone()))),
             Aabb2::new(
-                rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
+                rect.min().add_v(&Vector2::new(zero::<S>(), dim.y.clone())),
                 rect.max().clone())))
     } else {
         // fit |BB
@@ -43,10 +43,10 @@ fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vec2<S>, rect: &Aabb2<S>) ->
         // AAAA|BB
         // AAAA|BB
         (fit, (Aabb2::new(
-                rect.min().add_v(&Vec2::new(zero::<S>(), dim.y.clone())),
-                rect.min().add_v(&Vec2::new(dim.x.clone(), rect_dim.y))),
+                rect.min().add_v(&Vector2::new(zero::<S>(), dim.y.clone())),
+                rect.min().add_v(&Vector2::new(dim.x.clone(), rect_dim.y))),
             Aabb2::new(
-                rect.min().add_v(&Vec2::new(dim.x.clone(), zero::<S>())),
+                rect.min().add_v(&Vector2::new(dim.x.clone(), zero::<S>())),
                 rect.max().clone())))
     }
 }
@@ -61,7 +61,7 @@ impl<S: Primitive + TotalOrd + PartOrdPrim> Packing<S> {
         Packing{slots: vec!(area.clone())}
     }
 
-    pub fn fit(&mut self, dim: &Vec2<S>) -> Option<Aabb2<S>> {
+    pub fn fit(&mut self, dim: &Vector2<S>) -> Option<Aabb2<S>> {
         for i in range(0, self.slots.len()) {
             if fits(dim, self.slots.get(i)) {
                 let (ret, (new_1, new_2)) = pack_into(dim, self.slots.get(i));
@@ -77,10 +77,10 @@ impl<S: Primitive + TotalOrd + PartOrdPrim> Packing<S> {
 }
 
 pub fn try_pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
-    rect: &Aabb2<S>, sizes: &[Vec2<S>]) -> Option<Vec<Aabb2<S>>> {
+    rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> Option<Vec<Aabb2<S>>> {
     // Store the original indices so that we know what was where even if we
     // change the order.
-    let mut indexed : Vec<(uint, &Vec2<S>)> = sizes.iter().enumerate().collect();
+    let mut indexed : Vec<(uint, &Vector2<S>)> = sizes.iter().enumerate().collect();
     // Sort the list from the size denoting the largest area down.
     indexed.sort_by(|&(_i, v1), &(_j, v2)| (v2.x * v2.y).cmp(&(v1.x * v1.y)));
     let mut packer = Packing::new(rect);
@@ -98,7 +98,7 @@ pub fn try_pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
 }
 
 pub fn pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
-    rect: &Aabb2<S>, sizes: &[Vec2<S>]) -> (Aabb2<S>, Vec<Aabb2<S>>) {
+    rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> (Aabb2<S>, Vec<Aabb2<S>>) {
     let next_rect = Aabb2::new(
         rect.min().clone(), rect.min().add_v(&(rect.dim() + rect.dim())));
     match try_pack_rects(rect, sizes) {

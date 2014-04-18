@@ -13,7 +13,7 @@ use calx::key;
 use calx::renderer::Renderer;
 use calx::app::App;
 use calx::timing::Ticker;
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use world::area::{ChartPos, DIRECTIONS6};
 use world::transform::Transform;
 use world::areaview;
@@ -21,7 +21,7 @@ use game::Game;
 
 pub mod game;
 
-static SMART_MOVE_6: &'static [&'static [Vec2<int>]] = &[
+static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
     &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
     &[DIRECTIONS6[1], DIRECTIONS6[0], DIRECTIONS6[2]],
     &[DIRECTIONS6[2], DIRECTIONS6[1], DIRECTIONS6[3]],

@@ -3,7 +3,7 @@ use std::cmp::{min, max};
 use cgmath::aabb::{Aabb, Aabb2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...
 use cgVector = cgmath::vector::Vector;
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::point::{Point, Point2};
 use rectutil::RectUtil;
 
@@ -31,8 +31,8 @@ impl Tile {
 
     // Split a large image into small tiles.
     pub fn new_alpha_set(
-        tile_dim: &Vec2<int>, sheet_dim: &Vec2<int>,
-        data: Vec<u8>, offset: &Vec2<int>) -> Vec<Tile> {
+        tile_dim: &Vector2<int>, sheet_dim: &Vector2<int>,
+        data: Vec<u8>, offset: &Vector2<int>) -> Vec<Tile> {
         let mut ret = vec!();
         for r in range(0, sheet_dim.y / tile_dim.y) {
             for c in range(0, sheet_dim.x / tile_dim.x) {

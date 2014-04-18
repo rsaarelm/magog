@@ -1,7 +1,7 @@
 use std::f64::sin;
 use time;
 use cgmath::point::{Point2};
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::RGB;
 use color::rgb::consts::*;
@@ -58,15 +58,15 @@ pub struct Kernel<C> {
 impl<C: Clone> Kernel<C> {
     pub fn new(get: |Location| -> C, loc: Location) -> Kernel<C> {
         Kernel {
-            n: get(loc + Vec2::new(-1, -1)),
-            ne: get(loc + Vec2::new(0, -1)),
-            e: get(loc + Vec2::new(1, -1)),
-            nw: get(loc + Vec2::new(-1, 0)),
+            n: get(loc + Vector2::new(-1, -1)),
+            ne: get(loc + Vector2::new(0, -1)),
+            e: get(loc + Vector2::new(1, -1)),
+            nw: get(loc + Vector2::new(-1, 0)),
             center: get(loc),
-            se: get(loc + Vec2::new(1, 0)),
-            w: get(loc + Vec2::new(-1, 1)),
-            sw: get(loc + Vec2::new(0, 1)),
-            s: get(loc + Vec2::new(1, 1)),
+            se: get(loc + Vector2::new(1, 0)),
+            w: get(loc + Vector2::new(-1, 1)),
+            sw: get(loc + Vector2::new(0, 1)),
+            s: get(loc + Vector2::new(1, 1)),
         }
     }
 
@@ -204,10 +204,10 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
 pub fn init_tiles<R: Renderer>(app: &mut App<R>) {
     let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
-        &Vec2::new(32, 32),
-        &Vec2::new(tiles.width as int, tiles.height as int),
+        &Vector2::new(32, 32),
+        &Vector2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
-        &Vec2::new(-16, -16));
+        &Vector2::new(-16, -16));
     for i in range(0u, 72u) {
         app.r.add_tile(~tiles.get(i).clone());
     }

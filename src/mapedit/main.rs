@@ -18,7 +18,7 @@ use serialize::{Encodable, Decodable};
 use glutil::glrenderer::GlRenderer;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use calx::app::App;
 use calx::key;
 use calx::renderer::Renderer;
@@ -103,10 +103,10 @@ pub fn main() {
                         key::F12 => { app.r.screenshot("/tmp/shot.png"); }
                         key::NUM_1 => { brush += area::TERRAINS.len() - 1; brush %= area::TERRAINS.len(); }
                         key::NUM_2 => { brush += 1; brush %= area::TERRAINS.len(); }
-                        key::UP => { state.loc = state.loc + Vec2::new(-1, -1); }
-                        key::DOWN => { state.loc = state.loc + Vec2::new(1, 1); }
-                        key::LEFT => { state.loc = state.loc + Vec2::new(-1, 1); }
-                        key::RIGHT => { state.loc = state.loc + Vec2::new(1, -1); }
+                        key::UP => { state.loc = state.loc + Vector2::new(-1, -1); }
+                        key::DOWN => { state.loc = state.loc + Vector2::new(1, 1); }
+                        key::LEFT => { state.loc = state.loc + Vector2::new(-1, 1); }
+                        key::RIGHT => { state.loc = state.loc + Vector2::new(1, -1); }
                         _ => (),
                     }
                 }

@@ -8,7 +8,7 @@ use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...
 use cgVector = cgmath::vector::Vector;
-use cgmath::vector::Vec2;
+use cgmath::vector::Vector2;
 use hgl::texture::{Texture, ImageInfo};
 use hgl::texture;
 use hgl::texture::pixel;
@@ -28,14 +28,14 @@ impl AtlasRect {
     pub fn new(
         bounds_intrect: &Aabb2<int>,
         tex_intrect: &Aabb2<int>,
-        tex_dim: &Vec2<int>) -> AtlasRect {
-        let tex_scale = Vec2::new(1f32 / tex_dim.x as f32, 1f32 / tex_dim.y as f32);
+        tex_dim: &Vector2<int>) -> AtlasRect {
+        let tex_scale = Vector2::new(1f32 / tex_dim.x as f32, 1f32 / tex_dim.y as f32);
         return AtlasRect {
-            bounds: to_float_rect(bounds_intrect, &Vec2::new(1f32, 1f32)),
+            bounds: to_float_rect(bounds_intrect, &Vector2::new(1f32, 1f32)),
             texcoords: to_float_rect(tex_intrect, &tex_scale),
         };
 
-        fn to_float_rect(rect: &Aabb2<int>, scale: &Vec2<f32>) -> Aabb2<f32> {
+        fn to_float_rect(rect: &Aabb2<int>, scale: &Vector2<f32>) -> Aabb2<f32> {
             RectUtil::new(
                 rect.min().x as f32 * scale.x, rect.min().y as f32 * scale.y,
                 rect.max().x as f32 * scale.x, rect.max().y as f32 * scale.y)
@@ -72,15 +72,15 @@ impl Atlas {
         if !self.is_dirty { return; }
 
         // Create gaps between the tiles to prevent edge artifacts.
-        let dims = self.tiles.iter().map(|s| s.bounds.dim() + Vec2::new(1, 1)).collect::<Vec<Vec2<int>>>();
+        let dims = self.tiles.iter().map(|s| s.bounds.dim() + Vector2::new(1, 1)).collect::<Vec<Vector2<int>>>();
         let total_volume = dims.iter().map(|&v| v.x * v.y).sum();
-        let atlas_dim = next_power_of_two(sqrt(total_volume as f64) as uint) as int;
+        let atlas_dim = next_power_of_two((total_volume as f64).sqrt() as uint) as int;
 
         let base = RectUtil::new(0, 0, atlas_dim, atlas_dim);
         let (base, pack) = pack_rects(&base, dims.as_slice());
         // Cut off the extra padding
         let pack : Vec<Aabb2<int>> = pack.iter().map(|&rect| Aabb2::new(
-                *rect.min(), rect.max().add_v(&Vec2::new(-1, -1)))).collect();
+                *rect.min(), rect.max().add_v(&Vector2::new(-1, -1)))).collect();
 
         let mut tex_data = Vec::from_elem(base.volume() as uint, 0u8);
 
@@ -106,7 +106,7 @@ impl Atlas {
 
         fn paint_tile(
             tile: &Tile, tex_data: &mut Vec<u8>,
-            offset: &Vec2<int>, tex_pitch: int) {
+            offset: &Vector2<int>, tex_pitch: int) {
             let offset = offset - tile.bounds.min().to_vec();
             for p in tile.bounds.points() {
                 tex_data.grow_set(
@@ -137,7 +137,7 @@ impl Atlas {
             }
 
             let min = Point2::new(glyph.xOffset as int, glyph.yOffset as int);
-            let max = min.add_v(&Vec2::new(glyph.width, glyph.height));
+            let max = min.add_v(&Vector2::new(glyph.width, glyph.height));
             self.push(~Tile::new_alpha(Aabb2::new(min, max), glyph.pixels));
         }
     }

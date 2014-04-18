@@ -2,7 +2,7 @@ use std::default::Default;
 use color::RGB;
 use color::rgb::{ToRGB};
 use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::point::{Point, Point2};
 use stb::image::Image;
 use rectutil::RectUtil;
@@ -37,8 +37,8 @@ pub struct App<R> {
     draw_layer: f32,
     hot_item: CodeId,
     active_item: CodeId,
-    alive: bool,
-    resolution: Vec2<f32>,
+    pub alive: bool,
+    resolution: Vector2<f32>,
 }
 
 impl <R: Renderer> App<R> {
@@ -51,16 +51,16 @@ impl <R: Renderer> App<R> {
             hot_item: Default::default(),
             active_item: Default::default(),
             alive: true,
-            resolution: Vec2::new(width as f32, height as f32),
+            resolution: Vector2::new(width as f32, height as f32),
         };
 
         // Load font.
         let font = Image::load_from_memory(FONT_DATA, 1).unwrap();
         let tiles = Tile::new_alpha_set(
-            &Vec2::new(FONT_WIDTH as int, FONT_HEIGHT as int),
-            &Vec2::new(font.width as int, font.height as int),
+            &Vector2::new(FONT_WIDTH as int, FONT_HEIGHT as int),
+            &Vector2::new(font.width as int, font.height as int),
             font.pixels,
-            &Vec2::new(0, -FONT_HEIGHT as int));
+            &Vector2::new(0, -FONT_HEIGHT as int));
         for i in range(0, FONT_NUM_CHARS) {
             ret.r.add_tile(~tiles.get(i).clone());
         }
@@ -99,14 +99,14 @@ impl <R: Renderer> App<R> {
                 self.r.draw_tile(i as uint - FONT_START_CHAR + first_font_idx, &pos,
                     self.draw_layer, color, renderer::ColorKeyDraw);
             }
-            pos = pos.add_v(&Vec2::new(FONT_WIDTH, 0.0));
+            pos = pos.add_v(&Vector2::new(FONT_WIDTH, 0.0));
         }
     }
 
     pub fn print_words(&mut self, area: &Aabb2<f32>, align: Align, text: &str) {
         let w = area.dim().x;
         if w < FONT_WIDTH { return; }
-        let origin = area.min().add_v(&Vec2::new(0.0, FONT_HEIGHT));
+        let origin = area.min().add_v(&Vector2::new(0.0, FONT_HEIGHT));
 
         let mut pos = origin;
         let wrapped = text::wrap_lines((w / FONT_WIDTH) as uint, text);
@@ -133,10 +133,10 @@ impl <R: Renderer> App<R> {
 
     pub fn outline_string(&mut self, pos: &Point2<f32>, text: &str) {
         let back = self.background_color;
-        self._draw_string(&pos.add_v(&Vec2::new( 1.0f32,  0.0f32)), &back, text);
-        self._draw_string(&pos.add_v(&Vec2::new(-1.0f32,  0.0f32)), &back, text);
-        self._draw_string(&pos.add_v(&Vec2::new( 0.0f32,  1.0f32)), &back, text);
-        self._draw_string(&pos.add_v(&Vec2::new( 0.0f32, -1.0f32)), &back, text);
+        self._draw_string(&pos.add_v(&Vector2::new( 1.0f32,  0.0f32)), &back, text);
+        self._draw_string(&pos.add_v(&Vector2::new(-1.0f32,  0.0f32)), &back, text);
+        self._draw_string(&pos.add_v(&Vector2::new( 0.0f32,  1.0f32)), &back, text);
+        self._draw_string(&pos.add_v(&Vector2::new( 0.0f32, -1.0f32)), &back, text);
         self.draw_string(pos, text);
     }
 

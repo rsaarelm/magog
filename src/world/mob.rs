@@ -1,7 +1,7 @@
 use time;
 
 use color::rgb::consts::*;
-use cgmath::vector::{Vec2};
+use cgmath::vector::{Vector2};
 use cgmath::point::{Point};
 
 use calx::timing::{cycle_anim, single_anim};
@@ -99,7 +99,7 @@ impl Mob {
         let mut ret : ~[Sprite] = ~[];
         let pos = xf.to_screen(ChartPos::from_location(self.loc));
 
-        let bob = Vec2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, -1.0f32]));
+        let bob = Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, -1.0f32]));
 
         match self.t {
             Player => {

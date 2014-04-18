@@ -2,7 +2,7 @@ use std::num::{Round};
 use num::Integer;
 use collections::hashmap::HashSet;
 
-use cgmath::vector::{Vector, Vec2};
+use cgmath::vector::{Vector, Vector2};
 
 use area::Area;
 use area::{Location, DIRECTIONS6};
@@ -27,9 +27,9 @@ impl Angle {
     pub fn winding_index(self) -> int { (self.pos + 0.5).floor() as int }
     pub fn end_index(self) -> int { (self.pos + 0.5).ceil() as int }
     pub fn is_below(self, other: Angle) -> bool { self.winding_index() < other.end_index() }
-    pub fn to_vec(self) -> Vec2<int> {
+    pub fn to_vec(self) -> Vector2<int> {
         if self.radius == 0 {
-            return Vec2::new(0, 0);
+            return Vector2::new(0, 0);
         }
 
         let index = self.winding_index();
@@ -117,9 +117,9 @@ pub fn fov(a: &Area, center: Location, range: uint) -> Fov {
             //
             // If both loc and above are visible, left and right will
             // be made visible if they are opaque.
-            let above = loc + Vec2::new(-1, -1);
-            let left = loc + Vec2::new(-1, 0);
-            let right = loc + Vec2::new(0, -1);
+            let above = loc + Vector2::new(-1, -1);
+            let left = loc + Vector2::new(-1, 0);
+            let right = loc + Vector2::new(0, -1);
             if h.contains(&above) {
                if a.is_opaque(left) {
                    queue.push(left);
