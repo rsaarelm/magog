@@ -18,4 +18,4 @@
 	url = https://github.com/bjz/color-rs.git
 [submodule "lib/hgl-rs"]
 	path = lib/hgl-rs
-	url = https://github.com/cmr/hgl-rs
+	url = https://github.com/rsaarelm/hgl-rs

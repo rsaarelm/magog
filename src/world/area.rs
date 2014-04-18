@@ -93,7 +93,7 @@ impl TerrainType {
 
 pub struct Area {
     pub default: TerrainType,
-    set: HashMap<Location, TerrainType>,
+    pub set: HashMap<Location, TerrainType>,
 }
 
 pub type DijkstraMap = HashMap<Location, uint>;

@@ -34,18 +34,18 @@ pub enum MobType {
 }
 
 pub struct MobData {
-    max_hits: uint,
-    name: ~str,
+    pub max_hits: uint,
+    pub name: ~str,
 }
 
 #[deriving(Clone)]
 pub struct Mob {
-    t: MobType,
-    loc: Location,
-    hits: int,
-    anim_state: AnimState,
+    pub t: MobType,
+    pub loc: Location,
+    pub hits: int,
+    pub anim_state: AnimState,
     // Player only.
-    ammo: uint,
+    pub ammo: uint,
 }
 
 impl Mob {

@@ -18,11 +18,11 @@ pub trait RectUtil<S: Primitive + SampleRange, I: Iterator<Point2<S>>> {
 }
 
 pub struct RectIter<S> {
-    priv x: S,
-    priv y: S,
-    priv x_start: S,
-    priv x_end: S,
-    priv y_end: S,
+    x: S,
+    y: S,
+    x_start: S,
+    x_end: S,
+    y_end: S,
 }
 
 impl<S: Primitive> Iterator<Point2<S>> for RectIter<S> {

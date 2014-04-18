@@ -25,7 +25,7 @@ impl MapGen for Area {
         }
 
         for _itercount in range(0, 10000) {
-            let loc = *rng.sample(edge.iter(), 1)[0];
+            let loc = **rng.sample(edge.iter(), 1).get(0);
             let nfloor = DIRECTIONS6.iter().count(|&v| self.is_open(loc + v));
             assert!(nfloor > 0);
 
@@ -49,7 +49,7 @@ impl MapGen for Area {
         }
 
         if make_exit {
-            let down_pos = *rng.sample(edge.iter(), 1)[0];
+            let down_pos = **rng.sample(edge.iter(), 1).get(0);
             self.set(down_pos, area::Downstairs);
             edge.remove(&down_pos);
         }

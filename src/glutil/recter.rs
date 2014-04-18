@@ -49,7 +49,7 @@ impl Vertex {
 }
 
 pub struct Recter {
-    priv vertices: Vec<Vertex>,
+    vertices: Vec<Vertex>,
 }
 
 impl Recter {

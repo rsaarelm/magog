@@ -3,7 +3,7 @@
 #![license = "MIT"]
 #![crate_type = "rlib"]
 
-#![feature(globs)]
+extern crate libc;
 
 pub mod image;
 pub mod truetype;

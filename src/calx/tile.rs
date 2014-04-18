@@ -11,8 +11,8 @@ pub static TILE_ALPHA: u8 = 0x80;
 
 #[deriving(Clone)]
 pub struct Tile {
-    bounds: Aabb2<int>,
-    data: Vec<u8>,
+    pub bounds: Aabb2<int>,
+    pub data: Vec<u8>,
 }
 
 impl Tile {

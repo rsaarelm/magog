@@ -7,11 +7,11 @@ use gl;
 use gl::types::{GLuint};
 
 pub struct Framebuffer {
-    width: uint,
-    height: uint,
-    framebuffer: GLuint,
-    depthbuffer: GLuint,
-    texture: ~Texture,
+    pub width: uint,
+    pub height: uint,
+    pub framebuffer: GLuint,
+    pub depthbuffer: GLuint,
+    pub texture: ~Texture,
 }
 
 impl Framebuffer {

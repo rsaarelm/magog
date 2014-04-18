@@ -31,7 +31,7 @@ pub enum Align {
 }
 
 pub struct App<R> {
-    r: ~R,
+    pub r: ~R,
     draw_color: RGB<u8>,
     background_color: RGB<u8>,
     draw_layer: f32,

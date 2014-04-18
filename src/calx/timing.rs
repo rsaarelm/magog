@@ -15,7 +15,7 @@ pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T
     if idx < 0 { idx = 0; }
     if idx >= frames.len() as int { idx = frames.len() as int - 1; }
 
-    &frames[idx]
+    &frames[idx as uint]
 }
 
 pub struct Ticker {

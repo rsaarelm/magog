@@ -1,5 +1,5 @@
 use std::vec::Vec;
-use std::libc::*;
+use libc::{c_uchar, c_void, c_int, c_char, c_float, free};
 use std::intrinsics;
 use std::cast::transmute;
 
@@ -39,7 +39,7 @@ extern {
 }
 
 pub struct Font {
-    priv info: StbttFontinfo,
+    info: StbttFontinfo,
     data: Vec<u8>,
 }
 

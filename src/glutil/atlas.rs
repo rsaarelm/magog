@@ -1,6 +1,6 @@
 use std::vec::Vec;
 use std::iter::AdditiveIterator;
-use std::num::{sqrt, next_power_of_two};
+use std::num::{next_power_of_two};
 use std::cmp::{min, max};
 use std::iter::Iterator;
 
@@ -20,8 +20,8 @@ use calx::tile::{Tile, TILE_ALPHA};
 use stb;
 
 pub struct AtlasRect {
-    bounds: Aabb2<f32>,
-    texcoords: Aabb2<f32>,
+    pub bounds: Aabb2<f32>,
+    pub texcoords: Aabb2<f32>,
 }
 
 impl AtlasRect {

@@ -9,10 +9,10 @@ pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
 
 pub struct Sprite {
-    idx: uint,
-    pos: Point2<f32>,
-    z: f32,
-    color: RGB<u8>,
+    pub idx: uint,
+    pub pos: Point2<f32>,
+    pub z: f32,
+    pub color: RGB<u8>,
 }
 
 impl Sprite {

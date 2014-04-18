@@ -31,15 +31,15 @@ static VERSION: &'static str = include!("../../gen/git_version.inc");
 
 // XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
-    area: ~Area,
-    pos: Location,
-    seen: ~Fov,
-    remembered: ~Fov,
-    mobs: Vec<Mob>,
-    player_dijkstra: Option<DijkstraMap>,
-    rng: rand::StdRng,
-    stop: bool,
-    depth: uint,
+    pub area: ~Area,
+    pub pos: Location,
+    pub seen: ~Fov,
+    pub remembered: ~Fov,
+    pub mobs: Vec<Mob>,
+    pub player_dijkstra: Option<DijkstraMap>,
+    pub rng: rand::StdRng,
+    pub stop: bool,
+    pub depth: uint,
 }
 
 static GUN_RANGE: uint = 8;
@@ -66,7 +66,7 @@ impl Game {
             remembered: ~Fov::new(),
             mobs: vec!(),
             player_dijkstra: None,
-            rng: rand::StdRng::new(),
+            rng: rand::StdRng::new().unwrap(),
             stop: true,
             depth: 0,
         };

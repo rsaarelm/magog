@@ -6,17 +6,17 @@ use tile::Tile;
 #[deriving(Clone, Eq)]
 pub struct KeyEvent {
     // Scancode (ignores local layout)
-    code: uint,
+    pub code: uint,
     // Printable character (if any)
-    ch: Option<char>,
+    pub ch: Option<char>,
 }
 
 #[deriving(Eq, Clone)]
 pub struct MouseState {
-    pos: Point2<f32>,
-    left: bool,
-    middle: bool,
-    right: bool,
+    pub pos: Point2<f32>,
+    pub left: bool,
+    pub middle: bool,
+    pub right: bool,
 }
 
 pub enum DrawMode {

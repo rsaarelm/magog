@@ -1,5 +1,5 @@
 use std::vec::Vec;
-use std::libc::*;
+use libc::{c_uchar, c_void, c_int, c_char, free};
 use std::slice::raw::from_buf_raw;
 use std::io::File;
 use std::cast;
@@ -27,7 +27,7 @@ impl Image {
         let path = Path::new(path);
         if !path.exists() { return None; }
         let data = File::open(&path).read_to_end().unwrap();
-        Image::load_from_memory(data, force_channels)
+        Image::load_from_memory(data.as_slice(), force_channels)
     }
 
     pub fn load_from_memory(data: &[u8], force_channels: uint) -> Option<Image> {

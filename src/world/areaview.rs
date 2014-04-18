@@ -1,4 +1,3 @@
-use std::f64::sin;
 use time;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
@@ -117,7 +116,7 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
         },
         area::Portal => {
-            let glow = (127.0 *(1.0 + sin(time::precise_time_s()))) as u8;
+            let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
             let portal_col = RGB::new(glow, glow, 255);
             ret.push(Sprite { idx: PORTAL, pos: *pos, z: BLOCK_Z, color: portal_col });
         },

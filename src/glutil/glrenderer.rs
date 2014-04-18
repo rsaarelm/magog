@@ -88,18 +88,18 @@ static BLIT_F: &'static str =
 
 pub struct GlRenderer {
     pub resolution: Vector2<f32>,
-    glfw_state: ~glfw::Glfw,
-    window: ~glfw::Window,
-    receiver: ~Receiver<(f64, glfw::WindowEvent)>,
-    alive: bool,
-    atlas: ~Atlas,
-    tile_shader: ~Program,
-    blit_shader: ~Program,
-    recter: Recter,
-    framebuffer: Framebuffer,
-    key_buffer: Vec<KeyEvent>,
+    pub glfw_state: ~glfw::Glfw,
+    pub window: ~glfw::Window,
+    pub receiver: ~Receiver<(f64, glfw::WindowEvent)>,
+    pub alive: bool,
+    pub atlas: ~Atlas,
+    pub tile_shader: ~Program,
+    pub blit_shader: ~Program,
+    pub recter: Recter,
+    pub framebuffer: Framebuffer,
+    pub key_buffer: Vec<KeyEvent>,
     // Key input hack flag.
-    unknown_key: bool,
+    pub unknown_key: bool,
 }
 
 impl GlRenderer {
@@ -151,7 +151,7 @@ impl GlRenderer {
 
 impl Renderer for GlRenderer {
     fn new(width: uint, height: uint, title: &str) -> GlRenderer {
-        let (glfw_state, _) = glfw::init().unwrap();
+        let glfw_state = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
         let (window, receiver) = glfw_state.create_window(
             width as u32, height as u32, title, glfw::Windowed)

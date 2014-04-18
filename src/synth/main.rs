@@ -46,7 +46,7 @@ fn sinewave() {
             buf.reserve(bufsize);
             buf.grow_fn(bufsize, |_|{
                 phase += f32::consts::PI * 440.0 * isr;
-                sin(phase)
+                phase.sin()
             });
             stream.write(buf, bufsize as u32);
         }

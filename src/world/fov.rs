@@ -34,7 +34,7 @@ impl Angle {
 
         let index = self.winding_index();
 
-        let sector = index.mod_floor(&(self.radius as int * 6)) / self.radius as int;
+        let sector = index.mod_floor(&(self.radius as int * 6)) as uint / self.radius;
         let offset = index.mod_floor(&(self.radius as int)) as int;
         let rod = DIRECTIONS6[sector].mul_s(self.radius as int);
         let tangent = DIRECTIONS6[(sector + 2) % 6].mul_s(offset);
