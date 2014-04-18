@@ -1,27 +1,15 @@
 include_rules
 
-# XXX: These ones are nasty.
-: lib/glfw/CMakeLists.txt |> mkdir -p glfw-build/; cd glfw-build/; cmake -DCMAKE_C_FLAGS="-fPIC -Os -DNDEBUG" ../lib/glfw; make; cp src/libglfw3.a ../libglfw.a; cd ..; rm -rf glfw-build/ |> libglfw.a
-# XXX: The particularly nasty tar hack is because something goes very wonky
-# with recursive copying when using tup variants.
-: lib/portaudio/configure |> ODIR=`pwd`; TDIR=`mktemp -d`; tar cf $TDIR/pa.tar lib/portaudio; cd $TDIR; tar xf pa.tar; cd lib/portaudio; ./configure CFLAGS="-fPIC -Os -DNDEBUG"; make; cp ./lib/.libs/libportaudio.a $ODIR/; cd $ODIR; rm -rf $TDIR |> libportaudio.a
+# Haven't figured out how to make this thing tup cleanly.
+# : |> ./init-submodules.sh |> libportaudio.a libglfw.a lib/gl-rs/src/gl/lib.rs lib/glfw-rs/src/lib/link.rs
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
 
-# Need to use generated rules to manage Rust's crate output name mangling. Grab
-# the outputs into named bins so we can refer to them later as dependencies.
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
-
-# XXX: Add the code-generation bit from glfw-rs's Makefile. Just calling the Makefile
-# would create a mess of output files that made Tup complain.
-# Could use the tempdir hack used above for portaudio, but then I'd also need to re-do
-# the output filename inference part.
-: lib/glfw-rs/etc/link-rs.sh |> sh lib/glfw-rs/etc/link-rs.sh "`sh lib/glfw-rs/etc/glfw-link-args.sh`" > %o |> lib/glfw-rs/src/lib/link.rs
-run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw} \| lib/glfw-rs/src/lib/link.rs libglfw.a
-
-run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa} \| libportaudio.a
+run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
+run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
