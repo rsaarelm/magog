@@ -10,10 +10,11 @@ extern crate serialize;
 extern crate num;
 extern crate rand;
 extern crate world;
-extern crate toml;
 
 use std::io::{IoResult, File, Open, Write, BufferedReader, BufferedWriter};
 use std::path::Path;
+use serialize::json;
+use serialize::{Encodable, Decodable};
 use glutil::glrenderer::GlRenderer;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
@@ -22,6 +23,7 @@ use calx::app::App;
 use calx::key;
 use calx::renderer::Renderer;
 use calx::renderer;
+use calx::asciimap::AsciiMap;
 use world::area::{Area, Location, ChartPos};
 use world::area;
 use world::transform::Transform;
@@ -56,13 +58,14 @@ impl State {
 
     pub fn from_file(path: &str) -> Option<State> {
         let mut rd = BufferedReader::new(File::open(&Path::new(path)));
-        let toml_value: toml::Value = match toml::parse_from_buffer(&mut rd) {
+        let json_value = match json::from_reader(&mut rd) {
             Ok(v) => v,
-            Err(e) => { println!("Toml parse error {}", e.to_str()); return None; }
+            Err(e) => { println!("JSON parse error {}", e.to_str()); return None; }
         };
-        let ascii_map = match toml::from_toml(toml_value) {
-            Ok(s) => s,
-            Err(e) => { println!("Toml decode error {}", e.to_str()); return None; }
+        let mut decoder = json::Decoder::new(json_value);
+        let ascii_map: AsciiMap = match Decodable::decode(&mut decoder) {
+            Ok(v) => v,
+            Err(e) => { println!("Decoding error: {}", e); return None; }
         };
         Some(State {
             area: ~Area::from_ascii_map(&ascii_map),
@@ -73,8 +76,9 @@ impl State {
     pub fn save(&self, path: &str) -> IoResult<()> {
         let file = File::open_mode(&Path::new(path), Open, Write).unwrap();
         let mut wr = BufferedWriter::new(file);
+        let mut encoder = json::PrettyEncoder::new(&mut wr);
         let obj = self.area.build_asciimap();
-        try!(writeln!(&mut wr, "{}", obj.to_str()));
+        try!(obj.encode(&mut encoder));
         Ok(())
     }
 }

@@ -2,8 +2,6 @@ use std::num::Bounded;
 use std::cmp::{min, max};
 use std::str;
 use std::vec::Vec;
-use std::fmt;
-use std::fmt::{Show, Formatter};
 use collections::hashmap::{HashMap};
 use cgmath::point::{Point2};
 
@@ -78,32 +76,6 @@ impl AsciiMap {
                 glyph: glyph, terrain_type: cell.terrain_type.clone(), spawns: cell.spawns.clone()
             }).collect(),
         }
-    }
-}
-
-impl Show for AsciiMap {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        // TOML formatted text output. Needs to be hand-written until Rust-Toml
-        // gets automatic struct encoding support.
-
-        // XXX: Currently doesn't escape double quotes. Double quote character
-        // is not included in the terrain set for this reason.
-        try!(writeln!(f.buf, "offset_x = {}\noffset_y = {}", self.offset_x, self.offset_y));
-        try!(writeln!(f.buf, "default_terrain = \"{}\"", self.default_terrain));
-        try!(writeln!(f.buf, "terrain = ["));
-        for line in self.terrain.iter() {
-            try!(writeln!(f.buf, "  \"{}\",", line));
-        }
-        try!(writeln!(f.buf, "]"));
-        for entry in self.legend.iter() {
-            try!(writeln!(f.buf, "[[legend]]"));
-            try!(writeln!(f.buf, "glyph = \"{}\"", entry.glyph));
-            try!(writeln!(f.buf, "terrain_type = \"{}\"", entry.terrain_type));
-            try!(write!(f.buf, "spawns = ["));
-            for spawn in entry.spawns.iter() { try!(write!(f.buf, "\"{}\", ", spawn)); }
-            try!(writeln!(f.buf, "]"));
-        }
-        Ok(())
     }
 }
 
