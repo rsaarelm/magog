@@ -16,7 +16,7 @@ use fov;
 use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
 use state::State;
 
-static TILE_DATA: &'static [u8] = include!("../../gen/tile_data.inc");
+static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
 pub static CUBE : uint = SPRITE_INDEX_START + 0;
 pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;

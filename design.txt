@@ -73,5 +73,4 @@
 		- Give the Dijkstra map type a method "slope" for returning a vector
 		  of the neighbors of a cell, sorted by their score. Downhill and
 		  uphill values are now the first and last elements of this vector.
-	* TODO Use include_bin!() to bake in binary assets
 	* TODO Doc comments, document generation
