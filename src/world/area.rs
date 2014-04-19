@@ -36,7 +36,8 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 12;
+    count: 14;
+
     Void, "void";
     Floor, "floor";
     Water, "water";
@@ -49,6 +50,8 @@ terrain_data! {
     Grass, "grass";
     Stalagmite, "stalagmite";
     Portal, "portal";
+    Door, "door";
+    Window, "window";
 }
 
 
@@ -62,28 +65,28 @@ impl TerrainType {
 
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | RockWall | Rock => true,
+            Wall | RockWall | Rock | Door | Window => true,
             _ => false
         }
     }
 
     pub fn is_opaque(self) -> bool {
         match self {
-            Wall | RockWall | Rock => true,
+            Wall | RockWall | Rock | Door => true,
             _ => false
         }
     }
 
     pub fn blocks_shot(self) -> bool {
         match self {
-            Wall | RockWall | Rock | Tree | Stalagmite => true,
+            Wall | RockWall | Rock | Tree | Stalagmite | Door => true,
             _ => false
         }
     }
 
     pub fn is_walkable(self) -> bool {
         match self {
-            Floor | Grass | Downstairs | Portal => true,
+            Floor | Grass | Downstairs | Portal | Door => true,
             _ => false
         }
     }

@@ -34,6 +34,8 @@ pub static MAGMA : uint = SPRITE_INDEX_START + 14;
 pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 15;
 pub static ROCKWALL : uint = SPRITE_INDEX_START + 16;
 pub static WALL : uint = SPRITE_INDEX_START + 20;
+pub static WINDOW : uint = SPRITE_INDEX_START + 32;
+pub static DOOR : uint = SPRITE_INDEX_START + 36;
 pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
 pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
 pub static AVATAR : uint = SPRITE_INDEX_START + 51;
@@ -87,8 +89,6 @@ impl<C: Clone> Kernel<C> {
 pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] {
     let mut ret = ~[];
 
-    // TODO: Make this thing more data-driven once the data schema needed by
-    // different types of terrain becomes clearer.
     match k.center {
         area::Void => {
             ret.push(Sprite { idx: BLANK_FLOOR, pos: *pos, z: FLOOR_Z, color: BLACK });
@@ -125,15 +125,24 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         }
         area::Wall => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, WALL, &LIGHTSLATEGRAY);
+            wallform(k, &mut ret, pos, WALL, &LIGHTSLATEGRAY, true);
         },
         area::RockWall => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, ROCKWALL, &LIGHTSLATEGRAY);
+            wallform(k, &mut ret, pos, ROCKWALL, &LIGHTSLATEGRAY, true);
         },
         area::Stalagmite => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: DARKGOLDENROD });
+        },
+        area::Window => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            wallform(k, &mut ret, pos, WINDOW, &LIGHTSLATEGRAY, false);
+        },
+        area::Door => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            wallform(k, &mut ret, pos, DOOR, &LIGHTSLATEGRAY, true);
+            wallform(k, &mut ret, pos, DOOR + 4, &SADDLEBROWN, false);
         },
     }
 
@@ -151,14 +160,10 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         }
     }
 
-    fn wallform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+    fn wallform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
         let (left_wall, right_wall, block) = wall_flags_lrb(k);
         if block {
-            // TODO: See-through walls should be drawn differently, don't show the blocked
-            // innards, just an expanse of XYWALL.
-            //   The logic's in place below, but this doesn't make sense until areaview
-            // is expanded to handle multiple wall types.
-            if area::Wall.is_opaque() {
+            if opaque {
                 ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *color });
             } else {
                 ret.push(Sprite { idx: idx + 2, pos: *pos, z: BLOCK_Z, color: *color });
