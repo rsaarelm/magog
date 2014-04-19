@@ -36,11 +36,12 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 14;
+    count: 15;
 
     Void, "void";
     Floor, "floor";
     Water, "water";
+    Shallows, "shallows";
     Magma, "magma";
     Downstairs, "stairs down";
     Wall, "wall";
@@ -86,7 +87,7 @@ impl TerrainType {
 
     pub fn is_walkable(self) -> bool {
         match self {
-            Floor | Grass | Downstairs | Portal | Door => true,
+            Floor | Shallows | Grass | Downstairs | Portal | Door => true,
             _ => false
         }
     }
@@ -186,7 +187,7 @@ impl Area {
 
     pub fn is_open(&self, p: Location) -> bool {
         match self.get(p) {
-            Floor | Water | Magma | Grass | Downstairs | Portal => true,
+            Floor | Water | Shallows | Magma | Grass | Downstairs | Portal => true,
             _ => false
         }
     }

@@ -25,6 +25,7 @@ pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
 pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
 pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
 pub static BLOCK_DARK : uint = SPRITE_INDEX_START + 6;
+pub static SHALLOWS : uint = SPRITE_INDEX_START + 8;
 pub static PORTAL : uint = SPRITE_INDEX_START + 9;
 pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
 pub static FLOOR : uint = SPRITE_INDEX_START + 11;
@@ -96,6 +97,9 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         area::Water => {
             ret.push(Sprite { idx: WATER, pos: *pos, z: FLOOR_Z, color: ROYALBLUE });
         },
+        area::Shallows => {
+            ret.push(Sprite { idx: SHALLOWS, pos: *pos, z: FLOOR_Z, color: CORNFLOWERBLUE });
+        },
         area::Magma => {
             ret.push(Sprite { idx: MAGMA, pos: *pos, z: FLOOR_Z, color: DARKRED });
         },
@@ -103,7 +107,7 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
             // A two-toner, with floor, using two z-layers
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             ret.push(Sprite { idx: TREE_TRUNK, pos: *pos, z: BLOCK_Z, color: SADDLEBROWN });
-            ret.push(Sprite { idx: TREE_FOLIAGE, pos: *pos, z: BLOCK_Z, color: DARKGREEN });
+            ret.push(Sprite { idx: TREE_FOLIAGE, pos: *pos, z: BLOCK_Z, color: GREEN });
         },
         area::Floor => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
