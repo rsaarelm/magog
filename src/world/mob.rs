@@ -31,6 +31,7 @@ pub enum MobType {
     Centipede,
     BigMorlock,
     TimeEater,
+    Serpent,
 }
 
 pub struct MobData {
@@ -70,6 +71,7 @@ impl Mob {
             Centipede =>    MobData { max_hits: 2, name: ~"centipede" },
             BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
             TimeEater =>    MobData { max_hits: 4, name: ~"time eater" },
+            Serpent =>      MobData { max_hits: 1, name: ~"serpent" },
         }
     }
 
@@ -99,7 +101,7 @@ impl Mob {
         let mut ret : ~[Sprite] = ~[];
         let pos = xf.to_screen(ChartPos::from_location(self.loc));
 
-        let bob = Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, -1.0f32]));
+        let bob = Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, 1.0f32]));
 
         match self.t {
             Player => {
@@ -117,14 +119,20 @@ impl Mob {
             TimeEater => {
                 ret.push(Sprite::new(tile(62), pos, sprite::BLOCK_Z, CRIMSON));
             },
+            Serpent => {
+                ret.push(Sprite::new(tile(94), pos, sprite::BLOCK_Z, CORAL));
+                ret.push(Sprite::new(tile(95), pos, sprite::BLOCK_Z, CORAL));
+            }
         };
 
 
         match self.anim_state {
             Awake => {
                 if self.t != Player {
-                    for s in ret.mut_iter() {
-                        s.pos = s.pos.add_v(&bob);
+                    if ret.len() > 0 {
+                        // XXX: Always assuming only the first sprite is the bobbing one.
+                        // TODO: Get a better way to split sprite to elements.
+                        ret[0].pos = ret[0].pos.add_v(&bob);
                     }
                 }
             }

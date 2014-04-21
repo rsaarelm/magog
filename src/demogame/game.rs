@@ -150,7 +150,7 @@ impl Game {
 
         let sites = self.open_cells();
 
-        let mut spawns = vec!(mob::Morlock);
+        let mut spawns = vec!(mob::Morlock, mob::Serpent);
         if self.depth > 3 {
             spawns.push(mob::Centipede);
         }
@@ -405,10 +405,10 @@ impl Game {
         app.set_color(&LIGHTSLATEGRAY);
 
         if self.mobs.get(self.player_idx()).hits == -666 {
-            app.print_words(&text_zone, app::Left, "Morlock Hunter\n\nYou win!");
+            app.print_words(&text_zone, app::Left, "You win!");
         } else {
             app.print_words(
-                &text_zone, app::Left, format!("Morlock Hunter\n\ncontrols\n--------\n\
+                &text_zone, app::Left, format!("New Game Text Here\n\ncontrols\n--------\n\
                 QWE\nASD to move and shoot\nSPACE to rest and reload\n\
                 ESC to exit\n\nversion {}", VERSION));
         }
