@@ -1,7 +1,7 @@
 include_rules
 
 # Haven't figured out how to make this thing tup cleanly.
-# : |> ./init-submodules.sh |> libportaudio.a libglfw.a lib/gl-rs/src/gl/lib.rs lib/glfw-rs/src/lib/link.rs
+# : |> ./init-submodules.sh |> libglfw.a lib/gl-rs/src/gl/lib.rs lib/glfw-rs/src/lib/link.rs
 
 : foreach lib/stb/*.c |> !cc |> %B.o {stb_objs}
 : {stb_objs} |> !ar |> libstb.a
@@ -9,7 +9,6 @@ include_rules
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
-run ./rust-rule.sh lib/portaudio-rs/src/portaudio/lib.rs {libpa}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
 run ./rust-rule.sh src/stb/lib.rs {libstb}
@@ -18,6 +17,5 @@ run ./rust-rule.sh src/world/lib.rs {libworld} \| {libcgmath} {libcolor} {libcal
 run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
-: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/git_version.inc |> !rustbin |> demogame
-: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a libportaudio.a gen/git_version.inc |> !rustbin |> mapedit
-: src/synth/main.rs | {libpa} libportaudio.a libglfw.a |> !rustbin |> synth
+: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> demogame
+: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> mapedit

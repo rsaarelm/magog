@@ -10,15 +10,6 @@ make
 cp src/libglfw3.a ../../libglfw.a
 cd -
 
-# Build native Portaudio
-mkdir -p .build/
-cp -r lib/portaudio .build/
-cd .build/portaudio
-./configure CFLAGS="-fPIC -Os -DNDEBUG"
-make
-cp lib/.libs/libportaudio.a ../../
-cd -
-
 # Remove the temporary build directory to keep tup from complaining.
 rm -rf .build/
 
