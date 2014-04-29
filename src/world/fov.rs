@@ -1,4 +1,3 @@
-use std::num::{Round};
 use num::Integer;
 use collections::hashmap::HashSet;
 
@@ -109,7 +108,7 @@ pub fn fov(a: &Area, center: Location, range: uint) -> Fov {
     // rooms visible.
     {
         let Fov(ref mut h) = ret;
-        let mut queue = ~[];
+        let mut queue = vec!();
         for &loc in h.iter() {
             //    above
             //  left right

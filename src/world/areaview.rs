@@ -87,8 +87,8 @@ impl<C: Clone> Kernel<C> {
     }
 }
 
-pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] {
-    let mut ret = ~[];
+pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite> {
+    let mut ret = vec!();
 
     match k.center {
         area::Void => {
@@ -150,7 +150,7 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         },
     }
 
-    fn blockform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+    fn blockform(k: &Kernel<TerrainType>, ret: &mut Vec<Sprite>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
         ret.push(Sprite { idx: idx, pos: *pos, z: BLOCK_Z, color: *color });
         // Back lines for blocks with open floor behind them.
         if !k.nw.is_wall() {
@@ -164,7 +164,7 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> ~[Sprite] 
         }
     }
 
-    fn wallform(k: &Kernel<TerrainType>, ret: &mut ~[Sprite], pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
+    fn wallform(k: &Kernel<TerrainType>, ret: &mut Vec<Sprite>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
         let (left_wall, right_wall, block) = wall_flags_lrb(k);
         if block {
             if opaque {
@@ -245,7 +245,7 @@ pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
             }
         } else if fov == fov::Unknown {
             // Solid blocks for unseen areas, cover stuff in front.
-            sprites = ~[Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK }];
+            sprites = vec!(Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK });
         }
 
         for s in sprites.iter() {

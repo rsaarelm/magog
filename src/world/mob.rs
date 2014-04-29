@@ -97,8 +97,8 @@ impl Mob {
         }
     }
 
-    pub fn sprites(&self, xf: &Transform) -> ~[Sprite] {
-        let mut ret : ~[Sprite] = ~[];
+    pub fn sprites(&self, xf: &Transform) -> Vec<Sprite> {
+        let mut ret = vec!();
         let pos = xf.to_screen(ChartPos::from_location(self.loc));
 
         let bob = Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, 1.0f32]));
@@ -132,7 +132,7 @@ impl Mob {
                     if ret.len() > 0 {
                         // XXX: Always assuming only the first sprite is the bobbing one.
                         // TODO: Get a better way to split sprite to elements.
-                        ret[0].pos = ret[0].pos.add_v(&bob);
+                        ret.get_mut(0).pos = ret.get_mut(0).pos.add_v(&bob);
                     }
                 }
             }
@@ -142,15 +142,15 @@ impl Mob {
                 }
             }
             Dying(start_time) => {
-                ret = ~[Sprite::new(
+                ret = vec!(Sprite::new(
                     *single_anim(start_time, 0.1f64, &[tile(64), tile(65), tile(66), tile(67), tile(68)]),
-                    pos, sprite::BLOCK_Z, MAROON)];
+                    pos, sprite::BLOCK_Z, MAROON));
             }
             Dead => {
-                ret = ~[Sprite::new(tile(68), pos, sprite::FLOOR_Z, MAROON)];
+                ret = vec!(Sprite::new(tile(68), pos, sprite::FLOOR_Z, MAROON));
             }
             Invisible => {
-                ret = ~[]
+                ret = vec!();
             }
             _ => ()
         }
