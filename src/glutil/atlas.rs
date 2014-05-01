@@ -14,9 +14,9 @@ use hgl::texture;
 use hgl::texture::pixel;
 use gl::types::{GLint};
 
-use calx::pack_rect::pack_rects;
-use calx::rectutil::RectUtil;
-use calx::tile::{Tile, TILE_ALPHA};
+use pack_rect::pack_rects;
+use rectutil::RectUtil;
+use tile::{Tile, TILE_ALPHA};
 use stb;
 
 pub struct AtlasRect {

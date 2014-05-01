@@ -1,15 +1,9 @@
-#![feature(globs)]
-
 extern crate cgmath;
-extern crate glutil;
 extern crate color;
-extern crate calx;
-extern crate stb;
 extern crate collections;
 extern crate serialize;
 extern crate num;
 extern crate rand;
-extern crate world;
 
 use std::io::{IoResult, File, Open, Write, BufferedReader, BufferedWriter};
 use std::path::Path;
@@ -19,11 +13,11 @@ use glutil::glrenderer::GlRenderer;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
-use calx::app::App;
-use calx::key;
-use calx::renderer::Renderer;
-use calx::renderer;
-use calx::asciimap::AsciiMap;
+use app::App;
+use key;
+use renderer::Renderer;
+use renderer;
+use asciimap::AsciiMap;
 use world::area::{Area, Location, ChartPos};
 use world::area;
 use world::transform::Transform;

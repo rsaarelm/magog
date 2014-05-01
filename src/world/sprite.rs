@@ -1,9 +1,9 @@
 use cgmath::point::{Point2};
 use color::rgb::RGB;
-use calx::app;
-use calx::app::App;
-use calx::renderer::Renderer;
-use calx::renderer;
+use app;
+use app::App;
+use renderer::Renderer;
+use renderer;
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;

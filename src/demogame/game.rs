@@ -8,11 +8,11 @@ use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb2};
 use color::rgb::consts::*;
 
-use calx::app::App;
-use calx::app;
-use calx::renderer::Renderer;
-use calx::renderer;
-use calx::rectutil::RectUtil;
+use app::App;
+use app;
+use renderer::Renderer;
+use renderer;
+use rectutil::RectUtil;
 
 use world::dijkstra;
 use world::area::{Location, ChartPos, Area, uphill, DijkstraMap, DIRECTIONS6};

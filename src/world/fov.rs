@@ -3,8 +3,8 @@ use collections::hashmap::HashSet;
 
 use cgmath::vector::{Vector, Vector2};
 
-use area::Area;
-use area::{Location, DIRECTIONS6};
+use world::area::Area;
+use world::area::{Location, DIRECTIONS6};
 
 pub struct Fov(HashSet<Location>);
 

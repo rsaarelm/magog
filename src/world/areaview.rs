@@ -5,16 +5,16 @@ use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::RGB;
 use color::rgb::consts::*;
 use stb::image::Image;
-use calx::rectutil::RectUtil;
-use calx::app::App;
-use calx::app::{SPRITE_INDEX_START};
-use calx::renderer::Renderer;
-use calx::tile::Tile;
-use area;
-use area::{TerrainType, Location, ChartPos};
-use fov;
-use sprite::{Sprite, BLOCK_Z, FLOOR_Z};
-use state::State;
+use rectutil::RectUtil;
+use app::App;
+use app::{SPRITE_INDEX_START};
+use renderer::Renderer;
+use tile::Tile;
+use world::area;
+use world::area::{TerrainType, Location, ChartPos};
+use world::fov;
+use world::sprite::{Sprite, BLOCK_Z, FLOOR_Z};
+use world::state::State;
 
 static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 

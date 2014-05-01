@@ -13,7 +13,7 @@ use gen_id::CodeId;
 use tile::Tile;
 use text;
 
-static FONT_DATA: &'static [u8] = include_bin!("../../assets/font.png");
+static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 static FONT_WIDTH: f32 = 8.0;
 static FONT_START_CHAR: uint = 32;
 static FONT_NUM_CHARS: uint = 96;

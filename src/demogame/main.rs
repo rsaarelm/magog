@@ -1,23 +1,18 @@
-#![feature(globs)]
-
 extern crate cgmath;
-extern crate glutil;
 extern crate color;
-extern crate calx;
 extern crate time;
 extern crate rand;
-extern crate world;
 
 use glutil::glrenderer::GlRenderer;
-use calx::key;
-use calx::renderer::Renderer;
-use calx::app::App;
-use calx::timing::Ticker;
+use key;
+use renderer::Renderer;
+use app::App;
+use timing::Ticker;
 use cgmath::vector::{Vector2};
 use world::area::{ChartPos, DIRECTIONS6};
 use world::transform::Transform;
 use world::areaview;
-use game::Game;
+use demogame::game::Game;
 
 pub mod game;
 

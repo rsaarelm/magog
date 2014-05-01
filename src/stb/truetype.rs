@@ -1,5 +1,5 @@
 use std::vec::Vec;
-use libc::{c_uchar, c_void, c_int, c_char, c_float, free};
+use libc::{c_uchar, c_void, c_int, c_float};
 use std::intrinsics;
 use std::cast::transmute;
 

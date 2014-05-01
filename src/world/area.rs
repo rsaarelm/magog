@@ -6,10 +6,10 @@ use std::cast;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb2};
-use calx::rectutil::RectUtil;
-use calx::asciimap::{AsciiMap, Cell};
-use dijkstra;
-use fov::Fov;
+use rectutil::RectUtil;
+use asciimap::{AsciiMap, Cell};
+use world::dijkstra;
+use world::fov::Fov;
 
 // TODO: Figure out how to not require explicit element count.
 macro_rules! terrain_data {

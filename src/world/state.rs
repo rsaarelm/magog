@@ -1,7 +1,7 @@
-use transform::Transform;
-use fov::FovStatus;
-use mob::Mob;
-use area::{Area, Location};
+use world::transform::Transform;
+use world::fov::FovStatus;
+use world::mob::Mob;
+use world::area::{Area, Location};
 
 pub trait State {
     fn transform(&self) -> Transform;

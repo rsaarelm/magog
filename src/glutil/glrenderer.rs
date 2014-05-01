@@ -12,15 +12,15 @@ use hgl::{Program};
 use hgl;
 use glfw;
 use glfw::{Glfw, Context};
-use calx::rectutil::RectUtil;
-use calx::renderer::{Renderer, KeyEvent, MouseState, DrawMode};
-use calx::key;
-use calx::tile::Tile;
+use rectutil::RectUtil;
+use renderer::{Renderer, KeyEvent, MouseState, DrawMode};
+use key;
+use tile::Tile;
 use stb::image::Image;
-use atlas::{Atlas};
-use recter::Recter;
-use recter;
-use framebuffer::Framebuffer;
+use glutil::atlas::{Atlas};
+use glutil::recter::Recter;
+use glutil::recter;
+use glutil::framebuffer::Framebuffer;
 
 static COLORED_V: &'static str =
     "#version 130

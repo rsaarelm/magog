@@ -11,11 +11,6 @@ run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
 run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
-run ./rust-rule.sh src/stb/lib.rs {libstb}
-run ./rust-rule.sh src/calx/lib.rs {libcalx} \| {libcgmath} {libcolor} {libstb} assets/font.png
-run ./rust-rule.sh src/world/lib.rs {libworld} \| {libcgmath} {libcolor} {libcalx} {libstb} assets/tile.png
-run ./rust-rule.sh src/glutil/lib.rs {libglutil} \| {libstb} {libcalx} {libgl} {libhgl} {libcolor} {libcgmath} {libglfw}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
-: src/demogame/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> demogame
-: src/mapedit/main.rs | {libcgmath} {libglfw} {libgl} {libstb} {libglutil} {libworld} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> mapedit
+: src/calx.rs | {libcgmath} {libcolor} {libhgl} {libglfw} {libgl} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> calx

@@ -1,4 +1,4 @@
-use area::ChartPos;
+use world::area::ChartPos;
 use cgmath::point::{Point2};
 
 pub struct Transform {
