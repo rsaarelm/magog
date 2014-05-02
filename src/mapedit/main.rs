@@ -1,10 +1,3 @@
-extern crate cgmath;
-extern crate color;
-extern crate collections;
-extern crate serialize;
-extern crate num;
-extern crate rand;
-
 use std::io::{IoResult, File, Open, Write, BufferedReader, BufferedWriter};
 use std::path::Path;
 use serialize::json;

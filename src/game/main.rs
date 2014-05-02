@@ -1,8 +1,3 @@
-extern crate cgmath;
-extern crate color;
-extern crate time;
-extern crate rand;
-
 use glutil::glrenderer::GlRenderer;
 use key;
 use renderer::Renderer;
