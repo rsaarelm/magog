@@ -12,7 +12,7 @@ use cgmath::vector::{Vector2};
 use world::area::{ChartPos, DIRECTIONS6};
 use world::transform::Transform;
 use world::areaview;
-use demogame::game::Game;
+use game::game::Game;
 
 pub mod game;
 
