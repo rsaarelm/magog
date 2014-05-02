@@ -32,7 +32,7 @@ impl state::State for State {
 
 impl State {
     pub fn new() -> State {
-        let mut area = Area::new(area::Rock);
+        let mut area = Area::new(area::Tree);
         let mut rng = rand::StdRng::new().unwrap();
         area.gen_herringbone(&mut rng);
         State {
