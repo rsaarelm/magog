@@ -36,10 +36,11 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 15;
+    count: 16;
 
     Void, "void";
     Floor, "floor";
+    Chasm, "chasm";
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";

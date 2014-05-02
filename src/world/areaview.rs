@@ -25,6 +25,7 @@ pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
 pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
 pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
 pub static BLOCK_DARK : uint = SPRITE_INDEX_START + 6;
+pub static CHASM : uint = SPRITE_INDEX_START + 7;
 pub static SHALLOWS : uint = SPRITE_INDEX_START + 8;
 pub static PORTAL : uint = SPRITE_INDEX_START + 9;
 pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
@@ -111,6 +112,9 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite
         },
         area::Floor => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+        },
+        area::Chasm => {
+            ret.push(Sprite { idx: CHASM, pos: *pos, z: FLOOR_Z, color: DARKSLATEGRAY });
         },
         area::Grass => {
             ret.push(Sprite { idx: GRASS, pos: *pos, z: FLOOR_Z, color: DARKGREEN });
