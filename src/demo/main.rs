@@ -49,6 +49,7 @@ pub fn main() {
     let mut state = State::new();
 
     while app.alive {
+        areaview::draw_area(&state, &mut app);
         loop {
             match app.r.pop_key() {
                 Some(key) => {
@@ -65,8 +66,6 @@ pub fn main() {
                 _ => { break; }
             }
         }
-
-        areaview::draw_area(&state, &mut app);
 
         let mouse = app.r.get_mouse();
         let xf = Transform::new(ChartPos::from_location(state.loc));
