@@ -36,13 +36,22 @@ pub static MAGMA : uint = SPRITE_INDEX_START + 14;
 pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 15;
 pub static ROCKWALL : uint = SPRITE_INDEX_START + 16;
 pub static WALL : uint = SPRITE_INDEX_START + 20;
+pub static FENCE : uint = SPRITE_INDEX_START + 24;
+pub static BARS : uint = SPRITE_INDEX_START + 28;
 pub static WINDOW : uint = SPRITE_INDEX_START + 32;
 pub static DOOR : uint = SPRITE_INDEX_START + 36;
 pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
 pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
+pub static TABLE : uint = SPRITE_INDEX_START + 50;
 pub static AVATAR : uint = SPRITE_INDEX_START + 51;
 pub static BLOCK : uint = SPRITE_INDEX_START + 52;
+pub static FOUNTAIN : uint = SPRITE_INDEX_START + 53;
+pub static ALTAR : uint = SPRITE_INDEX_START + 54;
+pub static BARREL : uint = SPRITE_INDEX_START + 55;
 pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
+pub static GRAVE : uint = SPRITE_INDEX_START + 58;
+pub static STONE : uint = SPRITE_INDEX_START + 69;
+pub static MENHIR : uint = SPRITE_INDEX_START + 70;
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
@@ -139,6 +148,20 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             wallform(k, &mut ret, pos, ROCKWALL, &LIGHTSLATEGRAY, true);
         },
+        area::Fence => {
+            // The floor type beneath the fence tile is visible, make it grass if there's grass
+            // behind the fence.
+            if k.n == area::Grass || k.ne == area::Grass || k.nw == area::Grass {
+                ret.push(Sprite { idx: GRASS, pos: *pos, z: FLOOR_Z, color: DARKGREEN });
+            } else {
+                ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            }
+            wallform(k, &mut ret, pos, FENCE, &DARKGOLDENROD, false);
+        },
+        area::Bars => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            wallform(k, &mut ret, pos, BARS, &GAINSBORO, false);
+        },
         area::Stalagmite => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: DARKGOLDENROD });
@@ -151,6 +174,38 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             wallform(k, &mut ret, pos, DOOR, &LIGHTSLATEGRAY, true);
             wallform(k, &mut ret, pos, DOOR + 4, &SADDLEBROWN, false);
+        },
+        area::Table => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: TABLE, pos: *pos, z: BLOCK_Z, color: DARKKHAKI });
+        },
+        area::Fountain => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: FOUNTAIN, pos: *pos, z: BLOCK_Z, color: GAINSBORO });
+        },
+        area::Altar => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: ALTAR, pos: *pos, z: BLOCK_Z, color: GAINSBORO });
+        },
+        area::Barrel => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: BARREL, pos: *pos, z: BLOCK_Z, color: DARKKHAKI });
+        },
+        area::Grave => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: GRAVE, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+        },
+        area::Stone => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: STONE, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+        },
+        area::Menhir => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: MENHIR, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+        },
+        area::DeadTree => {
+            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ret.push(Sprite { idx: TREE_TRUNK, pos: *pos, z: BLOCK_Z, color: SADDLEBROWN });
         },
     }
 
