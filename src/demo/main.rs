@@ -34,7 +34,7 @@ impl State {
     pub fn new() -> State {
         let mut area = Area::new(area::Rock);
         let mut rng = rand::StdRng::new().unwrap();
-        area.gen_cave(&mut rng, false);
+        area.gen_herringbone(&mut rng);
         State {
             area: area,
             loc: Location::new(0i8, 0i8),

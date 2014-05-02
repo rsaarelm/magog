@@ -1,6 +1,7 @@
 use std::cmp::max;
 use rand::Rng;
 use collections::hashmap::HashSet;
+use num::Integer;
 
 use text::Map2DUtil;
 use cgmath::aabb::{Aabb, Aabb2};
@@ -8,9 +9,111 @@ use cgmath::point::{Point2};
 use world::area::{Area, DIRECTIONS6, Location};
 use world::area;
 
+/*
+1######B222 Template for herringbone prefabs
+1##########
+1########## Cells at positions A, B and C must have an open tile.
+A########## On each half, the openings A, B and C must be connected.
+########### The two halves may or may not be connected.
+########### This ensures automatic map connectivity, while not
+########### making the map trivially open.
+##########B
+##########2 The numbered lines are parameters by which the openings
+##########2 are positioned. When changing the position of an opening
+##########2 for an alternative set, lines with the same symbol must
+3*********1 remain at equal length.
+3*********1
+3*********1
+3*********A
+3**********
+C**********
+***********
+***********
+***********
+***********
+33333C*****
+*/
+
+static CHUNK_W: int = 11;
+
+static CHUNKS: &'static[&'static str] = &[
+"\
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........
+...........",
+
+"\
+#######.###
+#######.###
+#######.###
+........###
+#######.###
+#######.###
+#######.###
+#######....
+###########
+###########
+###########
+###########
+###########
+###########
+#####......
+#####.#####
+......#####
+#####.#####
+#####.#####
+#####.#####
+#####.#####
+#####.#####",
+
+"\
+#######.###
+#######+###
+##.......##
+.+...#...##
+##..###..##
+##...#...##
+##.#...#.##
+##.......+.
+##.......##
+##.#...#.##
+##.......##
+##.......##
+##.#...#.##
+##.......##
+##.......+.
+##.#...#.##
+.+...#...##
+##..###..##
+##...#...##
+##.......##
+#####+#####
+#####.#####",
+];
+
 pub trait MapGen {
     fn gen_cave<R: Rng>(&mut self, rng: &mut R, make_exit: bool);
     fn gen_prefab(&mut self, prefab: &str);
+    fn gen_herringbone<R: Rng>(&mut self, rng: &mut R);
 }
 
 impl MapGen for Area {
@@ -74,5 +177,40 @@ impl MapGen for Area {
             }
         }
 
+    }
+
+    // http://nothings.org/gamedev/herringbone/
+    fn gen_herringbone<R: Rng>(&mut self, rng: &mut R) {
+        for cy in range(0, 4) {
+            for cx in range(0, 4) {
+                let chunk = rng.choose(CHUNKS);
+                for (glyph, x, y) in chunk.chars().map2d() {
+                    let terrain = match glyph {
+                        '.' => area::Floor,
+                        '#' => area::Wall,
+                        _ => area::Void
+                    };
+                    let (ax, ay) = herringbone_map((cx, cy), (x, y));
+                    self.set.insert(Location::new(ax as i8, ay as i8), terrain);
+                }
+            }
+        }
+    }
+}
+
+// Map in-chunk coordinates to on-map coordinates based on chunk position in
+// the herringbone chunk grid.
+fn herringbone_map(chunk_pos: (int, int), in_chunk_pos: (int, int)) -> (int, int) {
+    let (cx, cy) = chunk_pos;
+    let (div, m) = cx.div_mod_floor(&2);
+    let (x, y) = in_chunk_pos;
+
+    let origin_x = div * CHUNK_W + cy * CHUNK_W;
+    let origin_y = cy * CHUNK_W - m * CHUNK_W - 3 * div * CHUNK_W;
+
+    if m == 0 {
+        (origin_x + x, origin_y + y)
+    } else {
+        (origin_x + y, origin_y + x)
     }
 }
