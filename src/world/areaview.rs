@@ -52,6 +52,7 @@ pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
 pub static GRAVE : uint = SPRITE_INDEX_START + 58;
 pub static STONE : uint = SPRITE_INDEX_START + 69;
 pub static MENHIR : uint = SPRITE_INDEX_START + 70;
+pub static TALLGRASS : uint = SPRITE_INDEX_START + 80;
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
@@ -206,6 +207,9 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite
         area::DeadTree => {
             ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
             ret.push(Sprite { idx: TREE_TRUNK, pos: *pos, z: BLOCK_Z, color: SADDLEBROWN });
+        },
+        area::TallGrass => {
+            ret.push(Sprite { idx: TALLGRASS, pos: *pos, z: FLOOR_Z, color: GOLD });
         },
     }
 

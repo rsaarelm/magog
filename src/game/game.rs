@@ -61,7 +61,7 @@ impl Game {
     pub fn new() -> Game {
         let mut ret = Game {
             area: ~Area::new(area::Rock),
-            pos: Location::new(0i8, 0i8),
+            pos: Location::new(0i8, 3i8),
             seen: ~Fov::new(),
             remembered: ~Fov::new(),
             mobs: vec!(),
@@ -140,13 +140,13 @@ impl Game {
 
     pub fn next_level(&mut self) {
         // Player state doesn't persist level-to-level.
-        self.mobs = vec!(Mob::new(mob::Player, Location::new(0i8, 0i8)));
+        self.mobs = vec!(Mob::new(mob::Player, Location::new(0i8, 3i8)));
         self.area = ~Area::new(area::Rock);
         self.depth += 1;
         let make_exit = self.depth < END_LEVEL;
-        self.area.gen_cave(&mut self.rng, make_exit);
+        self.area.gen_herringbone(&mut self.rng);
 
-        self.player().loc = Location::new(0i8, 0i8);
+        self.player().loc = Location::new(0i8, 3i8);
 
         let sites = self.open_cells();
 
@@ -177,7 +177,7 @@ impl Game {
     }
 
     pub fn area_name(&self) -> ~str {
-        format!("Floor {}", self.depth)
+        ~"Chaoslands"
     }
 
     pub fn object_name(&self, loc: Location) -> ~str {

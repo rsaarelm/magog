@@ -36,7 +36,7 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 26;
+    count: 27;
 
     Void, "void";
     Floor, "floor";
@@ -64,6 +64,7 @@ terrain_data! {
     Stone, "stone";
     Menhir, "menhir";
     DeadTree, "dead tree";
+    TallGrass, "tall grass";
 }
 
 
@@ -84,7 +85,7 @@ impl TerrainType {
 
     pub fn is_opaque(self) -> bool {
         match self {
-            Wall | RockWall | Rock | Door => true,
+            Wall | RockWall | Rock | Door | Tree | DeadTree | TallGrass => true,
             _ => false
         }
     }
@@ -98,7 +99,7 @@ impl TerrainType {
 
     pub fn is_walkable(self) -> bool {
         match self {
-            Floor | Shallows | Grass | Downstairs | Portal | Door => true,
+            Floor | Shallows | Grass | Downstairs | Portal | Door | TallGrass => true,
             _ => false
         }
     }
