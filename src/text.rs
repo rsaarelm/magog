@@ -178,11 +178,11 @@ mod tests {
 
     #[test]
     fn wrap_small() {
-        assert_eq!(wrap_lines(1, ""), ~"");
-        assert_eq!(wrap_lines(1, " "), ~" ");
-        assert_eq!(wrap_lines(1, "a"), ~"a");
-        assert_eq!(wrap_lines(4, "foo bar"), ~"foo\nbar");
-        assert_eq!(wrap_lines(8, "foo bar"), ~"foo bar");
+        assert_eq!(wrap_lines(1, ""), "".to_owned());
+        assert_eq!(wrap_lines(1, " "), " ".to_owned());
+        assert_eq!(wrap_lines(1, "a"), "a".to_owned());
+        assert_eq!(wrap_lines(4, "foo bar"), "foo\nbar".to_owned());
+        assert_eq!(wrap_lines(8, "foo bar"), "foo bar".to_owned());
     }
 
     #[test]
@@ -190,6 +190,6 @@ mod tests {
         // Newline in input means that the subsequent whitespace
         // needs to be preserved.
         let txt = "First\n  Second";
-        assert_eq!(wrap_lines(8, txt), ~"First\n  Second");
+        assert_eq!(wrap_lines(8, txt), "First\n  Second".to_owned());
     }
 }

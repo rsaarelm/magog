@@ -66,12 +66,12 @@ impl Mob {
     // boilerplate or using macros.
     pub fn type_data(t: MobType) -> MobData {
         match t {
-            Player =>       MobData { max_hits: 5, name: ~"you" },
-            Morlock =>      MobData { max_hits: 1, name: ~"morlock" },
-            Centipede =>    MobData { max_hits: 2, name: ~"centipede" },
-            BigMorlock =>   MobData { max_hits: 3, name: ~"big morlock" },
-            TimeEater =>    MobData { max_hits: 4, name: ~"time eater" },
-            Serpent =>      MobData { max_hits: 1, name: ~"serpent" },
+            Player =>       MobData { max_hits: 5, name: "you".to_owned() },
+            Morlock =>      MobData { max_hits: 1, name: "morlock".to_owned() },
+            Centipede =>    MobData { max_hits: 2, name: "centipede".to_owned() },
+            BigMorlock =>   MobData { max_hits: 3, name: "big morlock".to_owned() },
+            TimeEater =>    MobData { max_hits: 4, name: "time eater".to_owned() },
+            Serpent =>      MobData { max_hits: 1, name: "serpent".to_owned() },
         }
     }
 

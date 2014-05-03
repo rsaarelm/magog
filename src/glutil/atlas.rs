@@ -44,7 +44,7 @@ impl AtlasRect {
 }
 
 pub struct Atlas {
-    tiles: Vec<~Tile>,
+    tiles: Vec<Tile>,
     rects: Vec<AtlasRect>,
     is_dirty: bool,
     texture: Texture,
@@ -89,7 +89,7 @@ impl Atlas {
 
         for i in range(0, self.tiles.len()) {
             paint_tile(
-                *self.tiles.get(i), &mut tex_data, &pack.get(i).min().to_vec(), base.dim().x);
+                self.tiles.get(i), &mut tex_data, &pack.get(i).min().to_vec(), base.dim().x);
             self.rects.push(AtlasRect::new(
                     &self.tiles.get(i).bounds, pack.get(i), &base.dim()));
         }
@@ -116,7 +116,7 @@ impl Atlas {
         }
     }
 
-    pub fn push(&mut self, tile: ~Tile) -> uint {
+    pub fn push(&mut self, tile: Tile) -> uint {
         self.dirty();
         self.tiles.push(tile);
         self.tiles.len() - 1
@@ -138,7 +138,7 @@ impl Atlas {
 
             let min = Point2::new(glyph.xOffset as int, glyph.yOffset as int);
             let max = min.add_v(&Vector2::new(glyph.width, glyph.height));
-            self.push(~Tile::new_alpha(Aabb2::new(min, max), glyph.pixels));
+            self.push(Tile::new_alpha(Aabb2::new(min, max), glyph.pixels));
         }
     }
 

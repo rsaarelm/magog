@@ -88,13 +88,13 @@ static BLIT_F: &'static str =
 
 pub struct GlRenderer {
     pub resolution: Vector2<f32>,
-    pub glfw_state: ~glfw::Glfw,
-    pub window: ~glfw::Window,
-    pub receiver: ~Receiver<(f64, glfw::WindowEvent)>,
+    pub glfw_state: glfw::Glfw,
+    pub window: glfw::Window,
+    pub receiver: Receiver<(f64, glfw::WindowEvent)>,
     pub alive: bool,
-    pub atlas: ~Atlas,
-    pub tile_shader: ~Program,
-    pub blit_shader: ~Program,
+    pub atlas: Atlas,
+    pub tile_shader: Program,
+    pub blit_shader: Program,
     pub recter: Recter,
     pub framebuffer: Framebuffer,
     pub key_buffer: Vec<KeyEvent>,
@@ -109,7 +109,7 @@ impl GlRenderer {
         gl::Viewport(0, 0, self.resolution.x as i32, self.resolution.y as i32);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         self.atlas.bind();
-        self.recter.render(self.tile_shader);
+        self.recter.render(&self.tile_shader);
         self.framebuffer.unbind();
     }
 
@@ -172,18 +172,18 @@ impl Renderer for GlRenderer {
 
         let mut ret = GlRenderer {
             resolution: Vector2::new(width as f32, height as f32),
-            glfw_state: ~glfw_state,
-            window: ~window,
-            receiver: ~receiver,
+            glfw_state: glfw_state,
+            window: window,
+            receiver: receiver,
             alive: true,
-            atlas: ~Atlas::new(),
+            atlas: Atlas::new(),
             tile_shader:
-                ~Program::link(
+                Program::link(
                     [hgl::Shader::compile(COLORED_V, hgl::VertexShader).unwrap(),
                      hgl::Shader::compile(ALPHA_TILE_F, hgl::FragmentShader).unwrap()]
                  ).unwrap(),
             blit_shader:
-                ~Program::link(
+                Program::link(
                     [hgl::Shader::compile(BLIT_V, hgl::VertexShader).unwrap(),
                      hgl::Shader::compile(BLIT_F, hgl::FragmentShader).unwrap()]
                  ).unwrap(),
@@ -195,15 +195,14 @@ impl Renderer for GlRenderer {
 
         // Hack for solid rectangles, push a solid single-pixel tile in.
         // Assume this'll end up as position 0.
-        ret.atlas.push(~Tile::new_alpha(
+        ret.atlas.push(Tile::new_alpha(
                 RectUtil::new(0, 0, 1, 1),
                 vec!(255u8)));
-
 
         ret
     }
 
-    fn add_tile(&mut self, tile: ~Tile) -> uint {
+    fn add_tile(&mut self, tile: Tile) -> uint {
         self.atlas.push(tile)
     }
 
@@ -241,7 +240,7 @@ impl Renderer for GlRenderer {
         swap(&mut bound.min.y, &mut bound.max.y);
         screen_draw.add(
             &bound, 0f32, &RectUtil::new(0f32, 0f32, 1f32, 1f32), &rgb::consts::WHITE, 1f32);
-        screen_draw.render(self.blit_shader);
+        screen_draw.render(&self.blit_shader);
 
         self.window.swap_buffers();
 
@@ -249,7 +248,7 @@ impl Renderer for GlRenderer {
 
         // XXX: Dance around the borrow checker...
         let mut queue = vec!();
-        for event in glfw::flush_messages(self.receiver) {
+        for event in glfw::flush_messages(&self.receiver) {
             queue.push(event);
         }
         for &event in queue.iter() {

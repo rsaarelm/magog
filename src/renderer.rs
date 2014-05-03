@@ -29,7 +29,7 @@ pub enum DrawMode {
 pub trait Renderer {
     fn new(width: uint, height: uint, title: &str) -> Self;
     fn fill_rect<C: ToRGB>(&mut self, rect: &Aabb2<f32>, z: f32, color: &C);
-    fn add_tile(&mut self, tile: ~Tile) -> uint;
+    fn add_tile(&mut self, tile: Tile) -> uint;
     fn draw_tile<C: ToRGB>(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C, mode: DrawMode);
     fn flush(&mut self);
     fn screenshot(&mut self, path: &str);

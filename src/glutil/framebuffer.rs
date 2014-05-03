@@ -11,7 +11,7 @@ pub struct Framebuffer {
     pub height: uint,
     pub framebuffer: GLuint,
     pub depthbuffer: GLuint,
-    pub texture: ~Texture,
+    pub texture: Texture,
 }
 
 impl Framebuffer {
@@ -39,7 +39,7 @@ impl Framebuffer {
             height: height,
             framebuffer: fb,
             depthbuffer: db,
-            texture: ~texture,
+            texture: texture,
         };
 
         //ret.bind();

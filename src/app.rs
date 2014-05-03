@@ -31,7 +31,7 @@ pub enum Align {
 }
 
 pub struct App<R> {
-    pub r: ~R,
+    pub r: R,
     draw_color: RGB<u8>,
     background_color: RGB<u8>,
     draw_layer: f32,
@@ -44,7 +44,7 @@ pub struct App<R> {
 impl <R: Renderer> App<R> {
     pub fn new(width: uint, height: uint, title: &str) -> App<R> {
         let mut ret : App<R> = App {
-            r: ~Renderer::new(width, height, title),
+            r: Renderer::new(width, height, title),
             draw_color: WHITE,
             background_color: BLACK,
             draw_layer: 0f32,
@@ -62,7 +62,7 @@ impl <R: Renderer> App<R> {
             font.pixels,
             &Vector2::new(0, -FONT_HEIGHT as int));
         for i in range(0, FONT_NUM_CHARS) {
-            ret.r.add_tile(~tiles.get(i).clone());
+            ret.r.add_tile(tiles.get(i).clone());
         }
 
         ret

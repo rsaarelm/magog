@@ -280,7 +280,7 @@ pub fn init_tiles<R: Renderer>(app: &mut App<R>) {
         tiles.pixels,
         &Vector2::new(-16, -16));
     for i in range(0u, 96u) {
-        app.r.add_tile(~tiles.get(i).clone());
+        app.r.add_tile(tiles.get(i).clone());
     }
 }
 

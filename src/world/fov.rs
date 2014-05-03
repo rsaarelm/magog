@@ -54,10 +54,10 @@ impl Angle {
 impl Fov {
     pub fn new() -> Fov { Fov(HashSet::new()) }
 
-    pub fn add(&mut self, other: ~Fov) {
+    pub fn add(&mut self, other: &Fov) {
         let &Fov(ref mut h) = self;
-        let ~Fov(o) = other;
-        h.extend(o.move_iter());
+        let &Fov(ref o) = other;
+        h.extend(o.iter().map(|x| x.clone()));
     }
 
     pub fn contains(&self, loc: Location) -> bool {

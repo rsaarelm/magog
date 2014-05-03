@@ -14,7 +14,7 @@ pub fn build_map<N: Hash + TotalEq + Clone>(
         ret.insert(k.clone(), 0);
     }
 
-    let mut edge = ~HashSet::new();
+    let mut edge = HashSet::new();
 
     for k in goals.iter() {
         for n in neighbors(k).iter() {
@@ -29,7 +29,7 @@ pub fn build_map<N: Hash + TotalEq + Clone>(
             ret.insert(k.clone(), dist);
         }
 
-        let mut new_edge = ~HashSet::new();
+        let mut new_edge = HashSet::new();
         for k in edge.iter() {
             for n in neighbors(k).iter() {
                 if !ret.contains_key(n) { new_edge.insert(n.clone()); }

@@ -1,7 +1,6 @@
 use time;
 use rand;
 use rand::Rng;
-use std::mem;
 
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
@@ -31,10 +30,10 @@ static VERSION: &'static str = include!("../../gen/git_version.inc");
 
 // XXX: Indiscriminate blob of stuff ahoy
 pub struct Game {
-    pub area: ~Area,
+    pub area: Area,
     pub pos: Location,
-    pub seen: ~Fov,
-    pub remembered: ~Fov,
+    pub seen: Fov,
+    pub remembered: Fov,
     pub mobs: Vec<Mob>,
     pub player_dijkstra: Option<DijkstraMap>,
     pub rng: rand::StdRng,
@@ -60,10 +59,10 @@ pub enum ProbeResult {
 impl Game {
     pub fn new() -> Game {
         let mut ret = Game {
-            area: ~Area::new(area::Rock),
+            area: Area::new(area::Rock),
             pos: Location::new(0i8, 3i8),
-            seen: ~Fov::new(),
-            remembered: ~Fov::new(),
+            seen: Fov::new(),
+            remembered: Fov::new(),
             mobs: vec!(),
             player_dijkstra: None,
             rng: rand::StdRng::new().unwrap(),
@@ -141,7 +140,7 @@ impl Game {
     pub fn next_level(&mut self) {
         // Player state doesn't persist level-to-level.
         self.mobs = vec!(Mob::new(mob::Player, Location::new(0i8, 3i8)));
-        self.area = ~Area::new(area::Rock);
+        self.area = Area::new(area::Rock);
         self.depth += 1;
         let make_exit = self.depth < END_LEVEL;
         self.area.gen_herringbone(&mut self.rng);
@@ -172,18 +171,18 @@ impl Game {
             self.mobs.push(Mob::new(mob::TimeEater, site));
         }
 
-        self.seen = ~Fov::new();
-        self.remembered = ~Fov::new();
+        self.seen = Fov::new();
+        self.remembered = Fov::new();
     }
 
     pub fn area_name(&self) -> ~str {
-        ~"Chaoslands"
+        "Chaoslands".to_owned()
     }
 
     pub fn object_name(&self, loc: Location) -> ~str {
         match self.mob_at(loc) {
             Some(mob) => mob.data().name,
-            None => ~"",
+            None => "".to_owned(),
         }
     }
 
@@ -388,10 +387,8 @@ impl Game {
         let xf = Transform::new(ChartPos::from_location(self.pos));
         let cursor_chart_loc = xf.to_chart(&mouse.pos);
 
-        let mut tmp_seen = ~fov::fov(self.area, self.pos, 12);
-        mem::swap(self.seen, tmp_seen);
-        // Move old fov to map memory.
-        self.remembered.add(tmp_seen);
+        self.remembered.add(&self.seen);
+        self.seen = fov::fov(&self.area, self.pos, 12);
 
         for mob in self.mobs.mut_iter() {
             mob.update_anim();
@@ -414,12 +411,12 @@ impl Game {
         }
 
         app.set_color(&CRIMSON);
-        let mut health_str = ~"hits: ";
+        let mut health_str = "hits: ".to_owned();
         for _ in range(0, self.player().hits) { health_str = health_str + "o"; }
         app.print_words(&RectUtil::new(0f32, 0f32, 120f32, 8f32), app::Left, health_str);
 
         app.set_color(&ROYALBLUE);
-        let mut ammo_str = ~"ammo: ";
+        let mut ammo_str = "ammo: ".to_owned();
         for _ in range(0, self.player().ammo) { ammo_str = ammo_str + "|"; }
         app.print_words(&RectUtil::new(0f32, 8f32, 120f32, 16f32), app::Left, ammo_str);
 
@@ -432,8 +429,8 @@ impl Game {
             app::Right, self.area_name());
 
         if !self.stop {
-            if !self.area.fully_explored(self.remembered) {
-                let map = self.area.explore_map(self.remembered);
+            if !self.area.fully_explored(&self.remembered) {
+                let map = self.area.explore_map(&self.remembered);
                 match uphill(&map, self.pos) {
                     Some(p) => { if self.area.get(p).is_walkable() { self.pos = p; } },
                     None => (),
@@ -468,5 +465,5 @@ impl state::State for Game {
         ret
     }
 
-    fn area<'a>(&'a self) -> &'a Area { &*self.area }
+    fn area<'a>(&'a self) -> &'a Area { &self.area }
 }

@@ -24,7 +24,7 @@ use world::sprite;
 static VERSION: &'static str = include!("../../gen/git_version.inc");
 
 pub struct State {
-    area: ~Area,
+    area: Area,
     loc: Location,
 }
 
@@ -32,13 +32,13 @@ impl state::State for State {
     fn transform(&self) -> Transform { Transform::new(ChartPos::from_location(self.loc)) }
     fn fov(&self, _loc: Location) -> fov::FovStatus { fov::Seen }
     fn drawable_mob_at<'a>(&'a self, _loc: Location) -> Option<&'a Mob> { None }
-    fn area<'a>(&'a self) -> &'a Area { &*self.area }
+    fn area<'a>(&'a self) -> &'a Area { &self.area }
 }
 
 impl State {
     pub fn new() -> State {
         State {
-            area: ~Area::new(area::Void),
+            area: Area::new(area::Void),
             loc: Location::new(0i8, 0i8),
         }
     }
@@ -55,7 +55,7 @@ impl State {
             Err(e) => { println!("Decoding error: {}", e); return None; }
         };
         Some(State {
-            area: ~Area::from_ascii_map(&ascii_map),
+            area: Area::from_ascii_map(&ascii_map),
             loc: Location::new(0i8, 0i8),
         })
     }
