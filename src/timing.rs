@@ -1,4 +1,5 @@
 use time;
+use std::io::timer;
 
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
     assert!(period_s > 0.0);
@@ -31,18 +32,61 @@ impl Ticker {
         }
     }
 
-    pub fn get(&mut self) -> bool {
+    fn time_remaining(&mut self) -> Option<f64> {
         let now = time::precise_time_s();
         if now - self.last_t > self.period_s {
             if now - self.last_t > self.period_s * 2.0 {
-                // Bring the clock up to speed.
+                // Bring the clock up to speed if running very late.
                 self.last_t = now;
             } else {
                 self.last_t += self.period_s;
             }
-            true
+            None
         } else {
-            false
+            Some(self.period_s - (now - self.last_t))
         }
+    }
+
+    pub fn get(&mut self) -> bool {
+        self.time_remaining().is_none()
+    }
+
+    pub fn wait_for_tick(&mut self) {
+        match self.time_remaining() {
+            Some(t) => {
+                timer::sleep((t * 1000.0) as u64);
+                self.last_t += self.period_s;
+            }
+            _ => {}
+        }
+    }
+}
+
+pub struct TimePerFrame {
+    update_weight: f64,
+    start_t: f64,
+    pub average: f64,
+    pub last: f64,
+}
+
+impl TimePerFrame {
+    pub fn new(update_weight: f64) -> TimePerFrame {
+        assert!(update_weight >= 0.0 && update_weight <= 1.0);
+        TimePerFrame {
+            update_weight: update_weight,
+            start_t: time::precise_time_s(),
+            average: 0.0,
+            last: 0.0,
+        }
+    }
+
+    pub fn begin(&mut self) {
+        self.start_t = time::precise_time_s();
+    }
+
+    pub fn end(&mut self) {
+        self.last = time::precise_time_s() - self.start_t;
+        self.average = self.update_weight * self.last +
+            (1.0 - self.update_weight) * self.average;
     }
 }
