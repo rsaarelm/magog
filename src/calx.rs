@@ -16,15 +16,16 @@ extern crate time;
 
 use std::os;
 
+pub mod app;
 pub mod asciimap;
-pub mod text;
+pub mod engine;
+pub mod gen_id;
+pub mod key;
 pub mod pack_rect;
 pub mod rectutil;
-pub mod gen_id;
-pub mod app;
 pub mod renderer;
+pub mod text;
 pub mod tile;
-pub mod key;
 pub mod timing;
 
 pub mod glutil {
@@ -60,6 +61,10 @@ pub mod mapedit {
     pub mod main;
 }
 
+pub mod enginetest {
+    pub mod main;
+}
+
 pub mod demo {
     pub mod main;
 }
@@ -70,6 +75,7 @@ pub fn main() {
         "mapedit" => mapedit::main::main(),
         "game" => game::main::main(),
         "demo" => demo::main::main(),
+        "enginetest" => enginetest::main::main(),
         _ => println!("Unknown command")
     }
 }

@@ -9,6 +9,7 @@ use rectutil::RectUtil;
 
 pub static TILE_ALPHA: u8 = 0x80;
 
+/// Tile is a container for raw pixel data.
 #[deriving(Clone)]
 pub struct Tile {
     pub bounds: Aabb2<int>,
