@@ -1,3 +1,4 @@
+#![crate_id="calx#0.1"]
 #![feature(globs)]
 #![feature(macro_rules)]
 
