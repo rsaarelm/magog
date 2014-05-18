@@ -2,7 +2,7 @@ use std::num::Bounded;
 use std::cmp::{min, max};
 use collections::hashmap::{HashMap, Keys};
 use collections::hashmap::HashSet;
-use std::cast;
+use std::mem;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb2};
@@ -138,10 +138,10 @@ impl Area {
 
     pub fn from_ascii_map(ascii_map: &AsciiMap) -> Area {
         let mut ret = Area::new(
-            TerrainType::from_name(ascii_map.default_terrain).unwrap());
+            TerrainType::from_name(ascii_map.default_terrain.to_str()).unwrap());
         let mut legend = HashMap::new();
         for e in ascii_map.legend.iter() {
-            let t = match TerrainType::from_name(e.terrain_type) {
+            let t = match TerrainType::from_name(e.terrain_type.to_str()) {
                 Some(val) => val,
                 None => {
                     println!("Unknown terrain {}", e.terrain_type);
@@ -152,7 +152,7 @@ impl Area {
         }
 
         for y in range(0, ascii_map.terrain.len()) {
-            for (x, glyph) in ascii_map.terrain.get(y).chars().enumerate() {
+            for (x, glyph) in ascii_map.terrain.get(y).to_str().chars().enumerate() {
                 let loc = Location::new(
                     (x as int + ascii_map.offset_x) as i8,
                     (y as int + ascii_map.offset_y) as i8);
@@ -270,9 +270,9 @@ impl Area {
     pub fn build_asciimap(&self) -> AsciiMap {
         // XXX: Spawns will never be added in this version, since Area type
         // doesn't contain dynamic object information at the present.
-        AsciiMap::new(self.default.name().to_owned(), self.set.iter().map(
+        AsciiMap::new(self.default.name().to_strbuf(), self.set.iter().map(
                 |(loc, t)|
-                (Point2::new(loc.x as int, loc.y as int), Cell::new(t.name().to_owned(), vec!()))))
+                (Point2::new(loc.x as int, loc.y as int), Cell::new(t.name().to_strbuf(), vec!()))))
     }
 }
 
@@ -310,7 +310,7 @@ impl Location {
 impl<'a> Location {
     pub fn p(&'a self) -> &'a Point2<i8> {
         unsafe {
-            cast::transmute(self)
+            mem::transmute(self)
         }
     }
 }
@@ -350,7 +350,7 @@ impl<'a> ChartPos {
 
     pub fn p(&'a self) -> &'a Point2<int> {
         unsafe {
-            cast::transmute(self)
+            mem::transmute(self)
         }
     }
 }

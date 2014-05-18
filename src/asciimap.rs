@@ -1,18 +1,19 @@
 use std::num::Bounded;
 use std::cmp::{min, max};
 use std::str;
+use std::str::StrAllocating;
 use std::vec::Vec;
 use collections::hashmap::{HashMap};
 use cgmath::point::{Point2};
 
 #[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
 pub struct Cell {
-    pub terrain_type: ~str,
-    pub spawns: Vec<~str>,
+    pub terrain_type: StrBuf,
+    pub spawns: Vec<StrBuf>,
 }
 
 impl Cell {
-    pub fn new(terrain_type: ~str, spawns: Vec<~str>) -> Cell {
+    pub fn new(terrain_type: StrBuf, spawns: Vec<StrBuf>) -> Cell {
         Cell { terrain_type: terrain_type, spawns: spawns }
     }
 }
@@ -20,8 +21,8 @@ impl Cell {
 #[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
 pub struct LegendEntry {
     pub glyph: char,
-    pub terrain_type: ~str,
-    pub spawns: Vec<~str>,
+    pub terrain_type: StrBuf,
+    pub spawns: Vec<StrBuf>,
 }
 
 // This struct is designed to be serialized with a structured markup language,
@@ -31,13 +32,13 @@ pub struct LegendEntry {
 pub struct AsciiMap {
     pub offset_x: int,
     pub offset_y: int,
-    pub default_terrain: ~str,
-    pub terrain: Vec<~str>,
+    pub default_terrain: StrBuf,
+    pub terrain: Vec<StrBuf>,
     pub legend: Vec<LegendEntry>,
 }
 
 impl AsciiMap {
-    pub fn new<I: Iterator<(Point2<int>, Cell)>>(default_terrain: ~str, mut cells: I) -> AsciiMap {
+    pub fn new<I: Iterator<(Point2<int>, Cell)>>(default_terrain: StrBuf, mut cells: I) -> AsciiMap {
         let mut terrainMap = HashMap::new();
         let mut legend = HashMap::new();
         let mut lb = LegendBuilder::new();
@@ -71,9 +72,9 @@ impl AsciiMap {
             offset_x: min_x,
             offset_y: min_y,
             default_terrain: default_terrain,
-            terrain: terrain,
+            terrain: terrain.iter().map(|x| x.to_strbuf()).collect(),
             legend: legend.iter().map(|(&glyph, cell)| LegendEntry {
-                glyph: glyph, terrain_type: cell.terrain_type.clone(), spawns: cell.spawns.clone()
+                glyph: glyph, terrain_type: cell.terrain_type.to_strbuf(), spawns: cell.spawns.clone()
             }).collect(),
         }
     }
@@ -140,13 +141,13 @@ fn classify(cell: &Cell) -> TerrainClass {
     if cell.spawns.len() > 0 { return Spawning; }
     match cell.terrain_type.as_slice() {
         "floor"
-        | "grass"
-        | "sand"
-        | "dirt"
+      | "grass"
+      | "sand"
+      | "dirt"
         => Floor,
         "wall"
-        | "rock"
-        | "rock wall"
+      | "rock"
+      | "rock wall"
         => Wall,
         _ => Other
     }

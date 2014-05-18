@@ -1,6 +1,6 @@
 #[macro_escape]
 
-use std::fmt::{Show, Formatter, Result};
+use std::fmt;
 
 #[deriving(Eq, Clone, Default)]
 pub struct CodeId {
@@ -8,9 +8,9 @@ pub struct CodeId {
     path: ~str,
 }
 
-impl Show for CodeId {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(f.buf, "{}:{}", self.path, self.line)
+impl fmt::Show for CodeId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:{}", self.path, self.line)
     }
 }
 

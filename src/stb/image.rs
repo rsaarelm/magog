@@ -1,8 +1,8 @@
 use std::vec::Vec;
 use libc::{c_uchar, c_void, c_int, c_char, free};
-use std::slice::raw::from_buf_raw;
+use std::slice::raw::buf_as_slice;
 use std::io::File;
-use std::cast;
+use std::mem;
 
 #[link(name="stb")]
 extern {
@@ -50,7 +50,8 @@ impl Image {
                 width: w as uint,
                 height: h as uint,
                 bpp: bpp,
-                pixels: Vec::from_slice(from_buf_raw(cast::transmute(buffer), (w * h) as uint * bpp)),
+                pixels: buf_as_slice(
+                    mem::transmute(buffer), (w * h) as uint * bpp, |s| Vec::from_slice(s)),
             });
             free(buffer as *mut c_void);
             ret

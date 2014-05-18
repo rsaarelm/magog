@@ -1,5 +1,5 @@
 use std::vec::Vec;
-use std::cast;
+use std::mem;
 use hgl::texture::{Texture, ImageInfo};
 use hgl::texture;
 use hgl::texture::pixel;
@@ -77,7 +77,7 @@ impl Framebuffer {
         unsafe {
             gl::GetTexImage(
                 gl::TEXTURE_2D, 0, gl::RGBA, gl::UNSIGNED_BYTE,
-                cast::transmute(ret.get(0)));
+                mem::transmute(ret.get(0)));
         }
         gl::BindTexture(gl::TEXTURE_2D, 0);
         ret

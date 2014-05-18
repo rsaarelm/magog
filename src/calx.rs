@@ -70,7 +70,7 @@ pub mod demo {
 }
 
 pub fn main() {
-    let cmd = if os::args().len() > 1 { os::args()[1] } else { "game".to_owned() };
+    let cmd = if os::args().len() > 1 { os::args().get(1).to_owned() } else { "game".to_owned() };
     match cmd.as_slice() {
         "mapedit" => mapedit::main::main(),
         "game" => game::main::main(),

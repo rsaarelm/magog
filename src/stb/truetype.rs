@@ -1,7 +1,7 @@
 use std::vec::Vec;
 use libc::{c_uchar, c_void, c_int, c_float};
 use std::intrinsics;
-use std::cast::transmute;
+use std::mem::transmute;
 
 struct StbttFontinfo {
     userdata: *c_void,
