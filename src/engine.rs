@@ -25,6 +25,26 @@ use timing::{Ticker, TimePerFrame};
 pub trait App {
     fn setup(&mut self, ctx: &mut Engine);
     fn draw(&mut self, ctx: &mut Engine);
+
+    fn char_typed(&mut self, _ch: char) {}
+    fn key_pressed(&mut self, _key: Key) {}
+    fn key_released(&mut self, _key: Key) {}
+}
+
+#[deriving(Clone, Eq)]
+pub struct KeyEvent {
+    // Scancode (ignores local layout)
+    pub code: uint,
+    // Printable character (if any)
+    pub ch: Option<char>,
+}
+
+#[deriving(Eq, Clone)]
+pub struct MouseState {
+    pub pos: Point2<f32>,
+    pub left: bool,
+    pub middle: bool,
+    pub right: bool,
 }
 
 pub struct Engine {
@@ -33,6 +53,7 @@ pub struct Engine {
     title: ~str,
     // If None, render frames as fast as you can.
     frame_interval: Option<f64>,
+    window: Option<glfw::Window>,
     // Index to shader table
     // XXX: Somewhat cruddy system for pointing to a resource. Using references
     // gets us borrow checker hell.
@@ -57,6 +78,7 @@ impl Engine {
             resolution: Vector2::new(640u, 360u),
             title: "Application".to_owned(),
             frame_interval: None,
+            window: None,
             current_shader: 0,
             shaders: vec!(),
             textures: vec!(),
@@ -81,11 +103,15 @@ impl Engine {
 
         app.setup(&mut ctx);
 
-        let (window, _receiver) = glfw_state.create_window(
+        let (window, receiver) = glfw_state.create_window(
             ctx.resolution.x as u32, ctx.resolution.y as u32, ctx.title,
             glfw::Windowed)
             .expect("Failed to create GLFW window.");
         window.make_current();
+        window.set_key_polling(true);
+        window.set_char_polling(true);
+        ctx.window = Some(window);
+
         gl::load_with(|s| glfw_state.get_proc_address(s));
 
         // Must be in the order matching the SHADER_IDX constants.
@@ -130,11 +156,29 @@ impl Engine {
             app.draw(&mut ctx);
             framebuffer.unbind();
 
-            ctx.draw_screen(&framebuffer, &window);
-            window.swap_buffers();
+            ctx.draw_screen(&framebuffer, ctx.get_window());
+            ctx.get_window().swap_buffers();
 
             glfw_state.poll_events();
-            if window.should_close() { ctx.alive = false; }
+            if ctx.get_window().should_close() { ctx.alive = false; }
+
+            for (_time, event) in glfw::flush_messages(&receiver) {
+                match event {
+                    glfw::CharEvent(ch) => app.char_typed(ch),
+                    glfw::KeyEvent(key, _scan, action, _mods) => {
+                        translate_glfw_key(key).map(
+                            |key| {
+                                if action == glfw::Press || action == glfw::Repeat {
+                                    app.key_pressed(key);
+                                }
+                                if action == glfw::Release {
+                                    app.key_released(key);
+                                }
+                            });
+                    }
+                    _ => ()
+                }
+            }
 
             if ctx.frame_interval.is_some() {
                 ticker.wait_for_tick();
@@ -162,6 +206,11 @@ impl Engine {
         self.frame_interval = Some(interval_seconds);
     }
 
+    fn get_window<'a>(&'a self) -> &'a glfw::Window {
+        assert!(self.window.is_some());
+        self.window.get_ref()
+    }
+
     /// Converts a collection of pixel data tiles into drawable images. A
     /// separate texture atlas will be alotted to each batch of images, it will
     /// be more efficient to make large batches and to batch images that will
@@ -184,6 +233,29 @@ impl Engine {
 
     pub fn quit(&mut self) {
         self.alive = false;
+    }
+
+    pub fn get_mouse(&self) -> MouseState {
+        let (cx, cy) = self.get_window().get_cursor_pos();
+        // XXX: overly complex juggling back and forth the coordinate systems.
+        let (width, height) = self.get_window().get_size();
+        let area = Vector2::new(width as f32, height as f32);
+        let resolution =
+            Vector2::new(self.resolution.x as f32, self.resolution.y as f32);
+        let bounds =
+            screen_bound(&resolution, &area)
+            .add_v(&Vector2::new(1f32, 1f32))
+            .mul_s(0.5f32)
+            .mul_v(&area);
+
+        MouseState {
+            pos: Point2::new(
+                     (cx as f32 - bounds.min.x) * (resolution.x / bounds.dim().x),
+                     (cy as f32 - bounds.min.y) * (resolution.y / bounds.dim().y)),
+            left: self.get_window().get_mouse_button(glfw::MouseButtonLeft) != glfw::Release,
+            middle: self.get_window().get_mouse_button(glfw::MouseButtonMiddle) != glfw::Release,
+            right: self.get_window().get_mouse_button(glfw::MouseButtonRight) != glfw::Release,
+        }
     }
 
     pub fn clear<C: ToRGB>(&mut self, color: &C) {
@@ -577,3 +649,221 @@ static TILE_F: &'static str =
         gl_FragColor = vec4(color.x * a, color.y * a, color.z * a, 1.0);
     }
     ";
+
+#[deriving(Clone, Eq, Hash, Show, TotalEq)]
+pub enum Key {
+    KeySpace = 2u8,
+    KeyApostrophe = 3u8,
+    KeyComma = 4u8,
+    KeyMinus = 5u8,
+    KeyPeriod = 6u8,
+    KeySlash = 7u8,
+    Key0 = 8u8,
+    Key1 = 9u8,
+    Key2 = 10u8,
+    Key3 = 11u8,
+    Key4 = 12u8,
+    Key5 = 13u8,
+    Key6 = 14u8,
+    Key7 = 15u8,
+    Key8 = 16u8,
+    Key9 = 17u8,
+    KeySemicolon = 18u8,
+    KeyEquals = 19u8,
+    KeyA = 20u8,
+    KeyB = 21u8,
+    KeyC = 22u8,
+    KeyD = 23u8,
+    KeyE = 24u8,
+    KeyF = 25u8,
+    KeyG = 26u8,
+    KeyH = 27u8,
+    KeyI = 28u8,
+    KeyJ = 29u8,
+    KeyK = 30u8,
+    KeyL = 31u8,
+    KeyM = 32u8,
+    KeyN = 33u8,
+    KeyO = 34u8,
+    KeyP = 35u8,
+    KeyQ = 36u8,
+    KeyR = 37u8,
+    KeyS = 38u8,
+    KeyT = 39u8,
+    KeyU = 40u8,
+    KeyV = 41u8,
+    KeyW = 42u8,
+    KeyX = 43u8,
+    KeyY = 44u8,
+    KeyZ = 45u8,
+    KeyLeftBracket = 46u8,
+    KeyBackslash = 47u8,
+    KeyRightBracket = 48u8,
+    KeyGrave = 49u8,
+    KeyEscape = 50u8,
+    KeyEnter = 51u8,
+    KeyTab = 52u8,
+    KeyBackspace = 53u8,
+    KeyInsert = 54u8,
+    KeyDelete = 55u8,
+    KeyRight = 56u8,
+    KeyLeft = 57u8,
+    KeyDown = 58u8,
+    KeyUp = 59u8,
+    KeyPageUp = 60u8,
+    KeyPageDown = 61u8,
+    KeyHome = 62u8,
+    KeyEnd = 63u8,
+    KeyCapsLock = 64u8,
+    KeyScrollLock = 65u8,
+    KeyNumLock = 66u8,
+    KeyPrintScreen = 67u8,
+    KeyPause = 68u8,
+    KeyF1 = 69u8,
+    KeyF2 = 70u8,
+    KeyF3 = 71u8,
+    KeyF4 = 72u8,
+    KeyF5 = 73u8,
+    KeyF6 = 74u8,
+    KeyF7 = 75u8,
+    KeyF8 = 76u8,
+    KeyF9 = 77u8,
+    KeyF10 = 78u8,
+    KeyF11 = 79u8,
+    KeyF12 = 80u8,
+    KeyPad0 = 81u8,
+    KeyPad1 = 82u8,
+    KeyPad2 = 83u8,
+    KeyPad3 = 84u8,
+    KeyPad4 = 85u8,
+    KeyPad5 = 86u8,
+    KeyPad6 = 87u8,
+    KeyPad7 = 88u8,
+    KeyPad8 = 89u8,
+    KeyPad9 = 90u8,
+    KeyPadDecimal = 91u8,
+    KeyPadDivide = 92u8,
+    KeyPadMultiply = 93u8,
+    KeyPadMinus = 94u8,
+    KeyPadPlus = 95u8,
+    KeyPadEnter = 96u8,
+    KeyPadEquals = 97u8,
+    KeyLeftShift = 98u8,
+    KeyLeftControl = 99u8,
+    KeyLeftAlt = 100u8,
+    KeyLeftSuper = 101u8,
+    KeyRightShift = 102u8,
+    KeyRightControl = 103u8,
+    KeyRightAlt = 104u8,
+    KeyRightSuper = 105u8,
+}
+
+fn translate_glfw_key(k: glfw::Key) -> Option<Key> {
+    match k {
+        glfw::KeySpace => Some(KeySpace),
+        glfw::KeyApostrophe => Some(KeyApostrophe),
+        glfw::KeyComma => Some(KeyComma),
+        glfw::KeyMinus => Some(KeyMinus),
+        glfw::KeyPeriod => Some(KeyPeriod),
+        glfw::KeySlash => Some(KeySlash),
+        glfw::Key0 => Some(KeyPad0),
+        glfw::Key1 => Some(KeyPad1),
+        glfw::Key2 => Some(KeyPad2),
+        glfw::Key3 => Some(KeyPad3),
+        glfw::Key4 => Some(KeyPad4),
+        glfw::Key5 => Some(KeyPad5),
+        glfw::Key6 => Some(KeyPad6),
+        glfw::Key7 => Some(KeyPad7),
+        glfw::Key8 => Some(KeyPad8),
+        glfw::Key9 => Some(KeyPad9),
+        glfw::KeySemicolon => Some(KeySemicolon),
+        glfw::KeyEqual => Some(KeyEquals),
+        glfw::KeyA => Some(KeyA),
+        glfw::KeyB => Some(KeyB),
+        glfw::KeyC => Some(KeyC),
+        glfw::KeyD => Some(KeyD),
+        glfw::KeyE => Some(KeyE),
+        glfw::KeyF => Some(KeyF),
+        glfw::KeyG => Some(KeyG),
+        glfw::KeyH => Some(KeyH),
+        glfw::KeyI => Some(KeyI),
+        glfw::KeyJ => Some(KeyJ),
+        glfw::KeyK => Some(KeyK),
+        glfw::KeyL => Some(KeyL),
+        glfw::KeyM => Some(KeyM),
+        glfw::KeyN => Some(KeyN),
+        glfw::KeyO => Some(KeyO),
+        glfw::KeyP => Some(KeyP),
+        glfw::KeyQ => Some(KeyQ),
+        glfw::KeyR => Some(KeyR),
+        glfw::KeyS => Some(KeyS),
+        glfw::KeyT => Some(KeyT),
+        glfw::KeyU => Some(KeyU),
+        glfw::KeyV => Some(KeyV),
+        glfw::KeyW => Some(KeyW),
+        glfw::KeyX => Some(KeyX),
+        glfw::KeyY => Some(KeyY),
+        glfw::KeyZ => Some(KeyZ),
+        glfw::KeyLeftBracket => Some(KeyLeftBracket),
+        glfw::KeyBackslash => Some(KeyBackslash),
+        glfw::KeyRightBracket => Some(KeyRightBracket),
+        glfw::KeyGraveAccent => Some(KeyGrave),
+        glfw::KeyEscape => Some(KeyEscape),
+        glfw::KeyEnter => Some(KeyEnter),
+        glfw::KeyTab => Some(KeyTab),
+        glfw::KeyBackspace => Some(KeyBackspace),
+        glfw::KeyInsert => Some(KeyInsert),
+        glfw::KeyDelete => Some(KeyDelete),
+        glfw::KeyRight => Some(KeyRight),
+        glfw::KeyLeft => Some(KeyLeft),
+        glfw::KeyDown => Some(KeyDown),
+        glfw::KeyUp => Some(KeyUp),
+        glfw::KeyPageUp => Some(KeyPageUp),
+        glfw::KeyPageDown => Some(KeyPageDown),
+        glfw::KeyHome => Some(KeyHome),
+        glfw::KeyEnd => Some(KeyEnd),
+        glfw::KeyCapsLock => Some(KeyCapsLock),
+        glfw::KeyScrollLock => Some(KeyScrollLock),
+        glfw::KeyNumLock => Some(KeyNumLock),
+        glfw::KeyPrintScreen => Some(KeyPrintScreen),
+        glfw::KeyPause => Some(KeyPause),
+        glfw::KeyF1 => Some(KeyF1),
+        glfw::KeyF2 => Some(KeyF2),
+        glfw::KeyF3 => Some(KeyF3),
+        glfw::KeyF4 => Some(KeyF4),
+        glfw::KeyF5 => Some(KeyF5),
+        glfw::KeyF6 => Some(KeyF6),
+        glfw::KeyF7 => Some(KeyF7),
+        glfw::KeyF8 => Some(KeyF8),
+        glfw::KeyF9 => Some(KeyF9),
+        glfw::KeyF10 => Some(KeyF10),
+        glfw::KeyF11 => Some(KeyF11),
+        glfw::KeyF12 => Some(KeyF12),
+        glfw::KeyKp0 => Some(KeyPad0),
+        glfw::KeyKp1 => Some(KeyPad1),
+        glfw::KeyKp2 => Some(KeyPad2),
+        glfw::KeyKp3 => Some(KeyPad3),
+        glfw::KeyKp4 => Some(KeyPad4),
+        glfw::KeyKp5 => Some(KeyPad5),
+        glfw::KeyKp6 => Some(KeyPad6),
+        glfw::KeyKp7 => Some(KeyPad7),
+        glfw::KeyKp8 => Some(KeyPad8),
+        glfw::KeyKp9 => Some(KeyPad9),
+        glfw::KeyKpDecimal => Some(KeyPadDecimal),
+        glfw::KeyKpDivide => Some(KeyPadDivide),
+        glfw::KeyKpMultiply => Some(KeyPadMultiply),
+        glfw::KeyKpSubtract => Some(KeyPadMinus),
+        glfw::KeyKpAdd => Some(KeyPadPlus),
+        glfw::KeyKpEnter => Some(KeyPadEnter),
+        glfw::KeyKpEqual => Some(KeyPadEquals),
+        glfw::KeyLeftShift => Some(KeyLeftShift),
+        glfw::KeyLeftControl => Some(KeyLeftControl),
+        glfw::KeyLeftAlt => Some(KeyLeftAlt),
+        glfw::KeyLeftSuper => Some(KeyLeftSuper),
+        glfw::KeyRightShift => Some(KeyRightShift),
+        glfw::KeyRightControl => Some(KeyRightControl),
+        glfw::KeyRightAlt => Some(KeyRightAlt),
+        glfw::KeyRightSuper => Some(KeyRightSuper),
+        _ => None
+    }
+}

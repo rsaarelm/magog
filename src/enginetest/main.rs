@@ -1,7 +1,7 @@
 use cgmath::aabb::{Aabb2};
 use cgmath::point::{Point2};
 use color::rgb::consts::*;
-use engine::{App, Engine};
+use engine::{App, Engine, Key};
 
 struct EngineTest {
     tick: int,
@@ -33,6 +33,14 @@ impl App for EngineTest {
         ctx.draw_string(
             format!("FPS: {:.0}", 1.0f64 / ctx.current_spf),
             &Point2::new(0f32, 8f32));
+    }
+
+    fn char_typed(&mut self, ch: char) {
+        println!("Typed {}", ch);
+    }
+
+    fn key_pressed(&mut self, key: Key) {
+        println!("{} down", key);
     }
 }
 
