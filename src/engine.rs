@@ -28,7 +28,7 @@ pub trait App {
 }
 
 pub struct Engine {
-    during_setup: bool,
+    alive: bool,
     resolution: Vector2<uint>,
     title: ~str,
     // If None, render frames as fast as you can.
@@ -41,7 +41,6 @@ pub struct Engine {
     textures: Vec<TextureProxy>,
     font: Vec<Image>,
 
-    pub alive: bool,
     // Seconds per frame measurement, adjust at runtime.
     pub current_spf: f64,
     pub draw_color: RGB<u8>,
@@ -54,7 +53,7 @@ pub struct Engine {
 impl Engine {
     fn new() -> Engine {
         Engine {
-            during_setup: true,
+            alive: false,
             resolution: Vector2::new(640u, 360u),
             title: "Application".to_owned(),
             frame_interval: None,
@@ -63,7 +62,6 @@ impl Engine {
             textures: vec!(),
             font: vec!(),
 
-            alive: false,
             current_spf: 0.0,
             draw_color: WHITE,
             background_color: BLACK,
@@ -82,7 +80,6 @@ impl Engine {
         ctx.init_font();
 
         app.setup(&mut ctx);
-        ctx.during_setup = false;
 
         let (window, _receiver) = glfw_state.create_window(
             ctx.resolution.x as u32, ctx.resolution.y as u32, ctx.title,
@@ -149,18 +146,18 @@ impl Engine {
     }
 
     pub fn set_resolution(&mut self, w: uint, h: uint) {
-        assert!(self.during_setup);
+        assert!(!self.alive);
         self.resolution.x = w;
         self.resolution.y = h;
     }
 
     pub fn set_title(&mut self, title: ~str) {
-        assert!(self.during_setup);
+        assert!(!self.alive);
         self.title = title;
     }
 
     pub fn set_frame_interval(&mut self, interval_seconds: f64) {
-        assert!(self.during_setup);
+        assert!(!self.alive);
         assert!(interval_seconds > 0.00001);
         self.frame_interval = Some(interval_seconds);
     }
@@ -183,6 +180,10 @@ impl Engine {
             font.pixels,
             &Vector2::new(0, -8));
         self.font = self.make_images(&tiles);
+    }
+
+    pub fn quit(&mut self) {
+        self.alive = false;
     }
 
     pub fn clear<C: ToRGB>(&mut self, color: &C) {
