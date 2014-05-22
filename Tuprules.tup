@@ -5,16 +5,15 @@ RUSTBINFLAGS = -Z lto
 endif
 
 GLFW_LINKARGS = -C link-args='-lglfw -lGL -lX11 -lXxf86vm -lXrandr -lXi -lXcursor'
-PA_LINKARGS = -C link-args='-lasound -ljack -lportaudio'
 
 !cc = |> cc -Wall -Os -DNDEBUG -c %f -o %o |>
 !ar = |> ar crs %o %f |>
 
 !rustlib = |> rustc %f --out-dir ./ $(RUSTFLAGS) --crate-type rlib |>
 ifeq (@(TUP_RELEASE),y)
-!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS) $(PA_LINKARGS); strip %o |>
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS); strip %o |>
 else
-!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS) $(PA_LINKARGS) |>
+!rustbin = |> rustc %f -o %o $(RUSTFLAGS) $(RUSTBINFLAGS) $(GLFW_LINKARGS) |>
 endif
 
 !databake = |> echo "&[" > %o; cat %f | xxd -i >> %o; echo "]" >> %o |>
