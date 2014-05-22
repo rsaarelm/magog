@@ -9,7 +9,7 @@ use glfw::{Context};
 use glfw;
 use glutil::framebuffer::Framebuffer;
 use hgl::buffer;
-use hgl::texture::{Texture, ImageInfo, pixel};
+use hgl::texture::{ImageInfo, pixel};
 use hgl::texture;
 use hgl::{Program, Vao, Vbo};
 use hgl;
@@ -38,7 +38,7 @@ pub struct Engine {
     // gets us borrow checker hell.
     current_shader: uint,
     shaders: Vec<Program>,
-    textures: Vec<Texture>,
+    textures: Vec<TextureProxy>,
     font: Vec<Image>,
 
     pub alive: bool,
@@ -79,6 +79,8 @@ impl Engine {
             .unwrap();
 
         let mut ctx = Engine::new();
+        ctx.init_font();
+
         app.setup(&mut ctx);
         ctx.during_setup = false;
 
@@ -114,8 +116,6 @@ impl Engine {
         if ctx.frame_interval.is_none() {
             glfw_state.set_swap_interval(0);
         }
-
-        ctx.init_font();
 
         ctx.alive = true;
 
@@ -212,7 +212,7 @@ impl Engine {
     pub fn draw_image(&mut self, image: &Image, pos: &Point2<f32>) {
         assert!(image.texture_idx < self.textures.len(),
             "Image has nonexistent texture");
-        self.textures.get(image.texture_idx).bind();
+        self.textures.get_mut(image.texture_idx).bind();
         self.texture_rect(
             &image.area.add_v(&pos.to_vec()),
             image.texcoords.min(), image.texcoords.max());
@@ -296,7 +296,43 @@ pub struct Image {
     texcoords: Aabb2<f32>,
 }
 
-fn pack_tiles(tiles: &Vec<Tile>, texture_idx: uint) -> (Texture, Vec<Image>) {
+/// Type for lazily instantiated textures.
+enum TextureProxy {
+    ImageData(int, int, Vec<u8>),
+    Texture(texture::Texture),
+}
+
+impl TextureProxy {
+    fn new(w: int, h: int, data: Vec<u8>) -> TextureProxy {
+        ImageData(w, h, data)
+    }
+
+    fn bind(&mut self) {
+        // Reassign self to loaded texture if it's an ImageData.
+        match self {
+            &ImageData(w, h, ref data) => {
+                let info = ImageInfo::new()
+                    .width(w as GLint)
+                    .height(h as GLint)
+                    .pixel_format(pixel::RED)
+                    .pixel_type(pixel::UNSIGNED_BYTE)
+                    ;
+                let texture = texture::Texture::new_raw(texture::Texture2D);
+                texture.filter(texture::Nearest);
+                texture.wrap(texture::ClampToEdge);
+                texture.load_image(info, data.get(0));
+                texture.bind();
+                Some(Texture(texture))
+            }
+            &Texture(ref texture) => {
+                texture.bind();
+                None
+            }
+        }.map(|x| *self = x);
+    }
+}
+
+fn pack_tiles(tiles: &Vec<Tile>, texture_idx: uint) -> (TextureProxy, Vec<Image>) {
     let colorkey = 0x80u8;
     // Create gaps between the tiles to prevent edge artifacts.
     let dims = tiles.iter().map(|s| s.bounds.dim() + Vector2::new(1, 1))
@@ -332,18 +368,7 @@ fn pack_tiles(tiles: &Vec<Tile>, texture_idx: uint) -> (Texture, Vec<Image>) {
         });
     }
 
-    let info = ImageInfo::new()
-        .width(base.dim().x as GLint)
-        .height(base.dim().y as GLint)
-        .pixel_format(pixel::RED)
-        .pixel_type(pixel::UNSIGNED_BYTE)
-        ;
-    let texture = Texture::new_raw(texture::Texture2D);
-    texture.filter(texture::Nearest);
-    texture.wrap(texture::ClampToEdge);
-    texture.load_image(info, tex_data.get(0));
-
-    return (texture, images);
+    return (TextureProxy::new(base.dim().x, base.dim().y, tex_data), images);
 
     fn paint_tile(
         tile: &Tile, tex_data: &mut Vec<u8>,
