@@ -26,9 +26,9 @@ pub trait App {
     fn setup(&mut self, ctx: &mut Engine);
     fn draw(&mut self, ctx: &mut Engine);
 
-    fn char_typed(&mut self, _ch: char) {}
-    fn key_pressed(&mut self, _key: Key) {}
-    fn key_released(&mut self, _key: Key) {}
+    fn char_typed(&mut self, _ctx: &mut Engine, _ch: char) {}
+    fn key_pressed(&mut self, _ctx: &mut Engine, _key: Key) {}
+    fn key_released(&mut self, _ctx: &mut Engine, _key: Key) {}
 }
 
 #[deriving(Clone, Eq)]
@@ -54,6 +54,7 @@ pub struct Engine {
     // If None, render frames as fast as you can.
     frame_interval: Option<f64>,
     window: Option<glfw::Window>,
+    framebuffer: Option<Framebuffer>,
     // Index to shader table
     // XXX: Somewhat cruddy system for pointing to a resource. Using references
     // gets us borrow checker hell.
@@ -79,6 +80,7 @@ impl Engine {
             title: "Application".to_owned(),
             frame_interval: None,
             window: None,
+            framebuffer: None,
             current_shader: 0,
             shaders: vec!(),
             textures: vec!(),
@@ -129,7 +131,7 @@ impl Engine {
             .unwrap());
 
         // Set up texture target where the App will render into.
-        let framebuffer = Framebuffer::new(ctx.resolution.x, ctx.resolution.y);
+        ctx.framebuffer = Some(Framebuffer::new(ctx.resolution.x, ctx.resolution.y));
 
         // Turn off vsync if the user wants to go fast. Otherwise swap_buffers
         // will always clamp things to something like 60 FPS.
@@ -150,13 +152,13 @@ impl Engine {
         while ctx.alive {
             spf.begin();
 
-            framebuffer.bind();
+            ctx.get_framebuffer().bind();
             gl::Viewport(0, 0, ctx.resolution.x as i32, ctx.resolution.y as i32);
             ctx.current_shader = TILE_SHADER_IDX;
             app.draw(&mut ctx);
-            framebuffer.unbind();
+            ctx.get_framebuffer().unbind();
 
-            ctx.draw_screen(&framebuffer, ctx.get_window());
+            ctx.draw_screen();
             ctx.get_window().swap_buffers();
 
             glfw_state.poll_events();
@@ -164,15 +166,15 @@ impl Engine {
 
             for (_time, event) in glfw::flush_messages(&receiver) {
                 match event {
-                    glfw::CharEvent(ch) => app.char_typed(ch),
+                    glfw::CharEvent(ch) => app.char_typed(&mut ctx, ch),
                     glfw::KeyEvent(key, _scan, action, _mods) => {
                         translate_glfw_key(key).map(
                             |key| {
                                 if action == glfw::Press || action == glfw::Repeat {
-                                    app.key_pressed(key);
+                                    app.key_pressed(&mut ctx, key);
                                 }
                                 if action == glfw::Release {
-                                    app.key_released(key);
+                                    app.key_released(&mut ctx, key);
                                 }
                             });
                     }
@@ -209,6 +211,11 @@ impl Engine {
     fn get_window<'a>(&'a self) -> &'a glfw::Window {
         assert!(self.window.is_some());
         self.window.get_ref()
+    }
+
+    fn get_framebuffer<'a>(&'a self) -> &'a Framebuffer {
+        assert!(self.framebuffer.is_some());
+        self.framebuffer.get_ref()
     }
 
     /// Converts a collection of pixel data tiles into drawable images. A
@@ -315,17 +322,17 @@ impl Engine {
     }
 
     /// Draw the framebuffer texture on screen.
-    fn draw_screen(&self, framebuffer: &Framebuffer, window: &glfw::Window) {
+    fn draw_screen(&self) {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-        let (width, height) = window.get_size();
+        let (width, height) = self.get_window().get_size();
         // Clamp odd screen dimensions to even, otherwise pixel perfection
         // will break
         let (width, height) = (width & !1, height & !1);
         gl::Viewport(0, 0, width, height);
 
-        framebuffer.texture.bind();
+        self.get_framebuffer().texture.bind();
         let area = screen_bound(
             &Vector2::new(self.resolution.x as f32, self.resolution.y as f32),
             &Vector2::new(width as f32, height as f32));
@@ -333,6 +340,15 @@ impl Engine {
             &area, 0f32, &Point2::new(0.0f32, 1.0f32),
             &Point2::new(1.0f32, 0.0f32), &WHITE, 1f32);
         Vertex::draw_triangles(&vertices, self.shaders.get(BLIT_SHADER_IDX));
+    }
+
+    /// Save a png screenshot.
+    pub fn screenshot(&mut self, path: &str) {
+        let bytes = self.get_framebuffer().get_bytes();
+        let mut img = image::Image::new(
+            self.resolution.x as uint, self.resolution.y as uint, 4);
+        img.pixels = bytes;
+        img.save_png(path);
     }
 }
 

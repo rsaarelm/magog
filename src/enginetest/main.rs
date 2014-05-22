@@ -2,6 +2,7 @@ use cgmath::aabb::{Aabb2};
 use cgmath::point::{Point2};
 use color::rgb::consts::*;
 use engine::{App, Engine, Key};
+use engine;
 
 struct EngineTest {
     tick: int,
@@ -35,12 +36,15 @@ impl App for EngineTest {
             &Point2::new(0f32, 8f32));
     }
 
-    fn char_typed(&mut self, ch: char) {
+    fn char_typed(&mut self, _ctx: &mut Engine, ch: char) {
         println!("Typed {}", ch);
     }
 
-    fn key_pressed(&mut self, key: Key) {
+    fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
         println!("{} down", key);
+        if key == engine::KeyF12 {
+            ctx.screenshot("/tmp/demoshot.png");
+        }
     }
 }
 
