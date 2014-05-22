@@ -3,11 +3,10 @@ use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
 use color::rgb::consts::*;
 use color::rgb::{ToRGB, RGB};
-use gl::types::{GLint};
+use gl::types::{GLint, GLuint};
 use gl;
 use glfw::{Context};
 use glfw;
-use glutil::framebuffer::Framebuffer;
 use hgl::buffer;
 use hgl::texture::{ImageInfo, pixel};
 use hgl::texture;
@@ -17,6 +16,7 @@ use pack_rect::pack_rects;
 use rectutil::RectUtil;
 use stb::image;
 use std::iter::AdditiveIterator;
+use std::mem;
 use std::mem::size_of;
 use std::num::{next_power_of_two};
 use tile::Tile;
@@ -578,6 +578,94 @@ impl Vertex {
     fn pos_offset() -> uint { 0 }
     fn tex_offset() -> uint { 3 * size_of::<f32>() }
     fn color_offset() -> uint { 5 * size_of::<f32>() }
+}
+
+struct Framebuffer {
+    width: uint,
+    height: uint,
+    framebuffer: GLuint,
+    depthbuffer: GLuint,
+    texture: hgl::Texture,
+}
+
+impl Framebuffer {
+    fn new(width: uint, height: uint) -> Framebuffer {
+        let info = ImageInfo::new()
+            .width(width as i32)
+            .height(height as i32)
+            .pixel_format(texture::pixel::RGBA)
+            .pixel_type(pixel::UNSIGNED_BYTE)
+            ;
+        let pixels = Vec::from_elem(width * height * 4, 0u8);
+        let texture = hgl::Texture::new(texture::Texture2D, info, pixels.get(0));
+        texture.filter(texture::Nearest);
+        texture.wrap(texture::ClampToEdge);
+
+        let mut fb: GLuint = 0;
+        unsafe { gl::GenFramebuffers(1, &mut fb); }
+
+        // Make a depth buffer.
+        let mut db: GLuint = 0;
+        unsafe { gl::GenRenderbuffers(1, &mut db); }
+
+        let ret = Framebuffer {
+            width: width,
+            height: height,
+            framebuffer: fb,
+            depthbuffer: db,
+            texture: texture,
+        };
+
+        //ret.bind();
+        gl::BindFramebuffer(gl::FRAMEBUFFER, ret.framebuffer);
+        gl::BindRenderbuffer(gl::RENDERBUFFER, ret.depthbuffer);
+        gl::FramebufferTexture2D(
+            gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
+            gl::TEXTURE_2D, ret.texture.name, 0);
+        gl::RenderbufferStorage(gl::RENDERBUFFER, gl::DEPTH_COMPONENT, width as i32, height as i32);
+        gl::FramebufferRenderbuffer(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT,
+            gl::RENDERBUFFER, ret.depthbuffer);
+
+        assert!(
+            gl::CheckFramebufferStatus(gl::FRAMEBUFFER) ==
+            gl::FRAMEBUFFER_COMPLETE);
+
+        ret.unbind();
+
+        ret
+    }
+
+    fn bind(&self) {
+        gl::BindFramebuffer(gl::FRAMEBUFFER, self.framebuffer);
+        gl::BindRenderbuffer(gl::RENDERBUFFER, self.depthbuffer);
+    }
+
+    fn unbind(&self) {
+        gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+        gl::BindRenderbuffer(gl::RENDERBUFFER, 0);
+    }
+
+    fn get_bytes(&self) -> Vec<u8> {
+        let ret = Vec::from_elem(self.width * self.height * 4, 0u8);
+        self.texture.bind();
+        unsafe {
+            gl::GetTexImage(
+                gl::TEXTURE_2D, 0, gl::RGBA, gl::UNSIGNED_BYTE,
+                mem::transmute(ret.get(0)));
+        }
+        gl::BindTexture(gl::TEXTURE_2D, 0);
+        ret
+    }
+}
+
+impl Drop for Framebuffer {
+    fn drop(&mut self) {
+        unsafe {
+            self.unbind();
+            gl::DeleteFramebuffers(1, &self.framebuffer);
+            gl::DeleteRenderbuffers(1, &self.depthbuffer);
+        }
+    }
 }
 
 static BLIT_V: &'static str =

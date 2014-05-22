@@ -16,30 +16,22 @@ extern crate time;
 
 use std::os;
 
-pub mod app;
 pub mod asciimap;
 pub mod engine;
 pub mod gen_id;
 pub mod key;
 pub mod pack_rect;
 pub mod rectutil;
-pub mod renderer;
 pub mod text;
 pub mod tile;
 pub mod timing;
-
-pub mod glutil {
-    pub mod glrenderer;
-    pub mod atlas;
-    pub mod recter;
-    pub mod framebuffer;
-}
 
 pub mod stb {
     pub mod image;
     pub mod truetype;
 }
 
+/*
 pub mod world {
     pub mod dijkstra;
     pub mod area;
@@ -51,7 +43,9 @@ pub mod world {
     pub mod mob;
     pub mod state;
 }
+*/
 
+/*
 pub mod game {
     pub mod game;
     pub mod main;
@@ -61,20 +55,23 @@ pub mod mapedit {
     pub mod main;
 }
 
-pub mod enginetest {
+pub mod demo {
     pub mod main;
 }
+*/
 
-pub mod demo {
+pub mod enginetest {
     pub mod main;
 }
 
 pub fn main() {
     let cmd = if os::args().len() > 1 { os::args().get(1).to_owned() } else { "game".to_owned() };
     match cmd.as_slice() {
+        /*
         "mapedit" => mapedit::main::main(),
         "game" => game::main::main(),
         "demo" => demo::main::main(),
+        */
         "enginetest" => enginetest::main::main(),
         _ => println!("Unknown command")
     }
