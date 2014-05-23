@@ -275,6 +275,10 @@ impl Engine {
         self.draw_color = color.to_rgb::<u8>();
     }
 
+    pub fn set_layer(&mut self, layer: f32) {
+        self.z_layer = layer;
+    }
+
     /// Draws a textured rectangle. The texture needs to have been bound before
     /// this is called. The draw_color of the Engine will be used to colorize
     /// the rectangle.
@@ -379,6 +383,7 @@ fn transform_pixel_rect(dim: &Vector2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
             rect.max.y / dim.y * 2.0f32 - 1.0f32))
 }
 
+#[deriving(Clone, Eq)]
 pub struct Image {
     texture_idx: uint,
     area: Aabb2<f32>,
