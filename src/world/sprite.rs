@@ -1,30 +1,33 @@
 use cgmath::point::{Point2};
-use color::rgb::RGB;
-use app;
-use app::App;
-use renderer::Renderer;
-use renderer;
+use color::rgb::{RGB, ToRGB};
+use engine::{Engine, Image};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
 
 pub struct Sprite {
-    pub idx: uint,
+    pub image: Image,
     pub pos: Point2<f32>,
     pub z: f32,
     pub color: RGB<u8>,
 }
 
 impl Sprite {
-    pub fn new(idx: uint, pos: Point2<f32>, z: f32, color: RGB<u8>) -> Sprite {
-        Sprite { idx: idx, pos: pos, z: z, color: color }
+    pub fn new(image: Image, pos: Point2<f32>, z: f32, color: RGB<u8>) -> Sprite {
+        Sprite { image: image, pos: pos, z: z, color: color }
     }
 }
 
-impl<R: Renderer> Sprite {
-    pub fn draw(&self, app: &mut App<R>) {
-        app.r.draw_tile(self.idx, &self.pos, self.z, &self.color, renderer::ColorKeyDraw);
+impl Sprite {
+    pub fn draw(&self, ctx: &mut Engine) {
+        ctx.set_layer(self.z);
+        ctx.set_color(&self.color);
+        ctx.draw_image(&self.image, &self.pos);
     }
 }
 
-pub fn tile(idx: uint) -> uint { idx + app::SPRITE_INDEX_START }
+/// Interface for sprite-drawing.
+pub trait DrawContext {
+    fn draw<C: ToRGB>(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C);
+}

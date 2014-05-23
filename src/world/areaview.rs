@@ -2,57 +2,55 @@ use time;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
-use color::rgb::RGB;
+use color::rgb::{RGB, ToRGB};
 use color::rgb::consts::*;
-use stb::image::Image;
+use stb::image;
 use rectutil::RectUtil;
-use app::App;
-use app::{SPRITE_INDEX_START};
-use renderer::Renderer;
+use engine::{App, Engine, Image};
 use tile::Tile;
 use world::area;
 use world::area::{TerrainType, Location, ChartPos};
 use world::fov;
-use world::sprite::{Sprite, BLOCK_Z, FLOOR_Z};
+use world::sprite::{Sprite, BLOCK_Z, FLOOR_Z, DrawContext};
 use world::state::State;
 
 static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
-pub static CUBE : uint = SPRITE_INDEX_START + 0;
-pub static CURSOR_BOTTOM : uint = SPRITE_INDEX_START + 1;
-pub static CURSOR_TOP : uint = SPRITE_INDEX_START + 2;
-pub static BLOCK_NW : uint = SPRITE_INDEX_START + 3;
-pub static BLOCK_N : uint = SPRITE_INDEX_START + 4;
-pub static BLOCK_NE : uint = SPRITE_INDEX_START + 5;
-pub static BLOCK_DARK : uint = SPRITE_INDEX_START + 6;
-pub static CHASM : uint = SPRITE_INDEX_START + 7;
-pub static SHALLOWS : uint = SPRITE_INDEX_START + 8;
-pub static PORTAL : uint = SPRITE_INDEX_START + 9;
-pub static BLANK_FLOOR : uint = SPRITE_INDEX_START + 10;
-pub static FLOOR : uint = SPRITE_INDEX_START + 11;
-pub static GRASS : uint = SPRITE_INDEX_START + 12;
-pub static WATER : uint = SPRITE_INDEX_START + 13;
-pub static MAGMA : uint = SPRITE_INDEX_START + 14;
-pub static DOWNSTAIRS : uint = SPRITE_INDEX_START + 15;
-pub static ROCKWALL : uint = SPRITE_INDEX_START + 16;
-pub static WALL : uint = SPRITE_INDEX_START + 20;
-pub static FENCE : uint = SPRITE_INDEX_START + 24;
-pub static BARS : uint = SPRITE_INDEX_START + 28;
-pub static WINDOW : uint = SPRITE_INDEX_START + 32;
-pub static DOOR : uint = SPRITE_INDEX_START + 36;
-pub static TREE_TRUNK : uint = SPRITE_INDEX_START + 48;
-pub static TREE_FOLIAGE : uint = SPRITE_INDEX_START + 49;
-pub static TABLE : uint = SPRITE_INDEX_START + 50;
-pub static AVATAR : uint = SPRITE_INDEX_START + 51;
-pub static BLOCK : uint = SPRITE_INDEX_START + 52;
-pub static FOUNTAIN : uint = SPRITE_INDEX_START + 53;
-pub static ALTAR : uint = SPRITE_INDEX_START + 54;
-pub static BARREL : uint = SPRITE_INDEX_START + 55;
-pub static STALAGMITE : uint = SPRITE_INDEX_START + 56;
-pub static GRAVE : uint = SPRITE_INDEX_START + 58;
-pub static STONE : uint = SPRITE_INDEX_START + 69;
-pub static MENHIR : uint = SPRITE_INDEX_START + 70;
-pub static TALLGRASS : uint = SPRITE_INDEX_START + 80;
+pub static CUBE : uint = 0;
+pub static CURSOR_BOTTOM : uint = 1;
+pub static CURSOR_TOP : uint = 2;
+pub static BLOCK_NW : uint = 3;
+pub static BLOCK_N : uint = 4;
+pub static BLOCK_NE : uint = 5;
+pub static BLOCK_DARK : uint = 6;
+pub static CHASM : uint = 7;
+pub static SHALLOWS : uint = 8;
+pub static PORTAL : uint = 9;
+pub static BLANK_FLOOR : uint = 10;
+pub static FLOOR : uint = 11;
+pub static GRASS : uint = 12;
+pub static WATER : uint = 13;
+pub static MAGMA : uint = 14;
+pub static DOWNSTAIRS : uint = 15;
+pub static ROCKWALL : uint = 16;
+pub static WALL : uint = 20;
+pub static FENCE : uint = 24;
+pub static BARS : uint = 28;
+pub static WINDOW : uint = 32;
+pub static DOOR : uint = 36;
+pub static TREE_TRUNK : uint = 48;
+pub static TREE_FOLIAGE : uint = 49;
+pub static TABLE : uint = 50;
+pub static AVATAR : uint = 51;
+pub static BLOCK : uint = 52;
+pub static FOUNTAIN : uint = 53;
+pub static ALTAR : uint = 54;
+pub static BARREL : uint = 55;
+pub static STALAGMITE : uint = 56;
+pub static GRAVE : uint = 58;
+pub static STONE : uint = 69;
+pub static MENHIR : uint = 70;
+pub static TALLGRASS : uint = 80;
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
@@ -98,155 +96,154 @@ impl<C: Clone> Kernel<C> {
     }
 }
 
-pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite> {
-    let mut ret = vec!();
-
+pub fn terrain_sprites<C: DrawContext>(
+    ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>) {
     match k.center {
         area::Void => {
-            ret.push(Sprite { idx: BLANK_FLOOR, pos: *pos, z: FLOOR_Z, color: BLACK });
+            ctx.draw(BLANK_FLOOR, pos, FLOOR_Z, &BLACK);
         },
         area::Water => {
-            ret.push(Sprite { idx: WATER, pos: *pos, z: FLOOR_Z, color: ROYALBLUE });
+            ctx.draw(WATER, pos, FLOOR_Z, &ROYALBLUE);
         },
         area::Shallows => {
-            ret.push(Sprite { idx: SHALLOWS, pos: *pos, z: FLOOR_Z, color: CORNFLOWERBLUE });
+            ctx.draw(SHALLOWS, pos, FLOOR_Z, &CORNFLOWERBLUE);
         },
         area::Magma => {
-            ret.push(Sprite { idx: MAGMA, pos: *pos, z: FLOOR_Z, color: DARKRED });
+            ctx.draw(MAGMA, pos, FLOOR_Z, &DARKRED);
         },
         area::Tree => {
             // A two-toner, with floor, using two z-layers
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: TREE_TRUNK, pos: *pos, z: BLOCK_Z, color: SADDLEBROWN });
-            ret.push(Sprite { idx: TREE_FOLIAGE, pos: *pos, z: BLOCK_Z, color: GREEN });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(TREE_TRUNK, pos, BLOCK_Z, &SADDLEBROWN);
+            ctx.draw(TREE_FOLIAGE, pos, BLOCK_Z, &GREEN);
         },
         area::Floor => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
         },
         area::Chasm => {
-            ret.push(Sprite { idx: CHASM, pos: *pos, z: FLOOR_Z, color: DARKSLATEGRAY });
+            ctx.draw(CHASM, pos, FLOOR_Z, &DARKSLATEGRAY);
         },
         area::Grass => {
-            ret.push(Sprite { idx: GRASS, pos: *pos, z: FLOOR_Z, color: DARKGREEN });
+            ctx.draw(GRASS, pos, FLOOR_Z, &DARKGREEN);
         },
         area::Downstairs => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: DOWNSTAIRS, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(DOWNSTAIRS, pos, BLOCK_Z, &SLATEGRAY);
         },
         area::Portal => {
             let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
             let portal_col = RGB::new(glow, glow, 255);
-            ret.push(Sprite { idx: PORTAL, pos: *pos, z: BLOCK_Z, color: portal_col });
+            ctx.draw(PORTAL, pos, BLOCK_Z, &portal_col);
         },
         area::Rock => {
-            blockform(k, &mut ret, pos, BLOCK, &DARKGOLDENROD);
+            blockform(ctx, k, pos, BLOCK, &DARKGOLDENROD);
         }
         area::Wall => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, WALL, &LIGHTSLATEGRAY, true);
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, WALL, &LIGHTSLATEGRAY, true);
         },
         area::RockWall => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, ROCKWALL, &LIGHTSLATEGRAY, true);
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, ROCKWALL, &LIGHTSLATEGRAY, true);
         },
         area::Fence => {
             // The floor type beneath the fence tile is visible, make it grass if there's grass
             // behind the fence.
             if k.n == area::Grass || k.ne == area::Grass || k.nw == area::Grass {
-                ret.push(Sprite { idx: GRASS, pos: *pos, z: FLOOR_Z, color: DARKGREEN });
+                ctx.draw(GRASS, pos, FLOOR_Z, &DARKGREEN);
             } else {
-                ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
+                ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             }
-            wallform(k, &mut ret, pos, FENCE, &DARKGOLDENROD, false);
+            wallform(ctx, k, pos, FENCE, &DARKGOLDENROD, false);
         },
         area::Bars => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, BARS, &GAINSBORO, false);
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, BARS, &GAINSBORO, false);
         },
         area::Stalagmite => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: STALAGMITE, pos: *pos, z: BLOCK_Z, color: DARKGOLDENROD });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(STALAGMITE, pos, BLOCK_Z, &DARKGOLDENROD);
         },
         area::Window => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, WINDOW, &LIGHTSLATEGRAY, false);
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, WINDOW, &LIGHTSLATEGRAY, false);
         },
         area::Door => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            wallform(k, &mut ret, pos, DOOR, &LIGHTSLATEGRAY, true);
-            wallform(k, &mut ret, pos, DOOR + 4, &SADDLEBROWN, false);
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, DOOR, &LIGHTSLATEGRAY, true);
+            wallform(ctx, k, pos, DOOR + 4, &SADDLEBROWN, false);
         },
         area::Table => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: TABLE, pos: *pos, z: BLOCK_Z, color: DARKKHAKI });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(TABLE, pos, BLOCK_Z, &DARKKHAKI);
         },
         area::Fountain => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: FOUNTAIN, pos: *pos, z: BLOCK_Z, color: GAINSBORO });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(FOUNTAIN, pos, BLOCK_Z, &GAINSBORO);
         },
         area::Altar => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: ALTAR, pos: *pos, z: BLOCK_Z, color: GAINSBORO });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(ALTAR, pos, BLOCK_Z, &GAINSBORO);
         },
         area::Barrel => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: BARREL, pos: *pos, z: BLOCK_Z, color: DARKKHAKI });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(BARREL, pos, BLOCK_Z, &DARKKHAKI);
         },
         area::Grave => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: GRAVE, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(GRAVE, pos, BLOCK_Z, &SLATEGRAY);
         },
         area::Stone => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: STONE, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(STONE, pos, BLOCK_Z, &SLATEGRAY);
         },
         area::Menhir => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: MENHIR, pos: *pos, z: BLOCK_Z, color: SLATEGRAY });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(MENHIR, pos, BLOCK_Z, &SLATEGRAY);
         },
         area::DeadTree => {
-            ret.push(Sprite { idx: FLOOR, pos: *pos, z: FLOOR_Z, color: SLATEGRAY });
-            ret.push(Sprite { idx: TREE_TRUNK, pos: *pos, z: BLOCK_Z, color: SADDLEBROWN });
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            ctx.draw(TREE_TRUNK, pos, BLOCK_Z, &SADDLEBROWN);
         },
         area::TallGrass => {
-            ret.push(Sprite { idx: TALLGRASS, pos: *pos, z: FLOOR_Z, color: GOLD });
+            ctx.draw(TALLGRASS, pos, FLOOR_Z, &GOLD);
         },
     }
 
-    fn blockform(k: &Kernel<TerrainType>, ret: &mut Vec<Sprite>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
-        ret.push(Sprite { idx: idx, pos: *pos, z: BLOCK_Z, color: *color });
+    fn blockform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+        ctx.draw(idx, pos, BLOCK_Z, color);
         // Back lines for blocks with open floor behind them.
         if !k.nw.is_wall() {
-            ret.push(Sprite { idx: BLOCK_NW, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(BLOCK_NW, pos, BLOCK_Z, color);
         }
         if !k.n.is_wall() {
-            ret.push(Sprite { idx: BLOCK_N, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(BLOCK_N, pos, BLOCK_Z, color);
         }
         if !k.ne.is_wall() {
-            ret.push(Sprite { idx: BLOCK_NE, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(BLOCK_NE, pos, BLOCK_Z, color);
         }
     }
 
-    fn wallform(k: &Kernel<TerrainType>, ret: &mut Vec<Sprite>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
+    fn wallform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
         let (left_wall, right_wall, block) = wall_flags_lrb(k);
         if block {
             if opaque {
-                ret.push(Sprite { idx: CUBE, pos: *pos, z: BLOCK_Z, color: *color });
+                ctx.draw(CUBE, pos, BLOCK_Z, color);
             } else {
-                ret.push(Sprite { idx: idx + 2, pos: *pos, z: BLOCK_Z, color: *color });
+                ctx.draw(idx + 2, pos, BLOCK_Z, color);
                 return;
             }
         }
         if left_wall && right_wall {
-            ret.push(Sprite { idx: idx + 2, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(idx + 2, pos, BLOCK_Z, color);
         } else if left_wall {
-            ret.push(Sprite { idx: idx, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(idx, pos, BLOCK_Z, color);
         } else if right_wall {
-            ret.push(Sprite { idx: idx + 1, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(idx + 1, pos, BLOCK_Z, color);
         } else if !block || !k.s.is_wall() {
             // NB: This branch has some actual local kernel logic not
             // handled by wall_flags_lrb.
-            ret.push(Sprite { idx: idx + 3, pos: *pos, z: BLOCK_Z, color: *color });
+            ctx.draw(idx + 3, pos, BLOCK_Z, color);
         }
     }
 
@@ -266,25 +263,59 @@ pub fn terrain_sprites(k: &Kernel<TerrainType>, pos: &Point2<f32>) -> Vec<Sprite
             (k.nw.is_wall(), k.ne.is_wall(), false)
         }
     }
-
-    ret
 }
 
 // TODO: Set up invariants so that draw_area cannot be called unless the tile
 // set is set up.
-pub fn init_tiles<R: Renderer>(app: &mut App<R>) {
-    let tiles = Image::load_from_memory(TILE_DATA, 1).unwrap();
+pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
+    let tiles = image::Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
         &Vector2::new(32, 32),
         &Vector2::new(tiles.width as int, tiles.height as int),
         tiles.pixels,
         &Vector2::new(-16, -16));
-    for i in range(0u, 96u) {
-        app.r.add_tile(tiles.get(i).clone());
+    ctx.make_images(&tiles)
+}
+
+struct SpriteCollector<'a> {
+    pub sprites: Vec<Sprite>,
+    pub mode: SpriteMode,
+    tiles: &'a Vec<Image>,
+}
+
+enum SpriteMode {
+    Normal,
+    FogOfWar,
+}
+
+impl<'a> SpriteCollector<'a> {
+    pub fn new<'a>(tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
+        SpriteCollector {
+            sprites: vec!(),
+            mode: Normal,
+            tiles: tiles,
+        }
     }
 }
 
-pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
+impl<'a> DrawContext for SpriteCollector<'a> {
+    fn draw<C: ToRGB>(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
+        let color = match self.mode {
+            Normal => color.to_rgb::<u8>(),
+            FogOfWar => RGB::new(0x22u8, 0x22u8, 0x11u8),
+        };
+        self.sprites.push(
+            Sprite {
+                image: *self.tiles.get(idx),
+                pos: *pos,
+                z: z,
+                color: color,
+            });
+    }
+}
+
+pub fn draw_area<S: State>(ctx: &mut Engine, state: &S, tiles: &Vec<Image>) {
     let xf = state.transform();
 
     let mut rect = Aabb2::new(
@@ -299,31 +330,33 @@ pub fn draw_area<R: Renderer, S: State>(state: &S, app: &mut App<R>) {
 
         let loc = p.to_location();
         let kernel = Kernel::new(|p| state.area().get(p), loc);
-        let mut sprites = terrain_sprites(&kernel, &offset);
+        let mut acc = SpriteCollector::new(tiles);
+
         let fov = state.fov(loc);
 
-        if fov == fov::Remembered {
-            for s in sprites.mut_iter() {
-                s.color = RGB::new(0x22u8, 0x22u8, 0x11u8);
-            }
-        } else if fov == fov::Unknown {
+        if fov == fov::Unknown {
             // Solid blocks for unseen areas, cover stuff in front.
-            sprites = vec!(Sprite { idx: BLOCK_DARK, pos: offset, z: BLOCK_Z, color: BLACK });
+            acc.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+        } else {
+            if fov == fov::Remembered { acc.mode = FogOfWar }
+            terrain_sprites(&acc, &kernel, &offset);
         }
 
-        for s in sprites.iter() {
-            s.draw(app);
+        for s in acc.sprites.iter() {
+            s.draw(ctx);
         }
 
+        /*
         if fov == fov::Seen {
             match state.drawable_mob_at(loc) {
                 Some(mob) => {
                     for s in mob.sprites(&xf).iter() {
-                        s.draw(app);
+                        s.draw(ctx);
                     }
                 }
                 _ => ()
             };
         }
+        */
     }
 }

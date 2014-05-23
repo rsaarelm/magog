@@ -1,13 +1,12 @@
 use time;
-
 use color::rgb::consts::*;
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point};
-
 use timing::{cycle_anim, single_anim};
+use engine::{Image};
 use world::area::{Location, ChartPos};
 use world::transform::Transform;
-use world::sprite::{Sprite, tile};
+use world::sprite::{Sprite};
 use world::sprite;
 
 // How many seconds to show the hurt blink.
@@ -97,7 +96,7 @@ impl Mob {
         }
     }
 
-    pub fn sprites(&self, xf: &Transform) -> Vec<Sprite> {
+    pub fn sprites(&self, tiles: Vec<Image>, xf: &Transform) -> Vec<Sprite> {
         let mut ret = vec!();
         let pos = xf.to_screen(ChartPos::from_location(self.loc));
 
@@ -105,23 +104,23 @@ impl Mob {
 
         match self.t {
             Player => {
-                ret.push(Sprite::new(tile(51), pos, sprite::BLOCK_Z, AZURE));
+                ret.push(Sprite::new(tiles.get(51), pos, sprite::BLOCK_Z, AZURE));
             },
             Morlock => {
-                ret.push(Sprite::new(tile(59), pos, sprite::BLOCK_Z, LIGHTSLATEGRAY));
+                ret.push(Sprite::new(tiles.get(59), pos, sprite::BLOCK_Z, LIGHTSLATEGRAY));
             },
             Centipede => {
-                ret.push(Sprite::new(tile(61), pos, sprite::BLOCK_Z, DARKCYAN));
+                ret.push(Sprite::new(tiles.get(61), pos, sprite::BLOCK_Z, DARKCYAN));
             },
             BigMorlock => {
-                ret.push(Sprite::new(tile(60), pos, sprite::BLOCK_Z, GOLD));
+                ret.push(Sprite::new(tiles.get(60), pos, sprite::BLOCK_Z, GOLD));
             },
             TimeEater => {
-                ret.push(Sprite::new(tile(62), pos, sprite::BLOCK_Z, CRIMSON));
+                ret.push(Sprite::new(tiles.get(62), pos, sprite::BLOCK_Z, CRIMSON));
             },
             Serpent => {
-                ret.push(Sprite::new(tile(94), pos, sprite::BLOCK_Z, CORAL));
-                ret.push(Sprite::new(tile(95), pos, sprite::BLOCK_Z, CORAL));
+                ret.push(Sprite::new(tiles.get(94), pos, sprite::BLOCK_Z, CORAL));
+                ret.push(Sprite::new(tiles.get(95), pos, sprite::BLOCK_Z, CORAL));
             }
         };
 
@@ -143,11 +142,11 @@ impl Mob {
             }
             Dying(start_time) => {
                 ret = vec!(Sprite::new(
-                    *single_anim(start_time, 0.1f64, &[tile(64), tile(65), tile(66), tile(67), tile(68)]),
+                    *single_anim(start_time, 0.1f64, &[tiles.get(64), tiles.get(65), tiles.get(66), tiles.get(67), tiles.get(68)]),
                     pos, sprite::BLOCK_Z, MAROON));
             }
             Dead => {
-                ret = vec!(Sprite::new(tile(68), pos, sprite::FLOOR_Z, MAROON));
+                ret = vec!(Sprite::new(tiles.get(68), pos, sprite::FLOOR_Z, MAROON));
             }
             Invisible => {
                 ret = vec!();
