@@ -149,7 +149,7 @@ pub fn terrain_sprites<C: DrawContext>(
         },
         area::Fence => {
             // The floor type beneath the fence tile is visible, make it grass if there's grass
-            // behind the fence.
+            // behind the fence. Otherwise make it regular floor.
             if k.n == area::Grass || k.ne == area::Grass || k.nw == area::Grass {
                 ctx.draw(GRASS, pos, FLOOR_Z, &DARKGREEN);
             } else {
@@ -207,7 +207,7 @@ pub fn terrain_sprites<C: DrawContext>(
             ctx.draw(TREE_TRUNK, pos, BLOCK_Z, &SADDLEBROWN);
         },
         area::TallGrass => {
-            ctx.draw(TALLGRASS, pos, FLOOR_Z, &GOLD);
+            ctx.draw(TALLGRASS, pos, BLOCK_Z, &GOLD);
         },
     }
 
