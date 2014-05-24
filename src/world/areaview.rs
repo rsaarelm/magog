@@ -342,18 +342,12 @@ pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
             terrain_sprites(&mut acc, &kernel, &offset);
         }
 
-        /*
         if fov == fov::Seen {
             match state.drawable_mob_at(loc) {
-                Some(mob) => {
-                    for s in mob.sprites(&xf).iter() {
-                        s.draw(ctx);
-                    }
-                }
+                Some(mob) => mob.draw(&mut acc, &offset),
                 _ => ()
             };
         }
-        */
     }
 }
 

@@ -1,13 +1,12 @@
 use time;
 use color::rgb::consts::*;
+use color::rgb::{RGB};
+use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point};
 use timing::{cycle_anim, single_anim};
-use engine::{Image};
-use world::area::{Location, ChartPos};
-use world::transform::Transform;
-use world::sprite::{Sprite};
-use world::sprite;
+use world::area::{Location};
+use world::sprite::{BLOCK_Z, DrawContext};
 
 // How many seconds to show the hurt blink.
 static HURT_TIME_S : f64 = 0.2;
@@ -96,65 +95,74 @@ impl Mob {
         }
     }
 
-    /*
-    pub fn sprites(&self, tiles: Vec<Image>, xf: &Transform) -> Vec<Sprite> {
-        let mut ret = vec!();
-        let pos = xf.to_screen(ChartPos::from_location(self.loc));
+    /// Should the mob be shown doing an idle alert animation?
+    fn is_bobbing(&self) -> bool {
+        self.anim_state == Awake && self.t != Player
+    }
 
-        let bob = Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, 1.0f32]));
+    fn color(&self) -> RGB<u8> {
+        match self.t {
+            Player => AZURE,
+            Morlock => LIGHTSLATEGRAY,
+            Centipede => DARKCYAN,
+            BigMorlock => GOLD,
+            TimeEater => CRIMSON,
+            Serpent => CORAL,
+        }
+    }
+
+    pub fn draw<C: DrawContext>(&self, ctx: &mut C, pos: &Point2<f32>) {
+        // Handle special animations.
+        match self.anim_state {
+            Dying(start_time) => {
+                let frame = *single_anim(
+                    start_time, 0.1f64, &[64, 65, 66, 67, 68]);
+                ctx.draw(frame, pos, BLOCK_Z, &MAROON);
+                return;
+            }
+            Dead => {
+                ctx.draw(68, pos, BLOCK_Z, &MAROON);
+                return;
+            }
+            Invisible => {
+                return;
+            }
+            _ => ()
+        };
+
+        let body_pos = if self.is_bobbing() {
+            pos.add_v(&Vector2::new(0.0f32, *cycle_anim(0.25f64, &[0.0f32, 1.0f32])))
+        } else {
+            *pos
+        };
+
+        let color = match self.anim_state {
+            Hurt(_) => *cycle_anim(0.05f64, &[BLACK, WHITE]),
+            _ => self.color()
+        };
 
         match self.t {
             Player => {
-                ret.push(Sprite::new(tiles.get(51), pos, sprite::BLOCK_Z, AZURE));
+                ctx.draw(51, &body_pos, BLOCK_Z, &color);
             },
             Morlock => {
-                ret.push(Sprite::new(tiles.get(59), pos, sprite::BLOCK_Z, LIGHTSLATEGRAY));
+                ctx.draw(59, &body_pos, BLOCK_Z, &color);
             },
             Centipede => {
-                ret.push(Sprite::new(tiles.get(61), pos, sprite::BLOCK_Z, DARKCYAN));
+                ctx.draw(61, &body_pos, BLOCK_Z, &color);
             },
             BigMorlock => {
-                ret.push(Sprite::new(tiles.get(60), pos, sprite::BLOCK_Z, GOLD));
+                ctx.draw(60, &body_pos, BLOCK_Z, &color);
             },
             TimeEater => {
-                ret.push(Sprite::new(tiles.get(62), pos, sprite::BLOCK_Z, CRIMSON));
+                ctx.draw(62, &body_pos, BLOCK_Z, &color);
             },
             Serpent => {
-                ret.push(Sprite::new(tiles.get(94), pos, sprite::BLOCK_Z, CORAL));
-                ret.push(Sprite::new(tiles.get(95), pos, sprite::BLOCK_Z, CORAL));
+                // Body
+                ctx.draw(94, &body_pos, BLOCK_Z, &color);
+                // Ground mound
+                ctx.draw(95, pos, BLOCK_Z, &color);
             }
         };
-
-
-        match self.anim_state {
-            Awake => {
-                if self.t != Player {
-                    if ret.len() > 0 {
-                        // XXX: Always assuming only the first sprite is the bobbing one.
-                        // TODO: Get a better way to split sprite to elements.
-                        ret.get_mut(0).pos = ret.get_mut(0).pos.add_v(&bob);
-                    }
-                }
-            }
-            Hurt(_) => {
-                for s in ret.mut_iter() {
-                    s.color = *cycle_anim(0.05f64, &[BLACK, WHITE]);
-                }
-            }
-            Dying(start_time) => {
-                ret = vec!(Sprite::new(
-                    *single_anim(start_time, 0.1f64, &[tiles.get(64), tiles.get(65), tiles.get(66), tiles.get(67), tiles.get(68)]),
-                    pos, sprite::BLOCK_Z, MAROON));
-            }
-            Dead => {
-                ret = vec!(Sprite::new(tiles.get(68), pos, sprite::FLOOR_Z, MAROON));
-            }
-            Invisible => {
-                ret = vec!();
-            }
-            _ => ()
-        }
-        ret
     }
-    */
 }
