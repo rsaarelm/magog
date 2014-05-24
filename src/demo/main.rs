@@ -1,11 +1,7 @@
-use app::App;
 use cgmath::vector::{Vector2};
 use color::rgb::consts::*;
-use glutil::glrenderer::GlRenderer;
 use key;
 use rand;
-use renderer::Renderer;
-use renderer;
 use world::area::{Area, Location, ChartPos};
 use world::area;
 use world::areaview;
@@ -15,12 +11,15 @@ use world::mob::Mob;
 use world::sprite;
 use world::state;
 use world::transform::Transform;
+use engine::{App, Engine, Key, Image};
+use engine;
 
 static VERSION: &'static str = include!("../../gen/git_version.inc");
 
 pub struct State {
     area: Area,
     loc: Location,
+    tiles: Vec<Image>,
 }
 
 impl state::State for State {
@@ -38,41 +37,44 @@ impl State {
         State {
             area: area,
             loc: Location::new(0i8, 0i8),
+            tiles: vec!(),
         }
     }
 }
 
-pub fn main() {
-    let mut app : App<GlRenderer> = App::new(640, 360, format!("Tech demo ({})", VERSION));
-    areaview::init_tiles(&mut app);
-
-    let mut state = State::new();
-
-    while app.alive {
-        areaview::draw_area(&state, &mut app);
-        loop {
-            match app.r.pop_key() {
-                Some(key) => {
-                    match key.code {
-                        key::ESC => { app.quit(); }
-                        key::F12 => { app.r.screenshot("/tmp/shot.png"); }
-                        key::UP => { state.loc = state.loc + Vector2::new(-1, -1); }
-                        key::DOWN => { state.loc = state.loc + Vector2::new(1, 1); }
-                        key::LEFT => { state.loc = state.loc + Vector2::new(-1, 1); }
-                        key::RIGHT => { state.loc = state.loc + Vector2::new(1, -1); }
-                        _ => (),
-                    }
-                }
-                _ => { break; }
-            }
-        }
-
-        let mouse = app.r.get_mouse();
-        let xf = Transform::new(ChartPos::from_location(state.loc));
-        let cursor_chart_pos = xf.to_chart(&mouse.pos);
-        app.r.draw_tile(areaview::CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), sprite::FLOOR_Z, &FIREBRICK, renderer::ColorKeyDraw);
-        app.r.draw_tile(areaview::CURSOR_TOP, &xf.to_screen(cursor_chart_pos), sprite::BLOCK_Z, &FIREBRICK, renderer::ColorKeyDraw);
-
-        app.r.flush();
+impl App for State {
+    fn setup(&mut self, ctx: &mut Engine) {
+        self.tiles = areaview::init_tiles(ctx);
     }
+
+    fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
+        match key {
+            engine::KeyEscape => { ctx.quit(); }
+            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
+            engine::KeyUp => { self.loc = self.loc + Vector2::new(-1, -1); }
+            engine::KeyDown => { self.loc = self.loc + Vector2::new(1, 1); }
+            engine::KeyLeft => { self.loc = self.loc + Vector2::new(-1, 1); }
+            engine::KeyRight => { self.loc = self.loc + Vector2::new(1, -1); }
+            _ => (),
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Engine) {
+        areaview::draw_area(ctx, self, &self.tiles);
+
+        let mouse = ctx.get_mouse();
+        let xf = Transform::new(ChartPos::from_location(self.loc));
+        let cursor_chart_pos = xf.to_chart(&mouse.pos);
+
+        ctx.set_color(&FIREBRICK);
+        ctx.set_layer(sprite::FLOOR_Z);
+        ctx.draw_image(self.tiles.get(areaview::CURSOR_BOTTOM), &xf.to_screen(cursor_chart_pos));
+        ctx.set_layer(sprite::BLOCK_Z);
+        ctx.draw_image(self.tiles.get(areaview::CURSOR_TOP), &xf.to_screen(cursor_chart_pos));
+    }
+}
+
+pub fn main() {
+    let mut app = State::new();
+    Engine::run(&mut app);
 }
