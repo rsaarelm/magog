@@ -1,6 +1,5 @@
 use cgmath::vector::{Vector2};
 use color::rgb::consts::*;
-use key;
 use rand;
 use world::area::{Area, Location, ChartPos};
 use world::area;

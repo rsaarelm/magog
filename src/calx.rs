@@ -19,7 +19,6 @@ use std::os;
 pub mod asciimap;
 pub mod engine;
 pub mod gen_id;
-pub mod key;
 pub mod pack_rect;
 pub mod rectutil;
 pub mod text;
