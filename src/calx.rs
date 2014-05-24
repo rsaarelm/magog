@@ -47,11 +47,11 @@ pub mod game {
     pub mod game;
     pub mod main;
 }
+*/
 
 pub mod mapedit {
     pub mod main;
 }
-*/
 
 pub mod demo {
     pub mod main;
@@ -64,12 +64,10 @@ pub mod enginetest {
 pub fn main() {
     let cmd = if os::args().len() > 1 { os::args().get(1).to_owned() } else { "game".to_owned() };
     match cmd.as_slice() {
-        /*
-        "mapedit" => mapedit::main::main(),
-        "game" => game::main::main(),
-        */
         "demo" => demo::main::main(),
         "enginetest" => enginetest::main::main(),
+        //"game" => game::main::main(),
+        "mapedit" => mapedit::main::main(),
         _ => println!("Unknown command")
     }
 }

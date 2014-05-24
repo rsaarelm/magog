@@ -13,6 +13,7 @@ use world::area::{TerrainType, Location, ChartPos};
 use world::fov;
 use world::sprite::{Sprite, BLOCK_Z, FLOOR_Z, DrawContext};
 use world::state::State;
+use world::transform::Transform;
 
 static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
@@ -277,14 +278,14 @@ pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
     ctx.make_images(&tiles)
 }
 
-struct SpriteCollector<'a> {
+pub struct SpriteCollector<'a> {
     pub sprites: Vec<Sprite>,
     pub mode: SpriteMode,
     engine: &'a mut Engine,
     tiles: &'a Vec<Image>,
 }
 
-enum SpriteMode {
+pub enum SpriteMode {
     Normal,
     FogOfWar,
 }
@@ -314,7 +315,7 @@ impl<'a> DrawContext for SpriteCollector<'a> {
     }
 }
 
-pub fn draw_area<S: State>(ctx: &mut Engine, state: &S, tiles: &Vec<Image>) {
+pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
     let xf = state.transform();
 
     let mut rect = Aabb2::new(
@@ -354,4 +355,18 @@ pub fn draw_area<S: State>(ctx: &mut Engine, state: &S, tiles: &Vec<Image>) {
         }
         */
     }
+}
+
+pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>, center: Location) -> ChartPos {
+    let mouse = ctx.get_mouse();
+    let xf = Transform::new(ChartPos::from_location(center));
+    let cursor_chart_pos = xf.to_chart(&mouse.pos);
+
+    ctx.set_color(&FIREBRICK);
+    ctx.set_layer(FLOOR_Z);
+    ctx.draw_image(tiles.get(CURSOR_BOTTOM), &xf.to_screen(cursor_chart_pos));
+    ctx.set_layer(BLOCK_Z);
+    ctx.draw_image(tiles.get(CURSOR_TOP), &xf.to_screen(cursor_chart_pos));
+
+    cursor_chart_pos
 }

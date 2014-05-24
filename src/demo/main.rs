@@ -1,5 +1,4 @@
 use cgmath::vector::{Vector2};
-use color::rgb::consts::*;
 use rand;
 use world::area::{Area, Location, ChartPos};
 use world::area;
@@ -7,13 +6,10 @@ use world::areaview;
 use world::fov;
 use world::mapgen::MapGen;
 use world::mob::Mob;
-use world::sprite;
 use world::state;
 use world::transform::Transform;
 use engine::{App, Engine, Key, Image};
 use engine;
-
-static VERSION: &'static str = include!("../../gen/git_version.inc");
 
 pub struct State {
     area: Area,
@@ -59,17 +55,8 @@ impl App for State {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        areaview::draw_area(ctx, self, &self.tiles);
-
-        let mouse = ctx.get_mouse();
-        let xf = Transform::new(ChartPos::from_location(self.loc));
-        let cursor_chart_pos = xf.to_chart(&mouse.pos);
-
-        ctx.set_color(&FIREBRICK);
-        ctx.set_layer(sprite::FLOOR_Z);
-        ctx.draw_image(self.tiles.get(areaview::CURSOR_BOTTOM), &xf.to_screen(cursor_chart_pos));
-        ctx.set_layer(sprite::BLOCK_Z);
-        ctx.draw_image(self.tiles.get(areaview::CURSOR_TOP), &xf.to_screen(cursor_chart_pos));
+        areaview::draw_area(ctx, &self.tiles, self);
+        areaview::draw_mouse(ctx, &self.tiles, self.loc);
     }
 }
 

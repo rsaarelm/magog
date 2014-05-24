@@ -2,14 +2,8 @@ use std::io::{IoResult, File, Open, Write, BufferedReader, BufferedWriter};
 use std::path::Path;
 use serialize::json;
 use serialize::{Encodable, Decodable};
-use glutil::glrenderer::GlRenderer;
-use color::rgb::consts::*;
 use cgmath::point::{Point2};
 use cgmath::vector::{Vector2};
-use app::App;
-use key;
-use renderer::Renderer;
-use renderer;
 use asciimap::AsciiMap;
 use world::area::{Area, Location, ChartPos};
 use world::area;
@@ -19,13 +13,14 @@ use world::mob::Mob;
 use world::state;
 use world::areaview;
 use world::areaview::Kernel;
-use world::sprite;
-
-static VERSION: &'static str = include!("../../gen/git_version.inc");
+use engine::{App, Engine, Key, Image};
+use engine;
 
 pub struct State {
     area: Area,
     loc: Location,
+    tiles: Vec<Image>,
+    brush: uint,
 }
 
 impl state::State for State {
@@ -35,11 +30,56 @@ impl state::State for State {
     fn area<'a>(&'a self) -> &'a Area { &self.area }
 }
 
+impl App for State {
+    fn setup(&mut self, ctx: &mut Engine) {
+        self.tiles = areaview::init_tiles(ctx);
+    }
+
+    fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
+        match key {
+            engine::KeyEscape => { ctx.quit(); }
+            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
+            engine::Key1 => {
+                self.brush += area::TERRAINS.len() - 1;
+                self.brush %= area::TERRAINS.len();
+            }
+            engine::Key2 => {
+                self.brush += 1;
+                self.brush %= area::TERRAINS.len();
+            }
+            engine::KeyUp => { self.loc = self.loc + Vector2::new(-1, -1); }
+            engine::KeyDown => { self.loc = self.loc + Vector2::new(1, 1); }
+            engine::KeyLeft => { self.loc = self.loc + Vector2::new(-1, 1); }
+            engine::KeyRight => { self.loc = self.loc + Vector2::new(1, -1); }
+            _ => (),
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Engine) {
+        areaview::draw_area(ctx, &self.tiles, self);
+        let mouse_pos = areaview::draw_mouse(ctx, &self.tiles, self.loc);
+        let mouse = ctx.get_mouse();
+        if mouse.left {
+            self.area.set(mouse_pos.to_location(), area::TERRAINS[self.brush]);
+        }
+        if mouse.right {
+            self.area.set(mouse_pos.to_location(), self.area.default);
+        }
+
+        let mut spr = areaview::SpriteCollector::new(ctx, &self.tiles);
+        areaview::terrain_sprites(
+            &mut spr, &Kernel::new_default(area::TERRAINS[self.brush], area::Void),
+            &Point2::new(32f32, 32f32));
+    }
+}
+
 impl State {
-    pub fn new() -> State {
+    pub fn new(area: Area) -> State {
         State {
-            area: Area::new(area::Void),
+            area: area,
             loc: Location::new(0i8, 0i8),
+            tiles: vec!(),
+            brush: 1,
         }
     }
 
@@ -54,10 +94,7 @@ impl State {
             Ok(v) => v,
             Err(e) => { println!("Decoding error: {}", e); return None; }
         };
-        Some(State {
-            area: Area::from_ascii_map(&ascii_map),
-            loc: Location::new(0i8, 0i8),
-        })
+        Some(State::new(Area::from_ascii_map(&ascii_map)))
     }
 
     pub fn save(&self, path: &str) -> IoResult<()> {
@@ -71,58 +108,8 @@ impl State {
 }
 
 pub fn main() {
-    let mut app : App<GlRenderer> = App::new(640, 360, format!("Map editor ({})", VERSION));
-    areaview::init_tiles(&mut app);
-
-    let mut state = match State::from_file("map.txt") {
-        Some(s) => s,
-        None => State::new()
-    };
-
-    let mut brush = 0;
-
-    while app.alive {
-        loop {
-            match app.r.pop_key() {
-                Some(key) => {
-                    match key.code {
-                        key::ESC => { app.quit(); }
-                        key::F12 => { app.r.screenshot("/tmp/shot.png"); }
-                        key::NUM_1 => { brush += area::TERRAINS.len() - 1; brush %= area::TERRAINS.len(); }
-                        key::NUM_2 => { brush += 1; brush %= area::TERRAINS.len(); }
-                        key::UP => { state.loc = state.loc + Vector2::new(-1, -1); }
-                        key::DOWN => { state.loc = state.loc + Vector2::new(1, 1); }
-                        key::LEFT => { state.loc = state.loc + Vector2::new(-1, 1); }
-                        key::RIGHT => { state.loc = state.loc + Vector2::new(1, -1); }
-                        _ => (),
-                    }
-                }
-                _ => { break; }
-            }
-        }
-
-        areaview::draw_area(&state, &mut app);
-
-        for spr in
-            areaview::terrain_sprites(
-                &Kernel::new_default(area::TERRAINS[brush], area::Void),
-                &Point2::new(32f32, 32f32)).iter() {
-            spr.draw(&mut app);
-        }
-
-        let mouse = app.r.get_mouse();
-        let xf = Transform::new(ChartPos::from_location(state.loc));
-        let cursor_chart_pos = xf.to_chart(&mouse.pos);
-        app.r.draw_tile(areaview::CURSOR_BOTTOM, &xf.to_screen(cursor_chart_pos), sprite::FLOOR_Z, &FIREBRICK, renderer::ColorKeyDraw);
-        app.r.draw_tile(areaview::CURSOR_TOP, &xf.to_screen(cursor_chart_pos), sprite::BLOCK_Z, &FIREBRICK, renderer::ColorKeyDraw);
-        if mouse.left {
-            state.area.set(cursor_chart_pos.to_location(), area::TERRAINS[brush]);
-        }
-        if mouse.right {
-            state.area.set(cursor_chart_pos.to_location(), state.area.default);
-        }
-
-        app.r.flush();
-    }
-    let _ = state.save("map.txt");
+    let mut app = State::from_file("map.txt").unwrap_or_else(||
+        State::new(Area::new(area::Void)));
+    Engine::run(&mut app);
+    let _ = app.save("map.txt");
 }
