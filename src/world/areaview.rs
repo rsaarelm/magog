@@ -175,7 +175,7 @@ pub fn terrain_sprites<C: DrawContext>(
         },
         area::Table => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
-            ctx.draw(TABLE, pos, BLOCK_Z, &DARKKHAKI);
+            ctx.draw(TABLE, pos, BLOCK_Z, &DARKGOLDENROD);
         },
         area::Fountain => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
@@ -187,7 +187,7 @@ pub fn terrain_sprites<C: DrawContext>(
         },
         area::Barrel => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
-            ctx.draw(BARREL, pos, BLOCK_Z, &DARKKHAKI);
+            ctx.draw(BARREL, pos, BLOCK_Z, &DARKGOLDENROD);
         },
         area::Grave => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
