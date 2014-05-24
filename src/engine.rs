@@ -116,6 +116,12 @@ impl Engine {
 
         gl::load_with(|s| glfw_state.get_proc_address(s));
 
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+
+        gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LEQUAL);
+
         // Must be in the order matching the SHADER_IDX constants.
         ctx.shaders.push(Program::link(
                 [hgl::Shader::compile(BLIT_V, hgl::VertexShader).unwrap(),
@@ -153,6 +159,7 @@ impl Engine {
             spf.begin();
 
             ctx.get_framebuffer().bind();
+            ctx.clear(&BLACK);
             gl::Viewport(0, 0, ctx.resolution.x as i32, ctx.resolution.y as i32);
             ctx.current_shader = TILE_SHADER_IDX;
             app.draw(&mut ctx);
