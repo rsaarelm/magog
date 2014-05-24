@@ -96,6 +96,7 @@ impl Mob {
         }
     }
 
+    /*
     pub fn sprites(&self, tiles: Vec<Image>, xf: &Transform) -> Vec<Sprite> {
         let mut ret = vec!();
         let pos = xf.to_screen(ChartPos::from_location(self.loc));
@@ -155,4 +156,5 @@ impl Mob {
         }
         ret
     }
+    */
 }

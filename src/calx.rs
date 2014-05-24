@@ -31,7 +31,6 @@ pub mod stb {
     pub mod truetype;
 }
 
-/*
 pub mod world {
     pub mod dijkstra;
     pub mod area;
@@ -43,7 +42,6 @@ pub mod world {
     pub mod mob;
     pub mod state;
 }
-*/
 
 /*
 pub mod game {
@@ -54,11 +52,11 @@ pub mod game {
 pub mod mapedit {
     pub mod main;
 }
+*/
 
 pub mod demo {
     pub mod main;
 }
-*/
 
 pub mod enginetest {
     pub mod main;
@@ -70,8 +68,8 @@ pub fn main() {
         /*
         "mapedit" => mapedit::main::main(),
         "game" => game::main::main(),
-        "demo" => demo::main::main(),
         */
+        "demo" => demo::main::main(),
         "enginetest" => enginetest::main::main(),
         _ => println!("Unknown command")
     }

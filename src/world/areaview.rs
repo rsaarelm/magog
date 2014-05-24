@@ -280,6 +280,7 @@ pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
 struct SpriteCollector<'a> {
     pub sprites: Vec<Sprite>,
     pub mode: SpriteMode,
+    engine: &'a mut Engine,
     tiles: &'a Vec<Image>,
 }
 
@@ -289,10 +290,11 @@ enum SpriteMode {
 }
 
 impl<'a> SpriteCollector<'a> {
-    pub fn new<'a>(tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
+    pub fn new<'a>(engine: &'a mut Engine, tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
         SpriteCollector {
             sprites: vec!(),
             mode: Normal,
+            engine: engine,
             tiles: tiles,
         }
     }
@@ -305,13 +307,10 @@ impl<'a> DrawContext for SpriteCollector<'a> {
             Normal => color.to_rgb::<u8>(),
             FogOfWar => RGB::new(0x22u8, 0x22u8, 0x11u8),
         };
-        self.sprites.push(
-            Sprite {
-                image: *self.tiles.get(idx),
-                pos: *pos,
-                z: z,
-                color: color,
-            });
+
+        self.engine.set_layer(z);
+        self.engine.set_color(&color);
+        self.engine.draw_image(self.tiles.get(idx), pos);
     }
 }
 
@@ -330,7 +329,7 @@ pub fn draw_area<S: State>(ctx: &mut Engine, state: &S, tiles: &Vec<Image>) {
 
         let loc = p.to_location();
         let kernel = Kernel::new(|p| state.area().get(p), loc);
-        let mut acc = SpriteCollector::new(tiles);
+        let mut acc = SpriteCollector::new(ctx, tiles);
 
         let fov = state.fov(loc);
 
@@ -339,11 +338,7 @@ pub fn draw_area<S: State>(ctx: &mut Engine, state: &S, tiles: &Vec<Image>) {
             acc.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
         } else {
             if fov == fov::Remembered { acc.mode = FogOfWar }
-            terrain_sprites(&acc, &kernel, &offset);
-        }
-
-        for s in acc.sprites.iter() {
-            s.draw(ctx);
+            terrain_sprites(&mut acc, &kernel, &offset);
         }
 
         /*
