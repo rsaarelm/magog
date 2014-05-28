@@ -1,16 +1,15 @@
-use glutil::glrenderer::GlRenderer;
-use key;
-use renderer::Renderer;
-use app::App;
 use timing::Ticker;
-use cgmath::vector::{Vector2};
-use world::area::{ChartPos, DIRECTIONS6};
-use world::transform::Transform;
-use world::areaview;
-use game::game::Game;
+use cgmath::point::{Point2};
+//use world::area::{ChartPos, DIRECTIONS6};
+//use world::transform::Transform;
+//use world::areaview;
+//use game::game::Game;
+use engine::{App, Engine, Key, Image};
+use engine;
 
-pub mod game;
+//pub mod game;
 
+/*
 static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
     &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
     &[DIRECTIONS6[1], DIRECTIONS6[0], DIRECTIONS6[2]],
@@ -27,7 +26,91 @@ static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
     &[DIRECTIONS6[4], DIRECTIONS6[5]],
     &[DIRECTIONS6[2], DIRECTIONS6[1]],
 ];
+*/
 
+struct GameApp {
+    //game: Game,
+    tiles: Vec<Image>,
+    standalone_anim: Ticker,
+}
+
+impl GameApp {
+    pub fn new() -> GameApp {
+        GameApp {
+            //game: Game::new(),
+            tiles: vec!(),
+            standalone_anim: Ticker::new(0.2f64),
+        }
+    }
+}
+
+impl App for GameApp {
+    fn setup(&mut self, ctx: &mut Engine) {
+        //self.tiles = areaview::init_tiles(ctx);
+        ctx.set_title("Demogame".to_owned());
+        ctx.set_frame_interval(1f64 / 30.0);
+    }
+
+    fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
+        /*
+        if self.game.player().is_alive() {
+            // For the hacked sideways move.
+            let column = {
+                let player = self.game.player();
+                player.loc.p().x - player.loc.p().y
+            };
+            match key {
+
+                engine::KeyQ | engine::KeyPad7 => { self.game.smart_move(SMART_MOVE_6[5]); },
+                engine::KeyW | engine::KeyPad8 => { self.game.smart_move(SMART_MOVE_6[0]); },
+                engine::KeyE | engine::PAGEUP => { self.game.smart_move(SMART_MOVE_6[1]); },
+                engine::KeyA | engine::END => { self.game.smart_move(SMART_MOVE_6[4]); },
+                engine::KeyS | engine::DOWN => { self.game.smart_move(SMART_MOVE_6[3]); },
+                engine::KeyD | engine::PAGEDOWN => { self.game.smart_move(SMART_MOVE_6[2]); },
+
+                engine::KeyLeft => { self.game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
+                engine::KeyRight => { self.game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
+                engine::KeySpace => { self.game.pass(); },
+                _ => (),
+            }
+        }
+        */
+
+        // Keys that work even when there's no player.
+        match key {
+            engine::KeyEscape => { ctx.quit(); },
+            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); },
+            _ => (),
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Engine) {
+        ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
+        /*
+        self.game.draw(ctx, self.tiles);
+
+        let mouse_pos = areaview::draw_mouse(ctx, &self.tiles, self.game.pos);
+
+        // Player's gone, assume we're running an attract mode or something.
+        if !game.has_player() { break; }
+
+        // Player is dead, run timed animations.
+        if !game.player().is_alive() {
+            if self.standalone_anim.get() {
+                game.update();
+            }
+        }
+
+        */
+    }
+}
+
+pub fn main() {
+    let mut app = GameApp::new();
+    Engine::run(&mut app);
+}
+
+/*
 pub fn main() {
     let mut app : App<GlRenderer> = App::new(640, 360, "Demogame");
     areaview::init_tiles(&mut app);
@@ -99,3 +182,4 @@ pub fn main() {
         app.r.flush();
     }
 }
+*/

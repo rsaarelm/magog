@@ -30,6 +30,7 @@ pub mod stb {
     pub mod truetype;
 }
 
+/*
 pub mod world {
     pub mod dijkstra;
     pub mod area;
@@ -41,14 +42,14 @@ pub mod world {
     pub mod mob;
     pub mod state;
 }
-
-/*
-pub mod game {
-    pub mod game;
-    pub mod main;
-}
 */
 
+pub mod game {
+    //pub mod game;
+    pub mod main;
+}
+
+/*
 pub mod mapedit {
     pub mod main;
 }
@@ -60,14 +61,15 @@ pub mod demo {
 pub mod enginetest {
     pub mod main;
 }
+*/
 
 pub fn main() {
     let cmd = if os::args().len() > 1 { os::args().get(1).to_owned() } else { "game".to_owned() };
     match cmd.as_slice() {
-        "demo" => demo::main::main(),
-        "enginetest" => enginetest::main::main(),
-        //"game" => game::main::main(),
-        "mapedit" => mapedit::main::main(),
+        //"demo" => demo::main::main(),
+        //"enginetest" => enginetest::main::main(),
+        "game" => game::main::main(),
+        //"mapedit" => mapedit::main::main(),
         _ => println!("Unknown command")
     }
 }
