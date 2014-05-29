@@ -104,7 +104,7 @@ impl<C: Clone> Kernel<C> {
     }
 }
 
-trait WorldView {
+pub trait WorldView {
     fn draw_entities_at<C: DrawContext>(
         &self, ctx: &mut C, tiles: &Vec<Image>,
         loc: Location, pos: &Point2<f32>);
@@ -128,7 +128,7 @@ impl WorldView for World {
     }
 }
 
-pub fn terrain_sprites<C: DrawContext>(
+fn terrain_sprites<C: DrawContext>(
     ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>) {
     match k.center {
         terrain::Void => {

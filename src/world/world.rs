@@ -9,6 +9,7 @@ pub struct World {
     mobs: HashMap<MobId, Mob>,
 }
 
+#[deriving(Decodable, Encodable)]
 impl World {
     pub fn new(seed: u32) -> World {
         World {
@@ -77,6 +78,27 @@ impl Sub<Location, Vector2<int>> for Location {
 }
 
 
+pub static DIRECTIONS6: [Vector2<int>, ..6] = [
+    Vector2 { x: -1, y: -1 },
+    Vector2 { x:  0, y: -1 },
+    Vector2 { x:  1, y:  0 },
+    Vector2 { x:  1, y:  1 },
+    Vector2 { x:  0, y:  1 },
+    Vector2 { x: -1, y:  0 },
+];
+
+pub static DIRECTIONS8: [Vector2<int>, ..8] = [
+    Vector2 { x: -1, y: -1 },
+    Vector2 { x:  0, y: -1 },
+    Vector2 { x:  1, y: -1 },
+    Vector2 { x:  1, y:  0 },
+    Vector2 { x:  1, y:  1 },
+    Vector2 { x:  0, y:  1 },
+    Vector2 { x: -1, y:  1 },
+    Vector2 { x: -1, y:  0 },
+];
+
+
 // Positions on a virtual infinite 2D chart, which may map to different actual
 // Locations.
 #[deriving(Eq, TotalEq, Clone, Hash)]
@@ -97,6 +119,16 @@ impl<'a> ChartPos {
     }
 }
 
+impl Add<Vector2<int>, ChartPos> for ChartPos {
+    fn add(&self, other: &Vector2<int>) -> ChartPos {
+        ChartPos::new(
+            (self.x + other.x),
+            (self.y + other.y))
+    }
+}
+
+//pub struct Chart(HashMap<ChartPos, Location>);
+pub type Chart = HashMap<ChartPos, Location>;
 
 pub struct Mob {
     pub loc: Location,

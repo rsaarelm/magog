@@ -1,19 +1,136 @@
 use num::Integer;
-use collections::hashmap::HashSet;
+use collections::hashmap::HashMap;
 
 use cgmath::vector::{Vector, Vector2};
 
-use world::area::Area;
-use world::area::{Location, DIRECTIONS6};
+use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6, DIRECTIONS8};
 
-pub struct Fov(HashSet<Location>);
+pub struct Fov {
+    seen: Chart,
+    remembered: Chart,
+    offset: ChartPos,
+}
 
 #[deriving(Eq)]
 pub enum FovStatus {
-    Seen,
-    Remembered,
+    Seen(Location),
+    Remembered(Location),
     Unknown,
 }
+
+
+impl Fov {
+    pub fn new() -> Fov {
+        Fov {
+            seen: HashMap::new(),
+            remembered: HashMap::new(),
+            offset: ChartPos::new(0, 0),
+        }
+    }
+
+    pub fn translate(&mut self, delta: &Vector2<int>) {
+        self.offset = self.offset + *delta;
+    }
+
+    pub fn update(&mut self, world: &World, center: Location, range: uint) {
+        self.seen = HashMap::new();
+
+        mark_seen(self, ChartPos::new(0, 0), center);
+
+        process(self, world, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
+
+        // Post-processing hack to make acute corner wall tiles in fake-isometric
+        // rooms visible.
+        {
+            let mut queue = vec!();
+            for (&pos, &loc) in self.seen.iter() {
+                //    above
+                //  left right
+                //     pos
+                //
+                // If both pos and above are visible, left and right will
+                // be made visible if they are opaque.
+                let above = pos + Vector2::new(-1, -1);
+
+                let left_loc = loc + Vector2::new(-1, 0);
+                let right_loc = loc + Vector2::new(0, -1);
+
+                if self.seen.contains_key(&above) {
+                    if world.is_opaque(left_loc) {
+                        queue.push((pos + Vector2::new(-1, 0), left_loc));
+                    }
+                    if world.is_opaque(right_loc) {
+                        queue.push((pos + Vector2::new(0, -1), right_loc));
+                    }
+                }
+            }
+
+            for &(pos, loc) in queue.iter() { mark_seen(self, pos, loc); }
+        }
+
+
+        // Compute field-of-view using recursive shadowcasting in hex grid
+        // geometry.
+        fn process(
+            fov: &mut Fov, world: &World, range: uint,
+            center: Location, begin: Angle, end: Angle) {
+            if begin.radius > range { return; }
+
+            let mut angle = begin;
+            let group_opaque = world.is_opaque(center + angle.to_vec());
+            while angle.is_below(end) {
+                let loc = center + angle.to_vec();
+                if world.is_opaque(loc) != group_opaque {
+                    process(fov, world, range, center, angle, end);
+                    // Terrain opaquity has changed, time to recurse.
+                    if !group_opaque {
+                        process(fov, world, range, center, begin.further(), angle.further());
+                    }
+                    return;
+                }
+                mark_seen(fov, ChartPos::new(0, 0) + angle.to_vec(), loc);
+
+                angle = angle.next();
+            }
+
+            if !group_opaque {
+                process(fov, world, range, center, begin.further(), end.further());
+            }
+        }
+
+        fn mark_seen(fov: &mut Fov, pos: ChartPos, loc: Location) {
+            let insert_pos = fov.to_chart(pos);
+            fov.seen.insert(insert_pos, loc);
+            fov.remembered.insert(insert_pos, loc);
+        }
+    }
+
+    pub fn get(&self, pos: ChartPos) -> FovStatus {
+        let retrieve_pos = self.from_chart(pos);
+
+        match self.seen.find(&retrieve_pos) {
+            Some(&loc) => return Seen(loc),
+            _ => ()
+        }
+
+        match self.remembered.find(&retrieve_pos) {
+            Some(&loc) => return Remembered(loc),
+            _ => ()
+        }
+
+        Unknown
+    }
+
+    fn to_chart(&self, pos: ChartPos) -> ChartPos {
+        ChartPos::new(pos.x + self.offset.x, pos.y + self.offset.y)
+    }
+
+    fn from_chart(&self, pos: ChartPos) -> ChartPos {
+        ChartPos::new(pos.x - self.offset.x, pos.y - self.offset.y)
+    }
+
+}
+
 
 #[deriving(Eq)]
 struct Angle {
@@ -49,88 +166,4 @@ impl Angle {
     pub fn next(self) -> Angle {
         Angle::new((self.pos + 0.5).floor() + 0.5, self.radius)
     }
-}
-
-impl Fov {
-    pub fn new() -> Fov { Fov(HashSet::new()) }
-
-    pub fn add(&mut self, other: &Fov) {
-        let &Fov(ref mut h) = self;
-        let &Fov(ref o) = other;
-        h.extend(o.iter().map(|x| x.clone()));
-    }
-
-    pub fn contains(&self, loc: Location) -> bool {
-        let &Fov(ref h) = self;
-        h.contains(&loc)
-    }
-
-    fn insert(&mut self, loc: Location) {
-        let Fov(ref mut h) = *self;
-        h.insert(loc);
-    }
-}
-
-pub fn fov(a: &Area, center: Location, range: uint) -> Fov {
-    let mut ret = Fov::new();
-    ret.insert(center);
-
-    process(a, &mut ret, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
-
-    fn process(
-        a: &Area, f: &mut Fov, range: uint,
-        center: Location, begin: Angle, end: Angle) {
-        if begin.radius > range { return; }
-
-        let mut angle = begin;
-        let group_opaque = a.is_opaque(center + angle.to_vec());
-        while angle.is_below(end) {
-            let loc = center + angle.to_vec();
-            if a.is_opaque(loc) != group_opaque {
-                process(a, f, range, center, angle, end);
-                // Terrain opaquity has changed, time to recurse.
-                if !group_opaque {
-                    process(a, f, range, center, begin.further(), angle.further());
-                }
-                return;
-            }
-            f.insert(loc);
-
-            angle = angle.next();
-        }
-
-        if !group_opaque {
-            process(a, f, range, center, begin.further(), end.further());
-        }
-    }
-
-    // Post-processing hack to make acute corner wall tiles in fake-isometric
-    // rooms visible.
-    {
-        let Fov(ref mut h) = ret;
-        let mut queue = vec!();
-        for &loc in h.iter() {
-            //    above
-            //  left right
-            //     loc
-            //
-            // If both loc and above are visible, left and right will
-            // be made visible if they are opaque.
-            let above = loc + Vector2::new(-1, -1);
-            let left = loc + Vector2::new(-1, 0);
-            let right = loc + Vector2::new(0, -1);
-            if h.contains(&above) {
-               if a.is_opaque(left) {
-                   queue.push(left);
-               }
-               if a.is_opaque(right) {
-                   queue.push(right);
-               }
-            }
-        }
-
-        for &loc in queue.iter() { h.insert(loc); }
-    }
-
-    ret
 }

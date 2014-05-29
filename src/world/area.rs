@@ -180,23 +180,3 @@ impl Area {
                 (Point2::new(loc.x as int, loc.y as int), Cell::new(t.name().to_strbuf(), vec!()))))
     }
 }
-
-pub static DIRECTIONS6: [Vector2<int>, ..6] = [
-    Vector2 { x: -1, y: -1 },
-    Vector2 { x:  0, y: -1 },
-    Vector2 { x:  1, y:  0 },
-    Vector2 { x:  1, y:  1 },
-    Vector2 { x:  0, y:  1 },
-    Vector2 { x: -1, y:  0 },
-];
-
-pub static DIRECTIONS8: [Vector2<int>, ..8] = [
-    Vector2 { x: -1, y: -1 },
-    Vector2 { x:  0, y: -1 },
-    Vector2 { x:  1, y: -1 },
-    Vector2 { x:  1, y:  0 },
-    Vector2 { x:  1, y:  1 },
-    Vector2 { x:  0, y:  1 },
-    Vector2 { x: -1, y:  1 },
-    Vector2 { x: -1, y:  0 },
-];
