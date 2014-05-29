@@ -8,12 +8,19 @@ use stb::image;
 use rectutil::RectUtil;
 use engine::{App, Engine, Image};
 use tile::Tile;
-use world::area;
-use world::area::{TerrainType, Location, ChartPos};
-use world::fov;
-use world::sprite::{Sprite, BLOCK_Z, FLOOR_Z, DrawContext};
-use world::state::State;
-use world::transform::Transform;
+use world::terrain;
+use world::terrain::TerrainType;
+use world::world::{World, Location, ChartPos};
+use view::transform::Transform;
+
+pub static FLOOR_Z: f32 = 0.500f32;
+pub static BLOCK_Z: f32 = 0.400f32;
+
+/// Interface for sprite-drawing.
+pub trait DrawContext {
+    fn draw<C: ToRGB>(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C);
+}
 
 static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
@@ -97,116 +104,141 @@ impl<C: Clone> Kernel<C> {
     }
 }
 
+trait WorldView {
+    fn draw_entities_at<C: DrawContext>(
+        &self, ctx: &mut C, tiles: &Vec<Image>,
+        loc: Location, pos: &Point2<f32>);
+
+    fn draw_area(
+        &self, ctx: &mut Engine, tiles: &Vec<Image>,
+        origin: Location);
+}
+
+impl WorldView for World {
+    fn draw_entities_at<C: DrawContext>(
+        &self, ctx: &mut C, tiles: &Vec<Image>,
+        loc: Location, pos: &Point2<f32>) {
+        fail!("TODO");
+    }
+
+    fn draw_area(
+        &self, ctx: &mut Engine, tiles: &Vec<Image>,
+        origin: Location) {
+        fail!("TODO");
+    }
+}
+
 pub fn terrain_sprites<C: DrawContext>(
     ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>) {
     match k.center {
-        area::Void => {
+        terrain::Void => {
             ctx.draw(BLANK_FLOOR, pos, FLOOR_Z, &BLACK);
         },
-        area::Water => {
+        terrain::Water => {
             ctx.draw(WATER, pos, FLOOR_Z, &ROYALBLUE);
         },
-        area::Shallows => {
+        terrain::Shallows => {
             ctx.draw(SHALLOWS, pos, FLOOR_Z, &CORNFLOWERBLUE);
         },
-        area::Magma => {
+        terrain::Magma => {
             ctx.draw(MAGMA, pos, FLOOR_Z, &DARKRED);
         },
-        area::Tree => {
+        terrain::Tree => {
             // A two-toner, with floor, using two z-layers
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(TREE_TRUNK, pos, BLOCK_Z, &SADDLEBROWN);
             ctx.draw(TREE_FOLIAGE, pos, BLOCK_Z, &GREEN);
         },
-        area::Floor => {
+        terrain::Floor => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
         },
-        area::Chasm => {
+        terrain::Chasm => {
             ctx.draw(CHASM, pos, FLOOR_Z, &DARKSLATEGRAY);
         },
-        area::Grass => {
+        terrain::Grass => {
             ctx.draw(GRASS, pos, FLOOR_Z, &DARKGREEN);
         },
-        area::Downstairs => {
+        terrain::Downstairs => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(DOWNSTAIRS, pos, BLOCK_Z, &SLATEGRAY);
         },
-        area::Portal => {
+        terrain::Portal => {
             let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
             let portal_col = RGB::new(glow, glow, 255);
             ctx.draw(PORTAL, pos, BLOCK_Z, &portal_col);
         },
-        area::Rock => {
+        terrain::Rock => {
             blockform(ctx, k, pos, BLOCK, &DARKGOLDENROD);
         }
-        area::Wall => {
+        terrain::Wall => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             wallform(ctx, k, pos, WALL, &LIGHTSLATEGRAY, true);
         },
-        area::RockWall => {
+        terrain::RockWall => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             wallform(ctx, k, pos, ROCKWALL, &LIGHTSLATEGRAY, true);
         },
-        area::Fence => {
-            // The floor type beneath the fence tile is visible, make it grass if there's grass
-            // behind the fence. Otherwise make it regular floor.
-            if k.n == area::Grass || k.ne == area::Grass || k.nw == area::Grass {
+        terrain::Fence => {
+            // The floor type beneath the fence tile is visible, make it grass
+            // if there's grass behind the fence. Otherwise make it regular
+            // floor.
+            if k.n == terrain::Grass || k.ne == terrain::Grass || k.nw == terrain::Grass {
                 ctx.draw(GRASS, pos, FLOOR_Z, &DARKGREEN);
             } else {
                 ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             }
             wallform(ctx, k, pos, FENCE, &DARKGOLDENROD, false);
         },
-        area::Bars => {
+        terrain::Bars => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             wallform(ctx, k, pos, BARS, &GAINSBORO, false);
         },
-        area::Stalagmite => {
+        terrain::Stalagmite => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(STALAGMITE, pos, BLOCK_Z, &DARKGOLDENROD);
         },
-        area::Window => {
+        terrain::Window => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             wallform(ctx, k, pos, WINDOW, &LIGHTSLATEGRAY, false);
         },
-        area::Door => {
+        terrain::Door => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             wallform(ctx, k, pos, DOOR, &LIGHTSLATEGRAY, true);
             wallform(ctx, k, pos, DOOR + 4, &SADDLEBROWN, false);
         },
-        area::Table => {
+        terrain::Table => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(TABLE, pos, BLOCK_Z, &DARKGOLDENROD);
         },
-        area::Fountain => {
+        terrain::Fountain => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(FOUNTAIN, pos, BLOCK_Z, &GAINSBORO);
         },
-        area::Altar => {
+        terrain::Altar => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(ALTAR, pos, BLOCK_Z, &GAINSBORO);
         },
-        area::Barrel => {
+        terrain::Barrel => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(BARREL, pos, BLOCK_Z, &DARKGOLDENROD);
         },
-        area::Grave => {
+        terrain::Grave => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(GRAVE, pos, BLOCK_Z, &SLATEGRAY);
         },
-        area::Stone => {
+        terrain::Stone => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(STONE, pos, BLOCK_Z, &SLATEGRAY);
         },
-        area::Menhir => {
+        terrain::Menhir => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(MENHIR, pos, BLOCK_Z, &SLATEGRAY);
         },
-        area::DeadTree => {
+        terrain::DeadTree => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(TREE_TRUNK, pos, BLOCK_Z, &SADDLEBROWN);
         },
-        area::TallGrass => {
+        terrain::TallGrass => {
             ctx.draw(TALLGRASS, pos, BLOCK_Z, &GOLD);
         },
     }
@@ -279,7 +311,6 @@ pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
 }
 
 pub struct SpriteCollector<'a> {
-    pub sprites: Vec<Sprite>,
     pub mode: SpriteMode,
     engine: &'a mut Engine,
     tiles: &'a Vec<Image>,
@@ -293,7 +324,6 @@ pub enum SpriteMode {
 impl<'a> SpriteCollector<'a> {
     pub fn new<'a>(engine: &'a mut Engine, tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
         SpriteCollector {
-            sprites: vec!(),
             mode: Normal,
             engine: engine,
             tiles: tiles,
@@ -315,6 +345,7 @@ impl<'a> DrawContext for SpriteCollector<'a> {
     }
 }
 
+/*
 pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
     let xf = state.transform();
 
@@ -350,6 +381,7 @@ pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
         }
     }
 }
+*/
 
 pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>, center: Location) -> ChartPos {
     let mouse = ctx.get_mouse();

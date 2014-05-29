@@ -4,6 +4,7 @@ use cgmath::point::{Point2};
 //use world::transform::Transform;
 //use world::areaview;
 //use game::game::Game;
+use world::world::World;
 use engine::{App, Engine, Key, Image};
 use engine;
 
@@ -29,7 +30,7 @@ static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
 */
 
 struct GameApp {
-    //game: Game,
+    world: World,
     tiles: Vec<Image>,
     standalone_anim: Ticker,
 }
@@ -37,7 +38,7 @@ struct GameApp {
 impl GameApp {
     pub fn new() -> GameApp {
         GameApp {
-            //game: Game::new(),
+            world: World::new(666),
             tiles: vec!(),
             standalone_anim: Ticker::new(0.2f64),
         }

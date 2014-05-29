@@ -30,19 +30,24 @@ pub mod stb {
     pub mod truetype;
 }
 
-/*
 pub mod world {
-    pub mod dijkstra;
-    pub mod area;
-    pub mod fov;
-    pub mod areaview;
-    pub mod mapgen;
-    pub mod transform;
-    pub mod sprite;
-    pub mod mob;
-    pub mod state;
+    //pub mod dijkstra;
+    //pub mod area;
+    //pub mod fov;
+    //pub mod areaview;
+    //pub mod mapgen;
+    //pub mod transform;
+    //pub mod sprite;
+    //pub mod mob;
+    //pub mod state;
+    pub mod world;
+    pub mod terrain;
 }
-*/
+
+pub mod view {
+    pub mod transform;
+    pub mod worldview;
+}
 
 pub mod game {
     //pub mod game;
