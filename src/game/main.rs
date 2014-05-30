@@ -1,3 +1,4 @@
+use rand;
 use timing::Ticker;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
@@ -8,6 +9,7 @@ use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;
 use world::terrain;
+use world::mapgen::MapGen;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -58,6 +60,7 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_owned());
         ctx.set_frame_interval(1f64 / 30.0);
 
+        self.world.gen_herringbone(&mut rand::StdRng::new().unwrap());
         self.world.terrain_set(Location::new(0, 0), terrain::Grass);
         self.world.terrain_set(Location::new(1, 0), terrain::Wall);
         self.world.terrain_set(Location::new(1, -1), terrain::Wall);
@@ -97,7 +100,7 @@ impl App for GameApp {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        self.fov.update(&self.world, Location::new(0, 0), 12);
+        self.fov.update(&self.world, Location::new(0, 3), 12);
         self.world.draw_area(ctx, &self.tiles, &self.fov);
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);

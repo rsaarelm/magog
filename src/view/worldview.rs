@@ -145,12 +145,35 @@ impl WorldView for World {
                     self.draw_entities_at(&mut draw, loc, &offset);
                 }
                 Unknown => {
-                    draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+                    //draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
                 }
             }
         }
     }
 }
+
+
+pub struct SpriteCollector<'a> {
+    pub mode: SpriteMode,
+    engine: &'a mut Engine,
+    tiles: &'a Vec<Image>,
+}
+
+pub enum SpriteMode {
+    Normal,
+    FogOfWar,
+}
+
+impl<'a> SpriteCollector<'a> {
+    pub fn new<'a>(engine: &'a mut Engine, tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
+        SpriteCollector {
+            mode: Normal,
+            engine: engine,
+            tiles: tiles,
+        }
+    }
+}
+
 
 fn terrain_sprites<C: DrawContext>(
     ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>) {
@@ -332,26 +355,6 @@ pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
     ctx.make_images(&tiles)
 }
 
-pub struct SpriteCollector<'a> {
-    pub mode: SpriteMode,
-    engine: &'a mut Engine,
-    tiles: &'a Vec<Image>,
-}
-
-pub enum SpriteMode {
-    Normal,
-    FogOfWar,
-}
-
-impl<'a> SpriteCollector<'a> {
-    pub fn new<'a>(engine: &'a mut Engine, tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
-        SpriteCollector {
-            mode: Normal,
-            engine: engine,
-            tiles: tiles,
-        }
-    }
-}
 
 impl<'a> DrawContext for SpriteCollector<'a> {
     fn draw<C: ToRGB>(
@@ -366,44 +369,6 @@ impl<'a> DrawContext for SpriteCollector<'a> {
         self.engine.draw_image(self.tiles.get(idx), pos);
     }
 }
-
-/*
-pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
-    let xf = state.transform();
-
-    let mut rect = Aabb2::new(
-        *xf.to_chart(&Point2::new(0f32, 0f32)).p(),
-        *xf.to_chart(&Point2::new(640f32, 392f32)).p());
-    rect = rect.grow(xf.to_chart(&Point2::new(640f32, 0f32)).p());
-    rect = rect.grow(xf.to_chart(&Point2::new(0f32, 392f32)).p());
-
-    for pt in rect.points() {
-        let p = ChartPos::new(pt.x, pt.y);
-        let offset = xf.to_screen(p);
-
-        let loc = p.to_location();
-        let kernel = Kernel::new(|p| state.area().get(p), loc);
-        let mut acc = SpriteCollector::new(ctx, tiles);
-
-        let fov = state.fov(loc);
-
-        if fov == fov::Unknown {
-            // Solid blocks for unseen areas, cover stuff in front.
-            acc.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
-        } else {
-            if fov == fov::Remembered { acc.mode = FogOfWar }
-            terrain_sprites(&mut acc, &kernel, &offset);
-        }
-
-        if fov == fov::Seen {
-            match state.drawable_mob_at(loc) {
-                Some(mob) => mob.draw(&mut acc, &offset),
-                _ => ()
-            };
-        }
-    }
-}
-*/
 
 pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>) -> ChartPos {
     let mouse = ctx.get_mouse();
