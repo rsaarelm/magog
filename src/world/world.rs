@@ -42,7 +42,9 @@ impl World {
 
     pub fn remove_mob(&mut self, id: MobId) { self.mobs.remove(&id); }
 
-    // pub fn iter_mobs(
+    pub fn mob_ids(&self) -> Vec<MobId> {
+        self.mobs.keys().map(|&x| x).collect()
+    }
 
     pub fn find_mut_mob<'a>(&'a mut self, id: MobId) -> Option<&'a mut Mob> {
         self.mobs.find_mut(&id)
