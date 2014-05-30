@@ -11,7 +11,7 @@ use tile::Tile;
 use world::terrain;
 use world::terrain::TerrainType;
 use world::world::{World, Location, ChartPos};
-use view::transform::Transform;
+use world::fov::Fov;
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -110,8 +110,7 @@ pub trait WorldView {
         loc: Location, pos: &Point2<f32>);
 
     fn draw_area(
-        &self, ctx: &mut Engine, tiles: &Vec<Image>,
-        origin: Location);
+        &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov);
 }
 
 impl WorldView for World {
@@ -122,8 +121,7 @@ impl WorldView for World {
     }
 
     fn draw_area(
-        &self, ctx: &mut Engine, tiles: &Vec<Image>,
-        origin: Location) {
+        &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov) {
         fail!("TODO");
     }
 }
@@ -385,14 +383,28 @@ pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
 
 pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>, center: Location) -> ChartPos {
     let mouse = ctx.get_mouse();
-    let xf = Transform::new(ChartPos::from_location(center));
-    let cursor_chart_pos = xf.to_chart(&mouse.pos);
+    let cursor_chart_pos = to_chart(&mouse.pos);
 
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
-    ctx.draw_image(tiles.get(CURSOR_BOTTOM), &xf.to_screen(cursor_chart_pos));
+    ctx.draw_image(tiles.get(CURSOR_BOTTOM), &to_screen(cursor_chart_pos));
     ctx.set_layer(BLOCK_Z);
-    ctx.draw_image(tiles.get(CURSOR_TOP), &xf.to_screen(cursor_chart_pos));
+    ctx.draw_image(tiles.get(CURSOR_TOP), &to_screen(cursor_chart_pos));
 
     cursor_chart_pos
+}
+
+static CENTER_X: f32 = 320.0;
+static CENTER_Y: f32 = 180.0;
+
+fn to_screen(pos: ChartPos) -> Point2<f32> {
+    let x = (pos.x) as f32;
+    let y = (pos.y) as f32;
+    Point2::new(CENTER_X + 16.0 * x - 16.0 * y, CENTER_Y + 8.0 * x + 8.0 * y)
+}
+
+fn to_chart(pos: &Point2<f32>) -> ChartPos {
+    let column = ((pos.x + 8.0 - CENTER_X) / 16.0).floor();
+    let row = ((pos.y - CENTER_Y as f32 - column * 8.0) / 16.0).floor();
+    ChartPos::new((column + row) as int, row as int)
 }

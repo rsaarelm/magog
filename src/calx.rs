@@ -45,7 +45,6 @@ pub mod world {
 }
 
 pub mod view {
-    pub mod transform;
     pub mod worldview;
 }
 
