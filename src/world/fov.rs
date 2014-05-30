@@ -6,7 +6,7 @@ use cgmath::vector::{Vector, Vector2};
 use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6};
 use world::area::Area;
 
-#[deriving(Eq)]
+#[deriving(Eq, Show)]
 pub enum FovStatus {
     Seen(Location),
     Remembered(Location),
@@ -52,10 +52,10 @@ impl Fov {
                 // If both pos and above are visible, left and right will
                 // be made visible if they are opaque.
                 let above = pos + Vector2::new(-1, -1);
-
                 let left_loc = loc + Vector2::new(-1, 0);
                 let right_loc = loc + Vector2::new(0, -1);
 
+                let pos = self.from_chart(pos);
                 if self.seen.contains_key(&above) {
                     if world.is_opaque(left_loc) {
                         queue.push((pos + Vector2::new(-1, 0), left_loc));
@@ -107,7 +107,7 @@ impl Fov {
     }
 
     pub fn get(&self, pos: ChartPos) -> FovStatus {
-        let retrieve_pos = self.from_chart(pos);
+        let retrieve_pos = self.to_chart(pos);
 
         match self.seen.find(&retrieve_pos) {
             Some(&loc) => return Seen(loc),

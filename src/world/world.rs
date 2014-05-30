@@ -53,7 +53,7 @@ impl World {
 
 
 // TODO: Add third dimension for multiple persistent levels.
-#[deriving(Eq, TotalEq, Clone, Hash)]
+#[deriving(Eq, TotalEq, Clone, Hash, Show)]
 pub struct Location {
     pub x: i8,
     pub y: i8,
@@ -101,7 +101,7 @@ pub static DIRECTIONS8: [Vector2<int>, ..8] = [
 
 // Positions on a virtual infinite 2D chart, which may map to different actual
 // Locations.
-#[deriving(Eq, TotalEq, Clone, Hash)]
+#[deriving(Eq, TotalEq, Clone, Hash, Show)]
 pub struct ChartPos {
     pub x: int,
     pub y: int,

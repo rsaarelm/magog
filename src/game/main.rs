@@ -2,11 +2,7 @@ use rand;
 use timing::Ticker;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
-//use world::area::{ChartPos, DIRECTIONS6};
-//use world::transform::Transform;
-//use world::areaview;
-//use game::game::Game;
-use world::world::{World, Location};
+use world::world::{World, Location, DIRECTIONS8};
 use world::fov::Fov;
 use world::terrain;
 use world::mapgen::MapGen;
@@ -41,6 +37,7 @@ struct GameApp {
     tiles: Vec<Image>,
     standalone_anim: Ticker,
     fov: Fov,
+    loc: Location,
 }
 
 impl GameApp {
@@ -50,7 +47,17 @@ impl GameApp {
             tiles: vec!(),
             standalone_anim: Ticker::new(0.2f64),
             fov: Fov::new(),
+            loc: Location::new(0, 3),
         }
+    }
+}
+
+impl GameApp {
+    fn move(&mut self, dir8: uint) {
+        let delta = &DIRECTIONS8[dir8];
+        self.fov.translate(delta);
+        self.loc = self.loc + *delta;
+        self.fov.update(&self.world, self.loc, 12);
     }
 }
 
@@ -64,6 +71,8 @@ impl App for GameApp {
         self.world.terrain_set(Location::new(0, 0), terrain::Grass);
         self.world.terrain_set(Location::new(1, 0), terrain::Wall);
         self.world.terrain_set(Location::new(1, -1), terrain::Wall);
+
+        self.fov.update(&self.world, self.loc, 12);
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
@@ -91,17 +100,24 @@ impl App for GameApp {
         }
         */
 
-        // Keys that work even when there's no player.
         match key {
-            engine::KeyEscape => { ctx.quit(); },
-            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); },
+            engine::KeyQ | engine::KeyPad7 => { self.move(7); }
+            engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
+            engine::KeyE | engine::KeyPad9 => { self.move(1); }
+            engine::KeyA | engine::KeyPad1 => { self.move(5); }
+            engine::KeyS | engine::KeyPad2 | engine::KeyDown => { self.move(4); }
+            engine::KeyD | engine::KeyPad3 => { self.move(3); }
+            engine::KeyEscape => { ctx.quit(); }
+            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
             _ => (),
         }
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        self.fov.update(&self.world, Location::new(0, 3), 12);
         self.world.draw_area(ctx, &self.tiles, &self.fov);
+
+        let _mouse_pos = worldview::draw_mouse(ctx, &self.tiles);
+
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);
         ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
@@ -109,7 +125,6 @@ impl App for GameApp {
         /*
         self.game.draw(ctx, self.tiles);
 
-        let mouse_pos = areaview::draw_mouse(ctx, &self.tiles, self.game.pos);
 
         // Player's gone, assume we're running an attract mode or something.
         if !game.has_player() { break; }
