@@ -22,7 +22,7 @@ impl Area for World {
         }
     }
 
-    fn default_terrain_at(&self, loc: Location) -> TerrainType {
+    fn default_terrain_at(&self, _loc: Location) -> TerrainType {
         // TODO: Logic for this
         terrain::Void
     }

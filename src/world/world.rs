@@ -1,5 +1,6 @@
 use collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
+use cgmath::point::{Point2};
 use world::terrain::TerrainType;
 
 pub struct World {
@@ -9,7 +10,6 @@ pub struct World {
     mobs: HashMap<MobId, Mob>,
 }
 
-#[deriving(Decodable, Encodable)]
 impl World {
     pub fn new(seed: u32) -> World {
         World {
@@ -116,6 +116,10 @@ impl<'a> ChartPos {
 
     pub fn to_location(self) -> Location {
         Location::new(self.x as i8, self.y as i8)
+    }
+
+    pub fn to_point(self) -> Point2<int> {
+        Point2::new(self.x, self.y)
     }
 }
 

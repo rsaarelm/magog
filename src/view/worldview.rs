@@ -11,7 +11,8 @@ use tile::Tile;
 use world::terrain;
 use world::terrain::TerrainType;
 use world::world::{World, Location, ChartPos};
-use world::fov::Fov;
+use world::area::Area;
+use world::fov::{Fov, Seen, Remembered, Unknown};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -106,8 +107,7 @@ impl<C: Clone> Kernel<C> {
 
 pub trait WorldView {
     fn draw_entities_at<C: DrawContext>(
-        &self, ctx: &mut C, tiles: &Vec<Image>,
-        loc: Location, pos: &Point2<f32>);
+        &self, ctx: &mut C, loc: Location, pos: &Point2<f32>);
 
     fn draw_area(
         &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov);
@@ -115,14 +115,40 @@ pub trait WorldView {
 
 impl WorldView for World {
     fn draw_entities_at<C: DrawContext>(
-        &self, ctx: &mut C, tiles: &Vec<Image>,
-        loc: Location, pos: &Point2<f32>) {
-        fail!("TODO");
+        &self, ctx: &mut C, loc: Location, pos: &Point2<f32>) {
+        let kernel = Kernel::new(|loc| self.terrain_at(loc), loc);
+        terrain_sprites(ctx, &kernel, pos);
+
+        // TODO get mobs, draw mobs.
     }
 
     fn draw_area(
         &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov) {
-        fail!("TODO");
+        let mut chart_bounds = Aabb2::new(
+            to_chart(&Point2::new(0f32, 0f32)).to_point(),
+            to_chart(&Point2::new(640f32, 392f32)).to_point());
+        chart_bounds = chart_bounds.grow(&to_chart(&Point2::new(640f32, 0f32)).to_point());
+        chart_bounds = chart_bounds.grow(&to_chart(&Point2::new(0f32, 392f32)).to_point());
+
+        for pt in chart_bounds.points() {
+            let p = ChartPos::new(pt.x, pt.y);
+            let offset = to_screen(p);
+
+            let mut draw = SpriteCollector::new(ctx, tiles);
+
+            match fov.get(p) {
+                Seen(loc) => {
+                    self.draw_entities_at(&mut draw, loc, &offset);
+                }
+                Remembered(loc) => {
+                    draw.mode = FogOfWar;
+                    self.draw_entities_at(&mut draw, loc, &offset);
+                }
+                Unknown => {
+                    draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+                }
+            }
+        }
     }
 }
 
@@ -296,8 +322,6 @@ fn terrain_sprites<C: DrawContext>(
     }
 }
 
-// TODO: Set up invariants so that draw_area cannot be called unless the tile
-// set is set up.
 pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
     let tiles = image::Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
@@ -381,7 +405,7 @@ pub fn draw_area<S: State>(ctx: &mut Engine, tiles: &Vec<Image>, state: &S) {
 }
 */
 
-pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>, center: Location) -> ChartPos {
+pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>) -> ChartPos {
     let mouse = ctx.get_mouse();
     let cursor_chart_pos = to_chart(&mouse.pos);
 

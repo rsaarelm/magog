@@ -1,10 +1,15 @@
 use timing::Ticker;
+use color::rgb::consts::*;
 use cgmath::point::{Point2};
 //use world::area::{ChartPos, DIRECTIONS6};
 //use world::transform::Transform;
 //use world::areaview;
 //use game::game::Game;
-use world::world::World;
+use world::world::{World, Location};
+use world::fov::Fov;
+use world::terrain;
+use view::worldview::WorldView;
+use view::worldview;
 use engine::{App, Engine, Key, Image};
 use engine;
 
@@ -33,6 +38,7 @@ struct GameApp {
     world: World,
     tiles: Vec<Image>,
     standalone_anim: Ticker,
+    fov: Fov,
 }
 
 impl GameApp {
@@ -41,15 +47,20 @@ impl GameApp {
             world: World::new(666),
             tiles: vec!(),
             standalone_anim: Ticker::new(0.2f64),
+            fov: Fov::new(),
         }
     }
 }
 
 impl App for GameApp {
     fn setup(&mut self, ctx: &mut Engine) {
-        //self.tiles = areaview::init_tiles(ctx);
+        self.tiles = worldview::init_tiles(ctx);
         ctx.set_title("Demogame".to_owned());
         ctx.set_frame_interval(1f64 / 30.0);
+
+        self.world.terrain_set(Location::new(0, 0), terrain::Grass);
+        self.world.terrain_set(Location::new(1, 0), terrain::Wall);
+        self.world.terrain_set(Location::new(1, -1), terrain::Wall);
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
@@ -86,7 +97,12 @@ impl App for GameApp {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
+        self.fov.update(&self.world, Location::new(0, 0), 12);
+        self.world.draw_area(ctx, &self.tiles, &self.fov);
+        ctx.set_color(&WHITE);
+        ctx.set_layer(0.100f32);
         ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
+
         /*
         self.game.draw(ctx, self.tiles);
 

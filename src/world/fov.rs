@@ -3,14 +3,8 @@ use collections::hashmap::HashMap;
 
 use cgmath::vector::{Vector, Vector2};
 
-use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6, DIRECTIONS8};
+use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6};
 use world::area::Area;
-
-pub struct Fov {
-    seen: Chart,
-    remembered: Chart,
-    offset: ChartPos,
-}
 
 #[deriving(Eq)]
 pub enum FovStatus {
@@ -19,6 +13,12 @@ pub enum FovStatus {
     Unknown,
 }
 
+
+pub struct Fov {
+    seen: Chart,
+    remembered: Chart,
+    offset: ChartPos,
+}
 
 impl Fov {
     pub fn new() -> Fov {
@@ -129,7 +129,6 @@ impl Fov {
     fn from_chart(&self, pos: ChartPos) -> ChartPos {
         ChartPos::new(pos.x - self.offset.x, pos.y - self.offset.y)
     }
-
 }
 
 
