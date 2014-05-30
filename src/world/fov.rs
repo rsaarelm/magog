@@ -4,6 +4,7 @@ use collections::hashmap::HashMap;
 use cgmath::vector::{Vector, Vector2};
 
 use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6, DIRECTIONS8};
+use world::area::Area;
 
 pub struct Fov {
     seen: Chart,

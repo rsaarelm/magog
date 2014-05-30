@@ -32,7 +32,7 @@ pub mod stb {
 
 pub mod world {
     //pub mod dijkstra;
-    //pub mod area;
+    pub mod area;
     pub mod fov;
     //pub mod areaview;
     //pub mod mapgen;
