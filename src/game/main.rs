@@ -11,8 +11,6 @@ use view::worldview;
 use engine::{App, Engine, Key, Image};
 use engine;
 
-//pub mod game;
-
 /*
 static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
     &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
@@ -121,22 +119,6 @@ impl App for GameApp {
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);
         ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
-
-        /*
-        self.game.draw(ctx, self.tiles);
-
-
-        // Player's gone, assume we're running an attract mode or something.
-        if !game.has_player() { break; }
-
-        // Player is dead, run timed animations.
-        if !game.player().is_alive() {
-            if self.standalone_anim.get() {
-                game.update();
-            }
-        }
-
-        */
     }
 }
 
@@ -144,77 +126,3 @@ pub fn main() {
     let mut app = GameApp::new();
     Engine::run(&mut app);
 }
-
-/*
-pub fn main() {
-    let mut app : App<GlRenderer> = App::new(640, 360, "Demogame");
-    areaview::init_tiles(&mut app);
-
-    let mut game = Game::new();
-
-    let mut standalone_anim = Ticker::new(0.2f64);
-
-    while app.r.alive {
-        game.draw(&mut app);
-
-        let xf = Transform::new(ChartPos::from_location(game.pos));
-        let mouse = app.r.get_mouse();
-        let cursor_chart_loc = xf.to_chart(&mouse.pos);
-        if game.has_player() {
-            let _vec = cursor_chart_loc.to_location() - game.pos;
-            // TODO: Convert mouse clicks to player input. This needs a
-            // slowdown feature to make it work like the keyboard repeat thing,
-            // otherwise pressing the mouse button will make the inputs repeat
-            // at top speed and make the game unplayable.
-        }
-
-
-        loop {
-            // Player's gone, assume we're running an attract mode or something.
-            if !game.has_player() { break; }
-            if !game.player().is_alive() {
-                if standalone_anim.get() {
-                    game.update();
-                }
-            }
-
-            let mut column;
-
-            {
-                let player = game.player();
-                // For the hacked sideways move.
-                column = player.loc.p().x - player.loc.p().y;
-            }
-
-            match app.r.pop_key() {
-                Some(key) => {
-                    if game.player().is_alive() {
-                        match key.code {
-
-                            key::Q | key::HOME => { game.smart_move(SMART_MOVE_6[5]); },
-                            key::W | key::UP => { game.smart_move(SMART_MOVE_6[0]); },
-                            key::E | key::PAGEUP => { game.smart_move(SMART_MOVE_6[1]); },
-                            key::A | key::END => { game.smart_move(SMART_MOVE_6[4]); },
-                            key::S | key::DOWN => { game.smart_move(SMART_MOVE_6[3]); },
-                            key::D | key::PAGEDOWN => { game.smart_move(SMART_MOVE_6[2]); },
-
-                            key::LEFT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
-                            key::RIGHT => { game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
-                            key::SPACE => { game.pass(); },
-                            _ => (),
-                        }
-                    }
-                    match key.code {
-                        key::ESC => { return; },
-                        key::F12 => { app.r.screenshot("/tmp/shot.png"); },
-                        _ => (),
-                    }
-                },
-                None => { break; }
-            }
-        }
-
-        app.r.flush();
-    }
-}
-*/
