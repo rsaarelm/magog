@@ -12,16 +12,12 @@ use world::terrain;
 use world::terrain::TerrainType;
 use world::world::{World, Location, ChartPos};
 use world::area::Area;
+use world::mob::{Mobs, Mob, MobType};
+use world::mob;
 use world::fov::{Fov, Seen, Remembered, Unknown};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
-
-/// Interface for sprite-drawing.
-pub trait DrawContext {
-    fn draw<C: ToRGB>(
-        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C);
-}
 
 static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
@@ -119,7 +115,11 @@ impl WorldView for World {
         let kernel = Kernel::new(|loc| self.terrain_at(loc), loc);
         terrain_sprites(ctx, &kernel, pos);
 
-        // TODO get mobs, draw mobs.
+        if ctx.get_mode() != FogOfWar {
+            for &id in self.mobs_at(loc).iter() {
+                draw_mob(ctx, self.mob(id), pos);
+            }
+        }
     }
 
     fn draw_area(
@@ -153,13 +153,22 @@ impl WorldView for World {
 }
 
 
+/// Interface for sprite-drawing.
+pub trait DrawContext {
+    fn draw<C: ToRGB>(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C);
+
+    fn get_mode(&self) -> ViewMode;
+}
+
 pub struct SpriteCollector<'a> {
-    pub mode: SpriteMode,
+    pub mode: ViewMode,
     engine: &'a mut Engine,
     tiles: &'a Vec<Image>,
 }
 
-pub enum SpriteMode {
+#[deriving(Eq)]
+pub enum ViewMode {
     Normal,
     FogOfWar,
 }
@@ -172,6 +181,22 @@ impl<'a> SpriteCollector<'a> {
             tiles: tiles,
         }
     }
+}
+
+impl<'a> DrawContext for SpriteCollector<'a> {
+    fn draw<C: ToRGB>(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
+        let color = match self.mode {
+            Normal => color.to_rgb::<u8>(),
+            FogOfWar => RGB::new(0x22u8, 0x22u8, 0x11u8),
+        };
+
+        self.engine.set_layer(z);
+        self.engine.set_color(&color);
+        self.engine.draw_image(self.tiles.get(idx), pos);
+    }
+
+    fn get_mode(&self) -> ViewMode { self.mode }
 }
 
 
@@ -345,6 +370,34 @@ fn terrain_sprites<C: DrawContext>(
     }
 }
 
+fn draw_mob<C: DrawContext>(
+    ctx: &mut C, mob: &Mob, pos: &Point2<f32>) {
+    // TODO: Body_pos bob anim for awake non-player mobs.
+    let body_pos = *pos;
+
+    let (icon, color) = visual(mob.t);
+    match mob.t {
+        mob::Serpent => {
+            // Body
+            ctx.draw(94, &body_pos, BLOCK_Z, &color);
+            // Ground mound
+            ctx.draw(95, pos, BLOCK_Z, &color);
+        }
+        _ => {
+            ctx.draw(icon, &body_pos, BLOCK_Z, &color);
+        }
+    }
+
+    fn visual(t: MobType) -> (uint, RGB<u8>) {
+        match t {
+            mob::Player => (51, AZURE),
+            mob::Dreg => (72, BROWN),
+            mob::GridBug => (76, MAGENTA),
+            mob::Serpent => (94, CORAL),
+        }
+    }
+}
+
 pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
     let tiles = image::Image::load_from_memory(TILE_DATA, 1).unwrap();
     let tiles = Tile::new_alpha_set(
@@ -353,21 +406,6 @@ pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
         tiles.pixels,
         &Vector2::new(-16, -16));
     ctx.make_images(&tiles)
-}
-
-
-impl<'a> DrawContext for SpriteCollector<'a> {
-    fn draw<C: ToRGB>(
-        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
-        let color = match self.mode {
-            Normal => color.to_rgb::<u8>(),
-            FogOfWar => RGB::new(0x22u8, 0x22u8, 0x11u8),
-        };
-
-        self.engine.set_layer(z);
-        self.engine.set_color(&color);
-        self.engine.draw_image(self.tiles.get(idx), pos);
-    }
 }
 
 pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>) -> ChartPos {

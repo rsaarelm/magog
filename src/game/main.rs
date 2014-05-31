@@ -6,6 +6,8 @@ use world::world::{World, Location, DIRECTIONS8};
 use world::fov::Fov;
 use world::terrain;
 use world::mapgen::MapGen;
+use world::mob::{Mobs, Mob};
+use world::mob;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -56,6 +58,9 @@ impl GameApp {
         self.fov.translate(delta);
         self.loc = self.loc + *delta;
         self.fov.update(&self.world, self.loc, 12);
+
+        let player = self.world.player();
+        player.loc = player.loc + *delta;
     }
 }
 
@@ -71,6 +76,10 @@ impl App for GameApp {
         self.world.terrain_set(Location::new(1, -1), terrain::Wall);
 
         self.fov.update(&self.world, self.loc, 12);
+
+        let mut mob = Mob::new(mob::Player);
+        mob.loc = self.loc;
+        self.world.insert_mob(mob);
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {

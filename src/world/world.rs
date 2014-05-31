@@ -2,12 +2,13 @@ use collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point2};
 use world::terrain::TerrainType;
+use world::mob::{Mob, MobId};
 
 pub struct World {
     seed: u32,
     next_id: u64,
-    area: HashMap<Location, TerrainType>,
-    mobs: HashMap<MobId, Mob>,
+    pub area: HashMap<Location, TerrainType>,
+    pub mobs: HashMap<MobId, Mob>,
 }
 
 impl World {
@@ -32,23 +33,19 @@ impl World {
         self.area.remove(&loc);
     }
 
-    pub fn insert_mob(&mut self, mob: Mob) -> MobId {
-        let id : MobId = self.next_id;
+    fn make_id(&mut self) -> u64 {
+        let ret = self.next_id;
         self.next_id += 1;
+        ret
+    }
 
-        self.mobs.insert(id, mob);
-        id
+    pub fn insert_mob(&mut self, mut mob: Mob) -> MobId {
+        mob.id = self.make_id();
+        self.mobs.insert(mob.id, mob);
+        mob.id
     }
 
     pub fn remove_mob(&mut self, id: MobId) { self.mobs.remove(&id); }
-
-    pub fn mob_ids(&self) -> Vec<MobId> {
-        self.mobs.keys().map(|&x| x).collect()
-    }
-
-    pub fn find_mut_mob<'a>(&'a mut self, id: MobId) -> Option<&'a mut Mob> {
-        self.mobs.find_mut(&id)
-    }
 
     pub fn rng_seed(&self) -> u32 { self.seed }
 }
@@ -136,8 +133,3 @@ impl Add<Vector2<int>, ChartPos> for ChartPos {
 //pub struct Chart(HashMap<ChartPos, Location>);
 pub type Chart = HashMap<ChartPos, Location>;
 
-pub struct Mob {
-    pub loc: Location,
-}
-
-pub type MobId = u64;

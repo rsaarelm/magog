@@ -35,7 +35,7 @@ pub mod world {
     pub mod area;
     pub mod fov;
     pub mod mapgen;
-    //pub mod mob;
+    pub mod mob;
     pub mod world;
     pub mod terrain;
 }
