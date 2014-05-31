@@ -31,7 +31,7 @@ pub mod stb {
 }
 
 pub mod world {
-    //pub mod dijkstra;
+    pub mod dijkstra;
     pub mod area;
     pub mod fov;
     pub mod mapgen;
@@ -45,7 +45,6 @@ pub mod view {
 }
 
 pub mod game {
-    //pub mod game;
     pub mod main;
 }
 
