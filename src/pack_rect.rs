@@ -4,15 +4,15 @@ use std::vec::Vec;
 use std::num::zero;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::vector::Vector2;
-use cgmath::partial_ord::PartOrdPrim;
 use cgmath::point::{Point, Point2};
+use cgmath::num::BaseNum;
 
-fn fits<S: Primitive + Num + PartOrdPrim>(dim: &Vector2<S>, rect: &Aabb2<S>) -> bool {
+fn fits<S: BaseNum>(dim: &Vector2<S>, rect: &Aabb2<S>) -> bool {
     let rect_dim = rect.dim();
     dim.x <= rect_dim.x && dim.y <= rect_dim.y
 }
 
-fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vector2<S>, rect: &Aabb2<S>) ->
+fn pack_into<S: BaseNum>(dim: &Vector2<S>, rect: &Aabb2<S>) ->
     (Aabb2<S>, (Aabb2<S>, Aabb2<S>)) {
     assert!(fits(dim, rect));
 
@@ -21,9 +21,9 @@ fn pack_into<S: Primitive + PartOrdPrim>(dim: &Vector2<S>, rect: &Aabb2<S>) ->
 
     // Choose between making a vertical or a horizontal split
     // based on which leaves a bigger open rectangle.
-    let vert_vol = (rect_dim.x * (rect_dim.y - dim.y)).max(
+    let vert_vol = (rect_dim.x * (rect_dim.y - dim.y)).partial_max(
         (rect_dim.x - dim.x) * dim.y);
-    let horiz_vol = (dim.x * (rect_dim.y - dim.y)).max(
+    let horiz_vol = (dim.x * (rect_dim.y - dim.y)).partial_max(
         (rect_dim.x - dim.x) * rect_dim.y);
 
     if vert_vol > horiz_vol {
@@ -56,7 +56,7 @@ struct Packing<S> {
     slots: Vec<Aabb2<S>>,
 }
 
-impl<S: Primitive + TotalOrd + PartOrdPrim> Packing<S> {
+impl<S: BaseNum + TotalOrd> Packing<S> {
     pub fn new(area: &Aabb2<S>) -> Packing<S> {
         Packing{slots: vec!(area.clone())}
     }
@@ -76,7 +76,7 @@ impl<S: Primitive + TotalOrd + PartOrdPrim> Packing<S> {
     }
 }
 
-pub fn try_pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
+pub fn try_pack_rects<S: BaseNum + TotalOrd>(
     rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> Option<Vec<Aabb2<S>>> {
     // Store the original indices so that we know what was where even if we
     // change the order.
@@ -97,7 +97,7 @@ pub fn try_pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
     Some(ret)
 }
 
-pub fn pack_rects<S: Primitive + TotalOrd + PartOrdPrim>(
+pub fn pack_rects<S: BaseNum + TotalOrd>(
     rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> (Aabb2<S>, Vec<Aabb2<S>>) {
     let next_rect = Aabb2::new(
         rect.min().clone(), rect.min().add_v(&(rect.dim() + rect.dim())));

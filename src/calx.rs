@@ -49,7 +49,7 @@ pub mod game {
 }
 
 pub fn main() {
-    let cmd = if os::args().len() > 1 { os::args().get(1).to_owned() } else { "game".to_owned() };
+    let cmd = if os::args().len() > 1 { os::args().get(1).to_string() } else { "game".to_string() };
     match cmd.as_slice() {
         "game" => game::main::main(),
         _ => println!("Unknown command")

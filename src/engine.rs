@@ -50,7 +50,7 @@ pub struct MouseState {
 pub struct Engine {
     alive: bool,
     resolution: Vector2<uint>,
-    title: ~str,
+    title: String,
     // If None, render frames as fast as you can.
     frame_interval: Option<f64>,
     window: Option<glfw::Window>,
@@ -77,7 +77,7 @@ impl Engine {
         Engine {
             alive: false,
             resolution: Vector2::new(640u, 360u),
-            title: "Application".to_owned(),
+            title: "Application".to_string(),
             frame_interval: None,
             window: None,
             framebuffer: None,
@@ -106,7 +106,7 @@ impl Engine {
         app.setup(&mut ctx);
 
         let (window, receiver) = glfw_state.create_window(
-            ctx.resolution.x as u32, ctx.resolution.y as u32, ctx.title,
+            ctx.resolution.x as u32, ctx.resolution.y as u32, ctx.title.as_slice(),
             glfw::Windowed)
             .expect("Failed to create GLFW window.");
         window.make_current();
@@ -204,7 +204,7 @@ impl Engine {
         self.resolution.y = h;
     }
 
-    pub fn set_title(&mut self, title: ~str) {
+    pub fn set_title(&mut self, title: String) {
         assert!(!self.alive);
         self.title = title;
     }

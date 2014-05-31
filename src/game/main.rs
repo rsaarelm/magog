@@ -1,4 +1,4 @@
-use rand;
+use std::rand;
 use timing::Ticker;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
@@ -67,10 +67,10 @@ impl GameApp {
 impl App for GameApp {
     fn setup(&mut self, ctx: &mut Engine) {
         self.tiles = worldview::init_tiles(ctx);
-        ctx.set_title("Demogame".to_owned());
+        ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
-        self.world.gen_herringbone(&mut rand::StdRng::new().unwrap());
+        self.world.gen_herringbone(&mut rand::task_rng());
         self.world.terrain_set(Location::new(0, 0), terrain::Grass);
         self.world.terrain_set(Location::new(1, 0), terrain::Wall);
         self.world.terrain_set(Location::new(1, -1), terrain::Wall);

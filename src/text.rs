@@ -110,7 +110,7 @@ impl<T: Iterator<char>> WrapUtil for T {
     }
 }
 
-pub fn wrap_lines(line_len: uint, s: &str) -> ~str {
+pub fn wrap_lines(line_len: uint, s: &str) -> String {
     str::from_chars(s.chars().wrap(line_len).collect::<Vec<char>>().as_slice())
 }
 

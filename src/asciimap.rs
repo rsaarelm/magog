@@ -8,12 +8,12 @@ use cgmath::point::{Point2};
 
 #[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
 pub struct Cell {
-    pub terrain_type: StrBuf,
-    pub spawns: Vec<StrBuf>,
+    pub terrain_type: String,
+    pub spawns: Vec<String>,
 }
 
 impl Cell {
-    pub fn new(terrain_type: StrBuf, spawns: Vec<StrBuf>) -> Cell {
+    pub fn new(terrain_type: String, spawns: Vec<String>) -> Cell {
         Cell { terrain_type: terrain_type, spawns: spawns }
     }
 }
@@ -21,8 +21,8 @@ impl Cell {
 #[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
 pub struct LegendEntry {
     pub glyph: char,
-    pub terrain_type: StrBuf,
-    pub spawns: Vec<StrBuf>,
+    pub terrain_type: String,
+    pub spawns: Vec<String>,
 }
 
 // This struct is designed to be serialized with a structured markup language,
@@ -32,13 +32,13 @@ pub struct LegendEntry {
 pub struct AsciiMap {
     pub offset_x: int,
     pub offset_y: int,
-    pub default_terrain: StrBuf,
-    pub terrain: Vec<StrBuf>,
+    pub default_terrain: String,
+    pub terrain: Vec<String>,
     pub legend: Vec<LegendEntry>,
 }
 
 impl AsciiMap {
-    pub fn new<I: Iterator<(Point2<int>, Cell)>>(default_terrain: StrBuf, mut cells: I) -> AsciiMap {
+    pub fn new<I: Iterator<(Point2<int>, Cell)>>(default_terrain: String, mut cells: I) -> AsciiMap {
         let mut terrainMap = HashMap::new();
         let mut legend = HashMap::new();
         let mut lb = LegendBuilder::new();
@@ -65,16 +65,19 @@ impl AsciiMap {
 
         for (&(x, y), glyph) in terrainMap.iter() {
             // XXX: Can't have unicode.
-            terrain.get_mut((y - min_y) as uint)[(x - min_x) as uint] = *glyph as u8;
+            unsafe {
+                terrain.get_mut((y - min_y) as uint).as_mut_bytes()[(x - min_x) as uint] =
+                    *glyph as u8;
+            }
         }
 
         AsciiMap {
             offset_x: min_x,
             offset_y: min_y,
             default_terrain: default_terrain,
-            terrain: terrain.iter().map(|x| x.to_strbuf()).collect(),
+            terrain: terrain.iter().map(|x| x.to_string()).collect(),
             legend: legend.iter().map(|(&glyph, cell)| LegendEntry {
-                glyph: glyph, terrain_type: cell.terrain_type.to_strbuf(), spawns: cell.spawns.clone()
+                glyph: glyph, terrain_type: cell.terrain_type.to_string(), spawns: cell.spawns.clone()
             }).collect(),
         }
     }

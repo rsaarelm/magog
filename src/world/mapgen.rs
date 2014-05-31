@@ -309,7 +309,7 @@ impl MapGen for World {
     fn gen_herringbone<R: Rng>(&mut self, rng: &mut R) {
         for cy in range(-3, 4) {
             for cx in range(-3, 4) {
-                let chunk = rng.choose(CHUNKS);
+                let chunk = rng.choose(CHUNKS).unwrap();
                 for (glyph, x, y) in chunk.chars().map2d() {
                     let terrain = match glyph {
                         '.' => terrain::Floor,

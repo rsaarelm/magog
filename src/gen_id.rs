@@ -5,7 +5,7 @@ use std::fmt;
 #[deriving(Eq, Clone, Default)]
 pub struct CodeId {
     line: uint,
-    path: ~str,
+    path: String,
 }
 
 impl fmt::Show for CodeId {

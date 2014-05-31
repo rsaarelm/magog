@@ -1,11 +1,11 @@
 use cgmath::point::{Point2};
 use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::partial_ord::PartOrdPrim;
 use std::num::{one};
+use cgmath::num::BaseNum;
 use rand::{Rng};
 use rand::distributions::range::SampleRange;
 
-pub trait RectUtil<S: Primitive + SampleRange, I: Iterator<Point2<S>>> {
+pub trait RectUtil<S: BaseNum + SampleRange, I: Iterator<Point2<S>>> {
     // Iterate all integer points inside the rectangle.
     fn points(&self) -> I;
     // Get the scanline position (0 at top left corner, increasing along
@@ -25,7 +25,7 @@ pub struct RectIter<S> {
     y_end: S,
 }
 
-impl<S: Primitive> Iterator<Point2<S>> for RectIter<S> {
+impl<S: BaseNum> Iterator<Point2<S>> for RectIter<S> {
     #[inline]
     fn next(&mut self) -> Option<Point2<S>> {
         if self.x_end <= self.x_start {
@@ -45,7 +45,7 @@ impl<S: Primitive> Iterator<Point2<S>> for RectIter<S> {
 
 }
 
-impl<S: Primitive + SampleRange + PartOrdPrim> RectUtil<S, RectIter<S>> for Aabb2<S> {
+impl<S: BaseNum + SampleRange> RectUtil<S, RectIter<S>> for Aabb2<S> {
     #[inline]
     fn points(&self) -> RectIter<S> {
         RectIter {
