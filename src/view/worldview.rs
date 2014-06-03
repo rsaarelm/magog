@@ -145,7 +145,7 @@ impl WorldView for World {
                     self.draw_entities_at(&mut draw, loc, &offset);
                 }
                 Unknown => {
-                    //draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+                    draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
                 }
             }
         }
