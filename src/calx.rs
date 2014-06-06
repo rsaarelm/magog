@@ -31,13 +31,14 @@ pub mod stb {
 }
 
 pub mod world {
-    pub mod dijkstra;
     pub mod area;
+    pub mod dijkstra;
     pub mod fov;
     pub mod mapgen;
-    pub mod mob;
-    pub mod world;
+    pub mod mobs;
+    pub mod spawn;
     pub mod terrain;
+    pub mod world;
 }
 
 pub mod view {

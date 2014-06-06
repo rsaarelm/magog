@@ -6,8 +6,9 @@ use world::world::{World, Location, DIRECTIONS8};
 use world::fov::Fov;
 use world::terrain;
 use world::mapgen::MapGen;
-use world::mob::{Mobs, Mob};
-use world::mob;
+use world::mobs::{Mobs, Mob};
+use world::mobs;
+use world::spawn::Spawn;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -71,15 +72,14 @@ impl App for GameApp {
         ctx.set_frame_interval(1f64 / 30.0);
 
         self.world.gen_herringbone(&mut rand::task_rng());
-        self.world.terrain_set(Location::new(0, 0), terrain::Grass);
-        self.world.terrain_set(Location::new(1, 0), terrain::Wall);
-        self.world.terrain_set(Location::new(1, -1), terrain::Wall);
 
         self.fov.update(&self.world, self.loc, 12);
 
-        let mut mob = Mob::new(mob::Player);
+        let mut mob = Mob::new(mobs::Player);
         mob.loc = self.loc;
         self.world.insert_mob(mob);
+
+        self.world.gen_mobs();
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {

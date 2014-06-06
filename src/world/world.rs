@@ -2,7 +2,7 @@ use collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point2};
 use world::terrain::TerrainType;
-use world::mob::{Mob, MobId};
+use world::mobs::{Mob, MobId};
 
 pub struct World {
     seed: u32,

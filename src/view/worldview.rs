@@ -12,8 +12,8 @@ use world::terrain;
 use world::terrain::TerrainType;
 use world::world::{World, Location, ChartPos};
 use world::area::Area;
-use world::mob::{Mobs, Mob, MobType};
-use world::mob;
+use world::mobs::{Mobs, Mob, MobType};
+use world::mobs;
 use world::fov::{Fov, Seen, Remembered, Unknown};
 
 pub static FLOOR_Z: f32 = 0.500f32;
@@ -377,7 +377,7 @@ fn draw_mob<C: DrawContext>(
 
     let (icon, color) = visual(mob.t);
     match mob.t {
-        mob::Serpent => {
+        mobs::Serpent => {
             // Body
             ctx.draw(94, &body_pos, BLOCK_Z, &color);
             // Ground mound
@@ -390,10 +390,10 @@ fn draw_mob<C: DrawContext>(
 
     fn visual(t: MobType) -> (uint, RGB<u8>) {
         match t {
-            mob::Player => (51, AZURE),
-            mob::Dreg => (72, BROWN),
-            mob::GridBug => (76, MAGENTA),
-            mob::Serpent => (94, CORAL),
+            mobs::Player => (51, AZURE),
+            mobs::Dreg => (72, CHOCOLATE),
+            mobs::GridBug => (76, MAGENTA),
+            mobs::Serpent => (94, CORAL),
         }
     }
 }
