@@ -31,6 +31,10 @@ pub enum MobType {
 pub trait Mobs {
     fn mobs_at(&self, loc: Location) -> Vec<MobId>;
 
+    fn has_mobs_at(&self, loc: Location) -> bool {
+        self.mobs_at(loc).len() > 0
+    }
+
     /// Returns mob reference without checking if it exists.
     fn mob<'a>(&'a self, id: MobId) -> &'a Mob;
 

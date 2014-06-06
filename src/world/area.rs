@@ -1,5 +1,4 @@
-use world::terrain::TerrainType;
-use world::terrain;
+use world::terrain::*;
 use world::world::{World, Location};
 use world::mobs::Mobs;
 
@@ -22,15 +21,22 @@ pub trait Area {
 
 impl Area for World {
     fn terrain_at(&self, loc: Location) -> TerrainType {
-        match self.terrain_get(loc) {
+        let mut ret = match self.terrain_get(loc) {
             Some(t) => t,
             None => self.default_terrain_at(loc)
+        };
+
+        // Make doors open if someone is walking through them.
+        if ret == Door && self.has_mobs_at(loc) {
+            ret = OpenDoor;
         }
+
+        ret
     }
 
     fn default_terrain_at(&self, _loc: Location) -> TerrainType {
         // TODO: Logic for this
-        terrain::Void
+        Void
     }
 
     fn is_opaque(&self, loc: Location) -> bool {

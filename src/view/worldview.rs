@@ -278,6 +278,10 @@ fn terrain_sprites<C: DrawContext>(
             wallform(ctx, k, pos, DOOR, &LIGHTSLATEGRAY, true);
             wallform(ctx, k, pos, DOOR + 4, &SADDLEBROWN, false);
         },
+        terrain::OpenDoor => {
+            ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
+            wallform(ctx, k, pos, DOOR, &LIGHTSLATEGRAY, true);
+        },
         terrain::Table => {
             ctx.draw(FLOOR, pos, FLOOR_Z, &SLATEGRAY);
             ctx.draw(TABLE, pos, BLOCK_Z, &DARKGOLDENROD);
