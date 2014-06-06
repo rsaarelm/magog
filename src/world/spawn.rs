@@ -1,7 +1,6 @@
 use std::rand;
 use std::rand::Rng;
 use world::world::{World, Location};
-use world::mobs::Mobs;
 use world::area::Area;
 use world::mobs;
 use world::mobs::{MobType, Mob};

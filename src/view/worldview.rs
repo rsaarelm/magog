@@ -391,7 +391,7 @@ fn draw_mob<C: DrawContext>(
     fn visual(t: MobType) -> (uint, RGB<u8>) {
         match t {
             mobs::Player => (51, AZURE),
-            mobs::Dreg => (72, CHOCOLATE),
+            mobs::Dreg => (72, OLIVE),
             mobs::GridBug => (76, MAGENTA),
             mobs::Serpent => (94, CORAL),
         }

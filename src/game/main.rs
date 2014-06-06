@@ -2,9 +2,8 @@ use std::rand;
 use timing::Ticker;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
-use world::world::{World, Location, DIRECTIONS8};
+use world::world::{World, Location};
 use world::fov::Fov;
-use world::terrain;
 use world::mapgen::MapGen;
 use world::mobs::{Mobs, Mob};
 use world::mobs;
@@ -13,25 +12,6 @@ use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
 use engine;
-
-/*
-static SMART_MOVE_6: &'static [&'static [Vector2<int>]] = &[
-    &[DIRECTIONS6[0], DIRECTIONS6[5], DIRECTIONS6[1]],
-    &[DIRECTIONS6[1], DIRECTIONS6[0], DIRECTIONS6[2]],
-    &[DIRECTIONS6[2], DIRECTIONS6[1], DIRECTIONS6[3]],
-    &[DIRECTIONS6[3], DIRECTIONS6[2], DIRECTIONS6[4]],
-    &[DIRECTIONS6[4], DIRECTIONS6[3], DIRECTIONS6[5]],
-    &[DIRECTIONS6[5], DIRECTIONS6[4], DIRECTIONS6[0]],
-
-    // Sideways move left, right, even column.
-    &[DIRECTIONS6[5], DIRECTIONS6[4]],
-    &[DIRECTIONS6[1], DIRECTIONS6[2]],
-
-    // Sideways move left, right, odd column.
-    &[DIRECTIONS6[4], DIRECTIONS6[5]],
-    &[DIRECTIONS6[2], DIRECTIONS6[1]],
-];
-*/
 
 struct GameApp {
     world: World,
@@ -55,13 +35,16 @@ impl GameApp {
 
 impl GameApp {
     fn move(&mut self, dir8: uint) {
-        let delta = &DIRECTIONS8[dir8];
-        self.fov.translate(delta);
-        self.loc = self.loc + *delta;
-        self.fov.update(&self.world, self.loc, 12);
-
         let player = self.world.player();
-        player.loc = player.loc + *delta;
+        let delta = self.world.smart_move(player, dir8);
+        match delta {
+            Some(delta) => {
+                self.fov.translate(&delta);
+                self.loc = self.loc + delta;
+                self.fov.update(&self.world, self.loc, 12);
+            }
+            _ => ()
+        }
     }
 }
 
@@ -114,6 +97,8 @@ impl App for GameApp {
             engine::KeyA | engine::KeyPad1 => { self.move(5); }
             engine::KeyS | engine::KeyPad2 | engine::KeyDown => { self.move(4); }
             engine::KeyD | engine::KeyPad3 => { self.move(3); }
+            engine::KeyLeft => { self.move(6); }
+            engine::KeyRight => { self.move(2); }
             engine::KeyEscape => { ctx.quit(); }
             engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
             _ => (),
