@@ -1,5 +1,5 @@
 use time;
-use cgmath::point::{Point2};
+use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::rgb::{RGB, ToRGB};
@@ -15,6 +15,7 @@ use world::area::Area;
 use world::mobs::{Mobs, Mob, MobType};
 use world::mobs;
 use world::fov::{Fov, Seen, Remembered, Unknown};
+use timing;
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -376,8 +377,12 @@ fn terrain_sprites<C: DrawContext>(
 
 fn draw_mob<C: DrawContext>(
     ctx: &mut C, mob: &Mob, pos: &Point2<f32>) {
-    // TODO: Body_pos bob anim for awake non-player mobs.
-    let body_pos = *pos;
+    let body_pos =
+    if is_bobbing(mob) {
+        pos.add_v(timing::cycle_anim(
+            0.3f64,
+            &[Vector2::new(0.0f32, 0.0f32), Vector2::new(0.0f32, -1.0f32)]))
+    } else { *pos };
 
     let (icon, color) = visual(mob.t);
     match mob.t {
@@ -399,6 +404,11 @@ fn draw_mob<C: DrawContext>(
             mobs::GridBug => (76, MAGENTA),
             mobs::Serpent => (94, CORAL),
         }
+    }
+
+    fn is_bobbing(mob: &Mob) -> bool {
+        // TODO: Sleeping mobs don't bob.
+        mob.t != mobs::Player
     }
 }
 
