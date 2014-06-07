@@ -7,6 +7,7 @@ use world::mobs::{Mob, MobId};
 pub struct World {
     seed: u32,
     next_id: u64,
+    tick: u64,
     pub area: HashMap<Location, TerrainType>,
     pub mobs: HashMap<MobId, Mob>,
 }
@@ -16,6 +17,7 @@ impl World {
         World {
             seed: seed,
             next_id: 1,
+            tick: 0,
             area: HashMap::new(),
             mobs: HashMap::new(),
         }
@@ -48,6 +50,12 @@ impl World {
     pub fn remove_mob(&mut self, id: MobId) { self.mobs.remove(&id); }
 
     pub fn rng_seed(&self) -> u32 { self.seed }
+
+    pub fn get_tick(&self) -> u64 { self.tick }
+
+    pub fn advance_frame(&mut self) {
+        self.tick += 1;
+    }
 }
 
 

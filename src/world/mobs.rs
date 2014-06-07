@@ -16,6 +16,24 @@ impl Mob {
             t: t,
         }
     }
+
+    pub fn has_quirk(&self, q: quirk::Quirk) -> bool {
+        if q == quirk::Fast && self.t == GridBug { return true; }
+
+        false
+    }
+}
+
+pub mod quirk {
+#[deriving(Eq, Clone)]
+pub enum Quirk {
+    /// Moves 1/3 slower than usual
+    Slow,
+    /// Moves 1/3 faster than usual, stacks with Quick
+    Fast,
+    /// Moves 1/3 faster than usual, stacks with Fast
+    Quick,
+}
 }
 
 pub type MobId = u64;
@@ -42,7 +60,7 @@ pub trait Mobs {
 
     fn mob_exists(&self, id: MobId) -> bool;
 
-    fn player(&self) -> MobId;
+    fn player(&self) -> Option<MobId>;
 
     fn move(&mut self, id: MobId, delta: &Vector2<int>) -> bool;
 
@@ -73,13 +91,13 @@ impl Mobs for World {
 
     fn mob_exists(&self, id: MobId) -> bool { self.mobs.find(&id).is_some() }
 
-    fn player(&self) -> MobId {
+    fn player(&self) -> Option<MobId> {
         for (_, mob) in self.mobs.iter() {
             if mob.t == Player {
-                return mob.id;
+                return Some(mob.id);
             }
         }
-        fail!("Player doesn't exit");
+        None
     }
 
     fn move(&mut self, id: MobId, delta: &Vector2<int>) -> bool {

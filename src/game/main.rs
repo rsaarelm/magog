@@ -8,6 +8,7 @@ use world::mapgen::MapGen;
 use world::mobs::{Mobs, Mob};
 use world::mobs;
 use world::spawn::Spawn;
+use world::ai::AI;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -19,6 +20,7 @@ struct GameApp {
     standalone_anim: Ticker,
     fov: Fov,
     loc: Location,
+    in_player_input: bool,
 }
 
 impl GameApp {
@@ -29,22 +31,31 @@ impl GameApp {
             standalone_anim: Ticker::new(0.2f64),
             fov: Fov::new(),
             loc: Location::new(0, 3),
+            in_player_input: false,
         }
     }
 }
 
 impl GameApp {
     fn move(&mut self, dir8: uint) {
-        let player = self.world.player();
+        assert!(self.in_player_input);
+        let player = self.world.player().unwrap();
         let delta = self.world.smart_move(player, dir8);
         match delta {
             Some(delta) => {
                 self.fov.translate(&delta);
                 self.loc = self.loc + delta;
-                self.fov.update(&self.world, self.loc, 12);
             }
             _ => ()
         }
+
+        self.end_turn();
+    }
+
+    fn end_turn(&mut self) {
+        self.in_player_input = false;
+
+        self.world.update_mobs();
     }
 }
 
@@ -66,39 +77,27 @@ impl App for GameApp {
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
-        /*
-        if self.game.player().is_alive() {
-            // For the hacked sideways move.
-            let column = {
-                let player = self.game.player();
-                player.loc.p().x - player.loc.p().y
-            };
+        if self.in_player_input {
             match key {
-
-                engine::KeyQ | engine::KeyPad7 => { self.game.smart_move(SMART_MOVE_6[5]); },
-                engine::KeyW | engine::KeyPad8 => { self.game.smart_move(SMART_MOVE_6[0]); },
-                engine::KeyE | engine::PAGEUP => { self.game.smart_move(SMART_MOVE_6[1]); },
-                engine::KeyA | engine::END => { self.game.smart_move(SMART_MOVE_6[4]); },
-                engine::KeyS | engine::DOWN => { self.game.smart_move(SMART_MOVE_6[3]); },
-                engine::KeyD | engine::PAGEDOWN => { self.game.smart_move(SMART_MOVE_6[2]); },
-
-                engine::KeyLeft => { self.game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 6 } else { 8 }]); },
-                engine::KeyRight => { self.game.smart_move(SMART_MOVE_6[ if column % 2 == 0 { 7 } else { 9 }]); },
-                engine::KeySpace => { self.game.pass(); },
+                engine::KeyQ | engine::KeyPad7 => { self.move(7); }
+                engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
+                engine::KeyE | engine::KeyPad9 => { self.move(1); }
+                engine::KeyA | engine::KeyPad1 => { self.move(5); }
+                engine::KeyS | engine::KeyPad2 | engine::KeyDown => { self.move(4); }
+                engine::KeyD | engine::KeyPad3 => { self.move(3); }
+                engine::KeyLeft => { self.move(6); }
+                engine::KeyRight => { self.move(2); }
+                engine::Key0 => {
+                    // Destroy the player mob, just to test that everything
+                    // will keep working if there is no player to be found.
+                    let p = self.world.player().unwrap();
+                    self.world.remove_mob(p);
+                }
                 _ => (),
             }
         }
-        */
 
         match key {
-            engine::KeyQ | engine::KeyPad7 => { self.move(7); }
-            engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
-            engine::KeyE | engine::KeyPad9 => { self.move(1); }
-            engine::KeyA | engine::KeyPad1 => { self.move(5); }
-            engine::KeyS | engine::KeyPad2 | engine::KeyDown => { self.move(4); }
-            engine::KeyD | engine::KeyPad3 => { self.move(3); }
-            engine::KeyLeft => { self.move(6); }
-            engine::KeyRight => { self.move(2); }
             engine::KeyEscape => { ctx.quit(); }
             engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
             _ => (),
@@ -106,6 +105,9 @@ impl App for GameApp {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
+        self.in_player_input = self.world.player_has_turn();
+
+        self.fov.update(&self.world, self.loc, 12);
         self.world.draw_area(ctx, &self.tiles, &self.fov);
 
         let _mouse_pos = worldview::draw_mouse(ctx, &self.tiles);
@@ -113,6 +115,10 @@ impl App for GameApp {
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);
         ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
+
+        if !self.in_player_input {
+            self.end_turn();
+        }
     }
 }
 
