@@ -35,8 +35,13 @@ impl Area for World {
     }
 
     fn default_terrain_at(&self, _loc: Location) -> TerrainType {
-        // TODO: Logic for this
-        Void
+        if self.depth() == 0 {
+            // Overworld
+            Tree
+        } else {
+            // Underground
+            Rock
+        }
     }
 
     fn is_opaque(&self, loc: Location) -> bool {

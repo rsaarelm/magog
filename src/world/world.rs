@@ -56,6 +56,10 @@ impl World {
     pub fn advance_frame(&mut self) {
         self.tick += 1;
     }
+
+    pub fn depth(&self) -> int {
+        0
+    }
 }
 
 

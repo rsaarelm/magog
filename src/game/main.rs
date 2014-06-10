@@ -67,6 +67,7 @@ impl App for GameApp {
 
         self.world.gen_herringbone(&mut rand::task_rng());
 
+        self.loc = self.world.spawn_loc().unwrap();
         self.fov.update(&self.world, self.loc, 12);
 
         let mut mob = Mob::new(mobs::Player);
