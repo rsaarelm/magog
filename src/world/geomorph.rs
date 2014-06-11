@@ -1,3 +1,5 @@
+use world::mapgen::{Chunk};
+
 /*
 1######B222 Template for herringbone prefabs
 1##########
@@ -22,6 +24,22 @@ C**********
 ***********
 33333C*****
 */
+
+pub struct Chunks {
+    pub overland: Vec<Chunk>,
+    pub dungeon: Vec<Chunk>,
+}
+
+impl Chunks {
+    pub fn new() -> Chunks {
+        Chunks {
+            overland: OVERLAND.iter()
+                .map(|&t| Chunk::new(t).unwrap()).collect(),
+            dungeon: DUNGEON.iter()
+                .map(|&t| Chunk::new(t).unwrap()).collect(),
+        }
+    }
+}
 
 pub static OVERLAND: &'static[&'static str] = &[
 "\

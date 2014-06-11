@@ -1,15 +1,13 @@
-use std::rand;
 use timing::Ticker;
 use color::rgb::consts::*;
 use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;
-use world::mapgen::{MapGen, Chunk};
-use world::mobs::{Mobs, Mob};
-use world::mobs;
-use world::spawn::Spawn;
+use world::mapgen::{MapGen};
+use world::mobs::{Mobs};
 use world::ai::AI;
-use world::geomorph;
+use world::area::Area;
+use world::geomorph::Chunks;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -22,8 +20,7 @@ struct GameApp {
     fov: Fov,
     loc: Location,
     in_player_input: bool,
-    overland_chunks: Vec<Chunk>,
-    dungeon_chunks: Vec<Chunk>,
+    chunks: Chunks,
 }
 
 impl GameApp {
@@ -35,10 +32,7 @@ impl GameApp {
             fov: Fov::new(),
             loc: Location::new(0, 3),
             in_player_input: false,
-            overland_chunks: geomorph::OVERLAND.iter()
-                .map(|&t| Chunk::new(t).unwrap()).collect(),
-            dungeon_chunks: geomorph::DUNGEON.iter()
-                .map(|&t| Chunk::new(t).unwrap()).collect(),
+            chunks: Chunks::new(),
         }
     }
 }
@@ -54,6 +48,12 @@ impl GameApp {
                 self.loc = self.loc + delta;
             }
             _ => ()
+        }
+
+        if self.world.terrain_at(self.world.mob(player).loc).is_exit() {
+            self.fov = Fov::new();
+            self.world.next_level(&self.chunks);
+            self.loc = self.world.mob(self.world.player().unwrap()).loc;
         }
 
         self.end_turn();
@@ -72,16 +72,9 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
-        self.world.gen_herringbone(&mut rand::task_rng(), &self.overland_chunks);
+        self.world.next_level(&self.chunks);
 
-        self.loc = self.world.spawn_loc().unwrap();
-        self.fov.update(&self.world, self.loc, 12);
-
-        let mut mob = Mob::new(mobs::Player);
-        mob.loc = self.loc;
-        self.world.insert_mob(mob);
-
-        self.world.gen_mobs();
+        self.loc = self.world.mob(self.world.player().unwrap()).loc;
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {

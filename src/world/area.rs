@@ -35,7 +35,7 @@ impl Area for World {
     }
 
     fn default_terrain_at(&self, _loc: Location) -> TerrainType {
-        if self.depth() == 0 {
+        if self.depth == 1 {
             // Overworld
             Tree
         } else {

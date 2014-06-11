@@ -8,6 +8,7 @@ pub struct World {
     seed: u32,
     next_id: u64,
     tick: u64,
+    pub depth: int,
     pub area: HashMap<Location, TerrainType>,
     pub mobs: HashMap<MobId, Mob>,
 }
@@ -18,6 +19,7 @@ impl World {
             seed: seed,
             next_id: 1,
             tick: 0,
+            depth: 0,
             area: HashMap::new(),
             mobs: HashMap::new(),
         }
@@ -55,11 +57,6 @@ impl World {
 
     pub fn advance_frame(&mut self) {
         self.tick += 1;
-    }
-
-    /// Current dungeon depth. 0 is for overland.
-    pub fn depth(&self) -> int {
-        0
     }
 }
 

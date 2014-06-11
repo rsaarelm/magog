@@ -1,18 +1,26 @@
 use collections::hashmap::{HashMap, HashSet};
+use std::rand;
 use rand::Rng;
 use text::Map2DUtil;
 use num::Integer;
 use world::world::{World, Location};
 use world::terrain::*;
 use world::world::{DIRECTIONS6};
+use world::spawn::Spawn;
+use world::mobs::{Mob};
+use world::mobs;
+use world::geomorph::Chunks;
 
 pub trait MapGen {
-    fn gen_herringbone<R: Rng>(&mut self, rng: &mut R, chunks: &Vec<Chunk>);
+    fn gen_herringbone(&mut self, chunks: &Vec<Chunk>);
+    fn next_level(&mut self, chunks: &Chunks);
 }
 
 impl MapGen for World {
     // http://nothings.org/gamedev/herringbone/
-    fn gen_herringbone<R: Rng>(&mut self, rng: &mut R, chunks: &Vec<Chunk>) {
+    fn gen_herringbone(&mut self, chunks: &Vec<Chunk>) {
+        let mut rng = rand::task_rng();
+
         let edge: Vec<&Chunk> = chunks.iter().filter(|c| !c.exit && c.connected).collect();
         let inner: Vec<&Chunk> = chunks.iter().filter(|c| !c.exit).collect();
         let exit: Vec<&Chunk> = chunks.iter().filter(|c| c.exit).collect();
@@ -35,6 +43,22 @@ impl MapGen for World {
                 }
             }
         }
+    }
+
+    fn next_level(&mut self, chunks: &Chunks) {
+        // TODO: Preserve player object.
+        self.area.clear();
+        self.mobs.clear();
+        self.depth += 1;
+
+        self.gen_herringbone(
+            if self.depth == 1 { &chunks.overland }
+            else { &chunks.dungeon });
+
+        let mut player = Mob::new(mobs::Player);
+        player.loc = self.spawn_loc().unwrap();
+        self.insert_mob(player);
+        self.gen_mobs();
     }
 }
 
