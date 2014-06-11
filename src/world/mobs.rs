@@ -67,6 +67,8 @@ pub trait Mobs {
     /// Try to move the mob in a direction, then try to roll around obstacles
     /// if the direction is blocked.
     fn smart_move(&mut self, id: MobId, dir8: uint) -> Option<Vector2<int>>;
+
+    fn clear_npcs(&mut self);
 }
 
 impl Mobs for World {
@@ -154,5 +156,14 @@ impl Mobs for World {
             7 => 5,
             _ => fail!("Invalid dir8"),
         }])
+    }
+
+    fn clear_npcs(&mut self) {
+        let npcs: Vec<MobId> = self.mobs.iter()
+            .filter(|&(_, m)| m.t != Player)
+            .map(|(&i, _)| i).collect();
+        for &id in npcs.iter() {
+            self.remove_mob(id);
+        }
     }
 }

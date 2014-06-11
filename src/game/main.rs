@@ -4,7 +4,8 @@ use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
-use world::mobs::{Mobs};
+use world::mobs::{Mobs, Mob};
+use world::mobs;
 use world::ai::AI;
 use world::area::Area;
 use world::geomorph::Chunks;
@@ -53,7 +54,7 @@ impl GameApp {
         if self.world.terrain_at(self.world.mob(player).loc).is_exit() {
             self.fov = Fov::new();
             self.world.next_level(&self.chunks);
-            self.loc = self.world.mob(self.world.player().unwrap()).loc;
+            self.loc = self.world.mob(player).loc;
         }
 
         self.end_turn();
@@ -72,6 +73,8 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
+        let player = Mob::new(mobs::Player);
+        self.world.insert_mob(player);
         self.world.next_level(&self.chunks);
 
         self.loc = self.world.mob(self.world.player().unwrap()).loc;

@@ -7,8 +7,7 @@ use world::world::{World, Location};
 use world::terrain::*;
 use world::world::{DIRECTIONS6};
 use world::spawn::Spawn;
-use world::mobs::{Mob};
-use world::mobs;
+use world::mobs::{Mobs};
 use world::geomorph::Chunks;
 
 pub trait MapGen {
@@ -48,16 +47,16 @@ impl MapGen for World {
     fn next_level(&mut self, chunks: &Chunks) {
         // TODO: Preserve player object.
         self.area.clear();
-        self.mobs.clear();
+        self.clear_npcs();
         self.depth += 1;
 
         self.gen_herringbone(
             if self.depth == 1 { &chunks.overland }
             else { &chunks.dungeon });
 
-        let mut player = Mob::new(mobs::Player);
-        player.loc = self.spawn_loc().unwrap();
-        self.insert_mob(player);
+        let loc = self.spawn_loc().unwrap();
+        let player = self.player().unwrap();
+        self.mut_mob(player).loc = loc;
         self.gen_mobs();
     }
 }
