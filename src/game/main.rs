@@ -4,11 +4,12 @@ use color::rgb::consts::*;
 use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;
-use world::mapgen::MapGen;
+use world::mapgen::{MapGen, Chunk};
 use world::mobs::{Mobs, Mob};
 use world::mobs;
 use world::spawn::Spawn;
 use world::ai::AI;
+use world::geomorph;
 use view::worldview::WorldView;
 use view::worldview;
 use engine::{App, Engine, Key, Image};
@@ -21,6 +22,8 @@ struct GameApp {
     fov: Fov,
     loc: Location,
     in_player_input: bool,
+    overland_chunks: Vec<Chunk>,
+    dungeon_chunks: Vec<Chunk>,
 }
 
 impl GameApp {
@@ -32,6 +35,10 @@ impl GameApp {
             fov: Fov::new(),
             loc: Location::new(0, 3),
             in_player_input: false,
+            overland_chunks: geomorph::OVERLAND.iter()
+                .map(|&t| Chunk::new(t).unwrap()).collect(),
+            dungeon_chunks: geomorph::DUNGEON.iter()
+                .map(|&t| Chunk::new(t).unwrap()).collect(),
         }
     }
 }
@@ -65,7 +72,7 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
-        self.world.gen_herringbone(&mut rand::task_rng());
+        self.world.gen_herringbone(&mut rand::task_rng(), &self.overland_chunks);
 
         self.loc = self.world.spawn_loc().unwrap();
         self.fov.update(&self.world, self.loc, 12);

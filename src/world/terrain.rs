@@ -93,5 +93,12 @@ impl TerrainType {
         }
     }
 
+    pub fn is_exit(self) -> bool {
+        match self {
+            Downstairs => true,
+            _ => false
+        }
+    }
+
     pub fn name(self) -> &'static str { terrain_name(self) }
 }

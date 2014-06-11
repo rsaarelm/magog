@@ -35,6 +35,7 @@ pub mod world {
     pub mod area;
     pub mod dijkstra;
     pub mod fov;
+    pub mod geomorph;
     pub mod mapgen;
     pub mod mobs;
     pub mod spawn;
