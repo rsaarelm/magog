@@ -57,6 +57,7 @@ impl World {
         self.tick += 1;
     }
 
+    /// Current dungeon depth. 0 is for overland.
     pub fn depth(&self) -> int {
         0
     }
