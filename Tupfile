@@ -9,8 +9,7 @@ include_rules
 run ./rust-rule.sh lib/cgmath-rs/src/cgmath/lib.rs {libcgmath}
 run ./rust-rule.sh lib/glfw-rs/src/lib/lib.rs {libglfw}
 run ./rust-rule.sh lib/gl-rs/src/gl/lib.rs {libgl}
-run ./rust-rule.sh lib/color-rs/src/lib.rs {libcolor}
 run ./rust-rule.sh lib/hgl-rs/src/lib.rs {libhgl} \| {libgl}
 
 : |> echo \"`git log --pretty=format:%%h | head -1`\" > %o |> gen/git_version.inc
-: src/calx.rs | {libcgmath} {libcolor} {libhgl} {libglfw} {libgl} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> calx
+: src/calx.rs | {libcgmath} {libhgl} {libglfw} {libgl} libstb.a libglfw.a gen/git_version.inc |> !rustbin |> calx

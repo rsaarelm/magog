@@ -4,7 +4,6 @@
 
 extern crate cgmath;
 extern crate collections;
-extern crate color;
 extern crate gl;
 extern crate glfw;
 extern crate hgl;
@@ -17,6 +16,7 @@ extern crate time;
 use std::os;
 
 pub mod asciimap;
+pub mod color;
 pub mod engine;
 pub mod gen_id;
 pub mod pack_rect;

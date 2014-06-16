@@ -1,8 +1,8 @@
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
-use color::rgb::consts::*;
-use color::rgb::{ToRGB, RGB};
+use color::consts::*;
+use color::{RGB};
 use gl::types::{GLint, GLuint};
 use gl;
 use glfw::{Context};
@@ -65,8 +65,8 @@ pub struct Engine {
 
     // Seconds per frame measurement, adjust at runtime.
     pub current_spf: f64,
-    pub draw_color: RGB<u8>,
-    pub background_color: RGB<u8>,
+    pub draw_color: RGB,
+    pub background_color: RGB,
     pub z_layer: f32,
 }
 
@@ -272,14 +272,13 @@ impl Engine {
         }
     }
 
-    pub fn clear<C: ToRGB>(&mut self, color: &C) {
-        let color = color.to_rgb::<f32>();
-        gl::ClearColor(color.r, color.g, color.b, 1.0);
+    pub fn clear(&mut self, color: &RGB) {
+        gl::ClearColor(color.r as f32 / 255.0, color.g as f32 / 255.0, color.b as f32 / 255.0, 1.0);
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
     }
 
-    pub fn set_color<C: ToRGB>(&mut self, color: &C) {
-        self.draw_color = color.to_rgb::<u8>();
+    pub fn set_color(&mut self, color: &RGB) {
+        self.draw_color = *color;
     }
 
     pub fn set_layer(&mut self, layer: f32) {
@@ -507,57 +506,56 @@ impl Vertex {
     fn new(
         px: f32, py: f32, pz: f32,
         u: f32, v: f32,
-        color: &RGB<f32>, a: f32) -> Vertex {
+        color: &RGB, a: f32) -> Vertex {
         Vertex {
             px: px,
             py: py,
             pz: pz,
             u: u,
             v: v,
-            r: color.r,
-            g: color.g,
-            b: color.b,
+            r: color.r as f32 / 255.0,
+            g: color.g as f32 / 255.0,
+            b: color.b as f32 / 255.0,
             a: a
         }
     }
 
-    fn rect<C: ToRGB>(
+    fn rect(
         area: &Aabb2<f32>, z: f32,
         uv1: &Point2<f32>, uv2: &Point2<f32>,
-        color: &C, alpha: f32) -> Vec<Vertex> {
-        let c = color.to_rgb::<f32>();
+        c: &RGB, alpha: f32) -> Vec<Vertex> {
 
         let mut ret = vec!();
 
         ret.push(Vertex::new(
                 area.min().x, area.min().y, z,
                 uv1.x, uv1.y,
-                &c, alpha));
+                c, alpha));
 
         ret.push(Vertex::new(
                 area.min().x, area.max().y, z,
                 uv1.x, uv2.y,
-                &c, alpha));
+                c, alpha));
 
         ret.push(Vertex::new(
                 area.max().x, area.max().y, z,
                 uv2.x, uv2.y,
-                &c, alpha));
+                c, alpha));
 
         ret.push(Vertex::new(
                 area.min().x, area.min().y, z,
                 uv1.x, uv1.y,
-                &c, alpha));
+                c, alpha));
 
         ret.push(Vertex::new(
                 area.max().x, area.max().y, z,
                 uv2.x, uv2.y,
-                &c, alpha));
+                c, alpha));
 
         ret.push(Vertex::new(
                 area.max().x, area.min().y, z,
                 uv2.x, uv1.y,
-                &c, alpha));
+                c, alpha));
 
         ret
     }

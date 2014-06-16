@@ -1,5 +1,5 @@
 use timing::Ticker;
-use color::rgb::consts::*;
+use color::consts::*;
 use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;

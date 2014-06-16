@@ -2,8 +2,8 @@ use time;
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
-use color::rgb::{RGB, ToRGB};
-use color::rgb::consts::*;
+use color::{RGB};
+use color::consts::*;
 use stb::image;
 use rectutil::RectUtil;
 use engine::{App, Engine, Image};
@@ -156,8 +156,7 @@ impl WorldView for World {
 
 /// Interface for sprite-drawing.
 pub trait DrawContext {
-    fn draw<C: ToRGB>(
-        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C);
+    fn draw(&mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &RGB);
 
     fn get_mode(&self) -> ViewMode;
 }
@@ -185,10 +184,10 @@ impl<'a> SpriteCollector<'a> {
 }
 
 impl<'a> DrawContext for SpriteCollector<'a> {
-    fn draw<C: ToRGB>(
-        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &C) {
+    fn draw(
+        &mut self, idx: uint, pos: &Point2<f32>, z: f32, color: &RGB) {
         let color = match self.mode {
-            Normal => color.to_rgb::<u8>(),
+            Normal => *color,
             FogOfWar => RGB::new(0x22u8, 0x22u8, 0x11u8),
         };
 
@@ -320,7 +319,7 @@ fn terrain_sprites<C: DrawContext>(
         },
     }
 
-    fn blockform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>) {
+    fn blockform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB) {
         ctx.draw(idx, pos, BLOCK_Z, color);
         // Back lines for blocks with open floor behind them.
         if !k.nw.is_wall() {
@@ -334,7 +333,7 @@ fn terrain_sprites<C: DrawContext>(
         }
     }
 
-    fn wallform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB<u8>, opaque: bool) {
+    fn wallform<C: DrawContext>(ctx: &mut C, k: &Kernel<TerrainType>, pos: &Point2<f32>, idx: uint, color: &RGB, opaque: bool) {
         let (left_wall, right_wall, block) = wall_flags_lrb(k);
         if block {
             if opaque {
@@ -397,7 +396,7 @@ fn draw_mob<C: DrawContext>(
         }
     }
 
-    fn visual(t: MobType) -> (uint, RGB<u8>) {
+    fn visual(t: MobType) -> (uint, RGB) {
         match t {
             mobs::Player => (51, AZURE),
             mobs::Dreg => (72, OLIVE),
