@@ -27,7 +27,6 @@ pub mod timing;
 
 pub mod stb {
     pub mod image;
-    pub mod truetype;
 }
 
 pub mod world {
