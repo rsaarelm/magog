@@ -18,6 +18,7 @@ use std::os;
 pub mod asciimap;
 pub mod color;
 pub mod engine;
+#[macro_escape]
 pub mod gen_id;
 pub mod pack_rect;
 pub mod rectutil;

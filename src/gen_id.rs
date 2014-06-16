@@ -1,11 +1,9 @@
-#[macro_escape]
-
 use std::fmt;
 
 #[deriving(PartialEq, Eq, Clone, Default)]
 pub struct CodeId {
-    line: uint,
-    path: String,
+    pub line: uint,
+    pub path: String,
 }
 
 impl fmt::Show for CodeId {
@@ -23,5 +21,5 @@ impl fmt::Show for CodeId {
 /// different crates built in different source trees?)
 #[macro_export]
 macro_rules! gen_id(
-    () => ( gen_id::CodeId { line: line!(), path: file!().to_owned() } )
+    () => ( gen_id::CodeId { line: line!(), path: file!().to_string() } )
 )
