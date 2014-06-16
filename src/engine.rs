@@ -489,17 +489,17 @@ fn pack_tiles(tiles: &Vec<Tile>, texture_idx: uint) -> (TextureProxy, Vec<Image>
 }
 
 struct Vertex {
-    px: f32,
-    py: f32,
-    pz: f32,
+    _px: f32,
+    _py: f32,
+    _pz: f32,
 
-    u: f32,
-    v: f32,
+    _u: f32,
+    _v: f32,
 
-    r: f32,
-    g: f32,
-    b: f32,
-    a: f32,
+    _r: f32,
+    _g: f32,
+    _b: f32,
+    _a: f32,
 }
 
 impl Vertex {
@@ -508,15 +508,15 @@ impl Vertex {
         u: f32, v: f32,
         color: &RGB, a: f32) -> Vertex {
         Vertex {
-            px: px,
-            py: py,
-            pz: pz,
-            u: u,
-            v: v,
-            r: color.r as f32 / 255.0,
-            g: color.g as f32 / 255.0,
-            b: color.b as f32 / 255.0,
-            a: a
+            _px: px,
+            _py: py,
+            _pz: pz,
+            _u: u,
+            _v: v,
+            _r: color.r as f32 / 255.0,
+            _g: color.g as f32 / 255.0,
+            _b: color.b as f32 / 255.0,
+            _a: a
         }
     }
 

@@ -1,4 +1,3 @@
-use timing::Ticker;
 use color::consts::*;
 use cgmath::point::{Point2};
 use world::world::{World, Location};
@@ -17,7 +16,6 @@ use engine;
 struct GameApp {
     world: World,
     tiles: Vec<Image>,
-    standalone_anim: Ticker,
     fov: Fov,
     loc: Location,
     in_player_input: bool,
@@ -29,7 +27,6 @@ impl GameApp {
         GameApp {
             world: World::new(666),
             tiles: vec!(),
-            standalone_anim: Ticker::new(0.2f64),
             fov: Fov::new(),
             loc: Location::new(0, 3),
             in_player_input: false,
