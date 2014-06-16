@@ -56,7 +56,7 @@ struct Packing<S> {
     slots: Vec<Aabb2<S>>,
 }
 
-impl<S: BaseNum + TotalOrd> Packing<S> {
+impl<S: BaseNum + Ord> Packing<S> {
     pub fn new(area: &Aabb2<S>) -> Packing<S> {
         Packing{slots: vec!(area.clone())}
     }
@@ -76,7 +76,7 @@ impl<S: BaseNum + TotalOrd> Packing<S> {
     }
 }
 
-pub fn try_pack_rects<S: BaseNum + TotalOrd>(
+pub fn try_pack_rects<S: BaseNum + Ord>(
     rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> Option<Vec<Aabb2<S>>> {
     // Store the original indices so that we know what was where even if we
     // change the order.
@@ -97,7 +97,7 @@ pub fn try_pack_rects<S: BaseNum + TotalOrd>(
     Some(ret)
 }
 
-pub fn pack_rects<S: BaseNum + TotalOrd>(
+pub fn pack_rects<S: BaseNum + Ord>(
     rect: &Aabb2<S>, sizes: &[Vector2<S>]) -> (Aabb2<S>, Vec<Aabb2<S>>) {
     let next_rect = Aabb2::new(
         rect.min().clone(), rect.min().add_v(&(rect.dim() + rect.dim())));

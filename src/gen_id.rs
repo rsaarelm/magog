@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-#[deriving(Eq, Clone, Default)]
+#[deriving(PartialEq, Eq, Clone, Default)]
 pub struct CodeId {
     line: uint,
     path: String,

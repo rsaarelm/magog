@@ -31,7 +31,7 @@ pub trait App {
     fn key_released(&mut self, _ctx: &mut Engine, _key: Key) {}
 }
 
-#[deriving(Clone, Eq)]
+#[deriving(Clone, PartialEq, Eq)]
 pub struct KeyEvent {
     // Scancode (ignores local layout)
     pub code: uint,
@@ -39,7 +39,7 @@ pub struct KeyEvent {
     pub ch: Option<char>,
 }
 
-#[deriving(Eq, Clone)]
+#[deriving(Clone, PartialEq)]
 pub struct MouseState {
     pub pos: Point2<f32>,
     pub left: bool,
@@ -389,7 +389,7 @@ fn transform_pixel_rect(dim: &Vector2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
             rect.max.y / dim.y * 2.0f32 - 1.0f32))
 }
 
-#[deriving(Clone, Eq)]
+#[deriving(Clone, PartialEq)]
 pub struct Image {
     texture_idx: uint,
     area: Aabb2<f32>,
@@ -764,7 +764,7 @@ static TILE_F: &'static str =
     }
     ";
 
-#[deriving(Clone, Eq, Hash, Show, TotalEq)]
+#[deriving(Clone, PartialEq, Eq, Hash, Show)]
 pub enum Key {
     KeySpace = 2u8,
     KeyApostrophe = 3u8,

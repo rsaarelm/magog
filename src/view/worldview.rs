@@ -167,7 +167,7 @@ pub struct SpriteCollector<'a> {
     tiles: &'a Vec<Image>,
 }
 
-#[deriving(Eq)]
+#[deriving(Eq, PartialEq)]
 pub enum ViewMode {
     Normal,
     FogOfWar,

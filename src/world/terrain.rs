@@ -4,7 +4,7 @@ macro_rules! terrain_data {
         count: $count:expr;
         $($symbol:ident, $name:expr;)*
     } => {
-#[deriving(Eq, Clone)]
+#[deriving(Eq, PartialEq, Clone)]
         pub enum TerrainType {
             $($symbol,)*
         }

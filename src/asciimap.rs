@@ -3,10 +3,10 @@ use std::cmp::{min, max};
 use std::str;
 use std::str::StrAllocating;
 use std::vec::Vec;
-use collections::hashmap::{HashMap};
+use std::collections::hashmap::{HashMap};
 use cgmath::point::{Point2};
 
-#[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
+#[deriving(Eq, PartialEq, Hash, Clone, Decodable, Encodable)]
 pub struct Cell {
     pub terrain_type: String,
     pub spawns: Vec<String>,
@@ -18,7 +18,7 @@ impl Cell {
     }
 }
 
-#[deriving(Eq, TotalEq, Hash, Clone, Decodable, Encodable)]
+#[deriving(Eq, PartialEq, Hash, Clone, Decodable, Encodable)]
 pub struct LegendEntry {
     pub glyph: char,
     pub terrain_type: String,

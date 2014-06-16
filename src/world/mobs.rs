@@ -25,7 +25,7 @@ impl Mob {
 }
 
 pub mod quirk {
-#[deriving(Eq, Clone)]
+#[deriving(Eq, PartialEq, Clone)]
 pub enum Quirk {
     /// Moves 1/3 slower than usual
     Slow,
@@ -36,9 +36,10 @@ pub enum Quirk {
 }
 }
 
+#[deriving(Eq, PartialEq)]
 pub type MobId = u64;
 
-#[deriving(Eq, Clone)]
+#[deriving(Eq, PartialEq, Clone)]
 pub enum MobType {
     Player,
     Dreg,

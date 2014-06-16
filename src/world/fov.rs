@@ -1,12 +1,12 @@
 use num::Integer;
-use collections::hashmap::HashMap;
+use std::collections::hashmap::HashMap;
 
 use cgmath::vector::{Vector, Vector2};
 
 use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6};
 use world::area::Area;
 
-#[deriving(Eq, Show)]
+#[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {
     Seen(Location),
     Remembered(Location),
@@ -132,7 +132,7 @@ impl Fov {
 }
 
 
-#[deriving(Eq)]
+#[deriving(PartialEq)]
 struct Angle {
     pos: f32,
     radius: uint

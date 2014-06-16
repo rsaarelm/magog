@@ -1,4 +1,4 @@
-use collections::hashmap::{HashMap, HashSet};
+use std::collections::hashmap::{HashMap, HashSet};
 use std::rand;
 use rand::Rng;
 use text::Map2DUtil;
@@ -49,9 +49,10 @@ impl MapGen for World {
         self.area.clear();
         self.clear_npcs();
         self.depth += 1;
+        let depth = self.depth;
 
         self.gen_herringbone(
-            if self.depth == 1 { &chunks.overland }
+            if depth == 1 { &chunks.overland }
             else { &chunks.dungeon });
 
         let loc = self.spawn_loc().unwrap();
