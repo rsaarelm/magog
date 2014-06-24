@@ -4,10 +4,9 @@ use cgmath::vector::{Vector2};
 use cgmath::aabb::{Aabb, Aabb2};
 use color::{RGB};
 use color::consts::*;
-use stb::image;
 use rectutil::RectUtil;
-use engine::{App, Engine, Image};
-use tile::Tile;
+use engine::{Engine};
+use view::tilecache;
 use world::terrain;
 use world::terrain::TerrainType;
 use world::world::{World, Location, ChartPos};
@@ -19,8 +18,6 @@ use timing;
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
-
-static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
 
 pub static CUBE : uint = 0;
 pub static CURSOR_BOTTOM : uint = 1;
@@ -107,7 +104,7 @@ pub trait WorldView {
         &self, ctx: &mut C, loc: Location, pos: &Point2<f32>);
 
     fn draw_area(
-        &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov);
+        &self, ctx: &mut Engine, fov: &Fov);
 }
 
 impl WorldView for World {
@@ -124,7 +121,7 @@ impl WorldView for World {
     }
 
     fn draw_area(
-        &self, ctx: &mut Engine, tiles: &Vec<Image>, fov: &Fov) {
+        &self, ctx: &mut Engine, fov: &Fov) {
         let mut chart_bounds = Aabb2::new(
             to_chart(&Point2::new(0f32, 0f32)).to_point(),
             to_chart(&Point2::new(640f32, 392f32)).to_point());
@@ -135,7 +132,7 @@ impl WorldView for World {
             let p = ChartPos::new(pt.x, pt.y);
             let offset = to_screen(p);
 
-            let mut draw = SpriteCollector::new(ctx, tiles);
+            let mut draw = SpriteCollector::new(ctx);
 
             match fov.get(p) {
                 Seen(loc) => {
@@ -164,7 +161,6 @@ pub trait DrawContext {
 pub struct SpriteCollector<'a> {
     pub mode: ViewMode,
     engine: &'a mut Engine,
-    tiles: &'a Vec<Image>,
 }
 
 #[deriving(Eq, PartialEq)]
@@ -174,11 +170,10 @@ pub enum ViewMode {
 }
 
 impl<'a> SpriteCollector<'a> {
-    pub fn new<'a>(engine: &'a mut Engine, tiles: &'a Vec<Image>) -> SpriteCollector<'a> {
+    pub fn new<'a>(engine: &'a mut Engine) -> SpriteCollector<'a> {
         SpriteCollector {
             mode: Normal,
             engine: engine,
-            tiles: tiles,
         }
     }
 }
@@ -193,7 +188,7 @@ impl<'a> DrawContext for SpriteCollector<'a> {
 
         self.engine.set_layer(z);
         self.engine.set_color(&color);
-        self.engine.draw_image(self.tiles.get(idx), pos);
+        self.engine.draw_image(&tilecache::get(idx), pos);
     }
 
     fn get_mode(&self) -> ViewMode { self.mode }
@@ -411,25 +406,15 @@ fn draw_mob<C: DrawContext>(
     }
 }
 
-pub fn init_tiles(ctx: &mut Engine) -> Vec<Image> {
-    let tiles = image::Image::load_from_memory(TILE_DATA, 1).unwrap();
-    let tiles = Tile::new_alpha_set(
-        &Vector2::new(32, 32),
-        &Vector2::new(tiles.width as int, tiles.height as int),
-        tiles.pixels,
-        &Vector2::new(-16, -16));
-    ctx.make_images(&tiles)
-}
-
-pub fn draw_mouse(ctx: &mut Engine, tiles: &Vec<Image>) -> ChartPos {
+pub fn draw_mouse(ctx: &mut Engine) -> ChartPos {
     let mouse = ctx.get_mouse();
     let cursor_chart_pos = to_chart(&mouse.pos);
 
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
-    ctx.draw_image(tiles.get(CURSOR_BOTTOM), &to_screen(cursor_chart_pos));
+    ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &to_screen(cursor_chart_pos));
     ctx.set_layer(BLOCK_Z);
-    ctx.draw_image(tiles.get(CURSOR_TOP), &to_screen(cursor_chart_pos));
+    ctx.draw_image(&tilecache::get(CURSOR_TOP), &to_screen(cursor_chart_pos));
 
     cursor_chart_pos
 }

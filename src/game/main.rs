@@ -9,13 +9,13 @@ use world::ai::AI;
 use world::area::Area;
 use world::geomorph::Chunks;
 use view::worldview::WorldView;
+use view::tilecache;
 use view::worldview;
-use engine::{App, Engine, Key, Image};
+use engine::{App, Engine, Key};
 use engine;
 
 struct GameApp {
     world: World,
-    tiles: Vec<Image>,
     fov: Fov,
     loc: Location,
     in_player_input: bool,
@@ -26,7 +26,6 @@ impl GameApp {
     pub fn new() -> GameApp {
         GameApp {
             world: World::new(666),
-            tiles: vec!(),
             fov: Fov::new(),
             loc: Location::new(0, 3),
             in_player_input: false,
@@ -66,7 +65,7 @@ impl GameApp {
 
 impl App for GameApp {
     fn setup(&mut self, ctx: &mut Engine) {
-        self.tiles = worldview::init_tiles(ctx);
+        tilecache::init(ctx);
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
@@ -109,9 +108,9 @@ impl App for GameApp {
         self.in_player_input = self.world.player_has_turn();
 
         self.fov.update(&self.world, self.loc, 12);
-        self.world.draw_area(ctx, &self.tiles, &self.fov);
+        self.world.draw_area(ctx, &self.fov);
 
-        let _mouse_pos = worldview::draw_mouse(ctx, &self.tiles);
+        let _mouse_pos = worldview::draw_mouse(ctx);
 
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);

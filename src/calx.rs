@@ -45,6 +45,7 @@ pub mod world {
 
 pub mod view {
     pub mod worldview;
+    pub mod tilecache;
 }
 
 pub mod game {
