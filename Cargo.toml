@@ -1,0 +1,22 @@
+[package]
+
+name = "calx"
+version = "0.1.0"
+authors = [ "risto.saarelma@iki.fi" ]
+build = "./.build.sh"
+
+[[bin]]
+
+name = "calx"
+
+[dependencies.cgmath-rs]
+git = "https://github.com/bjz/cgmath-rs.git"
+
+[dependencies.gl]
+git = "https://github.com/bjz/gl-rs.git"
+
+[dependencies.glfw-rs]
+git = "https://github.com/bjz/glfw-rs.git"
+
+[dependencies.hgl-rs]
+git = "https://github.com/rsaarelm/hgl-rs.git"
