@@ -18,5 +18,5 @@ git = "https://github.com/bjz/gl-rs.git"
 [dependencies.glfw-rs]
 git = "https://github.com/bjz/glfw-rs.git"
 
-[dependencies.hgl-rs]
-git = "https://github.com/rsaarelm/hgl-rs.git"
+[dependencies.hgl]
+git = "https://github.com/cmr/hgl-rs.git"
