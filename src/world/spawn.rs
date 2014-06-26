@@ -34,7 +34,7 @@ impl Spawn for World {
     fn gen_mobs(&mut self) {
         let spawn_count = 59;
 
-        for _ in range(0, spawn_count) {
+        for _ in range(0u, spawn_count) {
             match self.spawn_loc() {
                 None => return,
                 Some(loc) => {

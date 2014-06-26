@@ -27,8 +27,8 @@ impl MapGen for World {
         assert!(!exit.is_empty(), "No exit chunks found");
         assert!(inner.len() + exit.len() == chunks.len());
 
-        for cy in range(-2, 2) {
-            for cx in range(-2, 2) {
+        for cy in range(-2i, 2) {
+            for cx in range(-2i, 2) {
                 let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
 
                 let chunk = rng.choose(

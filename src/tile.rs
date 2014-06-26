@@ -81,7 +81,7 @@ impl Tile {
         if min_x >= max_x || min_y >= max_y {
             // Empty area.
             self.data = vec!();
-            self.bounds = RectUtil::new(0, 0, 0, 0);
+            self.bounds = RectUtil::new(0i, 0i, 0i, 0i);
             return;
         }
         let new_bounds : Aabb2<int> = RectUtil::new(min_x, min_y, max_x, max_y);
