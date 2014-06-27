@@ -124,16 +124,16 @@ impl Engine {
 
         // Must be in the order matching the SHADER_IDX constants.
         ctx.shaders.push(Program::link(
-                [hgl::Shader::compile(BLIT_V, hgl::VertexShader).unwrap(),
-                hgl::Shader::compile(BLIT_F, hgl::FragmentShader).unwrap()])
+                &[hgl::Shader::compile(BLIT_V, hgl::VertexShader),
+                hgl::Shader::compile(BLIT_F, hgl::FragmentShader)])
             .unwrap());
         ctx.shaders.push(Program::link(
-                [hgl::Shader::compile(PLAIN_V, hgl::VertexShader).unwrap(),
-                hgl::Shader::compile(PLAIN_F, hgl::FragmentShader).unwrap()])
+                &[hgl::Shader::compile(PLAIN_V, hgl::VertexShader),
+                hgl::Shader::compile(PLAIN_F, hgl::FragmentShader)])
             .unwrap());
         ctx.shaders.push(Program::link(
-                [hgl::Shader::compile(TILE_V, hgl::VertexShader).unwrap(),
-                hgl::Shader::compile(TILE_F, hgl::FragmentShader).unwrap()])
+                &[hgl::Shader::compile(TILE_V, hgl::VertexShader),
+                hgl::Shader::compile(TILE_F, hgl::FragmentShader)])
             .unwrap());
 
         // Set up texture target where the App will render into.
