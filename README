@@ -1,10 +1,12 @@
 Rust multimedia programming scratch space.
 
-Init the submodules
-$ ./init-submodules.sh
+You need to have the Rust compiler, the Rust Cargo package manager
+and GLFW installed to build this.
 
-To build, you need tup from http://gittup.org/tup/:
-$ tup
+Build:
 
-To activate a variant build, eg. release build, do
-$ tup variant configs/release.config
+$ make
+
+Build and run:
+
+$ make run
