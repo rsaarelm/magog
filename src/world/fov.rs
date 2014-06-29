@@ -33,12 +33,12 @@ impl Fov {
         self.offset = self.offset + *delta;
     }
 
-    pub fn update(&mut self, world: &World, center: Location, range: uint) {
+    pub fn update(&mut self, center: Location, range: uint) {
         self.seen = HashMap::new();
 
         mark_seen(self, ChartPos::new(0, 0), center);
 
-        process(self, world, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
+        process(self, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
 
         // Post-processing hack to make acute corner wall tiles in fake-isometric
         // rooms visible.
@@ -57,10 +57,10 @@ impl Fov {
 
                 let pos = self.from_chart(pos);
                 if self.seen.contains_key(&above) {
-                    if world.is_opaque(left_loc) {
+                    if World::map(|w| w.is_opaque(left_loc)) {
                         queue.push((pos + Vector2::new(-1, 0), left_loc));
                     }
-                    if world.is_opaque(right_loc) {
+                    if World::map(|w| w.is_opaque(right_loc)) {
                         queue.push((pos + Vector2::new(0, -1), right_loc));
                     }
                 }
@@ -73,19 +73,19 @@ impl Fov {
         // Compute field-of-view using recursive shadowcasting in hex grid
         // geometry.
         fn process(
-            fov: &mut Fov, world: &World, range: uint,
+            fov: &mut Fov, range: uint,
             center: Location, begin: Angle, end: Angle) {
             if begin.radius > range { return; }
 
             let mut angle = begin;
-            let group_opaque = world.is_opaque(center + angle.to_vec());
+            let group_opaque = World::map(|w| w.is_opaque(center + angle.to_vec()));
             while angle.is_below(end) {
                 let loc = center + angle.to_vec();
-                if world.is_opaque(loc) != group_opaque {
-                    process(fov, world, range, center, angle, end);
+                if World::map(|w| w.is_opaque(loc)) != group_opaque {
+                    process(fov, range, center, angle, end);
                     // Terrain opaquity has changed, time to recurse.
                     if !group_opaque {
-                        process(fov, world, range, center, begin.further(), angle.further());
+                        process(fov, range, center, begin.further(), angle.further());
                     }
                     return;
                 }
@@ -95,7 +95,7 @@ impl Fov {
             }
 
             if !group_opaque {
-                process(fov, world, range, center, begin.further(), end.further());
+                process(fov, range, center, begin.further(), end.further());
             }
         }
 

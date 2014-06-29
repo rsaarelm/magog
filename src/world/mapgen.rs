@@ -57,7 +57,7 @@ impl MapGen for World {
 
         let loc = self.spawn_loc().unwrap();
         let player = self.player().unwrap();
-        self.mut_mob(player).loc = loc;
+        self.mob_mut(player).loc = loc;
         self.gen_mobs();
     }
 }

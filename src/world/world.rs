@@ -1,11 +1,15 @@
+use std::cell::RefCell;
 use std::collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point2};
 use world::terrain::TerrainType;
 use world::mobs::{Mob, MobId};
 
+local_data_key!(WORLD: RefCell<World>)
+
+
 pub struct World {
-    seed: u32,
+    pub seed: u32,
     next_id: u64,
     tick: u64,
     pub depth: int,
@@ -14,7 +18,23 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(seed: u32) -> World {
+    pub fn map<T>(f: |&World| -> T) -> T {
+        if WORLD.get().is_none() {
+            WORLD.replace(Some(RefCell::new(World::new(0))));
+        }
+
+        f(WORLD.get().unwrap().borrow().deref())
+    }
+
+    pub fn map_mut<T>(f: |&mut World| -> T) -> T {
+        if WORLD.get().is_none() {
+            WORLD.replace(Some(RefCell::new(World::new(0))));
+        }
+
+        f(WORLD.get().unwrap().borrow_mut().deref_mut())
+    }
+
+    fn new(seed: u32) -> World {
         World {
             seed: seed,
             next_id: 1,
@@ -44,7 +64,7 @@ impl World {
     }
 
     pub fn insert_mob(&mut self, mut mob: Mob) -> MobId {
-        mob.id = self.make_id();
+        mob.id = MobId(self.make_id());
         self.mobs.insert(mob.id, mob);
         mob.id
     }
