@@ -10,13 +10,13 @@ build = "./.build.sh"
 name = "calx"
 
 [dependencies.cgmath-rs]
-git = "https://github.com/bjz/cgmath-rs.git"
+git = "https://github.com/bjz/cgmath-rs"
 
 [dependencies.gl]
-git = "https://github.com/bjz/gl-rs.git"
+git = "https://github.com/bjz/gl-rs"
 
 [dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs.git"
+git = "https://github.com/bjz/glfw-rs"
 
 [dependencies.hgl]
-git = "https://github.com/cmr/hgl-rs.git"
+git = "https://github.com/cmr/hgl-rs"
