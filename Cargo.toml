@@ -1,7 +1,7 @@
 [package]
 
 name = "calx"
-version = "0.1.0"
+version = "0.0.1"
 authors = [ "risto.saarelma@iki.fi" ]
 build = "./.build.sh"
 
