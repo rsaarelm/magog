@@ -7,12 +7,12 @@ use std::mem;
 #[link(name="stb")]
 extern {
     fn stbi_load_from_memory(
-        buffer: *c_uchar, len: c_int, x: *mut c_int, y: *mut c_int,
-        comp: *mut c_int, req_comp: c_int) -> *c_uchar;
+        buffer: *const c_uchar, len: c_int, x: *mut c_int, y: *mut c_int,
+        comp: *mut c_int, req_comp: c_int) -> *const c_uchar;
 
     fn stbi_write_png(
-        filename: *c_char, w: c_int, h: c_int, comp: c_int,
-        data: *c_void, stride_in_bytes: c_int);
+        filename: *const c_char, w: c_int, h: c_int, comp: c_int,
+        data: *const c_void, stride_in_bytes: c_int);
 }
 
 pub struct Image {
@@ -70,11 +70,9 @@ impl Image {
 
     pub fn save_png(&self, path: &str) {
         unsafe {
-            path.to_c_str().with_ref(|bytes| {
-                stbi_write_png(
-                    bytes, self.width as c_int, self.height as c_int,
-                    self.bpp as c_int, self.pixels.as_ptr() as *c_void, 0);
-            })
+            stbi_write_png(
+                path.to_c_str().as_ptr(), self.width as c_int, self.height as c_int,
+                self.bpp as c_int, self.pixels.as_ptr() as *const c_void, 0);
         }
     }
 }

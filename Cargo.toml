@@ -9,7 +9,7 @@ build = "./.build.sh"
 
 name = "calx"
 
-[dependencies.cgmath-rs]
+[dependencies.cgmath]
 git = "https://github.com/bjz/cgmath-rs"
 
 [dependencies.gl]
