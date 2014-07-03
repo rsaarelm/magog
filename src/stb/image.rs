@@ -70,9 +70,10 @@ impl Image {
 
     pub fn save_png(&self, path: &str) {
         unsafe {
-            stbi_write_png(
-                path.to_c_str().as_ptr(), self.width as c_int, self.height as c_int,
-                self.bpp as c_int, self.pixels.as_ptr() as *const c_void, 0);
+            path.with_c_str(|cstr|
+                stbi_write_png(
+                    cstr, self.width as c_int, self.height as c_int,
+                    self.bpp as c_int, self.pixels.as_ptr() as *const c_void, 0));
         }
     }
 }
