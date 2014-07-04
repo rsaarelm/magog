@@ -1,4 +1,4 @@
-use color::consts::*;
+use calx::color::consts::*;
 use cgmath::point::{Point2};
 use world::world::{World, Location};
 use world::fov::Fov;
@@ -10,8 +10,8 @@ use world::geomorph::Chunks;
 use view::worldview::WorldView;
 use view::tilecache;
 use view::worldview;
-use engine::{App, Engine, Key};
-use engine;
+use calx::engine::{App, Engine, Key};
+use calx::engine;
 
 struct GameApp {
     fov: Fov,

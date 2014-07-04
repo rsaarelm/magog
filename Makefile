@@ -7,7 +7,7 @@ rebuild-dependencies:
 	cargo build -u
 
 run: build
-	./target/calx
+	./target/magog
 
 clean:
 	rm -rf target/

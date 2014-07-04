@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 use cgmath::vector::{Vector2};
-use stb::image;
-use tile::Tile;
-use engine::{Engine, Image};
+use calx::stb::image;
+use calx::tile::Tile;
+use calx::engine::{Engine, Image};
 
 local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
 

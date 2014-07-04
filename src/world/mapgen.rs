@@ -1,7 +1,7 @@
 use std::collections::hashmap::{HashMap, HashSet};
 use std::rand;
 use rand::Rng;
-use text::Map2DUtil;
+use calx::text::Map2DUtil;
 use num::Integer;
 use world::world::{World, Location};
 use world::terrain::*;

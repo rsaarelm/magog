@@ -1,22 +1,15 @@
 [package]
 
-name = "calx"
+name = "magog"
 version = "0.0.1"
 authors = [ "risto.saarelma@iki.fi" ]
-build = "./.build.sh"
 
 [[bin]]
 
-name = "calx"
+name = "magog"
+
+[dependencies.calx]
+path = "calx"
 
 [dependencies.cgmath]
 git = "https://github.com/bjz/cgmath-rs"
-
-[dependencies.gl]
-git = "https://github.com/bjz/gl-rs"
-
-[dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs"
-
-[dependencies.hgl]
-git = "https://github.com/cmr/hgl-rs"
