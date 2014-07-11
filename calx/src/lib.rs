@@ -11,6 +11,7 @@ extern crate cgmath;
 extern crate libc;
 extern crate time;
 extern crate serialize;
+extern crate uuid;
 
 pub mod asciimap;
 pub mod color;
@@ -22,6 +23,7 @@ pub mod rectutil;
 pub mod text;
 pub mod tile;
 pub mod timing;
+pub mod world;
 
 pub mod stb {
     pub mod image;
