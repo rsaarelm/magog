@@ -12,6 +12,12 @@ pub struct World<T> {
     data: Rc<RefCell<WorldData<T>>>,
 }
 
+impl<T> Clone for World<T> {
+    fn clone(&self) -> World<T> {
+        World { data: self.data.clone() }
+    }
+}
+
 impl<T: System> World<T> {
     /// Create a world coupled with an application specific system object.
     pub fn new(master_system: T) -> World<T> {
