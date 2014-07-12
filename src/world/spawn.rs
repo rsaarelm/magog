@@ -1,6 +1,6 @@
 use std::rand;
 use std::rand::Rng;
-use world::world::{World, Location};
+use world::world::{System, Location};
 use world::area::Area;
 use world::mobs;
 use world::mobs::{MobType, Mob};
@@ -11,7 +11,7 @@ pub trait Spawn {
     fn gen_mobs(&mut self);
 }
 
-impl Spawn for World {
+impl Spawn for System {
     fn spawn_loc(&mut self) -> Option<Location> {
         // Maybe use a RNG stored in self later.
         rand::task_rng()
@@ -21,6 +21,7 @@ impl Spawn for World {
 
     fn random_mob_type(&mut self) -> MobType {
         // TODO: Spawn harder monsters in deeper depths
+        // TODO: Use world seed based rng
         rand::task_rng()
             .choose(&[
                     mobs::Dreg,

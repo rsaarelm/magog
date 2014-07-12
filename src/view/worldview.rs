@@ -3,6 +3,7 @@ use calx::color::{RGB};
 use calx::engine::{Engine};
 use calx::rectutil::RectUtil;
 use calx::timing;
+use calx::world::World;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
@@ -10,11 +11,11 @@ use time;
 use view::tilecache;
 use world::area::Area;
 use world::fov::{Fov, Seen, Remembered, Unknown};
-use world::mobs::{Mobs, Mob, MobType};
-use world::mobs;
+//use world::mobs::{Mobs, Mob, MobType};
+//use world::mobs;
 use world::terrain::TerrainType;
 use world::terrain;
-use world::world::{World, Location, ChartPos};
+use world::system::{System, Location, ChartPos};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -107,17 +108,19 @@ pub trait WorldView {
         &self, ctx: &mut Engine, fov: &Fov);
 }
 
-impl WorldView for World {
+impl WorldView for World<System> {
     fn draw_entities_at<C: DrawContext>(
         &self, ctx: &mut C, loc: Location, pos: &Point2<f32>) {
         let kernel = Kernel::new(|loc| self.terrain_at(loc), loc);
         terrain_sprites(ctx, &kernel, pos);
 
+        /*
         if ctx.get_mode() != FogOfWar {
             for &id in self.mobs_at(loc).iter() {
                 draw_mob(ctx, self.mob(id), pos);
             }
         }
+        */
     }
 
     fn draw_area(
@@ -369,6 +372,7 @@ fn terrain_sprites<C: DrawContext>(
     }
 }
 
+    /*
 fn draw_mob<C: DrawContext>(
     ctx: &mut C, mob: &Mob, pos: &Point2<f32>) {
     let body_pos =
@@ -405,6 +409,7 @@ fn draw_mob<C: DrawContext>(
         mob.t != mobs::Player
     }
 }
+    */
 
 pub fn draw_mouse(ctx: &mut Engine) -> ChartPos {
     let mouse = ctx.get_mouse();

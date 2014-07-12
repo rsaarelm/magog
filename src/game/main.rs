@@ -1,19 +1,23 @@
 use calx::color::consts::*;
 use cgmath::point::{Point2};
-use world::world::{World, Location};
+use world::system::{System, Location};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
-use world::mobs::{Mob};
-use world::mobs;
-use world::ai;
+use world::area::Area;
+//use world::mobs::{Mob};
+//use world::mobs;
+//use world::ai;
 use world::geomorph::Chunks;
 use view::worldview::WorldView;
 use view::tilecache;
 use view::worldview;
 use calx::engine::{App, Engine, Key};
 use calx::engine;
+use calx::world::World;
 
 struct GameApp {
+    world: World<System>,
+    // TODO: Move this into System.
     fov: Fov,
     loc: Location,
     in_player_input: bool,
@@ -22,8 +26,10 @@ struct GameApp {
 
 impl GameApp {
     pub fn new() -> GameApp {
+        let world = World::new(System::new(0));
         GameApp {
-            fov: Fov::new(),
+            world: world.clone(),
+            fov: Fov::new(world.clone()),
             loc: Location::new(0, 3),
             in_player_input: false,
             chunks: Chunks::new(),
@@ -33,6 +39,7 @@ impl GameApp {
 
 impl GameApp {
     fn move(&mut self, dir8: uint) {
+        /*
         assert!(self.in_player_input);
         let player = ai::player().unwrap();
         let delta = player.smart_move(dir8);
@@ -44,7 +51,6 @@ impl GameApp {
             _ => ()
         }
 
-        /*
         if self.world.terrain_at(self.world.mob(player).loc).is_exit() {
             self.fov = Fov::new();
             self.world.next_level(&self.chunks);
@@ -58,7 +64,7 @@ impl GameApp {
     fn end_turn(&mut self) {
         self.in_player_input = false;
 
-        ai::update_mobs();
+        //ai::update_mobs();
     }
 }
 
@@ -68,6 +74,7 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
+        /*
         let player = Mob::new(mobs::Player);
         World::map_mut(|w| {
             w.seed = 666;
@@ -76,6 +83,9 @@ impl App for GameApp {
         });
 
         self.loc = ai::player().unwrap().loc();
+        */
+        self.world.next_level(&self.chunks);
+        self.loc = *self.world.open_locs().get(0);
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
@@ -101,10 +111,11 @@ impl App for GameApp {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        self.in_player_input = ai::player_has_turn();
+        //self.in_player_input = ai::player_has_turn();
+        self.in_player_input = true;
 
         self.fov.update(self.loc, 12);
-        World::map_mut(|w| w.draw_area(ctx, &self.fov));
+        self.world.draw_area(ctx, &self.fov);
 
         let _mouse_pos = worldview::draw_mouse(ctx);
 

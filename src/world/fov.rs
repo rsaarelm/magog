@@ -1,10 +1,9 @@
 use num::Integer;
 use std::collections::hashmap::HashMap;
-
 use cgmath::vector::{Vector, Vector2};
-
-use world::world::{World, Location, Chart, ChartPos, DIRECTIONS6};
+use world::system::{System, Location, Chart, ChartPos, DIRECTIONS6};
 use world::area::Area;
+use calx::world::World;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {
@@ -15,14 +14,16 @@ pub enum FovStatus {
 
 
 pub struct Fov {
+    world: World<System>,
     seen: Chart,
     remembered: Chart,
     offset: ChartPos,
 }
 
 impl Fov {
-    pub fn new() -> Fov {
+    pub fn new(world: World<System>) -> Fov {
         Fov {
+            world: world,
             seen: HashMap::new(),
             remembered: HashMap::new(),
             offset: ChartPos::new(0, 0),
@@ -57,10 +58,10 @@ impl Fov {
 
                 let pos = self.from_chart(pos);
                 if self.seen.contains_key(&above) {
-                    if World::map(|w| w.is_opaque(left_loc)) {
+                    if self.world.is_opaque(left_loc) {
                         queue.push((pos + Vector2::new(-1, 0), left_loc));
                     }
-                    if World::map(|w| w.is_opaque(right_loc)) {
+                    if self.world.is_opaque(right_loc) {
                         queue.push((pos + Vector2::new(0, -1), right_loc));
                     }
                 }
@@ -78,10 +79,10 @@ impl Fov {
             if begin.radius > range { return; }
 
             let mut angle = begin;
-            let group_opaque = World::map(|w| w.is_opaque(center + angle.to_vec()));
+            let group_opaque = fov.world.is_opaque(center + angle.to_vec());
             while angle.is_below(end) {
                 let loc = center + angle.to_vec();
-                if World::map(|w| w.is_opaque(loc)) != group_opaque {
+                if fov.world.is_opaque(loc) != group_opaque {
                     process(fov, range, center, angle, end);
                     // Terrain opaquity has changed, time to recurse.
                     if !group_opaque {

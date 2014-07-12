@@ -1,8 +1,13 @@
 use world::terrain::*;
-use world::world::{World, Location};
-use world::mobs::Mobs;
+use world::system::{Location, Entity, World};
 
 pub trait Area {
+    fn terrain_get(&self, loc: Location) -> Option<TerrainType>;
+
+    fn terrain_set(&mut self, loc: Location, t: TerrainType);
+
+    fn terrain_clear(&mut self, loc: Location);
+
     fn terrain_at(&self, loc: Location) -> TerrainType;
 
     /// Return the terrain type a location with no explicitly specified terrain
@@ -17,9 +22,27 @@ pub trait Area {
     fn is_walkable(&self, loc: Location) -> bool;
 
     fn open_locs(&self) -> Vec<Location>;
+
+    fn entities_at(&self, loc: Location) -> Vec<Entity>;
+
+    fn has_entities_at(&self, loc: Location) -> bool {
+        !self.entities_at(loc).is_empty()
+    }
 }
 
 impl Area for World {
+    fn terrain_get(&self, loc: Location) -> Option<TerrainType> {
+        self.system().area.find(&loc).map(|x| *x)
+    }
+
+    fn terrain_set(&mut self, loc: Location, t: TerrainType) {
+        self.system_mut().area.insert(loc, t);
+    }
+
+    fn terrain_clear(&mut self, loc: Location) {
+        self.system_mut().area.remove(&loc);
+    }
+
     fn terrain_at(&self, loc: Location) -> TerrainType {
         let mut ret = match self.terrain_get(loc) {
             Some(t) => t,
@@ -27,7 +50,7 @@ impl Area for World {
         };
 
         // Make doors open if someone is walking through them.
-        if ret == Door && self.has_mobs_at(loc) {
+        if ret == Door && self.has_entities_at(loc) {
             ret = OpenDoor;
         }
 
@@ -35,7 +58,7 @@ impl Area for World {
     }
 
     fn default_terrain_at(&self, _loc: Location) -> TerrainType {
-        if self.depth == 1 {
+        if self.system().depth == 1 {
             // Overworld
             Tree
         } else {
@@ -55,12 +78,21 @@ impl Area for World {
             return false;
         }
 
-        self.mobs_at(loc).len() == 0
+        !self.has_entities_at(loc)
     }
 
     fn open_locs(&self) -> Vec<Location> {
-        self.area.keys()
+        self.system().area.keys()
             .filter(|&&loc| self.is_walkable(loc))
             .map(|&loc| loc).collect()
+    }
+
+    fn entities_at(&self, loc: Location) -> Vec<Entity> {
+        self.entities().iter().filter(|e|
+            match e.into::<Location>() {
+                Some(l) => *l == loc,
+                None => false
+            })
+            .map(|e| e.clone()).collect()
     }
 }

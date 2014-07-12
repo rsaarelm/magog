@@ -63,6 +63,13 @@ impl<T: System> World<T> {
             None => None
         }
     }
+
+    pub fn entities(&self) -> Vec<Entity<T>> {
+        // XXX: Inefficient
+        self.data.borrow().uuids.iter()
+            .map(|(&uuid, &idx)| self.wrap(EntityId { uuid: uuid, idx: idx }))
+            .collect()
+    }
 }
 
 /// Callback interface for application data connected to the component system
@@ -80,10 +87,15 @@ pub trait System {
     fn deleted(&mut self, e: &Entity<Self>);
 }
 
-#[deriving(Clone)]
 pub struct Entity<T> {
     world: Weak<RefCell<WorldData<T>>>,
     id: EntityId,
+}
+
+impl<T> Clone for Entity<T> {
+    fn clone(&self) -> Entity<T> {
+        Entity { world: self.world.clone(), id: self.id }
+    }
 }
 
 impl<T> Show for Entity<T> {

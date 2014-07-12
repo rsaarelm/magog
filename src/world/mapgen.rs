@@ -3,11 +3,12 @@ use std::rand;
 use rand::Rng;
 use calx::text::Map2DUtil;
 use num::Integer;
-use world::world::{World, Location};
+use world::system::{Location, World, DIRECTIONS6};
 use world::terrain::*;
-use world::world::{DIRECTIONS6};
-use world::spawn::Spawn;
-use world::mobs::{Mobs};
+use world::system::{};
+//use world::spawn::Spawn;
+//use world::mobs::{Mobs};
+use world::area::Area;
 use world::geomorph::Chunks;
 
 pub trait MapGen {
@@ -46,19 +47,21 @@ impl MapGen for World {
 
     fn next_level(&mut self, chunks: &Chunks) {
         // TODO: Preserve player object.
-        self.area.clear();
-        self.clear_npcs();
-        self.depth += 1;
-        let depth = self.depth;
+        self.system_mut().area.clear();
+        //self.clear_npcs();
+        self.system_mut().depth += 1;
+        let depth = self.system().depth;
 
         self.gen_herringbone(
             if depth == 1 { &chunks.overland }
             else { &chunks.dungeon });
 
+        /*
         let loc = self.spawn_loc().unwrap();
         let player = self.player().unwrap();
         self.mob_mut(player).loc = loc;
         self.gen_mobs();
+        */
     }
 }
 

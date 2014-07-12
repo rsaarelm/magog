@@ -3,83 +3,54 @@ use std::collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point2};
 use world::terrain::TerrainType;
-use world::mobs::{Mob, MobId};
+use world::area::Area;
+use calx::world;
 
-local_data_key!(WORLD: RefCell<World>)
+pub type Entity = world::Entity<System>;
+pub type World = world::World<System>;
 
-
-pub struct World {
+pub struct System {
+    world: Option<World>,
     pub seed: u32,
-    next_id: u64,
     tick: u64,
     pub depth: int,
     pub area: HashMap<Location, TerrainType>,
-    pub mobs: HashMap<MobId, Mob>,
 }
 
-impl World {
-    pub fn map<T>(f: |&World| -> T) -> T {
-        if WORLD.get().is_none() {
-            WORLD.replace(Some(RefCell::new(World::new(0))));
-        }
-
-        f(WORLD.get().unwrap().borrow().deref())
+impl world::System for System {
+    fn register(&mut self, world: &World) {
+        self.world = Some(world.clone());
     }
 
-    pub fn map_mut<T>(f: |&mut World| -> T) -> T {
-        if WORLD.get().is_none() {
-            WORLD.replace(Some(RefCell::new(World::new(0))));
-        }
+    fn added(&mut self, e: &Entity) {}
+    fn changed<C>(&mut self, e: &Entity, component: Option<&C>) {}
+    fn deleted(&mut self, e: &Entity) {}
+}
 
-        f(WORLD.get().unwrap().borrow_mut().deref_mut())
-    }
-
-    fn new(seed: u32) -> World {
-        World {
+impl System {
+    pub fn new(seed: u32) -> System {
+        System {
+            world: None,
             seed: seed,
-            next_id: 1,
             tick: 0,
             depth: 0,
             area: HashMap::new(),
-            mobs: HashMap::new(),
         }
-    }
-
-    pub fn terrain_get(&self, loc: Location) -> Option<TerrainType> {
-        self.area.find(&loc).map(|x| *x)
-    }
-
-    pub fn terrain_set(&mut self, loc: Location, t: TerrainType) {
-        self.area.insert(loc, t);
-    }
-
-    pub fn terrain_clear(&mut self, loc: Location) {
-        self.area.remove(&loc);
-    }
-
-    fn make_id(&mut self) -> u64 {
-        let ret = self.next_id;
-        self.next_id += 1;
-        ret
-    }
-
-    pub fn insert_mob(&mut self, mut mob: Mob) -> MobId {
-        mob.id = MobId(self.make_id());
-        self.mobs.insert(mob.id, mob);
-        mob.id
-    }
-
-    pub fn remove_mob(&mut self, id: MobId) { self.mobs.remove(&id); }
-
-    pub fn rng_seed(&self) -> u32 { self.seed }
-
-    pub fn get_tick(&self) -> u64 { self.tick }
-
-    pub fn advance_frame(&mut self) {
-        self.tick += 1;
     }
 }
 
+pub trait EngineLogic {
+    /// Get the number of the current time frame.
+    fn get_tick(&self) -> u64;
+    /// Advance to the next time frame.
+    fn advance_frame(&mut self);
+}
+
+impl EngineLogic for World {
+    fn get_tick(&self) -> u64 { self.system().tick }
+
+    fn advance_frame(&mut self) { self.system_mut().tick += 1; }
+}
 
 // TODO: Add third dimension for multiple persistent levels.
 #[deriving(Eq, PartialEq, Clone, Hash, Show)]
@@ -163,3 +134,25 @@ impl Add<Vector2<int>, ChartPos> for ChartPos {
 //pub struct Chart(HashMap<ChartPos, Location>);
 pub type Chart = HashMap<ChartPos, Location>;
 
+/// Trait for entities that have a position in space.
+pub trait Position {
+    fn location(&self) -> Location;
+    fn move(&mut self, delta: &Vector2<int>) -> bool;
+}
+
+impl Position for Entity {
+    fn location(&self) -> Location {
+        *self.into::<Location>().unwrap()
+    }
+
+    fn move(&mut self, delta: &Vector2<int>) -> bool {
+        let new_loc = self.location() + *delta;
+
+        if self.world().is_walkable(new_loc) {
+            *self.into::<Location>().unwrap() = new_loc;
+            return true;
+        }
+
+        return false;
+    }
+}
