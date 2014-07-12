@@ -13,7 +13,7 @@ pub struct World<T> {
 }
 
 impl<T: System> World<T> {
-    /// Create a world coupled with an application specific system object
+    /// Create a world coupled with an application specific system object.
     pub fn new(master_system: T) -> World<T> {
         let ret = World {
             data: Rc::new(RefCell::new(WorldData::new(master_system))),
@@ -31,7 +31,7 @@ impl<T: System> World<T> {
         }
     }
 
-    /// Create a new entity bound to this world
+    /// Create a new entity bound to this world.
     pub fn new_entity(&mut self) -> Entity<T> {
         let id = EntityId {
             idx: self.data.borrow_mut().get_idx(),
@@ -62,15 +62,15 @@ impl<T: System> World<T> {
 /// Callback interface for application data connected to the component system
 /// world.
 pub trait System {
-    /// Callback for initially attaching the system to a world
+    /// Callback for initially attaching the system to a world.
     fn register(&mut self, world: &World<Self>);
-    /// Callback for adding a new entity to world
+    /// Callback for adding a new entity to world.
     fn added(&mut self, e: &Entity<Self>);
     /// Callback for a component being added or removed in an entity. Note that
     /// this is not called when the data of an existing component is written
     /// to, only if the component is replaced or removed.
     fn changed<C>(&mut self, e: &Entity<Self>, component: Option<&C>);
-    /// Callback for an entity being deleted
+    /// Callback for an entity being deleted.
     fn deleted(&mut self, e: &Entity<Self>);
 }
 
