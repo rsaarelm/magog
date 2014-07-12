@@ -1,9 +1,9 @@
 use std::rand;
 use std::rand::Rng;
-use world::world::{System, Location};
+use world::system::{Location, World};
 use world::area::Area;
 use world::mobs;
-use world::mobs::{MobType, Mob};
+use world::mobs::{MobType, MobComp};
 
 pub trait Spawn {
     fn spawn_loc(&mut self) -> Option<Location>;
@@ -11,7 +11,7 @@ pub trait Spawn {
     fn gen_mobs(&mut self);
 }
 
-impl Spawn for System {
+impl Spawn for World {
     fn spawn_loc(&mut self) -> Option<Location> {
         // Maybe use a RNG stored in self later.
         rand::task_rng()
@@ -39,9 +39,9 @@ impl Spawn for System {
             match self.spawn_loc() {
                 None => return,
                 Some(loc) => {
-                    let mut mob = Mob::new(self.random_mob_type());
-                    mob.loc = loc;
-                    self.insert_mob(mob);
+                    let mut e = self.new_entity();
+                    e.set_component(MobComp::new(self.random_mob_type()));
+                    e.set_component(loc);
                 }
             }
         }

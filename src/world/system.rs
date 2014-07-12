@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::hashmap::{HashMap};
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point2};
@@ -22,9 +21,9 @@ impl world::System for System {
         self.world = Some(world.clone());
     }
 
-    fn added(&mut self, e: &Entity) {}
-    fn changed<C>(&mut self, e: &Entity, component: Option<&C>) {}
-    fn deleted(&mut self, e: &Entity) {}
+    fn added(&mut self, _e: &Entity) {}
+    fn changed<C>(&mut self, _e: &Entity, _component: Option<&C>) {}
+    fn deleted(&mut self, _e: &Entity) {}
 }
 
 impl System {

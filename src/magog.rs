@@ -16,7 +16,7 @@ pub mod world {
     pub mod geomorph;
     pub mod mapgen;
     pub mod mobs;
-    //pub mod spawn;
+    pub mod spawn;
     pub mod terrain;
     pub mod system;
 }

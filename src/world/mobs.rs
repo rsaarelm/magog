@@ -5,7 +5,7 @@ use world::system::{World, Entity, EngineLogic};
 use world::system::{Location, Position, DIRECTIONS6};
 use world::area::Area;
 
-#[deriving(Show)]
+#[deriving(Clone, Show)]
 pub struct MobComp {
     pub t: MobType,
 }
@@ -32,7 +32,7 @@ pub enum Quirk {
 }
 
 /// Trait for entities that are mobile things.
-trait Mob {
+pub trait Mob {
     fn acts_this_frame(&self) -> bool;
     fn has_quirk(&self, q: quirk::Quirk) -> bool;
     fn mob_type(&self) -> MobType;

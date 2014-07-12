@@ -11,11 +11,11 @@ use time;
 use view::tilecache;
 use world::area::Area;
 use world::fov::{Fov, Seen, Remembered, Unknown};
-//use world::mobs::{Mobs, Mob, MobType};
-//use world::mobs;
+use world::mobs::{Mobs, Mob, MobType};
+use world::mobs;
 use world::terrain::TerrainType;
 use world::terrain;
-use world::system::{System, Location, ChartPos};
+use world::system::{System, Location, ChartPos, Entity};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -114,13 +114,11 @@ impl WorldView for World<System> {
         let kernel = Kernel::new(|loc| self.terrain_at(loc), loc);
         terrain_sprites(ctx, &kernel, pos);
 
-        /*
         if ctx.get_mode() != FogOfWar {
-            for &id in self.mobs_at(loc).iter() {
-                draw_mob(ctx, self.mob(id), pos);
+            for mob in self.mobs_at(loc).iter() {
+                draw_mob(ctx, mob, pos);
             }
         }
-        */
     }
 
     fn draw_area(
@@ -372,9 +370,8 @@ fn terrain_sprites<C: DrawContext>(
     }
 }
 
-    /*
 fn draw_mob<C: DrawContext>(
-    ctx: &mut C, mob: &Mob, pos: &Point2<f32>) {
+    ctx: &mut C, mob: &Entity, pos: &Point2<f32>) {
     let body_pos =
     if is_bobbing(mob) {
         pos.add_v(timing::cycle_anim(
@@ -382,8 +379,8 @@ fn draw_mob<C: DrawContext>(
             &[Vector2::new(0.0f32, 0.0f32), Vector2::new(0.0f32, -1.0f32)]))
     } else { *pos };
 
-    let (icon, color) = visual(mob.t);
-    match mob.t {
+    let (icon, color) = visual(mob.mob_type());
+    match mob.mob_type() {
         mobs::Serpent => {
             // Body
             ctx.draw(94, &body_pos, BLOCK_Z, &color);
@@ -404,12 +401,11 @@ fn draw_mob<C: DrawContext>(
         }
     }
 
-    fn is_bobbing(mob: &Mob) -> bool {
+    fn is_bobbing(mob: &Entity) -> bool {
         // TODO: Sleeping mobs don't bob.
-        mob.t != mobs::Player
+        mob.mob_type() != mobs::Player
     }
 }
-    */
 
 pub fn draw_mouse(ctx: &mut Engine) -> ChartPos {
     let mouse = ctx.get_mouse();

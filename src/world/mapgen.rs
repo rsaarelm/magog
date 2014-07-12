@@ -6,8 +6,8 @@ use num::Integer;
 use world::system::{Location, World, DIRECTIONS6};
 use world::terrain::*;
 use world::system::{};
-//use world::spawn::Spawn;
-//use world::mobs::{Mobs};
+use world::spawn::Spawn;
+use world::mobs::{Mobs};
 use world::area::Area;
 use world::geomorph::Chunks;
 
@@ -48,7 +48,7 @@ impl MapGen for World {
     fn next_level(&mut self, chunks: &Chunks) {
         // TODO: Preserve player object.
         self.system_mut().area.clear();
-        //self.clear_npcs();
+        self.clear_npcs();
         self.system_mut().depth += 1;
         let depth = self.system().depth;
 
@@ -56,12 +56,10 @@ impl MapGen for World {
             if depth == 1 { &chunks.overland }
             else { &chunks.dungeon });
 
-        /*
         let loc = self.spawn_loc().unwrap();
         let player = self.player().unwrap();
-        self.mob_mut(player).loc = loc;
+        *player.into::<Location>().unwrap() = loc;
         self.gen_mobs();
-        */
     }
 }
 

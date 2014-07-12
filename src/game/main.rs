@@ -1,11 +1,11 @@
 use calx::color::consts::*;
 use cgmath::point::{Point2};
-use world::system::{System, Location};
+use world::system::{System, Location, Position};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
 use world::area::Area;
-//use world::mobs::{Mob};
-//use world::mobs;
+use world::mobs::{Mobs, MobComp};
+use world::mobs;
 //use world::ai;
 use world::geomorph::Chunks;
 use view::worldview::WorldView;
@@ -74,18 +74,13 @@ impl App for GameApp {
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
-        /*
-        let player = Mob::new(mobs::Player);
-        World::map_mut(|w| {
-            w.seed = 666;
-            w.insert_mob(player);
-            w.next_level(&self.chunks);
-        });
+        let mut e = self.world.new_entity();
+        e.set_component(Location::new(0, 0));
+        e.set_component(MobComp::new(mobs::Player));
 
-        self.loc = ai::player().unwrap().loc();
-        */
         self.world.next_level(&self.chunks);
-        self.loc = *self.world.open_locs().get(0);
+        self.world.player().unwrap().location();
+        self.loc = self.world.player().unwrap().location();
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
