@@ -128,8 +128,14 @@ impl<T: System> Entity<T> {
         }
     }
 
+    /// Return unique identifier for this entity.
     pub fn uuid(&self) -> Uuid {
         self.id.uuid
+    }
+
+    /// Return a handle to the world.
+    pub fn world(&self) -> World<T> {
+        World { data: self.world.upgrade().unwrap() }
     }
 }
 
