@@ -57,8 +57,8 @@ impl MapGen for World {
             else { &chunks.dungeon });
 
         let loc = self.spawn_loc().unwrap();
-        let player = self.player().unwrap();
-        *player.into::<Location>().unwrap() = loc;
+        let mut player = self.player().unwrap();
+        player.set_component(loc);
         self.gen_mobs();
     }
 }

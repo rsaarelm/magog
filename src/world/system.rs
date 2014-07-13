@@ -148,7 +148,7 @@ impl Position for Entity {
         let new_loc = self.location() + *delta;
 
         if self.world().is_walkable(new_loc) {
-            *self.into::<Location>().unwrap() = new_loc;
+            self.set_component(new_loc);
             return true;
         }
 

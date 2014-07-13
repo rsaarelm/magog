@@ -173,12 +173,14 @@ impl<T: System, C: 'static> Deref<C> for CompProxyMut<T, C> {
     }
 }
 
+/*
 impl<T: System, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
     fn deref_mut<'a>(&'a mut self) -> &'a mut C {
         self.world.upgrade().unwrap().borrow_mut()
             .comp_ref_mut::<'a, C>(self.id).unwrap()
     }
 }
+*/
 
 #[deriving(PartialEq, Clone, Show)]
 struct EntityId {
@@ -291,6 +293,7 @@ impl<T: System> WorldData<T> {
         }
     }
 
+    /*
     fn comp_ref_mut<'a, C: 'static>(
         &mut self, id: EntityId) -> Option<&'a mut C> {
         self.check_entity(id);
@@ -311,5 +314,6 @@ impl<T: System> WorldData<T> {
             }
         }
     }
+    */
 }
 
