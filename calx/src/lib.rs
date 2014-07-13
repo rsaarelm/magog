@@ -15,6 +15,7 @@ extern crate uuid;
 
 pub mod asciimap;
 pub mod color;
+pub mod debug;
 pub mod engine;
 #[macro_escape]
 pub mod gen_id;
