@@ -220,7 +220,6 @@ impl<T: System> WorldData<T> {
     }
 
     fn delete_entity(&mut self, e: &Entity<T>) {
-        self.check_entity(e.id);
         self.uuids.remove(&e.id.uuid);
 
         for (_, c) in self.components.mut_iter() {
@@ -246,13 +245,7 @@ impl<T: System> WorldData<T> {
         }
     }
 
-    fn check_entity(&self, id: EntityId) {
-        assert!(self.uuids.contains_key(&id.uuid), "Unknown entity UUID");
-        assert!(*self.uuids.find(&id.uuid).unwrap() == id.idx, "Entity UUID mismatch");
-    }
-
     fn set_component<C: 'static+Clone>(&mut self, e: &Entity<T>, comp: Option<C>) {
-        self.check_entity(e.id);
         let type_id = TypeId::of::<C>();
         // We haven't seen this kind of component yet.
         if !self.components.contains_key(&type_id) {
@@ -276,7 +269,6 @@ impl<T: System> WorldData<T> {
 
     fn comp_ref<'a, C: 'static>(
         &self, id: EntityId) -> Option<&'a C> {
-        self.check_entity(id);
         let type_id = TypeId::of::<C>();
         match self.components.find(&type_id) {
             None => { None }
@@ -296,7 +288,6 @@ impl<T: System> WorldData<T> {
     /*
     fn comp_ref_mut<'a, C: 'static>(
         &mut self, id: EntityId) -> Option<&'a mut C> {
-        self.check_entity(id);
         let type_id = TypeId::of::<C>();
         match self.components.find_mut(&type_id) {
             None => { None }
