@@ -3,7 +3,8 @@ use std::rand;
 use rand::Rng;
 use calx::text::Map2DUtil;
 use num::Integer;
-use world::system::{Location, World, DIRECTIONS6};
+use world::spatial::{Location, DIRECTIONS6, Position};
+use world::system::{World};
 use world::terrain::*;
 use world::system::{};
 use world::spawn::Spawn;
@@ -46,7 +47,6 @@ impl MapGen for World {
     }
 
     fn next_level(&mut self, chunks: &Chunks) {
-        // TODO: Preserve player object.
         self.system_mut().area.clear();
         self.clear_npcs();
         self.system_mut().depth += 1;
@@ -58,7 +58,7 @@ impl MapGen for World {
 
         let loc = self.spawn_loc().unwrap();
         let mut player = self.player().unwrap();
-        player.set_component(loc);
+        player.set_location(loc);
         self.gen_mobs();
     }
 }

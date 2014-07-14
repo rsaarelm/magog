@@ -16,9 +16,10 @@ pub mod world {
     pub mod geomorph;
     pub mod mapgen;
     pub mod mobs;
+    pub mod spatial;
     pub mod spawn;
-    pub mod terrain;
     pub mod system;
+    pub mod terrain;
 }
 
 pub mod view {

@@ -1,5 +1,6 @@
 use world::terrain::*;
-use world::system::{Location, Entity, World};
+use world::system::{Entity, World};
+use world::spatial::{Location};
 
 pub trait Area {
     fn terrain_get(&self, loc: Location) -> Option<TerrainType>;
@@ -88,11 +89,6 @@ impl Area for World {
     }
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        self.entities().iter().filter(|e|
-            match e.into::<Location>() {
-                Some(l) => *l == loc,
-                None => false
-            })
-            .map(|e| e.clone()).collect()
+        self.system().spatial.entities_at(loc)
     }
 }

@@ -1,9 +1,9 @@
 use num::Integer;
 use std::collections::hashmap::HashMap;
 use cgmath::vector::{Vector, Vector2};
-use world::system::{System, Location, Chart, ChartPos, DIRECTIONS6};
+use world::spatial::{Location, Chart, ChartPos, DIRECTIONS6};
+use world::system::{World};
 use world::area::Area;
-use calx::world::World;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {
@@ -14,14 +14,14 @@ pub enum FovStatus {
 
 
 pub struct Fov {
-    world: World<System>,
+    world: World,
     seen: Chart,
     remembered: Chart,
     offset: ChartPos,
 }
 
 impl Fov {
-    pub fn new(world: World<System>) -> Fov {
+    pub fn new(world: World) -> Fov {
         Fov {
             world: world,
             seen: HashMap::new(),

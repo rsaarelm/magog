@@ -2,7 +2,7 @@ use std::rand;
 use std::rand::Rng;
 use cgmath::vector::{Vector2};
 use world::system::{World, Entity, EngineLogic};
-use world::system::{Location, Position, DIRECTIONS6};
+use world::spatial::{Location, Position, DIRECTIONS6};
 use world::area::Area;
 
 #[deriving(Clone, Show)]

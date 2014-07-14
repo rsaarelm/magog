@@ -1,6 +1,7 @@
 use std::rand;
 use std::rand::Rng;
-use world::system::{Location, World};
+use world::spatial::{Location, Position};
+use world::system::{World};
 use world::area::Area;
 use world::mobs;
 use world::mobs::{MobType, MobComp};
@@ -41,7 +42,7 @@ impl Spawn for World {
                 Some(loc) => {
                     let mut e = self.new_entity();
                     e.set_component(MobComp::new(self.random_mob_type()));
-                    e.set_component(loc);
+                    e.set_location(loc);
                 }
             }
         }

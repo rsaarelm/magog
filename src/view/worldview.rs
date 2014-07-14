@@ -15,7 +15,8 @@ use world::mobs::{Mobs, Mob, MobType};
 use world::mobs;
 use world::terrain::TerrainType;
 use world::terrain;
-use world::system::{System, Location, ChartPos, Entity};
+use world::spatial::{Location, ChartPos};
+use world::system::{System, Entity};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;

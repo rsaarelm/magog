@@ -1,10 +1,11 @@
 use calx::color::consts::*;
 use cgmath::point::{Point2};
-use world::system::{System, Location, Position};
+use world::spatial::{Location, Position};
+use world::system::{System};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
 use world::area::Area;
-use world::mobs::{Mobs, MobComp};
+use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
 //use world::ai;
 use world::geomorph::Chunks;
@@ -39,9 +40,8 @@ impl GameApp {
 
 impl GameApp {
     fn move(&mut self, dir8: uint) {
-        /*
         assert!(self.in_player_input);
-        let player = ai::player().unwrap();
+        let mut player = self.world.player().unwrap();
         let delta = player.smart_move(dir8);
         match delta {
             Some(delta) => {
@@ -51,12 +51,11 @@ impl GameApp {
             _ => ()
         }
 
-        if self.world.terrain_at(self.world.mob(player).loc).is_exit() {
-            self.fov = Fov::new();
+        if self.world.terrain_at(player.location()).is_exit() {
+            self.fov = Fov::new(self.world.clone());
             self.world.next_level(&self.chunks);
-            self.loc = self.world.mob(player).loc;
+            self.loc = player.location();
         }
-        */
 
         self.end_turn();
     }
@@ -75,7 +74,6 @@ impl App for GameApp {
         ctx.set_frame_interval(1f64 / 30.0);
 
         let mut e = self.world.new_entity();
-        e.set_component(Location::new(0, 0));
         e.set_component(MobComp::new(mobs::Player));
 
         self.world.next_level(&self.chunks);
