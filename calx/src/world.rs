@@ -4,6 +4,8 @@ use std::rc::{Rc, Weak};
 use std::fmt::{Formatter, Show, Result};
 use std::collections::hashmap::HashMap;
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
+use std::hash::Hash;
+use std::hash::sip::SipState;
 use std::mem;
 use uuid::Uuid;
 
@@ -91,6 +93,20 @@ pub struct Entity<T> {
     world: Weak<RefCell<WorldData<T>>>,
     id: EntityId,
 }
+
+impl <T> Hash for Entity<T> {
+    fn hash(&self, state: &mut SipState) {
+        self.id.hash(state);
+    }
+}
+
+impl <T> PartialEq for Entity<T> {
+    fn eq(&self, other: &Entity<T>) -> bool {
+        self.id.eq(&other.id)
+    }
+}
+
+impl <T> Eq for Entity<T> {}
 
 impl<T> Clone for Entity<T> {
     fn clone(&self) -> Entity<T> {
@@ -182,7 +198,7 @@ impl<T: System, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
 }
 */
 
-#[deriving(PartialEq, Clone, Show)]
+#[deriving(PartialEq, Clone, Hash, Show)]
 struct EntityId {
     uuid: Uuid,
     idx: uint,
