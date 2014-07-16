@@ -4,6 +4,7 @@ use cgmath::point::{Point2};
 use world::system::{Entity};
 use world::area::Area;
 
+/// Handle placing and finding entities in space.
 pub struct SpatialSystem {
     loc_to_entities: HashMap<Location, Vec<Entity>>,
     entity_to_loc: HashMap<Entity, Location>,
@@ -80,6 +81,8 @@ impl SpatialSystem {
 }
 
 // TODO: Add third dimension for multiple persistent levels.
+
+/// Unambiguous location in the game world.
 #[deriving(Eq, PartialEq, Clone, Hash, Show)]
 pub struct Location {
     pub x: i8,
@@ -126,8 +129,8 @@ pub static DIRECTIONS8: [Vector2<int>, ..8] = [
 ];
 
 
-// Positions on a virtual infinite 2D chart, which may map to different actual
-// Locations.
+/// Positions on a virtual infinite 2D chart, which may map to different actual
+/// Locations.
 #[deriving(Eq, PartialEq, Clone, Hash, Show)]
 pub struct ChartPos {
     pub x: int,
@@ -158,7 +161,6 @@ impl Add<Vector2<int>, ChartPos> for ChartPos {
     }
 }
 
-//pub struct Chart(HashMap<ChartPos, Location>);
 pub type Chart = HashMap<ChartPos, Location>;
 
 /// Trait for entities that have a position in space.

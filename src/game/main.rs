@@ -1,13 +1,12 @@
 use calx::color::consts::*;
 use cgmath::point::{Point2};
 use world::spatial::{Location, Position};
-use world::system::{System};
+use world::system::{System, EngineLogic};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
 use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
-//use world::ai;
 use world::geomorph::Chunks;
 use view::worldview::WorldView;
 use view::tilecache;
@@ -63,7 +62,8 @@ impl GameApp {
     fn end_turn(&mut self) {
         self.in_player_input = false;
 
-        //ai::update_mobs();
+        self.world.update_mobs();
+        self.world.advance_frame();
     }
 }
 

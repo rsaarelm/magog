@@ -72,9 +72,6 @@ impl Mob for Entity {
     }
 
     fn update_ai(&mut self) {
-        if !self.acts_this_frame() { return; }
-        if self.mob_type() == Player { return; }
-
         if self.mob_type() == GridBug {
             // Grid bugs move only non-diagonally. Even though horizontal
             // non-diagonal movement actually involves teleporting through
@@ -88,7 +85,10 @@ impl Mob for Entity {
                         ])
                 .unwrap();
             self.move(&delta);
+            return;
         }
+
+        self.move(rand::task_rng().choose(DIRECTIONS6.as_slice()).unwrap());
     }
 
     fn smart_move(&mut self, dir8: uint) -> Option<Vector2<int>> {
@@ -146,7 +146,9 @@ pub trait Mobs {
     fn mobs_at(&self, loc: Location) -> Vec<Entity>;
     fn mobs(&self) -> Vec<Entity>;
     fn player(&self) -> Option<Entity>;
+    fn player_has_turn(&self) -> bool;
     fn clear_npcs(&mut self);
+    fn update_mobs(&mut self);
 }
 
 impl Mobs for World {
@@ -169,11 +171,28 @@ impl Mobs for World {
         None
     }
 
+    fn player_has_turn(&self) -> bool {
+        match self.player() {
+            Some(p) => p.acts_this_frame(),
+            _ => false
+        }
+    }
+
     fn clear_npcs(&mut self) {
         for e in self.mobs().mut_iter() {
             if e.mob_type() != Player {
                 e.delete();
             }
         }
+    }
+
+    fn update_mobs(&mut self) {
+        for mob in self.mobs().mut_iter() {
+            if !mob.acts_this_frame() { continue; }
+            if mob.mob_type() == Player { continue; }
+            mob.update_ai();
+        }
+
+        self.advance_frame();
     }
 }
