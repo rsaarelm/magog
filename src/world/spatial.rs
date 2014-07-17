@@ -39,8 +39,8 @@ impl SpatialSystem {
 
     /// Remove an entity from the space.
     pub fn remove(&mut self, e: &Entity) {
-        assert!(self.entity_to_loc.contains_key(e),
-            "Removing an entity not in the space");
+        if !self.entity_to_loc.contains_key(e) { return; }
+
         let loc = *self.entity_to_loc.find(e).unwrap();
         self.entity_to_loc.remove(e);
         {

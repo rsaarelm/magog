@@ -22,7 +22,10 @@ impl world::System for System {
 
     fn added(&mut self, _e: &Entity) {}
     fn changed<C>(&mut self, _e: &Entity, _component: Option<&C>) {}
-    fn deleted(&mut self, _e: &Entity) {}
+
+    fn deleted(&mut self, e: &Entity) {
+         self.spatial.remove(e);
+    }
 }
 
 impl System {
