@@ -51,12 +51,17 @@ impl GameApp {
         }
 
         if self.world.terrain_at(player.location()).is_exit() {
-            self.fov = Fov::new(self.world.clone());
-            self.world.next_level(&self.chunks);
-            self.loc = player.location();
+            self.next_level();
         }
 
         self.end_turn();
+    }
+
+    fn next_level(&mut self) {
+        let player = self.world.player().unwrap();
+        self.fov = Fov::new(self.world.clone());
+        self.world.next_level(&self.chunks);
+        self.loc = player.location();
     }
 
     fn end_turn(&mut self) {
@@ -84,6 +89,7 @@ impl App for GameApp {
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
         if self.in_player_input {
             match key {
+                engine::Key1 => { self.next_level(); }
                 engine::KeyQ | engine::KeyPad7 => { self.move(7); }
                 engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
                 engine::KeyE | engine::KeyPad9 => { self.move(1); }
