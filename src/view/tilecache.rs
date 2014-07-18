@@ -22,5 +22,5 @@ pub fn init(ctx: &mut Engine) {
 
 pub fn get(idx: uint) -> Image {
     assert!(TILE_CACHE.get().is_some(), "Tile cache not initialized");
-    TILE_CACHE.get().unwrap().borrow().get(idx).clone()
+    (*TILE_CACHE.get().unwrap().borrow())[idx].clone()
 }

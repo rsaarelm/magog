@@ -1,4 +1,4 @@
-#![crate_id="magog#0.0.1"]
+#![crate_name="magog"]
 #![feature(globs)]
 #![feature(macro_rules)]
 

@@ -56,7 +56,7 @@ impl SpatialSystem {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
                 // (Need to drop out of scope for borrows reasons)
-                assert!(v.get(0) == e);
+                assert!(&(*v)[0] == e);
             }
         }
         // We only end up here if we need to clear the container for the

@@ -177,16 +177,16 @@ fn verify_topology(regions: &Vec<HashSet<(int, int)>>) -> Option<String> {
     let mut r2;
 
     if regions.len() == 1 {
-        r1 = regions.get(0);
-        r2 = regions.get(0);
+        r1 = &regions[0];
+        r2 = &regions[0];
     } else {
         assert!(regions.len() == 2);
-        if regions.get(0).contains(set_1.get(0)) {
-            r1 = regions.get(0);
-            r2 = regions.get(1);
+        if regions[0].contains(&set_1[0]) {
+            r1 = &regions[0];
+            r2 = &regions[1];
         } else {
-            r1 = regions.get(1);
-            r2 = regions.get(0);
+            r1 = &regions[1];
+            r2 = &regions[0];
         }
     }
 
