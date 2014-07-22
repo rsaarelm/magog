@@ -7,7 +7,7 @@ use world::mapgen::{MapGen};
 use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
-use world::geomorph::Chunks;
+use world::geomorph;
 use view::worldview::WorldView;
 use view::tilecache;
 use view::worldview;
@@ -21,7 +21,6 @@ struct GameApp {
     fov: Fov,
     loc: Location,
     in_player_input: bool,
-    chunks: Chunks,
 }
 
 impl GameApp {
@@ -32,7 +31,6 @@ impl GameApp {
             fov: Fov::new(world.clone()),
             loc: Location::new(0, 3),
             in_player_input: false,
-            chunks: Chunks::new(),
         }
     }
 }
@@ -60,7 +58,7 @@ impl GameApp {
     fn next_level(&mut self) {
         let player = self.world.player().unwrap();
         self.fov = Fov::new(self.world.clone());
-        self.world.next_level(&self.chunks);
+        self.world.next_level();
         self.loc = player.location();
     }
 
@@ -75,13 +73,14 @@ impl GameApp {
 impl App for GameApp {
     fn setup(&mut self, ctx: &mut Engine) {
         tilecache::init(ctx);
+        geomorph::init();
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
 
         let mut e = self.world.new_entity();
         e.set_component(MobComp::new(mobs::Player));
 
-        self.world.next_level(&self.chunks);
+        self.world.next_level();
         self.world.player().unwrap().location();
         self.loc = self.world.player().unwrap().location();
     }

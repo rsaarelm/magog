@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::hashmap::{HashMap, HashSet};
 use std::rand;
 use rand::Rng;
@@ -10,21 +11,28 @@ use world::system::{};
 use world::spawn::Spawn;
 use world::mobs::{Mobs};
 use world::area::Area;
-use world::geomorph::Chunks;
 
 pub trait MapGen {
-    fn gen_herringbone(&mut self, chunks: &Vec<Chunk>);
-    fn next_level(&mut self, chunks: &Chunks);
+    fn gen_herringbone(&mut self, biome: Biome, depth: int);
+    fn next_level(&mut self);
 }
 
 impl MapGen for World {
     // http://nothings.org/gamedev/herringbone/
-    fn gen_herringbone(&mut self, chunks: &Vec<Chunk>) {
+    fn gen_herringbone(&mut self, biome: Biome, depth: int) {
         let mut rng = rand::task_rng();
+        let chunkref = CHUNK_CACHE.get().unwrap();
+        let chunkbor = chunkref.borrow();
+        let chunks = chunkbor.iter().filter(
+                |c| c.biome == biome && c.depth <= depth)
+            .collect::<Vec<&Chunk>>();
 
-        let edge: Vec<&Chunk> = chunks.iter().filter(|c| !c.exit && c.connected).collect();
-        let inner: Vec<&Chunk> = chunks.iter().filter(|c| !c.exit).collect();
-        let exit: Vec<&Chunk> = chunks.iter().filter(|c| c.exit).collect();
+        let edge = chunks.iter().filter(|c| !c.exit && c.connected)
+            .map(|&c| c).collect::<Vec<&Chunk>>();
+        let inner = chunks.iter().filter(|c| !c.exit)
+            .map(|&c| c).collect::<Vec<&Chunk>>();
+        let exit = chunks.iter().filter(|c| c.exit)
+            .map(|&c| c).collect::<Vec<&Chunk>>();
 
         assert!(!exit.is_empty(), "No exit chunks found");
         assert!(inner.len() + exit.len() == chunks.len());
@@ -46,15 +54,14 @@ impl MapGen for World {
         }
     }
 
-    fn next_level(&mut self, chunks: &Chunks) {
+    fn next_level(&mut self) {
         self.system_mut().area.clear();
         self.clear_npcs();
         self.system_mut().depth += 1;
         let depth = self.system().depth;
+        let biome = if depth == 1 { Overland } else { Dungeon };
 
-        self.gen_herringbone(
-            if depth == 1 { &chunks.overland }
-            else { &chunks.dungeon });
+        self.gen_herringbone(biome, depth);
 
         let loc = self.spawn_loc().unwrap();
         let mut player = self.player().unwrap();
@@ -110,16 +117,37 @@ fn legend(glyph: char) -> Option<TerrainType> {
 
 static CHUNK_W: int = 11;
 
+local_data_key!(CHUNK_CACHE: RefCell<Vec<Chunk>>)
+
 type Cells = HashMap<(int, int), TerrainType>;
+
+#[deriving(PartialEq)]
+pub enum Biome {
+    Overland,
+    Dungeon,
+}
 
 pub struct Chunk {
     cells: Cells,
     connected: bool,
     exit: bool,
+    biome: Biome,
+    depth: int,
+}
+
+pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
+    if CHUNK_CACHE.get().is_none() {
+        CHUNK_CACHE.replace(Some(RefCell::new(vec!())));
+    }
+
+    match Chunk::new(biome, depth, text) {
+        Ok(chunk) => CHUNK_CACHE.get().unwrap().borrow_mut().push(chunk),
+        Err(e) => fail!("Bad chunk cache data: {}", e),
+    }
 }
 
 impl Chunk {
-    pub fn new(text: &str) -> Result<Chunk, String> {
+    pub fn new(biome: Biome, depth: int, text: &str) -> Result<Chunk, String> {
         let chunk_w = 11;
         let chunk_h = 22;
 
@@ -153,6 +181,8 @@ impl Chunk {
             cells: cells,
             connected: regions.len() == 1,
             exit: exit,
+            biome: biome,
+            depth: depth,
         })
     }
 }

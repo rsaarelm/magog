@@ -1,4 +1,5 @@
-use world::mapgen::{Chunk};
+
+use world::mapgen::{add_cache_chunk, Overland, Dungeon};
 
 /*
 1######B222 Template for herringbone prefabs
@@ -25,24 +26,8 @@ C**********
 33333C*****
 */
 
-pub struct Chunks {
-    pub overland: Vec<Chunk>,
-    pub dungeon: Vec<Chunk>,
-}
-
-impl Chunks {
-    pub fn new() -> Chunks {
-        Chunks {
-            overland: OVERLAND.iter()
-                .map(|&t| Chunk::new(t).unwrap()).collect(),
-            dungeon: DUNGEON.iter()
-                .map(|&t| Chunk::new(t).unwrap()).collect(),
-        }
-    }
-}
-
-pub static OVERLAND: &'static[&'static str] = &[
-"\
+pub fn init() {
+    add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%
 %%%%%%%,%%%
 %%%%%%%,%%%
@@ -64,9 +49,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%,,%%%%%%
 %%%%,%%%%%%
 %%%%,%%%%%%
-%%%%%,%%%%%",
+%%%%%,%%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%
 %%%%%%,,%%%
 %%%%,,,%%%%
@@ -88,9 +73,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%%,,%%%%%
 %%%%%,,%%%%
 %%%%%,,%%%%
-%%%%%,%%%%%",
+%%%%%,%%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%,,,%%%
 %%,,,,,,,%%
 %,,,%,,,,,%
@@ -112,9 +97,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%%,%%,,%%
 %%%%%,,,%%%
 %%%%%,%%%%%
-%%%%%,%%%%%",
+%%%%%,%%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%,,,%%%
 %%%,,,,,,,%
 %%,,,,,,,,%
@@ -136,9 +121,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %,,,,,,,,,%
 %%o%,,,,,%%
 %%%,,,,,%%%
-%%%%,,,%%%%",
+%%%%,,,%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%oo,,,%%%
 %,,o=o,,%%%
 %%,,=%,,,%%
@@ -160,9 +145,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 ,,~=====~,,
 ,,~~===~~,,
 ,,,~~~~~~,,
-%,,,,,,,,%%",
+%,,,,,,,,%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%
 %%%,,,,,%%%
 %%,,%%%,%%%
@@ -184,9 +169,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %,,,A,.,,%%
 %%,,,,,,,%%
 %%%,,,,,%%%
-%%%%%,%%%%%",
+%%%%%,%%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%
 %%%%%,,,%%%
 %%,,,,,,%%%
@@ -208,9 +193,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%%,%%/%%%
 %%%%%,%%%%%
 %%%%%,,%%%%
-%%%%%,,%%%%",
+%%%%%,,%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%
 %%%%%%,,,%%
 %%%%,,,,,%%
@@ -232,9 +217,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%%,,,%%%%
 %%%%%,,,%%%
 %%%%%,,%%%%
-%%%%%,,%%%%",
+%%%%%,,%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 %%%%%%,,%%%
 %%%%%%,,,%%
 %%%%,,,,,%%
@@ -256,9 +241,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 %%%%,,,%%%%
 %%%%%,,,%%%
 %%%%%,,%%%%
-%%%%%,,%%%%",
+%%%%%,,%%%%");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 ,,,,,,,,,,,
 ,========,,
 ,=#|#=#|#=,
@@ -280,9 +265,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 ,=|.###.|=,
 ,=#|#=#|#=,
 ,,========,
-,,,,,,,,,,,",
+,,,,,,,,,,,");
 
-"\
+    add_cache_chunk(Overland, 0, "\
 ,,,,,,,,,,,
 ,,,,,,,,,,,
 ,,******,,,
@@ -304,11 +289,9 @@ pub static OVERLAND: &'static[&'static str] = &[
 ,**!..X#**,
 ,,**###***,
 ,,*******,,
-,,,,,,,,,,,",
-];
+,,,,,,,,,,,");
 
-pub static DUNGEON: &'static[&'static str] = &[
-"\
+    add_cache_chunk(Dungeon, 0, "\
 #######.###
 #######+###
 ##......###
@@ -330,9 +313,9 @@ pub static DUNGEON: &'static[&'static str] = &[
 #####.#####
 #####.#####
 #####.#####
-#####.#####",
+#####.#####");
 
-"\
+    add_cache_chunk(Dungeon, 0, "\
 #######.###
 #######.###
 #######.###
@@ -354,9 +337,9 @@ pub static DUNGEON: &'static[&'static str] = &[
 #####.#####
 #####.#####
 #####.#####
-#####.#####",
+#####.#####");
 
-"\
+    add_cache_chunk(Dungeon, 0, "\
 #######.###
 #######+###
 ##.......##
@@ -378,9 +361,9 @@ pub static DUNGEON: &'static[&'static str] = &[
 ##...#...##
 ##.......##
 #####+#####
-#####.#####",
+#####.#####");
 
-"\
+    add_cache_chunk(Dungeon, 0, "\
 *******.***
 ****#...***
 #####...#**
@@ -402,9 +385,9 @@ pub static DUNGEON: &'static[&'static str] = &[
 ***....XX**
 ****..**XX*
 *****.*XXX*
-*****.*****",
+*****.*****");
 
-"\
+    add_cache_chunk(Dungeon, 0, "\
 #######.###
 #######.###
 #######.###
@@ -426,9 +409,9 @@ pub static DUNGEON: &'static[&'static str] = &[
 ###.....###
 ###.....###
 #####.#####
-#####.#####",
+#####.#####");
 
-"\
+    add_cache_chunk(Dungeon, 0, "\
 #######.###
 #.........#
 #.........#
@@ -450,5 +433,5 @@ pub static DUNGEON: &'static[&'static str] = &[
 #.........#
 #.........#
 #.........#
-#####.#####",
-];
+#####.#####");
+}
