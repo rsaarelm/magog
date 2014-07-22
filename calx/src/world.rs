@@ -51,6 +51,10 @@ impl<T: System> World<T> {
         ret
     }
 
+    pub fn delete_entity(&mut self, e: &Entity<T>) {
+        self.data.borrow_mut().delete_entity(e);
+    }
+
     pub fn system<'a>(&'a self) -> &'a T {
         unsafe { mem::transmute(&self.data.borrow().master_system) }
     }
@@ -222,14 +226,12 @@ impl<T: System, C: 'static> Deref<C> for CompProxyMut<T, C> {
     }
 }
 
-/*
 impl<T: System, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
     fn deref_mut<'a>(&'a mut self) -> &'a mut C {
         self.world.upgrade().unwrap().borrow_mut()
             .comp_ref_mut::<'a, C>(self.id).unwrap()
     }
 }
-*/
 
 #[deriving(PartialEq, Clone, Hash, Show)]
 struct EntityId {
@@ -335,7 +337,6 @@ impl<T: System> WorldData<T> {
         }
     }
 
-    /*
     fn comp_ref_mut<'a, C: 'static>(
         &mut self, id: EntityId) -> Option<&'a mut C> {
         let type_id = TypeId::of::<C>();
@@ -355,6 +356,5 @@ impl<T: System> WorldData<T> {
             }
         }
     }
-    */
 }
 

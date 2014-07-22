@@ -8,12 +8,19 @@ use world::area::Area;
 #[deriving(Clone, Show)]
 pub struct MobComp {
     pub t: MobType,
+    pub max_hp: int,
+    pub hp: int,
+    pub power: int,
 }
 
 impl MobComp {
     pub fn new(t: MobType) -> MobComp {
+        let hp = if t == Player { 6 } else { 1 };
         MobComp {
             t: t,
+            max_hp: hp,
+            hp: hp,
+            power: if t == Player { 5 } else { 1 },
         }
     }
 
@@ -36,12 +43,15 @@ pub trait Mob {
     fn acts_this_frame(&self) -> bool;
     fn has_quirk(&self, q: quirk::Quirk) -> bool;
     fn mob_type(&self) -> MobType;
+    fn power(&self) -> int;
     fn update_ai(&mut self);
 
     /// Try to move the mob in a direction, then try to roll around obstacles
     /// if the direction is blocked.
     fn smart_move(&mut self, dir8: uint) -> Option<Vector2<int>>;
 
+    fn enemy_at(&self, loc: Location) -> Option<Entity>;
+    fn attack(&mut self, loc: Location);
 }
 
 impl Mob for Entity {
@@ -67,9 +77,9 @@ impl Mob for Entity {
         false
     }
 
-    fn mob_type(&self) -> MobType {
-        self.into::<MobComp>().unwrap().t
-    }
+    fn mob_type(&self) -> MobType { self.into::<MobComp>().unwrap().t }
+
+    fn power(&self) -> int { self.into::<MobComp>().unwrap().power }
 
     fn update_ai(&mut self) {
         if self.mob_type() == GridBug {
@@ -127,10 +137,60 @@ impl Mob for Entity {
             }];
 
         for delta in deltas.iter() {
+            let new_loc = loc + *delta;
+            match self.enemy_at(new_loc) {
+                Some(_) => {
+                    self.attack(new_loc);
+                    return None;
+                }
+                _ => ()
+            }
             if self.move(delta) { return Some(*delta); }
         }
 
         None
+    }
+
+    fn enemy_at(&self, loc: Location) -> Option<Entity> {
+        let targs = self.world().mobs_at(loc);
+        // Nothing to fight.
+        if targs.len() == 0 { return None; }
+        // TODO: Alignment check
+        Some(targs[0].clone())
+    }
+
+    fn attack(&mut self, loc: Location) {
+        let p = self.power();
+        // No power, can't fight.
+        if p == 0 { return; }
+
+        let target = match self.enemy_at(loc) {
+            None => return,
+            Some(t) => t,
+        };
+
+        // Every five points of power is one certain hit.
+        let full = p / 5;
+        let partial = (p % 5) as f64 / 5.0;
+
+        // TODO: Make some rng utility functions.
+        let r = rand::random::<f64>() % 1.0;
+
+        let damage = full + if r < partial { 1 } else { 0 };
+
+        // TODO: A deal_damage method.
+        let mut tm = target.into::<MobComp>().unwrap();
+        tm.hp -= damage;
+
+        if tm.hp <= 0 {
+            if target.mob_type() == Player {
+                println!("TODO handle player death");
+                tm.hp = tm.max_hp;
+            }
+            // TODO: Whatever extra stuff we want to do when killing a mob.
+            // It's probably a special occasion if it's the player avatar.
+            self.world().delete_entity(&target);
+        }
     }
 }
 
