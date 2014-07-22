@@ -158,7 +158,7 @@ impl Mobs for World {
     }
 
     fn mobs(&self) -> Vec<Entity> {
-        self.entities().iter().filter(|e| e.has::<MobComp>())
+        self.entities().filter(|e| e.has::<MobComp>())
             .map(|e| e.clone()).collect()
     }
 

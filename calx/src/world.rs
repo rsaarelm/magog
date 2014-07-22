@@ -60,19 +60,52 @@ impl<T: System> World<T> {
     }
 
     pub fn find_entity(&self, uuid: &Uuid) -> Option<Entity<T>> {
-        match self.data.borrow().uuids.find(uuid) {
-            Some(idx) => Some(self.wrap(EntityId { uuid: *uuid, idx: *idx })),
+        match self.data.borrow().uuids.as_slice().position_elem(&Some(*uuid)) {
+            Some(idx) => Some(self.wrap(EntityId { uuid: *uuid, idx: idx })),
             None => None
         }
     }
 
-    pub fn entities(&self) -> Vec<Entity<T>> {
-        // XXX: Inefficient
-        self.data.borrow().uuids.iter()
-            .map(|(&uuid, &idx)| self.wrap(EntityId { uuid: uuid, idx: idx }))
-            .collect()
+    /// Return an iterator for the entities. The iterator will not be
+    /// invalidated if entities are added or removed during iteration.
+    ///
+    /// XXX: It is currently unspecified whether entities added during
+    /// iteration will show up in the iteration or not.
+    pub fn entities(&self) -> Entities<T> {
+        Entities {
+            idx: 0,
+            world: self.data.downgrade(),
+        }
     }
 }
+
+pub struct Entities<T> {
+    idx: uint,
+    world: Weak<RefCell<WorldData<T>>>,
+}
+
+impl<T> Iterator<Entity<T>> for Entities<T> {
+    fn next(&mut self) -> Option<Entity<T>> {
+        let w = self.world.upgrade().unwrap();
+        loop {
+            let uuids = &w.borrow().uuids;
+            if self.idx >= uuids.len() { return None; }
+            let (idx, uuid) = (self.idx, uuids[self.idx]);
+            self.idx += 1;
+            match uuid {
+                Some(uuid) => return Some(Entity {
+                    world: self.world.clone(),
+                    id: EntityId {
+                        uuid: uuid,
+                        idx: idx
+                    }
+                }),
+                _ => ()
+            }
+        }
+    }
+}
+
 
 /// Callback interface for application data connected to the component system
 /// world.
@@ -213,7 +246,7 @@ struct WorldData<T> {
 
     next_idx: uint,
     reusable_idxs: Vec<uint>,
-    uuids: HashMap<Uuid, uint>,
+    uuids: Vec<Option<Uuid>>,
 
     master_system: T,
 }
@@ -224,19 +257,20 @@ impl<T: System> WorldData<T> {
             components: HashMap::new(),
             next_idx: 0,
             reusable_idxs: vec!(),
-            uuids: HashMap::new(),
+            uuids: vec!(),
             master_system: master_system,
         }
     }
 
     fn register_new_entity(&mut self, id: EntityId) {
-        assert!(!self.uuids.contains_key(&id.uuid),
+        assert!(self.uuids.len() <= id.idx || self.uuids[id.idx].is_none(),
             "New entity clobbering existing one");
-        self.uuids.insert(id.uuid, id.idx);
+
+        self.uuids.grow_set(id.idx, &None, Some(id.uuid));
     }
 
     fn delete_entity(&mut self, e: &Entity<T>) {
-        self.uuids.remove(&e.id.uuid);
+        self.uuids.as_mut_slice()[e.id.idx] = None;
 
         for (_, c) in self.components.mut_iter() {
             if c.len() > e.id.idx {
