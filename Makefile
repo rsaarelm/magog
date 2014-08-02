@@ -3,7 +3,8 @@ all: build
 build:
 	cargo build
 
-rebuild-dependencies:
+dep:
+	@echo Updating dependencies...
 	cargo build -u
 
 run: build
