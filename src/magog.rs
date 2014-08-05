@@ -28,6 +28,8 @@ pub mod view {
 
 pub mod game {
     pub mod main;
+    pub mod titlestate;
+    pub mod gamestate;
 }
 
 pub fn main() {
