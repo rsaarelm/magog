@@ -3,8 +3,8 @@ use calx::engine::{App, Engine, Key};
 use calx::color::consts::*;
 use calx::engine;
 use calx::world::{World, CompProxyMut};
-use world::spatial::{Location, Position};
-use world::system::{System, EngineLogic};
+use world::spatial::{Position};
+use world::system::{System, EngineLogic, Entity};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
 use world::area::Area;
@@ -18,17 +18,17 @@ use game::titlestate::TitleState;
 pub struct GameState {
     running: bool,
     world: World<System>,
-    loc: Location,
+    camera: Entity,
     in_player_input: bool,
 }
 
 impl GameState {
     pub fn new() -> GameState {
-        let world = World::new(System::new(0));
+        let mut world = World::new(System::new(0));
         GameState {
             running: true,
             world: world.clone(),
-            loc: Location::new(0, 3),
+            camera: world.new_entity(),
             in_player_input: false,
         }
     }
@@ -39,8 +39,7 @@ impl GameState {
         let delta = player.smart_move(dir8);
         match delta {
             Some(delta) => {
-                self.get_fov().unwrap().translate(&delta);
-                self.loc = self.loc + delta;
+                self.get_fov().translate(&delta);
             }
             _ => ()
         }
@@ -53,19 +52,30 @@ impl GameState {
     }
 
     fn reset_fov(&mut self) {
-        self.world.player().unwrap().
-            set_component(Fov::new());
+        self.camera.set_component(Fov::new());
     }
 
-    fn get_fov<'a>(&'a self) -> Option<CompProxyMut<System, Fov>> {
-        self.world.player().unwrap().into::<Fov>()
+    fn get_fov<'a>(&'a self) -> CompProxyMut<System, Fov> {
+        // The camera has to always have the FOV component.
+        self.camera.into::<Fov>().unwrap()
+    }
+
+    fn camera_to_player(&mut self) {
+        // Move camera to player's position and recompute FOV.
+        match self.world.player() {
+            Some(e) => {
+                let loc = e.location();
+                self.camera.set_location(loc);
+                self.get_fov().update(&self.world, loc, 12);
+            }
+            _ => ()
+        }
     }
 
     fn next_level(&mut self) {
-        let player = self.world.player().unwrap();
         self.reset_fov();
         self.world.next_level();
-        self.loc = player.location();
+        self.camera_to_player();
     }
 
     fn end_turn(&mut self) {
@@ -75,7 +85,7 @@ impl GameState {
         self.world.advance_frame();
     }
 
-    fn draw_ui(&self, ctx: &mut Engine) {
+    fn draw_ui(&self, ctx: &mut Engine, player: Entity) {
         ctx.set_color(&WHITE);
         ctx.set_layer(0.100f32);
         ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
@@ -86,11 +96,12 @@ impl App for GameState {
     fn setup(&mut self, _ctx: &mut Engine) {
         let mut e = self.world.new_entity();
         e.set_component(MobComp::new(mobs::Player));
+
         self.reset_fov();
 
         self.world.next_level();
         self.world.player().unwrap().location();
-        self.loc = self.world.player().unwrap().location();
+        self.camera_to_player();
     }
 
     fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
@@ -120,12 +131,16 @@ impl App for GameState {
         //self.in_player_input = ai::player_has_turn();
         self.in_player_input = true;
 
-        self.get_fov().unwrap().update(&self.world, self.loc, 12);
-        self.world.draw_area(ctx, self.get_fov().unwrap().deref());
+        self.camera_to_player();
+        self.world.draw_area(ctx, self.get_fov().deref());
 
         let _mouse_pos = worldview::draw_mouse(ctx);
 
-        self.draw_ui(ctx);
+        // UI needs player stats to be displayed, so only do it if a player exists.
+        match self.world.player() {
+            Some(e) => self.draw_ui(ctx, e),
+            _ => ()
+        }
 
         if !self.in_player_input {
             self.end_turn();
