@@ -2,7 +2,7 @@ use cgmath::point::{Point2};
 use calx::engine::{App, Engine, Key};
 use calx::color::consts::*;
 use calx::engine;
-use calx::world::World;
+use calx::world::{World, CompProxyMut};
 use world::spatial::{Location, Position};
 use world::system::{System, EngineLogic};
 use world::fov::Fov;
@@ -18,8 +18,6 @@ use game::titlestate::TitleState;
 pub struct GameState {
     running: bool,
     world: World<System>,
-    // TODO: Move Fov into System
-    fov: Fov,
     loc: Location,
     in_player_input: bool,
 }
@@ -30,7 +28,6 @@ impl GameState {
         GameState {
             running: true,
             world: world.clone(),
-            fov: Fov::new(world.clone()),
             loc: Location::new(0, 3),
             in_player_input: false,
         }
@@ -42,7 +39,7 @@ impl GameState {
         let delta = player.smart_move(dir8);
         match delta {
             Some(delta) => {
-                self.fov.translate(&delta);
+                self.get_fov().unwrap().translate(&delta);
                 self.loc = self.loc + delta;
             }
             _ => ()
@@ -55,9 +52,18 @@ impl GameState {
         self.end_turn();
     }
 
+    fn reset_fov(&mut self) {
+        self.world.player().unwrap().
+            set_component(Fov::new());
+    }
+
+    fn get_fov<'a>(&'a self) -> Option<CompProxyMut<System, Fov>> {
+        self.world.player().unwrap().into::<Fov>()
+    }
+
     fn next_level(&mut self) {
         let player = self.world.player().unwrap();
-        self.fov = Fov::new(self.world.clone());
+        self.reset_fov();
         self.world.next_level();
         self.loc = player.location();
     }
@@ -74,6 +80,7 @@ impl App for GameState {
     fn setup(&mut self, _ctx: &mut Engine) {
         let mut e = self.world.new_entity();
         e.set_component(MobComp::new(mobs::Player));
+        self.reset_fov();
 
         self.world.next_level();
         self.world.player().unwrap().location();
@@ -107,8 +114,8 @@ impl App for GameState {
         //self.in_player_input = ai::player_has_turn();
         self.in_player_input = true;
 
-        self.fov.update(self.loc, 12);
-        self.world.draw_area(ctx, &self.fov);
+        self.get_fov().unwrap().update(&self.world, self.loc, 12);
+        self.world.draw_area(ctx, self.get_fov().unwrap().deref());
 
         let _mouse_pos = worldview::draw_mouse(ctx);
 
