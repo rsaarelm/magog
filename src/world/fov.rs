@@ -12,6 +12,16 @@ pub enum FovStatus {
     Unknown,
 }
 
+impl FovStatus {
+    pub fn loc(self) -> Option<Location> {
+        match self {
+            Seen(loc) => Some(loc),
+            Remembered(loc) => Some(loc),
+            Unknown => None
+        }
+    }
+}
+
 
 #[deriving(Clone)]
 pub struct Fov {

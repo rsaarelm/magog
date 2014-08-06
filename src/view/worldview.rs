@@ -3,7 +3,6 @@ use calx::color::{RGB};
 use calx::engine::{Engine};
 use calx::rectutil::RectUtil;
 use calx::timing;
-use calx::world::World;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
@@ -17,7 +16,7 @@ use world::mobs;
 use world::terrain::TerrainType;
 use world::terrain;
 use world::spatial::{Location, ChartPos};
-use world::system::{System, Entity};
+use world::system::{World, Entity};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
@@ -75,7 +74,7 @@ pub trait WorldView {
         &self, ctx: &mut Engine, fov: &Fov);
 }
 
-impl WorldView for World<System> {
+impl WorldView for World {
     fn draw_entities_at<C: DrawContext>(
         &self, ctx: &mut C, loc: Location, pos: &Point2<f32>) {
         let kernel = Kernel::new(|loc| self.terrain_at(loc), loc);
@@ -111,9 +110,34 @@ impl WorldView for World<System> {
                     self.draw_entities_at(&mut draw, loc, &offset);
                 }
                 Unknown => {
-                    draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+                    let (front_of_wall, is_door) = classify(self, p, fov);
+                    if front_of_wall && !is_door {
+                        draw.draw(CUBE, &offset, BLOCK_Z, &BLACK);
+                    } else if !front_of_wall {
+                        draw.draw(BLOCK_DARK, &offset, BLOCK_Z, &BLACK);
+                    }
                 }
             }
+        }
+
+        fn classify(world: &World, pt: ChartPos, fov: &Fov) -> (bool, bool) {
+            let mut front_of_wall = false;
+            let mut is_door = false;
+            let nw = ChartPos::new(pt.x - 1, pt.y);
+            let ne = ChartPos::new(pt.x, pt.y - 1);
+
+            for &p in vec![nw, ne].iter() {
+                match fov.get(p).loc().map(|loc| world.terrain_at(loc)) {
+                    Some(t) => {
+                        if t.is_wall() {
+                            front_of_wall = true;
+                            if t.is_walkable() { is_door = true; }
+                        }
+                    }
+                    _ => ()
+                }
+            }
+            return (front_of_wall, is_door);
         }
     }
 }
