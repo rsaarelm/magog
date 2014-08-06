@@ -1,5 +1,7 @@
+use calx::color::consts::*;
 use cgmath::point::{Point2};
 use calx::engine::{App, Engine, Key};
+use view::tilecache;
 use game::main::State;
 use game::gamestate::GameState;
 
@@ -20,7 +22,9 @@ impl App for TitleState {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        ctx.draw_string("MAGOG", &Point2::new(0f32, 8f32));
+        let logo = tilecache::get(tilecache::LOGO);
+        ctx.set_color(&FIREBRICK);
+        ctx.draw_image(&logo, &Point2::new(280f32, 180f32));
     }
 
     fn char_typed(&mut self, _ctx: &mut Engine, _ch: char) {

@@ -74,6 +74,12 @@ impl GameState {
         self.world.update_mobs();
         self.world.advance_frame();
     }
+
+    fn draw_ui(&self, ctx: &mut Engine) {
+        ctx.set_color(&WHITE);
+        ctx.set_layer(0.100f32);
+        ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
+    }
 }
 
 impl App for GameState {
@@ -119,9 +125,7 @@ impl App for GameState {
 
         let _mouse_pos = worldview::draw_mouse(ctx);
 
-        ctx.set_color(&WHITE);
-        ctx.set_layer(0.100f32);
-        ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
+        self.draw_ui(ctx);
 
         if !self.in_player_input {
             self.end_turn();
