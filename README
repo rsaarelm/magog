@@ -3,10 +3,6 @@ Rust multimedia programming scratch space.
 You need to have the Rust compiler, the Rust Cargo package manager
 and GLFW installed to build this.
 
-Build:
+To run, do
 
-$ make
-
-Build and run:
-
-$ make run
+$ cargo run

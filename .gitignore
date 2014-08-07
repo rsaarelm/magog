@@ -1,3 +1,4 @@
 libstb.a
+Cargo.lock
 target/
 doc/
