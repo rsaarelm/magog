@@ -11,6 +11,7 @@ pub struct MobComp {
     pub max_hp: int,
     pub hp: int,
     pub power: int,
+    pub armor: int,
 }
 
 impl MobComp {
@@ -21,6 +22,7 @@ impl MobComp {
             max_hp: hp,
             hp: hp,
             power: if t == Player { 5 } else { 1 },
+            armor: 0,
         }
     }
 

@@ -12,6 +12,8 @@ use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
 use view::worldview::WorldView;
 use view::worldview;
+use view::tilecache;
+use view::tilecache::icon;
 use game::main::State;
 use game::titlestate::TitleState;
 
@@ -39,6 +41,9 @@ impl GameState {
         let delta = player.smart_move(dir8);
         match delta {
             Some(delta) => {
+                // XXX: It's a bit of a wart that we have to explicitly translate the FOV when
+                // movement happens. This is needed for non-Euclidean portal maps, but it's not
+                // obvious if the code should be supporting those...
                 self.get_fov().translate(&delta);
             }
             _ => ()
@@ -84,12 +89,6 @@ impl GameState {
         self.world.update_mobs();
         self.world.advance_frame();
     }
-
-    fn draw_ui(&self, ctx: &mut Engine, player: Entity) {
-        ctx.set_color(&WHITE);
-        ctx.set_layer(0.100f32);
-        ctx.draw_string("Hello, world!", &Point2::new(0f32, 8f32));
-    }
 }
 
 impl App for GameState {
@@ -108,6 +107,12 @@ impl App for GameState {
         if self.in_player_input {
             match key {
                 engine::Key1 => { self.next_level(); }
+                engine::Key2 => {
+                    let mut player = self.world.player().unwrap();
+                    let loc = player.location();
+                    player.attack(loc);
+                }
+
                 engine::KeyQ | engine::KeyPad7 => { self.move(7); }
                 engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
                 engine::KeyE | engine::KeyPad9 => { self.move(1); }
@@ -128,8 +133,10 @@ impl App for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Engine) {
-        //self.in_player_input = ai::player_has_turn();
-        self.in_player_input = true;
+        self.in_player_input = match self.world.player() {
+            Some(p) => p.acts_this_frame(),
+            None => false
+        };
 
         self.camera_to_player();
         self.world.draw_area(ctx, self.get_fov().deref());
@@ -155,5 +162,49 @@ impl State for GameState {
         } else {
             None
         }
+    }
+}
+
+// UI rendering
+impl GameState {
+    fn health_bar(&self, ctx: &mut Engine, player: Entity) {
+        let mob = player.into::<MobComp>().unwrap();
+        ctx.set_color(&RED);
+        let num_hearts = (mob.max_hp + 1) / 2;
+        let solid_hearts = mob.hp / 2;
+        let half_heart = (mob.hp % 2) == 1;
+        for i in range(0, num_hearts) {
+            let pos = Point2::new(i as f32 * 8f32, 8f32);
+            let img =
+                if i < solid_hearts {
+                    icon::HEART
+                } else if i == solid_hearts && half_heart {
+                    icon::HALF_HEART
+                } else {
+                    icon::NO_HEART
+                };
+            ctx.draw_image(&tilecache::get(img), &pos);
+        }
+
+        ctx.set_color(&LIGHTSLATEGRAY);
+        let num_shards = (mob.armor + 1) / 2;
+        let half_shard = (mob.armor % 2) == 1;
+
+        for i in range(0, num_shards) {
+            let pos = Point2::new((i + num_hearts) as f32 * 8f32, 8f32);
+            let img =
+                if i == num_shards - 1 && half_shard {
+                    icon::HALF_SHARD
+                } else {
+                    icon::SHARD
+                };
+            ctx.draw_image(&tilecache::get(img), &pos);
+        }
+    }
+
+    fn draw_ui(&self, ctx: &mut Engine, player: Entity) {
+        ctx.set_layer(0.100f32);
+
+        self.health_bar(ctx, player);
     }
 }
