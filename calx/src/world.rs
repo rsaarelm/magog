@@ -160,6 +160,11 @@ impl<T> Show for Entity<T> {
 impl<T: System> Entity<T> {
     /// Add or reset a component in the entity. Causes a "changed" call to the
     /// world system.
+    ///
+    /// Due to the system used to identify components, the component type
+    /// needs to be a 'static one that doesn't include any reference values.
+    /// Components are generally expected to be very plain data, like a
+    /// database record.
     pub fn set_component<C: 'static+Clone>(&mut self, comp: C) {
         self.world.upgrade().unwrap().borrow_mut().deref_mut()
             .set_component(self, Some(comp));
