@@ -1,3 +1,4 @@
+use cgmath::num::BaseNum;
 use cgmath::aabb::{Aabb, Aabb2};
 use cgmath::point::{Point, Point2};
 use cgmath::vector::{Vector2};
@@ -21,6 +22,14 @@ use std::mem::size_of;
 use std::num::{next_power_of_two};
 use tile::Tile;
 use timing::{Ticker, TimePerFrame};
+
+/// Utility function to get away from writing Point2::new all over the place.
+pub fn pt<T: BaseNum>(x: T, y: T) -> Point2<T> { Point2::new(x, y) }
+
+/// Utility function.
+pub fn rect<T: BaseNum>(x1: T, y1: T, x2: T, y2: T) -> Aabb2<T> {
+    Aabb2::new(Point2::new(x1, y1), Point2::new(x2, y2))
+}
 
 pub trait App {
     fn setup(&mut self, ctx: &mut Engine);

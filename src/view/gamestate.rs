@@ -1,5 +1,4 @@
-use cgmath::point::{Point2};
-use calx::engine::{App, Engine, Key};
+use calx::engine::{App, Engine, Key, pt};
 use calx::color::consts::*;
 use calx::engine;
 use calx::world::{World, CompProxyMut};
@@ -174,7 +173,7 @@ impl GameState {
         let solid_hearts = mob.hp / 2;
         let half_heart = (mob.hp % 2) == 1;
         for i in range(0, num_hearts) {
-            let pos = Point2::new(i as f32 * 8f32, 8f32);
+            let pos = pt(i as f32 * 8f32, 8f32);
             let img =
                 if i < solid_hearts {
                     icon::HEART
@@ -191,7 +190,7 @@ impl GameState {
         let half_shard = (mob.armor % 2) == 1;
 
         for i in range(0, num_shards) {
-            let pos = Point2::new((i + num_hearts) as f32 * 8f32, 8f32);
+            let pos = pt((i + num_hearts) as f32 * 8f32, 8f32);
             let img =
                 if i == num_shards - 1 && half_shard {
                     icon::HALF_SHARD
