@@ -1,7 +1,7 @@
 use world::geomorph;
 use view::tilecache;
 use calx::engine::{App, Engine, Key};
-use game::titlestate::TitleState;
+use view::titlestate::TitleState;
 
 struct GameApp {
     state: Box<State>,

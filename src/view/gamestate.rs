@@ -14,8 +14,8 @@ use view::worldview::WorldView;
 use view::worldview;
 use view::tilecache;
 use view::tilecache::icon;
-use game::main::State;
-use game::titlestate::TitleState;
+use view::main::State;
+use view::titlestate::TitleState;
 
 pub struct GameState {
     running: bool,

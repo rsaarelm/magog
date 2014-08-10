@@ -24,14 +24,11 @@ pub mod world {
 pub mod view {
     pub mod worldview;
     pub mod tilecache;
-}
-
-pub mod game {
     pub mod main;
     pub mod titlestate;
     pub mod gamestate;
 }
 
 pub fn main() {
-    game::main::main()
+    view::main::main()
 }

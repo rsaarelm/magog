@@ -2,8 +2,8 @@ use calx::color::consts::*;
 use cgmath::point::{Point2};
 use calx::engine::{App, Engine, Key};
 use view::tilecache;
-use game::main::State;
-use game::gamestate::GameState;
+use view::main::State;
+use view::gamestate::GameState;
 
 pub struct TitleState {
     running: bool,
