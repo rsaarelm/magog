@@ -23,9 +23,10 @@ pub struct GameState {
     in_player_input: bool,
 }
 
+
 impl GameState {
     pub fn new() -> GameState {
-        let mut world = World::new(System::new(0));
+        let mut world = World::new(System::new(0, Fx::new()));
         GameState {
             running: true,
             world: world.clone(),
@@ -205,5 +206,38 @@ impl GameState {
         ctx.set_layer(0.100f32);
 
         self.health_bar(ctx, player);
+
+        self.world.system().fx.draw(ctx);
+    }
+}
+
+pub struct Fx {
+    // TODO: turn this into a timed queue.
+    message: String,
+    // TODO: caption
+    // TODO: effects
+}
+
+impl Fx {
+    pub fn new() -> Fx {
+        Fx {
+            message: "".to_string(),
+        }
+    }
+
+    pub fn draw(&self, ctx: &mut Engine) {
+        ctx.draw_string(self.message.as_slice(), &pt(0f32, 300f32));
+    }
+
+    pub fn msg(&mut self, txt: &str) {
+        self.message = txt.to_string();
+    }
+
+    pub fn caption(&mut self, _txt: &str) {
+        unimplemented!();
+    }
+
+    pub fn beam(&mut self, _dir6: uint, _length: uint) {
+        unimplemented!();
     }
 }

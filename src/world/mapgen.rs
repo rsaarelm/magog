@@ -67,6 +67,9 @@ impl MapGen for World {
         let mut player = self.player().unwrap();
         player.set_location(loc);
         self.gen_mobs();
+
+        let dep = self.system().depth;
+        self.system_mut().fx.msg(format!("Level {}", dep).as_slice());
     }
 }
 
