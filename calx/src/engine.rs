@@ -11,7 +11,7 @@ use glfw;
 use hgl::buffer;
 use hgl::texture::{ImageInfo, pixel};
 use hgl::texture;
-use hgl::{Program, Vao, Vbo};
+use hgl::{Program, Vao, Vbo, Primitive};
 use hgl;
 use pack_rect::pack_rects;
 use rectutil::RectUtil;
@@ -263,8 +263,7 @@ impl Engine {
         // XXX: overly complex juggling back and forth the coordinate systems.
         let (width, height) = self.get_window().get_size();
         let area = Vector2::new(width as f32, height as f32);
-        let resolution =
-            Vector2::new(self.resolution.x as f32, self.resolution.y as f32);
+        let resolution = self.dim();
         let bounds =
             screen_bound(&resolution, &area)
             .add_v(&Vector2::new(1f32, 1f32))
@@ -294,18 +293,35 @@ impl Engine {
         self.z_layer = layer;
     }
 
+    fn dim(&self) -> Vector2<f32> {
+        Vector2::new(self.resolution.x as f32, self.resolution.y as f32)
+    }
+
     /// Draws a textured rectangle. The texture needs to have been bound before
     /// this is called. The draw_color of the Engine will be used to colorize
     /// the rectangle.
     pub fn texture_rect(
         &mut self, area: &Aabb2<f32>,
         uv1: &Point2<f32>, uv2: &Point2<f32>) {
-        let area = transform_pixel_rect(
-            &Vector2::new(self.resolution.x as f32, self.resolution.y as f32),
-            area);
+        let area = transform_pixel_rect(&self.dim(), area);
         let vertices = Vertex::rect(
-            &area, self.z_layer, uv1, uv2, &self.draw_color, 1.0f32);
-        Vertex::draw_triangles(&vertices, self.shaders.get(TILE_SHADER_IDX));
+            &area, self.z_layer, uv1, uv2, &self.draw_color, 1f32);
+        Vertex::draw(&vertices, &self.shaders[TILE_SHADER_IDX], hgl::Triangles);
+    }
+
+    pub fn line_width(&mut self, width: f32) {
+        gl::LineWidth(width);
+    }
+
+    /// Draw a colored line
+    pub fn line(&mut self, p1: &Point2<f32>, p2: &Point2<f32>) {
+        let p1 = transform_pt(&self.dim(), p1);
+        let p2 = transform_pt(&self.dim(), p2);
+        let vertices = vec![
+            Vertex::new(p1.x, p1.y, self.z_layer, 0f32, 0f32, &self.draw_color, 1f32),
+            Vertex::new(p2.x, p2.y, self.z_layer, 0f32, 0f32, &self.draw_color, 1f32),
+        ];
+        Vertex::draw(&vertices, &self.shaders[PLAIN_SHADER_IDX], hgl::Lines);
     }
 
     pub fn draw_image(&mut self, image: &Image, pos: &Point2<f32>) {
@@ -331,13 +347,11 @@ impl Engine {
     /// Draw a solid-color filled rectangle.
     pub fn fill_rect(
         &mut self, area: &Aabb2<f32>) {
-        let area = transform_pixel_rect(
-            &Vector2::new(self.resolution.x as f32, self.resolution.y as f32),
-            area);
+        let area = transform_pixel_rect(&self.dim(), area);
         let vertices = Vertex::rect(
             &area, self.z_layer, &Point2::new(0f32, 0f32),
             &Point2::new(1f32, 1f32), &self.draw_color, 1.0f32);
-        Vertex::draw_triangles(&vertices, self.shaders.get(PLAIN_SHADER_IDX));
+        Vertex::draw(&vertices, &self.shaders[PLAIN_SHADER_IDX], hgl::Triangles);
     }
 
     /// Draw the framebuffer texture on screen.
@@ -352,13 +366,12 @@ impl Engine {
         gl::Viewport(0, 0, width, height);
 
         self.get_framebuffer().texture.bind();
-        let area = screen_bound(
-            &Vector2::new(self.resolution.x as f32, self.resolution.y as f32),
+        let area = screen_bound(&self.dim(),
             &Vector2::new(width as f32, height as f32));
         let vertices = Vertex::rect(
             &area, 0f32, &Point2::new(0.0f32, 1.0f32),
             &Point2::new(1.0f32, 0.0f32), &WHITE, 1f32);
-        Vertex::draw_triangles(&vertices, self.shaders.get(BLIT_SHADER_IDX));
+        Vertex::draw(&vertices, self.shaders.get(BLIT_SHADER_IDX), hgl::Triangles);
     }
 
     /// Save a png screenshot.
@@ -390,12 +403,12 @@ fn screen_bound(dim: &Vector2<f32>, area: &Vector2<f32>) -> Aabb2<f32> {
 
 fn transform_pixel_rect(dim: &Vector2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
     Aabb2::new(
-        Point2::new(
-            rect.min.x / dim.x * 2.0f32 - 1.0f32,
-            rect.min.y / dim.y * 2.0f32 - 1.0f32),
-        Point2::new(
-            rect.max.x / dim.x * 2.0f32 - 1.0f32,
-            rect.max.y / dim.y * 2.0f32 - 1.0f32))
+        transform_pt(dim, &rect.min),
+        transform_pt(dim, &rect.max))
+}
+
+fn transform_pt(dim: &Vector2<f32>, p: &Point2<f32>) -> Point2<f32> {
+    Point2::new(p.x / dim.x * 2.0f32 - 1.0f32, p.y / dim.y * 2.0f32 - 1.0f32)
 }
 
 #[deriving(Clone, PartialEq)]
@@ -569,7 +582,7 @@ impl Vertex {
         ret
     }
 
-    fn draw_triangles(vertices: &Vec<Vertex>, shader: &Program) {
+    fn draw(vertices: &Vec<Vertex>, shader: &Program, kind: Primitive) {
         if vertices.len() == 0 {
             return;
         }
@@ -590,7 +603,7 @@ impl Vertex {
             shader, "in_color", gl::FLOAT, 4,
             Vertex::stride(), Vertex::color_offset());
 
-        vao.draw_array(hgl::Triangles, 0, vertices.len() as i32);
+        vao.draw_array(kind, 0, vertices.len() as i32);
     }
 
     fn stride() -> i32 { size_of::<Vertex>() as i32 }
