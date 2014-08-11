@@ -28,9 +28,9 @@ impl MobComp {
 
 }
 
-pub mod quirk {
+pub mod intrinsic {
 #[deriving(Eq, PartialEq, Clone)]
-pub enum Quirk {
+pub enum Intrinsic {
     /// Moves 1/3 slower than usual
     Slow,
     /// Moves 1/3 faster than usual, stacks with Quick
@@ -43,7 +43,7 @@ pub enum Quirk {
 /// Trait for entities that are mobile things.
 pub trait Mob {
     fn acts_this_frame(&self) -> bool;
-    fn has_quirk(&self, q: quirk::Quirk) -> bool;
+    fn has_intrinsic(&self, q: intrinsic::Intrinsic) -> bool;
     fn mob_type(&self) -> MobType;
     fn power(&self) -> int;
     fn update_ai(&mut self);
@@ -65,16 +65,16 @@ impl Mob for Entity {
         let phase = self.world().get_tick() % 5;
         match phase {
             0 => return true,
-            1 => return self.has_quirk(quirk::Fast),
+            1 => return self.has_intrinsic(intrinsic::Fast),
             2 => return true,
-            3 => return self.has_quirk(quirk::Quick),
-            4 => return !self.has_quirk(quirk::Slow),
+            3 => return self.has_intrinsic(intrinsic::Quick),
+            4 => return !self.has_intrinsic(intrinsic::Slow),
             _ => fail!("Invalid action phase"),
         }
     }
 
-    fn has_quirk(&self, q: quirk::Quirk) -> bool {
-        if q == quirk::Fast && self.mob_type() == GridBug { return true; }
+    fn has_intrinsic(&self, q: intrinsic::Intrinsic) -> bool {
+        if q == intrinsic::Fast && self.mob_type() == GridBug { return true; }
 
         false
     }
