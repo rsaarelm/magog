@@ -1,8 +1,9 @@
+use cgmath::vector::{Vector, Vector2};
 use calx::engine::{App, Engine, Key, v2};
 use calx::color::consts::*;
 use calx::engine;
 use calx::world::{World, CompProxyMut};
-use world::spatial::{Position};
+use world::spatial::{Position, Location, DIRECTIONS6};
 use world::system::{System, EngineLogic, Entity};
 use world::fov::Fov;
 use world::mapgen::{MapGen};
@@ -10,16 +11,78 @@ use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
 use view::worldview;
+use view::worldview::{loc_to_view};
 use view::tilecache;
+use view::drawable::Drawable;
 use view::tilecache::icon;
 use view::main::State;
 use view::titlestate::TitleState;
+
+trait WorldSprite : Drawable {
+    /// Return false if the sprite's lifetime is over.
+    fn update(&mut self) -> bool;
+}
+
+struct WorldEffects {
+    sprites: Vec<Box<WorldSprite>>,
+}
+
+impl WorldEffects {
+    pub fn new() -> WorldEffects {
+        WorldEffects {
+            sprites: vec!(),
+        }
+    }
+
+    pub fn add(&mut self, spr: Box<WorldSprite>) {
+        self.sprites.push(spr);
+    }
+
+    pub fn draw(&mut self, ctx: &mut Engine, center: Location) {
+        // FIXME: Effects will be visible on top of remembered-but-not-seen terrain.
+        let offset = worldview::loc_to_screen(center, Location::new(0, 0));
+        let mut i = 0;
+        loop {
+            if i >= self.sprites.len() { break; }
+            if !self.sprites.get_mut(i).update() {
+                // Update returns false when the sprite dies.
+                self.sprites.swap_remove(i);
+            } else {
+                self.sprites[i].draw(ctx, &offset);
+                i += 1;
+            }
+        }
+    }
+}
+
+struct BeamSprite {
+    p1: Location,
+    p2: Location,
+    life: int,
+}
+
+impl Drawable for BeamSprite {
+    fn draw(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+        let v1 = loc_to_view(self.p1);
+        let v2 = loc_to_view(self.p2);
+
+        ctx.set_color(&LIME);
+        ctx.set_layer(worldview::FX_Z);
+        ctx.line_width(3f32);
+        ctx.line(&v1.add_v(offset), &v2.add_v(offset));
+    }
+}
+
+impl WorldSprite for BeamSprite {
+    fn update(&mut self) -> bool { self.life -= 1; self.life >= 0 }
+}
 
 pub struct GameState {
     running: bool,
     world: World<System>,
     camera: Entity,
     in_player_input: bool,
+    world_fx: WorldEffects,
 }
 
 
@@ -31,6 +94,7 @@ impl GameState {
             world: world.clone(),
             camera: world.new_entity(),
             in_player_input: false,
+            world_fx: WorldEffects::new(),
         }
     }
 
@@ -102,6 +166,19 @@ impl App for GameState {
                     let loc = player.location();
                     player.attack(loc);
                 }
+                engine::Key3 => {
+                    let loc = self.world.player().unwrap().location();
+                    for i in range(0, 6) {
+                    self.world_fx.add(box
+                        BeamSprite {
+                            p1: loc,
+                            p2: Location::new(
+                                loc.x + DIRECTIONS6[i].x as i8 * 6,
+                                loc.y + DIRECTIONS6[i].y as i8 * 6,),
+                            life: 30,
+                        });
+                    }
+                }
 
                 engine::KeyQ | engine::KeyPad7 => { self.move(7); }
                 engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
@@ -130,6 +207,7 @@ impl App for GameState {
 
         self.camera_to_player();
         worldview::draw_area(&self.world, ctx, self.camera.location(), self.get_fov().deref());
+        self.world_fx.draw(ctx, self.camera.location());
 
         let _mouse_pos = worldview::draw_mouse(ctx, self.camera.location());
 
