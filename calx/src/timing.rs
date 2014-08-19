@@ -1,4 +1,5 @@
 use time;
+use std::time::duration::Duration;
 use std::io::timer;
 
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
@@ -54,7 +55,7 @@ impl Ticker {
     pub fn wait_for_tick(&mut self) {
         match self.time_remaining() {
             Some(t) => {
-                timer::sleep((t * 1000.0) as u64);
+                timer::sleep(Duration::milliseconds((t * 1000.0) as i32));
                 self.last_t += self.period_s;
             }
             _ => {}

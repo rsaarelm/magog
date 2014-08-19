@@ -2,7 +2,7 @@ use std::vec::Vec;
 use std::cmp::{min, max};
 use cgmath::aabb::{Aabb, Aabb2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...
-use cgVector = cgmath::vector::Vector;
+use cgmath::vector::Vector as cgVector;
 use cgmath::vector::{Vector2};
 use cgmath::point::{Point, Point2};
 use rectutil::RectUtil;
