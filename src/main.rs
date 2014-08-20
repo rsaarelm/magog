@@ -22,6 +22,7 @@ pub mod world {
 }
 
 pub mod view {
+    pub mod drawable;
     pub mod worldview;
     pub mod tilecache;
     pub mod main;
