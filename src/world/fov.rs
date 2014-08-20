@@ -1,82 +1,76 @@
 use num::Integer;
-use std::collections::hashmap::HashMap;
+use std::collections::hashmap::HashSet;
 use cgmath::vector::{Vector, Vector2};
-use world::spatial::{Location, Chart, ChartPos, DIRECTIONS6};
+use world::spatial::{Location, DIRECTIONS6};
 use world::system::{World};
 use world::area::Area;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {
-    Seen(Location),
-    Remembered(Location),
-    Unknown,
+    Seen,
+    Remembered,
 }
-
-impl FovStatus {
-    pub fn loc(self) -> Option<Location> {
-        match self {
-            Seen(loc) => Some(loc),
-            Remembered(loc) => Some(loc),
-            Unknown => None
-        }
-    }
-}
-
 
 #[deriving(Clone)]
 pub struct Fov {
-    seen: Chart,
-    remembered: Chart,
-    offset: ChartPos,
+    seen: HashSet<Location>,
+    remembered: HashSet<Location>,
 }
 
 impl Fov {
     pub fn new() -> Fov {
         Fov {
-            seen: HashMap::new(),
-            remembered: HashMap::new(),
-            offset: ChartPos::new(0, 0),
+            seen: HashSet::new(),
+            remembered: HashSet::new(),
         }
     }
 
-    pub fn translate(&mut self, delta: &Vector2<int>) {
-        self.offset = self.offset + *delta;
+    pub fn get(&self, loc: Location) -> Option<FovStatus> {
+        if self.seen.contains(&loc) {
+            Some(Seen)
+        } else if self.remembered.contains(&loc) {
+            Some(Remembered)
+        } else {
+            None
+        }
     }
 
     pub fn update(&mut self, world: &World, center: Location, range: uint) {
-        self.seen = HashMap::new();
+        self.seen = HashSet::new();
 
-        mark_seen(self, ChartPos::new(0, 0), center);
+        mark_seen(self, center);
 
         process(self, world, range, center, Angle::new(0.0, 1), Angle::new(6.0, 1));
 
-        // Post-processing hack to make acute corner wall tiles in fake-isometric
-        // rooms visible.
+        // Post-processing hack to make acute corner wall tiles in
+        // fake-isometric rooms visible.
         {
             let mut queue = vec!();
-            for (&pos, &loc) in self.seen.iter() {
+            for &loc in self.seen.iter() {
                 //    above
                 //  left right
-                //     pos
+                //     loc
                 //
-                // If both pos and above are visible, left and right will
+                // If both loc and above are visible, left and right will
                 // be made visible if they are opaque.
-                let above = pos + Vector2::new(-1, -1);
+                //
+                // (Loc is known to be seen from the fact that the iteration
+                // brings us to this block to begin with.)
+                let above = loc + Vector2::new(-1, -1);
                 let left_loc = loc + Vector2::new(-1, 0);
                 let right_loc = loc + Vector2::new(0, -1);
 
-                let pos = self.from_chart(pos);
-                if self.seen.contains_key(&above) {
+                if self.seen.contains(&above) {
                     if world.is_opaque(left_loc) {
-                        queue.push((pos + Vector2::new(-1, 0), left_loc));
+                        queue.push(left_loc);
                     }
                     if world.is_opaque(right_loc) {
-                        queue.push((pos + Vector2::new(0, -1), right_loc));
+                        queue.push(right_loc);
                     }
                 }
             }
 
-            for &(pos, loc) in queue.iter() { mark_seen(self, pos, loc); }
+            for &loc in queue.iter() { mark_seen(self, loc); }
         }
 
         // Compute field-of-view using recursive shadowcasting in hex grid
@@ -98,7 +92,7 @@ impl Fov {
                     }
                     return;
                 }
-                mark_seen(fov, ChartPos::new(0, 0) + angle.to_vec(), loc);
+                mark_seen(fov, loc);
 
                 angle = angle.next();
             }
@@ -108,35 +102,10 @@ impl Fov {
             }
         }
 
-        fn mark_seen(fov: &mut Fov, pos: ChartPos, loc: Location) {
-            let insert_pos = fov.to_chart(pos);
-            fov.seen.insert(insert_pos, loc);
-            fov.remembered.insert(insert_pos, loc);
+        fn mark_seen(fov: &mut Fov, loc: Location) {
+            fov.seen.insert(loc);
+            fov.remembered.insert(loc);
         }
-    }
-
-    pub fn get(&self, pos: ChartPos) -> FovStatus {
-        let retrieve_pos = self.to_chart(pos);
-
-        match self.seen.find(&retrieve_pos) {
-            Some(&loc) => return Seen(loc),
-            _ => ()
-        }
-
-        match self.remembered.find(&retrieve_pos) {
-            Some(&loc) => return Remembered(loc),
-            _ => ()
-        }
-
-        Unknown
-    }
-
-    fn to_chart(&self, pos: ChartPos) -> ChartPos {
-        ChartPos::new(pos.x + self.offset.x, pos.y + self.offset.y)
-    }
-
-    fn from_chart(&self, pos: ChartPos) -> ChartPos {
-        ChartPos::new(pos.x - self.offset.x, pos.y - self.offset.y)
     }
 }
 

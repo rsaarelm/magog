@@ -38,16 +38,7 @@ impl GameState {
     fn move(&mut self, dir8: uint) {
         assert!(self.in_player_input);
         let mut player = self.world.player().unwrap();
-        let delta = player.smart_move(dir8);
-        match delta {
-            Some(delta) => {
-                // XXX: It's a bit of a wart that we have to explicitly translate the FOV when
-                // movement happens. This is needed for non-Euclidean portal maps, but it's not
-                // obvious if the code should be supporting those...
-                self.get_fov().translate(&delta);
-            }
-            _ => ()
-        }
+        player.smart_move(dir8);
 
         if self.world.terrain_at(player.location()).is_exit() {
             self.next_level();
@@ -139,7 +130,7 @@ impl App for GameState {
         };
 
         self.camera_to_player();
-        self.world.draw_area(ctx, self.get_fov().deref());
+        self.world.draw_area(ctx, self.camera.location(), self.get_fov().deref());
 
         let _mouse_pos = worldview::draw_mouse(ctx);
 

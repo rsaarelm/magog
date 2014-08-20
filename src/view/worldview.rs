@@ -10,7 +10,7 @@ use time;
 use view::tilecache;
 use view::tilecache::tile::*;
 use world::area::Area;
-use world::fov::{Fov, Seen, Remembered, Unknown};
+use world::fov::{Fov, Seen, Remembered};
 use world::mobs::{Mobs, Mob, MobType};
 use world::mobs;
 use world::terrain::TerrainType;
@@ -71,7 +71,7 @@ pub trait WorldView {
         &self, ctx: &mut C, loc: Location, pos: &Point2<f32>);
 
     fn draw_area(
-        &self, ctx: &mut Engine, fov: &Fov);
+        &self, ctx: &mut Engine, center: Location, fov: &Fov);
 }
 
 impl WorldView for World {
@@ -88,7 +88,7 @@ impl WorldView for World {
     }
 
     fn draw_area(
-        &self, ctx: &mut Engine, fov: &Fov) {
+        &self, ctx: &mut Engine, center: Location, fov: &Fov) {
         let mut chart_bounds = Aabb2::new(
             to_chart(&Point2::new(0f32, 0f32)).to_point(),
             to_chart(&Point2::new(640f32, 392f32)).to_point());
@@ -98,18 +98,19 @@ impl WorldView for World {
         for pt in chart_bounds.points() {
             let p = ChartPos::new(pt.x, pt.y);
             let offset = to_screen(p);
+            let loc = Location::new(center.x + p.x as i8, center.y + p.y as i8);
 
             let mut draw = SpriteCollector::new(ctx);
 
-            match fov.get(p) {
-                Seen(loc) => {
+            match fov.get(loc) {
+                Some(Seen) => {
                     self.draw_entities_at(&mut draw, loc, &offset);
                 }
-                Remembered(loc) => {
+                Some(Remembered) => {
                     draw.mode = FogOfWar;
                     self.draw_entities_at(&mut draw, loc, &offset);
                 }
-                Unknown => {
+                None => {
                     let (front_of_wall, is_door) = classify(self, p, fov);
                     if front_of_wall && !is_door {
                         draw.draw(CUBE, &offset, BLOCK_Z, &BLACK);
@@ -126,6 +127,8 @@ impl WorldView for World {
             let nw = ChartPos::new(pt.x - 1, pt.y);
             let ne = ChartPos::new(pt.x, pt.y - 1);
 
+            /*
+            // Uses obsolete FOV, will be replaced by terrain-drawables soon anyway.
             for &p in vec![nw, ne].iter() {
                 match fov.get(p).loc().map(|loc| world.terrain_at(loc)) {
                     Some(t) => {
@@ -137,6 +140,7 @@ impl WorldView for World {
                     _ => ()
                 }
             }
+            */
             return (front_of_wall, is_door);
         }
     }
