@@ -9,8 +9,9 @@ use cgmath::vector::{Vector2};
 use time;
 use view::tilecache;
 use view::tilecache::tile::*;
+use view::drawable::{Drawable, Translated};
 use world::area::Area;
-use world::fov::{Fov, Seen, Remembered};
+use world::fov::{Fov, FovStatus, Seen, Remembered};
 use world::mobs::{Mobs, Mob, MobType};
 use world::mobs;
 use world::terrain::TerrainType;
@@ -20,7 +21,9 @@ use world::system::{World, Entity};
 
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
-
+pub static FX_Z: f32 = 0.375f32;
+pub static FOG_Z: f32 = 0.350f32;
+pub static CAPTION_Z: f32 = 0.300f32;
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
@@ -34,6 +37,34 @@ pub struct Kernel<C> {
     w: C,
     sw: C,
     s: C,
+}
+
+pub struct CellDrawable {
+    loc: Location,
+    kernel: Kernel<TerrainType>,
+    fov: Option<FovStatus>,
+    world: World,
+}
+
+impl Drawable for CellDrawable {
+    fn draw(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+
+        fn classify(c: &CellDrawable) -> (bool, bool) {
+            let mut front_of_wall = false;
+            let mut is_door = false;
+            let nw = c.loc + Vector2::new(-1, 0);
+            let ne = c.loc + Vector2::new(0, -1);
+
+            for &p in vec![nw, ne].iter() {
+                let t = c.world.terrain_at(p);
+                if t.is_wall() {
+                    front_of_wall = true;
+                    if t.is_walkable() { is_door = true; }
+                }
+            }
+            (front_of_wall, is_door)
+        }
+    }
 }
 
 impl<C: Clone> Kernel<C> {
