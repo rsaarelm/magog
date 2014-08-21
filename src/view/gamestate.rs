@@ -1,4 +1,4 @@
-use calx::engine::{App, Engine, Key, pt};
+use calx::engine::{App, Engine, Key, v2};
 use calx::color::consts::*;
 use calx::engine;
 use calx::world::{World, CompProxyMut};
@@ -165,7 +165,7 @@ impl GameState {
         let solid_hearts = mob.hp / 2;
         let half_heart = (mob.hp % 2) == 1;
         for i in range(0, num_hearts) {
-            let pos = pt(i as f32 * 8f32, 8f32);
+            let pos = v2(i as f32 * 8f32, 8f32);
             let img =
                 if i < solid_hearts {
                     icon::HEART
@@ -182,7 +182,7 @@ impl GameState {
         let half_shard = (mob.armor % 2) == 1;
 
         for i in range(0, num_shards) {
-            let pos = pt((i + num_hearts) as f32 * 8f32, 8f32);
+            let pos = v2((i + num_hearts) as f32 * 8f32, 8f32);
             let img =
                 if i == num_shards - 1 && half_shard {
                     icon::HALF_SHARD
@@ -217,7 +217,7 @@ impl Fx {
     }
 
     pub fn draw(&self, ctx: &mut Engine) {
-        ctx.draw_string(self.message.as_slice(), &pt(0f32, 300f32));
+        ctx.draw_string(self.message.as_slice(), &v2(0f32, 300f32));
     }
 
     pub fn msg(&mut self, txt: &str) {

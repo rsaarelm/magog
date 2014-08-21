@@ -4,7 +4,6 @@ use calx::engine::{Engine};
 use calx::rectutil::RectUtil;
 use calx::timing;
 use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::point::{Point};
 use cgmath::vector::{Vector, Vector2};
 use time;
 use view::tilecache;
@@ -82,7 +81,7 @@ impl CellDrawable {
 
         ctx.set_layer(z);
         ctx.set_color(&color);
-        ctx.draw_image(&tilecache::get(idx), &Point::from_vec(offset));
+        ctx.draw_image(&tilecache::get(idx), offset);
     }
 
     fn draw_cell(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
@@ -381,13 +380,13 @@ impl WorldView for World {
 
 pub fn draw_mouse(ctx: &mut Engine) -> ChartPos {
     let mouse = ctx.get_mouse();
-    let cursor_chart_pos = to_chart(&mouse.pos.to_vec());
+    let cursor_chart_pos = to_chart(&mouse.pos);
 
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
-    ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &Point::from_vec(&to_screen(cursor_chart_pos)));
+    ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &to_screen(cursor_chart_pos));
     ctx.set_layer(BLOCK_Z);
-    ctx.draw_image(&tilecache::get(CURSOR_TOP), &Point::from_vec(&to_screen(cursor_chart_pos)));
+    ctx.draw_image(&tilecache::get(CURSOR_TOP), &to_screen(cursor_chart_pos));
 
     cursor_chart_pos
 }

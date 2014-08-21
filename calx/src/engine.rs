@@ -23,8 +23,8 @@ use std::num::{next_power_of_two};
 use tile::Tile;
 use timing::{Ticker, TimePerFrame};
 
-/// Utility function to get away from writing Point2::new all over the place.
-pub fn pt<T: BaseNum>(x: T, y: T) -> Point2<T> { Point2::new(x, y) }
+/// Utility function to get away from writing Vector2::new all over the place.
+pub fn v2<T: BaseNum>(x: T, y: T) -> Vector2<T> { Vector2::new(x, y) }
 
 /// Utility function.
 pub fn rect<T: BaseNum>(x1: T, y1: T, x2: T, y2: T) -> Aabb2<T> {
@@ -50,7 +50,7 @@ pub struct KeyEvent {
 
 #[deriving(Clone, PartialEq)]
 pub struct MouseState {
-    pub pos: Point2<f32>,
+    pub pos: Vector2<f32>,
     pub left: bool,
     pub middle: bool,
     pub right: bool,
@@ -271,7 +271,7 @@ impl Engine {
             .mul_v(&area);
 
         MouseState {
-            pos: Point2::new(
+            pos: Vector2::new(
                      (cx as f32 - bounds.min.x) * (resolution.x / bounds.dim().x),
                      (cy as f32 - bounds.min.y) * (resolution.y / bounds.dim().y)),
             left: self.get_window().get_mouse_button(glfw::MouseButtonLeft) != glfw::Release,
@@ -302,7 +302,7 @@ impl Engine {
     /// the rectangle.
     pub fn texture_rect(
         &mut self, area: &Aabb2<f32>,
-        uv1: &Point2<f32>, uv2: &Point2<f32>) {
+        uv1: &Vector2<f32>, uv2: &Vector2<f32>) {
         let area = transform_pixel_rect(&self.dim(), area);
         let vertices = Vertex::rect(
             &area, self.z_layer, uv1, uv2, &self.draw_color, 1f32);
@@ -314,7 +314,7 @@ impl Engine {
     }
 
     /// Draw a colored line
-    pub fn line(&mut self, p1: &Point2<f32>, p2: &Point2<f32>) {
+    pub fn line(&mut self, p1: &Vector2<f32>, p2: &Vector2<f32>) {
         let p1 = transform_pt(&self.dim(), p1);
         let p2 = transform_pt(&self.dim(), p2);
         let vertices = vec![
@@ -324,22 +324,22 @@ impl Engine {
         Vertex::draw(&vertices, &self.shaders[PLAIN_SHADER_IDX], hgl::Lines);
     }
 
-    pub fn draw_image(&mut self, image: &Image, pos: &Point2<f32>) {
+    pub fn draw_image(&mut self, image: &Image, pos: &Vector2<f32>) {
         assert!(image.texture_idx < self.textures.len(),
             "Image has nonexistent texture");
         self.textures.get_mut(image.texture_idx).bind();
         self.texture_rect(
-            &image.area.add_v(&pos.to_vec()),
-            image.texcoords.min(), image.texcoords.max());
+            &image.area.add_v(pos),
+            &image.texcoords.min().to_vec(), &image.texcoords.max().to_vec());
     }
 
-    pub fn draw_string(&mut self, text: &str, pos: &Point2<f32>) {
+    pub fn draw_string(&mut self, text: &str, pos: &Vector2<f32>) {
         for (x, c) in text.chars().enumerate() {
             let idx = c as i32 - 32;
             if idx >= 0 && idx < 96 {
                 let img = *self.font.get(idx as uint);
                 self.draw_image(
-                    &img, &Point2::new(pos.x + (8 * x) as f32, pos.y));
+                    &img, &Vector2::new(pos.x + (8 * x) as f32, pos.y));
             }
         }
     }
@@ -349,8 +349,8 @@ impl Engine {
         &mut self, area: &Aabb2<f32>) {
         let area = transform_pixel_rect(&self.dim(), area);
         let vertices = Vertex::rect(
-            &area, self.z_layer, &Point2::new(0f32, 0f32),
-            &Point2::new(1f32, 1f32), &self.draw_color, 1.0f32);
+            &area, self.z_layer, &Vector2::new(0f32, 0f32),
+            &Vector2::new(1f32, 1f32), &self.draw_color, 1.0f32);
         Vertex::draw(&vertices, &self.shaders[PLAIN_SHADER_IDX], hgl::Triangles);
     }
 
@@ -369,8 +369,8 @@ impl Engine {
         let area = screen_bound(&self.dim(),
             &Vector2::new(width as f32, height as f32));
         let vertices = Vertex::rect(
-            &area, 0f32, &Point2::new(0.0f32, 1.0f32),
-            &Point2::new(1.0f32, 0.0f32), &WHITE, 1f32);
+            &area, 0f32, &Vector2::new(0.0f32, 1.0f32),
+            &Vector2::new(1.0f32, 0.0f32), &WHITE, 1f32);
         Vertex::draw(&vertices, self.shaders.get(BLIT_SHADER_IDX), hgl::Triangles);
     }
 
@@ -402,13 +402,13 @@ fn screen_bound(dim: &Vector2<f32>, area: &Vector2<f32>) -> Aabb2<f32> {
 }
 
 fn transform_pixel_rect(dim: &Vector2<f32>, rect: &Aabb2<f32>) -> Aabb2<f32> {
-    Aabb2::new(
-        transform_pt(dim, &rect.min),
-        transform_pt(dim, &rect.max))
+    let p1 : Point2<f32> = Point::from_vec(&transform_pt(dim, &rect.min.to_vec()));
+    let p2 : Point2<f32> = Point::from_vec(&transform_pt(dim, &rect.max.to_vec()));
+    Aabb2::new(p1, p2)
 }
 
-fn transform_pt(dim: &Vector2<f32>, p: &Point2<f32>) -> Point2<f32> {
-    Point2::new(p.x / dim.x * 2.0f32 - 1.0f32, p.y / dim.y * 2.0f32 - 1.0f32)
+fn transform_pt(dim: &Vector2<f32>, p: &Vector2<f32>) -> Vector2<f32> {
+    Vector2::new(p.x / dim.x * 2.0f32 - 1.0f32, p.y / dim.y * 2.0f32 - 1.0f32)
 }
 
 #[deriving(Clone, PartialEq)]
@@ -544,7 +544,7 @@ impl Vertex {
 
     fn rect(
         area: &Aabb2<f32>, z: f32,
-        uv1: &Point2<f32>, uv2: &Point2<f32>,
+        uv1: &Vector2<f32>, uv2: &Vector2<f32>,
         c: &RGB, alpha: f32) -> Vec<Vertex> {
 
         let mut ret = vec!();

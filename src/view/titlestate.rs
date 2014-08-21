@@ -1,5 +1,5 @@
 use calx::color::consts::*;
-use cgmath::point::{Point2};
+use cgmath::vector::{Vector2};
 use calx::engine::{App, Engine, Key};
 use view::tilecache;
 use view::main::State;
@@ -24,7 +24,7 @@ impl App for TitleState {
     fn draw(&mut self, ctx: &mut Engine) {
         let logo = tilecache::get(tilecache::LOGO);
         ctx.set_color(&FIREBRICK);
-        ctx.draw_image(&logo, &Point2::new(280f32, 180f32));
+        ctx.draw_image(&logo, &Vector2::new(280f32, 180f32));
     }
 
     fn char_typed(&mut self, _ctx: &mut Engine, _ch: char) {
