@@ -9,7 +9,6 @@ use world::mapgen::{MapGen};
 use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
-use view::worldview::WorldView;
 use view::worldview;
 use view::tilecache;
 use view::tilecache::icon;
@@ -130,9 +129,9 @@ impl App for GameState {
         };
 
         self.camera_to_player();
-        self.world.draw_area(ctx, self.camera.location(), self.get_fov().deref());
+        worldview::draw_area(&self.world, ctx, self.camera.location(), self.get_fov().deref());
 
-        let _mouse_pos = worldview::draw_mouse(ctx);
+        let _mouse_pos = worldview::draw_mouse(ctx, self.camera.location());
 
         // UI needs player stats to be displayed, so only do it if a player exists.
         match self.world.player() {

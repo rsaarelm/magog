@@ -91,6 +91,8 @@ pub struct Location {
 
 impl Location {
     pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
+
+    pub fn to_point(&self) -> Point2<int> { Point2::new(self.x as int, self.y as int) }
 }
 
 impl Add<Vector2<int>, Location> for Location {
@@ -128,40 +130,6 @@ pub static DIRECTIONS8: [Vector2<int>, ..8] = [
     Vector2 { x: -1, y:  0 },
 ];
 
-
-/// Positions on a virtual infinite 2D chart, which may map to different actual
-/// Locations.
-#[deriving(Eq, PartialEq, Clone, Hash, Show)]
-pub struct ChartPos {
-    pub x: int,
-    pub y: int,
-}
-
-impl<'a> ChartPos {
-    pub fn new(x: int, y: int) -> ChartPos { ChartPos { x: x, y: y } }
-
-    pub fn from_location(loc: Location) -> ChartPos {
-        ChartPos::new(loc.x as int, loc.y as int)
-    }
-
-    pub fn to_location(self) -> Location {
-        Location::new(self.x as i8, self.y as i8)
-    }
-
-    pub fn to_point(self) -> Point2<int> {
-        Point2::new(self.x, self.y)
-    }
-}
-
-impl Add<Vector2<int>, ChartPos> for ChartPos {
-    fn add(&self, other: &Vector2<int>) -> ChartPos {
-        ChartPos::new(
-            (self.x + other.x),
-            (self.y + other.y))
-    }
-}
-
-pub type Chart = HashMap<ChartPos, Location>;
 
 /// Trait for entities that have a position in space.
 pub trait Position {

@@ -1,6 +1,6 @@
 use calx::color::consts::*;
 use calx::color::{RGB};
-use calx::engine::{Engine};
+use calx::engine::{Engine, v2};
 use calx::rectutil::RectUtil;
 use calx::timing;
 use cgmath::aabb::{Aabb, Aabb2};
@@ -15,7 +15,7 @@ use world::mobs::{Mobs, Mob, MobType};
 use world::mobs;
 use world::terrain::TerrainType;
 use world::terrain;
-use world::spatial::{Location, ChartPos};
+use world::spatial::{Location};
 use world::system::{World, Entity};
 
 pub static FLOOR_Z: f32 = 0.500f32;
@@ -39,9 +39,9 @@ impl Drawable for CellDrawable {
             None => {
                 let (front_of_wall, is_door) = classify(self);
                 if front_of_wall && !is_door {
-                    self.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
+                    self.draw_tile(ctx, CUBE, offset, FOG_Z, &BLACK);
                 } else if !front_of_wall {
-                    self.draw_tile(ctx, BLOCK_DARK, offset, BLOCK_Z, &BLACK);
+                    self.draw_tile(ctx, BLOCK_DARK, offset, FOG_Z, &BLACK);
                 }
             }
         }
@@ -49,8 +49,8 @@ impl Drawable for CellDrawable {
         fn classify(c: &CellDrawable) -> (bool, bool) {
             let mut front_of_wall = false;
             let mut is_door = false;
-            let nw = c.loc + Vector2::new(-1, 0);
-            let ne = c.loc + Vector2::new(0, -1);
+            let nw = c.loc + v2(-1, 0);
+            let ne = c.loc + v2(0, -1);
 
             for &p in vec![nw, ne].iter() {
                 let t = c.world.terrain_at(p);
@@ -273,7 +273,7 @@ impl CellDrawable {
             if is_bobbing(mob) {
                 offset.add_v(timing::cycle_anim(
                         0.3f64,
-                        &[Vector2::new(0.0f32, 0.0f32), Vector2::new(0.0f32, -1.0f32)]))
+                        &[v2(0.0f32, 0.0f32), v2(0.0f32, -1.0f32)]))
             } else { *offset };
 
         let (icon, color) = visual(mob.mob_type());
@@ -307,7 +307,7 @@ impl CellDrawable {
 
 /// 3x3 grid of terrain cells. Use this as the input for terrain tile
 /// computation, which will need to consider the immediate vicinity of cells.
-pub struct Kernel<C> {
+struct Kernel<C> {
     n: C,
     ne: C,
     e: C,
@@ -322,86 +322,87 @@ pub struct Kernel<C> {
 impl<C: Clone> Kernel<C> {
     pub fn new(get: |Location| -> C, loc: Location) -> Kernel<C> {
         Kernel {
-            n: get(loc + Vector2::new(-1, -1)),
-            ne: get(loc + Vector2::new(0, -1)),
-            e: get(loc + Vector2::new(1, -1)),
-            nw: get(loc + Vector2::new(-1, 0)),
+            n: get(loc + v2(-1, -1)),
+            ne: get(loc + v2(0, -1)),
+            e: get(loc + v2(1, -1)),
+            nw: get(loc + v2(-1, 0)),
             center: get(loc),
-            se: get(loc + Vector2::new(1, 0)),
-            w: get(loc + Vector2::new(-1, 1)),
-            sw: get(loc + Vector2::new(0, 1)),
-            s: get(loc + Vector2::new(1, 1)),
-        }
-    }
-
-    pub fn new_default(center: C, edge: C) -> Kernel<C> {
-        Kernel {
-            n: edge.clone(),
-            ne: edge.clone(),
-            e: edge.clone(),
-            nw: edge.clone(),
-            center: center,
-            se: edge.clone(),
-            w: edge.clone(),
-            sw: edge.clone(),
-            s: edge.clone(),
+            se: get(loc + v2(1, 0)),
+            w: get(loc + v2(-1, 1)),
+            sw: get(loc + v2(0, 1)),
+            s: get(loc + v2(1, 1)),
         }
     }
 }
 
-pub trait WorldView {
-    fn draw_area(
-        &self, ctx: &mut Engine, center: Location, fov: &Fov);
-}
+pub fn draw_area(
+    world: &World, ctx: &mut Engine, center: Location, fov: &Fov) {
+    let mut bounds = Aabb2::new(
+        screen_to_loc(center, &v2(0f32, 0f32)).to_point(),
+        screen_to_loc(center, &v2(640f32, 392f32)).to_point());
+    bounds = bounds.grow(
+        &screen_to_loc(center, &v2(640f32, 0f32)).to_point());
+    bounds = bounds.grow(
+        &screen_to_loc(center, &v2(0f32, 392f32)).to_point());
 
-impl WorldView for World {
-    fn draw_area(
-        &self, ctx: &mut Engine, center: Location, fov: &Fov) {
-        let mut chart_bounds = Aabb2::new(
-            to_chart(&Vector2::new(0f32, 0f32)).to_point(),
-            to_chart(&Vector2::new(640f32, 392f32)).to_point());
-        chart_bounds = chart_bounds.grow(&to_chart(&Vector2::new(640f32, 0f32)).to_point());
-        chart_bounds = chart_bounds.grow(&to_chart(&Vector2::new(0f32, 392f32)).to_point());
+    for pt in bounds.points() {
+        let loc = Location::new(pt.x as i8, pt.y as i8);
 
-        for pt in chart_bounds.points() {
-            let p = ChartPos::new(pt.x, pt.y);
-            let offset = to_screen(p);
-            let loc = Location::new(center.x + p.x as i8, center.y + p.y as i8);
-
-            // TODO: Offset for Translated into fixed translation view space,
-            // center to screen with the later draw call offset.
-            let drawable = Translated::new(
-                offset, CellDrawable::new(loc, fov.get(loc), self.clone()));
-            drawable.draw(ctx, &Vector2::new(0f32, 0f32));
-        }
+        let drawable = Translated::new(loc_to_view(loc),
+        CellDrawable::new(loc, fov.get(loc), world.clone()));
+        drawable.draw(ctx, &view_to_screen(&loc_to_view(center), &v2(0f32, 0f32)));
     }
 }
 
 
-pub fn draw_mouse(ctx: &mut Engine) -> ChartPos {
+pub fn draw_mouse(ctx: &mut Engine, center_loc: Location) -> Location {
     let mouse = ctx.get_mouse();
-    let cursor_chart_pos = to_chart(&mouse.pos);
+    let cursor_loc = screen_to_loc(center_loc, &mouse.pos);
+    let draw_pos = loc_to_screen(center_loc, cursor_loc);
 
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
-    ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &to_screen(cursor_chart_pos));
+    ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &draw_pos);
     ctx.set_layer(BLOCK_Z);
-    ctx.draw_image(&tilecache::get(CURSOR_TOP), &to_screen(cursor_chart_pos));
+    ctx.draw_image(&tilecache::get(CURSOR_TOP), &draw_pos);
 
-    cursor_chart_pos
+    cursor_loc
 }
 
 static CENTER_X: f32 = 320.0;
 static CENTER_Y: f32 = 180.0;
 
-fn to_screen(pos: ChartPos) -> Vector2<f32> {
-    let x = (pos.x) as f32;
-    let y = (pos.y) as f32;
-    Vector2::new(CENTER_X + 16.0 * x - 16.0 * y, CENTER_Y + 8.0 * x + 8.0 * y)
+/// Convert a location into absolute view space coordinates.
+pub fn loc_to_view(loc: Location) -> Vector2<f32> {
+    let x = (loc.x) as f32;
+    let y = (loc.y) as f32;
+    v2(16.0 * x - 16.0 * y, 8.0 * x + 8.0 * y)
 }
 
-fn to_chart(pos: &Vector2<f32>) -> ChartPos {
-    let column = ((pos.x + 8.0 - CENTER_X) / 16.0).floor();
-    let row = ((pos.y - CENTER_Y as f32 - column * 8.0) / 16.0).floor();
-    ChartPos::new((column + row) as int, row as int)
+/// Convert absolute view space coordinates into a Location.
+pub fn view_to_loc(view_pos: &Vector2<f32>) -> Location {
+    let column = ((view_pos.x + 8.0) / 16.0).floor();
+    let row = ((view_pos.y as f32 - column * 8.0) / 16.0).floor();
+    Location::new((column + row) as i8, row as i8)
+}
+
+/// Convert absolute view space coordinates into screen coordinates centered around a given view
+/// position.
+pub fn view_to_screen(view_center: &Vector2<f32>, view_pos: &Vector2<f32>) -> Vector2<f32> {
+    view_pos.sub_v(view_center).add_v(&v2(CENTER_X, CENTER_Y))
+}
+
+/// Convert screen coordinates centered around a given view position to absolute view coordinates.
+pub fn screen_to_view(view_center: &Vector2<f32>, screen_pos: &Vector2<f32>) -> Vector2<f32> {
+    screen_pos.add_v(view_center).sub_v(&v2(CENTER_X, CENTER_Y))
+}
+
+/// Convert screen coordinates to location.
+pub fn screen_to_loc(center_loc: Location, screen_pos: &Vector2<f32>) -> Location {
+    view_to_loc(&screen_to_view(&loc_to_view(center_loc), screen_pos))
+}
+
+/// Convert location to screen coordinates.
+pub fn loc_to_screen(center_loc: Location, loc: Location) -> Vector2<f32> {
+    view_to_screen(&loc_to_view(center_loc), &loc_to_view(loc))
 }
