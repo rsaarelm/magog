@@ -11,7 +11,7 @@ pub struct Translated<T> {
 }
 
 impl<T: Drawable> Translated<T> {
-    pub fn new(inner: T, offset: Vector2<f32>) -> Translated<T> {
+    pub fn new(offset: Vector2<f32>, inner: T) -> Translated<T> {
         Translated {
             inner: inner,
             offset: offset
