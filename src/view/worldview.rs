@@ -21,8 +21,7 @@ use world::system::{World, Entity};
 pub static FLOOR_Z: f32 = 0.500f32;
 pub static BLOCK_Z: f32 = 0.400f32;
 pub static FX_Z: f32 = 0.375f32;
-pub static FOG_Z: f32 = 0.350f32;
-pub static CAPTION_Z: f32 = 0.300f32;
+pub static CAPTION_Z: f32 = 0.350f32;
 
 pub struct CellDrawable {
     loc: Location,
@@ -39,9 +38,9 @@ impl Drawable for CellDrawable {
             None => {
                 let (front_of_wall, is_door) = classify(self);
                 if front_of_wall && !is_door {
-                    self.draw_tile(ctx, CUBE, offset, FOG_Z, &BLACK);
+                    self.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
                 } else if !front_of_wall {
-                    self.draw_tile(ctx, BLOCK_DARK, offset, FOG_Z, &BLACK);
+                    self.draw_tile(ctx, BLOCK_DARK, offset, BLOCK_Z, &BLACK);
                 }
             }
         }

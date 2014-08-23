@@ -1,3 +1,4 @@
+use std::slice::Items;
 use cgmath::vector::{Vector, Vector2};
 use calx::engine::{App, Engine, Key, v2};
 use calx::color::consts::*;
@@ -5,7 +6,7 @@ use calx::engine;
 use calx::world::{World, CompProxyMut};
 use world::spatial::{Position, Location, DIRECTIONS6};
 use world::system::{System, EngineLogic, Entity};
-use world::fov::Fov;
+use world::fov::{Fov, Seen};
 use world::mapgen::{MapGen};
 use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
@@ -19,8 +20,9 @@ use view::main::State;
 use view::titlestate::TitleState;
 
 trait WorldSprite : Drawable {
-    /// Return false if the sprite's lifetime is over.
-    fn update(&mut self) -> bool;
+    fn update(&mut self);
+    fn is_alive(&self) -> bool;
+    fn footprint<'a>(&'a self) -> Items<'a, Location>;
 }
 
 struct WorldEffects {
@@ -38,20 +40,19 @@ impl WorldEffects {
         self.sprites.push(spr);
     }
 
-    pub fn draw(&mut self, ctx: &mut Engine, center: Location) {
-        // FIXME: Effects will be visible on top of remembered-but-not-seen terrain.
+    pub fn draw(&self, ctx: &mut Engine, center: Location, fov: &Fov) {
         let offset = worldview::loc_to_screen(center, Location::new(0, 0));
-        let mut i = 0;
-        loop {
-            if i >= self.sprites.len() { break; }
-            if !self.sprites.get_mut(i).update() {
-                // Update returns false when the sprite dies.
-                self.sprites.swap_remove(i);
-            } else {
-                self.sprites[i].draw(ctx, &offset);
-                i += 1;
-            }
+        for spr in self.sprites.iter() {
+            if spr.footprint()
+                .any(|&loc| fov.get(loc) == Some(Seen)) {
+                    spr.draw(ctx, &offset);
+                }
         }
+    }
+
+    pub fn update(&mut self) {
+        for spr in self.sprites.mut_iter() { spr.update(); }
+        self.sprites.retain(|spr| spr.is_alive());
     }
 }
 
@@ -59,6 +60,19 @@ struct BeamSprite {
     p1: Location,
     p2: Location,
     life: int,
+    footprint: Vec<Location>,
+}
+
+impl BeamSprite {
+    pub fn new(p1: Location, p2: Location, life: int) -> BeamSprite {
+        BeamSprite {
+            p1: p1,
+            p2: p2,
+            life: life,
+            // TODO: Intervening points
+            footprint: vec![p1, p2],
+        }
+    }
 }
 
 impl Drawable for BeamSprite {
@@ -74,7 +88,11 @@ impl Drawable for BeamSprite {
 }
 
 impl WorldSprite for BeamSprite {
-    fn update(&mut self) -> bool { self.life -= 1; self.life >= 0 }
+    fn update(&mut self) { self.life -= 1; }
+    fn is_alive(&self) -> bool { self.life >= 0 }
+    fn footprint<'a>(&'a self) -> Items<'a, Location> {
+        self.footprint.iter()
+    }
 }
 
 pub struct GameState {
@@ -169,14 +187,10 @@ impl App for GameState {
                 engine::Key3 => {
                     let loc = self.world.player().unwrap().location();
                     for i in range(0, 6) {
-                    self.world_fx.add(box
-                        BeamSprite {
-                            p1: loc,
-                            p2: Location::new(
-                                loc.x + DIRECTIONS6[i].x as i8 * 6,
-                                loc.y + DIRECTIONS6[i].y as i8 * 6,),
-                            life: 30,
-                        });
+                        let p2 = Location::new(
+                            loc.x + DIRECTIONS6[i].x as i8 * 6,
+                            loc.y + DIRECTIONS6[i].y as i8 * 6,);
+                        self.world_fx.add(box BeamSprite::new(loc, p2, 30));
                     }
                 }
 
@@ -207,7 +221,8 @@ impl App for GameState {
 
         self.camera_to_player();
         worldview::draw_area(&self.world, ctx, self.camera.location(), self.get_fov().deref());
-        self.world_fx.draw(ctx, self.camera.location());
+        self.world_fx.draw(ctx, self.camera.location(), self.get_fov().deref());
+        self.world_fx.update();
 
         let _mouse_pos = worldview::draw_mouse(ctx, self.camera.location());
 
