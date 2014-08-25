@@ -204,6 +204,7 @@ pub enum MobType {
     Serpent,
 }
 
+/// Game world trait for global creature operations.
 pub trait Mobs {
     fn mobs_at(&self, loc: Location) -> Vec<Entity>;
     fn mobs(&self) -> Vec<Entity>;

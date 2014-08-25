@@ -26,6 +26,7 @@ fn add(tiles: &mut Vec<Tile>, data: &[u8],
     ret
 }
 
+/// Initialize global tile cache.
 pub fn init(ctx: &mut Engine) {
     let mut tiles = vec!();
     add(&mut tiles, TILE_DATA, (32, 32), (-16, -16));

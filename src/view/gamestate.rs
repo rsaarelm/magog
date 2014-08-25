@@ -95,6 +95,7 @@ impl WorldSprite for BeamSprite {
     }
 }
 
+/// Gameplay screen.
 pub struct GameState {
     running: bool,
     world: World<System>,
@@ -294,6 +295,7 @@ impl GameState {
     }
 }
 
+/// Fire-and-forget on-screen effects.
 pub struct Fx {
     // TODO: turn this into a timed queue.
     message: String,

@@ -5,6 +5,7 @@ use view::tilecache;
 use view::main::State;
 use view::gamestate::GameState;
 
+/// Title screen.
 pub struct TitleState {
     running: bool,
 }

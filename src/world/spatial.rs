@@ -4,7 +4,7 @@ use cgmath::point::{Point2};
 use world::system::{Entity};
 use world::area::Area;
 
-/// Handle placing and finding entities in space.
+/// Place and find entities in space.
 pub struct SpatialSystem {
     loc_to_entities: HashMap<Location, Vec<Entity>>,
     entity_to_loc: HashMap<Entity, Location>,

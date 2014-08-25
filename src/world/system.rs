@@ -11,6 +11,8 @@ use view::gamestate::Fx;
 pub type Entity = world::Entity<System>;
 pub type World = world::World<System>;
 
+/// Global game state values. The entity component system part is handled by
+/// the engine code.
 pub struct System {
     world: Option<World>,
     pub seed: u32,

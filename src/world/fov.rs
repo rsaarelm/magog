@@ -12,6 +12,7 @@ pub enum FovStatus {
 }
 
 #[deriving(Clone)]
+/// Field of view computation result.
 pub struct Fov {
     seen: HashSet<Location>,
     remembered: HashSet<Location>,

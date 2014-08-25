@@ -2,6 +2,7 @@ use world::terrain::*;
 use world::system::{Entity, World};
 use world::spatial::{Location};
 
+/// Terrain properties and operations.
 pub trait Area {
     fn terrain_get(&self, loc: Location) -> Option<TerrainType>;
 

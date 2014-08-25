@@ -12,6 +12,7 @@ use world::spawn::Spawn;
 use world::mobs::{Mobs};
 use world::area::Area;
 
+/// Procedural game world generation.
 pub trait MapGen {
     fn gen_herringbone(&mut self, biome: Biome, depth: int);
     fn next_level(&mut self);

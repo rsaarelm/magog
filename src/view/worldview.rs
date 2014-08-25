@@ -23,6 +23,7 @@ pub static BLOCK_Z: f32 = 0.400f32;
 pub static FX_Z: f32 = 0.375f32;
 pub static CAPTION_Z: f32 = 0.350f32;
 
+/// Drawable representation of a single map location.
 pub struct CellDrawable {
     loc: Location,
     fov: Option<FovStatus>,

@@ -6,6 +6,7 @@ use world::area::Area;
 use world::mobs;
 use world::mobs::{MobType, MobComp};
 
+/// Game object factory.
 pub trait Spawn {
     fn spawn_loc(&mut self) -> Option<Location>;
     fn random_mob_type(&mut self) -> MobType;

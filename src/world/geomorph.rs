@@ -26,6 +26,7 @@ C**********
 33333C*****
 */
 
+/// Initialize global geomorph cache.
 pub fn init() {
     add_cache_chunk(Overland, 0, "\
 %%%%%%%,%%%

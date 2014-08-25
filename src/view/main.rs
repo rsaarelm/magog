@@ -3,6 +3,7 @@ use view::tilecache;
 use calx::engine::{App, Engine, Key};
 use view::titlestate::TitleState;
 
+/// Toplevel game application.
 struct GameApp {
     state: Box<State>,
 }
