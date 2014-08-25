@@ -1,4 +1,3 @@
-use world::geomorph;
 use view::tilecache;
 use calx::engine::{App, Engine, Key};
 use view::titlestate::TitleState;
@@ -23,7 +22,6 @@ impl GameApp {
 impl App for GameApp {
     fn setup(&mut self, ctx: &mut Engine) {
         tilecache::init(ctx);
-        geomorph::init();
         ctx.set_title("Demogame".to_string());
         ctx.set_frame_interval(1f64 / 30.0);
     }
