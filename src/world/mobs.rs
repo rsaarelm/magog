@@ -202,6 +202,13 @@ pub enum MobType {
     Dreg,
     GridBug,
     Serpent,
+    Snake,
+    Ogre,
+    Wraith,
+    Flayer,
+    Ooze,
+    Efreet,
+    Octopus,
 }
 
 /// Game world trait for global creature operations.

@@ -29,6 +29,13 @@ impl Spawn for World {
                     mobs::Dreg,
                     mobs::GridBug,
                     mobs::Serpent,
+                    mobs::Snake,
+                    mobs::Ogre,
+                    mobs::Wraith,
+                    mobs::Flayer,
+                    mobs::Ooze,
+                    mobs::Efreet,
+                    mobs::Octopus,
                     ])
             .map(|&x| x)
             .unwrap()

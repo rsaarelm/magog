@@ -295,6 +295,13 @@ impl CellDrawable {
                 mobs::Dreg => (72, OLIVE),
                 mobs::GridBug => (76, MAGENTA),
                 mobs::Serpent => (94, CORAL),
+                mobs::Snake => (71, GREEN),
+                mobs::Ogre => (73, DARKSEAGREEN),
+                mobs::Wraith => (74, HOTPINK),
+                mobs::Flayer => (75, INDIANRED),
+                mobs::Ooze => (77, LIGHTSEAGREEN),
+                mobs::Efreet => (78, ORANGE),
+                mobs::Octopus => (63, DARKTURQUOISE),
             }
         }
 
