@@ -1,7 +1,5 @@
-use cgmath::point::{Point2};
-use cgmath::aabb::{Aabb, Aabb2};
+use cgmath::{Aabb, Aabb2, BaseNum, Point2};
 use std::num::{one};
-use cgmath::num::BaseNum;
 use rand::{Rng};
 use rand::distributions::range::SampleRange;
 

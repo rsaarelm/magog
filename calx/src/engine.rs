@@ -1,7 +1,5 @@
-use cgmath::num::BaseNum;
-use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::point::{Point, Point2};
-use cgmath::vector::{Vector2};
+use cgmath::BaseNum;
+use cgmath::{Aabb, Aabb2, Point, Point2, Vector2};
 use color::consts::*;
 use color::{RGB};
 use gl::types::{GLint, GLuint};

@@ -2,10 +2,7 @@ extern crate cgmath;
 
 use std::vec::Vec;
 use std::num::zero;
-use cgmath::aabb::{Aabb, Aabb2};
-use cgmath::vector::Vector2;
-use cgmath::point::{Point, Point2};
-use cgmath::num::BaseNum;
+use cgmath::{Aabb, Aabb2, BaseNum, Point, Point2, Vector2};
 
 fn fits<S: BaseNum>(dim: &Vector2<S>, rect: &Aabb2<S>) -> bool {
     let rect_dim = rect.dim();

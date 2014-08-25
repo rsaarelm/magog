@@ -1,6 +1,5 @@
 use std::collections::hashmap::{HashMap};
-use cgmath::vector::{Vector2};
-use cgmath::point::{Point2};
+use cgmath::{Vector2, Point2};
 use world::system::{Entity};
 use world::area::Area;
 

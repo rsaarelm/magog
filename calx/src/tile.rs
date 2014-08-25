@@ -1,10 +1,8 @@
 use std::vec::Vec;
 use std::cmp::{min, max};
-use cgmath::aabb::{Aabb, Aabb2};
+use cgmath::{Aabb, Aabb2, Point, Point2, Vector2};
 // cgmath Vector shadows std::vec::Vector and breaks as_slice...
-use cgmath::vector::Vector as cgVector;
-use cgmath::vector::{Vector2};
-use cgmath::point::{Point, Point2};
+use cgmath::Vector as cgVector;
 use rectutil::RectUtil;
 
 pub static TILE_ALPHA: u8 = 0x80;

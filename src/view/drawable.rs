@@ -1,4 +1,4 @@
-use cgmath::vector::{Vector, Vector2};
+use cgmath::{Vector, Vector2};
 use calx::engine::{Engine};
 
 pub trait Drawable {

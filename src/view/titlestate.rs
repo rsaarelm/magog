@@ -1,5 +1,5 @@
 use calx::color::consts::*;
-use cgmath::vector::{Vector2};
+use cgmath::{Vector2};
 use calx::engine::{App, Engine, Key};
 use view::tilecache;
 use view::main::State;

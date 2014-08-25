@@ -1,5 +1,5 @@
 use std::slice::Items;
-use cgmath::vector::{Vector, Vector2};
+use cgmath::{Vector, Vector2};
 use calx::engine::{App, Engine, Key, v2};
 use calx::color::consts::*;
 use calx::engine;

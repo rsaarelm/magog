@@ -1,6 +1,6 @@
 use num::Integer;
 use std::collections::hashmap::HashSet;
-use cgmath::vector::{Vector, Vector2};
+use cgmath::{Vector, Vector2};
 use world::spatial::{Location, DIRECTIONS6};
 use world::system::{World};
 use world::area::Area;

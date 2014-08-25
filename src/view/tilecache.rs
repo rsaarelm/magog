@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use cgmath::vector::{Vector2};
+use cgmath::{Vector2};
 use calx::stb::image;
 use calx::tile::Tile;
 use calx::engine::{Engine, Image};

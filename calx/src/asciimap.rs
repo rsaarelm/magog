@@ -4,7 +4,7 @@ use std::str;
 use std::str::StrAllocating;
 use std::vec::Vec;
 use std::collections::hashmap::{HashMap};
-use cgmath::point::{Point2};
+use cgmath::{Point2};
 
 #[deriving(Eq, PartialEq, Hash, Clone, Decodable, Encodable)]
 pub struct Cell {

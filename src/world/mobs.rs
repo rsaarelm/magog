@@ -1,6 +1,6 @@
 use std::rand;
 use std::rand::Rng;
-use cgmath::vector::{Vector2};
+use cgmath::{Vector2};
 use world::system::{World, Entity, EngineLogic};
 use world::spatial::{Location, Position, DIRECTIONS6};
 use world::area::Area;
