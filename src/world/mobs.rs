@@ -1,6 +1,8 @@
 use std::rand;
 use std::rand::Rng;
 use cgmath::{Vector2};
+use calx::color::RGB;
+use calx::color::consts::*;
 use world::system::{World, Entity, EngineLogic};
 use world::spatial::{Location, Position, DIRECTIONS6};
 use world::area::Area;
@@ -25,34 +27,97 @@ impl MobComp {
             armor: 0,
         }
     }
-
 }
 
 pub mod intrinsic {
 #[deriving(Eq, PartialEq, Clone)]
 pub enum Intrinsic {
-    /// Moves 1/3 slower than usual
+    /// Moves 1/3 slower than usual.
     Slow        = 0b1,
-    /// Moves 1/3 faster than usual, stacks with Quick status
+    /// Moves 1/3 faster than usual, stacks with Quick status.
     Fast        = 0b10,
-    /// Can manipulate objects and doors
+    /// Can manipulate objects and doors.
     Hands       = 0b100,
+
+    // XXX: The bugmove thing is possibly stupid.
+
+    /// Only moves along the (1, 1) and (1, -1) diagonal axes.
+    BugMove     = 0b1000,
 }
 }
 
 pub mod status {
 #[deriving(Eq, PartialEq, Clone)]
 pub enum Status {
-    /// Moves 1/3 slower than usual
+    /// Moves 1/3 slower than usual.
     Slow        = 0b1,
-    /// Moves 1/3 faster than usual, stacks with Fast intrinsic
+    /// Moves 1/3 faster than usual, stacks with Fast intrinsic.
     Quick       = 0b10,
-    /// Mob is inactive until disturbed
+    /// Mob is inactive until disturbed.
     Asleep      = 0b100,
-    /// Mob moves erratically
+    /// Mob moves erratically.
     Confused    = 0b1000,
 }
 }
+
+pub struct MobKind {
+    pub typ: MobType,
+    pub name: &'static str,
+    pub power: int,
+    pub depth: int,
+    pub sprite: uint,
+    pub color: RGB,
+    pub intrinsics: int,
+}
+
+// Intrinsic flag union.
+macro_rules! f {
+    { $($flag:ident),* } => { 0 $( | intrinsic::$flag as int )* }
+}
+
+macro_rules! mob_data {
+    {
+        count: $count:expr;
+        $($symbol:ident: $power:expr, $depth:expr, $sprite:expr, $color:expr, $flags:expr;)*
+
+    } => {
+#[deriving(Eq, PartialEq, Clone, Show)]
+pub enum MobType {
+    $($symbol,)*
+}
+
+pub static MOB_KINDS: [MobKind, ..$count] = [
+    $(MobKind {
+        typ: $symbol,
+        name: stringify!($symbol),
+        power: $power,
+        depth: $depth,
+        sprite: $sprite,
+        color: $color,
+        intrinsics: $flags,
+    },)*
+];
+
+// End macro
+    }
+}
+
+mob_data! {
+    count: 11;
+//  Symbol   power, depth, sprite, color, intrinsics
+    Player:     3, -1, 51, AZURE,            f!();
+    Dreg:       1,  1, 72, OLIVE,            f!(Hands);
+    GridBug:    1,  1, 76, MAGENTA,          f!(Fast,BugMove);
+    Serpent:    1,  1, 94, CORAL,            f!();
+    Snake:      1,  1, 71, GREEN,            f!();
+    Ogre:       1,  1, 73, DARKSLATEGRAY,    f!(Hands);
+    Wraith:     1,  1, 74, HOTPINK,          f!(Hands);
+    Flayer:     1,  1, 75, INDIANRED,        f!();
+    Ooze:       1,  1, 77, LIGHTSEAGREEN,    f!();
+    Efreet:     1,  1, 78, ORANGE,           f!();
+    Octopus:    1,  1, 63, DARKTURQUOISE,    f!();
+}
+
 
 /// Trait for entities that are mobile things.
 pub trait Mob {
@@ -213,21 +278,6 @@ impl Mob for Entity {
             self.world().delete_entity(&target);
         }
     }
-}
-
-#[deriving(Eq, PartialEq, Clone, Show)]
-pub enum MobType {
-    Player,
-    Dreg,
-    GridBug,
-    Serpent,
-    Snake,
-    Ogre,
-    Wraith,
-    Flayer,
-    Ooze,
-    Efreet,
-    Octopus,
 }
 
 /// Game world trait for global creature operations.
