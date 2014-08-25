@@ -32,18 +32,33 @@ pub mod intrinsic {
 #[deriving(Eq, PartialEq, Clone)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual
-    Slow,
-    /// Moves 1/3 faster than usual, stacks with Quick
-    Fast,
-    /// Moves 1/3 faster than usual, stacks with Fast
-    Quick,
+    Slow        = 0b1,
+    /// Moves 1/3 faster than usual, stacks with Quick status
+    Fast        = 0b10,
+    /// Can manipulate objects and doors
+    Hands       = 0b100,
+}
+}
+
+pub mod status {
+#[deriving(Eq, PartialEq, Clone)]
+pub enum Status {
+    /// Moves 1/3 slower than usual
+    Slow        = 0b1,
+    /// Moves 1/3 faster than usual, stacks with Fast intrinsic
+    Quick       = 0b10,
+    /// Mob is inactive until disturbed
+    Asleep      = 0b100,
+    /// Mob moves erratically
+    Confused    = 0b1000,
 }
 }
 
 /// Trait for entities that are mobile things.
 pub trait Mob {
     fn acts_this_frame(&self) -> bool;
-    fn has_intrinsic(&self, q: intrinsic::Intrinsic) -> bool;
+    fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool;
+    fn has_status(&self, f: status::Status) -> bool;
     fn mob_type(&self) -> MobType;
     fn power(&self) -> int;
     fn update_ai(&mut self);
@@ -67,15 +82,19 @@ impl Mob for Entity {
             0 => return true,
             1 => return self.has_intrinsic(intrinsic::Fast),
             2 => return true,
-            3 => return self.has_intrinsic(intrinsic::Quick),
+            3 => return self.has_status(status::Quick),
             4 => return !self.has_intrinsic(intrinsic::Slow),
             _ => fail!("Invalid action phase"),
         }
     }
 
-    fn has_intrinsic(&self, q: intrinsic::Intrinsic) -> bool {
-        if q == intrinsic::Fast && self.mob_type() == GridBug { return true; }
+    fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool {
+        if f == intrinsic::Fast && self.mob_type() == GridBug { return true; }
 
+        false
+    }
+
+    fn has_status(&self, _f: status::Status) -> bool {
         false
     }
 
