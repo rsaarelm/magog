@@ -3,7 +3,7 @@
 name = "calx"
 version = "0.0.1"
 authors = [ "risto.saarelma@iki.fi" ]
-build = "./.build.sh"
+build = "sh build.sh"
 
 [[lib]]
 
