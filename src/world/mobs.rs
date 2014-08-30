@@ -8,6 +8,7 @@ use world::spatial::{Location, Position, DIRECTIONS6};
 use world::mapgen::{AreaSpec};
 use world::mapgen;
 use world::area::Area;
+use world::fov::Fov;
 
 #[deriving(Clone, Show)]
 pub struct MobComp {
@@ -145,6 +146,10 @@ pub trait Mob {
 
     fn enemy_at(&self, loc: Location) -> Option<Entity>;
     fn attack(&mut self, loc: Location);
+
+    /// Something interesting is happening at location. See if the mob needs to
+    /// wake up and investigate.
+    fn alert_at(&mut self, loc: Location);
 }
 
 impl Mob for Entity {
@@ -306,6 +311,19 @@ impl Mob for Entity {
             self.world().delete_entity(&target);
         }
     }
+
+    fn alert_at(&mut self, loc: Location) {
+        // TODO: More complex logic. Check the square for enemies, don't wake
+        // up if enemy is stealthed successfully.
+        if self.has_status(status::Asleep) {
+            if self.location().dist(loc) < 6 {
+                self.remove_status(status::Asleep);
+
+                // XXX: Msging REALLY needs a nicer API.
+                self.world().system_mut().fx.msg(format!("{} wakes up.", MOB_KINDS[self.mob_type() as uint].name).as_slice());
+            }
+        }
+    }
 }
 
 /// Game world trait for global creature operations.
@@ -316,6 +334,7 @@ pub trait Mobs {
     fn player_has_turn(&self) -> bool;
     fn clear_npcs(&mut self);
     fn update_mobs(&mut self);
+    fn wake_up_mobs(&mut self);
 }
 
 impl Mobs for World {
@@ -353,7 +372,11 @@ impl Mobs for World {
         }
     }
 
+
+
     fn update_mobs(&mut self) {
+        self.wake_up_mobs();
+
         for mob in self.mobs().mut_iter() {
             if !mob.acts_this_frame() { continue; }
             if mob.mob_type() == Player { continue; }
@@ -361,5 +384,16 @@ impl Mobs for World {
         }
 
         self.advance_frame();
+    }
+
+    fn wake_up_mobs(&mut self) {
+        if self.player().is_none() { return; }
+        let player_fov = self.camera().into::<Fov>().unwrap();
+        let player_loc = self.player().unwrap().location();
+        for &loc in player_fov.deref().seen_locs() {
+            for mob in self.mobs_at(loc).mut_iter() {
+                mob.alert_at(player_loc);
+            }
+        }
     }
 }

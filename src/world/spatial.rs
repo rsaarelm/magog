@@ -1,4 +1,6 @@
 use std::collections::hashmap::{HashMap};
+use std::cmp::max;
+use std::num::{signum, abs};
 use cgmath::{Vector2, Point2};
 use world::system::{Entity};
 use world::area::Area;
@@ -92,6 +94,18 @@ impl Location {
     pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 
     pub fn to_point(&self) -> Point2<int> { Point2::new(self.x as int, self.y as int) }
+
+    /// Hex distance from another location.
+    pub fn dist(&self, other: Location) -> int {
+        // TODO: Does this handle edge wraparound with i8s correctly?
+        let xd = (other.x - self.x) as int;
+        let yd = (other.y - self.y) as int;
+        if signum(xd) == signum(yd) {
+            max(abs(xd), abs(yd))
+        } else {
+            abs(xd) + abs(yd)
+        }
+    }
 }
 
 impl Add<Vector2<int>, Location> for Location {

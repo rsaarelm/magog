@@ -101,7 +101,6 @@ impl WorldSprite for BeamSprite {
 pub struct GameState {
     running: bool,
     world: World<System>,
-    camera: Entity,
     in_player_input: bool,
     world_fx: WorldEffects,
 }
@@ -109,11 +108,9 @@ pub struct GameState {
 
 impl GameState {
     pub fn new() -> GameState {
-        let mut world = World::new(System::new(0, Fx::new()));
         GameState {
             running: true,
-            world: world.clone(),
-            camera: world.new_entity(),
+            world: World::new(System::new(0, Fx::new())),
             in_player_input: false,
             world_fx: WorldEffects::new(),
         }
@@ -132,12 +129,12 @@ impl GameState {
     }
 
     fn reset_fov(&mut self) {
-        self.camera.set_component(Fov::new());
+        self.world.camera().set_component(Fov::new());
     }
 
     fn get_fov<'a>(&'a self) -> CompProxyMut<System, Fov> {
         // The camera has to always have the FOV component.
-        self.camera.into::<Fov>().unwrap()
+        self.world.camera().into::<Fov>().unwrap()
     }
 
     fn camera_to_player(&mut self) {
@@ -145,7 +142,7 @@ impl GameState {
         match self.world.player() {
             Some(e) => {
                 let loc = e.location();
-                self.camera.set_location(loc);
+                self.world.camera().set_location(loc);
                 self.get_fov().update(&self.world, loc, 12);
             }
             _ => ()
@@ -223,11 +220,11 @@ impl App for GameState {
         };
 
         self.camera_to_player();
-        worldview::draw_area(&self.world, ctx, self.camera.location(), self.get_fov().deref());
-        self.world_fx.draw(ctx, self.camera.location(), self.get_fov().deref());
+        worldview::draw_area(&self.world, ctx, self.world.camera().location(), self.get_fov().deref());
+        self.world_fx.draw(ctx, self.world.camera().location(), self.get_fov().deref());
         self.world_fx.update();
 
-        let _mouse_pos = worldview::draw_mouse(ctx, self.camera.location());
+        let _mouse_pos = worldview::draw_mouse(ctx, self.world.camera().location());
 
         // UI needs player stats to be displayed, so only do it if a player exists.
         match self.world.player() {
