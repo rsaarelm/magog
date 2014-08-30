@@ -1,5 +1,5 @@
 use num::Integer;
-use std::collections::hashmap::HashSet;
+use std::collections::hashmap::{HashSet, SetItems};
 use cgmath::{Vector, Vector2};
 use world::spatial::{Location, DIRECTIONS6};
 use world::system::{World};
@@ -34,6 +34,10 @@ impl Fov {
         } else {
             None
         }
+    }
+
+    pub fn seen_locs<'a>(&'a self) -> SetItems<'a, Location> {
+        self.seen.iter()
     }
 
     pub fn update(&mut self, world: &World, center: Location, range: uint) {
