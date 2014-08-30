@@ -1,3 +1,5 @@
+use std::collections::hashmap::HashMap;
+use std::uint;
 use std::rand;
 use std::rand::Rng;
 use cgmath::{Vector2};
@@ -9,6 +11,7 @@ use world::mapgen::{AreaSpec};
 use world::mapgen;
 use world::area::Area;
 use world::fov::Fov;
+use world::dijkstra;
 
 #[deriving(Clone, Show)]
 pub struct MobComp {
@@ -44,11 +47,6 @@ pub enum Intrinsic {
     Fast        = 0b10,
     /// Can manipulate objects and doors.
     Hands       = 0b100,
-
-    // XXX: The bugmove thing is possibly stupid.
-
-    /// Only moves along the (1, 1) and (1, -1) diagonal axes.
-    BugMove     = 0b1000,
 }
 }
 
@@ -112,12 +110,11 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
 }
 
 mob_data! {
-    count: 11;
+    count: 10;
 //  Symbol   power, depth, biome, sprite, color,        intrinsics
     Player:     5,  -1, Anywhere, 51, AZURE,            f!();
     Dreg:       2,   1, Anywhere, 72, OLIVE,            f!(Hands);
     Snake:      2,   1, Overland, 71, GREEN,            f!();
-    GridBug:    2,   2, Dungeon,  76, MAGENTA,          f!(Fast,BugMove);
     Ooze:       4,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
     Flayer:     8,   4, Anywhere, 75, INDIANRED,        f!();
     Ogre:       9,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
@@ -201,22 +198,25 @@ impl Mob for Entity {
     fn power(&self) -> int { self.into::<MobComp>().unwrap().power }
 
     fn update_ai(&mut self) {
-        if self.mob_type() == GridBug {
-            // Grid bugs move only non-diagonally. Even though horizontal
-            // non-diagonal movement actually involves teleporting through
-            // walls...
-            let delta = *rand::task_rng()
-                .choose(&[
-                        Vector2::new(-1, -1),
-                        Vector2::new( 1, -1),
-                        Vector2::new( 1,  1),
-                        Vector2::new(-1,  1),
-                        ])
-                .unwrap();
-            self.move(&delta);
-            return;
+        if self.world().player().is_some() {
+            let player = self.world().player().unwrap();
+            let pathing = Pathing::at_loc(&self.world(), player.location());
+
+            let move = pathing.towards_from(self.location());
+            match move {
+                Some(loc) => {
+                    let move_dir = &self.location().dir6_towards(loc);
+                    match self.enemy_at(loc) {
+                        Some(_) => { self.attack(loc); }
+                        _ => { self.move(move_dir); }
+                    }
+                    return;
+                }
+                _ => ()
+            }
         }
 
+        // No target, wander around randomly.
         self.move(rand::task_rng().choose(DIRECTIONS6.as_slice()).unwrap());
     }
 
@@ -372,8 +372,6 @@ impl Mobs for World {
         }
     }
 
-
-
     fn update_mobs(&mut self) {
         self.wake_up_mobs();
 
@@ -395,5 +393,40 @@ impl Mobs for World {
                 mob.alert_at(player_loc);
             }
         }
+    }
+}
+
+pub struct Pathing {
+    gradient: HashMap<Location, uint>,
+}
+
+impl Pathing {
+    /// Pathing map towards a single point.
+    pub fn at_loc(world: &World, loc: Location) -> Pathing {
+        Pathing {
+            gradient: dijkstra::build_map(
+                vec![loc],
+                |&loc| world.open_neighbors(loc, DIRECTIONS6.iter()),
+                256),
+        }
+    }
+
+    fn neighbors(&self, loc: Location) -> Vec<Location> {
+        DIRECTIONS6.iter().map(|&d| loc + d).collect()
+    }
+
+    pub fn towards_from(&self, current: Location) -> Option<Location> {
+        let mut ret = None;
+        let mut best = uint::MAX;
+        for n in self.neighbors(current).iter() {
+            match self.gradient.find(n) {
+                Some(&weight) if weight <= best => {
+                    ret = Some(*n);
+                    best = weight;
+                }
+                _ => ()
+            }
+        }
+        ret
     }
 }

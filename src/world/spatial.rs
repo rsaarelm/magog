@@ -1,6 +1,7 @@
 use std::collections::hashmap::{HashMap};
 use std::cmp::max;
 use std::num::{signum, abs};
+use std::f32::consts::PI;
 use cgmath::{Vector2, Point2};
 use world::system::{Entity};
 use world::area::Area;
@@ -106,7 +107,29 @@ impl Location {
             abs(xd) + abs(yd)
         }
     }
+
+    pub fn dir6_towards(&self, other: Location) -> Vector2<int> {
+        return DIRECTIONS6[
+        match hexadecant(&Vector2::new((other.x - self.x) as int, (other.y - self.y) as int)) {
+            14 | 15 => 0,
+            0 | 1 | 2 | 3 => 1,
+            4 | 5 => 2,
+            6 | 7 => 3,
+            8 | 9 | 10 | 11 => 4,
+            12 | 13 => 5,
+            _ => fail!("Bad hexadecant")
+        }
+        ];
+
+        fn hexadecant(vec: &Vector2<int>) -> int {
+            let width = PI / 8.0;
+            let mut radian = (vec.x as f32).atan2(-vec.y as f32);
+            if radian < 0.0 { radian += 2.0 * PI }
+            return (radian / width).floor() as int;
+        }
+    }
 }
+
 
 impl Add<Vector2<int>, Location> for Location {
     fn add(&self, other: &Vector2<int>) -> Location {

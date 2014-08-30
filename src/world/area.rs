@@ -1,3 +1,4 @@
+use cgmath::Vector2;
 use world::terrain::*;
 use world::system::{Entity, World};
 use world::spatial::{Location};
@@ -29,6 +30,12 @@ pub trait Area {
 
     fn has_entities_at(&self, loc: Location) -> bool {
         !self.entities_at(loc).is_empty()
+    }
+
+    fn open_neighbors<'a, T: Iterator<&'a Vector2<int>>>(&self, loc: Location, dirs: T) -> Vec<Location> {
+        dirs.map(|&d| loc + d)
+            .filter(|&loc| self.is_walkable(loc))
+            .collect()
     }
 }
 
