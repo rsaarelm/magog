@@ -132,7 +132,9 @@ pub trait Mob {
     fn is_active(&self) -> bool;
     fn acts_this_frame(&self) -> bool;
     fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool;
-    fn has_status(&self, f: status::Status) -> bool;
+    fn has_status(&self, s: status::Status) -> bool;
+    fn add_status(&mut self, s: status::Status);
+    fn remove_status(&mut self, s: status::Status);
     fn mob_type(&self) -> MobType;
     fn power(&self) -> int;
     fn update_ai(&mut self);
@@ -177,6 +179,16 @@ impl Mob for Entity {
     fn has_status(&self, s: status::Status) -> bool {
         self.into::<MobComp>().map_or(false,
             |m| m.status as int & s as int != 0)
+    }
+
+    fn add_status(&mut self, s: status::Status) {
+        self.into::<MobComp>().as_mut().map(
+            |m| m.status |= s as int);
+    }
+
+    fn remove_status(&mut self, s: status::Status) {
+        self.into::<MobComp>().as_mut().map(
+            |m| m.status &= !(s as int));
     }
 
     fn mob_type(&self) -> MobType { self.into::<MobComp>().unwrap().t }
