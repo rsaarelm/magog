@@ -168,7 +168,8 @@ impl Mob for Entity {
             1 => return self.has_intrinsic(intrinsic::Fast),
             2 => return true,
             3 => return self.has_status(status::Quick),
-            4 => return !self.has_intrinsic(intrinsic::Slow),
+            4 => return !self.has_intrinsic(intrinsic::Slow)
+                        && !self.has_status(status::Slow),
             _ => fail!("Invalid action phase"),
         }
     }
