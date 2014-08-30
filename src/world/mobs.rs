@@ -16,17 +16,20 @@ pub struct MobComp {
     pub hp: int,
     pub power: int,
     pub armor: int,
+    pub status: int,
 }
 
 impl MobComp {
     pub fn new(t: MobType) -> MobComp {
         let data = MOB_KINDS[t as uint];
+        let status = if t != Player { status::Asleep as int } else { 0 };
         MobComp {
             t: t,
             max_hp: data.power / 2,
             hp: data.power / 2,
             power: data.power,
             armor: 0,
+            status: status,
         }
     }
 }
@@ -126,6 +129,7 @@ mob_data! {
 
 /// Trait for entities that are mobile things.
 pub trait Mob {
+    fn is_active(&self) -> bool;
     fn acts_this_frame(&self) -> bool;
     fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool;
     fn has_status(&self, f: status::Status) -> bool;
@@ -142,8 +146,15 @@ pub trait Mob {
 }
 
 impl Mob for Entity {
+    fn is_active(&self) -> bool {
+        if !self.has::<MobComp>() { return false; }
+        if self.has_status(status::Asleep) { return false; }
+        return true;
+    }
+
     fn acts_this_frame(&self) -> bool {
         if !self.has::<MobComp>() { return false; }
+        if !self.is_active() { return false; }
 
         // Go through a cycle of 5 phases to get 4 possible speeds.
         // System idea from Jeff Lait.
@@ -159,13 +170,13 @@ impl Mob for Entity {
     }
 
     fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool {
-        if f == intrinsic::Fast && self.mob_type() == GridBug { return true; }
-
-        false
+        self.into::<MobComp>().map_or(false,
+            |m| MOB_KINDS[m.t as uint].intrinsics as int & f as int != 0)
     }
 
-    fn has_status(&self, _f: status::Status) -> bool {
-        false
+    fn has_status(&self, s: status::Status) -> bool {
+        self.into::<MobComp>().map_or(false,
+            |m| m.status as int & s as int != 0)
     }
 
     fn mob_type(&self) -> MobType { self.into::<MobComp>().unwrap().t }

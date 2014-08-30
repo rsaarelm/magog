@@ -294,8 +294,9 @@ impl CellDrawable {
         }
 
         fn is_bobbing(mob: &Entity) -> bool {
-            // TODO: Sleeping mobs don't bob.
-            mob.mob_type() != mobs::Player
+            if mob.mob_type() == mobs::Player { return false; }
+            if !mob.is_active() { return false; }
+            true
         }
     }
 }
