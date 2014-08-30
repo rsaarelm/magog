@@ -5,6 +5,8 @@ use calx::color::RGB;
 use calx::color::consts::*;
 use world::system::{World, Entity, EngineLogic};
 use world::spatial::{Location, Position, DIRECTIONS6};
+use world::mapgen::{AreaSpec};
+use world::mapgen;
 use world::area::Area;
 
 #[deriving(Clone, Show)]
@@ -64,7 +66,7 @@ pub struct MobKind {
     pub typ: MobType,
     pub name: &'static str,
     pub power: int,
-    pub depth: int,
+    pub area_spec: AreaSpec,
     pub sprite: uint,
     pub color: RGB,
     pub intrinsics: int,
@@ -78,7 +80,7 @@ macro_rules! f {
 macro_rules! mob_data {
     {
         count: $count:expr;
-        $($symbol:ident: $power:expr, $depth:expr, $sprite:expr, $color:expr, $flags:expr;)*
+        $($symbol:ident: $power:expr, $depth:expr, $biome:ident, $sprite:expr, $color:expr, $flags:expr;)*
 
     } => {
 #[deriving(Eq, PartialEq, Clone, Show)]
@@ -91,7 +93,10 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
         typ: $symbol,
         name: stringify!($symbol),
         power: $power,
-        depth: $depth,
+        area_spec: AreaSpec {
+            depth: $depth,
+            biome: mapgen::$biome,
+        },
         sprite: $sprite,
         color: $color,
         intrinsics: $flags,
@@ -104,18 +109,18 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
 
 mob_data! {
     count: 11;
-//  Symbol   power, depth, sprite, color, intrinsics
-    Player:     3, -1, 51, AZURE,            f!();
-    Dreg:       1,  1, 72, OLIVE,            f!(Hands);
-    GridBug:    1,  1, 76, MAGENTA,          f!(Fast,BugMove);
-    Serpent:    1,  1, 94, CORAL,            f!();
-    Snake:      1,  1, 71, GREEN,            f!();
-    Ogre:       1,  1, 73, DARKSLATEGRAY,    f!(Hands);
-    Wraith:     1,  1, 74, HOTPINK,          f!(Hands);
-    Flayer:     1,  1, 75, INDIANRED,        f!();
-    Ooze:       1,  1, 77, LIGHTSEAGREEN,    f!();
-    Efreet:     1,  1, 78, ORANGE,           f!();
-    Octopus:    1,  1, 63, DARKTURQUOISE,    f!();
+//  Symbol   power, depth, biome, sprite, color,        intrinsics
+    Player:     3,  -1, Anywhere, 51, AZURE,            f!();
+    Dreg:       1,   1, Anywhere, 72, OLIVE,            f!(Hands);
+    Snake:      1,   1, Overland, 71, GREEN,            f!();
+    GridBug:    1,   2, Dungeon,  76, MAGENTA,          f!(Fast,BugMove);
+    Ooze:       3,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
+    Flayer:     5,   4, Anywhere, 75, INDIANRED,        f!();
+    Ogre:       7,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
+    Wraith:     5,   6, Dungeon,  74, HOTPINK,          f!(Hands);
+    Octopus:    6,   7, Anywhere, 63, DARKTURQUOISE,    f!();
+    Efreet:     10,  8, Anywhere, 78, ORANGE,           f!();
+    Serpent:    12,  9, Dungeon,  94, CORAL,            f!();
 }
 
 

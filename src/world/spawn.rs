@@ -3,14 +3,14 @@ use std::rand::Rng;
 use world::spatial::{Location, Position};
 use world::system::{World};
 use world::area::Area;
-use world::mobs;
-use world::mobs::{MobType, MobComp};
+use world::mapgen::AreaSpec;
+use world::mobs::{MobType, MobComp, MOB_KINDS};
 
 /// Game object factory.
 pub trait Spawn {
     fn spawn_loc(&mut self) -> Option<Location>;
-    fn random_mob_type(&mut self) -> MobType;
-    fn gen_mobs(&mut self);
+    fn random_mob_type(&mut self, spec: &AreaSpec) -> MobType;
+    fn gen_mobs(&mut self, spec: &AreaSpec);
 }
 
 impl Spawn for World {
@@ -21,27 +21,20 @@ impl Spawn for World {
             .map(|&x| x)
     }
 
-    fn random_mob_type(&mut self) -> MobType {
-        // TODO: Spawn harder monsters in deeper depths
+    fn random_mob_type(&mut self, spec: &AreaSpec) -> MobType {
         // TODO: Use world seed based rng
-        rand::task_rng()
-            .choose(&[
-                    mobs::Dreg,
-                    mobs::GridBug,
-                    mobs::Serpent,
-                    mobs::Snake,
-                    mobs::Ogre,
-                    mobs::Wraith,
-                    mobs::Flayer,
-                    mobs::Ooze,
-                    mobs::Efreet,
-                    mobs::Octopus,
-                    ])
+
+        let typs = MOB_KINDS.iter()
+            .filter(|mk| mk.area_spec.can_spawn(spec))
+            .map(|mk| mk.typ)
+            .collect::<Vec<MobType>>();
+
+        rand::task_rng().choose(typs.as_slice())
             .map(|&x| x)
             .unwrap()
     }
 
-    fn gen_mobs(&mut self) {
+    fn gen_mobs(&mut self, spec: &AreaSpec) {
         let spawn_count = 59;
 
         for _ in range(0u, spawn_count) {
@@ -49,7 +42,7 @@ impl Spawn for World {
                 None => return,
                 Some(loc) => {
                     let mut e = self.new_entity();
-                    e.set_component(MobComp::new(self.random_mob_type()));
+                    e.set_component(MobComp::new(self.random_mob_type(spec)));
                     e.set_location(loc);
                 }
             }

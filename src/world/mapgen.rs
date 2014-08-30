@@ -15,18 +15,18 @@ use world::area::Area;
 
 /// Procedural game world generation.
 pub trait MapGen {
-    fn gen_herringbone(&mut self, biome: Biome, depth: int);
+    fn gen_herringbone(&mut self, spec: &AreaSpec);
     fn next_level(&mut self);
 }
 
 impl MapGen for World {
     // http://nothings.org/gamedev/herringbone/
-    fn gen_herringbone(&mut self, biome: Biome, depth: int) {
+    fn gen_herringbone(&mut self, spec: &AreaSpec) {
         let mut rng = rand::task_rng();
         let chunkref = get_cache();
         let chunkbor = chunkref.borrow();
         let chunks = chunkbor.iter().filter(
-                |c| c.biome == biome && c.depth <= depth)
+                |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
             .collect::<Vec<&Chunk>>();
 
         let edge = chunks.iter().filter(|c| !c.exit && c.connected)
@@ -61,17 +61,19 @@ impl MapGen for World {
         self.clear_npcs();
         self.system_mut().depth += 1;
         let depth = self.system().depth;
-        let biome = if depth == 1 { Overland } else { Dungeon };
 
-        self.gen_herringbone(biome, depth);
+        let spec = AreaSpec::new(
+            if depth == 1 { Overland } else { Dungeon },
+            depth);
+
+        self.gen_herringbone(&spec);
 
         let loc = self.spawn_loc().unwrap();
         let mut player = self.player().unwrap();
         player.set_location(loc);
-        self.gen_mobs();
+        self.gen_mobs(&spec);
 
-        let dep = self.system().depth;
-        self.system_mut().fx.msg(format!("Level {}", dep).as_slice());
+        self.system_mut().fx.msg(format!("Level {}", depth).as_slice());
     }
 }
 
@@ -128,22 +130,40 @@ type Cells = HashMap<(int, int), TerrainType>;
 
 #[deriving(PartialEq)]
 pub enum Biome {
-    Overland,
-    Dungeon,
+    Overland = 0b1,
+    Dungeon  = 0b10,
+
+    // For things showing up at a biome.
+    Anywhere = 0b11111111,
+}
+
+pub struct AreaSpec {
+    pub biome: Biome,
+    pub depth: int,
+}
+
+impl AreaSpec {
+    pub fn new(biome: Biome, depth: int) -> AreaSpec {
+        AreaSpec { biome: biome, depth: depth }
+    }
+
+    pub fn can_spawn(&self, environment: &AreaSpec) -> bool {
+        self.depth >= 0 && self.depth <= environment.depth &&
+        (self.biome as int & environment.biome as int) != 0
+    }
 }
 
 struct Chunk {
     cells: Cells,
     connected: bool,
     exit: bool,
-    biome: Biome,
-    depth: int,
+    spec: AreaSpec,
 }
 
 fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
     assert!(CHUNK_CACHE.get().is_some());
 
-    match Chunk::new(biome, depth, text) {
+    match Chunk::new(AreaSpec::new(biome, depth), text) {
         Ok(chunk) => CHUNK_CACHE.get().unwrap().borrow_mut().push(chunk),
         Err(e) => fail!("Bad chunk cache data: {}", e),
     }
@@ -164,7 +184,7 @@ fn check_cache() {
 }
 
 impl Chunk {
-    pub fn new(biome: Biome, depth: int, text: &str) -> Result<Chunk, String> {
+    pub fn new(spec: AreaSpec, text: &str) -> Result<Chunk, String> {
         let chunk_w = 11;
         let chunk_h = 22;
 
@@ -198,8 +218,7 @@ impl Chunk {
             cells: cells,
             connected: regions.len() == 1,
             exit: exit,
-            biome: biome,
-            depth: depth,
+            spec: spec,
         })
     }
 }
