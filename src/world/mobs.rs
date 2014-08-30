@@ -408,7 +408,7 @@ impl Pathing {
             gradient: dijkstra::build_map(
                 vec![loc],
                 |&loc| world.open_neighbors(loc, DIRECTIONS6.iter()),
-                256),
+                64),
         }
     }
 
