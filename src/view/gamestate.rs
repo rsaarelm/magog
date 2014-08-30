@@ -69,7 +69,9 @@ impl BeamSprite {
             p1: p1,
             p2: p2,
             life: life,
-            // TODO: Intervening points
+            // TODO: Generate intervening points into the footprint. With this
+            // footprint you can't see the beam unless either the start or the
+            // end point is visible.
             footprint: vec![p1, p2],
         }
     }
