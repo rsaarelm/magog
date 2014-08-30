@@ -20,12 +20,12 @@ pub struct MobComp {
 
 impl MobComp {
     pub fn new(t: MobType) -> MobComp {
-        let hp = if t == Player { 6 } else { 1 };
+        let data = MOB_KINDS[t as uint];
         MobComp {
             t: t,
-            max_hp: hp,
-            hp: hp,
-            power: if t == Player { 5 } else { 1 },
+            max_hp: data.power / 2,
+            hp: data.power / 2,
+            power: data.power,
             armor: 0,
         }
     }
@@ -110,17 +110,17 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
 mob_data! {
     count: 11;
 //  Symbol   power, depth, biome, sprite, color,        intrinsics
-    Player:     3,  -1, Anywhere, 51, AZURE,            f!();
-    Dreg:       1,   1, Anywhere, 72, OLIVE,            f!(Hands);
-    Snake:      1,   1, Overland, 71, GREEN,            f!();
-    GridBug:    1,   2, Dungeon,  76, MAGENTA,          f!(Fast,BugMove);
-    Ooze:       3,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
-    Flayer:     5,   4, Anywhere, 75, INDIANRED,        f!();
-    Ogre:       7,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
-    Wraith:     5,   6, Dungeon,  74, HOTPINK,          f!(Hands);
-    Octopus:    6,   7, Anywhere, 63, DARKTURQUOISE,    f!();
-    Efreet:     10,  8, Anywhere, 78, ORANGE,           f!();
-    Serpent:    12,  9, Dungeon,  94, CORAL,            f!();
+    Player:     5,  -1, Anywhere, 51, AZURE,            f!();
+    Dreg:       2,   1, Anywhere, 72, OLIVE,            f!(Hands);
+    Snake:      2,   1, Overland, 71, GREEN,            f!();
+    GridBug:    2,   2, Dungeon,  76, MAGENTA,          f!(Fast,BugMove);
+    Ooze:       4,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
+    Flayer:     8,   4, Anywhere, 75, INDIANRED,        f!();
+    Ogre:       9,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
+    Wraith:     10,  6, Dungeon,  74, HOTPINK,          f!(Hands);
+    Octopus:    12,  7, Anywhere, 63, DARKTURQUOISE,    f!();
+    Efreet:     15,  8, Anywhere, 78, ORANGE,           f!();
+    Serpent:    20,  9, Dungeon,  94, CORAL,            f!();
 }
 
 
