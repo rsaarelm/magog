@@ -29,8 +29,8 @@ impl MobComp {
         let status = if t != Player { status::Asleep as int } else { 0 };
         MobComp {
             t: t,
-            max_hp: data.power / 2,
-            hp: data.power / 2,
+            max_hp: data.power,
+            hp: data.power,
             power: data.power,
             armor: 0,
             status: status,
@@ -112,16 +112,16 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
 mob_data! {
     count: 10;
 //  Symbol   power, depth, biome, sprite, color,        intrinsics
-    Player:     5,  -1, Anywhere, 51, AZURE,            f!();
-    Dreg:       2,   1, Anywhere, 72, OLIVE,            f!(Hands);
-    Snake:      2,   1, Overland, 71, GREEN,            f!();
-    Ooze:       4,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
-    Flayer:     8,   4, Anywhere, 75, INDIANRED,        f!();
-    Ogre:       9,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
-    Wraith:     10,  6, Dungeon,  74, HOTPINK,          f!(Hands);
-    Octopus:    12,  7, Anywhere, 63, DARKTURQUOISE,    f!();
-    Efreet:     15,  8, Anywhere, 78, ORANGE,           f!();
-    Serpent:    20,  9, Dungeon,  94, CORAL,            f!();
+    Player:     6,  -1, Anywhere, 51, AZURE,            f!();
+    Dreg:       1,   1, Anywhere, 72, OLIVE,            f!(Hands);
+    Snake:      1,   1, Overland, 71, GREEN,            f!();
+    Ooze:       3,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
+    Flayer:     4,   4, Anywhere, 75, INDIANRED,        f!();
+    Ogre:       6,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
+    Wraith:     8,   6, Dungeon,  74, HOTPINK,          f!(Hands);
+    Octopus:    10,  7, Anywhere, 63, DARKTURQUOISE,    f!();
+    Efreet:     12,  8, Anywhere, 78, ORANGE,           f!();
+    Serpent:    15,  9, Dungeon,  94, CORAL,            f!();
 }
 
 
