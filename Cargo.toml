@@ -6,7 +6,6 @@ authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 
 [lib]
 name = "blot"
-path = "src/lib.rs"
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"

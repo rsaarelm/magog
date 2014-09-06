@@ -1,9 +1,17 @@
 extern crate blot;
 
-use blot::window;
-
 fn main() {
-    println!("Hello, world!");
-    for evt in window::Window::new().run() {
+    let mut t = 0i;
+
+    for evt in blot::Window::new().run() {
+        match evt {
+            blot::Render(ctx) => {
+                ctx.clear([(t as f32) / 256f32 % 1.0, 0.0, 0.0, 1.0]);
+                t += 1;
+            }
+            blot::Input(e) => {
+                println!("Input event {}", e);
+            }
+        }
     }
 }
