@@ -1,0 +1,21 @@
+[package]
+
+name = "blot"
+version = "0.0.0"
+authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
+
+[lib]
+name = "blot"
+path = "src/lib.rs"
+
+[dependencies.gl]
+git = "https://github.com/bjz/gl-rs"
+
+[dependencies.glfw]
+git = "https://github.com/bjz/glfw-rs"
+
+[dependencies.gfx]
+git = "https://github.com/gfx-rs/gfx-rs"
+
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/rust-image"

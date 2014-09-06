@@ -1,0 +1,12 @@
+[package]
+
+name = "demo"
+version = "0.0.0"
+authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
+
+[[bin]]
+name = "demo"
+path = "main.rs"
+
+[dependencies.blot]
+path = "../.."
