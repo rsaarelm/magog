@@ -3,6 +3,7 @@
 
 extern crate time;
 extern crate sync;
+extern crate collections;
 
 extern crate glfw;
 extern crate gfx;
