@@ -10,7 +10,7 @@ extern crate gfx;
 extern crate gfx_macros;
 extern crate image;
 
-pub use window::Window;
-pub use window::{Render, Input};
+pub use canvas::Canvas;
+pub use canvas::{Render, Input};
 
-pub mod window;
+pub mod canvas;

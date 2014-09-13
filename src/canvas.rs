@@ -1,38 +1,56 @@
 use time;
 use std::mem;
 use sync::comm::Receiver;
+use image::{GenericImage, Pixel, ImageBuf, Rgba};
 use glfw;
 use glfw::Context as _Context;
 use gfx;
 
-pub struct Window {
+pub struct Canvas {
     title: String,
     dim: [u32, ..2],
     frame_interval: Option<f64>,
+
+    image_collector: ImageCollector,
 }
 
-impl Window {
-    pub fn new() -> Window {
-        Window {
+/// Toplevel graphics drawing and input reading context.
+impl Canvas {
+    pub fn new() -> Canvas {
+        Canvas {
             title: "window".to_string(),
             dim: [640, 360],
             frame_interval: None,
+            image_collector: ImageCollector::new(),
         }
     }
 
-    pub fn set_title(&mut self, title: &str) -> &mut Window {
+    pub fn set_title(&mut self, title: &str) -> &mut Canvas {
         self.title = title.to_string();
         self
     }
 
-    pub fn set_frame_interval(&mut self, interval_s: f64) -> &mut Window {
+    /// Set the frame rate.
+    pub fn set_frame_interval(&mut self, interval_s: f64) -> &mut Canvas {
         assert!(interval_s > 0.00001);
-        self.frame_interval = interval_s;
+        self.frame_interval = Some(interval_s);
         self
     }
 
+    /// Set the resolution.
+    pub fn set_dim(&mut self, dim: [u32, ..2]) -> &mut Canvas {
+        self.dim = dim;
+        self
+    }
+
+    pub fn add_image<P: Pixel<u8>, I: GenericImage<P>>(
+        &mut self, image: I) -> Image {
+        Image(self.image_collector.push(image))
+    }
+
     /// Start running the engine, return an event iteration.
-    pub fn run(&self) -> Context {
+    pub fn run(&mut self) -> Context {
+        // TODO: Make atlas with image_collector, pass it to context.
         Context::new(
             self.dim,
             self.title.as_slice(),
@@ -147,8 +165,38 @@ impl<'a> Iterator<Event<'a>> for Context {
     }
 }
 
-/// Drawable images stored in the Window.
+/// Drawable images stored in the Canvas.
 #[deriving(Clone, PartialEq)]
-pub struct Image {
-    texture_idx: uint,
+pub struct Image(uint);
+
+struct ImageCollector {
+    pending_images: Vec<ImageBuf<Rgba<u8>>>,
+    next_idx: uint,
+}
+
+impl ImageCollector {
+    fn new() -> ImageCollector {
+        ImageCollector {
+            pending_images: vec![],
+            next_idx: 0,
+        }
+    }
+
+    pub fn push<P: Pixel<u8>, I: GenericImage<P>>(
+        &mut self, image: I) -> uint {
+        let (w, h) = image.dimensions();
+        let img = ImageBuf::from_pixels(
+            image.pixels().map::<Rgba<u8>>(
+                |(_x, _y, p)| p.to_rgba())
+            .collect(),
+            w, h);
+        self.pending_images.push(img);
+
+        self.next_idx += 1;
+        self.next_idx - 1
+    }
+
+    pub fn make_atlas(&mut self) {
+        unimplemented!();
+    }
 }
