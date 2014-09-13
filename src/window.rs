@@ -8,6 +8,7 @@ use gfx;
 pub struct Window {
     title: String,
     dim: [u32, ..2],
+    frame_interval: Option<f64>,
 }
 
 impl Window {
@@ -15,7 +16,19 @@ impl Window {
         Window {
             title: "window".to_string(),
             dim: [640, 360],
+            frame_interval: None,
         }
+    }
+
+    pub fn set_title(&mut self, title: &str) -> &mut Window {
+        self.title = title.to_string();
+        self
+    }
+
+    pub fn set_frame_interval(&mut self, interval_s: f64) -> &mut Window {
+        assert!(interval_s > 0.00001);
+        self.frame_interval = interval_s;
+        self
     }
 
     /// Start running the engine, return an event iteration.
@@ -132,4 +145,10 @@ impl<'a> Iterator<Event<'a>> for Context {
             }
         }
     }
+}
+
+/// Drawable images stored in the Window.
+#[deriving(Clone, PartialEq)]
+pub struct Image {
+    texture_idx: uint,
 }
