@@ -61,7 +61,7 @@ impl Context {
         window.set_key_polling(true);
         window.set_char_polling(true);
 
-        let device = gfx::GlDevice::new(|s| glfw.get_proc_address(s));
+        let device = gfx::GlDevice::new(|s| window.get_proc_address(s));
         let graphics = gfx::Graphics::new(device);
         let frame = gfx::Frame::new(dim[0] as u16, dim[1] as u16);
 
@@ -111,7 +111,7 @@ impl<'a> Iterator<Event<'a>> for Context {
             self.glfw.poll_events();
 
             match self.events.try_recv() {
-                Ok(event) => {
+                Ok(_event) => {
                     // TODO: Process event.
                     return Some(Input(123))
                 }
