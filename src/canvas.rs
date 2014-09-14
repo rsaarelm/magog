@@ -2,21 +2,14 @@ use std::collections::hashmap::HashMap;
 use time;
 use std::mem;
 use sync::comm::Receiver;
-use image::{GenericImage, SubImage, Pixel, ImageBuf, Rgba};
+use image::{GenericImage, SubImage};
+use image::{Pixel, ImageBuf, Rgba};
 use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
-
-/// The magic RGB value that means a pixel should be set to transparent. The
-/// current (as of 2014-09-13) image library doesn't seem to see palettized PNG
-/// images with an alpha key set as RGBA, so I need to resort to trickery to get
-/// myself a nice RGBA source from the image. Of course this is totally
-/// unportable for any purpose where images might want to use the colorkey color
-/// for something that's not a transparency layer.
-pub static COLOR_KEY_RGB: (u8, u8, u8) = (0x80, 0x80, 0x80);
 
 pub struct Canvas {
     title: String,
@@ -142,6 +135,10 @@ impl Context {
                 stencil: 0,
             }, gfx::Color, &self.frame);
     }
+
+    pub fn draw_image(&mut self, offset: [int, ..2], image: Image) {
+        unimplemented!();
+    }
 }
 
 pub enum Event<'a> {
@@ -212,22 +209,13 @@ impl ImageCollector {
         let (w, h) = image.dimensions();
         let img = ImageBuf::from_pixels(
             image.pixels().map::<Rgba<u8>>(
-                |(_x, _y, p)| self.convert_pixel(&p))
+                |(_x, _y, p)| p.to_rgba())
             .collect(),
             w, h);
         self.pending_images.push(img);
 
         self.next_idx += 1;
         self.next_idx - 1
-    }
-
-    pub fn convert_pixel<P: Pixel<u8>>(&self, pixel: &P) -> Rgba<u8> {
-        let (r, g, b, mut a) = pixel.channels4();
-        if (r, g, b) == COLOR_KEY_RGB && a == 0xff {
-            a = 0;
-        }
-
-        Pixel::from_channels(r, g, b, a)
     }
 
     pub fn make_atlas(&mut self) {

@@ -15,3 +15,4 @@ pub use canvas::Canvas;
 pub use canvas::{Render, Input};
 
 pub mod canvas;
+pub mod util;
