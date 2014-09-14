@@ -1,5 +1,5 @@
 use std::default::{Default};
-use std::cmp::{max};
+use std::cmp::{min, max};
 use std::num::{next_power_of_two, zero};
 use image::{GenericImage, Pixel, ImageBuf, Rgba};
 
@@ -15,6 +15,29 @@ pub fn color_key<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
             Pixel::from_channels(pr, pg, pb, pa)
         }).collect();
     ImageBuf::from_pixels(pixels, w, h)
+}
+
+/// Return the rectangle enclosing the parts of the image that aren't fully
+/// transparent.
+pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
+    image: &I) -> ([u32, ..2], [u32, ..2]) {
+    let (w, h) = image.dimensions();
+    let mut p1 = [w, h];
+    let mut p2 = [0u32, 0u32];
+    for y in range(0, h) {
+        for x in range(0, w) {
+            let (_, _, _, a) = image.get_pixel(x, y).channels4();
+            if a != Default::default() {
+                p1[0] = min(x, p1[0]);
+                p2[0] = max(x, p2[0]);
+                p1[1] = min(y, p1[1]);
+                p2[1] = max(y, p2[1]);
+            }
+        }
+    }
+
+    if p1[0] > p2[0] { ([0, 0], [0, 0]) } // Empty image.
+    else { (p1, [p2[0] - p1[0], p2[1] - p1[1]]) }
 }
 
 /// Take a list of images and pack them into an atlas image. Return the atlas
@@ -86,6 +109,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     let mut slots = vec![([zero::<T>(), zero::<T>()], container_dim)];
 
+    // TODO: Fix when Rust supports fixed size array cloning.
     //let mut ret = Vec::from_elem(dims.len(), [zero::<T>(), zero::<T>()]);
     let mut ret = vec![];
     for i in range(0, container_dim.len()) { ret.push([zero::<T>(), zero::<T>()]) }
