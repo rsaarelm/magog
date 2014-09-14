@@ -34,20 +34,20 @@ impl Canvas {
         ret
     }
 
-    pub fn set_title(&mut self, title: &str) -> &mut Canvas {
+    pub fn set_title(mut self, title: &str) -> Canvas {
         self.title = title.to_string();
         self
     }
 
     /// Set the frame rate.
-    pub fn set_frame_interval(&mut self, interval_s: f64) -> &mut Canvas {
+    pub fn set_frame_interval(mut self, interval_s: f64) -> Canvas {
         assert!(interval_s > 0.00001);
         self.frame_interval = Some(interval_s);
         self
     }
 
     /// Set the resolution.
-    pub fn set_dim(&mut self, dim: [u32, ..2]) -> &mut Canvas {
+    pub fn set_dim(mut self, dim: [u32, ..2]) -> Canvas {
         self.dim = dim;
         self
     }
