@@ -1,4 +1,5 @@
 use std::collections::hashmap::HashMap;
+use std::str;
 use time;
 use std::mem;
 use sync::comm::Receiver;
@@ -10,6 +11,7 @@ use glfw::Context as _Context;
 use gfx;
 use gfx::{DeviceHelper, ToSlice};
 use util;
+use key;
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
@@ -162,8 +164,14 @@ impl Context {
 }
 
 pub enum Event<'a> {
+    /// Time to render the screen. Call your own render code on the Context
+    /// value when you get this.
     Render(&'a mut Context),
-    Input(int), // TODO: Proper input type
+    /// Some printable text entered. Data is whole strings to account for
+    /// exotic input devices.
+    Text(String),
+    KeyPressed(key::Key),
+    KeyReleased(key::Key),
 }
 
 impl<'a> Iterator<Event<'a>> for Context {
@@ -184,9 +192,27 @@ impl<'a> Iterator<Event<'a>> for Context {
             self.glfw.poll_events();
 
             match self.events.try_recv() {
-                Ok(_event) => {
-                    // TODO: Process event.
-                    return Some(Input(123))
+                Ok((_, event)) => {
+                    match event {
+                        glfw::CharEvent(ch) => {
+                            return Some(Text(str::from_char(ch)));
+                        }
+                        glfw::KeyEvent(k, _scan, action, _mods) => {
+                            match key::translate_glfw_key(k).map(|k| {
+                                if action == glfw::Press || action == glfw::Repeat {
+                                    KeyPressed(k)
+                                }
+                                else {
+                                    KeyReleased(k)
+                                }
+                            }) {
+                                Some(e) => { return Some(e); }
+                                _ => ()
+                            }
+                        }
+                        // TODO Mouse events.
+                        _ => ()
+                    }
                 }
                 _ => ()
             }

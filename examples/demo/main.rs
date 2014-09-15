@@ -10,9 +10,10 @@ fn main() {
                 ctx.draw_test();
                 t += 1;
             }
-            blot::Input(e) => {
-                println!("Input event {}", e);
+            blot::KeyPressed(blot::key::KeyEscape) => {
+                return;
             }
+            _ => ()
         }
     }
 }

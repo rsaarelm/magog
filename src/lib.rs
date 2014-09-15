@@ -12,7 +12,8 @@ extern crate gfx_macros;
 extern crate image;
 
 pub use canvas::Canvas;
-pub use canvas::{Render, Input};
+pub use canvas::{Render, Text, KeyPressed, KeyReleased};
 
 pub mod canvas;
 pub mod util;
+pub mod key;
