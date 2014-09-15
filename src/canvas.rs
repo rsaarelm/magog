@@ -8,6 +8,7 @@ use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
+use gfx::{DeviceHelper, ToSlice};
 use util;
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
@@ -140,6 +141,21 @@ impl Context {
             }, gfx::Color, &self.frame);
     }
 
+    /// Mess with drawy stuff
+    pub fn draw_test(&mut self) {
+        let mesh = self.graphics.device.create_mesh(vec![
+            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 0.0] },
+            Vertex { pos: [1.0, 0.0], tex_coord: [1.0, 0.0] },
+            Vertex { pos: [0.0, 1.0], tex_coord: [0.0, 1.0] },
+        ]);
+        let slice = mesh.to_slice(gfx::TriangleList);
+        let program = self.graphics.device.link_program(
+            VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
+        let batch: gfx::batch::RefBatch<(), ()> = self.graphics.make_batch(
+            &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
+        self.graphics.draw(&batch, &(), &self.frame);
+    }
+
     pub fn draw_image(&mut self, offset: [int, ..2], image: Image) {
         unimplemented!();
     }
@@ -251,3 +267,40 @@ impl Atlas {
         }
     }
 }
+
+#[vertex_format]
+struct Vertex {
+    #[name = "a_pos"]
+    pos: [f32, ..2],
+
+    #[name = "a_tex_coord"]
+    tex_coord: [f32, ..2],
+}
+
+static VERTEX_SRC: gfx::ShaderSource = shaders! {
+GLSL_120: b"
+    #version 120
+
+    attribute vec2 a_pos;
+    attribute vec2 a_tex_coord;
+    // TODO: Make color a uniform argument.
+    varying vec4 v_color;
+
+    void main() {
+        v_color = vec4(1.0, 0.0, 0.0, 1.0);
+        gl_Position = vec4(a_pos, 0.0, 1.0);
+    }
+"
+};
+
+static FRAGMENT_SRC: gfx::ShaderSource = shaders! {
+GLSL_120: b"
+    #version 120
+
+    varying vec4 v_color;
+
+    void main() {
+        gl_FragColor = v_color;
+    }
+"
+};
