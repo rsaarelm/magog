@@ -112,7 +112,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     // TODO: Fix when Rust supports fixed size array cloning.
     //let mut ret = Vec::from_elem(dims.len(), [zero::<T>(), zero::<T>()]);
     let mut ret = vec![];
-    for i in range(0, container_dim.len()) { ret.push([zero::<T>(), zero::<T>()]) }
+    for i in range(0, dims.len()) { ret.push([zero::<T>(), zero::<T>()]) }
 
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];
@@ -180,5 +180,51 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     fn fits<T: Ord>(dim: [T, ..2], container_dim: [T, ..2]) -> bool {
         dim[0] <= container_dim[0] && dim[1] <= container_dim[1]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::Show;
+    use image::{Rgba, ImageBuf, GenericImage};
+    use util;
+
+    #[test]
+    fn test_zero_atlas() {
+        let empty: Vec<ImageBuf<Rgba<u8>>> = vec![];
+        let (canvas, rects) = util::build_atlas(&empty);
+        assert!(rects.len() == 0);
+    }
+
+    #[test]
+    fn test_atlas() {
+        let images: Vec<ImageBuf<Rgba<u8>>> = vec![
+            ImageBuf::new(6, 4),
+            ImageBuf::new(8, 10),
+        //    ImageBuf::new(3, 3),
+        ];
+        let (canvas, rects) = util::build_atlas(&images);
+        assert!(rects.len() == images.len());
+        assert!(canvas.dimensions() == (16, 16));
+        // Filling the rect starts from top left, and the biggest item goes
+        // first.
+        rects_equal(&rects[1], &([0, 0], [8, 10]));
+        // The next rect goes below the first one since there is a smaller
+        // space there.
+        rects_equal(&rects[0], &([0, 10], [6, 4]));
+        //rects_equal(&rects[2], &([8, 0], [3, 3]));
+    }
+
+    // XXX: can't compare fixed arrays naively.
+    fn rects_equal<T: Primitive+Show>(
+        &(ref p1, ref d1): &([T, ..2], [T, ..2]),
+        &(ref p2, ref d2): &([T, ..2], [T, ..2])) {
+        let (p1, p2, d1, d2) = (
+            p1.as_slice(), p2.as_slice(),
+            d1.as_slice(), d2.as_slice());
+        println!("{}, {}", p1, p2);
+        println!("{}, {}", d1, d2);
+        assert!(p1 == p2);
+        assert!(d1 == d2);
     }
 }
