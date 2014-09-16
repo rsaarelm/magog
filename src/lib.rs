@@ -17,3 +17,4 @@ pub use canvas::{Render, Text, KeyPressed, KeyReleased};
 pub mod canvas;
 pub mod util;
 pub mod key;
+pub mod atlas;

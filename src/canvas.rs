@@ -12,6 +12,7 @@ use gfx;
 use gfx::{DeviceHelper, ToSlice};
 use util;
 use key;
+use atlas::{AtlasBuilder, Atlas};
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
@@ -19,7 +20,7 @@ pub struct Canvas {
     title: String,
     dim: [u32, ..2],
     frame_interval: Option<f64>,
-    image_collector: ImageCollector,
+    builder: AtlasBuilder,
     font_glyphs: HashMap<char, Image>,
 }
 
@@ -30,7 +31,7 @@ impl Canvas {
             title: "window".to_string(),
             dim: [640, 360],
             frame_interval: None,
-            image_collector: ImageCollector::new(),
+            builder: AtlasBuilder::new(),
             font_glyphs: HashMap::new(),
         };
         ret.init_font();
@@ -57,7 +58,7 @@ impl Canvas {
 
     pub fn add_image<P: Pixel<u8>, I: GenericImage<P>>(
         &mut self, image: I) -> Image {
-        Image(self.image_collector.push(image))
+        Image(self.builder.push(image))
     }
 
     /// Start running the engine, return an event iteration.
@@ -66,7 +67,7 @@ impl Canvas {
             self.dim,
             self.title.as_slice(),
             Some(1.0 / 30.0),
-            self.image_collector.build_atlas())
+            Atlas::new(&self.builder))
     }
 
     fn init_font(&mut self) {
@@ -236,63 +237,6 @@ impl<'a> Iterator<Event<'a>> for Context {
 /// Drawable images stored in the Canvas.
 #[deriving(Clone, PartialEq)]
 pub struct Image(uint);
-
-struct ImageCollector {
-    images: Vec<ImageBuf<Rgba<u8>>>,
-    offsets: Vec<[u32, ..2]>,
-}
-
-impl ImageCollector {
-    fn new() -> ImageCollector {
-        ImageCollector {
-            images: vec![],
-            offsets: vec![],
-        }
-    }
-
-    fn push<P: Pixel<u8>, I: GenericImage<P>>(
-        &mut self, mut image: I) -> uint {
-        let (pos, dim) = util::crop_alpha(&image);
-        let cropped = SubImage::new(&mut image, pos[0], pos[1], dim[0], dim[1]);
-
-        let (w, h) = cropped.dimensions();
-        let img = ImageBuf::from_pixels(
-            cropped.pixels().map::<Rgba<u8>>(
-                |(_x, _y, p)| p.to_rgba())
-            .collect(),
-            w, h);
-        self.images.push(img);
-        self.offsets.push(pos);
-        self.images.len()
-    }
-
-    fn build_atlas(&mut self) -> Atlas {
-        Atlas::new(&self.images, &self.offsets)
-    }
-
-    fn rendering_offset(&self, idx: uint) -> [u32, ..2] { self.offsets[idx] }
-}
-
-struct Atlas {
-    image: ImageBuf<Rgba<u8>>,
-    bounds: Vec<([u32, ..2], [u32, ..2])>,
-    offsets: Vec<[u32, ..2]>,
-}
-
-impl Atlas {
-    fn new(images: &Vec<ImageBuf<Rgba<u8>>>, offsets: &Vec<[u32, ..2]>) -> Atlas {
-        let (image, bounds) = util::build_atlas(images);
-
-        // TODO: Replace with offsets.clone() when Rust supports fixed size array cloning.
-        let mut offsets_clone = vec![]; for i in offsets.iter() { offsets_clone.push(*i); }
-
-        Atlas {
-            image: image,
-            bounds: bounds,
-            offsets: offsets_clone,
-        }
-    }
-}
 
 #[vertex_format]
 struct Vertex {
