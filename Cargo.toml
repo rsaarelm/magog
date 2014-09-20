@@ -1,11 +1,11 @@
 [package]
 
-name = "blot"
+name = "calx"
 version = "0.0.0"
 authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 
 [lib]
-name = "blot"
+name = "calx"
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"

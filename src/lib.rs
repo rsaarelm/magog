@@ -1,4 +1,4 @@
-#![crate_name="blot"]
+#![crate_name="calx"]
 #![feature(phase)]
 
 extern crate time;

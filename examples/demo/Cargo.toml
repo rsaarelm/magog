@@ -8,5 +8,5 @@ authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 name = "demo"
 path = "main.rs"
 
-[dependencies.blot]
+[dependencies.calx]
 path = "../.."
