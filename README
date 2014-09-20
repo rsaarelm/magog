@@ -1,8 +1,3 @@
-Rust multimedia programming scratch space.
+A fantasy roguelike game in Rust
 
-You need to have the Rust compiler, the Rust Cargo package manager
-and GLFW installed to build this.
-
-To run, do
-
-$ cargo run
+Work in progress.
