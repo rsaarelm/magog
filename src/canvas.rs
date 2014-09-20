@@ -3,13 +3,16 @@ use time;
 use std::mem;
 use sync::comm::Receiver;
 use image::{GenericImage, SubImage, Pixel};
+use image::{ImageBuf, Rgba};
 use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
-use gfx::{DeviceHelper, ToSlice};
+use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
+use gfx::{GlDevice};
 use key;
 use atlas::{AtlasBuilder, Atlas};
+use util;
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
@@ -68,7 +71,9 @@ impl Canvas {
     }
 
     fn init_font(&mut self) {
-        let mut font_sheet = image::load_from_memory(FONT_DATA, image::PNG).unwrap();
+        let mut font_sheet = util::color_key(
+            &image::load_from_memory(FONT_DATA, image::PNG).unwrap(),
+            0x80u8, 0x80u8, 0x80u8);
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
@@ -89,6 +94,7 @@ pub struct Context {
     frame_interval: Option<f64>,
     last_render_time: f64,
     atlas: Atlas,
+    atlas_tex: Texture,
 }
 
 #[deriving(PartialEq)]
@@ -115,8 +121,9 @@ impl Context {
         window.set_char_polling(true);
 
         let device = gfx::GlDevice::new(|s| window.get_proc_address(s));
-        let graphics = gfx::Graphics::new(device);
+        let mut graphics = gfx::Graphics::new(device);
         let frame = gfx::Frame::new(dim[0] as u16, dim[1] as u16);
+        let atlas_tex = Texture::from_rgba8(&atlas.image, &mut graphics.device);
 
         Context {
             glfw: glfw,
@@ -128,6 +135,7 @@ impl Context {
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
             atlas: atlas,
+            atlas_tex: atlas_tex,
         }
     }
 
@@ -144,16 +152,27 @@ impl Context {
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
         let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 0.0] },
-            Vertex { pos: [1.0, 0.0], tex_coord: [1.0, 0.0] },
-            Vertex { pos: [0.0, 1.0], tex_coord: [0.0, 1.0] },
+            Vertex { pos: [0.0, 1.0], tex_coord: [0.0, 0.0] },
+            Vertex { pos: [1.0, 1.0], tex_coord: [1.0, 0.0] },
+            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 1.0] },
+
+            Vertex { pos: [1.0, 1.0], tex_coord: [1.0, 0.0] },
+            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 1.0] },
+            Vertex { pos: [1.0, 0.0], tex_coord: [1.0, 1.0] },
         ]);
+
+        let sampler_info = None; // TODO
+        let params = ShaderParam {
+            color: [1.0, 0.0, 1.0, 0.0],
+            s_texture: (self.atlas_tex.tex, sampler_info),
+        };
+
         let slice = mesh.to_slice(gfx::TriangleList);
         let program = self.graphics.device.link_program(
             VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
-        let batch: gfx::batch::RefBatch<(), ()> = self.graphics.make_batch(
+        let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
-        self.graphics.draw(&batch, &(), &self.frame);
+        self.graphics.draw(&batch, &params, &self.frame);
     }
 
     pub fn draw_image(&mut self, offset: [int, ..2], image: Image) {
@@ -235,26 +254,22 @@ impl<'a> Iterator<Event<'a>> for Context {
 #[deriving(Clone, PartialEq)]
 pub struct Image(uint);
 
-#[vertex_format]
-struct Vertex {
-    #[name = "a_pos"]
-    pos: [f32, ..2],
-
-    #[name = "a_tex_coord"]
-    tex_coord: [f32, ..2],
-}
-
 static VERTEX_SRC: gfx::ShaderSource = shaders! {
 GLSL_120: b"
     #version 120
 
+    uniform vec4 color;
+
     attribute vec2 a_pos;
     attribute vec2 a_tex_coord;
+
     // TODO: Make color a uniform argument.
+    varying vec2 v_tex_coord;
     varying vec4 v_color;
 
     void main() {
-        v_color = vec4(1.0, 0.0, 0.0, 1.0);
+        v_tex_coord = a_tex_coord;
+        v_color = color;
         gl_Position = vec4(a_pos, 0.0, 1.0);
     }
 "
@@ -264,10 +279,62 @@ static FRAGMENT_SRC: gfx::ShaderSource = shaders! {
 GLSL_120: b"
     #version 120
 
+    uniform sampler2D s_texture;
+
+    varying vec2 v_tex_coord;
     varying vec4 v_color;
 
     void main() {
-        gl_FragColor = v_color;
+        vec4 tex_color = texture2D(s_texture, v_tex_coord);
+        if (tex_color.a == 0.0) discard;
+        gl_FragColor = v_color * tex_color;
     }
 "
 };
+
+#[shader_param(Program)]
+pub struct ShaderParam {
+    pub color: [f32, ..4],
+    pub s_texture: gfx::shade::TextureParam,
+}
+
+#[vertex_format]
+struct Vertex {
+    #[name = "a_pos"]
+    pos: [f32, ..2],
+
+    #[name = "a_tex_coord"]
+    tex_coord: [f32, ..2],
+}
+
+impl Clone for Vertex {
+    fn clone(&self) -> Vertex { *self }
+}
+
+struct Texture {
+    tex: gfx::TextureHandle,
+    width: u32,
+    height: u32,
+}
+
+impl Texture {
+    fn from_rgba8<D: Device<C>, C: CommandBuffer>(
+        img: &ImageBuf<Rgba<u8>>,
+        d: &mut D) -> Texture {
+        let (w, h) = img.dimensions();
+        let mut info = gfx::tex::TextureInfo::new();
+        info.width = w as u16;
+        info.height = h as u16;
+        info.kind = gfx::tex::Texture2D;
+        info.format = gfx::tex::RGBA8;
+
+        let tex = d.create_texture(info).unwrap();
+        d.update_texture(&tex, &info.to_image_info(), img.pixelbuf()).unwrap();
+
+        Texture {
+            tex: tex,
+            width: w,
+            height: h,
+        }
+    }
+}

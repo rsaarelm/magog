@@ -24,14 +24,15 @@ pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
     let (w, h) = image.dimensions();
     let mut p1 = [w, h];
     let mut p2 = [0u32, 0u32];
+    let transparent: T = Default::default();
     for y in range(0, h) {
         for x in range(0, w) {
             let (_, _, _, a) = image.get_pixel(x, y).channels4();
-            if a != Default::default() {
+            if a != transparent {
                 p1[0] = min(x, p1[0]);
-                p2[0] = max(x, p2[0]);
+                p2[0] = max(x + 1, p2[0]);
                 p1[1] = min(y, p1[1]);
-                p2[1] = max(y, p2[1]);
+                p2[1] = max(y + 1, p2[1]);
             }
         }
     }

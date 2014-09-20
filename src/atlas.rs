@@ -31,9 +31,10 @@ impl AtlasBuilder {
         self.draw_offsets.push(pos);
         self.images.len()
     }
-} 
+}
+
 pub struct Atlas {
-    pub atlas: ImageBuf<Rgba<u8>>,
+    pub image: ImageBuf<Rgba<u8>>,
     pub bounds: Vec<([u32, ..2], [u32, ..2])>,
     pub draw_offsets: Vec<[u32, ..2]>,
 }
@@ -65,9 +66,9 @@ impl Atlas {
         }
 
         // Blit subimages to atlas image.
-        let mut atlas: ImageBuf<Rgba<u8>> = ImageBuf::new(d, d);
+        let mut image: ImageBuf<Rgba<u8>> = ImageBuf::new(d, d);
         for (i, &offset) in offsets.iter().enumerate() {
-            util::blit(&builder.images[i], &mut atlas, offset);
+            util::blit(&builder.images[i], &mut image, offset);
         }
 
         // Construct subimage rectangles.
@@ -81,7 +82,7 @@ impl Atlas {
         }
 
         Atlas {
-            atlas: atlas,
+            image: image,
             bounds: bounds,
             draw_offsets: draw_offsets,
         }
