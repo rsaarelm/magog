@@ -72,7 +72,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     // TODO: Fix when Rust supports fixed size array cloning.
     //let mut ret = Vec::from_elem(dims.len(), [zero::<T>(), zero::<T>()]);
     let mut ret = vec![];
-    for i in range(0, dims.len()) { ret.push([zero::<T>(), zero::<T>()]) }
+    for _ in range(0, dims.len()) { ret.push([zero::<T>(), zero::<T>()]) }
 
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];

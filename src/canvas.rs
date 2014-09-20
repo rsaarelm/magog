@@ -1,16 +1,13 @@
 use std::collections::hashmap::HashMap;
-use std::str;
 use time;
 use std::mem;
 use sync::comm::Receiver;
-use image::{GenericImage, SubImage};
-use image::{Pixel, ImageBuf, Rgba};
+use image::{GenericImage, SubImage, Pixel};
 use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
 use gfx::{DeviceHelper, ToSlice};
-use util;
 use key;
 use atlas::{AtlasBuilder, Atlas};
 
@@ -146,7 +143,7 @@ impl Context {
 
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
-        let mesh = self.graphics.device.create_mesh(vec![
+        let mesh = self.graphics.device.create_mesh([
             Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 0.0] },
             Vertex { pos: [1.0, 0.0], tex_coord: [1.0, 0.0] },
             Vertex { pos: [0.0, 1.0], tex_coord: [0.0, 1.0] },
@@ -196,7 +193,7 @@ impl<'a> Iterator<Event<'a>> for Context {
                 Ok((_, event)) => {
                     match event {
                         glfw::CharEvent(ch) => {
-                            return Some(Text(str::from_char(ch)));
+                            return Some(Text(String::from_char(1, ch)));
                         }
                         glfw::KeyEvent(k, _scan, action, _mods) => {
                             match key::translate_glfw_key(k).map(|k| {
