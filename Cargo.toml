@@ -9,7 +9,7 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "magog"
 
 [dependencies.calx]
-path = "calx"
+git = "https://github.com/rsaarelm/calx"
 
 [dependencies.cgmath]
 git = "https://github.com/bjz/cgmath-rs"
