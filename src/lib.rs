@@ -1,5 +1,6 @@
 #![crate_name="calx"]
 #![feature(phase)]
+#![feature(tuple_indexing)]
 
 extern crate time;
 extern crate sync;
@@ -18,5 +19,8 @@ pub use color::{Rgb};
 pub mod atlas;
 pub mod canvas;
 pub mod color;
+pub mod geom;
 pub mod key;
+pub mod text;
+pub mod timing;
 pub mod util;

@@ -15,6 +15,7 @@ use atlas::{AtlasBuilder, Atlas};
 use util;
 use color;
 use color::{Rgb};
+use geom::{V2};
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
@@ -178,7 +179,7 @@ impl Context {
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
-    pub fn draw_image(&mut self, offset: (int, int), image: Image) {
+    pub fn draw_image(&mut self, offset: &V2<int>, image: Image) {
         unimplemented!();
     }
 }
