@@ -13,6 +13,8 @@ use gfx::{GlDevice};
 use key;
 use atlas::{AtlasBuilder, Atlas};
 use util;
+use color;
+use color::{Rgb};
 
 static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
@@ -83,6 +85,7 @@ impl Canvas {
     }
 }
 
+/// Interface to render to a live display.
 pub struct Context {
     glfw: glfw::Glfw,
     window: glfw::Window,
@@ -140,10 +143,10 @@ impl Context {
     }
 
     /// Clear the screen
-    pub fn clear(&mut self, color: [f32, ..4]) {
+    pub fn clear(&mut self, color: &Rgb) {
         self.graphics.clear(
             gfx::ClearData {
-                color: color,
+                color: color.to_array(),
                 depth: 1.0,
                 stencil: 0,
             }, gfx::Color, &self.frame);
@@ -175,7 +178,7 @@ impl Context {
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
-    pub fn draw_image(&mut self, offset: [int, ..2], image: Image) {
+    pub fn draw_image(&mut self, offset: (int, int), image: Image) {
         unimplemented!();
     }
 }

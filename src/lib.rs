@@ -11,10 +11,12 @@ extern crate gfx;
 extern crate gfx_macros;
 extern crate image;
 
-pub use canvas::Canvas;
+pub use canvas::{Canvas, Context};
 pub use canvas::{Render, Text, KeyPressed, KeyReleased};
+pub use color::{Rgb};
 
-pub mod canvas;
-pub mod util;
-pub mod key;
 pub mod atlas;
+pub mod canvas;
+pub mod color;
+pub mod key;
+pub mod util;
