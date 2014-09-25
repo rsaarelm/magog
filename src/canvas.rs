@@ -22,7 +22,7 @@ static FONT_DATA: &'static [u8] = include_bin!("../assets/font.png");
 
 pub struct Canvas {
     title: String,
-    dim: [u32, ..2],
+    dim: V2<u32>,
     frame_interval: Option<f64>,
     builder: AtlasBuilder,
     font_glyphs: HashMap<char, Image>,
@@ -33,7 +33,7 @@ impl Canvas {
     pub fn new() -> Canvas {
         let mut ret = Canvas {
             title: "window".to_string(),
-            dim: [640, 360],
+            dim: V2(640, 360),
             frame_interval: None,
             builder: AtlasBuilder::new(),
             font_glyphs: HashMap::new(),
@@ -55,7 +55,7 @@ impl Canvas {
     }
 
     /// Set the resolution.
-    pub fn set_dim(mut self, dim: [u32, ..2]) -> Canvas {
+    pub fn set_dim(mut self, dim: V2<u32>) -> Canvas {
         self.dim = dim;
         self
     }
@@ -100,6 +100,7 @@ pub struct Context {
     last_render_time: f64,
     atlas: Atlas,
     atlas_tex: Texture,
+    resolution: V2<u32>,
 }
 
 #[deriving(PartialEq)]
@@ -110,14 +111,14 @@ enum State {
 
 impl Context {
     fn new(
-        dim: [u32, ..2],
+        dim: V2<u32>,
         title: &str,
         frame_interval: Option<f64>,
         atlas: Atlas) -> Context {
 
         let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
         let (window, events) = glfw
-            .create_window(dim[0], dim[1],
+            .create_window(dim.0, dim.1,
             title.as_slice(), glfw::Windowed)
             .expect("Failed to open window");
         window.make_current();
@@ -127,7 +128,9 @@ impl Context {
 
         let device = gfx::GlDevice::new(|s| window.get_proc_address(s));
         let mut graphics = gfx::Graphics::new(device);
-        let frame = gfx::Frame::new(dim[0] as u16, dim[1] as u16);
+        //let frame = gfx::Frame::new(dim.0 as u16, dim.1 as u16);
+        let (w, h) = window.get_framebuffer_size();
+        let frame = gfx::Frame::new(w as u16, h as u16);
         let atlas_tex = Texture::from_rgba8(&atlas.image, &mut graphics.device);
 
         Context {
@@ -141,6 +144,7 @@ impl Context {
             last_render_time: time::precise_time_s(),
             atlas: atlas,
             atlas_tex: atlas_tex,
+            resolution: dim,
         }
     }
 
@@ -156,29 +160,29 @@ impl Context {
 
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
-        self.draw_image(V2(-2, -2), Image(32), &color::ALICEBLUE);
+        self.draw_image(V2(1, 1), Image(32), &color::ALICEBLUE);
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, image: Image, color: &Rgb) {
         let Image(idx) = image;
+        let scale = self.resolution.map(|x| 2.0 / (x as f32));
 
         let texcoords = self.atlas.texcoords[idx];
         let V2(u1, v1) = texcoords.min();
         let V2(u2, v2) = texcoords.max();
 
         let vertices = self.atlas.vertices[idx];
-        let V2(x1, y1) = vertices.min() + offset.map(|x| x as f32);
-        let V2(x2, y2) = vertices.max() + offset.map(|x| x as f32);
+        let V2(x1, y1) = (vertices.min() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
+        let V2(x2, y2) = (vertices.max() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
 
-        // TODO: Position.
         let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [x1, y2], tex_coord: [u1, v1] },
-            Vertex { pos: [x2, y2], tex_coord: [u2, v1] },
-            Vertex { pos: [x1, y1], tex_coord: [u1, v2] },
+            Vertex { pos: [x1, -y2], tex_coord: [u1, v2] },
+            Vertex { pos: [x2, -y2], tex_coord: [u2, v2] },
+            Vertex { pos: [x1, -y1], tex_coord: [u1, v1] },
 
-            Vertex { pos: [x2, y2], tex_coord: [u2, v1] },
-            Vertex { pos: [x1, y1], tex_coord: [u1, v2] },
-            Vertex { pos: [x2, y1], tex_coord: [u2, v2] },
+            Vertex { pos: [x2, -y2], tex_coord: [u2, v2] },
+            Vertex { pos: [x1, -y1], tex_coord: [u1, v1] },
+            Vertex { pos: [x2, -y1], tex_coord: [u2, v1] },
         ]);
 
         let sampler_info = Some(self.graphics.device.create_sampler(
@@ -259,6 +263,8 @@ impl<'a> Iterator<Event<'a>> for Context {
                 // Time to render, must return a handle to self.
                 // XXX: Need unsafe hackery to get around lifetimes check.
                 self.state = EndFrame;
+                let (w, h) = self.window.get_framebuffer_size();
+                self.frame = gfx::Frame::new(w as u16, h as u16);
                 unsafe {
                     return Some(Render(mem::transmute(self)))
                 }

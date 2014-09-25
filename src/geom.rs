@@ -22,6 +22,11 @@ impl<T> V2<T> {
     pub fn map<U>(self, f: |T| -> U) -> V2<U> { V2(f(self.0), f(self.1)) }
 }
 
+impl<T: Primitive> V2<T> {
+    // Componentwise multiplication.
+    pub fn mul(self, rhs: V2<T>) -> V2<T> { V2(self.0 * rhs.0, self.1 * rhs.1) }
+}
+
 /// A rectangle type consisting of position and size vectors.
 #[deriving(Show, PartialEq, PartialOrd, Clone)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
