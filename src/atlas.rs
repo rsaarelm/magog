@@ -37,10 +37,8 @@ impl AtlasBuilder {
 
 pub struct Atlas {
     pub image: ImageBuf<Rgba<u8>>,
-    /// Bounds normalized to unit image dimensions (0.0 to 1.0), for easy use as
-    /// texture coordinates.
-    pub bounds: Vec<Rect<f32>>,
-    pub draw_offsets: Vec<V2<int>>,
+    pub vertices: Vec<Rect<f32>>,
+    pub texcoords: Vec<Rect<f32>>,
 }
 
 impl Atlas {
@@ -78,21 +76,20 @@ impl Atlas {
         let image_dim = V2(d, d);
 
         // Construct subimage rectangles.
-        let bounds: Vec<Rect<f32>> = offsets.iter().enumerate()
+        let texcoords: Vec<Rect<f32>> = offsets.iter().enumerate()
             .map(|(i, &offset)| Rect(scale_vec(offset, image_dim), scale_vec(dims[i], image_dim)))
             .collect();
 
-        let mut draw_offsets = vec![];
-        for &i in builder.draw_offsets.iter() {
-            draw_offsets.push(i);
-        }
+        let vertices: Vec<Rect<f32>> = builder.draw_offsets.iter().enumerate()
+            .map(|(i, &offset)| Rect(offset.map(|x| x as f32), (offset + dims[i]).map(|x| x as f32)))
+            .collect();
 
-        assert!(bounds.len() == draw_offsets.len());
+        assert!(texcoords.len() == vertices.len());
 
         return Atlas {
             image: image,
-            bounds: bounds,
-            draw_offsets: draw_offsets,
+            vertices: vertices,
+            texcoords: texcoords,
         };
 
         fn scale_vec(pixel_vec: V2<int>, image_dim: V2<u32>) -> V2<f32> {

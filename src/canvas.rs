@@ -156,25 +156,29 @@ impl Context {
 
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
-        self.draw_image(V2(100, 100), Image(32), &color::ALICEBLUE);
+        self.draw_image(V2(-2, -2), Image(32), &color::ALICEBLUE);
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, image: Image, color: &Rgb) {
         let Image(idx) = image;
-        let bound = self.atlas.bounds[idx];
 
-        let V2(u1, v1) = bound.min();
-        let V2(u2, v2) = bound.max();
+        let texcoords = self.atlas.texcoords[idx];
+        let V2(u1, v1) = texcoords.min();
+        let V2(u2, v2) = texcoords.max();
+
+        let vertices = self.atlas.vertices[idx];
+        let V2(x1, y1) = vertices.min() + offset.map(|x| x as f32);
+        let V2(x2, y2) = vertices.max() + offset.map(|x| x as f32);
 
         // TODO: Position.
         let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [0.0, 1.0], tex_coord: [u1, v1] },
-            Vertex { pos: [1.0, 1.0], tex_coord: [u2, v1] },
-            Vertex { pos: [0.0, 0.0], tex_coord: [u1, v2] },
+            Vertex { pos: [x1, y2], tex_coord: [u1, v1] },
+            Vertex { pos: [x2, y2], tex_coord: [u2, v1] },
+            Vertex { pos: [x1, y1], tex_coord: [u1, v2] },
 
-            Vertex { pos: [1.0, 1.0], tex_coord: [u2, v1] },
-            Vertex { pos: [0.0, 0.0], tex_coord: [u1, v2] },
-            Vertex { pos: [1.0, 0.0], tex_coord: [u2, v2] },
+            Vertex { pos: [x2, y2], tex_coord: [u2, v1] },
+            Vertex { pos: [x1, y1], tex_coord: [u1, v2] },
+            Vertex { pos: [x2, y1], tex_coord: [u2, v2] },
         ]);
 
         let sampler_info = Some(self.graphics.device.create_sampler(
