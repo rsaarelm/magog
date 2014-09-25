@@ -28,3 +28,7 @@ impl<T: Neg<U>, U> Neg<V2<U>> for V2<T> {
 /// A rectangle type consisting of position and size vectors.
 #[deriving(Show, PartialEq, PartialOrd, Clone)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
+
+impl<T: Primitive> Rect<T> {
+    pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
+}
