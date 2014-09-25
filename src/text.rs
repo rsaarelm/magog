@@ -1,5 +1,4 @@
 use std::vec::Vec;
-use std::str;
 use collections::Deque;
 use collections::ringbuf::RingBuf;
 
@@ -24,7 +23,7 @@ impl<T: Iterator<char>> WrapLineIterator<T> {
         match self.peek {
             Some(c) => {
                 assert!(c.is_whitespace());
-                self.buffer.push_back(c);
+                self.buffer.push(c);
                 self.peek = None;
             },
             None => ()
@@ -42,7 +41,7 @@ impl<T: Iterator<char>> WrapLineIterator<T> {
                 self.peek = Some(c);
                 break;
             }
-            self.buffer.push_back(c);
+            self.buffer.push(c);
             if !c.is_whitespace() {
                 seen_text = true;
                 text_length += 1;
@@ -111,7 +110,7 @@ impl<T: Iterator<char>> WrapUtil for T {
 }
 
 pub fn wrap_lines(line_len: uint, s: &str) -> String {
-    str::from_chars(s.chars().wrap(line_len).collect::<Vec<char>>().as_slice())
+    String::from_chars(s.chars().wrap(line_len).collect::<Vec<char>>().as_slice())
 }
 
 pub struct Map2DIterator<T> {
