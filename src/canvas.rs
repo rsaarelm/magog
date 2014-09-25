@@ -155,19 +155,30 @@ impl Context {
 
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
-        let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [0.0, 1.0], tex_coord: [0.0, 0.0] },
-            Vertex { pos: [1.0, 1.0], tex_coord: [1.0, 0.0] },
-            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 1.0] },
+        self.draw_image(V2(100, 100), Image(32), &color::ALICEBLUE);
+    }
 
-            Vertex { pos: [1.0, 1.0], tex_coord: [1.0, 0.0] },
-            Vertex { pos: [0.0, 0.0], tex_coord: [0.0, 1.0] },
-            Vertex { pos: [1.0, 0.0], tex_coord: [1.0, 1.0] },
+    pub fn draw_image(&mut self, offset: V2<int>, image: Image, color: &Rgb) {
+        let Image(idx) = image;
+        let bound = self.atlas.bounds[idx];
+
+        let V2(u1, v1) = bound.min();
+        let V2(u2, v2) = bound.max();
+
+        // TODO: Position.
+        let mesh = self.graphics.device.create_mesh([
+            Vertex { pos: [0.0, 1.0], tex_coord: [u1, v1] },
+            Vertex { pos: [1.0, 1.0], tex_coord: [u2, v1] },
+            Vertex { pos: [0.0, 0.0], tex_coord: [u1, v2] },
+
+            Vertex { pos: [1.0, 1.0], tex_coord: [u2, v1] },
+            Vertex { pos: [0.0, 0.0], tex_coord: [u1, v2] },
+            Vertex { pos: [1.0, 0.0], tex_coord: [u2, v2] },
         ]);
 
         let sampler_info = None; // TODO
         let params = ShaderParam {
-            color: [1.0, 0.0, 1.0, 0.0],
+            color: color.to_array(),
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
@@ -177,10 +188,6 @@ impl Context {
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
-    }
-
-    pub fn draw_image(&mut self, offset: &V2<int>, image: Image) {
-        unimplemented!();
     }
 }
 

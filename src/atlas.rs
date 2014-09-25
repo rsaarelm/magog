@@ -87,6 +87,8 @@ impl Atlas {
             draw_offsets.push(i);
         }
 
+        assert!(bounds.len() == draw_offsets.len());
+
         return Atlas {
             image: image,
             bounds: bounds,
