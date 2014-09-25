@@ -8,6 +8,7 @@ use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
+use gfx::tex;
 use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
 use gfx::{GlDevice};
 use key;
@@ -176,7 +177,8 @@ impl Context {
             Vertex { pos: [1.0, 0.0], tex_coord: [u2, v2] },
         ]);
 
-        let sampler_info = None; // TODO
+        let sampler_info = Some(self.graphics.device.create_sampler(
+            tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
             color: color.to_array(),
             s_texture: (self.atlas_tex.tex, sampler_info),
