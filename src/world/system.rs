@@ -3,7 +3,7 @@ use std::collections::hashmap::{HashMap};
 use world::terrain::TerrainType;
 use world::spatial::{SpatialSystem, Location, Position};
 use world::fov::Fov;
-use calx::world;
+use world::world;
 
 // XXX: Reference to view layer. Wanted to make this work using traits, but
 // the ownership system got too hard to track when I also didn't want to make
