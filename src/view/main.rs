@@ -1,3 +1,4 @@
+/*
 use view::tilecache;
 use calx::engine::{App, Engine, Key};
 use view::titlestate::TitleState;
@@ -6,11 +7,13 @@ use view::titlestate::TitleState;
 struct GameApp {
     state: Box<State>,
 }
+*/
 
-pub trait State: App {
+pub trait State {
     fn next_state(&self) -> Option<Box<State>>;
 }
 
+/*
 impl GameApp {
     pub fn new() -> GameApp {
         GameApp {
@@ -53,4 +56,9 @@ impl App for GameApp {
 pub fn main() {
     let mut app = GameApp::new();
     Engine::run(&mut app);
+}
+*/
+
+pub fn main() {
+    println!("TODO");
 }

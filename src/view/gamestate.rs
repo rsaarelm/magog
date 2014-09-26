@@ -1,9 +1,9 @@
 use std::slice::Items;
 use cgmath::{Vector, Vector2};
-use calx::engine::{App, Engine, Key, v2};
-use calx::color::consts::*;
-use calx::engine;
-use calx::world::{World, CompProxyMut};
+use calx::color::*;
+use calx::{Context};
+use calx::key;
+use world::world::{World, CompProxyMut};
 use world::spatial::{Position, Location, DIRECTIONS6};
 use world::system::{System, EngineLogic, Entity};
 use world::fov::{Fov, Seen};
@@ -19,14 +19,17 @@ use view::tilecache::icon;
 use view::main::State;
 use view::titlestate::TitleState;
 
+// TODO: Replace with calx::V2.
+fn v2<T>(x: T, y: T) { Vector2::new(x, y) }
+
 trait WorldSprite : Drawable {
     fn update(&mut self);
     fn is_alive(&self) -> bool;
     fn footprint<'a>(&'a self) -> Items<'a, Location>;
 }
 
-struct WorldEffects {
-    sprites: Vec<Box<WorldSprite>>,
+struct WorldEffects<'a> {
+    sprites: Vec<Box<WorldSprite + 'a>>,
 }
 
 impl WorldEffects {
@@ -40,7 +43,7 @@ impl WorldEffects {
         self.sprites.push(spr);
     }
 
-    pub fn draw(&self, ctx: &mut Engine, center: Location, fov: &Fov) {
+    pub fn draw(&self, ctx: &mut Context, center: Location, fov: &Fov) {
         let offset = worldview::loc_to_screen(center, Location::new(0, 0));
         for spr in self.sprites.iter() {
             if spr.footprint()
@@ -78,14 +81,17 @@ impl BeamSprite {
 }
 
 impl Drawable for BeamSprite {
-    fn draw(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+    fn draw(&self, ctx: &mut Context, offset: &Vector2<f32>) {
         let v1 = loc_to_view(self.p1);
         let v2 = loc_to_view(self.p2);
 
+        // TODO
+        /*
         ctx.set_color(&LIME);
         ctx.set_layer(worldview::FX_Z);
         ctx.line_width(3f32);
         ctx.line(&v1.add_v(offset), &v2.add_v(offset));
+        */
     }
 }
 
@@ -163,8 +169,8 @@ impl GameState {
     }
 }
 
-impl App for GameState {
-    fn setup(&mut self, _ctx: &mut Engine) {
+impl /*App for*/ GameState {
+    fn setup(&mut self, _ctx: &mut Context) {
         let mut e = self.world.new_entity();
         e.set_component(MobComp::new(mobs::Player));
 
@@ -175,16 +181,16 @@ impl App for GameState {
         self.camera_to_player();
     }
 
-    fn key_pressed(&mut self, ctx: &mut Engine, key: Key) {
+    fn key_pressed(&mut self, ctx: &mut Context, key: key::Key) {
         if self.in_player_input {
             match key {
-                engine::Key1 => { self.next_level(); }
-                engine::Key2 => {
+                key::Key1 => { self.next_level(); }
+                key::Key2 => {
                     let mut player = self.world.player().unwrap();
                     let loc = player.location();
                     player.attack(loc);
                 }
-                engine::Key3 => {
+                key::Key3 => {
                     let loc = self.world.player().unwrap().location();
                     for i in range(0, 6) {
                         let p2 = Location::new(
@@ -194,26 +200,26 @@ impl App for GameState {
                     }
                 }
 
-                engine::KeyQ | engine::KeyPad7 => { self.move(7); }
-                engine::KeyW | engine::KeyPad8 | engine::KeyUp => { self.move(0); }
-                engine::KeyE | engine::KeyPad9 => { self.move(1); }
-                engine::KeyA | engine::KeyPad1 => { self.move(5); }
-                engine::KeyS | engine::KeyPad2 | engine::KeyDown => { self.move(4); }
-                engine::KeyD | engine::KeyPad3 => { self.move(3); }
-                engine::KeyLeft => { self.move(6); }
-                engine::KeyRight => { self.move(2); }
+                key::KeyQ | key::KeyPad7 => { self.move(7); }
+                key::KeyW | key::KeyPad8 | key::KeyUp => { self.move(0); }
+                key::KeyE | key::KeyPad9 => { self.move(1); }
+                key::KeyA | key::KeyPad1 => { self.move(5); }
+                key::KeyS | key::KeyPad2 | key::KeyDown => { self.move(4); }
+                key::KeyD | key::KeyPad3 => { self.move(3); }
+                key::KeyLeft => { self.move(6); }
+                key::KeyRight => { self.move(2); }
                 _ => (),
             }
         }
 
         match key {
-            engine::KeyEscape => { ctx.quit(); }
-            engine::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
+            key::KeyEscape => { ctx.quit(); }
+            key::KeyF12 => { ctx.screenshot("/tmp/shot.png"); }
             _ => (),
         }
     }
 
-    fn draw(&mut self, ctx: &mut Engine) {
+    fn draw(&mut self, ctx: &mut Context) {
         self.in_player_input = match self.world.player() {
             Some(p) => p.acts_this_frame(),
             None => false
@@ -250,9 +256,10 @@ impl State for GameState {
 
 // UI rendering
 impl GameState {
-    fn health_bar(&self, ctx: &mut Engine, player: Entity) {
+    fn health_bar(&self, ctx: &mut Context, player: Entity) {
         let mob = player.into::<MobComp>().unwrap();
-        ctx.set_color(&RED);
+        // TODO
+        //ctx.set_color(&RED);
         let num_hearts = (mob.max_hp + 1) / 2;
         let solid_hearts = mob.hp / 2;
         let half_heart = (mob.hp % 2) == 1;
@@ -266,10 +273,10 @@ impl GameState {
                 } else {
                     icon::NO_HEART
                 };
-            ctx.draw_image(&tilecache::get(img), &pos);
+            //ctx.draw_image(&tilecache::get(img), &pos);
         }
 
-        ctx.set_color(&LIGHTSLATEGRAY);
+        //ctx.set_color(&LIGHTSLATEGRAY);
         let num_shards = (mob.armor + 1) / 2;
         let half_shard = (mob.armor % 2) == 1;
 
@@ -281,12 +288,12 @@ impl GameState {
                 } else {
                     icon::SHARD
                 };
-            ctx.draw_image(&tilecache::get(img), &pos);
+            //ctx.draw_image(&tilecache::get(img), &pos);
         }
     }
 
-    fn draw_ui(&self, ctx: &mut Engine, player: Entity) {
-        ctx.set_layer(0.100f32);
+    fn draw_ui(&self, ctx: &mut Context, player: Entity) {
+        //ctx.set_layer(0.100f32);
 
         self.health_bar(ctx, player);
 
@@ -309,8 +316,9 @@ impl Fx {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Engine) {
-        ctx.draw_string(self.message.as_slice(), &v2(0f32, 300f32));
+    pub fn draw(&self, ctx: &mut Context) {
+        // TODO
+        //ctx.draw_string(self.message.as_slice(), &v2(0f32, 300f32));
     }
 
     pub fn msg(&mut self, txt: &str) {

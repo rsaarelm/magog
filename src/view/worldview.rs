@@ -1,7 +1,5 @@
-use calx::color::consts::*;
-use calx::color::{RGB};
-use calx::engine::{Engine, v2};
-use calx::rectutil::RectUtil;
+use calx::color::*;
+use calx::{Context};
 use calx::timing;
 use cgmath::{Aabb, Aabb2, Vector, Vector2};
 use time;
@@ -22,6 +20,9 @@ pub static BLOCK_Z: f32 = 0.400f32;
 pub static FX_Z: f32 = 0.375f32;
 pub static CAPTION_Z: f32 = 0.350f32;
 
+// TODO: Replace with calx::V2.
+fn v2<T>(x: T, y: T) { Vector2::new(x, y) }
+
 /// Drawable representation of a single map location.
 pub struct CellDrawable {
     loc: Location,
@@ -30,7 +31,7 @@ pub struct CellDrawable {
 }
 
 impl Drawable for CellDrawable {
-    fn draw(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+    fn draw(&self, ctx: &mut Context, offset: &Vector2<f32>) {
         match self.fov {
             Some(_) => {
                 self.draw_cell(ctx, offset)
@@ -72,18 +73,21 @@ impl CellDrawable {
         }
     }
 
-    fn draw_tile(&self, ctx: &mut Engine, idx: uint, offset: &Vector2<f32>, z: f32, color: &RGB) {
+    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: &Vector2<f32>, z: f32, color: &Rgb) {
         let color = match self.fov {
-            Some(Remembered) => RGB::new(0x22u8, 0x22u8, 0x11u8),
+            Some(Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
         };
 
+        // TODO
+        /*
         ctx.set_layer(z);
         ctx.set_color(&color);
         ctx.draw_image(&tilecache::get(idx), offset);
+        */
     }
 
-    fn draw_cell(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+    fn draw_cell(&self, ctx: &mut Context, offset: &Vector2<f32>) {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(Seen) {
@@ -93,7 +97,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_terrain(&self, ctx: &mut Engine, offset: &Vector2<f32>) {
+    fn draw_terrain(&self, ctx: &mut Context, offset: &Vector2<f32>) {
         let k = Kernel::new(|loc| self.world.terrain_at(loc), self.loc);
         match k.center {
             terrain::Void => {
@@ -129,7 +133,7 @@ impl CellDrawable {
             },
             terrain::Portal => {
                 let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
-                let portal_col = RGB::new(glow, glow, 255);
+                let portal_col = Rgb::new(glow, glow, 255);
                 self.draw_tile(ctx, PORTAL, offset, BLOCK_Z, &portal_col);
             },
             terrain::Rock => {
@@ -212,7 +216,7 @@ impl CellDrawable {
             },
         }
 
-        fn blockform(c: &CellDrawable, ctx: &mut Engine, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &RGB) {
+        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &Rgb) {
             c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
@@ -226,7 +230,7 @@ impl CellDrawable {
             }
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Engine, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &RGB, opaque: bool) {
+        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &Rgb, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {
@@ -267,7 +271,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_mob(&self, ctx: &mut Engine, offset: &Vector2<f32>, mob: &Entity) {
+    fn draw_mob(&self, ctx: &mut Context, offset: &Vector2<f32>, mob: &Entity) {
         let body_pos =
             if is_bobbing(mob) {
                 offset.add_v(timing::cycle_anim(
@@ -288,7 +292,7 @@ impl CellDrawable {
             }
         }
 
-        fn visual(t: MobType) -> (uint, RGB) {
+        fn visual(t: MobType) -> (uint, Rgb) {
             let kind = mobs::MOB_KINDS[t as uint];
             (kind.sprite, kind.color)
         }
@@ -332,7 +336,7 @@ impl<C: Clone> Kernel<C> {
 }
 
 pub fn draw_area(
-    world: &World, ctx: &mut Engine, center: Location, fov: &Fov) {
+    world: &World, ctx: &mut Context, center: Location, fov: &Fov) {
     let mut bounds = Aabb2::new(
         screen_to_loc(center, &v2(0f32, 0f32)).to_point(),
         screen_to_loc(center, &v2(640f32, 392f32)).to_point());
@@ -351,16 +355,19 @@ pub fn draw_area(
 }
 
 
-pub fn draw_mouse(ctx: &mut Engine, center_loc: Location) -> Location {
+pub fn draw_mouse(ctx: &mut Context, center_loc: Location) -> Location {
     let mouse = ctx.get_mouse();
     let cursor_loc = screen_to_loc(center_loc, &mouse.pos);
     let draw_pos = loc_to_screen(center_loc, cursor_loc);
 
+    // TODO
+    /*
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
     ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &draw_pos);
     ctx.set_layer(BLOCK_Z);
     ctx.draw_image(&tilecache::get(CURSOR_TOP), &draw_pos);
+    */
 
     cursor_loc
 }

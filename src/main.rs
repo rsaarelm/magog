@@ -2,11 +2,13 @@
 #![feature(globs)]
 #![feature(macro_rules)]
 
-extern crate calx;
-extern crate cgmath;
 extern crate num;
 extern crate rand;
 extern crate time;
+extern crate cgmath;
+extern crate image;
+extern crate calx;
+extern crate uuid;
 
 pub mod world {
     pub mod area;
@@ -18,6 +20,7 @@ pub mod world {
     pub mod spawn;
     pub mod system;
     pub mod terrain;
+    pub mod world;
 }
 
 pub mod view {

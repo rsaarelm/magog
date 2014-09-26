@@ -1,19 +1,14 @@
 use std::cell::RefCell;
-use cgmath::{Vector2};
-use calx::stb::image;
-use calx::tile::Tile;
-use calx::engine::{Engine, Image};
-
-static TILE_DATA: &'static [u8] = include_bin!("../../assets/tile.png");
-static ICON_DATA: &'static [u8] = include_bin!("../../assets/icon.png");
-static LOGO_DATA: &'static [u8] = include_bin!("../../assets/logo.png");
+use image;
+use calx::{V2, Canvas, Image};
 
 local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
 
-fn add(tiles: &mut Vec<Tile>, data: &[u8],
-       elt_dim: (int, int), offset: (int, int)) -> uint {
-    let image = image::Image::load_from_memory(data, 1).unwrap();
-    let (elt_w, elt_h) = elt_dim;
+fn batch(ctx: &mut Canvas, data: &[u8],
+       elt_dim: (int, int), offset: (int, int)) -> Vec<Image> {
+       /*
+    let image = image::load_from_memory(data, image::PNG).unwrap();
+    let (elt_w, elt_h) = image.dimensions();
     let (offset_w, offset_h) = offset;
 
     let set = Tile::new_alpha_set(
@@ -24,17 +19,17 @@ fn add(tiles: &mut Vec<Tile>, data: &[u8],
     let ret = set.len();
     tiles.push_all(set.as_slice());
     ret
+    */
+    // TODO
+    vec![]
 }
 
 /// Initialize global tile cache.
-pub fn init(ctx: &mut Engine) {
-    let mut tiles = vec!();
-    add(&mut tiles, TILE_DATA, (32, 32), (-16, -16));
-    add(&mut tiles, ICON_DATA, (8, 8), (0, -8));
-    add(&mut tiles, LOGO_DATA, (92, 25), (0, 0));
-
-    let tiles = ctx.make_images(&tiles);
-
+pub fn init(ctx: &mut Canvas) {
+    let mut tiles = vec![];
+    tiles.extend(batch(ctx, include_bin!("../../assets/tile.png"), (32, 32), (-16, -16)).iter());
+    tiles.extend(batch(ctx, include_bin!("../../assets/icon.png"), (8, 8), (0, -8)).iter());
+    tiles.extend(batch(ctx, include_bin!("../../assets/logo.png"), (92, 25), (0, 0)).iter());
     TILE_CACHE.replace(Some(RefCell::new(tiles)));
 }
 

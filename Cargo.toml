@@ -8,8 +8,11 @@ authors = [ "risto.saarelma@iki.fi" ]
 
 name = "magog"
 
-[dependencies.calx]
-git = "https://github.com/rsaarelm/calx"
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/rust-image"
 
 [dependencies.cgmath]
 git = "https://github.com/bjz/cgmath-rs"
+
+[dependencies.calx]
+git = "https://github.com/rsaarelm/calx"

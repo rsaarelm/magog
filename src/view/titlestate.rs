@@ -1,6 +1,5 @@
-use calx::color::consts::*;
-use cgmath::{Vector2};
-use calx::engine::{App, Engine, Key};
+use calx::color::*;
+use calx::{Context, V2};
 use view::tilecache;
 use view::main::State;
 use view::gamestate::GameState;
@@ -18,11 +17,12 @@ impl TitleState {
     }
 }
 
+/*
 impl App for TitleState {
-    fn setup(&mut self, _ctx: &mut Engine) {
+    fn setup(&mut self, _ctx: &mut Context) {
     }
 
-    fn draw(&mut self, ctx: &mut Engine) {
+    fn draw(&mut self, ctx: &mut Context) {
         let logo = tilecache::get(tilecache::LOGO);
         ctx.set_color(&FIREBRICK);
         ctx.draw_image(&logo, &Vector2::new(280f32, 180f32));
@@ -45,3 +45,4 @@ impl State for TitleState {
         }
     }
 }
+*/

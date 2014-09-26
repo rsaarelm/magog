@@ -3,8 +3,7 @@ use std::uint;
 use std::rand;
 use std::rand::Rng;
 use cgmath::{Vector2};
-use calx::color::RGB;
-use calx::color::consts::*;
+use calx::color::*;
 use world::system::{World, Entity, EngineLogic};
 use world::spatial::{Location, Position, DIRECTIONS6};
 use world::mapgen::{AreaSpec};
@@ -70,7 +69,7 @@ pub struct MobKind {
     pub power: int,
     pub area_spec: AreaSpec,
     pub sprite: uint,
-    pub color: RGB,
+    pub color: Rgb,
     pub intrinsics: int,
 }
 
