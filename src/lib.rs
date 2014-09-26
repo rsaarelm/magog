@@ -14,7 +14,9 @@ extern crate image;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Render, Text, KeyPressed, KeyReleased};
+pub use canvas::{Image};
 pub use color::{Rgb};
+pub use geom::{Rect, V2};
 
 pub mod atlas;
 pub mod canvas;
