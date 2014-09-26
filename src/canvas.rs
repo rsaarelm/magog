@@ -100,6 +100,7 @@ pub struct Context {
     last_render_time: f64,
     atlas: Atlas,
     atlas_tex: Texture,
+    flatshade: gfx::TextureHandle,
     resolution: V2<u32>,
 }
 
@@ -133,6 +134,16 @@ impl Context {
         let frame = gfx::Frame::new(w as u16, h as u16);
         let atlas_tex = Texture::from_rgba8(&atlas.image, &mut graphics.device);
 
+        // Blank white texture so we can draw flatshaded stuff without
+        // switching to non-texturing shader.
+        let mut inf = tex::TextureInfo::new();
+        inf.width = 1;
+        inf.height = 1;
+        inf.kind = tex::Texture2D;
+        inf.format = tex::RGBA8;
+        let flatshade = graphics.device.create_texture(inf).unwrap();
+        graphics.device.update_texture(&flatshade, &inf.to_image_info(), &[0xffu8, 0xff, 0xff, 0xff]).unwrap();
+
         Context {
             glfw: glfw,
             window: window,
@@ -144,6 +155,7 @@ impl Context {
             last_render_time: time::precise_time_s(),
             atlas: atlas,
             atlas_tex: atlas_tex,
+            flatshade: flatshade,
             resolution: dim,
         }
     }
@@ -162,6 +174,7 @@ impl Context {
     pub fn draw_test(&mut self) {
         let img = self.font_image('X').unwrap();
         self.draw_image(V2(1, 1), img, &color::ALICEBLUE);
+        self.draw_line(V2(10, 10), V2(100, 50), 3f32, &color::YELLOW);
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, Image(idx): Image, color: &Rgb) {
@@ -197,6 +210,32 @@ impl Context {
             VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
+        self.graphics.draw(&batch, &params, &self.frame);
+    }
+
+    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, thickness: f32, color: &Rgb) {
+        let scale = self.resolution.map(|x| 2.0 / (x as f32));
+        let p1 = p1.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
+        let p2 = p2.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
+
+        let mesh = self.graphics.device.create_mesh([
+            Vertex { pos: [p1.0, -p1.1], tex_coord: [0.0, 0.0] },
+            Vertex { pos: [p2.0, -p2.1], tex_coord: [0.0, 0.0] },
+        ]);
+
+        let sampler_info = Some(self.graphics.device.create_sampler(
+            tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
+        let params = ShaderParam {
+            color: color.to_array(),
+            s_texture: (self.flatshade, sampler_info),
+        };
+        let slice = mesh.to_slice(gfx::Line);
+        let program = self.graphics.device.link_program(
+            VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
+        let mut draw_state = gfx::DrawState::new();
+        draw_state.primitive.method = gfx::state::Line(thickness);
+        let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
+            &program, &mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
@@ -358,11 +397,11 @@ impl Texture {
         img: &ImageBuf<Rgba<u8>>,
         d: &mut D) -> Texture {
         let (w, h) = img.dimensions();
-        let mut info = gfx::tex::TextureInfo::new();
+        let mut info = tex::TextureInfo::new();
         info.width = w as u16;
         info.height = h as u16;
-        info.kind = gfx::tex::Texture2D;
-        info.format = gfx::tex::RGBA8;
+        info.kind = tex::Texture2D;
+        info.format = tex::RGBA8;
 
         let tex = d.create_texture(info).unwrap();
         d.update_texture(&tex, &info.to_image_info(), img.pixelbuf()).unwrap();
