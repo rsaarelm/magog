@@ -160,11 +160,11 @@ impl Context {
 
     /// Mess with drawy stuff
     pub fn draw_test(&mut self) {
-        self.draw_image(V2(1, 1), Image(32), &color::ALICEBLUE);
+        let img = self.font_image('X').unwrap();
+        self.draw_image(V2(1, 1), img, &color::ALICEBLUE);
     }
 
-    pub fn draw_image(&mut self, offset: V2<int>, image: Image, color: &Rgb) {
-        let Image(idx) = image;
+    pub fn draw_image(&mut self, offset: V2<int>, Image(idx): Image, color: &Rgb) {
         let scale = self.resolution.map(|x| 2.0 / (x as f32));
 
         let texcoords = self.atlas.texcoords[idx];
@@ -198,6 +198,19 @@ impl Context {
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
+    }
+
+    pub fn font_image(&self, c: char) -> Option<Image> {
+        let idx = c as int;
+        if idx >= 32 && idx < 128 {
+            Some(Image((idx - 32) as uint))
+        } else {
+            None
+        }
+    }
+
+    pub fn image_dim(&self, Image(idx): Image) -> V2<uint> {
+        self.atlas.vertices[idx].1.map(|x| x as uint)
     }
 }
 
@@ -336,8 +349,8 @@ impl Clone for Vertex {
 
 struct Texture {
     tex: gfx::TextureHandle,
-    width: u32,
-    height: u32,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl Texture {

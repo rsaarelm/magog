@@ -90,7 +90,8 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     fn place<T: Primitive+Ord>(
         dim: V2<T>, slots: &mut Vec<Rect<T>>) -> Option<V2<T>> {
         for i in range(0, slots.len()) {
-            let &Rect(slot_pos, slot_dim) = slots.get(i);
+            // XXX: Can't use [] indexing on slot because it's mut.
+            let &Rect(slot_pos, slot_dim) = slots.get_mut(i);
             if fits(dim, slot_dim) {
                 // Remove the original slot, it gets the item. Add the two new
                 // rectangles that form around the item.
