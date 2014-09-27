@@ -14,7 +14,6 @@ use gfx::{GlDevice};
 use key;
 use atlas::{AtlasBuilder, Atlas};
 use util;
-use color;
 use color::{Rgb};
 use geom::{V2};
 
@@ -165,17 +164,10 @@ impl Context {
                 color: color.to_array(),
                 depth: 1.0,
                 stencil: 0,
-            }, gfx::Color, &self.frame);
+            }, gfx::Color | gfx::Depth, &self.frame);
     }
 
-    /// Mess with drawy stuff
-    pub fn draw_test(&mut self) {
-        let img = self.font_image('X').unwrap();
-        self.draw_image(V2(1, 1), img, &color::ALICEBLUE);
-        self.draw_line(V2(10, 10), V2(100, 50), 3f32, &color::YELLOW);
-    }
-
-    pub fn draw_image(&mut self, offset: V2<int>, Image(idx): Image, color: &Rgb) {
+    pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
         let scale = self.resolution.map(|x| 2.0 / (x as f32));
 
         let texcoords = self.atlas.texcoords[idx];
@@ -187,13 +179,13 @@ impl Context {
         let V2(x2, y2) = (vertices.max() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
 
         let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [x1, -y2], tex_coord: [u1, v2] },
-            Vertex { pos: [x2, -y2], tex_coord: [u2, v2] },
-            Vertex { pos: [x1, -y1], tex_coord: [u1, v1] },
+            Vertex { pos: [x1, -y2, layer], tex_coord: [u1, v2] },
+            Vertex { pos: [x1, -y1, layer], tex_coord: [u1, v1] },
+            Vertex { pos: [x2, -y2, layer], tex_coord: [u2, v2] },
 
-            Vertex { pos: [x2, -y2], tex_coord: [u2, v2] },
-            Vertex { pos: [x1, -y1], tex_coord: [u1, v1] },
-            Vertex { pos: [x2, -y1], tex_coord: [u2, v1] },
+            Vertex { pos: [x2, -y2, layer], tex_coord: [u2, v2] },
+            Vertex { pos: [x1, -y1, layer], tex_coord: [u1, v1] },
+            Vertex { pos: [x2, -y1, layer], tex_coord: [u2, v1] },
         ]);
 
         let sampler_info = Some(self.graphics.device.create_sampler(
@@ -206,20 +198,24 @@ impl Context {
         let slice = mesh.to_slice(gfx::TriangleList);
         let program = self.graphics.device.link_program(
             VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
+        let mut draw_state = gfx::DrawState::new()
+            .depth(gfx::state::LessEqual, true);
+        draw_state.primitive.front_face = gfx::state::Clockwise;
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &program, &mesh, slice, &gfx::DrawState::new()).unwrap();
+            &program, &mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
-    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, thickness: f32, color: &Rgb) {
+    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
         let scale = self.resolution.map(|x| 2.0 / (x as f32));
         let p1 = p1.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
         let p2 = p2.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
 
         let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [p1.0, -p1.1], tex_coord: [0.0, 0.0] },
-            Vertex { pos: [p2.0, -p2.1], tex_coord: [0.0, 0.0] },
+            Vertex { pos: [p1.0, -p1.1, layer], tex_coord: [0.0, 0.0] },
+            Vertex { pos: [p2.0, -p2.1, layer], tex_coord: [0.0, 0.0] },
         ]);
+        // XXX: Copy-pasted code
 
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
@@ -230,7 +226,8 @@ impl Context {
         let slice = mesh.to_slice(gfx::Line);
         let program = self.graphics.device.link_program(
             VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
-        let mut draw_state = gfx::DrawState::new();
+        let mut draw_state = gfx::DrawState::new()
+            .depth(gfx::state::LessEqual, true);
         draw_state.primitive.method = gfx::state::Line(thickness);
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &program, &mesh, slice, &draw_state).unwrap();
@@ -333,7 +330,7 @@ GLSL_120: b"
 
     uniform vec4 color;
 
-    attribute vec2 a_pos;
+    attribute vec3 a_pos;
     attribute vec2 a_tex_coord;
 
     // TODO: Make color a uniform argument.
@@ -343,7 +340,7 @@ GLSL_120: b"
     void main() {
         v_tex_coord = a_tex_coord;
         v_color = color;
-        gl_Position = vec4(a_pos, 0.0, 1.0);
+        gl_Position = vec4(a_pos, 1.0);
     }
 "
 };
@@ -374,7 +371,7 @@ pub struct ShaderParam {
 #[vertex_format]
 struct Vertex {
     #[name = "a_pos"]
-    pos: [f32, ..2],
+    pos: [f32, ..3],
 
     #[name = "a_tex_coord"]
     tex_coord: [f32, ..2],
