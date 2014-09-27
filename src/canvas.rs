@@ -58,8 +58,8 @@ impl Canvas {
     }
 
     pub fn add_image<P: Pixel<u8>, I: GenericImage<P>>(
-        &mut self, image: I) -> Image {
-        Image(self.builder.push(image))
+        &mut self, offset: V2<int>, image: I) -> Image {
+        Image(self.builder.push(offset, image))
     }
 
     /// Start running the engine, return an event iteration.
@@ -78,7 +78,7 @@ impl Canvas {
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
-            let glyph = self.add_image(SubImage::new(&mut font_sheet, x, y, 8, 8));
+            let glyph = self.add_image(V2(0, 8), SubImage::new(&mut font_sheet, x, y, 8, 8));
             self.font_glyphs.insert((i + 32) as u8 as char, glyph);
         }
     }

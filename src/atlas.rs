@@ -17,7 +17,7 @@ impl AtlasBuilder {
     }
 
     pub fn push<P: Pixel<u8>, I: GenericImage<P>>(
-        &mut self, mut image: I) -> uint {
+        &mut self, offset: V2<int>, mut image: I) -> uint {
 
         let Rect(pos, dim) = util::crop_alpha(&image);
         let cropped = SubImage::new(&mut image,
@@ -30,7 +30,7 @@ impl AtlasBuilder {
             .collect(),
             w, h);
         self.images.push(img);
-        self.draw_offsets.push(pos);
+        self.draw_offsets.push(pos - offset);
         self.images.len()
     }
 }
@@ -81,7 +81,7 @@ impl Atlas {
             .collect();
 
         let vertices: Vec<Rect<f32>> = builder.draw_offsets.iter().enumerate()
-            .map(|(i, &offset)| Rect(offset.map(|x| x as f32), (offset + dims[i]).map(|x| x as f32)))
+            .map(|(i, &offset)| Rect(offset.map(|x| x as f32), dims[i].map(|x| x as f32)))
             .collect();
 
         assert!(texcoords.len() == vertices.len());
