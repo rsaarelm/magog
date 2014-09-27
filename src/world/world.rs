@@ -249,7 +249,7 @@ struct WorldData<T> {
     // implementation would use unboxed vecs for the components and would
     // provide lookup methods faster than a HashMap find to access the
     // components
-    components: HashMap<TypeId, Vec<Option<Box<Any>>>>,
+    components: HashMap<TypeId, Vec<Option<Box<Any + 'static>>>>,
 
     next_idx: uint,
     reusable_idxs: Vec<uint>,
@@ -315,7 +315,7 @@ impl<T: System> WorldData<T> {
         while bin.len() <= e.id.idx { bin.push(None); }
         bin.as_mut_slice()[e.id.idx] = match comp {
             None => None,
-            Some(c) => Some(box c as Box<Any>),
+            Some(c) => Some(box c as Box<Any + 'static>),
         };
 
         match bin.as_mut_slice()[e.id.idx] {

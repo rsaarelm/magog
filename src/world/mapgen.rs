@@ -73,7 +73,8 @@ impl MapGen for World {
         player.set_location(loc);
         self.gen_mobs(&spec);
 
-        self.system_mut().fx.msg(format!("Level {}", depth).as_slice());
+        // FIXME
+        //self.system_mut().fx.msg(format!("Level {}", depth).as_slice());
     }
 }
 

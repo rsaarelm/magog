@@ -4,8 +4,8 @@ use calx::{V2, Canvas, Image};
 
 local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
 
-fn batch(ctx: &mut Canvas, data: &[u8],
-       elt_dim: (int, int), offset: (int, int)) -> Vec<Image> {
+fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
+       elt_dim: (int, int), offset: (int, int)) {
        /*
     let image = image::load_from_memory(data, image::PNG).unwrap();
     let (elt_w, elt_h) = image.dimensions();
@@ -21,15 +21,14 @@ fn batch(ctx: &mut Canvas, data: &[u8],
     ret
     */
     // TODO
-    vec![]
 }
 
 /// Initialize global tile cache.
 pub fn init(ctx: &mut Canvas) {
-    let mut tiles = vec![];
-    tiles.extend(batch(ctx, include_bin!("../../assets/tile.png"), (32, 32), (-16, -16)).iter());
-    tiles.extend(batch(ctx, include_bin!("../../assets/icon.png"), (8, 8), (0, -8)).iter());
-    tiles.extend(batch(ctx, include_bin!("../../assets/logo.png"), (92, 25), (0, 0)).iter());
+    let mut tiles: Vec<Image> = vec![];
+    batch(&mut tiles, ctx, include_bin!("../../assets/tile.png"), (32, 32), (-16, -16));
+    batch(&mut tiles, ctx, include_bin!("../../assets/icon.png"), (8, 8), (0, -8));
+    batch(&mut tiles, ctx, include_bin!("../../assets/logo.png"), (92, 25), (0, 0));
     TILE_CACHE.replace(Some(RefCell::new(tiles)));
 }
 

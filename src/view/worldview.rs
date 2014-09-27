@@ -1,5 +1,5 @@
 use calx::color::*;
-use calx::{Context};
+use calx::{Context, V2};
 use calx::timing;
 use cgmath::{Aabb, Aabb2, Vector, Vector2};
 use time;
@@ -21,7 +21,7 @@ pub static FX_Z: f32 = 0.375f32;
 pub static CAPTION_Z: f32 = 0.350f32;
 
 // TODO: Replace with calx::V2.
-fn v2<T>(x: T, y: T) { Vector2::new(x, y) }
+fn v2<T>(x: T, y: T) -> Vector2<T> { Vector2::new(x, y) }
 
 /// Drawable representation of a single map location.
 pub struct CellDrawable {
@@ -31,7 +31,7 @@ pub struct CellDrawable {
 }
 
 impl Drawable for CellDrawable {
-    fn draw(&self, ctx: &mut Context, offset: &Vector2<f32>) {
+    fn draw(&self, ctx: &mut Context, offset: &V2<int>) {
         match self.fov {
             Some(_) => {
                 self.draw_cell(ctx, offset)
@@ -73,7 +73,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: &Vector2<f32>, z: f32, color: &Rgb) {
+    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: &V2<int>, z: f32, color: &Rgb) {
         let color = match self.fov {
             Some(Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
@@ -87,7 +87,7 @@ impl CellDrawable {
         */
     }
 
-    fn draw_cell(&self, ctx: &mut Context, offset: &Vector2<f32>) {
+    fn draw_cell(&self, ctx: &mut Context, offset: &V2<int>) {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(Seen) {
@@ -97,7 +97,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_terrain(&self, ctx: &mut Context, offset: &Vector2<f32>) {
+    fn draw_terrain(&self, ctx: &mut Context, offset: &V2<int>) {
         let k = Kernel::new(|loc| self.world.terrain_at(loc), self.loc);
         match k.center {
             terrain::Void => {
@@ -216,7 +216,7 @@ impl CellDrawable {
             },
         }
 
-        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &Rgb) {
+        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &V2<int>, idx: uint, color: &Rgb) {
             c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
@@ -230,7 +230,7 @@ impl CellDrawable {
             }
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &Vector2<f32>, idx: uint, color: &Rgb, opaque: bool) {
+        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &V2<int>, idx: uint, color: &Rgb, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {
@@ -271,7 +271,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_mob(&self, ctx: &mut Context, offset: &Vector2<f32>, mob: &Entity) {
+    fn draw_mob(&self, ctx: &mut Context, offset: &V2<int>, mob: &Entity) {
         let body_pos =
             if is_bobbing(mob) {
                 offset.add_v(timing::cycle_anim(
@@ -376,14 +376,14 @@ static CENTER_X: f32 = 320.0;
 static CENTER_Y: f32 = 180.0;
 
 /// Convert a location into absolute view space coordinates.
-pub fn loc_to_view(loc: Location) -> Vector2<f32> {
+pub fn loc_to_view(loc: Location) -> V2<int> {
     let x = (loc.x) as f32;
     let y = (loc.y) as f32;
     v2(16.0 * x - 16.0 * y, 8.0 * x + 8.0 * y)
 }
 
 /// Convert absolute view space coordinates into a Location.
-pub fn view_to_loc(view_pos: &Vector2<f32>) -> Location {
+pub fn view_to_loc(view_pos: &V2<int>) -> Location {
     let column = ((view_pos.x + 8.0) / 16.0).floor();
     let row = ((view_pos.y as f32 - column * 8.0) / 16.0).floor();
     Location::new((column + row) as i8, row as i8)
@@ -391,21 +391,21 @@ pub fn view_to_loc(view_pos: &Vector2<f32>) -> Location {
 
 /// Convert absolute view space coordinates into screen coordinates centered around a given view
 /// position.
-pub fn view_to_screen(view_center: &Vector2<f32>, view_pos: &Vector2<f32>) -> Vector2<f32> {
+pub fn view_to_screen(view_center: &V2<int>, view_pos: &V2<int>) -> V2<int> {
     view_pos.sub_v(view_center).add_v(&v2(CENTER_X, CENTER_Y))
 }
 
 /// Convert screen coordinates centered around a given view position to absolute view coordinates.
-pub fn screen_to_view(view_center: &Vector2<f32>, screen_pos: &Vector2<f32>) -> Vector2<f32> {
+pub fn screen_to_view(view_center: &V2<int>, screen_pos: &V2<int>) -> V2<int> {
     screen_pos.add_v(view_center).sub_v(&v2(CENTER_X, CENTER_Y))
 }
 
 /// Convert screen coordinates to location.
-pub fn screen_to_loc(center_loc: Location, screen_pos: &Vector2<f32>) -> Location {
+pub fn screen_to_loc(center_loc: Location, screen_pos: &V2<int>) -> Location {
     view_to_loc(&screen_to_view(&loc_to_view(center_loc), screen_pos))
 }
 
 /// Convert location to screen coordinates.
-pub fn loc_to_screen(center_loc: Location, loc: Location) -> Vector2<f32> {
+pub fn loc_to_screen(center_loc: Location, loc: Location) -> V2<int> {
     view_to_screen(&loc_to_view(center_loc), &loc_to_view(loc))
 }

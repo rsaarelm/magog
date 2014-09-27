@@ -20,7 +20,7 @@ use view::main::State;
 use view::titlestate::TitleState;
 
 // TODO: Replace with calx::V2.
-fn v2<T>(x: T, y: T) { Vector2::new(x, y) }
+fn v2<T>(x: T, y: T) -> Vector2<T> { Vector2::new(x, y) }
 
 trait WorldSprite : Drawable {
     fn update(&mut self);
@@ -28,8 +28,8 @@ trait WorldSprite : Drawable {
     fn footprint<'a>(&'a self) -> Items<'a, Location>;
 }
 
-struct WorldEffects<'a> {
-    sprites: Vec<Box<WorldSprite + 'a>>,
+struct WorldEffects {
+    sprites: Vec<Box<WorldSprite + 'static>>,
 }
 
 impl WorldEffects {
@@ -39,7 +39,7 @@ impl WorldEffects {
         }
     }
 
-    pub fn add(&mut self, spr: Box<WorldSprite>) {
+    pub fn add(&mut self, spr: Box<WorldSprite + 'static>) {
         self.sprites.push(spr);
     }
 
@@ -245,9 +245,9 @@ impl /*App for*/ GameState {
 }
 
 impl State for GameState {
-    fn next_state(&self) -> Option<Box<State>> {
+    fn next_state(&self) -> Option<Box<State + 'static>> {
         if !self.running {
-            Some(box TitleState::new() as Box<State>)
+            Some(box TitleState::new() as Box<State + 'static>)
         } else {
             None
         }

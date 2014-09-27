@@ -8,7 +8,7 @@ use world::world;
 // XXX: Reference to view layer. Wanted to make this work using traits, but
 // the ownership system got too hard to track when I also didn't want to make
 // System type-parametrized to keep the Entity and World type aliases simple.
-use view::gamestate::Fx;
+//use view::gamestate::Fx;
 
 pub type Entity = world::Entity<System>;
 pub type World = world::World<System>;
@@ -22,7 +22,8 @@ pub struct System {
     pub depth: int,
     pub area: HashMap<Location, TerrainType>,
     pub spatial: SpatialSystem,
-    pub fx: Fx,
+    // FIXME
+    //pub fx: Fx,
     pub camera: Option<Entity>,
 }
 
@@ -38,7 +39,7 @@ impl world::System for System {
 }
 
 impl System {
-    pub fn new(seed: u32, fx: Fx) -> System {
+    pub fn new(seed: u32/*, fx: Fx*/) -> System {
         System {
             world: None,
             seed: seed,
@@ -46,7 +47,7 @@ impl System {
             depth: 0,
             area: HashMap::new(),
             spatial: SpatialSystem::new(),
-            fx: fx,
+            //fx: fx,
             camera: None,
         }
     }

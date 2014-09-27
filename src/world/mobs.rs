@@ -320,7 +320,8 @@ impl Mob for Entity {
                 self.remove_status(status::Asleep);
 
                 // XXX: Msging REALLY needs a nicer API.
-                self.world().system_mut().fx.msg(format!("{} wakes up.", MOB_KINDS[self.mob_type() as uint].name).as_slice());
+                // FIXME
+                //self.world().system_mut().fx.msg(format!("{} wakes up.", MOB_KINDS[self.mob_type() as uint].name).as_slice());
             }
         }
     }
