@@ -10,19 +10,19 @@ use std::mem;
 use uuid::Uuid;
 
 /// Toplevel container of the entity component system.
-pub struct World<'a, T> {
-    data: Rc<RefCell<WorldData<'a, T>>>,
+pub struct World<T> {
+    data: Rc<RefCell<WorldData<T>>>,
 }
 
-impl<'a, T> Clone for World<'a, T> {
-    fn clone(&self) -> World<'a, T> {
+impl<T> Clone for World<T> {
+    fn clone(&self) -> World<T> {
         World { data: self.data.clone() }
     }
 }
 
-impl<'a, T: System> World<'a, T> {
+impl<T: System> World<T> {
     /// Create a world coupled with an application specific system object.
-    pub fn new(master_system: T) -> World<'a, T> {
+    pub fn new(master_system: T) -> World<T> {
         let ret = World {
             data: Rc::new(RefCell::new(WorldData::new(master_system))),
         };
@@ -83,12 +83,12 @@ impl<'a, T: System> World<'a, T> {
     }
 }
 
-pub struct Entities<'a, T> {
+pub struct Entities<T> {
     idx: uint,
-    world: Weak<RefCell<WorldData<'a, T>>>,
+    world: Weak<RefCell<WorldData<T>>>,
 }
 
-impl<'a, T> Iterator<Entity<'a, T>> for Entities<'a, T> {
+impl<T> Iterator<Entity<T>> for Entities<T> {
     fn next(&mut self) -> Option<Entity<T>> {
         let w = self.world.upgrade().unwrap();
         loop {
@@ -126,38 +126,38 @@ pub trait System {
     fn deleted(&mut self, e: &Entity<Self>);
 }
 
-pub struct Entity<'a, T> {
-    world: Weak<RefCell<WorldData<'a, T>>>,
+pub struct Entity<T> {
+    world: Weak<RefCell<WorldData<T>>>,
     id: EntityId,
 }
 
-impl<'a, T> Hash for Entity<'a, T> {
+impl <T> Hash for Entity<T> {
     fn hash(&self, state: &mut SipState) {
         self.id.hash(state);
     }
 }
 
-impl<'a, T> PartialEq for Entity<'a, T> {
+impl <T> PartialEq for Entity<T> {
     fn eq(&self, other: &Entity<T>) -> bool {
         self.id.eq(&other.id)
     }
 }
 
-impl<'a, T> Eq for Entity<'a, T> {}
+impl <T> Eq for Entity<T> {}
 
-impl<'a, T> Clone for Entity<'a, T> {
-    fn clone(&self) -> Entity<'a, T> {
+impl<T> Clone for Entity<T> {
+    fn clone(&self) -> Entity<T> {
         Entity { world: self.world.clone(), id: self.id }
     }
 }
 
-impl<'a, T> Show for Entity<'a, T> {
+impl<T> Show for Entity<T> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(f, "{}", self.id)
     }
 }
 
-impl<'a, T: System> Entity<'a, T> {
+impl<T: System> Entity<T> {
     /// Add or reset a component in the entity. Causes a "changed" call to the
     /// world system.
     ///
@@ -219,19 +219,19 @@ impl<'a, T: System> Entity<'a, T> {
 /// borrow internally, so using this carelessly may lead to runtime borrow
 /// errors. You should generally keep access to the concrete entity data short
 /// in scope and low in the call stack to prevent unexpected borrow failures.
-pub struct CompProxyMut<'a, T, C> {
-    world: Weak<RefCell<WorldData<'a, T>>>,
+pub struct CompProxyMut<T, C> {
+    world: Weak<RefCell<WorldData<T>>>,
     id: EntityId,
 }
 
-impl<'a, T: System, C: 'static> Deref<C> for CompProxyMut<'a, T, C> {
+impl<T: System, C: 'static> Deref<C> for CompProxyMut<T, C> {
     fn deref<'a>(&'a self) -> &'a C {
         self.world.upgrade().unwrap().borrow()
             .comp_ref::<'a, C>(self.id).unwrap()
     }
 }
 
-impl<'a, T: System, C: 'static> DerefMut<C> for CompProxyMut<'a, T, C> {
+impl<T: System, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
     fn deref_mut<'a>(&'a mut self) -> &'a mut C {
         self.world.upgrade().unwrap().borrow_mut()
             .comp_ref_mut::<'a, C>(self.id).unwrap()
@@ -244,12 +244,12 @@ struct EntityId {
     idx: uint,
 }
 
-struct WorldData<'a, T> {
+struct WorldData<T> {
     // XXX: This is much less efficient than it could be. A serious
     // implementation would use unboxed vecs for the components and would
     // provide lookup methods faster than a HashMap find to access the
     // components
-    components: HashMap<TypeId, Vec<Option<Box<Any + 'a>>>>,
+    components: HashMap<TypeId, Vec<Option<Box<Any>>>>,
 
     next_idx: uint,
     reusable_idxs: Vec<uint>,
@@ -258,8 +258,8 @@ struct WorldData<'a, T> {
     master_system: T,
 }
 
-impl<'a, T: System> WorldData<'a, T> {
-    fn new(master_system: T) -> WorldData<'a, T> {
+impl<T: System> WorldData<T> {
+    fn new(master_system: T) -> WorldData<T> {
         WorldData {
             components: HashMap::new(),
             next_idx: 0,

@@ -11,12 +11,12 @@ use world::world;
 use view::gamestate::Fx;
 
 pub type Entity = world::Entity<System>;
-pub type World<'a> = world::World<'a, System>;
+pub type World = world::World<System>;
 
 /// Global game state values. The entity component system part is handled by
 /// the engine code.
-pub struct System<'a> {
-    world: Option<World<'a>>,
+pub struct System {
+    world: Option<World>,
     pub seed: u32,
     tick: u64,
     pub depth: int,
@@ -26,7 +26,7 @@ pub struct System<'a> {
     pub camera: Option<Entity>,
 }
 
-impl<'a> world::System for System<'a> {
+impl world::System for System {
     fn register(&mut self, world: &World) { self.world = Some(world.clone()); }
 
     fn added(&mut self, _e: &Entity) {}
@@ -37,8 +37,8 @@ impl<'a> world::System for System<'a> {
     }
 }
 
-impl<'a> System<'a> {
-    pub fn new(seed: u32, fx: Fx) -> System<'a> {
+impl System {
+    pub fn new(seed: u32, fx: Fx) -> System {
         System {
             world: None,
             seed: seed,
