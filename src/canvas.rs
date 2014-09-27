@@ -74,7 +74,7 @@ impl Canvas {
     fn init_font(&mut self) {
         let mut font_sheet = util::color_key(
             &image::load_from_memory(include_bin!("../assets/font.png"), image::PNG).unwrap(),
-            0x80u8, 0x80u8, 0x80u8);
+            &Rgb::new(0x80u8, 0x80u8, 0x80u8));
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);

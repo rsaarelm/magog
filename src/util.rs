@@ -3,14 +3,15 @@ use std::cmp::{min, max};
 use std::num::{zero};
 use image::{GenericImage, Pixel, ImageBuf, Rgba};
 use geom::{V2, Rect};
+use color::Rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
-pub fn color_key<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
-    image: &I, r: T, g: T, b: T) -> ImageBuf<Rgba<T>> {
+pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
+    image: &I, color: &Rgb) -> ImageBuf<Rgba<u8>> {
     let (w, h) = image.dimensions();
     let pixels = image.pixels().map(|(_, _, p)| {
             let (pr, pg, pb, mut pa) = p.channels4();
-            if pr == r && pg == g && pb == b {
+            if pr == color.r && pg == color.g && pb == color.b {
                 pa = Default::default();
             }
             Pixel::from_channels(pr, pg, pb, pa)
