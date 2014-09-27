@@ -1,4 +1,3 @@
-use cgmath::{Vector, Vector2};
 use calx::{Context, V2};
 
 pub trait Drawable {

@@ -366,7 +366,7 @@ impl Mobs for World {
     }
 
     fn clear_npcs(&mut self) {
-        for e in self.mobs().mut_iter() {
+        for e in self.mobs().iter_mut() {
             if e.mob_type() != Player {
                 e.delete();
             }
@@ -376,7 +376,7 @@ impl Mobs for World {
     fn update_mobs(&mut self) {
         self.wake_up_mobs();
 
-        for mob in self.mobs().mut_iter() {
+        for mob in self.mobs().iter_mut() {
             if !mob.acts_this_frame() { continue; }
             if mob.mob_type() == Player { continue; }
             mob.update_ai();
@@ -390,7 +390,7 @@ impl Mobs for World {
         let player_fov = self.camera().into::<Fov>().unwrap();
         let player_loc = self.player().unwrap().location();
         for &loc in player_fov.deref().seen_locs() {
-            for mob in self.mobs_at(loc).mut_iter() {
+            for mob in self.mobs_at(loc).iter_mut() {
                 mob.alert_at(player_loc);
             }
         }

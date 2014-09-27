@@ -273,13 +273,14 @@ impl<T: System> WorldData<T> {
         assert!(self.uuids.len() <= id.idx || self.uuids[id.idx].is_none(),
             "New entity clobbering existing one");
 
-        self.uuids.grow_set(id.idx, &None, Some(id.uuid));
+        while self.uuids.len() < (id.idx + 1) { self.uuids.push(None); }
+        *self.uuids.get_mut(id.idx) = Some(id.uuid);
     }
 
     fn delete_entity(&mut self, e: &Entity<T>) {
         self.uuids.as_mut_slice()[e.id.idx] = None;
 
-        for (_, c) in self.components.mut_iter() {
+        for (_, c) in self.components.iter_mut() {
             if c.len() > e.id.idx {
                 c.as_mut_slice()[e.id.idx] = None;
             }
@@ -331,9 +332,9 @@ impl<T: System> WorldData<T> {
             None => { None }
             Some(bin) => {
                 if id.idx < bin.len() {
-                    match bin.get(id.idx) {
-                        &Some(ref c) => { unsafe { Some(mem::transmute(c.as_ref::<C>().unwrap())) } }
-                        &None => None
+                    match bin[id.idx] {
+                        Some(ref c) => { unsafe { Some(mem::transmute(c.downcast_ref::<C>().unwrap())) } }
+                        None => None
                     }
                 } else {
                     None
@@ -351,7 +352,7 @@ impl<T: System> WorldData<T> {
                 if id.idx < bin.len() {
                     match bin.get_mut(id.idx) {
                         &Some(ref mut c) => {
-                            unsafe { Some(mem::transmute(c.as_mut::<C>().unwrap())) }
+                            unsafe { Some(mem::transmute(c.downcast_mut::<C>().unwrap())) }
                         }
                         &None => None
                     }

@@ -1,6 +1,7 @@
 #![crate_name="magog"]
 #![feature(globs)]
 #![feature(macro_rules)]
+#![feature(tuple_indexing)]
 
 extern crate num;
 extern crate rand;

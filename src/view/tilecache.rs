@@ -1,26 +1,24 @@
 use std::cell::RefCell;
 use image;
+use image::{SubImage, GenericImage};
 use calx::{V2, Canvas, Image};
 
 local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
 
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (int, int), offset: (int, int)) {
-       /*
-    let image = image::load_from_memory(data, image::PNG).unwrap();
-    let (elt_w, elt_h) = image.dimensions();
-    let (offset_w, offset_h) = offset;
+    let mut image = image::load_from_memory(data, image::PNG).unwrap();
+    let (w, h) = image.dimensions();
+    let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
 
-    let set = Tile::new_alpha_set(
-            &Vector2::new(elt_w, elt_h),
-            &Vector2::new(image.width as int, image.height as int),
-            image.pixels,
-            &Vector2::new(offset_w, offset_h));
-    let ret = set.len();
-    tiles.push_all(set.as_slice());
-    ret
-    */
-    // TODO
+    for y in range(0, rows) {
+        for x in range(0, columns) {
+            tiles.push(ctx.add_image(V2(offset.0, offset.1), SubImage::new(
+                &mut image,
+                x * elt_dim.0 as u32, y * elt_dim.1 as u32,
+                elt_dim.0 as u32, elt_dim.1 as u32)));
+        }
+    }
 }
 
 /// Initialize global tile cache.
