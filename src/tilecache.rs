@@ -27,9 +27,9 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
 /// Initialize global tile cache.
 pub fn init(ctx: &mut Canvas) {
     let mut tiles: Vec<Image> = vec![];
-    batch(&mut tiles, ctx, include_bin!("../../assets/tile.png"), (32, 32), (-16, -16));
-    batch(&mut tiles, ctx, include_bin!("../../assets/icon.png"), (8, 8), (0, -8));
-    batch(&mut tiles, ctx, include_bin!("../../assets/logo.png"), (92, 25), (0, 0));
+    batch(&mut tiles, ctx, include_bin!("../assets/tile.png"), (32, 32), (-16, -16));
+    batch(&mut tiles, ctx, include_bin!("../assets/icon.png"), (8, 8), (0, -8));
+    batch(&mut tiles, ctx, include_bin!("../assets/logo.png"), (92, 25), (0, 0));
     TILE_CACHE.replace(Some(RefCell::new(tiles)));
 }
 

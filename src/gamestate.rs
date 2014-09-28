@@ -11,13 +11,13 @@ use world::mapgen::{MapGen};
 use world::area::Area;
 use world::mobs::{Mobs, MobComp, Mob};
 use world::mobs;
-use view::worldview;
-use view::worldview::{loc_to_view};
-use view::tilecache;
-use view::drawable::Drawable;
-use view::tilecache::icon;
-use view::main::State;
-use view::titlestate::TitleState;
+use worldview;
+use worldview::{loc_to_view};
+use tilecache;
+use drawable::Drawable;
+use tilecache::icon;
+use main::State;
+use titlestate::TitleState;
 
 // TODO: Replace with calx::V2.
 fn v2<T>(x: T, y: T) -> Vector2<T> { Vector2::new(x, y) }

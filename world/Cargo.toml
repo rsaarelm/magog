@@ -1,0 +1,20 @@
+[package]
+
+name = "world"
+version = "0.0.1"
+authors = [ "risto.saarelma@iki.fi" ]
+
+[lib]
+name = "world"
+
+[dependencies.cgmath]
+git = "https://github.com/bjz/cgmath-rs"
+
+[dependencies.num]
+git = "https://github.com/rust-lang/num"
+
+[dependencies.uuid]
+git = "https://github.com/rust-lang/uuid"
+
+[dependencies.calx]
+git = "https://github.com/rsaarelm/calx"
