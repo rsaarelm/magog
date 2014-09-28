@@ -30,7 +30,7 @@ impl AtlasBuilder {
             .collect(),
             w, h);
         self.images.push(img);
-        self.draw_offsets.push(pos - offset);
+        self.draw_offsets.push(pos + offset);
         self.images.len() - 1
     }
 }
