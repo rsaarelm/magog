@@ -2,17 +2,20 @@
 #![feature(globs)]
 #![feature(macro_rules)]
 #![feature(tuple_indexing)]
+#![comment = "Magog toplevel and display interface"]
 
 extern crate cgmath;
 extern crate image;
 extern crate calx;
 extern crate world;
+extern crate time;
 
 use calx::{V2};
 use calx::color;
 
 pub mod tilecache;
 pub mod drawable;
+pub mod worldview;
 // TODO
 //pub mod gamestate;
 //pub mod titlestate;

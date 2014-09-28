@@ -1,11 +1,11 @@
 use calx::color::*;
 use calx::{Context, V2};
 use calx::timing;
-use cgmath::{Aabb, Aabb2, Vector, Vector2};
+use cgmath::{Aabb, Aabb2, Vector2};
 use time;
-use view::tilecache;
-use view::tilecache::tile::*;
-use view::drawable::{Drawable, Translated};
+use tilecache;
+use tilecache::tile::*;
+use drawable::{Drawable, Translated};
 use world::area::Area;
 use world::fov::{Fov, FovStatus, Seen, Remembered};
 use world::mobs::{Mobs, Mob, MobType};
@@ -31,7 +31,7 @@ pub struct CellDrawable {
 }
 
 impl Drawable for CellDrawable {
-    fn draw(&self, ctx: &mut Context, offset: &V2<int>) {
+    fn draw(&self, ctx: &mut Context, offset: V2<int>) {
         match self.fov {
             Some(_) => {
                 self.draw_cell(ctx, offset)
@@ -73,7 +73,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: &V2<int>, z: f32, color: &Rgb) {
+    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: V2<int>, z: f32, color: &Rgb) {
         let color = match self.fov {
             Some(Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
@@ -87,7 +87,7 @@ impl CellDrawable {
         */
     }
 
-    fn draw_cell(&self, ctx: &mut Context, offset: &V2<int>) {
+    fn draw_cell(&self, ctx: &mut Context, offset: V2<int>) {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(Seen) {
@@ -97,7 +97,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_terrain(&self, ctx: &mut Context, offset: &V2<int>) {
+    fn draw_terrain(&self, ctx: &mut Context, offset: V2<int>) {
         let k = Kernel::new(|loc| self.world.terrain_at(loc), self.loc);
         match k.center {
             terrain::Void => {
@@ -216,7 +216,7 @@ impl CellDrawable {
             },
         }
 
-        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &V2<int>, idx: uint, color: &Rgb) {
+        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<int>, idx: uint, color: &Rgb) {
             c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
@@ -230,7 +230,7 @@ impl CellDrawable {
             }
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: &V2<int>, idx: uint, color: &Rgb, opaque: bool) {
+        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<int>, idx: uint, color: &Rgb, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {
@@ -271,24 +271,24 @@ impl CellDrawable {
         }
     }
 
-    fn draw_mob(&self, ctx: &mut Context, offset: &V2<int>, mob: &Entity) {
+    fn draw_mob(&self, ctx: &mut Context, offset: V2<int>, mob: &Entity) {
         let body_pos =
             if is_bobbing(mob) {
-                offset.add_v(timing::cycle_anim(
+                offset + *(timing::cycle_anim(
                         0.3f64,
-                        &[v2(0.0f32, 0.0f32), v2(0.0f32, -1.0f32)]))
-            } else { *offset };
+                        [V2(0, 0), V2(0, -1)]))
+            } else { offset };
 
         let (icon, color) = visual(mob.mob_type());
         match mob.mob_type() {
             mobs::Serpent => {
                 // Body
-                self.draw_tile(ctx, 94, &body_pos, BLOCK_Z, &color);
+                self.draw_tile(ctx, 94, body_pos, BLOCK_Z, &color);
                 // Ground mound
                 self.draw_tile(ctx, 95, offset, BLOCK_Z, &color);
             }
             _ => {
-                self.draw_tile(ctx, icon, &body_pos, BLOCK_Z, &color);
+                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
             }
         }
 
@@ -338,74 +338,78 @@ impl<C: Clone> Kernel<C> {
 pub fn draw_area(
     world: &World, ctx: &mut Context, center: Location, fov: &Fov) {
     let mut bounds = Aabb2::new(
-        screen_to_loc(center, &v2(0f32, 0f32)).to_point(),
-        screen_to_loc(center, &v2(640f32, 392f32)).to_point());
+        screen_to_loc(center, V2(0, 0)).to_point(),
+        screen_to_loc(center, V2(640, 392)).to_point());
     bounds = bounds.grow(
-        &screen_to_loc(center, &v2(640f32, 0f32)).to_point());
+        &screen_to_loc(center, V2(640, 0)).to_point());
     bounds = bounds.grow(
-        &screen_to_loc(center, &v2(0f32, 392f32)).to_point());
+        &screen_to_loc(center, V2(0, 392)).to_point());
 
-    for pt in bounds.points() {
-        let loc = Location::new(pt.x as i8, pt.y as i8);
+    for y in range(bounds.min().y, bounds.max().y) {
+        for x in range(bounds.min().x, bounds.max().x) {
+            let loc = Location::new(x as i8, y as i8);
 
-        let drawable = Translated::new(loc_to_view(loc),
-        CellDrawable::new(loc, fov.get(loc), world.clone()));
-        drawable.draw(ctx, &view_to_screen(&loc_to_view(center), &v2(0f32, 0f32)));
+            let drawable = Translated::new(loc_to_view(loc),
+            CellDrawable::new(loc, fov.get(loc), world.clone()));
+            drawable.draw(ctx, view_to_screen(loc_to_view(center), V2(0, 0)));
+        }
     }
 }
 
 
 pub fn draw_mouse(ctx: &mut Context, center_loc: Location) -> Location {
+    // TODO
+    /*
     let mouse = ctx.get_mouse();
     let cursor_loc = screen_to_loc(center_loc, &mouse.pos);
     let draw_pos = loc_to_screen(center_loc, cursor_loc);
 
-    // TODO
-    /*
     ctx.set_color(&FIREBRICK);
     ctx.set_layer(FLOOR_Z);
     ctx.draw_image(&tilecache::get(CURSOR_BOTTOM), &draw_pos);
     ctx.set_layer(BLOCK_Z);
     ctx.draw_image(&tilecache::get(CURSOR_TOP), &draw_pos);
-    */
 
     cursor_loc
+    */
+
+    Location::new(0, 0)
 }
 
-static CENTER_X: f32 = 320.0;
-static CENTER_Y: f32 = 180.0;
+static CENTER_X: int = 320;
+static CENTER_Y: int = 180;
 
 /// Convert a location into absolute view space coordinates.
 pub fn loc_to_view(loc: Location) -> V2<int> {
-    let x = (loc.x) as f32;
-    let y = (loc.y) as f32;
-    v2(16.0 * x - 16.0 * y, 8.0 * x + 8.0 * y)
+    let x = (loc.x) as int;
+    let y = (loc.y) as int;
+    V2(16 * x - 16 * y, 8 * x + 8 * y)
 }
 
 /// Convert absolute view space coordinates into a Location.
-pub fn view_to_loc(view_pos: &V2<int>) -> Location {
-    let column = ((view_pos.x + 8.0) / 16.0).floor();
-    let row = ((view_pos.y as f32 - column * 8.0) / 16.0).floor();
+pub fn view_to_loc(view_pos: V2<int>) -> Location {
+    let column = ((view_pos.0 as f32 + 8.0) / 16.0).floor();
+    let row = ((view_pos.1 as f32 - column * 8.0) / 16.0).floor();
     Location::new((column + row) as i8, row as i8)
 }
 
 /// Convert absolute view space coordinates into screen coordinates centered around a given view
 /// position.
-pub fn view_to_screen(view_center: &V2<int>, view_pos: &V2<int>) -> V2<int> {
-    view_pos.sub_v(view_center).add_v(&v2(CENTER_X, CENTER_Y))
+pub fn view_to_screen(view_center: V2<int>, view_pos: V2<int>) -> V2<int> {
+    view_pos - view_center + V2(CENTER_X, CENTER_Y)
 }
 
 /// Convert screen coordinates centered around a given view position to absolute view coordinates.
-pub fn screen_to_view(view_center: &V2<int>, screen_pos: &V2<int>) -> V2<int> {
-    screen_pos.add_v(view_center).sub_v(&v2(CENTER_X, CENTER_Y))
+pub fn screen_to_view(view_center: V2<int>, screen_pos: V2<int>) -> V2<int> {
+    screen_pos + view_center - V2(CENTER_X, CENTER_Y)
 }
 
 /// Convert screen coordinates to location.
-pub fn screen_to_loc(center_loc: Location, screen_pos: &V2<int>) -> Location {
-    view_to_loc(&screen_to_view(&loc_to_view(center_loc), screen_pos))
+pub fn screen_to_loc(center_loc: Location, screen_pos: V2<int>) -> Location {
+    view_to_loc(screen_to_view(loc_to_view(center_loc), screen_pos))
 }
 
 /// Convert location to screen coordinates.
 pub fn loc_to_screen(center_loc: Location, loc: Location) -> V2<int> {
-    view_to_screen(&loc_to_view(center_loc), &loc_to_view(loc))
+    view_to_screen(loc_to_view(center_loc), loc_to_view(loc))
 }
