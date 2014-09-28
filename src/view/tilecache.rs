@@ -1,13 +1,16 @@
 use std::cell::RefCell;
 use image;
 use image::{SubImage, GenericImage};
-use calx::{V2, Canvas, Image};
+use calx::{V2, Canvas, Image, Rgb};
+use calx::util;
 
 local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
 
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (int, int), offset: (int, int)) {
-    let mut image = image::load_from_memory(data, image::PNG).unwrap();
+    let mut image = util::color_key(
+        &image::load_from_memory(data, image::PNG).unwrap(),
+        &Rgb::new(0x80u8, 0x80u8, 0x80u8));
     let (w, h) = image.dimensions();
     let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
 

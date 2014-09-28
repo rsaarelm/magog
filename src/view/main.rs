@@ -1,3 +1,7 @@
+use view::tilecache;
+use calx;
+use calx::{V2};
+use calx::color;
 /*
 use view::tilecache;
 use calx::engine::{App, Engine, Key};
@@ -60,5 +64,20 @@ pub fn main() {
 */
 
 pub fn main() {
-    println!("TODO");
+    let mut canvas = calx::Canvas::new();
+    tilecache::init(&mut canvas);
+
+    for evt in canvas.run() {
+        match evt {
+            calx::Render(ctx) => {
+                ctx.clear(&color::BLACK);
+                let img = ctx.font_image('F').unwrap();
+                ctx.draw_image(V2(0, 0), 0.4, tilecache::get(tilecache::tile::AVATAR), &color::ORANGE);
+            }
+            calx::KeyPressed(calx::key::KeyEscape) => {
+                return;
+            }
+            _ => ()
+        }
+    }
 }
