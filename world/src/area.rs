@@ -1,7 +1,7 @@
 use cgmath::Vector2;
-use world::terrain::*;
-use world::system::{Entity, World};
-use world::spatial::{Location};
+use terrain::*;
+use system::{Entity, World};
+use spatial::{Location};
 
 /// Terrain properties and operations.
 pub trait Area {

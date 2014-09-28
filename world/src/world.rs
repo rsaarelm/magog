@@ -10,20 +10,20 @@ use std::mem;
 use uuid::Uuid;
 
 /// Toplevel container of the entity component system.
-pub struct World<T> {
+pub struct WorldBase<T> {
     data: Rc<RefCell<WorldData<T>>>,
 }
 
-impl<T> Clone for World<T> {
-    fn clone(&self) -> World<T> {
-        World { data: self.data.clone() }
+impl<T> Clone for WorldBase<T> {
+    fn clone(&self) -> WorldBase<T> {
+        WorldBase { data: self.data.clone() }
     }
 }
 
-impl<T: System> World<T> {
+impl<T: SystemBase> WorldBase<T> {
     /// Create a world coupled with an application specific system object.
-    pub fn new(master_system: T) -> World<T> {
-        let ret = World {
+    pub fn new(master_system: T) -> WorldBase<T> {
+        let ret = WorldBase {
             data: Rc::new(RefCell::new(WorldData::new(master_system))),
         };
         ret.data.borrow_mut().master_system.register(&ret);
@@ -32,15 +32,15 @@ impl<T: System> World<T> {
 
     /// Wrap an EntityId struct into an entity handle that has a backreference
     /// to the world object.
-    fn wrap(&self, id: EntityId) -> Entity<T> {
-        Entity {
+    fn wrap(&self, id: EntityId) -> EntityBase<T> {
+        EntityBase {
             world: self.data.downgrade(),
             id: id
         }
     }
 
     /// Create a new entity bound to this world.
-    pub fn new_entity(&mut self) -> Entity<T> {
+    pub fn new_entity(&mut self) -> EntityBase<T> {
         let id = EntityId {
             idx: self.data.borrow_mut().get_idx(),
             uuid: Uuid::new_v4(),
@@ -51,7 +51,7 @@ impl<T: System> World<T> {
         ret
     }
 
-    pub fn delete_entity(&mut self, e: &Entity<T>) {
+    pub fn delete_entity(&mut self, e: &EntityBase<T>) {
         self.data.borrow_mut().delete_entity(e);
     }
 
@@ -63,7 +63,7 @@ impl<T: System> World<T> {
         unsafe { mem::transmute(&self.data.borrow_mut().master_system) }
     }
 
-    pub fn find_entity(&self, uuid: &Uuid) -> Option<Entity<T>> {
+    pub fn find_entity(&self, uuid: &Uuid) -> Option<EntityBase<T>> {
         match self.data.borrow().uuids.as_slice().position_elem(&Some(*uuid)) {
             Some(idx) => Some(self.wrap(EntityId { uuid: *uuid, idx: idx })),
             None => None
@@ -88,8 +88,8 @@ pub struct Entities<T> {
     world: Weak<RefCell<WorldData<T>>>,
 }
 
-impl<T> Iterator<Entity<T>> for Entities<T> {
-    fn next(&mut self) -> Option<Entity<T>> {
+impl<T> Iterator<EntityBase<T>> for Entities<T> {
+    fn next(&mut self) -> Option<EntityBase<T>> {
         let w = self.world.upgrade().unwrap();
         loop {
             let uuids = &w.borrow().uuids;
@@ -97,7 +97,7 @@ impl<T> Iterator<Entity<T>> for Entities<T> {
             let (idx, uuid) = (self.idx, uuids[self.idx]);
             self.idx += 1;
             match uuid {
-                Some(uuid) => return Some(Entity {
+                Some(uuid) => return Some(EntityBase {
                     world: self.world.clone(),
                     id: EntityId {
                         uuid: uuid,
@@ -113,51 +113,51 @@ impl<T> Iterator<Entity<T>> for Entities<T> {
 
 /// Callback interface for application data connected to the component system
 /// world.
-pub trait System {
+pub trait SystemBase {
     /// Callback for initially attaching the system to a world.
-    fn register(&mut self, world: &World<Self>);
+    fn register(&mut self, world: &WorldBase<Self>);
     /// Callback for adding a new entity to world.
-    fn added(&mut self, e: &Entity<Self>);
+    fn added(&mut self, e: &EntityBase<Self>);
     /// Callback for a component being added or removed in an entity. Note that
     /// this is not called when the data of an existing component is written
     /// to, only if the component is replaced or removed.
-    fn changed<C>(&mut self, e: &Entity<Self>, component: Option<&C>);
+    fn changed<C>(&mut self, e: &EntityBase<Self>, component: Option<&C>);
     /// Callback for an entity being deleted.
-    fn deleted(&mut self, e: &Entity<Self>);
+    fn deleted(&mut self, e: &EntityBase<Self>);
 }
 
-pub struct Entity<T> {
+pub struct EntityBase<T> {
     world: Weak<RefCell<WorldData<T>>>,
     id: EntityId,
 }
 
-impl <T> Hash for Entity<T> {
+impl <T> Hash for EntityBase<T> {
     fn hash(&self, state: &mut SipState) {
         self.id.hash(state);
     }
 }
 
-impl <T> PartialEq for Entity<T> {
-    fn eq(&self, other: &Entity<T>) -> bool {
+impl <T> PartialEq for EntityBase<T> {
+    fn eq(&self, other: &EntityBase<T>) -> bool {
         self.id.eq(&other.id)
     }
 }
 
-impl <T> Eq for Entity<T> {}
+impl <T> Eq for EntityBase<T> {}
 
-impl<T> Clone for Entity<T> {
-    fn clone(&self) -> Entity<T> {
-        Entity { world: self.world.clone(), id: self.id }
+impl<T> Clone for EntityBase<T> {
+    fn clone(&self) -> EntityBase<T> {
+        EntityBase { world: self.world.clone(), id: self.id }
     }
 }
 
-impl<T> Show for Entity<T> {
+impl<T> Show for EntityBase<T> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(f, "{}", self.id)
     }
 }
 
-impl<T: System> Entity<T> {
+impl<T: SystemBase> EntityBase<T> {
     /// Add or reset a component in the entity. Causes a "changed" call to the
     /// world system.
     ///
@@ -210,8 +210,8 @@ impl<T: System> Entity<T> {
     }
 
     /// Return a handle to the world.
-    pub fn world(&self) -> World<T> {
-        World { data: self.world.upgrade().unwrap() }
+    pub fn world(&self) -> WorldBase<T> {
+        WorldBase { data: self.world.upgrade().unwrap() }
     }
 }
 
@@ -224,14 +224,14 @@ pub struct CompProxyMut<T, C> {
     id: EntityId,
 }
 
-impl<T: System, C: 'static> Deref<C> for CompProxyMut<T, C> {
+impl<T: SystemBase, C: 'static> Deref<C> for CompProxyMut<T, C> {
     fn deref<'a>(&'a self) -> &'a C {
         self.world.upgrade().unwrap().borrow()
             .comp_ref::<'a, C>(self.id).unwrap()
     }
 }
 
-impl<T: System, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
+impl<T: SystemBase, C: 'static> DerefMut<C> for CompProxyMut<T, C> {
     fn deref_mut<'a>(&'a mut self) -> &'a mut C {
         self.world.upgrade().unwrap().borrow_mut()
             .comp_ref_mut::<'a, C>(self.id).unwrap()
@@ -258,7 +258,7 @@ struct WorldData<T> {
     master_system: T,
 }
 
-impl<T: System> WorldData<T> {
+impl<T: SystemBase> WorldData<T> {
     fn new(master_system: T) -> WorldData<T> {
         WorldData {
             components: HashMap::new(),
@@ -277,7 +277,7 @@ impl<T: System> WorldData<T> {
         *self.uuids.get_mut(id.idx) = Some(id.uuid);
     }
 
-    fn delete_entity(&mut self, e: &Entity<T>) {
+    fn delete_entity(&mut self, e: &EntityBase<T>) {
         self.uuids.as_mut_slice()[e.id.idx] = None;
 
         for (_, c) in self.components.iter_mut() {
@@ -303,7 +303,7 @@ impl<T: System> WorldData<T> {
         }
     }
 
-    fn set_component<C: 'static+Clone>(&mut self, e: &Entity<T>, comp: Option<C>) {
+    fn set_component<C: 'static+Clone>(&mut self, e: &EntityBase<T>, comp: Option<C>) {
         let type_id = TypeId::of::<C>();
         // We haven't seen this kind of component yet.
         if !self.components.contains_key(&type_id) {

@@ -1,10 +1,10 @@
 use std::rand;
 use std::rand::Rng;
-use world::spatial::{Location, Position};
-use world::system::{World};
-use world::area::Area;
-use world::mapgen::AreaSpec;
-use world::mobs::{MobType, MobComp, MOB_KINDS};
+use spatial::{Location, Position};
+use system::{World};
+use area::Area;
+use mapgen::AreaSpec;
+use mobs::{MobType, MobComp, MOB_KINDS};
 
 /// Game object factory.
 pub trait Spawn {

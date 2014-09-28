@@ -3,8 +3,8 @@ use std::cmp::max;
 use std::num::{signum, abs};
 use std::f32::consts::PI;
 use cgmath::{Vector2, Point2};
-use world::system::{Entity};
-use world::area::Area;
+use system::{Entity};
+use area::Area;
 
 /// Place and find entities in space.
 pub struct SpatialSystem {

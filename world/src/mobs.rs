@@ -4,13 +4,13 @@ use std::rand;
 use std::rand::Rng;
 use cgmath::{Vector2};
 use calx::color::*;
-use world::system::{World, Entity, EngineLogic};
-use world::spatial::{Location, Position, DIRECTIONS6};
-use world::mapgen::{AreaSpec};
-use world::mapgen;
-use world::area::Area;
-use world::fov::Fov;
-use world::dijkstra;
+use system::{World, Entity, EngineLogic};
+use spatial::{Location, Position, DIRECTIONS6};
+use mapgen::{AreaSpec};
+use mapgen;
+use area::Area;
+use fov::Fov;
+use dijkstra;
 
 #[deriving(Clone, Show)]
 pub struct MobComp {

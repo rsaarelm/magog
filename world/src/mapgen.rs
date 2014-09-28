@@ -5,13 +5,13 @@ use std::rand;
 use rand::Rng;
 use calx::text::Map2DUtil;
 use num::Integer;
-use world::spatial::{Location, DIRECTIONS6, Position};
-use world::system::{World};
-use world::terrain::*;
-use world::system::{};
-use world::spawn::Spawn;
-use world::mobs::{Mobs};
-use world::area::Area;
+use spatial::{Location, DIRECTIONS6, Position};
+use system::{World};
+use terrain::*;
+use system::{};
+use spawn::Spawn;
+use mobs::{Mobs};
+use area::Area;
 
 /// Procedural game world generation.
 pub trait MapGen {

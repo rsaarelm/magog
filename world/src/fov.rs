@@ -1,9 +1,9 @@
 use num::Integer;
 use std::collections::hashmap::{HashSet, SetItems};
 use cgmath::{Vector, Vector2};
-use world::spatial::{Location, DIRECTIONS6};
-use world::system::{World};
-use world::area::Area;
+use spatial::{Location, DIRECTIONS6};
+use system::{World};
+use area::Area;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {
