@@ -8,5 +8,8 @@ extern crate num;
 extern crate rand;
 extern crate calx;
 
+pub use geom::{Location, DIR6, DIR8};
+
 mod world;
 mod ecs;
+mod geom;

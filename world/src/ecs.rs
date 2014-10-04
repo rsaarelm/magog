@@ -1,11 +1,11 @@
 use std::intrinsics::TypeId;
 use std::collections::hashmap::HashMap;
+use std::collections::bitv::Bitv;
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
+use world;
 
-pub type Uid = u64;
-
-#[deriving(Clone, PartialEq, Eq)]
-pub struct Entity(Uid);
+#[deriving(PartialEq, Clone, Hash, Show)]
+pub struct Entity(uint);
 
 /// Entity component system
 pub struct Ecs {
@@ -17,8 +17,7 @@ pub struct Ecs {
 
     next_idx: uint,
     reusable_idxs: Vec<uint>,
-    uids: Vec<Option<Uid>>,
-    next_uid: Uid,
+    active: Bitv,
 }
 
 impl Ecs {
@@ -27,16 +26,70 @@ impl Ecs {
             components: HashMap::new(),
             next_idx: 0,
             reusable_idxs: vec![],
-            uids: vec![],
-            next_uid: 1,
+            active: Bitv::new(),
         }
     }
 
-    pub fn new_entity(&self) -> Entity {
-        unimplemented!();
+    pub fn new_entity(&mut self) -> Entity {
+        // Get the entity idx, reuse old ones to keep the indexing compact.
+        // XXX Holding on to an entity after you've called a delete on it will end up you getting a
+        // different entity's crap in it. Don't do that.
+        let idx = match self.reusable_idxs.pop() {
+            None => {
+                let ret = self.next_idx;
+                self.next_idx += 1;
+                ret
+            }
+            Some(idx) => idx
+        };
+
+        if self.active.len() <= idx {
+            let diff = idx - self.active.len() + 1;
+            self.active.grow(diff, false);
+        }
+        assert!(!self.active.get(idx));
+        self.active.set(idx, true);
+
+        Entity(idx)
     }
 
-    pub fn delete_entity(&self, e: Entity) {
-        unimplemented!();
+    pub fn delete_entity(&mut self, Entity(idx): Entity) {
+        assert!(self.active.get(idx));
+
+        for (_, c) in self.components.iter_mut() {
+            if c.len() > idx {
+                c.as_mut_slice()[idx] = None;
+            }
+        }
+
+        self.reusable_idxs.push(idx);
+        self.active.set(idx, false);
+    }
+
+    /// Return an iterator for the entities. The iterator will not be
+    /// invalidated if entities are added or removed during iteration.
+    ///
+    /// XXX: It is currently unspecified whether entities added during
+    /// iteration will show up in the iteration or not.
+    pub fn iter(&self) -> EntityIter {
+        EntityIter(0)
+    }
+}
+
+struct EntityIter(uint);
+
+impl Iterator<Entity> for EntityIter {
+    fn next(&mut self) -> Option<Entity> {
+        let w = world::get();
+        let ecs = &w.borrow().ecs;
+
+        let &EntityIter(ref mut idx) = self;
+        loop {
+            if *idx >= ecs.active.len() { return None; }
+            let ret = Entity(*idx);
+            *idx += 1;
+            if !ecs.active.get(*idx - 1) { continue; }
+            return Some(ret);
+        }
     }
 }
