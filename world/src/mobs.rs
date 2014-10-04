@@ -202,13 +202,13 @@ impl Mob for Entity {
             let player = self.world().player().unwrap();
             let pathing = Pathing::at_loc(&self.world(), player.location());
 
-            let move = pathing.towards_from(self.location());
-            match move {
+            let mov = pathing.towards_from(self.location());
+            match mov {
                 Some(loc) => {
                     let move_dir = &self.location().dir6_towards(loc);
                     match self.enemy_at(loc) {
                         Some(_) => { self.attack(loc); }
-                        _ => { self.move(move_dir); }
+                        _ => { self.offset(move_dir); }
                     }
                     return;
                 }
@@ -217,7 +217,7 @@ impl Mob for Entity {
         }
 
         // No target, wander around randomly.
-        self.move(rand::task_rng().choose(DIRECTIONS6.as_slice()).unwrap());
+        self.offset(rand::task_rng().choose(DIRECTIONS6.as_slice()).unwrap());
     }
 
     fn smart_move(&mut self, dir8: uint) -> Option<Vector2<int>> {
@@ -264,7 +264,7 @@ impl Mob for Entity {
                 }
                 _ => ()
             }
-            if self.move(delta) { return Some(*delta); }
+            if self.offset(delta) { return Some(*delta); }
         }
 
         None

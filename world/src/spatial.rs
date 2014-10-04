@@ -171,7 +171,7 @@ pub static DIRECTIONS8: [Vector2<int>, ..8] = [
 pub trait Position {
     fn set_location(&mut self, loc: Location);
     fn location(&self) -> Location;
-    fn move(&mut self, delta: &Vector2<int>) -> bool;
+    fn offset(&mut self, delta: &Vector2<int>) -> bool;
 }
 
 impl Position for Entity {
@@ -194,7 +194,7 @@ impl Position for Entity {
         self.world().system().spatial.entity_loc(self).unwrap()
     }
 
-    fn move(&mut self, delta: &Vector2<int>) -> bool {
+    fn offset(&mut self, delta: &Vector2<int>) -> bool {
         let new_loc = self.location() + *delta;
 
         if self.world().is_walkable(new_loc) {
