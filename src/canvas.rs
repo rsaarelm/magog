@@ -173,12 +173,12 @@ impl Context {
         let scale = self.resolution.map(|x| 2.0 / (x as f32));
 
         let texcoords = self.atlas.texcoords[idx];
-        let V2(u1, v1) = texcoords.min();
-        let V2(u2, v2) = texcoords.max();
+        let V2(u1, v1) = texcoords.mn();
+        let V2(u2, v2) = texcoords.mx();
 
         let vertices = self.atlas.vertices[idx];
-        let V2(x1, y1) = (vertices.min() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
-        let V2(x2, y2) = (vertices.max() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
+        let V2(x1, y1) = (vertices.mn() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
+        let V2(x2, y2) = (vertices.mx() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
 
         let mesh = self.graphics.device.create_mesh([
             Vertex { pos: [x1, -y2, layer], tex_coord: [u1, v2] },

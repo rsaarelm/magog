@@ -34,7 +34,34 @@ pub struct Rect<T>(pub V2<T>, pub V2<T>);
 impl<T: Primitive> Rect<T> {
     pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
 
-    pub fn min(&self) -> V2<T> { self.0 }
+    pub fn mn(&self) -> V2<T> { self.0 }
 
-    pub fn max(&self) -> V2<T> { self.0 + self.1 }
+    pub fn mx(&self) -> V2<T> { self.0 + self.1 }
+
+    /// Grow the rectangle to enclose point p.
+    pub fn grow(&mut self, p: V2<T>) {
+        let (mn, mx) = (self.mn(), self.mx());
+
+        if p.0 < mn.0 {
+            (self.1).0 = (self.1).0 + mn.0 - p.0;
+            (self.0).0 = p.0;
+        }
+
+        if p.1 < mn.1 {
+            (self.1).1 = (self.1).1 + mn.1 - p.1;
+            (self.0).1 = p.1;
+        }
+
+        if p.0 > mx.0 { (self.1).0 = p.0 - mn.0; }
+
+        if p.1 > mx.1 { (self.1).1 = p.1 - mn.1; }
+    }
+
+    pub fn intersects(&self, rhs: &Rect<T>) -> bool {
+        let (mn, mx) = (self.mn(), self.mx());
+        let (rmn, rmx) = (rhs.mn(), rhs.mx());
+
+        !(mx.0 <= rmn.0 || mn.0 >= rmx.0 ||
+          mx.1 <= rmn.1 || mn.1 >= rmx.1)
+    }
 }
