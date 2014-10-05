@@ -11,8 +11,13 @@ extern crate time;
 
 use calx::{V2};
 use calx::color;
+use calx::event;
+use calx::key;
+use world::{Location};
 
 pub mod tilecache;
+pub mod viewutil;
+pub mod worldview;
 
 pub fn main() {
     let mut canvas = calx::Canvas::new();
@@ -20,11 +25,12 @@ pub fn main() {
 
     for evt in canvas.run() {
         match evt {
-            calx::Render(ctx) => {
+            event::Render(ctx) => {
                 ctx.clear(&color::BLACK);
-                ctx.draw_image(V2(32, 32), 0.4, tilecache::get(tilecache::tile::AVATAR), &color::ORANGE);
+                let camera = Location::new(0, 0);
+                worldview::draw_world(&camera, ctx);
             }
-            calx::KeyPressed(calx::key::KeyEscape) => {
+            event::KeyPressed(key::KeyEscape) => {
                 return;
             }
             _ => ()
