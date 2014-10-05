@@ -11,6 +11,7 @@ pub trait HexGeom {
     fn dir6_towards(&self) -> V2<int>;
 }
 
+/// Hex grid geometry for vectors.
 impl HexGeom for V2<int> {
     fn hex_dist(&self) -> int {
         let xd = self.0;

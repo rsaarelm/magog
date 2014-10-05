@@ -1,6 +1,9 @@
 use std::cell::RefCell;
+use std::collections::hashmap::HashMap;
 use std::rc::Rc;
 use ecs::Ecs;
+use location::Location;
+use terrain::TerrainType;
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
@@ -18,6 +21,7 @@ pub fn get() -> Rc<RefCell<WorldState>> {
 pub struct WorldState {
     pub seed: u32,
     pub ecs: Ecs,
+    pub terrain: HashMap<Location, TerrainType>,
 }
 
 impl WorldState {
@@ -25,6 +29,7 @@ impl WorldState {
         WorldState {
             seed: 0,
             ecs: Ecs::new(),
+            terrain: HashMap::new(),
         }
     }
 }
