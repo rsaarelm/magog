@@ -24,5 +24,24 @@ pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
 pub fn cells_in_view_rect(view_rect: Rect<int>) -> Vec<V2<int>> {
-    unimplemented!();
+    // Add CELL_W to bottom so that the tops of lower tiles will get drawn.
+    let (min, max) = (view_rect.mn(), view_rect.mx() + V2(0, CELL_W));
+    let mut cells = Rect(view_to_chart(min), V2(0, 0));
+    cells.grow(view_to_chart(min + V2((view_rect.1).0, 0)));
+    cells.grow(view_to_chart(min + V2(0, (view_rect.1).1 + CELL_W)));
+    cells.grow(view_to_chart(max));
+
+    // XXX: Adds some points that are outside the view rectangle.
+    let mut ret = vec![];
+    for y in range((cells.0).1, cells.mx().1 + 1) {
+        for x in range((cells.0).0, cells.mx().0 + 1) {
+            ret.push(V2(x, y));
+        }
+    }
+
+    ret
+}
+
+pub fn cells_on_screen() -> Vec<V2<int>> {
+    cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
 }

@@ -9,7 +9,6 @@ extern crate calx;
 extern crate world;
 extern crate time;
 
-use calx::{V2};
 use calx::color;
 use calx::event;
 use calx::key;

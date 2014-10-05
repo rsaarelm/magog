@@ -7,17 +7,15 @@ use mapgen::{AreaSpec, Biome};
 use geomorph_data;
 use geom::{DIR6};
 
-static CHUNK_W: int = 11;
-
 local_data_key!(CHUNK_CACHE: RefCell<Vec<Chunk>>)
 
 type Cells = HashMap<(int, int), TerrainType>;
 
 pub struct Chunk {
-    cells: Cells,
-    connected: bool,
-    exit: bool,
-    spec: AreaSpec,
+    pub cells: Cells,
+    pub connected: bool,
+    pub exit: bool,
+    pub spec: AreaSpec,
 }
 
 pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {

@@ -10,6 +10,7 @@ extern crate calx;
 
 pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
+pub use world::{init_world};
 
 mod ecs;
 mod geom;

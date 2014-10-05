@@ -52,12 +52,6 @@ impl Add<V2<int>, Location> for Location {
     }
 }
 
-impl Sub<Location, V2<int>> for Location {
-    fn sub(&self, other: &Location) -> V2<int> {
-        V2((self.x - other.x) as int, (self.y - other.y) as int)
-    }
-}
-
 /// An abstract type that maps a 2D plane into game world Locations. This can
 /// be just a straightforward mapping, or it can involve something exotic like
 /// a non-Euclidean space where the lines from the Chart origin are raycast

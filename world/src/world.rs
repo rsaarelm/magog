@@ -6,6 +6,7 @@ use rand::Rng;
 use ecs::Ecs;
 use location::Location;
 use terrain::TerrainType;
+use mapgen;
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
@@ -37,6 +38,7 @@ impl WorldState {
     }
 }
 
-fn init_world(seed: u32) {
-    println!("Creating world with seed {}", seed);
+pub fn init_world(seed: u32) {
+    // TODO: Proper world init.
+    mapgen::gen_herringbone(&Location::new(0, 0), &mapgen::AreaSpec::new(mapgen::Overland, 1));
 }
