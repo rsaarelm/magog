@@ -22,6 +22,7 @@ pub mod worldview;
 pub fn main() {
     let mut canvas = calx::Canvas::new();
     tilecache::init(&mut canvas);
+    println!("{}", Location::new(0, 0).terrain());
 
     for evt in canvas.run() {
         match evt {

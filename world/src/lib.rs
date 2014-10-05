@@ -16,3 +16,6 @@ mod geom;
 mod location;
 mod world;
 pub mod terrain;
+pub mod mapgen;
+mod geomorph;
+mod geomorph_data;

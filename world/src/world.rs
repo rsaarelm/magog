@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 use std::collections::hashmap::HashMap;
 use std::rc::Rc;
+use std::rand;
+use rand::Rng;
 use ecs::Ecs;
 use location::Location;
 use terrain::TerrainType;
@@ -12,6 +14,7 @@ pub fn get() -> Rc<RefCell<WorldState>> {
     if WORLD_STATE.get().is_none() {
         // Lazy init.
         WORLD_STATE.replace(Some(Rc::new(RefCell::new(WorldState::new()))));
+        init_world(rand::task_rng().gen());
     }
 
     WORLD_STATE.get().unwrap().clone()
@@ -32,4 +35,8 @@ impl WorldState {
             terrain: HashMap::new(),
         }
     }
+}
+
+fn init_world(seed: u32) {
+    println!("Creating world with seed {}", seed);
 }
