@@ -93,6 +93,7 @@ pub struct Context {
     events: Receiver<(f64, glfw::WindowEvent)>,
     graphics: gfx::Graphics<gfx::GlDevice, gfx::GlCommandBuffer>,
     frame: gfx::Frame,
+    program: gfx::ProgramHandle,
 
     state: State,
     frame_interval: Option<f64>,
@@ -143,12 +144,16 @@ impl Context {
         let flatshade = graphics.device.create_texture(inf).unwrap();
         graphics.device.update_texture(&flatshade, &inf.to_image_info(), &[0xffu8, 0xff, 0xff, 0xff]).unwrap();
 
+        let program = graphics.device.link_program(VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
+
         Context {
             glfw: glfw,
             window: window,
             events: events,
             graphics: graphics,
             frame: frame,
+            program: program,
+
             state: Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
@@ -198,13 +203,11 @@ impl Context {
         };
 
         let slice = mesh.to_slice(gfx::TriangleList);
-        let program = self.graphics.device.link_program(
-            VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.front_face = gfx::state::Clockwise;
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &program, &mesh, slice, &draw_state).unwrap();
+            &self.program, &mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
@@ -226,13 +229,11 @@ impl Context {
             s_texture: (self.flatshade, sampler_info),
         };
         let slice = mesh.to_slice(gfx::Line);
-        let program = self.graphics.device.link_program(
-            VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.method = gfx::state::Line(thickness);
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &program, &mesh, slice, &draw_state).unwrap();
+            &self.program, &mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
