@@ -32,8 +32,6 @@ impl Ecs {
 
     pub fn new_entity(&mut self) -> Entity {
         // Get the entity idx, reuse old ones to keep the indexing compact.
-        // XXX Holding on to an entity after you've called a delete on it will end up you getting a
-        // different entity's crap in it. Don't do that.
         let idx = match self.reusable_idxs.pop() {
             None => {
                 let ret = self.next_idx;
@@ -53,6 +51,11 @@ impl Ecs {
         Entity(idx)
     }
 
+    /// Delete an entity from the entity component system.
+    ///
+    /// XXX: The user is currently responsible for never using an entity handle again after
+    /// delete_entity has been called on it. Using an entity handle after deletion may return
+    /// another entity's contents.
     pub fn delete_entity(&mut self, Entity(idx): Entity) {
         assert!(self.active.get(idx));
 

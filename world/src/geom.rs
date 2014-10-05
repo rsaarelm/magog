@@ -3,6 +3,12 @@ use std::f32::consts::PI;
 use std::num::{signum, abs};
 use calx::V2;
 
+/// An abstract type that maps a 2D plane into game world Locations. This can
+/// be just a straightforward mapping, or it can involve something exotic like
+/// a non-Euclidean space where the lines from the Chart origin are raycast
+/// through portals.
+pub trait Chart: Add<V2<int>, Location> {}
+
 /// Unambiguous location in the game world.
 #[deriving(Eq, PartialEq, Clone, Hash, Show)]
 pub struct Location {
@@ -28,7 +34,8 @@ impl Location {
         }
     }
 
-    /// Return the hex direction that's closest to pointoing towards the given point.
+    /// Return the hex direction that's closest to pointoing towards the given
+    /// point.
     pub fn dir6_towards(&self, other: Location) -> V2<int> {
         return DIR6[
         match hexadecant(&V2((other.x - self.x) as int, (other.y - self.y) as int)) {
