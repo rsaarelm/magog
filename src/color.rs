@@ -1,18 +1,4 @@
-#[deriving(Clone, PartialEq, Eq, Show)]
-pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
-
-impl Rgb {
-    pub fn new(r: u8, g: u8, b: u8) -> Rgb {
-        Rgb { r: r, g: g, b: b }
-    }
-
-    pub fn to_array(&self) -> [f32, ..4] {
-        [self.r as f32 / 255.0,
-         self.g as f32 / 255.0,
-         self.b as f32 / 255.0,
-         1.0]
-    }
-}
+use canvas::Rgb;
 
 // From https://github.com/bjz/color-rs
 pub static ALICEBLUE:               Rgb = Rgb { r: 0xF0, g: 0xF8, b: 0xFF };
