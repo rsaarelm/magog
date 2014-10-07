@@ -21,6 +21,7 @@ pub use util::{color_key};
 mod atlas;
 mod canvas;
 mod geom;
+mod glfw_key;
 mod util;
 pub mod color;
 pub mod event;
