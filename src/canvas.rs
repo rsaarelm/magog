@@ -199,7 +199,8 @@ impl Context {
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
-            color: color.to_array(),
+            u_color: color.to_array(),
+            u_transform: identity_matrix4(), // TODO: Params
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
@@ -226,7 +227,8 @@ impl Context {
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
-            color: color.to_array(),
+            u_color: color.to_array(),
+            u_transform: identity_matrix4(), // TODO: Params
             s_texture: (self.flatshade, sampler_info),
         };
         let slice = mesh.to_slice(gfx::Line);
@@ -321,19 +323,19 @@ static VERTEX_SRC: gfx::ShaderSource = shaders! {
 GLSL_120: b"
     #version 120
 
-    uniform vec4 color;
+    uniform vec4 u_color;
+    uniform mat4 u_transform;
 
     attribute vec3 a_pos;
     attribute vec2 a_tex_coord;
 
-    // TODO: Make color a uniform argument.
     varying vec2 v_tex_coord;
     varying vec4 v_color;
 
     void main() {
         v_tex_coord = a_tex_coord;
-        v_color = color;
-        gl_Position = vec4(a_pos, 1.0);
+        v_color = u_color;
+        gl_Position = u_transform * vec4(a_pos, 1.0);
     }
 "
 };
@@ -357,7 +359,8 @@ GLSL_120: b"
 
 #[shader_param(Program)]
 pub struct ShaderParam {
-    pub color: [f32, ..4],
+    pub u_color: [f32, ..4],
+    pub u_transform: [[f32, ..4], ..4],
     pub s_texture: gfx::shade::TextureParam,
 }
 
@@ -417,4 +420,11 @@ impl Rgb {
          self.b as f32 / 255.0,
          1.0]
     }
+}
+
+fn identity_matrix4() -> [[f32, ..4], ..4] {
+    [[1.0, 0.0, 0.0, 0.0],
+     [0.0, 1.0, 0.0, 0.0],
+     [0.0, 0.0, 1.0, 0.0],
+     [0.0, 0.0, 0.0, 1.0]]
 }
