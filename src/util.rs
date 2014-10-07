@@ -3,7 +3,7 @@ use std::cmp::{min, max};
 use std::num::{zero};
 use image::{GenericImage, Pixel, ImageBuf, Rgba};
 use geom::{V2, Rect};
-use canvas::Rgb;
+use rgb::Rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(

@@ -11,13 +11,12 @@ use gfx;
 use gfx::tex;
 use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
 use gfx::{GlDevice};
-use key;
-use key::Key;
 use atlas::{AtlasBuilder, Atlas};
 use util;
 use geom::{V2};
 use event::Event;
 use event;
+use rgb::Rgb;
 use glfw_key;
 
 pub struct Canvas {
@@ -406,21 +405,6 @@ impl Texture {
 }
 
 
-#[deriving(Clone, PartialEq, Eq, Show)]
-pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
-
-impl Rgb {
-    pub fn new(r: u8, g: u8, b: u8) -> Rgb {
-        Rgb { r: r, g: g, b: b }
-    }
-
-    pub fn to_array(&self) -> [f32, ..4] {
-        [self.r as f32 / 255.0,
-         self.g as f32 / 255.0,
-         self.b as f32 / 255.0,
-         1.0]
-    }
-}
 
 fn identity_matrix4() -> [[f32, ..4], ..4] {
     [[1.0, 0.0, 0.0, 0.0],

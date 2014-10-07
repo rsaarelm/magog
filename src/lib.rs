@@ -14,7 +14,7 @@ extern crate image;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};
-pub use canvas::{Rgb};
+pub use rgb::{Rgb};
 pub use geom::{Rect, V2};
 pub use util::{color_key};
 
@@ -22,6 +22,7 @@ mod atlas;
 mod canvas;
 mod geom;
 mod glfw_key;
+mod rgb;
 mod util;
 pub mod color;
 pub mod event;

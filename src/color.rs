@@ -1,4 +1,4 @@
-use canvas::Rgb;
+use rgb::Rgb;
 
 // From https://github.com/bjz/color-rs
 pub static ALICEBLUE:               Rgb = Rgb { r: 0xF0, g: 0xF8, b: 0xFF };
