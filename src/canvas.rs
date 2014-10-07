@@ -11,6 +11,7 @@ use gfx;
 use gfx::tex;
 use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
 use gfx::{GlDevice};
+use gfx::Mesh;
 use atlas::{AtlasBuilder, Atlas};
 use util;
 use geom::{V2};
@@ -80,7 +81,7 @@ impl Canvas {
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
-            let glyph = self.add_image(V2(0, 8), SubImage::new(&mut font_sheet, x, y, 8, 8));
+            let glyph = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
             self.font_glyphs.insert((i + 32) as u8 as char, glyph);
         }
     }
@@ -98,8 +99,9 @@ pub struct Context {
     state: State,
     frame_interval: Option<f64>,
     last_render_time: f64,
-    atlas: Atlas,
     atlas_tex: Texture,
+    meshes: Vec<Mesh>,
+    image_dims: Vec<V2<uint>>,
     flatshade: gfx::TextureHandle,
     resolution: V2<u32>,
 }
@@ -134,6 +136,28 @@ impl Context {
         let frame = gfx::Frame::new(w as u16, h as u16);
         let atlas_tex = Texture::from_rgba8(&atlas.image, &mut graphics.device);
 
+        let mut meshes = vec![];
+        let mut dims = vec![];
+
+        for i in range(0, atlas.vertices.len()) {
+            let V2(x1, y1) = atlas.vertices[i].mn();
+            let V2(x2, y2) = atlas.vertices[i].mx();
+            let V2(u1, v1) = atlas.texcoords[i].mn();
+            let V2(u2, v2) = atlas.texcoords[i].mx();
+            let mesh = graphics.device.create_mesh([
+                Vertex { pos: [x1, y2, 0.0], tex_coord: [u1, v2] },
+                Vertex { pos: [x1, y1, 0.0], tex_coord: [u1, v1] },
+                Vertex { pos: [x2, y2, 0.0], tex_coord: [u2, v2] },
+
+                Vertex { pos: [x2, y2, 0.0], tex_coord: [u2, v2] },
+                Vertex { pos: [x1, y1, 0.0], tex_coord: [u1, v1] },
+                Vertex { pos: [x2, y1, 0.0], tex_coord: [u2, v1] },
+            ]);
+
+            meshes.push(mesh);
+            dims.push(atlas.vertices[i].1.map(|x| x as uint));
+        }
+
         // Blank white texture so we can draw flatshaded stuff without
         // switching to non-texturing shader.
         let mut inf = tex::TextureInfo::new();
@@ -157,8 +181,9 @@ impl Context {
             state: Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
-            atlas: atlas,
             atlas_tex: atlas_tex,
+            meshes: meshes,
+            image_dims: dims,
             flatshade: flatshade,
             resolution: dim,
         }
@@ -175,44 +200,33 @@ impl Context {
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
-        let scale = self.resolution.map(|x| 2.0 / (x as f32));
-
-        let texcoords = self.atlas.texcoords[idx];
-        let V2(u1, v1) = texcoords.mn();
-        let V2(u2, v2) = texcoords.mx();
-
-        let vertices = self.atlas.vertices[idx];
-        let V2(x1, y1) = (vertices.mn() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
-        let V2(x2, y2) = (vertices.mx() + offset.map(|x| x as f32)).mul(scale) - V2(1f32, 1f32);
-
-        let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [x1, -y2, layer], tex_coord: [u1, v2] },
-            Vertex { pos: [x1, -y1, layer], tex_coord: [u1, v1] },
-            Vertex { pos: [x2, -y2, layer], tex_coord: [u2, v2] },
-
-            Vertex { pos: [x2, -y2, layer], tex_coord: [u2, v2] },
-            Vertex { pos: [x1, -y1, layer], tex_coord: [u1, v1] },
-            Vertex { pos: [x2, -y1, layer], tex_coord: [u2, v1] },
-        ]);
-
+        let mut scale = self.resolution.map(|x| 2.0 / (x as f32));
+        scale.1 = -scale.1;
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
             u_color: color.to_array(),
-            u_transform: identity_matrix4(), // TODO: Params
+            u_transform: transform(
+                scale,
+                offset.map(|x| x as f32).mul(scale) - V2(1.0, -1.0),
+                layer),
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
+
+        let mesh = &self.meshes[idx];
 
         let slice = mesh.to_slice(gfx::TriangleList);
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.front_face = gfx::state::Clockwise;
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &self.program, &mesh, slice, &draw_state).unwrap();
+            &self.program, mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
     }
 
     pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
+        unimplemented!();
+        /*
         let scale = self.resolution.map(|x| 2.0 / (x as f32));
         let p1 = p1.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
         let p2 = p2.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
@@ -237,6 +251,7 @@ impl Context {
         let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
             &self.program, &mesh, slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
+        */
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
@@ -249,7 +264,7 @@ impl Context {
     }
 
     pub fn image_dim(&self, Image(idx): Image) -> V2<uint> {
-        self.atlas.vertices[idx].1.map(|x| x as uint)
+        self.image_dims[idx]
     }
 }
 
@@ -404,11 +419,9 @@ impl Texture {
     }
 }
 
-
-
-fn identity_matrix4() -> [[f32, ..4], ..4] {
-    [[1.0, 0.0, 0.0, 0.0],
-     [0.0, 1.0, 0.0, 0.0],
-     [0.0, 0.0, 1.0, 0.0],
-     [0.0, 0.0, 0.0, 1.0]]
+fn transform(scale: V2<f32>, offset: V2<f32>, z: f32) -> [[f32, ..4], ..4] {
+    [[scale.0,  0.0,      0.0, 0.0],
+     [0.0,      scale.1,  0.0, 0.0],
+     [0.0,      0.0,      1.0, 0.0],
+     [offset.0, offset.1, z,   1.0]]
 }

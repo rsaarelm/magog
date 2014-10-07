@@ -10,10 +10,14 @@ fn main() {
     for evt in calx::Canvas::new().run() {
         match evt {
             event::Render(ctx) => {
+                let img = ctx.font_image('@').unwrap();
+
                 ctx.clear(&calx::Rgb::new(t as u8, 0, 0));
-                let img = ctx.font_image('F').unwrap();
-                ctx.draw_image(V2(1, 9), 0.4, img, &color::ORANGE);
-                ctx.draw_line(V2(10, 10), V2(100, 50), 0.5, 3f32, &color::YELLOW);
+                for y in range(0, 360/8) {
+                    for x in range(0, 640/8) {
+                        ctx.draw_image(V2(x * 8, y * 8), 0.4, img, &color::ORANGE);
+                    }
+                }
                 t += 1;
             }
             event::KeyPressed(calx::key::KeyEscape) => {
