@@ -11,7 +11,8 @@ extern crate calx;
 pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
 pub use world::{init_world};
-pub use fov::{FovStatus};
+pub use terrain::{TerrainType};
+pub use ecs::{Entity};
 
 mod ecs;
 mod geom;
@@ -22,3 +23,9 @@ pub mod mapgen;
 mod geomorph;
 mod geomorph_data;
 mod fov;
+
+#[deriving(Eq, PartialEq, Show)]
+pub enum FovStatus {
+    Seen,
+    Remembered,
+}

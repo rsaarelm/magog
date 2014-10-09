@@ -6,6 +6,11 @@ pub static SCREEN_H: int = 360;
 /// Visual terrain cell width.
 pub static CELL_W: int = 32;
 
+/// Draw layer for floor tiles.
+pub static FLOOR_Z: f32 = 0.500f32;
+/// Draw layer for wall and object tiles.
+pub static BLOCK_Z: f32 = 0.400f32;
+
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
 pub fn chart_to_view(chart_pos: V2<int>) -> V2<int> {

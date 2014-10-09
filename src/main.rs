@@ -14,6 +14,7 @@ use calx::event;
 use calx::key;
 use world::{Location};
 
+mod drawable;
 pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
