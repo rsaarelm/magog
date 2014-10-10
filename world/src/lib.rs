@@ -6,14 +6,15 @@
 
 extern crate num;
 extern crate rand;
+extern crate serialize;
 extern crate calx;
 
 pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
 pub use world::{init_world};
-pub use terrain::{TerrainType};
 pub use ecs::{Entity};
 
+mod area;
 mod ecs;
 mod geom;
 mod location;

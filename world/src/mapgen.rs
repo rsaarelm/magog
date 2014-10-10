@@ -1,14 +1,12 @@
-use std::rand;
 use rand::Rng;
 use num::Integer;
 use calx::{V2};
-use location::{Chart};
 use geomorph;
 use geomorph::{Chunk};
+use terrain::TerrainType;
 
-pub fn gen_herringbone<C: Chart>(origin: &C, spec: &AreaSpec) {
-    // TODO: Determine level rng from world seed.
-    let mut rng = rand::task_rng();
+pub fn gen_herringbone<R: Rng>(
+    rng: &mut R, spec: &AreaSpec, set_terrain: |V2<int>, TerrainType|) {
     let chunkref = geomorph::get_cache();
     let chunkbor = chunkref.borrow();
     let chunks = chunkbor.iter().filter(
@@ -38,8 +36,7 @@ pub fn gen_herringbone<C: Chart>(origin: &C, spec: &AreaSpec) {
                 else { inner.as_slice() }).unwrap();
 
             for (&(x, y), &terrain) in chunk.cells.iter() {
-                let loc = *origin + herringbone_map((cx, cy), (x, y));
-                loc.set_terrain(Some(terrain));
+                set_terrain(herringbone_map((cx, cy), (x, y)), terrain);
             }
         }
     }

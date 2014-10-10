@@ -1,3 +1,4 @@
+use serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::intrinsics::TypeId;
 use std::collections::hashmap::HashMap;
 use std::collections::bitv::Bitv;
@@ -76,6 +77,18 @@ impl Ecs {
     /// iteration will show up in the iteration or not.
     pub fn iter(&self) -> EntityIter {
         EntityIter(0)
+    }
+}
+
+impl<E, D:Decoder<E>> Decodable<D, E> for Ecs {
+    fn decode(d: &mut D) -> Result<Ecs, E> {
+        unimplemented!();
+    }
+}
+
+impl<E, S:Encoder<E>> Encodable<S, E> for Ecs {
+    fn encode(&self, s: &mut S) -> Result<(), E> {
+        unimplemented!();
     }
 }
 

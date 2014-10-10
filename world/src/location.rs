@@ -18,24 +18,7 @@ impl Location {
     /// Return terrain at the location.
     pub fn terrain(&self) -> TerrainType {
         let w = world::get();
-        match w.borrow().terrain.find(self) {
-            Some(t) => *t,
-            None => self.default_terrain()
-        }
-    }
-
-    fn default_terrain(&self) -> TerrainType {
-        // TODO: Different default terrains in different biomes.
-        terrain::Rock
-    }
-
-    /// Set the terrain at the location. None will reset to default terrain.
-    pub fn set_terrain(&self, t: Option<TerrainType>) {
-        let w = world::get();
-        match t {
-            Some(tt) => { w.borrow_mut().terrain.insert(*self, tt); }
-            None => { w.borrow_mut().terrain.remove(self); }
-        }
+        w.borrow().area.terrain(*self)
     }
 
     pub fn blocks_sight(&self) -> bool { unimplemented!(); }
