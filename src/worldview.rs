@@ -3,10 +3,13 @@ use calx;
 use calx::{V2};
 use calx::{Context, Rgb};
 use calx::color::*;
+use calx::timing;
 use world::terrain;
 use world::{Location, Chart};
 use world::{FovStatus, Seen, Remembered};
 use world::{Entity};
+use world::mob;
+use world;
 use world::terrain::TerrainType;
 use viewutil::{SCREEN_W, SCREEN_H, chart_to_view, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
@@ -84,12 +87,9 @@ impl CellDrawable {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(Seen) {
-            // TODO
-            /*
-            for mob in self.loc.entities().iter() {
-                self.draw_mob(ctx, offset, mob);
+            for e in self.loc.entities().iter() {
+                self.draw_entity(ctx, offset, e);
             }
-            */
         }
     }
 
@@ -267,40 +267,32 @@ impl CellDrawable {
         }
     }
 
-    fn draw_mob(&self, ctx: &mut Context, offset: V2<int>, mob: &Entity) {
-        println!("TODO draw_mob");
-    /*
-        let body_pos =
-            if is_bobbing(mob) {
-                offset + *(timing::cycle_anim(
-                        0.3f64,
-                        [V2(0, 0), V2(0, -1)]))
-            } else { offset };
+    fn draw_entity(&self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
+        match entity.kind() {
+            world::MobKind(m) => {
+                let body_pos =
+                    if entity.is_bobbing() {
+                        offset + *(timing::cycle_anim(
+                                0.3f64,
+                                [V2(0, 0), V2(0, -1)]))
+                    } else { offset };
 
-        let (icon, color) = visual(mob.mob_type());
-        match mob.mob_type() {
-            mobs::Serpent => {
-                // Body
-                self.draw_tile(ctx, 94, body_pos, BLOCK_Z, &color);
-                // Ground mound
-                self.draw_tile(ctx, 95, offset, BLOCK_Z, &color);
+                let (icon, color) = (
+                    mob::SPECS[m as uint].sprite,
+                    mob::SPECS[m as uint].color);
+
+                if m == mob::Serpent {
+                    // Special case, Serpent sprite is made of two parts.
+                    // Body
+                    self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);
+                    // Ground mound, doesn't bob.
+                    self.draw_tile(ctx, icon + 1, offset, BLOCK_Z, color);
+                } else {
+                    self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);
+                }
             }
-            _ => {
-                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
-            }
+            todo => { println!("TODO: Draw {} entity", todo) }
         }
-
-        fn visual(t: MobType) -> (uint, Rgb) {
-            let kind = mobs::MOB_KINDS[t as uint];
-            (kind.sprite, kind.color)
-        }
-
-        fn is_bobbing(mob: &Entity) -> bool {
-            if mob.mob_type() == mobs::Player { return false; }
-            if !mob.is_active() { return false; }
-            true
-        }
-    */
     }
 }
 

@@ -20,4 +20,17 @@ impl Entity {
         world::get().borrow_mut().spatial.remove(self);
         world::get().borrow_mut().ecs.delete(self);
     }
+
+    /// Return the kind of the entity.
+    pub fn kind(self) -> ::EntityKind {
+        // XXX: Will crash if an entity has no kind specified.
+        *world::get().borrow().comp.kind.get(self).unwrap()
+    }
+
+    /// Return whether the entity is an awake non-player mob and should be
+    /// animated with a bob.
+    pub fn is_bobbing(self) -> bool {
+        // TODO
+        false
+    }
 }

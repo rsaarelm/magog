@@ -22,7 +22,11 @@ impl Location {
 
     pub fn blocks_sight(&self) -> bool { unimplemented!(); }
     pub fn blocks_walk(&self) -> bool { unimplemented!(); }
-    pub fn entities(&self) -> Vec<Entity> { unimplemented!(); }
+
+    pub fn entities(&self) -> Vec<Entity> {
+        world::get().borrow().spatial.entities_at(*self)
+    }
+
     pub fn has_entities(&self) -> bool { !self.entities().is_empty() }
 }
 

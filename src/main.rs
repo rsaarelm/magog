@@ -23,9 +23,6 @@ pub fn main() {
     let mut canvas = calx::Canvas::new();
     tilecache::init(&mut canvas);
 
-    let sav = world::save();
-    println!("{}", sav);
-
     for evt in canvas.run() {
         match evt {
             event::Render(ctx) => {
