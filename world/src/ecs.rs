@@ -5,7 +5,7 @@ use std::collections::bitv::Bitv;
 use std::any::{Any, AnyRefExt, AnyMutRefExt};
 use world;
 
-#[deriving(PartialEq, Clone, Hash, Show)]
+#[deriving(PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
 pub struct Entity(uint);
 
 /// Entity component system

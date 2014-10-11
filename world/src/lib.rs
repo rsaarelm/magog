@@ -14,17 +14,19 @@ pub use location::{Location, Chart};
 pub use world::{init_world};
 pub use ecs::{Entity};
 
+pub mod mapgen;
+pub mod terrain;
+
 mod area;
 mod ecs;
+mod fov;
 mod geom;
-mod location;
-mod world;
-pub mod terrain;
-pub mod mapgen;
 mod geomorph;
 mod geomorph_data;
-mod fov;
+mod location;
+mod spatial;
 mod spawn;
+mod world;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {

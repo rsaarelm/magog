@@ -4,6 +4,7 @@ use std::rand;
 use rand::Rng;
 use ecs::Ecs;
 use area::Area;
+use spatial::Spatial;
 use spawn::{spawn};
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
@@ -24,6 +25,7 @@ pub fn get() -> Rc<RefCell<WorldState>> {
 pub struct WorldState {
     pub ecs: Ecs,
     pub area: Area,
+    pub spatial: Spatial,
     pub flags: Flags,
 }
 
@@ -33,6 +35,7 @@ impl WorldState {
         WorldState {
             ecs: Ecs::new(),
             area: Area::new(seed),
+            spatial: Spatial::new(),
             flags: Flags::new(seed),
         }
     }

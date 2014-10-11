@@ -5,7 +5,7 @@ use terrain;
 use world;
 
 /// Unambiguous location in the game world.
-#[deriving(Eq, PartialEq, Clone, Hash, Show)]
+#[deriving(Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
 pub struct Location {
     pub x: i8,
     pub y: i8,
