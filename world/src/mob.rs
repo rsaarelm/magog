@@ -1,7 +1,6 @@
 use calx::Rgb;
 use calx::color::*;
-use mapgen;
-use mapgen::AreaSpec;
+use {AreaSpec};
 
 /// Data component for mobs.
 #[deriving(Clone, Show, Encodable, Decodable)]
@@ -86,7 +85,7 @@ pub static SPECS: [MobSpec, ..$count] = [
         power: $power,
         area_spec: AreaSpec {
             depth: $depth,
-            biome: mapgen::$biome,
+            biome: ::$biome,
         },
         sprite: $sprite,
         color: $color,

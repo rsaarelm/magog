@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::collections::hashmap::{HashMap, HashSet};
 use calx::text::Map2DUtil;
 use terrain::*;
-use mapgen::{AreaSpec, Biome};
+use {AreaSpec, Biome};
 use geomorph_data;
 use geom::{DIR6};
 

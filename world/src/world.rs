@@ -21,12 +21,16 @@ pub fn get() -> Rc<RefCell<WorldState>> {
     WORLD_STATE.get().unwrap().clone()
 }
 
+/// Save the global world state into a json string.
 pub fn save() -> String {
     json::encode(get().borrow().deref())
 }
 
-pub fn load(data: &str) -> Result<(), json::DecoderError> {
-    match json::decode(data) {
+/// Load the global world state from a json string. If the load operation
+/// is successful, the previous world state will be overwritten by the loaded
+/// one.
+pub fn load(json: &str) -> Result<(), json::DecoderError> {
+    match json::decode(json) {
         Ok(w) => {
             WORLD_STATE.replace(Some(Rc::new(RefCell::new(w))));
             Ok(())

@@ -8,6 +8,7 @@ use location::Location;
 use mapgen;
 use egg::Egg;
 use mob::{Player};
+use {AreaSpec};
 
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
@@ -34,7 +35,7 @@ impl Area {
         // TODO: Underground areas.
         mapgen::gen_herringbone(
             &mut rng,
-            &mapgen::AreaSpec::new(mapgen::Overland, 1),
+            &AreaSpec::new(::Overland, 1),
             |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
 
         Area {

@@ -1,5 +1,5 @@
 use geomorph::add_cache_chunk;
-use mapgen::{Overland, Dungeon};
+use {Overland, Dungeon};
 
 // Geomorph data.
 

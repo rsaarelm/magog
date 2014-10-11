@@ -14,7 +14,6 @@ pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
 pub use world::{init_world, load, save};
 
-pub mod mapgen;
 pub mod terrain;
 pub mod mob;
 
@@ -28,6 +27,7 @@ mod geom;
 mod geomorph;
 mod geomorph_data;
 mod location;
+mod mapgen;
 mod spatial;
 mod world;
 
@@ -48,4 +48,29 @@ pub enum EntityKind {
     PropKind,
     /// A static object that does things when stepped on.
     NodeKind,
+}
+
+#[deriving(PartialEq)]
+pub enum Biome {
+    Overland = 0b1,
+    Dungeon  = 0b10,
+
+    // For things showing up at a biome.
+    Anywhere = 0b11111111,
+}
+
+pub struct AreaSpec {
+    pub biome: Biome,
+    pub depth: int,
+}
+
+impl AreaSpec {
+    pub fn new(biome: Biome, depth: int) -> AreaSpec {
+        AreaSpec { biome: biome, depth: depth }
+    }
+
+    pub fn can_hatch(&self, environment: &AreaSpec) -> bool {
+        self.depth >= 0 && self.depth <= environment.depth &&
+        (self.biome as int & environment.biome as int) != 0
+    }
 }
