@@ -77,14 +77,12 @@ pub mod tile {
 }
 
 pub mod icon {
-    static ICON_OFFSET: uint = 256;
-
-    pub static HEART : uint = ICON_OFFSET + 0;
-    pub static HALF_HEART : uint = ICON_OFFSET + 1;
-    pub static NO_HEART : uint = ICON_OFFSET + 2;
-    pub static SHARD : uint = ICON_OFFSET + 3;
-    pub static HALF_SHARD : uint = ICON_OFFSET + 4;
-    pub static NO_SHARD : uint = ICON_OFFSET + 5;
+    pub static HEART : uint = 256;
+    pub static HALF_HEART : uint = 257;
+    pub static NO_HEART : uint = 258;
+    pub static SHARD : uint = 259;
+    pub static HALF_SHARD : uint = 260;
+    pub static NO_SHARD : uint = 261;
 }
 
 pub static LOGO: uint = 256 + 128;
