@@ -6,7 +6,6 @@ use terrain::TerrainType;
 use terrain;
 use location::Location;
 use mapgen;
-use world;
 use spawn::Seed;
 
 /// Immutable procedurally generated terrain initialized on random seed.

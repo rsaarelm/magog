@@ -1,20 +1,11 @@
-use std::collections::hashmap::HashMap;
-use std::uint;
-use std::rand;
-use std::rand::Rng;
-use cgmath::{Vector2};
+use calx::Rgb;
 use calx::color::*;
-use system::{World, Entity, EngineLogic};
-use spatial::{Location, Position, DIRECTIONS6};
-use mapgen::{AreaSpec};
 use mapgen;
-use area::Area;
-use fov::Fov;
-use dijkstra;
+use mapgen::AreaSpec;
 
-#[deriving(Clone, Show)]
-pub struct MobComp {
-    pub t: MobType,
+/// Data component for mobs.
+#[deriving(Clone, Show, Encodable, Decodable)]
+pub struct Mob {
     pub max_hp: int,
     pub hp: int,
     pub power: int,
@@ -22,12 +13,11 @@ pub struct MobComp {
     pub status: int,
 }
 
-impl MobComp {
-    pub fn new(t: MobType) -> MobComp {
+impl Mob {
+    pub fn new(t: MobType) -> Mob {
         let data = MOB_KINDS[t as uint];
         let status = if t != Player { status::Asleep as int } else { 0 };
-        MobComp {
-            t: t,
+        Mob {
             max_hp: data.power,
             hp: data.power,
             power: data.power,
@@ -38,7 +28,7 @@ impl MobComp {
 }
 
 pub mod intrinsic {
-#[deriving(Eq, PartialEq, Clone)]
+#[deriving(Eq, PartialEq, Clone, Encodable, Decodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -50,7 +40,7 @@ pub enum Intrinsic {
 }
 
 pub mod status {
-#[deriving(Eq, PartialEq, Clone)]
+#[deriving(Eq, PartialEq, Clone, Encodable, Decodable)]
 pub enum Status {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -69,7 +59,7 @@ pub struct MobKind {
     pub power: int,
     pub area_spec: AreaSpec,
     pub sprite: uint,
-    pub color: Rgb,
+    pub color: &'static Rgb,
     pub intrinsics: int,
 }
 
@@ -84,7 +74,7 @@ macro_rules! mob_data {
         $($symbol:ident: $power:expr, $depth:expr, $biome:ident, $sprite:expr, $color:expr, $flags:expr;)*
 
     } => {
-#[deriving(Eq, PartialEq, Clone, Show)]
+#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum MobType {
     $($symbol,)*
 }
@@ -111,19 +101,20 @@ pub static MOB_KINDS: [MobKind, ..$count] = [
 mob_data! {
     count: 10;
 //  Symbol   power, depth, biome, sprite, color,        intrinsics
-    Player:     6,  -1, Anywhere, 51, AZURE,            f!();
-    Dreg:       1,   1, Anywhere, 72, OLIVE,            f!(Hands);
-    Snake:      1,   1, Overland, 71, GREEN,            f!();
-    Ooze:       3,   3, Dungeon,  77, LIGHTSEAGREEN,    f!();
-    Flayer:     4,   4, Anywhere, 75, INDIANRED,        f!();
-    Ogre:       6,   5, Anywhere, 73, DARKSLATEGRAY,    f!(Hands);
-    Wraith:     8,   6, Dungeon,  74, HOTPINK,          f!(Hands);
-    Octopus:    10,  7, Anywhere, 63, DARKTURQUOISE,    f!();
-    Efreet:     12,  8, Anywhere, 78, ORANGE,           f!();
-    Serpent:    15,  9, Dungeon,  94, CORAL,            f!();
+    Player:     6,  -1, Anywhere, 51, &AZURE,            f!();
+    Dreg:       1,   1, Anywhere, 72, &OLIVE,            f!(Hands);
+    Snake:      1,   1, Overland, 71, &GREEN,            f!();
+    Ooze:       3,   3, Dungeon,  77, &LIGHTSEAGREEN,    f!();
+    Flayer:     4,   4, Anywhere, 75, &INDIANRED,        f!();
+    Ogre:       6,   5, Anywhere, 73, &DARKSLATEGRAY,    f!(Hands);
+    Wraith:     8,   6, Dungeon,  74, &HOTPINK,          f!(Hands);
+    Octopus:    10,  7, Anywhere, 63, &DARKTURQUOISE,    f!();
+    Efreet:     12,  8, Anywhere, 78, &ORANGE,           f!();
+    Serpent:    15,  9, Dungeon,  94, &CORAL,            f!();
 }
 
 
+/*
 /// Trait for entities that are mobile things.
 pub trait Mob {
     fn is_active(&self) -> bool;
@@ -431,3 +422,4 @@ impl Pathing {
         ret
     }
 }
+*/

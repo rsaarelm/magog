@@ -1,6 +1,6 @@
 use std::collections::hashmap::{HashMap};
-use ecs::{Entity};
-use serialize::{Decodable, Decoder, DecoderHelpers, Encodable, Encoder, EncoderHelpers};
+use entity::{Entity};
+use serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
 
 /// Spatial index for game entities
@@ -99,12 +99,12 @@ struct Elt(Entity, Location);
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Spatial {
     fn decode(d: &mut D) -> Result<Spatial, E> {
-        Ok(Spatial::slurp(try!(d.read_to_vec(|e| Decodable::decode(e)))))
+        Ok(Spatial::slurp(try!(Decodable::decode(d))))
     }
 }
 
 impl<E, S:Encoder<E>> Encodable<S, E> for Spatial {
     fn encode(&self, s: &mut S) -> Result<(), E> {
-        s.emit_from_vec(self.dump().as_slice(), |e, v| v.encode(e))
+        self.dump().encode(s)
     }
 }

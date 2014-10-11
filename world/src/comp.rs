@@ -1,40 +1,27 @@
-use serialize::{Decodable, Decoder, Encodable, Encoder};
-use ecs::{Component, Entity};
+use entity::{Entity};
+use ecs::{Component};
+use {EntityKind};
+use mob::{Mob};
 
 /// Generic components used by the game.
 #[deriving(Encodable, Decodable)]
 pub struct Comp {
-    pub sprite: Component<Sprite>,
-    pub stats: Component<Stats>,
+    pub kind: Component<EntityKind>,
+    pub mob: Component<Mob>,
 }
 
 impl Comp {
     pub fn new() -> Comp {
         Comp {
-            sprite: Component::new(),
-            stats: Component::new(),
+            kind: Component::new(),
+            mob: Component::new(),
         }
     }
 
     /// Delete entity from all memeber components.
     pub fn delete(&mut self, e: Entity) {
         // All member components must be included here.
-        self.sprite.delete(e);
-        self.stats.delete(e);
+        self.kind.delete(e);
+        self.mob.delete(e);
     }
 }
-
-// XXX: Placeholder, get some actual components in, remove this.
-#[deriving(Encodable, Decodable)]
-pub struct Sprite {
-    pub name: String,
-    pub idx: uint,
-}
-
-// XXX: Placeholder, get some actual components in, remove this.
-#[deriving(Encodable, Decodable)]
-pub struct Stats {
-    pub strength: int,
-    pub dex: int,
-}
-

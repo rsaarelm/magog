@@ -1,33 +1,21 @@
-use serialize::{Decodable, Decoder, Encodable, Encoder};
-use std::intrinsics::TypeId;
-use std::collections::hashmap::HashMap;
-use std::collections::bitv::Bitv;
-use std::any::{Any, AnyRefExt, AnyMutRefExt};
 use world;
+use entity::{Entity};
 
-#[deriving(PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
-pub struct Entity(uint);
-
-/// Entity component system
+/// Entity component system.
+#[deriving(Decodable, Encodable)]
 pub struct Ecs {
-    // XXX: This is much less efficient than it could be. A serious
-    // implementation would use unboxed vecs for the components and would
-    // provide lookup methods faster than a HashMap find to access the
-    // components
-    components: HashMap<TypeId, Vec<Option<Box<Any + 'static>>>>,
-
     next_idx: uint,
     reusable_idxs: Vec<uint>,
-    active: Bitv,
+    // Could use Bitv for active, but I can't bother to write the serializer...
+    active: Vec<bool>,
 }
 
 impl Ecs {
     pub fn new() -> Ecs {
         Ecs {
-            components: HashMap::new(),
             next_idx: 0,
             reusable_idxs: vec![],
-            active: Bitv::new(),
+            active: vec![],
         }
     }
 
@@ -46,8 +34,8 @@ impl Ecs {
             let diff = idx - self.active.len() + 1;
             self.active.grow(diff, false);
         }
-        assert!(!self.active.get(idx));
-        self.active.set(idx, true);
+        assert!(!self.active[idx]);
+        *self.active.get_mut(idx) = true;
 
         Entity(idx)
     }
@@ -57,17 +45,11 @@ impl Ecs {
     /// XXX: The user is currently responsible for never using an entity
     /// handle again after delete_entity has been called on it. Using an
     /// entity handle after deletion may return another entity's contents.
-    pub fn delete_entity(&mut self, Entity(idx): Entity) {
-        assert!(self.active.get(idx));
-
-        for (_, c) in self.components.iter_mut() {
-            if c.len() > idx {
-                c.as_mut_slice()[idx] = None;
-            }
-        }
+    pub fn delete(&mut self, Entity(idx): Entity) {
+        assert!(self.active[idx]);
 
         self.reusable_idxs.push(idx);
-        self.active.set(idx, false);
+        *self.active.get_mut(idx) = false;
     }
 
     /// Return an iterator for the entities. The iterator will not be
@@ -77,18 +59,6 @@ impl Ecs {
     /// iteration will show up in the iteration or not.
     pub fn iter(&self) -> EntityIter {
         EntityIter(0)
-    }
-}
-
-impl<E, D:Decoder<E>> Decodable<D, E> for Ecs {
-    fn decode(d: &mut D) -> Result<Ecs, E> {
-        unimplemented!();
-    }
-}
-
-impl<E, S:Encoder<E>> Encodable<S, E> for Ecs {
-    fn encode(&self, s: &mut S) -> Result<(), E> {
-        unimplemented!();
     }
 }
 
@@ -104,7 +74,7 @@ impl Iterator<Entity> for EntityIter {
             if *idx >= ecs.active.len() { return None; }
             let ret = Entity(*idx);
             *idx += 1;
-            if !ecs.active.get(*idx - 1) { continue; }
+            if !ecs.active[*idx - 1] { continue; }
             return Some(ret);
         }
     }

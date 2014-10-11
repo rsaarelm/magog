@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::rand;
 use rand::Rng;
-use ecs::{Ecs, Component, Entity};
+use ecs::Ecs;
 use area::Area;
 use spatial::Spatial;
 use comp::Comp;

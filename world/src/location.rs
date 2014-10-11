@@ -1,7 +1,6 @@
 use calx::V2;
-use ecs::Entity;
+use entity::Entity;
 use terrain::TerrainType;
-use terrain;
 use world;
 
 /// Unambiguous location in the game world.
