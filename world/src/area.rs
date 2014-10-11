@@ -6,7 +6,9 @@ use terrain::TerrainType;
 use terrain;
 use location::Location;
 use mapgen;
-use spawn::Seed;
+use egg::Egg;
+use mob::{Player};
+use {MobKind};
 
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
@@ -50,11 +52,11 @@ impl Area {
         }
     }
 
-    /// List the objects that should be spawned in the world during init. This
+    /// List the objects that should be hatched in the world during init. This
     /// is tied to map generation, so it goes in the area module.
-    pub fn get_spawns(&self) -> Vec<(Seed, Location)> {
+    pub fn get_eggs(&self) -> Vec<(Egg, Location)> {
         // TODO
-        vec![]
+        vec![(Egg::new(MobKind(Player)), Location::new(0, 0))]
     }
 
     fn default_terrain(&self, _loc: Location) -> TerrainType {

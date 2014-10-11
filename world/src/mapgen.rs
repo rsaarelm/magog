@@ -61,7 +61,7 @@ impl AreaSpec {
         AreaSpec { biome: biome, depth: depth }
     }
 
-    pub fn can_spawn(&self, environment: &AreaSpec) -> bool {
+    pub fn can_hatch(&self, environment: &AreaSpec) -> bool {
         self.depth >= 0 && self.depth <= environment.depth &&
         (self.biome as int & environment.biome as int) != 0
     }

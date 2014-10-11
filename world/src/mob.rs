@@ -15,7 +15,7 @@ pub struct Mob {
 
 impl Mob {
     pub fn new(t: MobType) -> Mob {
-        let data = MOB_KINDS[t as uint];
+        let data = MOB_SPECS[t as uint];
         let status = if t != Player { status::Asleep as int } else { 0 };
         Mob {
             max_hp: data.power,
@@ -53,7 +53,7 @@ pub enum Status {
 }
 }
 
-pub struct MobKind {
+pub struct MobSpec {
     pub typ: MobType,
     pub name: &'static str,
     pub power: int,
@@ -79,8 +79,8 @@ pub enum MobType {
     $($symbol,)*
 }
 
-pub static MOB_KINDS: [MobKind, ..$count] = [
-    $(MobKind {
+pub static MOB_SPECS: [MobSpec, ..$count] = [
+    $(MobSpec {
         typ: $symbol,
         name: stringify!($symbol),
         power: $power,
@@ -166,7 +166,7 @@ impl Mob for Entity {
 
     fn has_intrinsic(&self, f: intrinsic::Intrinsic) -> bool {
         self.into::<MobComp>().map_or(false,
-            |m| MOB_KINDS[m.t as uint].intrinsics as int & f as int != 0)
+            |m| MOB_SPECS[m.t as uint].intrinsics as int & f as int != 0)
     }
 
     fn has_status(&self, s: status::Status) -> bool {
@@ -312,7 +312,7 @@ impl Mob for Entity {
 
                 // XXX: Msging REALLY needs a nicer API.
                 // FIXME
-                //self.world().system_mut().fx.msg(format!("{} wakes up.", MOB_KINDS[self.mob_type() as uint].name).as_slice());
+                //self.world().system_mut().fx.msg(format!("{} wakes up.", MOB_SPECS[self.mob_type() as uint].name).as_slice());
             }
         }
     }

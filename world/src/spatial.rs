@@ -34,7 +34,7 @@ impl Spatial {
         self.loc_to_entities.insert(loc, vec![e]);
     }
 
-    /// Delete an entity from the space.
+    /// Remove an entity from the space.
     pub fn remove(&mut self, e: Entity) {
         if !self.entity_to_loc.contains_key(&e) { return; }
 

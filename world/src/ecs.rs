@@ -94,8 +94,8 @@ impl<T> Component<T> {
         }
     }
 
-    /// Delete an entity's element.
-    pub fn delete(&mut self, Entity(idx): Entity) {
+    /// Remove an entity's element.
+    pub fn remove(&mut self, Entity(idx): Entity) {
         if idx < self.data.len() {
             *self.data.get_mut(idx) = None;
         }

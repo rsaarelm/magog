@@ -7,7 +7,6 @@ use ecs::Ecs;
 use area::Area;
 use spatial::Spatial;
 use comp::Comp;
-use spawn::{spawn};
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
@@ -67,10 +66,10 @@ impl WorldState {
 /// Things you do to a newly-created world but not to one restored from a save
 /// file go here.
 pub fn init_world(seed: u32) {
-    let spawns = get().borrow().area.get_spawns();
+    let eggs = get().borrow().area.get_eggs();
 
-    for &(ref seed, ref loc) in spawns.iter() {
-        spawn(seed, *loc);
+    for &(ref egg, ref loc) in eggs.iter() {
+        egg.hatch(*loc);
     }
 }
 

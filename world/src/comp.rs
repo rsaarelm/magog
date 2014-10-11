@@ -18,10 +18,10 @@ impl Comp {
         }
     }
 
-    /// Delete entity from all memeber components.
-    pub fn delete(&mut self, e: Entity) {
+    /// Remove entity from all memeber components.
+    pub fn remove(&mut self, e: Entity) {
         // All member components must be included here.
-        self.kind.delete(e);
-        self.mob.delete(e);
+        self.kind.remove(e);
+        self.mob.remove(e);
     }
 }
