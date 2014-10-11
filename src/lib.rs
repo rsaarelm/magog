@@ -5,6 +5,7 @@
 extern crate time;
 extern crate sync;
 extern crate collections;
+extern crate serialize;
 
 extern crate glfw;
 extern crate gfx;

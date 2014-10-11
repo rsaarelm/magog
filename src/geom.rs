@@ -1,5 +1,5 @@
 /// 2D geometric vector.
-#[deriving(Show, PartialEq, PartialOrd, Clone)]
+#[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct V2<T>(pub T, pub T);
 
 impl<T: Add<U, V>, U, V> Add<V2<U>, V2<V>> for V2<T> {
@@ -28,7 +28,7 @@ impl<T: Primitive> V2<T> {
 }
 
 /// A rectangle type consisting of position and size vectors.
-#[deriving(Show, PartialEq, PartialOrd, Clone)]
+#[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
 impl<T: Primitive> Rect<T> {
