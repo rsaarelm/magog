@@ -1,3 +1,4 @@
+use serialize::json;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::rand;
@@ -19,6 +20,20 @@ pub fn get() -> Rc<RefCell<WorldState>> {
     }
 
     WORLD_STATE.get().unwrap().clone()
+}
+
+pub fn save() -> String {
+    json::encode(get().borrow().deref())
+}
+
+pub fn load(data: &str) -> Result<(), json::DecoderError> {
+    match json::decode(data) {
+        Ok(w) => {
+            WORLD_STATE.replace(Some(Rc::new(RefCell::new(w))));
+            Ok(())
+        }
+        Err(e) => Err(e)
+    }
 }
 
 /// The internal object that holds all the world state data.
