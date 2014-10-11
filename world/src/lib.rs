@@ -24,6 +24,7 @@ pub mod mapgen;
 mod geomorph;
 mod geomorph_data;
 mod fov;
+mod spawn;
 
 #[deriving(Eq, PartialEq, Show)]
 pub enum FovStatus {

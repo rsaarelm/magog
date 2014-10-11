@@ -4,6 +4,7 @@ use std::rand;
 use rand::Rng;
 use ecs::Ecs;
 use area::Area;
+use spawn::{spawn};
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
@@ -37,26 +38,25 @@ impl WorldState {
     }
 }
 
+/// Things you do to a newly-created world but not to one restored from a save
+/// file go here.
 pub fn init_world(seed: u32) {
-    // XXX: Uh-oh. This crashes. How do we do stuff with things accessed from
-    // within worldstate doing mutatey stuff on worldstate?
-    //get().borrow_mut().area.populate();
+    let spawns = get().borrow().area.get_spawns();
 
-    // TODO: Spawn mobs using Area when first starting but not when restoring
-    // a save.
+    for &(ref seed, ref loc) in spawns.iter() {
+        spawn(seed, *loc);
+    }
 }
 
 #[deriving(Encodable, Decodable)]
 pub struct Flags {
     pub seed: u32,
-    pub populated: bool,
 }
 
 impl Flags {
     fn new(seed: u32) -> Flags {
         Flags {
             seed: seed,
-            populated: false,
         }
     }
 }

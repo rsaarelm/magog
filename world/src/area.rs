@@ -7,6 +7,7 @@ use terrain;
 use location::Location;
 use mapgen;
 use world;
+use spawn::Seed;
 
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
@@ -50,15 +51,11 @@ impl Area {
         }
     }
 
-    /// Fill the world with the objects that come with the procedural world.
-    /// This must only be called exactly once when initializing the world.
-    pub fn populate(&self) {
-        let w = world::get();
-        assert!(!w.borrow().flags.populated, "Calling populate more than once");
-
-        println!("TODO area::populate");
-
-        w.borrow_mut().flags.populated = true;
+    /// List the objects that should be spawned in the world during init. This
+    /// is tied to map generation, so it goes in the area module.
+    pub fn get_spawns(&self) -> Vec<(Seed, Location)> {
+        // TODO
+        vec![]
     }
 
     fn default_terrain(&self, _loc: Location) -> TerrainType {
