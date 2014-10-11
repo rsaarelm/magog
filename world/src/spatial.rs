@@ -18,9 +18,9 @@ impl Spatial {
     }
 
     /// Insert an entity into space.
-    pub fn place(&mut self, e: Entity, loc: Location) {
+    pub fn insert(&mut self, e: Entity, loc: Location) {
         if self.entity_to_loc.contains_key(&e) {
-            self.remove(&e);
+            self.remove(e);
         }
 
         self.entity_to_loc.insert(e, loc);
@@ -34,26 +34,26 @@ impl Spatial {
         self.loc_to_entities.insert(loc, vec![e]);
     }
 
-    /// Remove an entity from the space.
-    pub fn remove(&mut self, e: &Entity) {
-        if !self.entity_to_loc.contains_key(e) { return; }
+    /// Delete an entity from the space.
+    pub fn remove(&mut self, e: Entity) {
+        if !self.entity_to_loc.contains_key(&e) { return; }
 
-        let loc = *self.entity_to_loc.find(e).unwrap();
-        self.entity_to_loc.remove(e);
+        let loc = *self.entity_to_loc.find(&e).unwrap();
+        self.entity_to_loc.remove(&e);
         {
             let v = self.loc_to_entities.find_mut(&loc).unwrap();
             assert!(v.len() > 0);
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
-                let idx = v.as_slice().position_elem(e).unwrap();
+                let idx = v.as_slice().position_elem(&e).unwrap();
                 v.swap_remove(idx);
                 return;
             } else {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
                 // (Need to drop out of scope for borrows reasons)
-                assert!(&(*v)[0] == e);
+                assert!((*v)[0] == e);
             }
         }
         // We only end up here if we need to clear the container for the
@@ -70,8 +70,8 @@ impl Spatial {
     }
 
     /// Return the location of an entity if the entity is present in the space.
-    pub fn entity_loc(&self, e: &Entity) -> Option<Location> {
-        self.entity_to_loc.find(e).map(|&loc| loc)
+    pub fn get(&self, e: Entity) -> Option<Location> {
+        self.entity_to_loc.find(&e).map(|&loc| loc)
     }
 
     /// Flatten to an easily serializable vector.
@@ -88,7 +88,7 @@ impl Spatial {
         let mut ret = Spatial::new();
 
         for &Elt(e, loc) in dump.iter() {
-            ret.place(e, loc);
+            ret.insert(e, loc);
         }
         ret
     }

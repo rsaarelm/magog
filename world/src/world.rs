@@ -2,9 +2,10 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::rand;
 use rand::Rng;
-use ecs::Ecs;
+use ecs::{Ecs, Component, Entity};
 use area::Area;
 use spatial::Spatial;
+use comp::Comp;
 use spawn::{spawn};
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
@@ -23,9 +24,15 @@ pub fn get() -> Rc<RefCell<WorldState>> {
 /// The internal object that holds all the world state data.
 #[deriving(Encodable, Decodable)]
 pub struct WorldState {
+    /// Global entity handler.
     pub ecs: Ecs,
+    /// World terrain generation and storage.
     pub area: Area,
+    /// Spatial index for game entities.
     pub spatial: Spatial,
+    /// Generic components for game entities.
+    pub comp: Comp,
+    /// Global gamestate flags.
     pub flags: Flags,
 }
 
@@ -36,6 +43,7 @@ impl WorldState {
             ecs: Ecs::new(),
             area: Area::new(seed),
             spatial: Spatial::new(),
+            comp: Comp::new(),
             flags: Flags::new(seed),
         }
     }

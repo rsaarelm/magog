@@ -54,9 +54,9 @@ impl Ecs {
 
     /// Delete an entity from the entity component system.
     ///
-    /// XXX: The user is currently responsible for never using an entity handle again after
-    /// delete_entity has been called on it. Using an entity handle after deletion may return
-    /// another entity's contents.
+    /// XXX: The user is currently responsible for never using an entity
+    /// handle again after delete_entity has been called on it. Using an
+    /// entity handle after deletion may return another entity's contents.
     pub fn delete_entity(&mut self, Entity(idx): Entity) {
         assert!(self.active.get(idx));
 
@@ -107,5 +107,45 @@ impl Iterator<Entity> for EntityIter {
             if !ecs.active.get(*idx - 1) { continue; }
             return Some(ret);
         }
+    }
+}
+
+/// Generic component type that holds some simple data elements associated
+/// with entities.
+#[deriving(Encodable, Decodable)]
+pub struct Component<T> {
+    data: Vec<Option<T>>,
+}
+
+impl<T> Component<T> {
+    pub fn new() -> Component<T> {
+        Component {
+            data: vec![],
+        }
+    }
+
+    /// Delete an entity's element.
+    pub fn delete(&mut self, Entity(idx): Entity) {
+        if idx < self.data.len() {
+            *self.data.get_mut(idx) = None;
+        }
+    }
+
+    /// Insert an element for an entity.
+    pub fn insert(&mut self, Entity(idx): Entity, c: T) {
+        while self.data.len() <= idx { self.data.push(None); }
+        *self.data.get_mut(idx) = Some(c);
+    }
+
+    /// Get the element for an entity if it exists.
+    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> {
+        if idx >= self.data.len() { return None; }
+        self.data[idx].as_ref()
+    }
+
+    /// Get a mutable reference to the element for an entity if it exists.
+    pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
+        if idx >= self.data.len() { return None; }
+        self.data.get_mut(idx).as_mut()
     }
 }

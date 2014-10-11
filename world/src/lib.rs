@@ -18,6 +18,7 @@ pub mod mapgen;
 pub mod terrain;
 
 mod area;
+mod comp;
 mod ecs;
 mod fov;
 mod geom;
