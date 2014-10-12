@@ -10,6 +10,15 @@ use egg::Egg;
 use mob::{Player};
 use {AreaSpec};
 
+// Note to maintainer: Due to the way serialization works, Area *must* be
+// generated to have exactly the same contents every time given the same seed
+// value. That means absolutely no outside sources of randomness. Only use an
+// internal generator initialized with the given seed value. And watch out for
+// surprise randomness. A map generator in a previous project used memory
+// addresses of temporary structures as indexing keys, and ended up with a
+// nondeterminism bug that depended on the numerical order of the arbitrary
+// address values.
+
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
     seed: u32,
