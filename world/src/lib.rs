@@ -12,6 +12,7 @@ extern crate calx;
 pub use entity::{Entity};
 pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
+pub use msg::{pop_msg};
 pub use world::{init_world, load, save};
 
 pub mod terrain;
@@ -28,6 +29,7 @@ mod geomorph;
 mod geomorph_data;
 mod location;
 mod mapgen;
+mod msg;
 mod spatial;
 mod world;
 
@@ -73,4 +75,12 @@ impl AreaSpec {
         self.depth >= 0 && self.depth <= environment.depth &&
         (self.biome as int & environment.biome as int) != 0
     }
+}
+
+/// Various one-off signals the game sends to the UI layer.
+#[deriving(Clone, Show)]
+pub enum Msg {
+    Text(String),
+    // TODO: Type of effect.
+    Explosion(Location),
 }
