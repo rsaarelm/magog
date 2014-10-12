@@ -7,15 +7,16 @@ use ecs::Ecs;
 use area::Area;
 use spatial::Spatial;
 use comp::Comp;
+use flags::Flags;
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
 /// Get the global world instance.
 pub fn get() -> Rc<RefCell<WorldState>> {
     if WORLD_STATE.get().is_none() {
-        // Lazy init.
-        WORLD_STATE.replace(Some(Rc::new(RefCell::new(WorldState::new()))));
-        init_world(rand::task_rng().gen());
+        // Lazy init. Use a value from the system rng for the world seed if
+        // none was given by the user.
+        init_world(None);
     }
 
     WORLD_STATE.get().unwrap().clone()
@@ -55,8 +56,7 @@ pub struct WorldState {
 }
 
 impl WorldState {
-    pub fn new() -> WorldState {
-        let seed = 0;
+    pub fn new(seed: u32) -> WorldState {
         WorldState {
             ecs: Ecs::new(),
             area: Area::new(seed),
@@ -67,25 +67,19 @@ impl WorldState {
     }
 }
 
-/// Things you do to a newly-created world but not to one restored from a save
-/// file go here.
-pub fn init_world(seed: u32) {
-    let eggs = get().borrow().area.get_eggs();
+/// Set up a fresh start-game world state with an optional fixed random number
+/// generator seed. Calling init_world will cause any existing world state to
+/// be discarded.
+pub fn init_world(seed: Option<u32>) {
+    let seed = match seed {
+        Some(s) => s,
+        // Use system rng for seed if the user didn't provide one.
+        None => rand::task_rng().gen()
+    };
 
+    WORLD_STATE.replace(Some(Rc::new(RefCell::new(WorldState::new(seed)))));
+    let eggs = get().borrow().area.get_eggs();
     for &(ref egg, ref loc) in eggs.iter() {
         egg.hatch(*loc);
-    }
-}
-
-#[deriving(Encodable, Decodable)]
-pub struct Flags {
-    pub seed: u32,
-}
-
-impl Flags {
-    fn new(seed: u32) -> Flags {
-        Flags {
-            seed: seed,
-        }
     }
 }

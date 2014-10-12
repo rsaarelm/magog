@@ -10,6 +10,7 @@ extern crate serialize;
 extern crate calx;
 
 pub use entity::{Entity};
+pub use flags::{camera, set_camera};
 pub use geom::{HexGeom, DIR6, DIR8};
 pub use location::{Location, Chart};
 pub use msg::{pop_msg};
@@ -23,6 +24,7 @@ mod comp;
 mod entity;
 mod ecs;
 mod egg;
+mod flags;
 mod fov;
 mod geom;
 mod geomorph;
