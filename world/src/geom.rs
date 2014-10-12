@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use std::num::{signum, abs};
 use calx::V2;
 
+/// Hex grid geometry for vectors.
 pub trait HexGeom {
     /// Hex distance represented by a vector.
     fn hex_dist(&self) -> int;
@@ -11,7 +12,6 @@ pub trait HexGeom {
     fn dir6_towards(&self) -> V2<int>;
 }
 
-/// Hex grid geometry for vectors.
 impl HexGeom for V2<int> {
     fn hex_dist(&self) -> int {
         let xd = self.0;
