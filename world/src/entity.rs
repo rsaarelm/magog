@@ -16,6 +16,8 @@ impl Entity {
     /// CALLER IS RESPONSIBLE FOR ENSUING THAT AN ENTITY WILL NOT BE
     /// USED FROM ANYWHERE AFTER THE DELETE OPERATION.
     pub fn delete(self) {
+        // LABYRINTH OF COMPONENTS
+        // This needs to call every toplevel component system.
         world::get().borrow_mut().comp.remove(self);
         world::get().borrow_mut().spatial.remove(self);
         world::get().borrow_mut().ecs.delete(self);

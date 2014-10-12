@@ -20,7 +20,8 @@ impl Comp {
 
     /// Remove entity from all memeber components.
     pub fn remove(&mut self, e: Entity) {
-        // All member components must be included here.
+        // LABYRINTH OF COMPONENTS
+        // All Comp member components must be included here.
         self.kind.remove(e);
         self.mob.remove(e);
     }
