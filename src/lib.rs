@@ -1,6 +1,7 @@
 #![crate_name="calx"]
 #![feature(phase)]
 #![feature(tuple_indexing)]
+#![feature(if_let)]
 
 extern crate time;
 extern crate sync;
@@ -26,6 +27,7 @@ mod glfw_key;
 mod rgb;
 mod util;
 pub mod color;
+pub mod dijkstra;
 pub mod event;
 pub mod key;
 pub mod text;
