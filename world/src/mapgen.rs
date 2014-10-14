@@ -23,8 +23,8 @@ pub fn gen_herringbone<R: Rng>(
     assert!(!exit.is_empty(), "No exit chunks found");
     assert!(inner.len() + exit.len() == chunks.len());
 
-    let exit_x = rng.gen_range(-1, 0);
-    let exit_y = rng.gen_range(-1, 0);
+    let exit_x = rng.gen_range(-2, 2);
+    let exit_y = rng.gen_range(-2, 2);
 
     for cy in range(-2i, 2) {
         for cx in range(-2i, 2) {
