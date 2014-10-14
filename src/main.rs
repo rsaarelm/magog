@@ -9,30 +9,34 @@ extern crate calx;
 extern crate world;
 extern crate time;
 
-use calx::color;
 use calx::event;
-use calx::key;
-use world::{Location};
+use titlestate::TitleState;
 
-mod drawable;
+pub mod drawable;
 pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
+mod gamestate;
+mod titlestate;
+
+pub trait State {
+    fn process(&mut self, event: event::Event) -> Option<Transition>;
+}
+
+pub enum Transition {
+    NewState(Box<State + Send>),
+    Quit,
+}
 
 pub fn main() {
     let mut canvas = calx::Canvas::new();
     tilecache::init(&mut canvas);
+    let mut state: Box<State + Send> = box TitleState::new();
 
     for evt in canvas.run() {
-        match evt {
-            event::Render(ctx) => {
-                ctx.clear(&color::BLACK);
-                let camera = Location::new(0, 0);
-                worldview::draw_world(&camera, ctx);
-            }
-            event::KeyPressed(key::KeyEscape) => {
-                return;
-            }
+        match state.process(evt) {
+            Some(Quit) => { return; }
+            Some(NewState(s)) => { state = s; }
             _ => ()
         }
     }
