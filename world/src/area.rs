@@ -1,4 +1,5 @@
 use std::rand::StdRng;
+use std::rand::Rng;
 use std::rand::SeedableRng;
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::hashmap::HashMap;
@@ -7,7 +8,7 @@ use terrain;
 use location::Location;
 use mapgen;
 use egg::Egg;
-use mob::{Player};
+use mob::*;
 use {AreaSpec};
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
@@ -21,8 +22,16 @@ use {AreaSpec};
 
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
+    /// Random number generator seed. Must uniquely define the Area contents.
     seed: u32,
+    /// Stored terrain.
     terrain: HashMap<Location, TerrainType>,
+    /// Valid slots to spawn things in, basically open floor and connected to
+    /// areas the player can reach. (Does not handle stuff like monsters that
+    /// spawn in water for now.)
+    open_slots: Vec<Location>,
+    /// Where the player should enter the area.
+    player_entrance: Location,
 }
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Area {
@@ -47,9 +56,26 @@ impl Area {
             &AreaSpec::new(::Overland, 1),
             |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
 
+        // Generate open slots that can be used to spawn stuff.
+        let mut opens = Vec::new();
+        for (&loc, t) in terrain.iter() {
+            // No connectivity analysis yes, trusting that herringbone map has
+            // total connectivity. Later on, use Dijkstra map that spreads
+            // from entrance/exit as a reachability floodfill to do something
+            // cleverer here.
+            if t.is_walkable() {
+                opens.push(loc);
+            }
+        }
+        rng.shuffle(opens.as_mut_slice());
+
+        let entrance = opens.swap_remove(0).unwrap();
+
         Area {
             seed: seed,
             terrain: terrain,
+            open_slots: opens,
+            player_entrance: entrance,
         }
     }
 
@@ -63,15 +89,19 @@ impl Area {
 
     /// List the objects that should be hatched in the world during init. This
     /// is tied to map generation, so it goes in the area module.
-   pub fn get_eggs(&self) -> Vec<(Egg, Location)> {
+    pub fn get_eggs(&self) -> Vec<(Egg, Location)> {
         // TODO: Properly.
         vec![
-            (Egg::new(::MobKind(Player)), Location::new(0, 0)),
+            (Egg::new(::MobKind(Serpent)), self.open_slots[0]),
         ]
+    }
+
+    pub fn player_entrance(&self) -> Location {
+        self.player_entrance
     }
 
     fn default_terrain(&self, _loc: Location) -> TerrainType {
         // TODO: Different default terrains in different biomes.
-        terrain::Rock
+        terrain::Tree
     }
 }

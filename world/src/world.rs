@@ -8,6 +8,9 @@ use area::Area;
 use spatial::Spatial;
 use comp::Comp;
 use flags::Flags;
+use flags;
+use mob::{Player};
+use egg::Egg;
 
 local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
 
@@ -82,4 +85,7 @@ pub fn init_world(seed: Option<u32>) {
     for &(ref egg, ref loc) in eggs.iter() {
         egg.hatch(*loc);
     }
+    let player_entrance = get().borrow().area.player_entrance();
+    Egg::new(::MobKind(Player)).hatch(player_entrance);
+    flags::set_camera(player_entrance);
 }

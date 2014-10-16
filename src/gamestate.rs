@@ -1,7 +1,7 @@
 use calx::color;
 use calx::event;
 use calx::key;
-use world::{Location, init_world};
+use world;
 use super::{State, Transition};
 use worldview;
 use titlestate::TitleState;
@@ -10,7 +10,7 @@ pub struct GameState;
 
 impl GameState {
     pub fn new(seed: Option<u32>) -> GameState {
-        init_world(seed);
+        world::init_world(seed);
         GameState
     }
 }
@@ -20,7 +20,7 @@ impl State for GameState {
         match event {
             event::Render(ctx) => {
                 ctx.clear(&color::BLACK);
-                let camera = Location::new(0, 0);
+                let camera = world::camera();
                 worldview::draw_world(&camera, ctx);
             }
             event::KeyPressed(key::KeyEscape) => {
