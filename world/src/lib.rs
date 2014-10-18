@@ -11,13 +11,14 @@ extern crate calx;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera};
-pub use geom::{HexGeom, DIR6, DIR8};
+pub use geom::{HexGeom};
 pub use location::{Location, Chart};
 pub use msg::{pop_msg};
 pub use world::{init_world, load, save};
 
-pub mod terrain;
+pub mod dir6;
 pub mod mob;
+pub mod terrain;
 
 mod area;
 mod comp;

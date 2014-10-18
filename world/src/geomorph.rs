@@ -5,7 +5,7 @@ use calx::text::Map2DUtil;
 use terrain::*;
 use {AreaSpec, Biome};
 use geomorph_data;
-use geom::{DIR6};
+use dir6::Dir6;
 
 local_data_key!(CHUNK_CACHE: RefCell<Vec<Chunk>>)
 
@@ -204,7 +204,8 @@ fn split_connected(set: &HashSet<(int, int)>) ->
 
                 let (x, y) = point;
 
-                for d in DIR6.iter() {
+                for dir in Dir6::iter() {
+                    let d = dir.to_v2();
                     let edge_point = (x + d.0, y + d.1);
                     if rest.contains(&edge_point) {
                         assert!(!connected.contains(&edge_point));
