@@ -3,45 +3,62 @@ use entity::{Entity};
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
 
+/// Entities can be placed either on open locations or inside other entities.
+/// A sum type will represent this nicely.
+#[deriving(Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
+pub enum Place {
+    At(Location),
+    In(Entity),
+}
+
 /// Spatial index for game entities
 pub struct Spatial {
-    loc_to_entities: HashMap<Location, Vec<Entity>>,
-    entity_to_loc: HashMap<Entity, Location>,
+    place_to_entities: HashMap<Place, Vec<Entity>>,
+    entity_to_place: HashMap<Entity, Place>,
 }
 
 impl Spatial {
     pub fn new() -> Spatial {
         Spatial {
-            loc_to_entities: HashMap::new(),
-            entity_to_loc: HashMap::new(),
+            place_to_entities: HashMap::new(),
+            entity_to_place: HashMap::new(),
         }
     }
 
-    /// Insert an entity into space.
-    pub fn insert(&mut self, e: Entity, loc: Location) {
-        if self.entity_to_loc.contains_key(&e) {
+    fn insert(&mut self, e: Entity, p: Place) {
+        if self.entity_to_place.contains_key(&e) {
             self.remove(e);
         }
 
-        self.entity_to_loc.insert(e, loc);
-        match self.loc_to_entities.find_mut(&loc) {
+        self.entity_to_place.insert(e, p);
+        match self.place_to_entities.find_mut(&p) {
             Some(v) => { v.push(e); return; }
             _ => ()
         };
         // Didn't return above, that means this location isn't indexed
         // yet and needs a brand new container. (Can't do this in match
         // block because borrows.)
-        self.loc_to_entities.insert(loc, vec![e]);
+        self.place_to_entities.insert(p, vec![e]);
+    }
+
+    /// Insert an entity into space.
+    pub fn insert_at(&mut self, e: Entity, loc: Location) {
+        self.insert(e, At(loc));
+    }
+
+    /// Insert an entity into container.
+    pub fn insert_in(&mut self, e: Entity, parent: Entity) {
+        self.insert(e, In(parent));
     }
 
     /// Remove an entity from the space.
     pub fn remove(&mut self, e: Entity) {
-        if !self.entity_to_loc.contains_key(&e) { return; }
+        if !self.entity_to_place.contains_key(&e) { return; }
 
-        let loc = *self.entity_to_loc.find(&e).unwrap();
-        self.entity_to_loc.remove(&e);
+        let p = *self.entity_to_place.find(&e).unwrap();
+        self.entity_to_place.remove(&e);
         {
-            let v = self.loc_to_entities.find_mut(&loc).unwrap();
+            let v = self.place_to_entities.find_mut(&p).unwrap();
             assert!(v.len() > 0);
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
@@ -58,26 +75,35 @@ impl Spatial {
         }
         // We only end up here if we need to clear the container for the
         // location.
-        self.loc_to_entities.remove(&loc);
+        self.place_to_entities.remove(&p);
     }
 
-    /// List entities at a location.
-    pub fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        match self.loc_to_entities.find(&loc) {
+    fn entities(&self, p: Place) -> Vec<Entity> {
+        match self.place_to_entities.find(&p) {
             None => vec![],
             Some(v) => v.clone(),
         }
     }
 
-    /// Return the location of an entity if the entity is present in the space.
-    pub fn get(&self, e: Entity) -> Option<Location> {
-        self.entity_to_loc.find(&e).map(|&loc| loc)
+    /// List entities at a location.
+    pub fn entities_at(&self, loc: Location) -> Vec<Entity> {
+        self.entities(At(loc))
+    }
+
+    /// List entities in a container.
+    pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
+        self.entities(In(parent))
+    }
+
+    /// Return the place of an entity if the entity is present in the space.
+    pub fn get(&self, e: Entity) -> Option<Place> {
+        self.entity_to_place.find(&e).map(|&loc| loc)
     }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
         let mut ret = vec![];
-        for (&e, &loc) in self.entity_to_loc.iter() {
+        for (&e, &loc) in self.entity_to_place.iter() {
             ret.push(Elt(e, loc));
         }
         ret
@@ -95,7 +121,7 @@ impl Spatial {
 }
 
 #[deriving(Clone, Decodable, Encodable)]
-struct Elt(Entity, Location);
+struct Elt(Entity, Place);
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Spatial {
     fn decode(d: &mut D) -> Result<Spatial, E> {

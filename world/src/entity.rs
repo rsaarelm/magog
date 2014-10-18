@@ -8,7 +8,7 @@ pub struct Entity(pub uint);
 impl Entity {
     /// Place the entity in a location in the game world.
     pub fn place(self, loc: Location) {
-        world::get().borrow_mut().spatial.insert(self, loc);
+        world::get().borrow_mut().spatial.insert_at(self, loc);
     }
 
     /// Remove the entity from all the game world systems. THE ENTITY VALUE
