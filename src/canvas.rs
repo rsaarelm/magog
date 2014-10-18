@@ -196,7 +196,7 @@ impl Context {
                 color: color.to_array(),
                 depth: 1.0,
                 stencil: 0,
-            }, gfx::Color | gfx::Depth, &self.frame);
+            }, gfx::COLOR | gfx::DEPTH, &self.frame);
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
