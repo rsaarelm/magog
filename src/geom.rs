@@ -14,6 +14,10 @@ impl<T: Neg<U>, U> Neg<V2<U>> for V2<T> {
     fn neg(&self) -> V2<U> { V2(-self.0, -self.1) }
 }
 
+impl<T: Mul<U, V>, U, V> Mul<U, V2<V>> for V2<T> {
+    fn mul(&self, rhs: &U) -> V2<V> { V2(self.0 * *rhs, self.1 * *rhs) }
+}
+
 impl<T> V2<T> {
     pub fn to_array(self) -> [T, ..2] { [self.0, self.1] }
 }
