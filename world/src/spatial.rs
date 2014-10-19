@@ -46,16 +46,35 @@ impl Spatial {
         self.insert(e, At(loc));
     }
 
+    /// Return whether the parent entity or an entity contained in the parent
+    /// entity contains entity e.
+    pub fn contains(&self, parent: Entity, e: Entity) -> bool {
+        match self.entity_to_place.find(&e) {
+            Some(&In(p)) if p == parent => true,
+            Some(&In(p)) => self.contains(parent, p),
+            _ => false
+        }
+    }
+
+
     /// Insert an entity into container.
     pub fn insert_in(&mut self, e: Entity, parent: Entity) {
+        assert!(!self.contains(e, parent), "Trying to create circular containment");
         self.insert(e, In(parent));
     }
 
-    /// Remove an entity from the space.
+    /// Remove an entity from the space. Other entities that were in the
+    /// entity to be removed will be added in the place the entity occupied.
     pub fn remove(&mut self, e: Entity) {
         if !self.entity_to_place.contains_key(&e) { return; }
 
         let p = *self.entity_to_place.find(&e).unwrap();
+
+        // Pop out the contents.
+        for &content in self.entities_in(e).iter() {
+            self.insert(content, p);
+        }
+
         self.entity_to_place.remove(&e);
         {
             let v = self.place_to_entities.find_mut(&p).unwrap();
