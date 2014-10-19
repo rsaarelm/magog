@@ -18,6 +18,7 @@ fn main() {
                         ctx.draw_image(V2(x * 8, y * 8), 0.4, img, &color::ORANGE);
                     }
                 }
+                ctx.draw_line(V2(64, 64), V2(8, 128), 0.3, 4.0, &color::CYAN);
                 t += 1;
             }
             event::KeyPressed(calx::key::KeyEscape) => {

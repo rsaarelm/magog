@@ -10,7 +10,7 @@ use glfw::Context as _Context;
 use gfx;
 use gfx::tex;
 use gfx::batch::{OwnedBatch};
-use gfx::{Device, DeviceHelper, CommandBuffer};
+use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
 use gfx::{GlDevice};
 use gfx::Mesh;
 use atlas::{AtlasBuilder, Atlas};
@@ -104,7 +104,11 @@ pub struct Context {
     meshes: Vec<Mesh>,
     image_dims: Vec<V2<uint>>,
     flatshade: gfx::TextureHandle,
+    line_mesh: Mesh,
     resolution: V2<u32>,
+
+    /// Time in seconds it took to render the last frame.
+    pub render_duration: f64,
 }
 
 #[deriving(PartialEq)]
@@ -159,6 +163,11 @@ impl Context {
             dims.push(atlas.vertices[i].1.map(|x| x as uint));
         }
 
+        let line_mesh = graphics.device.create_mesh([
+                Vertex { pos: [0.0, 0.0, 0.0], tex_coord: [0.0, 0.0] },
+                Vertex { pos: [1.0, 1.0, 0.0], tex_coord: [1.0, 1.0] },
+        ]);
+
         // Blank white texture so we can draw flatshaded stuff without
         // switching to non-texturing shader.
         let mut inf = tex::TextureInfo::new();
@@ -186,7 +195,10 @@ impl Context {
             meshes: meshes,
             image_dims: dims,
             flatshade: flatshade,
+            line_mesh: line_mesh,
             resolution: dim,
+
+            render_duration: 0.1f64,
         }
     }
 
@@ -225,33 +237,35 @@ impl Context {
     }
 
     pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
-        unimplemented!();
-        /*
-        let scale = self.resolution.map(|x| 2.0 / (x as f32));
-        let p1 = p1.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
-        let p2 = p2.map(|x| x as f32).mul(scale) - V2(1f32, 1f32);
+        // Use the fixed (0, 0) to (1, 1) mesh with a scale transform to
+        // represent all lines.
+        let mut scale = self.resolution.map(|x| 2.0 / (x as f32));
+        scale.1 = -scale.1;
 
-        let mesh = self.graphics.device.create_mesh([
-            Vertex { pos: [p1.0, -p1.1, layer], tex_coord: [0.0, 0.0] },
-            Vertex { pos: [p2.0, -p2.1, layer], tex_coord: [0.0, 0.0] },
-        ]);
-        // XXX: Copy-pasted code
+        let offset = p1.map(|x| x as f32);
+        let size = (p2 - p1).map(|x| x as f32);
 
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
             u_color: color.to_array(),
-            u_transform: identity_matrix4(), // TODO: Params
+            u_transform: transform(
+                size.mul(scale),
+                offset.mul(scale) - V2(1.0, -1.0),
+                layer),
             s_texture: (self.flatshade, sampler_info),
         };
-        let slice = mesh.to_slice(gfx::Line);
+
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
+        draw_state.primitive.front_face = gfx::state::Clockwise;
         draw_state.primitive.method = gfx::state::Line(thickness);
-        let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &self.program, &mesh, slice, &draw_state).unwrap();
-        self.graphics.draw(&batch, &params, &self.frame);
-        */
+
+        let mut batch: OwnedBatch<_ShaderParamLink, ShaderParam> = OwnedBatch::new(
+            self.line_mesh.clone(), self.program.clone(), params).unwrap();
+        batch.state = draw_state;
+        batch.slice = self.line_mesh.to_slice(gfx::Line);
+        self.graphics.renderer.draw(&batch, &self.frame);
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
@@ -314,6 +328,10 @@ impl<'a> Iterator<Event<'a>> for Context {
             let t = time::precise_time_s();
             if self.frame_interval.map_or(true,
                 |x| t - self.last_render_time >= x) {
+                let delta = t - self.last_render_time;
+                let damping = 0.25f64;
+                self.render_duration = damping * self.render_duration + (1f64 - damping) * delta;
+
                 self.last_render_time = t;
 
                 // Time to render, must return a handle to self.
