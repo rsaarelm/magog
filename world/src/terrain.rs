@@ -71,7 +71,7 @@ impl TerrainType {
         }
     }
 
-    pub fn is_opaque(self) -> bool {
+    pub fn blocks_sight(self) -> bool {
         match self {
             Wall | RockWall | Rock | Door | Tree | DeadTree | TallGrass => true,
             _ => false
@@ -85,11 +85,11 @@ impl TerrainType {
         }
     }
 
-    pub fn is_walkable(self) -> bool {
+    pub fn blocks_walk(self) -> bool {
         match self {
             Floor | Shallows | Grass | Downstairs | Portal
-                | Door | OpenDoor | TallGrass => true,
-            _ => false
+                | Door | OpenDoor | TallGrass => false,
+            _ => true
         }
     }
 

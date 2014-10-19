@@ -2,6 +2,7 @@
 #![feature(globs)]
 #![feature(macro_rules)]
 #![feature(tuple_indexing)]
+#![feature(if_let)]
 #![comment = "Display independent world logic for Magog"]
 
 extern crate num;
@@ -10,12 +11,13 @@ extern crate serialize;
 extern crate calx;
 
 pub use entity::{Entity};
-pub use flags::{camera, set_camera};
+pub use flags::{camera, set_camera, get_tick};
 pub use geom::{HexGeom};
 pub use location::{Location, Chart};
 pub use msg::{pop_msg};
 pub use world::{init_world, load, save};
 
+pub mod action;
 pub mod dir6;
 pub mod mob;
 pub mod terrain;

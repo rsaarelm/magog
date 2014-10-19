@@ -159,7 +159,7 @@ fn verify_topology(regions: &Vec<HashSet<(int, int)>>) -> Option<String> {
 
 fn make_topology(cells: &Cells) -> Vec<HashSet<(int, int)>> {
     let mut open : HashSet<(int, int)> = cells.iter()
-        .filter(|&(_p, t)| t.is_walkable())
+        .filter(|&(_p, t)| !t.blocks_walk())
         .map(|(&p, _t)| p)
         .collect();
     let mut ret = vec!();

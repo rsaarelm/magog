@@ -63,7 +63,7 @@ impl Area {
             // total connectivity. Later on, use Dijkstra map that spreads
             // from entrance/exit as a reachability floodfill to do something
             // cleverer here.
-            if t.is_walkable() {
+            if !t.blocks_walk() {
                 opens.push(loc);
             }
         }

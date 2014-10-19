@@ -59,7 +59,7 @@ impl Drawable for CellDrawable {
                 let t = p.terrain();
                 if t.is_wall() {
                     front_of_wall = true;
-                    if t.is_walkable() { is_door = true; }
+                    if !t.blocks_walk() { is_door = true; }
                 }
             }
             (front_of_wall, is_door)

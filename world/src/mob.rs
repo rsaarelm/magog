@@ -24,6 +24,18 @@ impl Mob {
             status: status,
         }
     }
+
+    pub fn has_status(&self, s: status::Status) -> bool {
+        self.status as int & s as int != 0
+    }
+
+    pub fn add_status(&mut self, s: status::Status) {
+        self.status |= s as int;
+    }
+
+    pub fn remove_status(&mut self, s: status::Status) {
+        self.status &= !(s as int);
+    }
 }
 
 pub mod intrinsic {

@@ -5,6 +5,8 @@ use world;
 pub struct Flags {
     pub seed: u32,
     pub camera: Location,
+    pub tick: u64,
+    pub player_acted: bool,
 }
 
 impl Flags {
@@ -12,6 +14,8 @@ impl Flags {
         Flags {
             seed: seed,
             camera: Location::new(0, 0),
+            tick: 0,
+            player_acted: false,
         }
     }
 }
@@ -24,4 +28,9 @@ pub fn camera() -> Location {
 /// Move the current view location.
 pub fn set_camera(loc: Location) {
     world::get().borrow_mut().flags.camera = loc;
+}
+
+/// Return the frame count since the start of the game.
+pub fn get_tick() -> u64 {
+    world::get().borrow().flags.tick
 }
