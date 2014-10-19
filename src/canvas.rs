@@ -9,7 +9,8 @@ use glfw;
 use glfw::Context as _Context;
 use gfx;
 use gfx::tex;
-use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
+use gfx::batch::{OwnedBatch};
+use gfx::{Device, DeviceHelper, CommandBuffer};
 use gfx::{GlDevice};
 use gfx::Mesh;
 use atlas::{AtlasBuilder, Atlas};
@@ -202,6 +203,7 @@ impl Context {
     pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
         let mut scale = self.resolution.map(|x| 2.0 / (x as f32));
         scale.1 = -scale.1;
+
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
@@ -213,15 +215,13 @@ impl Context {
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
-        let mesh = &self.meshes[idx];
-
-        let slice = mesh.to_slice(gfx::TriangleList);
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.front_face = gfx::state::Clockwise;
-        let batch: gfx::batch::RefBatch<_ShaderParamLink, ShaderParam> = self.graphics.make_batch(
-            &self.program, mesh, slice, &draw_state).unwrap();
-        self.graphics.draw(&batch, &params, &self.frame);
+        let mut batch: OwnedBatch<_ShaderParamLink, ShaderParam> = OwnedBatch::new(
+            self.meshes[idx].clone(), self.program.clone(), params).unwrap();
+        batch.state = draw_state;
+        self.graphics.renderer.draw(&batch, &self.frame);
     }
 
     pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
