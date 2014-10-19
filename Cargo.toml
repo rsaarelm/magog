@@ -11,9 +11,6 @@ name = "magog"
 [dependencies.image]
 git = "https://github.com/PistonDevelopers/rust-image"
 
-[dependencies.cgmath]
-git = "https://github.com/bjz/cgmath-rs"
-
 [dependencies.num]
 git = "https://github.com/rust-lang/num"
 

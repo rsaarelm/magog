@@ -7,9 +7,6 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "world"
 
-[dependencies.cgmath]
-git = "https://github.com/bjz/cgmath-rs"
-
 [dependencies.num]
 git = "https://github.com/rust-lang/num"
 
