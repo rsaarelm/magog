@@ -5,7 +5,7 @@ local_data_key!(MSG_QUEUE: RefCell<Vec<::Msg>>)
 /// Pop and return the oldest message left in the message queue.
 pub fn pop_msg() -> Option<::Msg> {
     if MSG_QUEUE.get().is_none() { return None; }
-    MSG_QUEUE.get().unwrap().borrow_mut().shift()
+    MSG_QUEUE.get().unwrap().borrow_mut().remove(0)
 }
 
 /// Insert a new message to the back of the message queue.
