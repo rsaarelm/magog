@@ -29,7 +29,8 @@ pub enum Transition {
 }
 
 pub fn main() {
-    let mut canvas = calx::Canvas::new();
+    let mut canvas = calx::Canvas::new()
+        .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state: Box<State + Send> = box TitleState::new();
 
