@@ -9,7 +9,6 @@ use glfw;
 use glfw::Context as _Context;
 use gfx;
 use gfx::tex;
-use gfx::batch::{OwnedBatch};
 use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
 use gfx::{GlDevice};
 use gfx::Mesh;
@@ -233,10 +232,11 @@ impl Context {
         let mut draw_state = gfx::DrawState::new()
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.front_face = gfx::state::Clockwise;
-        let mut batch: OwnedBatch<_ShaderParamLink, ShaderParam> = OwnedBatch::new(
-            self.meshes[idx].clone(), self.program.clone(), params).unwrap();
-        batch.state = draw_state;
-        self.graphics.renderer.draw(&batch, &self.frame);
+        let slice = self.meshes[idx].to_slice(gfx::TriangleList);
+
+        let batch: Program = self.graphics.make_batch(
+            &self.program, &self.meshes[idx], slice, &draw_state).unwrap();
+        self.graphics.draw(&batch, &params, &self.frame);
     }
 
     pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
@@ -263,12 +263,11 @@ impl Context {
             .depth(gfx::state::LessEqual, true);
         draw_state.primitive.front_face = gfx::state::Clockwise;
         draw_state.primitive.method = gfx::state::Line(thickness);
+        let slice = self.line_mesh.to_slice(gfx::Line);
 
-        let mut batch: OwnedBatch<_ShaderParamLink, ShaderParam> = OwnedBatch::new(
-            self.line_mesh.clone(), self.program.clone(), params).unwrap();
-        batch.state = draw_state;
-        batch.slice = self.line_mesh.to_slice(gfx::Line);
-        self.graphics.renderer.draw(&batch, &self.frame);
+        let batch: Program = self.graphics.make_batch(
+            &self.program, &self.line_mesh, slice, &draw_state).unwrap();
+        self.graphics.draw(&batch, &params, &self.frame);
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
