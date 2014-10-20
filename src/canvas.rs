@@ -21,6 +21,9 @@ use event;
 use rgb::Rgb;
 use glfw_key;
 
+pub static FONT_W: uint = 8;
+pub static FONT_H: uint = 8;
+
 pub struct Canvas {
     title: String,
     dim: V2<u32>,

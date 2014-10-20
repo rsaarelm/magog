@@ -19,9 +19,11 @@ pub use canvas::{Image};
 pub use rgb::{Rgb};
 pub use geom::{Rect, V2};
 pub use util::{color_key};
+pub use fonter::{Fonter, CanvasWriter};
 
 mod atlas;
 mod canvas;
+mod fonter;
 mod geom;
 mod glfw_key;
 mod rgb;

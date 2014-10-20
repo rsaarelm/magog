@@ -3,6 +3,7 @@ extern crate calx;
 use calx::color;
 use calx::{V2};
 use calx::event;
+use calx::{Fonter};
 
 fn main() {
     let mut t = 0i;
@@ -18,7 +19,18 @@ fn main() {
                         ctx.draw_image(V2(x * 8, y * 8), 0.4, img, &color::ORANGE);
                     }
                 }
-                ctx.draw_line(V2(64, 64), V2(8, 128), 0.3, 4.0, &color::CYAN);
+                let center = V2(320, 180);
+                let offset = V2(
+                    ((t as f32 / 16.0).cos() * 128.0) as int,
+                    ((t as f32 / 16.0).sin() * 128.0) as int);
+
+                ctx.draw_line(center, center + offset, 0.3, 4.0, &color::CYAN);
+
+                let fps = 1.0 / ctx.render_duration;
+                let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
+                               .set_border(color::BLACK),
+                    "FPS {}", fps);
+
                 t += 1;
             }
             event::KeyPressed(calx::key::KeyEscape) => {
