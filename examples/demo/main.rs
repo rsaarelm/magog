@@ -29,7 +29,7 @@ fn main() {
                 let fps = 1.0 / ctx.render_duration;
                 let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
                                .set_border(color::BLACK),
-                    "FPS {}", fps);
+                    "FPS {:.0}", fps);
 
                 t += 1;
             }

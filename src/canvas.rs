@@ -331,8 +331,8 @@ impl<'a> Iterator<Event<'a>> for Context {
             if self.frame_interval.map_or(true,
                 |x| t - self.last_render_time >= x) {
                 let delta = t - self.last_render_time;
-                let damping = 0.25f64;
-                self.render_duration = damping * self.render_duration + (1f64 - damping) * delta;
+                let sensitivity = 0.25f64;
+                self.render_duration = (1f64 - sensitivity) * self.render_duration + sensitivity * delta;
 
                 self.last_render_time = t;
 
