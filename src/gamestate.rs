@@ -2,6 +2,7 @@ use calx::color;
 use calx::Context;
 use calx::event;
 use calx::key;
+use calx::{Fonter, V2};
 use world;
 use world::action;
 use world::action::{Step};
@@ -23,6 +24,10 @@ impl GameState {
         ctx.clear(&color::BLACK);
         let camera = world::camera();
         worldview::draw_world(&camera, ctx);
+        let fps = 1.0 / ctx.render_duration;
+        let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
+                       .set_border(color::BLACK),
+                       "FPS {}", fps);
 
         if action::control_state() == action::ReadyToUpdate {
             action::update();
