@@ -77,7 +77,7 @@ impl Canvas {
         Context::new(
             self.dim,
             self.title.as_slice(),
-            Some(1.0 / 30.0),
+            self.frame_interval,
             Atlas::new(&self.builder))
     }
 
