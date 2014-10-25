@@ -1,4 +1,3 @@
-use std::collections::hashmap::HashMap;
 use time;
 use std::mem;
 use sync::comm::Receiver;

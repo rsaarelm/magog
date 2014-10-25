@@ -43,10 +43,14 @@ pub struct Atlas {
 
 impl Atlas {
     pub fn new(builder: &AtlasBuilder) -> Atlas {
+        let dims : Vec<V2<int>> = builder.images.iter()
+            .map(|img| { let (w, h) = img.dimensions(); V2(w as int, h as int) })
+            .collect();
+
         // Add 1 pixel edges to images to prevent texturing artifacts from
         // adjacent pixels in separate subimages.
-        let dims : Vec<V2<int>> = builder.images.iter()
-            .map(|img| { let (w, h) = img.dimensions(); V2(w as int + 1, h as int + 1) })
+        let expanded_dims = dims.iter()
+            .map(|v| v + V2(1, 1))
             .collect();
 
         // Guesstimate the size for the atlas container.
@@ -56,7 +60,7 @@ impl Atlas {
 
         loop {
             assert!(d < 1000000000); // Sanity check
-            match util::pack_rectangles(V2(d as int, d as int), &dims) {
+            match util::pack_rectangles(V2(d as int, d as int), &expanded_dims) {
                 Some(ret) => {
                     offsets = ret;
                     break;
