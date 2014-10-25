@@ -13,7 +13,7 @@ use gfx::{GlDevice};
 use gfx::Mesh;
 use atlas::{AtlasBuilder, Atlas};
 use util;
-use geom::{V2};
+use geom::{V2, Rect};
 use event::Event;
 use event;
 use rgb::Rgb;
@@ -218,26 +218,54 @@ impl Context {
             }, gfx::COLOR | gfx::DEPTH, &self.frame);
     }
 
-    pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
-        let mut scale = self.resolution.map(|x| 2.0 / (x as f32));
-        scale.1 = -scale.1;
+    /// Return the pixel-perfect scaled and centered canvas draw rectangle
+    /// within the current window, in pixel coordinates. Return (rect_x,
+    /// rect_y, rect_w, rect_h, window_w, window_h).
+    fn canvas_rect(&self) -> (u32, u32, u32, u32, u32, u32) {
+        let (w, h) = self.window.get_framebuffer_size();
+        let (w, h) = (w as u32, h as u32);
+        let Rect(V2(rx, ry), V2(rw, rh)) = pixel_perfect(self.resolution, V2(w, h));
+        (rx, ry, rw, rh, w, h)
+    }
 
+    fn draw_state(&self) -> gfx::DrawState {
+        let mut ret = gfx::DrawState::new()
+            .depth(gfx::state::LessEqual, true);
+
+        let (x, y, w, h, _, _) = self.canvas_rect();
+        ret.scissor = Some(gfx::Rect {
+            x: x as u16, y: y as u16, w: w as u16, h: h as u16
+        });
+        ret.primitive.front_face = gfx::state::Clockwise;
+
+        ret
+    }
+
+    fn transform(&self, offset: V2<int>, scale: V2<int>, layer: f32) -> Transform {
+        let (x, y, w, _, ww, wh) = self.canvas_rect();
+        let zoom = (w as f32) / (self.resolution.0 as f32);
+        let offset = offset + V2((x as f32 / zoom) as int, (y as f32 / zoom) as int);
+
+        //let mut screen_scale = self.resolution.map(|x| 2.0 / (x as f32));
+        let mut screen_scale = V2(2.0 * zoom / (ww as f32), 2.0 * zoom / (wh as f32));
+        screen_scale.1 = -screen_scale.1;
+        transform(
+            scale.map(|x| x as f32).mul(screen_scale),
+            offset.map(|x| x as f32).mul(screen_scale) - V2(1.0, -1.0),
+            layer)
+    }
+
+    pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
             u_color: color.to_array(),
-            u_transform: transform(
-                scale,
-                offset.map(|x| x as f32).mul(scale) - V2(1.0, -1.0),
-                layer),
+            u_transform: self.transform(offset, V2(1, 1), layer),
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
-        let mut draw_state = gfx::DrawState::new()
-            .depth(gfx::state::LessEqual, true);
-        draw_state.primitive.front_face = gfx::state::Clockwise;
+        let draw_state = self.draw_state();
         let slice = self.meshes[idx].to_slice(gfx::TriangleList);
-
         let batch: Program = self.graphics.make_batch(
             &self.program, &self.meshes[idx], slice, &draw_state).unwrap();
         self.graphics.draw(&batch, &params, &self.frame);
@@ -246,26 +274,15 @@ impl Context {
     pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
         // Use the fixed (0, 0) to (1, 1) mesh with a scale transform to
         // represent all lines.
-        let mut scale = self.resolution.map(|x| 2.0 / (x as f32));
-        scale.1 = -scale.1;
-
-        let offset = p1.map(|x| x as f32);
-        let size = (p2 - p1).map(|x| x as f32);
-
         let sampler_info = Some(self.graphics.device.create_sampler(
             tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
         let params = ShaderParam {
             u_color: color.to_array(),
-            u_transform: transform(
-                size.mul(scale),
-                offset.mul(scale) - V2(1.0, -1.0),
-                layer),
+            u_transform: self.transform(p1, (p2 - p1), layer),
             s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
-        let mut draw_state = gfx::DrawState::new()
-            .depth(gfx::state::LessEqual, true);
-        draw_state.primitive.front_face = gfx::state::Clockwise;
+        let mut draw_state = self.draw_state();
         draw_state.primitive.method = gfx::state::Line(thickness);
         let slice = self.line_mesh.to_slice(gfx::Line);
 
@@ -444,9 +461,27 @@ impl Texture {
     }
 }
 
-fn transform(scale: V2<f32>, offset: V2<f32>, z: f32) -> [[f32, ..4], ..4] {
+type Transform = [[f32, ..4], ..4];
+
+fn transform(scale: V2<f32>, offset: V2<f32>, z: f32) -> Transform {
     [[scale.0,  0.0,      0.0, 0.0],
      [0.0,      scale.1,  0.0, 0.0],
      [0.0,      0.0,      1.0, 0.0],
      [offset.0, offset.1, z,   1.0]]
+}
+
+/// A pixel perfect centered and scaled rectangle of resolution dim in a
+/// window of size area.
+fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<u32> {
+    let mut scale = (window.0 as f32 / canvas.0 as f32)
+        .min(window.1 as f32 / canvas.1 as f32);
+
+    if scale > 1.0 {
+        // Snap to pixel scale if more than 1 window pixel per canvas pixel.
+        scale = scale.floor();
+    }
+
+    let dim = V2((scale * canvas.0 as f32) as u32, (scale * canvas.1 as f32) as u32);
+    let offset = (window - dim) / 2;
+    Rect(offset, dim)
 }
