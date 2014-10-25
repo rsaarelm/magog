@@ -22,12 +22,17 @@ use glfw_key;
 pub static FONT_W: uint = 8;
 pub static FONT_H: uint = 8;
 
+/// The first font image in the atlas image set.
+static FONT_IDX: uint = 0;
+
+/// Image index of the solid color texture block.
+static SOLID_IDX: uint = 96;
+
 pub struct Canvas {
     title: String,
     dim: V2<u32>,
     frame_interval: Option<f64>,
     builder: AtlasBuilder,
-    font_glyphs: HashMap<char, Image>,
 }
 
 /// Toplevel graphics drawing and input reading context.
@@ -38,9 +43,9 @@ impl Canvas {
             dim: V2(640, 360),
             frame_interval: None,
             builder: AtlasBuilder::new(),
-            font_glyphs: HashMap::new(),
         };
         ret.init_font();
+        ret.init_solid();
         ret
     }
 
@@ -76,6 +81,7 @@ impl Canvas {
             Atlas::new(&self.builder))
     }
 
+    /// Load the default font into the texture atlas.
     fn init_font(&mut self) {
         let mut font_sheet = util::color_key(
             &image::load_from_memory(include_bin!("../assets/font.png"), image::PNG).unwrap(),
@@ -83,9 +89,16 @@ impl Canvas {
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
-            let glyph = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
-            self.font_glyphs.insert((i + 32) as u8 as char, glyph);
+            let Image(idx) = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
+            assert!(idx - i as uint == FONT_IDX);
         }
+    }
+
+    /// Load a solid color element into the texture atlas.
+    fn init_solid(&mut self) {
+        let image: ImageBuf<Rgba<u8>> = ImageBuf::from_fn(1, 1, |_, _| Rgba(0xffu8, 0xffu8, 0xffu8, 0xffu8));
+        let Image(idx) = self.add_image(V2(0, 0), image);
+        assert!(idx == SOLID_IDX);
     }
 }
 
@@ -104,7 +117,6 @@ pub struct Context {
     atlas_tex: Texture,
     meshes: Vec<Mesh>,
     image_dims: Vec<V2<uint>>,
-    flatshade: gfx::TextureHandle,
     line_mesh: Mesh,
     resolution: V2<u32>,
 
@@ -164,20 +176,14 @@ impl Context {
             dims.push(atlas.vertices[i].1.map(|x| x as uint));
         }
 
-        let line_mesh = graphics.device.create_mesh([
-                Vertex { pos: [0.0, 0.0, 0.0], tex_coord: [0.0, 0.0] },
-                Vertex { pos: [1.0, 1.0, 0.0], tex_coord: [1.0, 1.0] },
-        ]);
+        // The center of the solid image should be good as texture coordinates
+        // for flatshade objects.
+        let solid_uv = (atlas.texcoords[SOLID_IDX].mn() + atlas.texcoords[SOLID_IDX].mx()) * 0.5;
 
-        // Blank white texture so we can draw flatshaded stuff without
-        // switching to non-texturing shader.
-        let mut inf = tex::TextureInfo::new();
-        inf.width = 1;
-        inf.height = 1;
-        inf.kind = tex::Texture2D;
-        inf.format = tex::RGBA8;
-        let flatshade = graphics.device.create_texture(inf).unwrap();
-        graphics.device.update_texture(&flatshade, &inf.to_image_info(), &[0xffu8, 0xff, 0xff, 0xff]).unwrap();
+        let line_mesh = graphics.device.create_mesh([
+                Vertex { pos: [0.0, 0.0, 0.0], tex_coord: [solid_uv.0, solid_uv.1] },
+                Vertex { pos: [1.0, 1.0, 0.0], tex_coord: [solid_uv.0, solid_uv.1] },
+        ]);
 
         let program = graphics.device.link_program(VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
 
@@ -195,7 +201,6 @@ impl Context {
             atlas_tex: atlas_tex,
             meshes: meshes,
             image_dims: dims,
-            flatshade: flatshade,
             line_mesh: line_mesh,
             resolution: dim,
 
@@ -255,7 +260,7 @@ impl Context {
                 size.mul(scale),
                 offset.mul(scale) - V2(1.0, -1.0),
                 layer),
-            s_texture: (self.flatshade, sampler_info),
+            s_texture: (self.atlas_tex.tex, sampler_info),
         };
 
         let mut draw_state = gfx::DrawState::new()
@@ -271,8 +276,9 @@ impl Context {
 
     pub fn font_image(&self, c: char) -> Option<Image> {
         let idx = c as int;
+        // Hardcoded limiting of the font to printable ASCII.
         if idx >= 32 && idx < 128 {
-            Some(Image((idx - 32) as uint))
+            Some(Image((idx - 32) as uint + FONT_IDX))
         } else {
             None
         }
