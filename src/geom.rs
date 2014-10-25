@@ -46,6 +46,11 @@ impl<T: Primitive> Rect<T> {
 
     pub fn mx(&self) -> V2<T> { self.0 + self.1 }
 
+    pub fn p0(&self) -> V2<T> { self.mn() }
+    pub fn p1(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1) }
+    pub fn p2(&self) -> V2<T> { self.mx() }
+    pub fn p3(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1) }
+
     /// Grow the rectangle to enclose point p.
     pub fn grow(&mut self, p: V2<T>) {
         let (mn, mx) = (self.mn(), self.mx());
@@ -72,4 +77,8 @@ impl<T: Primitive> Rect<T> {
         !(mx.0 <= rmn.0 || mn.0 >= rmx.0 ||
           mx.1 <= rmn.1 || mn.1 >= rmx.1)
     }
+}
+
+impl<T: Add<U, T> + Clone, U> Add<V2<U>, Rect<T>> for Rect<T> {
+    fn add(&self, rhs: &V2<U>) -> Rect<T> { Rect(self.0 + *rhs, self.1.clone()) }
 }

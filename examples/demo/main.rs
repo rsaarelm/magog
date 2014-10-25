@@ -24,7 +24,7 @@ fn main() {
                     ((t as f32 / 16.0).cos() * 128.0) as int,
                     ((t as f32 / 16.0).sin() * 128.0) as int);
 
-                ctx.draw_line(center, center + offset, 0.3, 4.0, &color::CYAN);
+                ctx.draw_line(center, center + offset, 0.3, &color::CYAN);
 
                 let fps = 1.0 / ctx.render_duration;
                 let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)

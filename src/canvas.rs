@@ -7,16 +7,14 @@ use image;
 use glfw;
 use glfw::Context as _Context;
 use gfx;
-use gfx::tex;
-use gfx::{Device, DeviceHelper, ToSlice, CommandBuffer};
-use gfx::{GlDevice};
-use gfx::Mesh;
+use gfx::{CommandBuffer, GlDevice, GlCommandBuffer};
 use atlas::{AtlasBuilder, Atlas};
 use util;
 use geom::{V2, Rect};
 use event::Event;
 use event;
 use rgb::Rgb;
+use renderer::{Renderer, Vertex};
 use glfw_key;
 
 pub static FONT_W: uint = 8;
@@ -107,18 +105,18 @@ pub struct Context {
     glfw: glfw::Glfw,
     window: glfw::Window,
     events: Receiver<(f64, glfw::WindowEvent)>,
-    graphics: gfx::Graphics<gfx::GlDevice, gfx::GlCommandBuffer>,
-    frame: gfx::Frame,
-    program: gfx::ProgramHandle,
+    renderer: Renderer<GlDevice, GlCommandBuffer>,
+
+    atlas: Atlas,
+    triangle_buf: Vec<Vertex>,
+    line_buf: Vec<Vertex>,
 
     state: State,
     frame_interval: Option<f64>,
     last_render_time: f64,
-    atlas_tex: Texture,
-    meshes: Vec<Mesh>,
     image_dims: Vec<V2<uint>>,
-    line_mesh: Mesh,
     resolution: V2<u32>,
+    window_resolution: V2<u32>,
 
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
@@ -147,62 +145,34 @@ impl Context {
         window.set_key_polling(true);
         window.set_char_polling(true);
 
-        let device = gfx::GlDevice::new(|s| window.get_proc_address(s));
-        let mut graphics = gfx::Graphics::new(device);
-        //let frame = gfx::Frame::new(dim.0 as u16, dim.1 as u16);
         let (w, h) = window.get_framebuffer_size();
-        let frame = gfx::Frame::new(w as u16, h as u16);
-        let atlas_tex = Texture::from_rgba8(&atlas.image, &mut graphics.device);
 
-        let mut meshes = vec![];
+        let renderer = Renderer::new(
+            gfx::GlDevice::new(|s| window.get_proc_address(s)),
+            &atlas.image);
+
         let mut dims = vec![];
 
         for i in range(0, atlas.vertices.len()) {
-            let V2(x1, y1) = atlas.vertices[i].mn();
-            let V2(x2, y2) = atlas.vertices[i].mx();
-            let V2(u1, v1) = atlas.texcoords[i].mn();
-            let V2(u2, v2) = atlas.texcoords[i].mx();
-            let mesh = graphics.device.create_mesh([
-                Vertex { pos: [x1, y2, 0.0], tex_coord: [u1, v2] },
-                Vertex { pos: [x1, y1, 0.0], tex_coord: [u1, v1] },
-                Vertex { pos: [x2, y2, 0.0], tex_coord: [u2, v2] },
-
-                Vertex { pos: [x2, y2, 0.0], tex_coord: [u2, v2] },
-                Vertex { pos: [x1, y1, 0.0], tex_coord: [u1, v1] },
-                Vertex { pos: [x2, y1, 0.0], tex_coord: [u2, v1] },
-            ]);
-
-            meshes.push(mesh);
             dims.push(atlas.vertices[i].1.map(|x| x as uint));
         }
-
-        // The center of the solid image should be good as texture coordinates
-        // for flatshade objects.
-        let solid_uv = (atlas.texcoords[SOLID_IDX].mn() + atlas.texcoords[SOLID_IDX].mx()) * 0.5;
-
-        let line_mesh = graphics.device.create_mesh([
-                Vertex { pos: [0.0, 0.0, 0.0], tex_coord: [solid_uv.0, solid_uv.1] },
-                Vertex { pos: [1.0, 1.0, 0.0], tex_coord: [solid_uv.0, solid_uv.1] },
-        ]);
-
-        let program = graphics.device.link_program(VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
 
         Context {
             glfw: glfw,
             window: window,
             events: events,
-            graphics: graphics,
-            frame: frame,
-            program: program,
+            renderer: renderer,
+
+            atlas: atlas,
+            triangle_buf: Vec::new(),
+            line_buf: Vec::new(),
 
             state: Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
-            atlas_tex: atlas_tex,
-            meshes: meshes,
             image_dims: dims,
-            line_mesh: line_mesh,
             resolution: dim,
+            window_resolution: V2(w as u32, h as u32),
 
             render_duration: 0.1f64,
         }
@@ -210,85 +180,54 @@ impl Context {
 
     /// Clear the screen
     pub fn clear(&mut self, color: &Rgb) {
-        self.graphics.clear(
-            gfx::ClearData {
-                color: color.to_array(),
-                depth: 1.0,
-                stencil: 0,
-            }, gfx::COLOR | gfx::DEPTH, &self.frame);
+        self.renderer.clear(color);
+        self.triangle_buf.clear();
+        self.line_buf.clear();
     }
 
-    /// Return the pixel-perfect scaled and centered canvas draw rectangle
-    /// within the current window, in pixel coordinates. Return (rect_x,
-    /// rect_y, rect_w, rect_h, window_w, window_h).
-    fn canvas_rect(&self) -> (u32, u32, u32, u32, u32, u32) {
-        let (w, h) = self.window.get_framebuffer_size();
-        let (w, h) = (w as u32, h as u32);
-        let Rect(V2(rx, ry), V2(rw, rh)) = pixel_perfect(self.resolution, V2(w, h));
-        (rx, ry, rw, rh, w, h)
+    fn window_to_device(&self, window_pos: V2<int>, z: f32) -> [f32, ..3] {
+        let V2(w, h) = self.window_resolution;
+        let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
+        let zoom = (rw as f32) / (self.resolution.0 as f32);
+        [-1.0 + (2.0 * (rx as f32 + window_pos.0 as f32 * zoom) / w as f32),
+          1.0 - (2.0 * (ry as f32 + window_pos.1 as f32 * zoom) / h as f32),
+         z]
     }
 
-    fn draw_state(&self) -> gfx::DrawState {
-        let mut ret = gfx::DrawState::new()
-            .depth(gfx::state::LessEqual, true);
-
-        let (x, y, w, h, _, _) = self.canvas_rect();
-        ret.scissor = Some(gfx::Rect {
-            x: x as u16, y: y as u16, w: w as u16, h: h as u16
-        });
-        ret.primitive.front_face = gfx::state::Clockwise;
-
-        ret
+    fn tri_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32, ..4]) {
+        let pos = self.window_to_device(window_pos, layer);
+        self.triangle_buf.push(Vertex {
+            pos: pos,
+            color: color,
+            tex_coord: texture_pos.to_array() })
     }
 
-    fn transform(&self, offset: V2<int>, scale: V2<int>, layer: f32) -> Transform {
-        let (x, y, w, _, ww, wh) = self.canvas_rect();
-        let zoom = (w as f32) / (self.resolution.0 as f32);
-        let offset = offset + V2((x as f32 / zoom) as int, (y as f32 / zoom) as int);
-
-        //let mut screen_scale = self.resolution.map(|x| 2.0 / (x as f32));
-        let mut screen_scale = V2(2.0 * zoom / (ww as f32), 2.0 * zoom / (wh as f32));
-        screen_scale.1 = -screen_scale.1;
-        transform(
-            scale.map(|x| x as f32).mul(screen_scale),
-            offset.map(|x| x as f32).mul(screen_scale) - V2(1.0, -1.0),
-            layer)
+    fn line_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32, ..4]) {
+        let pos = self.window_to_device(window_pos, layer);
+        self.line_buf.push(Vertex {
+            pos: pos,
+            color: color,
+            tex_coord: texture_pos.to_array() })
     }
 
     pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
-        let sampler_info = Some(self.graphics.device.create_sampler(
-            tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
-        let params = ShaderParam {
-            u_color: color.to_array(),
-            u_transform: self.transform(offset, V2(1, 1), layer),
-            s_texture: (self.atlas_tex.tex, sampler_info),
-        };
+        let color = color.to_array();
+        let rect = self.atlas.vertices[idx] + offset;
+        let tex = self.atlas.texcoords[idx];
 
-        let draw_state = self.draw_state();
-        let slice = self.meshes[idx].to_slice(gfx::TriangleList);
-        let batch: Program = self.graphics.make_batch(
-            &self.program, &self.meshes[idx], slice, &draw_state).unwrap();
-        self.graphics.draw(&batch, &params, &self.frame);
+        self.tri_vtx(rect.p0(), layer, tex.p0(), color);
+        self.tri_vtx(rect.p1(), layer, tex.p1(), color);
+        self.tri_vtx(rect.p2(), layer, tex.p2(), color);
+        self.tri_vtx(rect.p0(), layer, tex.p0(), color);
+        self.tri_vtx(rect.p2(), layer, tex.p2(), color);
+        self.tri_vtx(rect.p3(), layer, tex.p3(), color);
     }
 
-    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, thickness: f32, color: &Rgb) {
-        // Use the fixed (0, 0) to (1, 1) mesh with a scale transform to
-        // represent all lines.
-        let sampler_info = Some(self.graphics.device.create_sampler(
-            tex::SamplerInfo::new(tex::Scale, tex::Clamp)));
-        let params = ShaderParam {
-            u_color: color.to_array(),
-            u_transform: self.transform(p1, (p2 - p1), layer),
-            s_texture: (self.atlas_tex.tex, sampler_info),
-        };
-
-        let mut draw_state = self.draw_state();
-        draw_state.primitive.method = gfx::state::Line(thickness);
-        let slice = self.line_mesh.to_slice(gfx::Line);
-
-        let batch: Program = self.graphics.make_batch(
-            &self.program, &self.line_mesh, slice, &draw_state).unwrap();
-        self.graphics.draw(&batch, &params, &self.frame);
+    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, color: &Rgb) {
+        let color = color.to_array();
+        let tex = self.atlas.texcoords[SOLID_IDX].0;
+        self.line_vtx(p1, layer, tex, color);
+        self.line_vtx(p2, layer, tex, color);
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
@@ -304,6 +243,15 @@ impl Context {
     pub fn image_dim(&self, Image(idx): Image) -> V2<uint> {
         self.image_dims[idx]
     }
+
+    fn line_thickness(&self) -> f32 {
+        let base_thickness = 3.0;
+
+        let Rect(V2(_, _), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
+        let zoom = (rw as f32) / (self.resolution.0 as f32);
+
+        base_thickness * zoom
+    }
 }
 
 impl<'a> Iterator<Event<'a>> for Context {
@@ -312,8 +260,16 @@ impl<'a> Iterator<Event<'a>> for Context {
         // iter call. Do post-render work here.
         if self.state == EndFrame {
             self.state = Normal;
-            self.graphics.end_frame();
+            let thickness = self.line_thickness();
+
+            self.renderer.draw_triangles(self.triangle_buf.as_slice());
+            self.renderer.draw_lines(self.line_buf.as_slice(), thickness);
+
+            self.renderer.end_frame();
             self.window.swap_buffers();
+
+            self.triangle_buf.clear();
+            self.line_buf.clear();
         }
 
         loop {
@@ -361,8 +317,12 @@ impl<'a> Iterator<Event<'a>> for Context {
                 // Time to render, must return a handle to self.
                 // XXX: Need unsafe hackery to get around lifetimes check.
                 self.state = EndFrame;
+
                 let (w, h) = self.window.get_framebuffer_size();
-                self.frame = gfx::Frame::new(w as u16, h as u16);
+                self.window_resolution = V2(w as u32, h as u32);
+                self.renderer.set_window_size(self.window.get_framebuffer_size());
+                self.renderer.scissor(pixel_perfect(self.resolution, self.window_resolution));
+
                 unsafe {
                     return Some(event::Render(mem::transmute(self)))
                 }
@@ -374,101 +334,6 @@ impl<'a> Iterator<Event<'a>> for Context {
 /// Drawable images stored in the Canvas.
 #[deriving(Clone, PartialEq)]
 pub struct Image(uint);
-
-static VERTEX_SRC: gfx::ShaderSource = shaders! {
-GLSL_120: b"
-    #version 120
-
-    uniform vec4 u_color;
-    uniform mat4 u_transform;
-
-    attribute vec3 a_pos;
-    attribute vec2 a_tex_coord;
-
-    varying vec2 v_tex_coord;
-    varying vec4 v_color;
-
-    void main() {
-        v_tex_coord = a_tex_coord;
-        v_color = u_color;
-        gl_Position = u_transform * vec4(a_pos, 1.0);
-    }
-"
-};
-
-static FRAGMENT_SRC: gfx::ShaderSource = shaders! {
-GLSL_120: b"
-    #version 120
-
-    uniform sampler2D s_texture;
-
-    varying vec2 v_tex_coord;
-    varying vec4 v_color;
-
-    void main() {
-        vec4 tex_color = texture2D(s_texture, v_tex_coord);
-        if (tex_color.a == 0.0) discard;
-        gl_FragColor = v_color * tex_color;
-    }
-"
-};
-
-#[shader_param(Program)]
-pub struct ShaderParam {
-    pub u_color: [f32, ..4],
-    pub u_transform: [[f32, ..4], ..4],
-    pub s_texture: gfx::shade::TextureParam,
-}
-
-#[vertex_format]
-struct Vertex {
-    #[name = "a_pos"]
-    pos: [f32, ..3],
-
-    #[name = "a_tex_coord"]
-    tex_coord: [f32, ..2],
-}
-
-impl Clone for Vertex {
-    fn clone(&self) -> Vertex { *self }
-}
-
-struct Texture {
-    tex: gfx::TextureHandle,
-    pub width: u32,
-    pub height: u32,
-}
-
-impl Texture {
-    fn from_rgba8<D: Device<C>, C: CommandBuffer>(
-        img: &ImageBuf<Rgba<u8>>,
-        d: &mut D) -> Texture {
-        let (w, h) = img.dimensions();
-        let mut info = tex::TextureInfo::new();
-        info.width = w as u16;
-        info.height = h as u16;
-        info.kind = tex::Texture2D;
-        info.format = tex::RGBA8;
-
-        let tex = d.create_texture(info).unwrap();
-        d.update_texture(&tex, &info.to_image_info(), img.pixelbuf()).unwrap();
-
-        Texture {
-            tex: tex,
-            width: w,
-            height: h,
-        }
-    }
-}
-
-type Transform = [[f32, ..4], ..4];
-
-fn transform(scale: V2<f32>, offset: V2<f32>, z: f32) -> Transform {
-    [[scale.0,  0.0,      0.0, 0.0],
-     [0.0,      scale.1,  0.0, 0.0],
-     [0.0,      0.0,      1.0, 0.0],
-     [offset.0, offset.1, z,   1.0]]
-}
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area.

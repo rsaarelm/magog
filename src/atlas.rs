@@ -37,7 +37,7 @@ impl AtlasBuilder {
 
 pub struct Atlas {
     pub image: ImageBuf<Rgba<u8>>,
-    pub vertices: Vec<Rect<f32>>,
+    pub vertices: Vec<Rect<int>>,
     pub texcoords: Vec<Rect<f32>>,
 }
 
@@ -84,8 +84,8 @@ impl Atlas {
             .map(|(i, &offset)| Rect(scale_vec(offset, image_dim), scale_vec(dims[i], image_dim)))
             .collect();
 
-        let vertices: Vec<Rect<f32>> = builder.draw_offsets.iter().enumerate()
-            .map(|(i, &offset)| Rect(offset.map(|x| x as f32), dims[i].map(|x| x as f32)))
+        let vertices: Vec<Rect<int>> = builder.draw_offsets.iter().enumerate()
+            .map(|(i, &offset)| Rect(offset, dims[i]))
             .collect();
 
         assert!(texcoords.len() == vertices.len());

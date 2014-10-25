@@ -12,6 +12,7 @@ extern crate glfw;
 extern crate gfx;
 #[phase(plugin)]
 extern crate gfx_macros;
+extern crate device;
 extern crate image;
 
 pub use canvas::{Canvas, Context};
@@ -26,6 +27,7 @@ mod canvas;
 mod fonter;
 mod geom;
 mod glfw_key;
+mod renderer;
 mod rgb;
 mod util;
 pub mod color;
