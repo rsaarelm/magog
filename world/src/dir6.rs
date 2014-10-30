@@ -51,7 +51,7 @@ impl Dir6 {
             5 | 6 => 3,
             7 | 8 | 9 => 4,
             10 | 11 | 12 => 5,
-            _ => fail!("Bad hexadecant")
+            _ => panic!("Bad hexadecant")
         })
     }
 

@@ -171,7 +171,7 @@ impl Mob for Entity {
             3 => return self.has_status(status::Quick),
             4 => return !self.has_intrinsic(intrinsic::Slow)
                         && !self.has_status(status::Slow),
-            _ => fail!("Invalid action phase"),
+            _ => panic!("Invalid action phase"),
         }
     }
 
@@ -254,7 +254,7 @@ impl Mob for Entity {
                 5 => 4,
                 6 => 8 + zag,
                 7 => 5,
-                _ => fail!("Invalid dir8"),
+                _ => panic!("Invalid dir8"),
             }];
 
         for delta in deltas.iter() {

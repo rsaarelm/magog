@@ -23,7 +23,7 @@ pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
 
     match Chunk::new(AreaSpec::new(biome, depth), text) {
         Ok(chunk) => CHUNK_CACHE.get().unwrap().borrow_mut().push(chunk),
-        Err(e) => fail!("Bad chunk cache data: {}", e),
+        Err(e) => panic!("Bad chunk cache data: {}", e),
     }
 }
 

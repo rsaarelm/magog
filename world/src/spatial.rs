@@ -14,6 +14,7 @@ pub enum Place {
 /// Spatial index for game entities
 pub struct Spatial {
     place_to_entities: HashMap<Place, Vec<Entity>>,
+    // TODO: Make this a Vec, like with components in mod comp.
     entity_to_place: HashMap<Entity, Place>,
 }
 
