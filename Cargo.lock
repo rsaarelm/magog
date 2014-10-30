@@ -1,0 +1,131 @@
+[root]
+name = "magog"
+version = "0.0.1"
+dependencies = [
+ "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
+ "image 0.1.0 (git+https://github.com/PistonDevelopers/rust-image)",
+ "num 0.0.1 (git+https://github.com/rust-lang/num)",
+ "uuid 0.0.1 (git+https://github.com/rust-lang/uuid)",
+ "world 0.0.1",
+]
+
+[[package]]
+name = "calx"
+version = "0.0.0"
+source = "git+https://github.com/rsaarelm/calx#eb87ca0aff6e4b08b92439eb9297538997c205a2"
+dependencies = [
+ "gfx 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "gl 0.0.1 (git+https://github.com/bjz/gl-rs)",
+ "glfw 0.0.1 (git+https://github.com/bjz/glfw-rs)",
+ "image 0.1.0 (git+https://github.com/PistonDevelopers/rust-image)",
+]
+
+[[package]]
+name = "device"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/gfx-rs#119cdb56ab3365a36cffee1e78789483f0db0c33"
+dependencies = [
+ "gfx_gl 0.1.0 (git+https://github.com/gfx-rs/gfx_gl.git)",
+]
+
+[[package]]
+name = "gfx"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/gfx-rs#119cdb56ab3365a36cffee1e78789483f0db0c33"
+dependencies = [
+ "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "gfx_macros 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "render 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+]
+
+[[package]]
+name = "gfx_gl"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/gfx_gl.git#ed681503da2e7ed9343003e78af4767e8e4e33a8"
+dependencies = [
+ "gl_generator 0.0.1 (git+https://github.com/bjz/gl-rs)",
+]
+
+[[package]]
+name = "gfx_macros"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/gfx-rs#119cdb56ab3365a36cffee1e78789483f0db0c33"
+
+[[package]]
+name = "gl"
+version = "0.0.1"
+source = "git+https://github.com/bjz/gl-rs#c93ac7204b36adc5f52f08fb675d31d2c41bb14a"
+dependencies = [
+ "gl_generator 0.0.1 (git+https://github.com/bjz/gl-rs)",
+]
+
+[[package]]
+name = "gl_generator"
+version = "0.0.1"
+source = "git+https://github.com/bjz/gl-rs#c93ac7204b36adc5f52f08fb675d31d2c41bb14a"
+dependencies = [
+ "khronos_api 0.0.1 (git+https://github.com/bjz/gl-rs)",
+ "rust-xml 0.1.0 (git+https://github.com/netvl/rust-xml)",
+]
+
+[[package]]
+name = "glfw"
+version = "0.0.1"
+source = "git+https://github.com/bjz/glfw-rs#848816edfdaf3cca21fbb9172ea6635f623d558c"
+dependencies = [
+ "glfw-sys 3.0.4 (git+https://github.com/servo/glfw?ref=cargo-3.0.4)",
+ "semver 0.1.0 (git+https://github.com/rust-lang/semver)",
+]
+
+[[package]]
+name = "glfw-sys"
+version = "3.0.4"
+source = "git+https://github.com/servo/glfw?ref=cargo-3.0.4#0e13d32555fb72b38ba1dfcff0c65a486510302e"
+
+[[package]]
+name = "image"
+version = "0.1.0"
+source = "git+https://github.com/PistonDevelopers/rust-image#6dc22cb810c83f16c7fbc8e098275baabe216be1"
+
+[[package]]
+name = "khronos_api"
+version = "0.0.1"
+source = "git+https://github.com/bjz/gl-rs#c93ac7204b36adc5f52f08fb675d31d2c41bb14a"
+
+[[package]]
+name = "num"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/num#52e2afa3040134b06384fb3ac6f78184cf9a6257"
+
+[[package]]
+name = "render"
+version = "0.1.0"
+source = "git+https://github.com/gfx-rs/gfx-rs#119cdb56ab3365a36cffee1e78789483f0db0c33"
+dependencies = [
+ "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+]
+
+[[package]]
+name = "rust-xml"
+version = "0.1.0"
+source = "git+https://github.com/netvl/rust-xml#4876722236a9c0f973e4867e3b2971368ed3111b"
+
+[[package]]
+name = "semver"
+version = "0.1.0"
+source = "git+https://github.com/rust-lang/semver#fdaec35ff5db609f53119f1e455fdd8830edc790"
+
+[[package]]
+name = "uuid"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/uuid#c6159089a491ff4398c6d423263a085c95092a04"
+
+[[package]]
+name = "world"
+version = "0.0.1"
+dependencies = [
+ "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
+ "num 0.0.1 (git+https://github.com/rust-lang/num)",
+ "uuid 0.0.1 (git+https://github.com/rust-lang/uuid)",
+]
+
