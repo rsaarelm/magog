@@ -77,7 +77,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];
         match place(dim, &mut slots) {
-            Some(pos) => { *ret.get_mut(idx) = pos; }
+            Some(pos) => { ret[idx] = pos; }
             None => { return None; }
         }
     }
@@ -91,8 +91,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     fn place<T: Primitive+Ord>(
         dim: V2<T>, slots: &mut Vec<Rect<T>>) -> Option<V2<T>> {
         for i in range(0, slots.len()) {
-            // XXX: Can't use [] indexing on slot because it's mut.
-            let &Rect(slot_pos, slot_dim) = slots.get_mut(i);
+            let Rect(slot_pos, slot_dim) = slots[i];
             if fits(dim, slot_dim) {
                 // Remove the original slot, it gets the item. Add the two new
                 // rectangles that form around the item.

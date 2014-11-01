@@ -2,6 +2,8 @@
 #[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct V2<T>(pub T, pub T);
 
+impl<T: Eq> Eq for V2<T> { }
+
 impl<T: Add<U, V>, U, V> Add<V2<U>, V2<V>> for V2<T> {
     fn add(&self, rhs: &V2<U>) -> V2<V> { V2(self.0 + rhs.0, self.1 + rhs.1) }
 }
@@ -38,6 +40,8 @@ impl<T: Primitive> V2<T> {
 /// A rectangle type consisting of position and size vectors.
 #[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
+
+impl<T: Eq> Eq for Rect<T> { }
 
 impl<T: Primitive> Rect<T> {
     pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
