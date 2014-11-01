@@ -18,7 +18,7 @@ extern crate image;
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};
 pub use rgb::{Rgb};
-pub use geom::{Rect, V2};
+pub use geom::{Rect, V2, RectIter};
 pub use util::{color_key};
 pub use fonter::{Fonter, CanvasWriter};
 

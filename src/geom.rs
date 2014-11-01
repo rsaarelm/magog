@@ -1,3 +1,5 @@
+use std::num::{one};
+
 /// 2D geometric vector.
 #[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct V2<T>(pub T, pub T);
@@ -81,8 +83,40 @@ impl<T: Primitive> Rect<T> {
         !(mx.0 <= rmn.0 || mn.0 >= rmx.0 ||
           mx.1 <= rmn.1 || mn.1 >= rmx.1)
     }
+
+    /// Return an iterator for all the points in the rectangle.
+    pub fn iter(&self) -> RectIter<T> {
+        RectIter {
+            x: (self.0).0,
+            y: (self.0).1,
+            x0: (self.0).0,
+            x1: (self.0).0 + (self.1).0,
+            y1: (self.0).1 + (self.1).1,
+        }
+    }
 }
 
 impl<T: Add<U, T> + Clone, U> Add<V2<U>, Rect<T>> for Rect<T> {
     fn add(&self, rhs: &V2<U>) -> Rect<T> { Rect(self.0 + *rhs, self.1.clone()) }
+}
+
+pub struct RectIter<T> {
+    x: T,
+    y: T,
+    x0: T,
+    x1: T,
+    y1: T,
+}
+
+impl<T: Primitive> Iterator<V2<T>> for RectIter<T> {
+    fn next(&mut self) -> Option<V2<T>> {
+        if self.y >= self.y1 { return None; }
+        let ret = Some(V2(self.x, self.y));
+        self.x = self.x + one::<T>();
+        if self.x >= self.x1 {
+            self.x = self.x0;
+            self.y = self.y + one::<T>();
+        }
+        ret
+    }
 }
