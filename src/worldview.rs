@@ -26,7 +26,7 @@ pub fn draw_world<C: Chart>(chart: &C, ctx: &mut calx::Context) {
         .map(|pt| *chart + pt)
         .collect();
 
-    for &pt in cells_on_screen().iter() {
+    for pt in cells_on_screen() {
         let screen_pos = chart_to_view(pt) + V2(SCREEN_W / 2, SCREEN_H / 2);
 
         let loc = *chart + pt;

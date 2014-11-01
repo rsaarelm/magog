@@ -1,4 +1,5 @@
-use calx::{V2, Rect};
+use std::iter::Map;
+use calx::{V2, Rect, RectIter};
 
 pub static SCREEN_W: int = 640;
 pub static SCREEN_H: int = 360;
@@ -28,25 +29,61 @@ pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect(view_rect: Rect<int>) -> Vec<V2<int>> {
-    // Add CELL_W to bottom so that the tops of lower tiles will get drawn.
-    let (min, max) = (view_rect.mn(), view_rect.mx() + V2(0, CELL_W));
-    let mut cells = Rect(view_to_chart(min), V2(0, 0));
-    cells.grow(view_to_chart(min + V2((view_rect.1).0, 0)));
-    cells.grow(view_to_chart(min + V2(0, (view_rect.1).1 + CELL_W)));
-    cells.grow(view_to_chart(max));
-
-    // XXX: Adds some points that are outside the view rectangle.
-    let mut ret = vec![];
-    for y in range((cells.0).1, cells.mx().1 + 1) {
-        for x in range((cells.0).0, cells.mx().0 + 1) {
-            ret.push(V2(x, y));
-        }
-    }
-
-    ret
+pub fn cells_in_view_rect<'a>(view_rect: Rect<int>) -> Map<'a, V2<int>, V2<int>, RectIter<int>> {
+    let p1 = pixel_to_min_column(view_rect.mn());
+    let p2 = pixel_to_max_column(view_rect.mx());
+    Rect(p1, p2 - p1)
+        .iter().map(|rc| column_to_chart(rc))
 }
 
-pub fn cells_on_screen() -> Vec<V2<int>> {
+pub fn cells_on_screen<'a>() -> Map<'a, V2<int>, V2<int>, RectIter<int>> {
     cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
+}
+
+/// Transform to the column space point that contains the pixel space point
+/// when looking for minimum column space point. (The column space rows
+/// overlap, so minimum and maximum points differ.)
+fn pixel_to_min_column(pixel_pos: V2<int>) -> V2<int> {
+    V2((pixel_pos.0 - PIXEL_UNIT) / PIXEL_UNIT,
+       (pixel_pos.1 - PIXEL_UNIT * 2) / PIXEL_UNIT)
+}
+
+/// Transform to the column space point that contains the pixel space point
+/// when looking for maximum column space point. (The column space rows
+/// overlap, so minimum and maximum points differ.)
+fn pixel_to_max_column(pixel_pos: V2<int>) -> V2<int> {
+    V2((pixel_pos.0 + PIXEL_UNIT) / PIXEL_UNIT,
+       (pixel_pos.1 + PIXEL_UNIT) / PIXEL_UNIT)
+}
+
+/// Transform a column space point to a chart space point.
+fn column_to_chart(cr: V2<int>) -> V2<int> {
+    V2(((1 + cr.0 + 2 * cr.1) as f32 / 2f32).floor() as int,
+       (-(cr.0 - 1) as f32 / 2f32).floor() as int + cr.1)
+}
+
+#[cfg(test)]
+mod test {
+    use calx::V2;
+    use super::column_to_chart;
+
+    #[test]
+    fn c2c() {
+        assert_eq!(V2(-1,  0), column_to_chart(V2(-1, -1)));
+        assert_eq!(V2(-1, -1), column_to_chart(V2( 0, -1)));
+        assert_eq!(V2( 0, -1), column_to_chart(V2( 1, -1)));
+
+        assert_eq!(V2( 0,  1), column_to_chart(V2(-1,  0)));
+        assert_eq!(V2( 0,  0), column_to_chart(V2( 0,  0)));
+        assert_eq!(V2( 1,  0), column_to_chart(V2( 1,  0)));
+
+        assert_eq!(V2( 1,  2), column_to_chart(V2(-1,  1)));
+        assert_eq!(V2( 1,  1), column_to_chart(V2( 0,  1)));
+        assert_eq!(V2( 2,  1), column_to_chart(V2( 1,  1)));
+
+        assert_eq!(V2(-3, -1), column_to_chart(V2(-2, -2)));
+        assert_eq!(V2( 1,  3), column_to_chart(V2(-2,  2)));
+        assert_eq!(V2( 3,  1), column_to_chart(V2( 2,  2)));
+        assert_eq!(V2(-1, -3), column_to_chart(V2( 2, -2)));
+    }
 }
