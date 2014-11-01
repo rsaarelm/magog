@@ -16,6 +16,7 @@ pub use geom::{HexGeom};
 pub use location::{Location, Chart};
 pub use msg::{pop_msg};
 pub use world::{init_world, load, save};
+pub use fov::{Fov};
 
 pub mod action;
 pub mod dir6;
