@@ -3,8 +3,8 @@ use calx::{V2, Rect};
 pub static SCREEN_W: int = 640;
 pub static SCREEN_H: int = 360;
 
-/// Visual terrain cell width.
-pub static CELL_W: int = 32;
+/// Useful general constant for cell dimension ops.
+static PIXEL_UNIT: int = 16;
 
 /// Draw layer for floor tiles.
 pub static FLOOR_Z: f32 = 0.500f32;
@@ -14,14 +14,14 @@ pub static BLOCK_Z: f32 = 0.400f32;
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
 pub fn chart_to_view(chart_pos: V2<int>) -> V2<int> {
-    V2(chart_pos.0 * CELL_W / 2 - chart_pos.1 * CELL_W / 2,
-       chart_pos.0 * CELL_W / 4 + chart_pos.1 * CELL_W / 4)
+    V2(chart_pos.0 * PIXEL_UNIT - chart_pos.1 * PIXEL_UNIT,
+       chart_pos.0 * PIXEL_UNIT / 2 + chart_pos.1 * PIXEL_UNIT / 2)
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).
 pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
-    let c = CELL_W as f32 / 4.0;
+    let c = PIXEL_UNIT as f32 / 2.0;
     let column = ((view_pos.0 as f32 + c) / (c * 2.0)).floor();
     let row = ((view_pos.1 as f32 - column * c) / (c * 2.0)).floor();
     V2((column + row) as int, row as int)
