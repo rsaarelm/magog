@@ -63,3 +63,16 @@ impl Add<V2<int>, Location> for Location {
 pub trait Chart: Add<V2<int>, Location> {}
 
 impl Chart for Location {}
+
+/// The other half of a Chart, mapping Locations into 2D plane positions, if a
+/// mapping exists. It depends on the weirdness of a space how trivial this is
+/// to do.
+pub trait Unchart {
+    fn chart_pos(&self, loc: Location) -> Option<V2<int>>;
+}
+
+impl Unchart for Location {
+    fn chart_pos(&self, loc: Location) -> Option<V2<int>> {
+        Some(V2(loc.x as int - self.x as int, loc.y as int - self.y as int))
+    }
+}

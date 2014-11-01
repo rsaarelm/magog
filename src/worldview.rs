@@ -1,5 +1,4 @@
 use time;
-use calx;
 use std::collections::hashmap::HashSet;
 use calx::{V2};
 use calx::{Context, Rgb};
@@ -12,13 +11,13 @@ use world::{Entity};
 use world::mob;
 use world;
 use world::terrain::TerrainType;
-use viewutil::{SCREEN_W, SCREEN_H, chart_to_view, cells_on_screen};
+use viewutil::{SCREEN_W, SCREEN_H, chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
 
-pub fn draw_world<C: Chart>(chart: &C, ctx: &mut calx::Context) {
+pub fn draw_world<C: Chart>(chart: &C, ctx: &mut Context) {
     // XXX: Running FOV on every frame is wasteful. Fix this with an actual
     // map memory component.
     let visible: HashSet<Location> = Fov::new(
@@ -27,7 +26,7 @@ pub fn draw_world<C: Chart>(chart: &C, ctx: &mut calx::Context) {
         .collect();
 
     for pt in cells_on_screen() {
-        let screen_pos = chart_to_view(pt) + V2(SCREEN_W / 2, SCREEN_H / 2);
+        let screen_pos = chart_to_screen(pt);
 
         let loc = *chart + pt;
         let state = if visible.contains(&loc) {

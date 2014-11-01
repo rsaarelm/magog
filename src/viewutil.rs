@@ -11,12 +11,20 @@ static PIXEL_UNIT: int = 16;
 pub static FLOOR_Z: f32 = 0.500f32;
 /// Draw layer for wall and object tiles.
 pub static BLOCK_Z: f32 = 0.400f32;
+/// Draw layer for visual effects
+pub static FX_Z: f32 = 0.300f32;
 
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
 pub fn chart_to_view(chart_pos: V2<int>) -> V2<int> {
     V2(chart_pos.0 * PIXEL_UNIT - chart_pos.1 * PIXEL_UNIT,
        chart_pos.0 * PIXEL_UNIT / 2 + chart_pos.1 * PIXEL_UNIT / 2)
+}
+
+/// Transform from chart space into the default on-screen space centered on
+/// window center.
+pub fn chart_to_screen(chart_pos: V2<int>) -> V2<int> {
+    chart_to_view(chart_pos) + V2(SCREEN_W / 2, SCREEN_H / 2)
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one

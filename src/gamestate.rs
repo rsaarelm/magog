@@ -7,16 +7,19 @@ use world;
 use world::action;
 use world::action::{Step};
 use world::dir6::*;
-use super::{State, Transition};
 use worldview;
-use titlestate::TitleState;
+use sprite::{WorldSprites};
 
-pub struct GameState;
+pub struct GameState {
+    world_spr: WorldSprites,
+}
 
 impl GameState {
     pub fn new(seed: Option<u32>) -> GameState {
         world::init_world(seed);
-        GameState
+        GameState {
+            world_spr: WorldSprites::new(),
+        }
     }
 
     /// Repaint view, update game world if needed.
@@ -24,6 +27,11 @@ impl GameState {
         ctx.clear(&color::BLACK);
         let camera = world::camera();
         worldview::draw_world(&camera, ctx);
+
+        // TODO use FOV for sprite draw.
+        self.world_spr.draw(|p| true, &camera, ctx);
+        self.world_spr.update();
+
         let fps = 1.0 / ctx.render_duration;
         let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
                        .set_border(color::BLACK),
@@ -51,22 +59,20 @@ impl GameState {
         }
         return true;
     }
-}
 
-impl State for GameState {
-    fn process(&mut self, event: event::Event) -> Option<Transition> {
+    pub fn process(&mut self, event: event::Event) -> bool {
         match event {
             event::Render(ctx) => {
                 self.update(ctx);
             }
             event::KeyPressed(key::KeyEscape) => {
-                return Some(super::NewState(box TitleState::new()));
+                return false;
             }
             event::KeyPressed(k) => {
                 self.process_key(k);
             }
             _ => ()
         }
-        None
+        true
     }
 }
