@@ -35,7 +35,7 @@ impl Ecs {
             self.active.grow(diff, false);
         }
         assert!(!self.active[idx]);
-        *self.active.get_mut(idx) = true;
+        self.active[idx] = true;
 
         Entity(idx)
     }
@@ -49,7 +49,7 @@ impl Ecs {
         assert!(self.active[idx]);
 
         self.reusable_idxs.push(idx);
-        *self.active.get_mut(idx) = false;
+        self.active[idx] = false;
     }
 
     /// Return an iterator for the entities. The iterator will not be
@@ -97,14 +97,14 @@ impl<T> Component<T> {
     /// Remove an entity's element.
     pub fn remove(&mut self, Entity(idx): Entity) {
         if idx < self.data.len() {
-            *self.data.get_mut(idx) = None;
+            self.data[idx] = None;
         }
     }
 
     /// Insert an element for an entity.
     pub fn insert(&mut self, Entity(idx): Entity, c: T) {
         while self.data.len() <= idx { self.data.push(None); }
-        *self.data.get_mut(idx) = Some(c);
+        self.data[idx] = Some(c);
     }
 
     /// Get the element for an entity if it exists.
@@ -116,6 +116,6 @@ impl<T> Component<T> {
     /// Get a mutable reference to the element for an entity if it exists.
     pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
         if idx >= self.data.len() { return None; }
-        self.data.get_mut(idx).as_mut()
+        self.data[idx].as_mut()
     }
 }
