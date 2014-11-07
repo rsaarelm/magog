@@ -1,6 +1,6 @@
 use std::local_data::Ref;
 use std::cell::RefCell;
-use std::collections::hashmap::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use calx::text::Map2DUtil;
 use terrain::*;
 use {AreaSpec, Biome};

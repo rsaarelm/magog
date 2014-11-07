@@ -2,7 +2,7 @@ use std::rand::StdRng;
 use std::rand::Rng;
 use std::rand::SeedableRng;
 use serialize::{Decodable, Decoder, Encodable, Encoder};
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 use terrain::TerrainType;
 use terrain;
 use location::Location;

@@ -1,5 +1,5 @@
 use time;
-use std::collections::hashmap::HashSet;
+use std::collections::HashSet;
 use calx::{V2};
 use calx::{Context, Rgb};
 use calx::color::*;

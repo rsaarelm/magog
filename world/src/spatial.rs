@@ -1,4 +1,4 @@
-use std::collections::hashmap::{HashMap};
+use std::collections::{HashMap};
 use entity::{Entity};
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
