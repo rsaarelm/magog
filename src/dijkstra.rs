@@ -1,6 +1,6 @@
 use std::hash::Hash;
-use std::collections::hashmap::HashMap;
-use std::collections::hashmap::HashSet;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 /// A grid node for the Dijkstra map.
 pub trait Node: Hash+Eq+Clone {

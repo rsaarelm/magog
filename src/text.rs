@@ -1,6 +1,5 @@
 use std::vec::Vec;
-use collections::Deque;
-use collections::ringbuf::RingBuf;
+use collections::ring_buf::RingBuf;
 
 pub struct WrapLineIterator<T> {
     /// Input iterator
