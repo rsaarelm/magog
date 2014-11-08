@@ -37,14 +37,20 @@ pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect<'a>(view_rect: Rect<int>) -> Map<'a, V2<int>, V2<int>, RectIter<int>> {
-    let p1 = pixel_to_min_column(view_rect.mn());
-    let p2 = pixel_to_max_column(view_rect.mx());
-    Rect(p1, p2 - p1)
-        .iter().map(|rc| column_to_chart(rc))
+pub fn cells_in_view_rect<'a>(view_rect: Rect<int>) -> Map<'a, V2<int>, V2<int>, ColumnRectIter> {
+    let V2(x0, y0) = pixel_to_min_column(view_rect.mn());
+    let V2(x1, y1) = pixel_to_max_column(view_rect.mx());
+    ColumnRectIter {
+        x: x0,
+        y: y0,
+        upper_row: x0 % 2 == 0,
+        x0: x0,
+        x1: x1,
+        y1: y1,
+    }.map(|rc| column_to_chart(rc))
 }
 
-pub fn cells_on_screen<'a>() -> Map<'a, V2<int>, V2<int>, RectIter<int>> {
+pub fn cells_on_screen<'a>() -> Map<'a, V2<int>, V2<int>, ColumnRectIter> {
     cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
 }
 
@@ -68,6 +74,42 @@ fn pixel_to_max_column(pixel_pos: V2<int>) -> V2<int> {
 fn column_to_chart(cr: V2<int>) -> V2<int> {
     V2(((1 + cr.0 + 2 * cr.1) as f32 / 2f32).floor() as int,
        (-(cr.0 - 1) as f32 / 2f32).floor() as int + cr.1)
+}
+
+pub struct ColumnRectIter {
+    x: int,
+    y: int,
+    // To prevent ordering artifacts, a hex column layout iterator needs to
+    // return each row in two parts, first the upper row of hexes offsetted
+    // up, then the lower row.
+    upper_row: bool,
+    x0: int,
+    x1: int,
+    y1: int,
+}
+
+impl Iterator<V2<int>> for ColumnRectIter {
+    fn next(&mut self) -> Option<V2<int>> {
+        if self.y >= self.y1 { return None; }
+        let ret = Some(V2(self.x, self.y));
+        self.x = self.x + 2;
+
+        if self.x >= self.x1 {
+            self.x = self.x0 +
+                if ((self.x0 % 2) == 1) ^ !self.upper_row {
+                    1
+                } else {
+                    0
+                };
+            if self.upper_row {
+                self.upper_row = false;
+            } else {
+                self.y = self.y + 1;
+                self.upper_row = true;
+            }
+        }
+        ret
+    }
 }
 
 #[cfg(test)]
