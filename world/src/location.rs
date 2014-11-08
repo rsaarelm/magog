@@ -1,6 +1,7 @@
 use calx::V2;
 use entity::Entity;
 use terrain::TerrainType;
+use geom::HexGeom;
 use terrain;
 use world;
 
@@ -45,6 +46,12 @@ impl Location {
 
     pub fn has_mobs(&self) -> bool {
         self.entities().iter().any(|e| e.is_mob())
+    }
+
+    pub fn distance_from(&self, other: Location) -> Option<int> {
+        // Return None for pairs on different floors if multi-floor support is
+        // added.
+        Some((V2(self.x as int, self.y as int) - V2(other.x as int, other.y as int)).hex_dist())
     }
 }
 

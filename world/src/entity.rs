@@ -7,6 +7,7 @@ use mob::status;
 use mob::intrinsic;
 use super::MobKind;
 use spatial;
+use action;
 
 /// Game object handle.
 #[deriving(PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
@@ -32,24 +33,13 @@ impl Entity {
 
     pub fn blocks_walk(self) -> bool { self.is_mob() }
 
-    pub fn is_mob(self) -> bool {
-        if let Some(&MobKind(_)) = world::get().borrow().comp.kind.get(self) {
-            return true;
-        }
-        return false;
-    }
-
     /// Return the kind of the entity.
     pub fn kind(self) -> ::EntityKind {
         // XXX: Will crash if an entity has no kind specified.
         *world::get().borrow().comp.kind.get(self).unwrap()
     }
 
-    /// Return whether the entity is an awake non-player mob and should be
-    /// animated with a bob.
-    pub fn is_bobbing(self) -> bool {
-        self.is_active() && !self.is_player()
-    }
+/*                             Spatial methods                        */
 
     pub fn can_enter(self, loc: Location) -> bool {
         if self.is_mob() && loc.has_mobs() { return false; }
@@ -78,6 +68,31 @@ impl Entity {
         }
     }
 
+    pub fn location(self) -> Option<Location> {
+        match world::get().borrow().spatial.get(self) {
+            Some(spatial::At(loc)) => Some(loc),
+            Some(spatial::In(e)) => e.location(),
+            _ => None
+        }
+    }
+
+    pub fn distance_from(self, other: Entity) -> Option<int> {
+        if let (Some(loc1), Some(loc2)) = (self.location(), other.location()) {
+            loc1.distance_from(loc2)
+        } else {
+            None
+        }
+    }
+
+/*                               Mob methods                          */
+
+    pub fn is_mob(self) -> bool {
+        if let Some(&MobKind(_)) = world::get().borrow().comp.kind.get(self) {
+            return true;
+        }
+        return false;
+    }
+
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         if let Some(&MobKind(mob::Player)) = world::get().borrow().comp.kind.get(self) {
@@ -86,11 +101,23 @@ impl Entity {
         return false;
     }
 
-    pub fn has_status(self, status: mob::status::Status) -> bool {
+    pub fn has_status(self, status: status::Status) -> bool {
         if let Some(&mob) = world::get().borrow().comp.mob.get(self) {
             return mob.has_status(status);
         }
         return false;
+    }
+
+    pub fn add_status(self, status: status::Status) {
+        if let Some(&mut mob) = world::get().borrow_mut().comp.mob.get(self) {
+            mob.add_status(status);
+        }
+    }
+
+    pub fn remove_status(self, status: status::Status) {
+        if let Some(&mut mob) = world::get().borrow_mut().comp.mob.get(self) {
+            mob.remove_status(status);
+        }
     }
 
     pub fn has_intrinsic(self, intrinsic: mob::intrinsic::Intrinsic) -> bool {
@@ -102,12 +129,15 @@ impl Entity {
 
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
-        self.is_mob() && !self.has_status(mob::status::Asleep)
+        self.is_mob() && !self.has_status(status::Asleep)
     }
 
-    /// Return whether the entity is a mob that will act this frame.
-    pub fn acts_this_frame(self) -> bool {
-        if !self.is_active() { return false; }
+    /// Return if the entity is a mob that should get an update this frame
+    /// based on its speed properties. Does not check for status effects like
+    /// sleep that might prevent actual action.
+    pub fn ticks_this_frame(self) -> bool {
+        if !self.is_mob() { return false; }
+
         let tick = flags::get_tick();
         // Go through a cycle of 5 phases to get 4 possible speeds.
         // System idea from Jeff Lait.
@@ -123,11 +153,47 @@ impl Entity {
         }
     }
 
-    pub fn location(self) -> Option<Location> {
-        match world::get().borrow().spatial.get(self) {
-            Some(spatial::At(loc)) => Some(loc),
-            Some(spatial::In(e)) => e.location(),
-            _ => None
+    /// Return whether the entity is a mob that will act this frame.
+    pub fn acts_this_frame(self) -> bool {
+        if !self.is_active() { return false; }
+        return self.ticks_this_frame();
+    }
+
+    /// Return whether the entity is an awake non-player mob and should be
+    /// animated with a bob.
+    pub fn is_bobbing(self) -> bool {
+        self.is_active() && !self.is_player()
+    }
+
+/*                                AI methods                          */
+
+    /// Top-level method called each frame to update the entity.
+    pub fn update(self) {
+        if self.is_mob() && !self.is_player() && self.ticks_this_frame() {
+            self.mob_ai();
         }
+    }
+
+    /// AI routine for autonomous mobs.
+    fn mob_ai(self) {
+        assert!(self.is_mob());
+        assert!(!self.is_player());
+        assert!(self.ticks_this_frame());
+
+        if self.has_status(status::Asleep) {
+            if let Some(p) = action::player() {
+                // TODO: Line-of-sight, stealth concerns, other enemies than
+                // player etc.
+                if let Some(d) = p.distance_from(self) {
+                    if d < 6 {
+                        self.remove_status(status::Asleep);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        // TODO: Roam around when awake.
     }
 }

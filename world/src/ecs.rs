@@ -53,7 +53,9 @@ impl Ecs {
     }
 
     /// Return an iterator for the entities. The iterator will not be
-    /// invalidated if entities are added or removed during iteration.
+    /// invalidated if entities are added or removed during iteration. The
+    /// iterator also won't maintain a lock on the world singleton outside
+    /// calling next.
     ///
     /// XXX: It is currently unspecified whether entities added during
     /// iteration will show up in the iteration or not.
@@ -62,7 +64,7 @@ impl Ecs {
     }
 }
 
-struct EntityIter(uint);
+pub struct EntityIter(uint);
 
 impl Iterator<Entity> for EntityIter {
     fn next(&mut self) -> Option<Entity> {

@@ -1,4 +1,6 @@
+use std::iter::Filter;
 use entity::Entity;
+use ecs::EntityIter;
 use world;
 use flags;
 use dir6::Dir6;
@@ -36,12 +38,12 @@ pub fn control_state() -> ControlState {
     }
 }
 
-/// Update the game state. Only valid to call if control_state() returned
-/// ReadyToUpdate.
+/// Top-level game state update function. Only valid to call if
+/// control_state() returned ReadyToUpdate.
 pub fn update() {
     assert!(control_state() == ReadyToUpdate);
 
-    // TODO: Run AI.
+    ai_main();
 
     world::get().borrow_mut().flags.tick += 1;
     world::get().borrow_mut().flags.player_acted = false;
@@ -59,4 +61,19 @@ pub fn input(input: PlayerInput) {
         }
     }
     world::get().borrow_mut().flags.player_acted = true;
+}
+
+pub fn entities() -> EntityIter {
+    world::get().borrow().ecs.iter()
+}
+
+pub fn mobs<'a>() -> Filter<'a, Entity, EntityIter> {
+    world::get().borrow().ecs.iter().filter(|e| e.is_mob())
+}
+
+/// Run AI for all autonomous mobs.
+fn ai_main() {
+    for entity in entities() {
+        entity.update();
+    }
 }

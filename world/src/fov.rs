@@ -1,6 +1,5 @@
 use std::iter::{Iterator, Chain};
 use std::option::{Item};
-use std::mem;
 use num::Integer;
 use calx::{V2};
 use dir6::Dir6;
