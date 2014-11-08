@@ -39,7 +39,7 @@ impl Mob {
 }
 
 pub mod intrinsic {
-#[deriving(Eq, PartialEq, Clone, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -51,7 +51,7 @@ pub enum Intrinsic {
 }
 
 pub mod status {
-#[deriving(Eq, PartialEq, Clone, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Status {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,

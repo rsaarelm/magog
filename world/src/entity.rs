@@ -1,3 +1,4 @@
+use calx::dijkstra::Dijkstra;
 use world;
 use location::{Location};
 use dir6::Dir6;
@@ -109,15 +110,15 @@ impl Entity {
     }
 
     pub fn add_status(self, status: status::Status) {
-        if let Some(&mut mob) = world::get().borrow_mut().comp.mob.get(self) {
-            mob.add_status(status);
-        }
+        if !self.is_mob() { return; }
+        world::get().borrow_mut().comp.mob.get_mut(self).unwrap().add_status(status);
+        assert!(self.has_status(status));
     }
 
     pub fn remove_status(self, status: status::Status) {
-        if let Some(&mut mob) = world::get().borrow_mut().comp.mob.get(self) {
-            mob.remove_status(status);
-        }
+        if !self.is_mob() { return; }
+        world::get().borrow_mut().comp.mob.get_mut(self).unwrap().remove_status(status);
+        assert!(!self.has_status(status));
     }
 
     pub fn has_intrinsic(self, intrinsic: mob::intrinsic::Intrinsic) -> bool {
@@ -194,6 +195,12 @@ impl Entity {
             return;
         }
 
-        // TODO: Roam around when awake.
+        if let Some(p) = action::player() {
+            let pathing = Dijkstra::new(vec![p.location().unwrap()], |&loc| !loc.blocks_walk(), 64);
+            let loc = self.location().unwrap();
+
+            let steps = pathing.sorted_neighbors(&loc);
+            self.step(loc.dir6_towards(steps[0]).unwrap());
+        }
     }
 }
