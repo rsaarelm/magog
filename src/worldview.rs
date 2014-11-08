@@ -11,7 +11,7 @@ use world::{Entity};
 use world::mob;
 use world;
 use world::terrain::TerrainType;
-use viewutil::{SCREEN_W, SCREEN_H, chart_to_screen, cells_on_screen};
+use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
 use tilecache;

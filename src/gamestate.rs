@@ -29,7 +29,7 @@ impl GameState {
         worldview::draw_world(&camera, ctx);
 
         // TODO use FOV for sprite draw.
-        self.world_spr.draw(|p| true, &camera, ctx);
+        self.world_spr.draw(|_| true, &camera, ctx);
         self.world_spr.update();
 
         let fps = 1.0 / ctx.render_duration;

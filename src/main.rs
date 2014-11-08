@@ -10,7 +10,6 @@ extern crate calx;
 extern crate world;
 extern crate time;
 
-use calx::event;
 use gamestate::GameState;
 
 pub mod drawable;

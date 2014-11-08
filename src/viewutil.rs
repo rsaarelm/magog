@@ -1,5 +1,5 @@
 use std::iter::Map;
-use calx::{V2, Rect, RectIter};
+use calx::{V2, Rect};
 
 pub static SCREEN_W: int = 640;
 pub static SCREEN_H: int = 360;
