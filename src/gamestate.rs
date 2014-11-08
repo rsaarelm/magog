@@ -1,3 +1,6 @@
+use std::io::File;
+use std::io::fs::PathExtensions;
+
 use calx::color;
 use calx::Context;
 use calx::event;
@@ -42,6 +45,19 @@ impl GameState {
         }
     }
 
+    pub fn save_game(&self) {
+        let save_data = world::save();
+        let mut file = File::create(&Path::new("/tmp/magog_save.json"));
+        file.write_str(save_data.as_slice());
+    }
+
+    pub fn load_game(&mut self) {
+        let path = Path::new("/tmp/magog_save.json");
+        if !path.exists() { return; }
+        let save_data = File::open(&path).read_to_string().unwrap();
+        world::load(save_data.as_slice());
+    }
+
     /// Process a player control keypress.
     pub fn process_key(&mut self, key: key::Key) -> bool {
         if action::control_state() != action::AwaitingInput {
@@ -55,6 +71,8 @@ impl GameState {
             key::KeyA | key::KeyPad1 => { action::input(Step(SouthWest)); }
             key::KeyS | key::KeyPad2 | key::KeyDown => { action::input(Step(South)); }
             key::KeyD | key::KeyPad3 => { action::input(Step(SouthEast)); }
+            key::KeyF5 => { self.save_game(); }
+            key::KeyF9 => { self.load_game(); }
             _ => { return false; }
         }
         return true;
