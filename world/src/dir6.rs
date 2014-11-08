@@ -17,6 +17,27 @@ pub enum Dir6 {
 
 impl Dir6 {
     /// Convert a vector into the closest hex direction.
+    ///
+    /// ```notrust
+    ///        *0*       *1*
+    ///           \ 14 15 | 00 01
+    ///           13\     |      02
+    ///               \   |
+    ///         12      \ |        03
+    ///     *5* ----------O-X------- *2*
+    ///         11        Y \      04
+    ///                   |   \
+    ///           10      |     \05
+    ///             09 08 | 07 06 \
+    ///                  *4*       *3*
+    ///
+    /// The hexadecants (00 to 15) and the hex
+    /// directions (*0* to *5*) around the origin.
+    /// ```
+    ///
+    /// Vectors that are in a space between two hex direction vectors are
+    /// rounded to a hexadecant, then assigned the hex direction whose vector
+    /// is nearest to that hexadecant.
     pub fn from_v2(v: V2<int>) -> Dir6 {
         let hexadecant = {
             let width = PI / 8.0;
@@ -25,25 +46,6 @@ impl Dir6 {
             (radian / width).floor() as int
         };
 
-        // The hexadecants (00 to 15) and the hex directions (*0* to *5*) around
-        // the origin.
-        //
-        //    *0*       *1*
-        //       \ 14 15 | 00 01
-        //       13\     |      02
-        //           \   |
-        //     12      \ |        03
-        // *5* ----------O-X------- *2*
-        //     11        Y \      04
-        //               |   \
-        //       10      |     \05
-        //         09 08 | 07 06 \
-        //              *4*       *3*
-        //
-        // Vectors that are in a space between two hex direction vectors are
-        // snapped to the hex direction vector nearer to them. The hexadecants
-        // are a convenience structure that lets us assign every vector using
-        // the single hexadecant value.
         Dir6::from_int(match hexadecant {
             13 | 14 => 0,
             15 | 0 | 1 => 1,
