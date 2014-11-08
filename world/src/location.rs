@@ -1,4 +1,6 @@
+use calx::dijkstra;
 use calx::V2;
+use dir6::Dir6;
 use entity::Entity;
 use terrain::TerrainType;
 use geom::HexGeom;
@@ -48,10 +50,21 @@ impl Location {
         self.entities().iter().any(|e| e.is_mob())
     }
 
-    pub fn distance_from(&self, other: Location) -> Option<int> {
+    /// Vector pointing from this location into the other one if the locations
+    /// are on the same Euclidean plane.
+    pub fn v2_at(&self, other: Location) -> Option<V2<int>> {
         // Return None for pairs on different floors if multi-floor support is
         // added.
-        Some((V2(self.x as int, self.y as int) - V2(other.x as int, other.y as int)).hex_dist())
+        Some(V2(other.x as int, other.y as int) - V2(self.x as int, self.y as int))
+    }
+
+    /// Hex distance from this location to the other one, if applicable.
+    pub fn distance_from(&self, other: Location) -> Option<int> {
+        if let Some(v) = self.v2_at(other) { Some(v.hex_dist()) } else { None }
+    }
+
+    pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
+        if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
     }
 }
 
@@ -81,5 +94,11 @@ pub trait Unchart {
 impl Unchart for Location {
     fn chart_pos(&self, loc: Location) -> Option<V2<int>> {
         Some(V2(loc.x as int - self.x as int, loc.y as int - self.y as int))
+    }
+}
+
+impl dijkstra::Node for Location {
+    fn neighbors(&self) -> Vec<Location> {
+        Dir6::iter().map(|d| self + d.to_v2()).collect()
     }
 }
