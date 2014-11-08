@@ -61,6 +61,13 @@ pub fn input(input: PlayerInput) {
         }
     }
     world::get().borrow_mut().flags.player_acted = true;
+
+    // Run one world update cycle right away, so that we don't get awkward
+    // single frames rendered where the player has acted and the rest of the
+    // world hasn't.
+    if control_state() == ReadyToUpdate {
+        update();
+    }
 }
 
 pub fn entities() -> EntityIter {
