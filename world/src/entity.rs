@@ -40,7 +40,7 @@ impl Entity {
         *world::get().borrow().comp.kind.get(self).unwrap()
     }
 
-/*                             Spatial methods                        */
+// Spatial methods /////////////////////////////////////////////////////
 
     pub fn can_enter(self, loc: Location) -> bool {
         if self.is_mob() && loc.has_mobs() { return false; }
@@ -85,7 +85,7 @@ impl Entity {
         }
     }
 
-/*                               Mob methods                          */
+// Mob methods /////////////////////////////////////////////////////////
 
     pub fn is_mob(self) -> bool {
         if let Some(&MobKind(_)) = world::get().borrow().comp.kind.get(self) {
@@ -166,7 +166,7 @@ impl Entity {
         self.is_active() && !self.is_player()
     }
 
-/*                                AI methods                          */
+// AI methods /////////////////////////////////////////////////////////
 
     /// Top-level method called each frame to update the entity.
     pub fn update(self) {

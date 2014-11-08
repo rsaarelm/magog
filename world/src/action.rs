@@ -29,6 +29,8 @@ pub fn player() -> Option<Entity> {
     None
 }
 
+// World update state machine //////////////////////////////////////////
+
 /// Get the current control state.
 pub fn control_state() -> ControlState {
     if world::get().borrow().flags.player_acted { return ReadyToUpdate; }
@@ -69,6 +71,8 @@ pub fn input(input: PlayerInput) {
         update();
     }
 }
+
+// Entities ////////////////////////////////////////////////////////////
 
 pub fn entities() -> EntityIter {
     world::get().borrow().ecs.iter()
