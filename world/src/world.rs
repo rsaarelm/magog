@@ -62,7 +62,7 @@ impl WorldState {
     pub fn new(seed: u32) -> WorldState {
         WorldState {
             ecs: Ecs::new(),
-            area: Area::new(seed),
+            area: Area::new(seed, ::AreaSpec::new(::Overland, 0)),
             spatial: Spatial::new(),
             comp: Comp::new(),
             flags: Flags::new(seed),

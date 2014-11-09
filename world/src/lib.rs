@@ -59,7 +59,9 @@ pub enum EntityKind {
     NodeKind,
 }
 
-#[deriving(PartialEq)]
+/// Landscape type. Also serves as bit field in order to produce habitat masks
+/// for entity spawning etc.
+#[deriving(Eq, PartialEq, Encodable, Decodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -68,6 +70,17 @@ pub enum Biome {
     Anywhere = 0b11111111,
 }
 
+impl Biome {
+    pub fn default_terrain(self) -> terrain::TerrainType {
+        match self {
+            Overland => terrain::Tree,
+            Dungeon => terrain::Rock,
+            _ => terrain::Void,
+        }
+    }
+}
+
+#[deriving(Eq, PartialEq, Encodable, Decodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: int,

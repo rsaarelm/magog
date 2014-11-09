@@ -4,7 +4,6 @@ use std::rand::SeedableRng;
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::HashMap;
 use terrain::TerrainType;
-use terrain;
 use location::Location;
 use mapgen;
 use egg::Egg;
@@ -20,10 +19,16 @@ use {AreaSpec};
 // nondeterminism bug that depended on the numerical order of the arbitrary
 // address values.
 
+#[deriving(Decodable, Encodable)]
+struct AreaSeed {
+    rng_seed: u32,
+    spec: AreaSpec,
+}
+
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.
-    seed: u32,
+    seed: AreaSeed,
     /// Stored terrain.
     terrain: HashMap<Location, TerrainType>,
     /// Valid slots to spawn things in, basically open floor and connected to
@@ -36,24 +41,25 @@ pub struct Area {
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Area {
     fn decode(d: &mut D) -> Result<Area, E> {
-        Ok(Area::new(try!(d.read_u32())))
+        let seed: AreaSeed = try!(Decodable::decode(d));
+        Ok(Area::new(seed.rng_seed, seed.spec))
     }
 }
 
 impl<E, S:Encoder<E>> Encodable<S, E> for Area {
     fn encode(&self, s: &mut S) -> Result<(), E> {
-        s.emit_u32(self.seed)
+        self.seed.encode(s)
     }
 }
 
 impl Area {
-    pub fn new(seed: u32) -> Area {
+    pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
         let mut terrain = HashMap::new();
-        let mut rng: StdRng = SeedableRng::from_seed([seed as uint].as_slice());
+        let mut rng: StdRng = SeedableRng::from_seed([rng_seed as uint + spec.depth as uint].as_slice());
         // TODO: Underground areas.
         mapgen::gen_herringbone(
             &mut rng,
-            &AreaSpec::new(::Overland, 1),
+            &spec,
             |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
 
         // Generate open slots that can be used to spawn stuff.
@@ -72,7 +78,7 @@ impl Area {
         let entrance = opens.swap_remove(0).unwrap();
 
         Area {
-            seed: seed,
+            seed: AreaSeed { rng_seed: rng_seed, spec: spec },
             terrain: terrain,
             open_slots: opens,
             player_entrance: entrance,
@@ -101,7 +107,6 @@ impl Area {
     }
 
     fn default_terrain(&self, _loc: Location) -> TerrainType {
-        // TODO: Different default terrains in different biomes.
-        terrain::Tree
+        self.seed.spec.biome.default_terrain()
     }
 }
