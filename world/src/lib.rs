@@ -35,6 +35,7 @@ mod geomorph;
 mod geomorph_data;
 mod location;
 mod mapgen;
+mod map_memory;
 mod msg;
 mod spatial;
 mod world;

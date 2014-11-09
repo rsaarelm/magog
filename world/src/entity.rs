@@ -9,6 +9,7 @@ use mob::intrinsic;
 use super::MobKind;
 use spatial;
 use action;
+use fov::Fov;
 
 /// Game object handle.
 #[deriving(PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
@@ -18,6 +19,7 @@ impl Entity {
     /// Place the entity in a location in the game world.
     pub fn place(self, loc: Location) {
         world::get().borrow_mut().spatial.insert_at(self, loc);
+        self.on_move_to(loc);
     }
 
     /// Remove the entity from all the game world systems. THE ENTITY VALUE
@@ -65,6 +67,7 @@ impl Entity {
             let new_loc = loc + dir.to_v2();
             if self.can_enter(new_loc) {
                 world::get().borrow_mut().spatial.insert_at(self, new_loc);
+                self.on_move_to(new_loc);
             }
         }
     }
@@ -201,6 +204,38 @@ impl Entity {
 
             let steps = pathing.sorted_neighbors(&loc);
             self.step(loc.dir6_towards(steps[0]).unwrap());
+        }
+    }
+
+// Callbacks ///////////////////////////////////////////////////////////
+
+    /// Called after the entity is moved to a new location.
+    pub fn on_move_to(self, _loc: Location) {
+        self.do_fov();
+    }
+
+// Misc ////////////////////////////////////////////////////////////////
+
+    fn has_map_memory(self) -> bool {
+        world::get().borrow().comp.map_memory.get(self).is_some()
+    }
+
+    fn do_fov(self) {
+        let range = 12u;
+        if let Some(loc) = self.location() {
+            if self.has_map_memory() {
+                let seen: Vec<Location> = Fov::new(
+                    |pt| (loc + pt).blocks_sight(), range)
+                    .map(|pt| loc + pt)
+                    .collect();
+                if let Some(ref mut mm) = world::get().borrow_mut().comp.map_memory.get_mut(self) {
+                    mm.seen.clear();
+                    mm.seen.extend(seen.clone().into_iter());
+                    mm.remembered.extend(seen.into_iter());
+                } else {
+                    panic!("Couldn't bind map memory");
+                }
+            }
         }
     }
 }

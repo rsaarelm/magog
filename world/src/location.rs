@@ -6,6 +6,7 @@ use terrain::TerrainType;
 use geom::HexGeom;
 use terrain;
 use world;
+use action;
 
 /// Unambiguous location in the game world.
 #[deriving(Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
@@ -65,6 +66,24 @@ impl Location {
 
     pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
         if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
+    }
+
+    /// Return the status of the location in the player's field of view.
+    /// Returns None if the location is unexplored.
+    pub fn fov_status(&self) -> Option<::FovStatus> {
+        if let Some(p) = action::player() {
+            if let Some(ref mm) = world::get().borrow().comp.map_memory.get(p) {
+                if mm.seen.contains(self) {
+                    return Some(::Seen);
+                } else if mm.remembered.contains(self) {
+                    return Some(::Remembered);
+                } else {
+                    return None;
+                }
+            }
+        }
+        // Just show everything by default.
+        Some(::Seen)
     }
 }
 
