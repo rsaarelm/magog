@@ -18,3 +18,7 @@ git = "https://github.com/gfx-rs/gfx-rs"
 
 [dependencies.image]
 git = "https://github.com/PistonDevelopers/rust-image"
+
+[[example]]
+name = "demo"
+path = "examples/demo/main.rs"
