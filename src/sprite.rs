@@ -28,7 +28,7 @@ impl WorldSprites {
         }
     }
 
-    pub fn add(&mut self, spr: Box<WorldSprite + 'static>) {
+    pub fn _add(&mut self, spr: Box<WorldSprite + 'static>) {
         self.sprites.push(spr);
     }
 
@@ -51,16 +51,16 @@ impl WorldSprites {
     }
 }
 
-pub struct BeamSprite {
+pub struct _BeamSprite {
     p1: Location,
     p2: Location,
     life: int,
     footprint: Vec<Location>,
 }
 
-impl BeamSprite {
-    pub fn new(p1: Location, p2: Location, life: int) -> BeamSprite {
-        BeamSprite {
+impl _BeamSprite {
+    pub fn _new(p1: Location, p2: Location, life: int) -> _BeamSprite {
+        _BeamSprite {
             p1: p1,
             p2: p2,
             life: life,
@@ -72,7 +72,7 @@ impl BeamSprite {
     }
 }
 
-impl WorldSprite for BeamSprite {
+impl WorldSprite for _BeamSprite {
     fn update(&mut self) { self.life -= 1; }
     fn is_alive(&self) -> bool { self.life >= 0 }
     fn footprint<'a>(&'a self) -> Items<'a, Location> {
