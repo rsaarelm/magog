@@ -1,6 +1,6 @@
 use std::slice::Items;
 use calx::color;
-use calx::{Context, V2};
+use calx::{Context, V2, CanvasUtil};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
 
@@ -80,7 +80,7 @@ impl WorldSprite for _BeamSprite {
     }
     fn draw(&self, chart: &Location, ctx: &mut Context) {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
-            ctx.draw_line(
+            ctx.draw_line(3,
                 chart_to_screen(p1), chart_to_screen(p2), FX_Z, &color::LIME);
         }
     }
