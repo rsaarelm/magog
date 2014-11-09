@@ -81,7 +81,7 @@ impl Area {
 
     /// Return terrain at given location.
     pub fn terrain(&self, loc: Location) -> TerrainType {
-        match self.terrain.find(&loc) {
+        match self.terrain.get(&loc) {
             Some(&t) => t,
             None => self.default_terrain(loc)
         }

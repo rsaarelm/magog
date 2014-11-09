@@ -48,14 +48,15 @@ impl GameState {
     pub fn save_game(&self) {
         let save_data = world::save();
         let mut file = File::create(&Path::new("/tmp/magog_save.json"));
-        file.write_str(save_data.as_slice());
+        file.write_str(save_data.as_slice()).unwrap();
     }
 
     pub fn load_game(&mut self) {
         let path = Path::new("/tmp/magog_save.json");
         if !path.exists() { return; }
         let save_data = File::open(&path).read_to_string().unwrap();
-        world::load(save_data.as_slice());
+        // TODO: Handle failed load nicely.
+        world::load(save_data.as_slice()).unwrap();
     }
 
     /// Process a player control keypress.

@@ -99,6 +99,6 @@ impl Unchart for Location {
 
 impl dijkstra::Node for Location {
     fn neighbors(&self) -> Vec<Location> {
-        Dir6::iter().map(|d| self + d.to_v2()).collect()
+        Dir6::iter().map(|d| *self + d.to_v2()).collect()
     }
 }

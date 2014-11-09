@@ -32,7 +32,7 @@ impl Spatial {
         }
 
         self.entity_to_place.insert(e, p);
-        match self.place_to_entities.find_mut(&p) {
+        match self.place_to_entities.get_mut(&p) {
             Some(v) => { v.push(e); return; }
             _ => ()
         };
@@ -50,7 +50,7 @@ impl Spatial {
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
     pub fn contains(&self, parent: Entity, e: Entity) -> bool {
-        match self.entity_to_place.find(&e) {
+        match self.entity_to_place.get(&e) {
             Some(&In(p)) if p == parent => true,
             Some(&In(p)) => self.contains(parent, p),
             _ => false
@@ -69,7 +69,7 @@ impl Spatial {
     pub fn remove(&mut self, e: Entity) {
         if !self.entity_to_place.contains_key(&e) { return; }
 
-        let p = *self.entity_to_place.find(&e).unwrap();
+        let p = self.entity_to_place[e];
 
         // Pop out the contents.
         for &content in self.entities_in(e).iter() {
@@ -78,7 +78,7 @@ impl Spatial {
 
         self.entity_to_place.remove(&e);
         {
-            let v = self.place_to_entities.find_mut(&p).unwrap();
+            let v = self.place_to_entities.get_mut(&p).unwrap();
             assert!(v.len() > 0);
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
@@ -99,7 +99,7 @@ impl Spatial {
     }
 
     fn entities(&self, p: Place) -> Vec<Entity> {
-        match self.place_to_entities.find(&p) {
+        match self.place_to_entities.get(&p) {
             None => vec![],
             Some(v) => v.clone(),
         }
@@ -117,7 +117,7 @@ impl Spatial {
 
     /// Return the place of an entity if the entity is present in the space.
     pub fn get(&self, e: Entity) -> Option<Place> {
-        self.entity_to_place.find(&e).map(|&loc| loc)
+        self.entity_to_place.get(&e).map(|&loc| loc)
     }
 
     /// Flatten to an easily serializable vector.
