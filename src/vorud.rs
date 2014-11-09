@@ -143,10 +143,10 @@ impl FromVorud<()> for Vec<u8> {
 impl ToVorud for u32 {
     fn to_vorud(&self) -> Vorud {
         let mut vec = Vec::new();
-        vec.push(((self >> 24) % 0xff) as u8);
-        vec.push(((self >> 16) % 0xff) as u8);
-        vec.push(((self >> 8) % 0xff) as u8);
-        vec.push((self % 0xff) as u8);
+        vec.push(((*self >> 24) % 0xff) as u8);
+        vec.push(((*self >> 16) % 0xff) as u8);
+        vec.push(((*self >> 8) % 0xff) as u8);
+        vec.push((*self % 0xff) as u8);
         vec.as_slice().to_vorud()
     }
 }

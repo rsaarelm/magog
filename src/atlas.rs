@@ -50,7 +50,7 @@ impl Atlas {
         // Add 1 pixel edges to images to prevent texturing artifacts from
         // adjacent pixels in separate subimages.
         let expanded_dims = dims.iter()
-            .map(|v| v + V2(1, 1))
+            .map(|&v| v + V2(1, 1))
             .collect();
 
         // Guesstimate the size for the atlas container.

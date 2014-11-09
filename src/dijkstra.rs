@@ -57,7 +57,7 @@ impl<N: Node> Dijkstra<N> {
     pub fn sorted_neighbors(& self, node: &N) -> Vec<N> {
         let mut ret = Vec::new();
         for n in node.neighbors().iter() {
-            if let Some(w) = self.weights.find(n) {
+            if let Some(w) = self.weights.get(n) {
                 ret.push((w, n.clone()));
             }
         }

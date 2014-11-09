@@ -22,7 +22,7 @@ impl<T: Iterator<char>> WrapLineIterator<T> {
         match self.peek {
             Some(c) => {
                 assert!(c.is_whitespace());
-                self.buffer.push(c);
+                self.buffer.push_back(c);
                 self.peek = None;
             },
             None => ()
@@ -40,7 +40,7 @@ impl<T: Iterator<char>> WrapLineIterator<T> {
                 self.peek = Some(c);
                 break;
             }
-            self.buffer.push(c);
+            self.buffer.push_back(c);
             if !c.is_whitespace() {
                 seen_text = true;
                 text_length += 1;
