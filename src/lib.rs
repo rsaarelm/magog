@@ -17,13 +17,15 @@ extern crate image;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};
-pub use rgb::{Rgb};
+pub use canvas_util::{CanvasUtil};
+pub use rgb::{Rgb, Rgba};
 pub use geom::{Rect, V2, RectIter};
 pub use util::{color_key};
 pub use fonter::{Fonter, CanvasWriter};
 
 mod atlas;
 mod canvas;
+mod canvas_util;
 mod fonter;
 mod geom;
 mod glfw_key;
@@ -37,3 +39,7 @@ pub mod key;
 pub mod text;
 pub mod timing;
 pub mod vorud;
+
+pub trait Color {
+    fn to_rgba(&self) -> [f32, ..4];
+}

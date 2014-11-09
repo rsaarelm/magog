@@ -1,9 +1,8 @@
 extern crate calx;
 
 use calx::color;
-use calx::{V2};
+use calx::{V2, Rgba, Fonter, CanvasUtil};
 use calx::event;
-use calx::{Fonter};
 
 fn main() {
     let mut t = 0i;
@@ -24,7 +23,7 @@ fn main() {
                     ((t as f32 / 16.0).cos() * 128.0) as int,
                     ((t as f32 / 16.0).sin() * 128.0) as int);
 
-                ctx.draw_line(center, center + offset, 0.3, &color::CYAN);
+                ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0, 255, 255, 128));
 
                 let fps = 1.0 / ctx.render_duration;
                 let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)

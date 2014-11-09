@@ -35,8 +35,11 @@ impl<T> V2<T> {
 }
 
 impl<T: Primitive> V2<T> {
-    // Componentwise multiplication.
+    /// Componentwise multiplication.
     pub fn mul(self, rhs: V2<T>) -> V2<T> { V2(self.0 * rhs.0, self.1 * rhs.1) }
+
+    /// Dot product.
+    pub fn dot(self, rhs: V2<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 }
 }
 
 /// A rectangle type consisting of position and size vectors.

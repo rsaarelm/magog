@@ -1,8 +1,8 @@
 use image::{GenericImage, ImageBuf, Rgba};
 use gfx::{Device, DeviceHelper, CommandBuffer, ToSlice};
 use gfx;
-use rgb::Rgb;
 use geom::{Rect, V2};
+use super::{Color};
 
 /// Custom sprite renderer.
 pub struct Renderer<D: Device<C>, C: CommandBuffer> {
@@ -58,10 +58,10 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
         }
     }
 
-    pub fn clear(&mut self, color: &Rgb) {
+    pub fn clear<C: Color>(&mut self, color: &C) {
         self.graphics.clear(
             gfx::ClearData {
-                color: color.to_array(),
+                color: color.to_rgba(),
                 depth: 1.0,
                 stencil: 0,
             }, gfx::COLOR | gfx::DEPTH,
@@ -102,11 +102,6 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
     pub fn draw_triangles(&mut self, data: &[Vertex]) {
         self.state.primitive.method = gfx::state::Fill(gfx::state::CullBack);
         self.draw(data, gfx::TriangleList);
-    }
-
-    pub fn draw_lines(&mut self, data: &[Vertex], thickness: f32) {
-        self.state.primitive.method = gfx::state::Line(thickness);
-        self.draw(data, gfx::Line);
     }
 }
 

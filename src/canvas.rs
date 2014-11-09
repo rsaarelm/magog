@@ -16,6 +16,7 @@ use event;
 use rgb::Rgb;
 use renderer::{Renderer, Vertex};
 use glfw_key;
+use super::{Color};
 
 pub static FONT_W: uint = 8;
 pub static FONT_H: uint = 8;
@@ -109,7 +110,6 @@ pub struct Context {
 
     atlas: Atlas,
     triangle_buf: Vec<Vertex>,
-    line_buf: Vec<Vertex>,
 
     state: State,
     frame_interval: Option<f64>,
@@ -165,7 +165,6 @@ impl Context {
 
             atlas: atlas,
             triangle_buf: Vec::new(),
-            line_buf: Vec::new(),
 
             state: Normal,
             frame_interval: frame_interval,
@@ -179,10 +178,9 @@ impl Context {
     }
 
     /// Clear the screen
-    pub fn clear(&mut self, color: &Rgb) {
+    pub fn clear<C: Color>(&mut self, color: &C) {
         self.renderer.clear(color);
         self.triangle_buf.clear();
-        self.line_buf.clear();
     }
 
     fn window_to_device(&self, window_pos: V2<int>, z: f32) -> [f32, ..3] {
@@ -202,16 +200,8 @@ impl Context {
             tex_coord: texture_pos.to_array() })
     }
 
-    fn line_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32, ..4]) {
-        let pos = self.window_to_device(window_pos, layer);
-        self.line_buf.push(Vertex {
-            pos: pos,
-            color: color,
-            tex_coord: texture_pos.to_array() })
-    }
-
-    pub fn draw_image(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &Rgb) {
-        let color = color.to_array();
+    pub fn draw_image<C: Color>(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &C) {
+        let color = color.to_rgba();
         let rect = self.atlas.vertices[idx] + offset;
         let tex = self.atlas.texcoords[idx];
 
@@ -223,11 +213,9 @@ impl Context {
         self.tri_vtx(rect.p3(), layer, tex.p3(), color);
     }
 
-    pub fn draw_line(&mut self, p1: V2<int>, p2: V2<int>, layer: f32, color: &Rgb) {
-        let color = color.to_array();
+    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<int>, ..3], c: [C, ..3]) {
         let tex = self.atlas.texcoords[SOLID_IDX].0;
-        self.line_vtx(p1, layer, tex, color);
-        self.line_vtx(p2, layer, tex, color);
+        for i in range(0, 3) { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
@@ -243,15 +231,6 @@ impl Context {
     pub fn image_dim(&self, Image(idx): Image) -> V2<uint> {
         self.image_dims[idx]
     }
-
-    fn line_thickness(&self) -> f32 {
-        let base_thickness = 3.0;
-
-        let Rect(V2(_, _), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
-        let zoom = (rw as f32) / (self.resolution.0 as f32);
-
-        base_thickness * zoom
-    }
 }
 
 impl<'a> Iterator<Event<'a>> for Context {
@@ -260,16 +239,13 @@ impl<'a> Iterator<Event<'a>> for Context {
         // iter call. Do post-render work here.
         if self.state == EndFrame {
             self.state = Normal;
-            let thickness = self.line_thickness();
 
             self.renderer.draw_triangles(self.triangle_buf.as_slice());
-            self.renderer.draw_lines(self.line_buf.as_slice(), thickness);
 
             self.renderer.end_frame();
             self.window.swap_buffers();
 
             self.triangle_buf.clear();
-            self.line_buf.clear();
         }
 
         loop {
