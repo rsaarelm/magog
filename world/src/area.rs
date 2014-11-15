@@ -7,7 +7,8 @@ use terrain::TerrainType;
 use location::Location;
 use mapgen;
 use egg::Egg;
-use mob::*;
+use mob;
+use mob::{MobSpec};
 use {AreaSpec};
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
@@ -34,9 +35,11 @@ pub struct Area {
     /// Valid slots to spawn things in, basically open floor and connected to
     /// areas the player can reach. (Does not handle stuff like monsters that
     /// spawn in water for now.)
-    open_slots: Vec<Location>,
+    _open_slots: Vec<Location>,
     /// Where the player should enter the area.
     player_entrance: Location,
+    /// Non-player entities to create when first initializing the map.
+    eggs: Vec<(Egg, Location)>,
 }
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Area {
@@ -54,6 +57,8 @@ impl<E, S:Encoder<E>> Encodable<S, E> for Area {
 
 impl Area {
     pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
+        let num_eggs = 32i;
+
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed([rng_seed as uint + spec.depth as uint].as_slice());
         // TODO: Underground areas.
@@ -77,11 +82,29 @@ impl Area {
 
         let entrance = opens.swap_remove(0).unwrap();
 
+        let viable_mobs: Vec<MobSpec> = mob::SPECS.iter()
+            .filter(|m| m.area_spec.can_hatch_in(&spec))
+            .map(|&x| x).collect();
+
+        let mut eggs = vec![];
+
+        assert!(viable_mobs.len() > 0, "Area has no viable mob spawns");
+        for _ in range(0, num_eggs) {
+            if let Some(loc) = opens.swap_remove(0) {
+                let mob = rng.choose(viable_mobs.as_slice()).unwrap();
+                eggs.push((Egg::new(::MobKind(mob.typ)), loc));
+            } else {
+                // Ran out of open space.
+                break;
+            }
+        }
+
         Area {
             seed: AreaSeed { rng_seed: rng_seed, spec: spec },
             terrain: terrain,
-            open_slots: opens,
+            _open_slots: opens,
             player_entrance: entrance,
+            eggs: eggs,
         }
     }
 
@@ -95,12 +118,7 @@ impl Area {
 
     /// List the objects that should be hatched in the world during init. This
     /// is tied to map generation, so it goes in the area module.
-    pub fn get_eggs(&self) -> Vec<(Egg, Location)> {
-        // TODO: Properly.
-        vec![
-            (Egg::new(::MobKind(Serpent)), self.open_slots[0]),
-        ]
-    }
+    pub fn get_eggs(&self) -> Vec<(Egg, Location)> { self.eggs.clone() }
 
     pub fn player_entrance(&self) -> Location {
         self.player_entrance

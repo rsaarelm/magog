@@ -47,7 +47,7 @@ pub enum FovStatus {
 }
 
 /// General type of a game entity.
-#[deriving(Eq, PartialEq, Show, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum EntityKind {
     /// An active, mobile entity like the player or the NPCs.
     MobKind(mob::MobType),
@@ -61,7 +61,7 @@ pub enum EntityKind {
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[deriving(Eq, PartialEq, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -80,7 +80,7 @@ impl Biome {
     }
 }
 
-#[deriving(Eq, PartialEq, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Show, Clone, Encodable, Decodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: int,
@@ -91,7 +91,9 @@ impl AreaSpec {
         AreaSpec { biome: biome, depth: depth }
     }
 
-    pub fn can_hatch(&self, environment: &AreaSpec) -> bool {
+    /// Return whether a thing with this spec can be spawned in an environment
+    /// with the given spec.
+    pub fn can_hatch_in(&self, environment: &AreaSpec) -> bool {
         self.depth >= 0 && self.depth <= environment.depth &&
         (self.biome as int & environment.biome as int) != 0
     }

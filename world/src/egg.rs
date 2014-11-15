@@ -6,6 +6,7 @@ use world;
 use entity::{Entity};
 use map_memory::{MapMemory};
 
+#[deriving(Clone)]
 pub struct Egg {
     kind: EntityKind,
 }
