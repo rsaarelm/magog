@@ -199,7 +199,7 @@ impl Entity {
         }
 
         if let Some(p) = action::player() {
-            let pathing = Dijkstra::new(vec![p.location().unwrap()], |&loc| !loc.blocks_walk(), 64);
+            let pathing = Dijkstra::new(vec![p.location().unwrap()], |&loc| !loc.blocks_walk(), 16);
             let loc = self.location().unwrap();
 
             let steps = pathing.sorted_neighbors(&loc);
