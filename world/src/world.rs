@@ -1,6 +1,5 @@
 use serialize::json;
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::rand;
 use rand::Rng;
 use ecs::Ecs;
@@ -12,22 +11,33 @@ use flags;
 use mob::{Player};
 use egg::Egg;
 
-local_data_key!(WORLD_STATE: Rc<RefCell<WorldState>>)
+local_data_key!(WORLD_STATE: RefCell<WorldState>)
 
-/// Get the global world instance.
-pub fn get() -> Rc<RefCell<WorldState>> {
+fn check_state() {
     if WORLD_STATE.get().is_none() {
         // Lazy init. Use a value from the system rng for the world seed if
         // none was given by the user.
         init_world(None);
     }
+}
 
-    WORLD_STATE.get().unwrap().clone()
+/// Access world state for reading. The world state may not be reaccessed for
+/// writing while within this function.
+pub fn with<A>(f: |&WorldState| -> A) -> A {
+    check_state();
+    f(WORLD_STATE.get().unwrap().borrow().deref())
+}
+
+/// Access world state for reading and writing. The world state may not be
+/// reaccessed while within this function.
+pub fn with_mut<A>(f: |&mut WorldState| -> A) -> A {
+    check_state();
+    f(WORLD_STATE.get().unwrap().borrow_mut().deref_mut())
 }
 
 /// Save the global world state into a json string.
 pub fn save() -> String {
-    json::encode(get().borrow().deref())
+    with(|w| json::encode(w))
 }
 
 /// Load the global world state from a json string. If the load operation
@@ -36,7 +46,7 @@ pub fn save() -> String {
 pub fn load(json: &str) -> Result<(), json::DecoderError> {
     match json::decode(json) {
         Ok(w) => {
-            WORLD_STATE.replace(Some(Rc::new(RefCell::new(w))));
+            WORLD_STATE.replace(Some(RefCell::new(w)));
             Ok(())
         }
         Err(e) => Err(e)
@@ -80,12 +90,12 @@ pub fn init_world(seed: Option<u32>) {
         None => rand::task_rng().gen()
     };
 
-    WORLD_STATE.replace(Some(Rc::new(RefCell::new(WorldState::new(seed)))));
-    let eggs = get().borrow().area.get_eggs();
+    WORLD_STATE.replace(Some(RefCell::new(WorldState::new(seed))));
+    let eggs = with(|w| w.area.get_eggs());
     for &(ref egg, ref loc) in eggs.iter() {
         egg.hatch(*loc);
     }
-    let player_entrance = get().borrow().area.player_entrance();
+    let player_entrance = with(|w| w.area.player_entrance());
     Egg::new(::MobKind(Player)).hatch(player_entrance);
     flags::set_camera(player_entrance);
 }

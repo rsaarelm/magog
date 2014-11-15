@@ -19,21 +19,24 @@ impl Egg {
     }
 
     pub fn hatch(&self, loc: Location) -> Entity {
-        let entity = world::get().borrow_mut().ecs.new_entity();
+        let entity = world::with_mut(|w| {
+            let entity = w.ecs.new_entity();
 
-        world::get().borrow_mut().comp.kind.insert(entity, self.kind);
+            w.comp.kind.insert(entity, self.kind);
 
-        match self.kind {
-            MobKind(m) => {
-                world::get().borrow_mut().comp.mob.insert(entity, Mob::new(m));
-                if m == mob::Player {
-                    // Player-specific component stuffs.
-                    world::get().borrow_mut().comp.map_memory.insert(
-                        entity, MapMemory::new());
+            match self.kind {
+                MobKind(m) => {
+                    w.comp.mob.insert(entity, Mob::new(m));
+                    if m == mob::Player {
+                        // Player-specific component stuffs.
+                        w.comp.map_memory.insert(
+                            entity, MapMemory::new());
+                    }
                 }
-            }
-            todo => { println!("TODO: Handle spawn type {}", todo); unimplemented!(); }
-        }
+                todo => { println!("TODO: Handle spawn type {}", todo); unimplemented!(); }
+            };
+            entity
+        });
 
         entity.place(loc);
 

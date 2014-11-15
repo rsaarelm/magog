@@ -68,17 +68,16 @@ pub struct EntityIter(uint);
 
 impl Iterator<Entity> for EntityIter {
     fn next(&mut self) -> Option<Entity> {
-        let w = world::get();
-        let ecs = &w.borrow().ecs;
-
-        let &EntityIter(ref mut idx) = self;
-        loop {
-            if *idx >= ecs.active.len() { return None; }
-            let ret = Entity(*idx);
-            *idx += 1;
-            if !ecs.active[*idx - 1] { continue; }
-            return Some(ret);
-        }
+        world::with(|w| {
+            let &EntityIter(ref mut idx) = self;
+            loop {
+                if *idx >= w.ecs.active.len() { return None; }
+                let ret = Entity(*idx);
+                *idx += 1;
+                if !w.ecs.active[*idx - 1] { continue; }
+                return Some(ret);
+            }
+        })
     }
 }
 

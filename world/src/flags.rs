@@ -22,15 +22,15 @@ impl Flags {
 
 /// Get the location where the current view should be centered.
 pub fn camera() -> Location {
-    world::get().borrow().flags.camera
+    world::with(|w| w.flags.camera)
 }
 
 /// Move the current view location.
 pub fn set_camera(loc: Location) {
-    world::get().borrow_mut().flags.camera = loc;
+    world::with_mut(|w| w.flags.camera = loc);
 }
 
 /// Return the frame count since the start of the game.
 pub fn get_tick() -> u64 {
-    world::get().borrow().flags.tick
+    world::with(|w| w.flags.tick)
 }

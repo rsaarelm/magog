@@ -21,7 +21,7 @@ impl Location {
 
     /// Return terrain at the location.
     pub fn terrain(&self) -> TerrainType {
-        let mut ret = world::get().borrow().area.terrain(*self);
+        let mut ret = world::with(|w| w.area.terrain(*self));
         // Mobs standing on doors make the doors open.
         if ret == terrain::Door && self.has_mobs() {
             ret = terrain::OpenDoor;
@@ -42,7 +42,7 @@ impl Location {
     }
 
     pub fn entities(&self) -> Vec<Entity> {
-        world::get().borrow().spatial.entities_at(*self)
+        world::with(|w| w.spatial.entities_at(*self))
     }
 
     pub fn has_entities(&self) -> bool { !self.entities().is_empty() }
@@ -84,15 +84,22 @@ impl Location {
     /// Returns None if the location is unexplored.
     pub fn fov_status(&self) -> Option<::FovStatus> {
         if let Some(p) = action::player() {
-            if let Some(ref mm) = world::get().borrow().comp.map_memory.get(p) {
-                if mm.seen.contains(self) {
-                    return Some(::Seen);
-                } else if mm.remembered.contains(self) {
-                    return Some(::Remembered);
+            match world::with(|w| {
+                if let Some(ref mm) = w.comp.map_memory.get(p) {
+                    Ok (if mm.seen.contains(self) {
+                        Some(::Seen)
+                    } else if mm.remembered.contains(self) {
+                        Some(::Remembered)
+                    } else {
+                        None
+                    })
                 } else {
-                    return None;
+                    Err(())
                 }
-            }
+            }) {
+                Ok(x) => return x,
+                _ => ()
+            };
         }
         // Just show everything by default.
         Some(::Seen)

@@ -22,7 +22,7 @@ pub struct Entity(pub uint);
 impl Entity {
     /// Place the entity in a location in the game world.
     pub fn place(self, loc: Location) {
-        world::get().borrow_mut().spatial.insert_at(self, loc);
+        world::with_mut(|w| w.spatial.insert_at(self, loc));
         self.on_move_to(loc);
     }
 
@@ -33,9 +33,9 @@ impl Entity {
     pub fn delete(self) {
         // LABYRINTH OF COMPONENTS
         // This needs to call every toplevel component system.
-        world::get().borrow_mut().comp.remove(self);
-        world::get().borrow_mut().spatial.remove(self);
-        world::get().borrow_mut().ecs.delete(self);
+        world::with_mut(|w| w.comp.remove(self));
+        world::with_mut(|w| w.spatial.remove(self));
+        world::with_mut(|w| w.ecs.delete(self));
     }
 
     pub fn blocks_walk(self) -> bool { self.is_mob() }
@@ -43,7 +43,7 @@ impl Entity {
     /// Return the kind of the entity.
     pub fn kind(self) -> ::EntityKind {
         // XXX: Will crash if an entity has no kind specified.
-        *world::get().borrow().comp.kind.get(self).unwrap()
+        world::with(|w| *w.comp.kind.get(self).unwrap())
     }
 
 // Spatial methods /////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ impl Entity {
 
     /// Return whether the entity can move in a direction.
     pub fn can_step(self, dir: Dir6) -> bool {
-        let place = world::get().borrow().spatial.get(self);
+        let place = world::with(|w| w.spatial.get(self));
         if let Some(spatial::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
             return self.can_enter(new_loc);
@@ -66,18 +66,18 @@ impl Entity {
 
     /// Try to move the entity in direction.
     pub fn step(self, dir: Dir6) {
-        let place = world::get().borrow().spatial.get(self);
+        let place = world::with(|w| w.spatial.get(self));
         if let Some(spatial::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
             if self.can_enter(new_loc) {
-                world::get().borrow_mut().spatial.insert_at(self, new_loc);
+                world::with_mut(|w| w.spatial.insert_at(self, new_loc));
                 self.on_move_to(new_loc);
             }
         }
     }
 
     pub fn location(self) -> Option<Location> {
-        match world::get().borrow().spatial.get(self) {
+        match world::with(|w| w.spatial.get(self)) {
             Some(spatial::At(loc)) => Some(loc),
             Some(spatial::In(e)) => e.location(),
             _ => None
@@ -97,17 +97,18 @@ impl Entity {
     pub fn damage(self, amount: int) {
         if amount == 0 { return; }
 
-        let w = world::get();
-        let mut kill = false;
-        if let Some(&mut mob) = w.borrow_mut().comp.mob.get_mut(self) {
-            mob.hp -= amount;
-            if mob.hp <= 0 {
-                // Remember this when we're out of the borrow.
-                kill = true;
-            }
-        } else {
-            panic!("Damaging a non-mob");
-        }
+        let (_amount, kill) = world::with_mut(|w| {
+            if let Some(&mut mob) = w.comp.mob.get_mut(self) {
+                mob.hp -= amount;
+                if mob.hp <= 0 {
+                    // Remember this when we're out of the borrow.
+                    return (amount, true);
+                }
+            } else {
+                panic!("Damaging a non-mob");
+            };
+            (amount, false)
+        });
 
         msg::push_msg(::Damage(self));
         if kill {
@@ -125,44 +126,52 @@ impl Entity {
 // Mob methods /////////////////////////////////////////////////////////
 
     pub fn is_mob(self) -> bool {
-        if let Some(&MobKind(_)) = world::get().borrow().comp.kind.get(self) {
-            return true;
-        }
-        return false;
+        world::with(|w| {
+            if let Some(&MobKind(_)) = w.comp.kind.get(self) {
+                return true;
+            }
+            return false;
+        })
     }
 
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
-        if let Some(&MobKind(mob::Player)) = world::get().borrow().comp.kind.get(self) {
-            return true;
-        }
-        return false;
+        world::with(|w| {
+            if let Some(&MobKind(mob::Player)) = w.comp.kind.get(self) {
+                return true;
+            }
+            return false;
+        })
     }
 
     pub fn has_status(self, status: status::Status) -> bool {
-        if let Some(&mob) = world::get().borrow().comp.mob.get(self) {
-            return mob.has_status(status);
-        }
-        return false;
+        world::with(|w| {
+            if let Some(&mob) = w.comp.mob.get(self) {
+                return mob.has_status(status);
+            }
+            return false;
+        })
     }
 
     pub fn add_status(self, status: status::Status) {
         if !self.is_mob() { return; }
-        world::get().borrow_mut().comp.mob.get_mut(self).unwrap().add_status(status);
+        world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().add_status(status));
         assert!(self.has_status(status));
     }
 
     pub fn remove_status(self, status: status::Status) {
         if !self.is_mob() { return; }
-        world::get().borrow_mut().comp.mob.get_mut(self).unwrap().remove_status(status);
+        world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().remove_status(status));
         assert!(!self.has_status(status));
     }
 
     pub fn has_intrinsic(self, intrinsic: mob::intrinsic::Intrinsic) -> bool {
-        if let Some(&MobKind(mt)) = world::get().borrow().comp.kind.get(self) {
-            return mob::SPECS[mt as uint].intrinsics & intrinsic as int != 0;
-        }
-        return false;
+        world::with(|w| {
+            if let Some(&MobKind(mt)) = w.comp.kind.get(self) {
+                return mob::SPECS[mt as uint].intrinsics & intrinsic as int != 0;
+            }
+            return false;
+        })
     }
 
     /// Return whether this entity is an awake mob.
@@ -207,7 +216,7 @@ impl Entity {
         let loc = self.location().unwrap() + dir.to_v2();
         if let Some(e) = loc.mob_at() {
             // Attack power
-            let p = world::get().borrow().comp.mob.get(self).unwrap().power;
+            let p = world::with(|w| w.comp.mob.get(self).unwrap().power);
             if p == 0 {
                 // No fight capacity.
                 return;
@@ -289,7 +298,7 @@ impl Entity {
 // Misc ////////////////////////////////////////////////////////////////
 
     fn has_map_memory(self) -> bool {
-        world::get().borrow().comp.map_memory.get(self).is_some()
+        world::with(|w| w.comp.map_memory.get(self).is_some())
     }
 
     fn do_fov(self) {
@@ -300,13 +309,15 @@ impl Entity {
                     |pt| (loc + pt).blocks_sight(), range)
                     .map(|pt| loc + pt)
                     .collect();
-                if let Some(ref mut mm) = world::get().borrow_mut().comp.map_memory.get_mut(self) {
-                    mm.seen.clear();
-                    mm.seen.extend(seen.clone().into_iter());
-                    mm.remembered.extend(seen.into_iter());
-                } else {
-                    panic!("Couldn't bind map memory");
-                }
+                world::with_mut(|w| {
+                    if let Some(ref mut mm) = w.comp.map_memory.get_mut(self) {
+                        mm.seen.clear();
+                        mm.seen.extend(seen.clone().into_iter());
+                        mm.remembered.extend(seen.iter().map(|&x| x));
+                    } else {
+                        panic!("Couldn't bind map memory");
+                    }
+                });
             }
         }
     }
