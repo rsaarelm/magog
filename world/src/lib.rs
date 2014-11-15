@@ -37,6 +37,7 @@ mod location;
 mod mapgen;
 mod map_memory;
 mod msg;
+mod rng;
 mod spatial;
 mod world;
 
@@ -105,4 +106,6 @@ pub enum Msg {
     Text(String),
     // TODO: Type of effect.
     Explosion(Location),
+    Damage(Entity),
+    Gib(Location),
 }

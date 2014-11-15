@@ -51,6 +51,18 @@ impl Location {
         self.entities().iter().any(|e| e.is_mob())
     }
 
+    /// Returns the mob at the given location, if any. The assumption is that
+    /// there is always a single primary mob in locations that contain
+    /// multiple mobs that can be selected as the return value.
+    pub fn mob_at(&self) -> Option<Entity> {
+        for &e in self.entities().iter() {
+            if e.is_mob() {
+                return Some(e);
+            }
+        }
+        None
+    }
+
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
     pub fn v2_at(&self, other: Location) -> Option<V2<int>> {

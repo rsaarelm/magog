@@ -61,7 +61,6 @@ impl Area {
 
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed([rng_seed as uint + spec.depth as uint].as_slice());
-        // TODO: Underground areas.
         mapgen::gen_herringbone(
             &mut rng,
             &spec,

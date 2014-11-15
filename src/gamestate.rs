@@ -8,7 +8,7 @@ use calx::key;
 use calx::{Fonter, V2};
 use world;
 use world::action;
-use world::action::{Step};
+use world::action::{Step, Melee};
 use world::dir6::*;
 use worldview;
 use sprite::{WorldSprites};
@@ -38,7 +38,7 @@ impl GameState {
         let fps = 1.0 / ctx.render_duration;
         let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
                        .set_border(color::BLACK),
-                       "FPS {}", fps);
+                       "FPS {:.0}", fps);
 
         if action::control_state() == action::ReadyToUpdate {
             action::update();
@@ -59,6 +59,16 @@ impl GameState {
         world::load(save_data.as_slice()).unwrap();
     }
 
+    fn smart_move(&mut self, dir: Dir6) {
+        let player = action::player().unwrap();
+        let target_loc = player.location().unwrap() + dir.to_v2();
+        if target_loc.has_mobs() {
+            action::input(Melee(dir));
+        } else {
+            action::input(Step(dir));
+        }
+    }
+
     /// Process a player control keypress.
     pub fn process_key(&mut self, key: key::Key) -> bool {
         if action::control_state() != action::AwaitingInput {
@@ -66,12 +76,12 @@ impl GameState {
         }
 
         match key {
-            key::KeyQ | key::KeyPad7 => { action::input(Step(NorthWest)); }
-            key::KeyW | key::KeyPad8 | key::KeyUp => { action::input(Step(North)); }
-            key::KeyE | key::KeyPad9 => { action::input(Step(NorthEast)); }
-            key::KeyA | key::KeyPad1 => { action::input(Step(SouthWest)); }
-            key::KeyS | key::KeyPad2 | key::KeyDown => { action::input(Step(South)); }
-            key::KeyD | key::KeyPad3 => { action::input(Step(SouthEast)); }
+            key::KeyQ | key::KeyPad7 => { self.smart_move(NorthWest); }
+            key::KeyW | key::KeyPad8 | key::KeyUp => { self.smart_move(North); }
+            key::KeyE | key::KeyPad9 => { self.smart_move(NorthEast); }
+            key::KeyA | key::KeyPad1 => { self.smart_move(SouthWest); }
+            key::KeyS | key::KeyPad2 | key::KeyDown => { self.smart_move(South); }
+            key::KeyD | key::KeyPad3 => { self.smart_move(SouthEast); }
             key::KeyF5 => { self.save_game(); }
             key::KeyF9 => { self.load_game(); }
             _ => { return false; }

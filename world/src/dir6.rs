@@ -5,7 +5,7 @@ use std::f32::consts::PI;
 use calx::V2;
 
 /// Hex grid directions.
-#[deriving(Eq, PartialEq, Clone, Show, FromPrimitive, Encodable, Decodable)]
+#[deriving(Eq, PartialEq, Clone, Show, FromPrimitive, Rand, Encodable, Decodable)]
 pub enum Dir6 {
     North = 0,
     NorthEast,

@@ -17,6 +17,7 @@ pub enum ControlState {
 pub enum PlayerInput {
     /// Take a step in the given direction.
     Step(Dir6),
+    Melee(Dir6),
     // TODO: More
 }
 
@@ -60,6 +61,9 @@ pub fn input(input: PlayerInput) {
         Step(d) => {
             p.step(d);
             flags::set_camera(p.location().unwrap());
+        }
+        Melee(d) => {
+            p.melee(d);
         }
     }
     world::get().borrow_mut().flags.player_acted = true;

@@ -1,3 +1,4 @@
+use std::rand::Rng;
 use calx::dijkstra::Dijkstra;
 use world;
 use location::{Location};
@@ -7,9 +8,12 @@ use mob;
 use mob::status;
 use mob::intrinsic;
 use super::MobKind;
+use geom::HexGeom;
 use spatial;
 use action;
 use fov::Fov;
+use rng;
+use msg;
 
 /// Game object handle.
 #[deriving(PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
@@ -86,6 +90,36 @@ impl Entity {
         } else {
             None
         }
+    }
+
+// Damage and lifetime /////////////////////////////////////////////////
+
+    pub fn damage(self, amount: int) {
+        if amount == 0 { return; }
+
+        let w = world::get();
+        let mut kill = false;
+        if let Some(&mut mob) = w.borrow_mut().comp.mob.get_mut(self) {
+            mob.hp -= amount;
+            if mob.hp <= 0 {
+                // Remember this when we're out of the borrow.
+                kill = true;
+            }
+        } else {
+            panic!("Damaging a non-mob");
+        }
+
+        msg::push_msg(::Damage(self));
+        if kill {
+            self.kill();
+        }
+    }
+
+    /// Do any game logic stuff related to this entity dying violently before
+    /// deleting it.
+    pub fn kill(self) {
+        msg::push_msg(::Gib(self.location().unwrap()));
+        self.delete();
     }
 
 // Mob methods /////////////////////////////////////////////////////////
@@ -169,6 +203,26 @@ impl Entity {
         self.is_active() && !self.is_player()
     }
 
+    pub fn melee(self, dir: Dir6) {
+        let loc = self.location().unwrap() + dir.to_v2();
+        if let Some(e) = loc.mob_at() {
+            // Attack power
+            let p = world::get().borrow().comp.mob.get(self).unwrap().power;
+            if p == 0 {
+                // No fight capacity.
+                return;
+            }
+
+            // Every five points of power is one certain hit.
+            let full = p / 5;
+            // The fractional points are one probabilistic hit.
+            let partial = (p % 5) as f64 / 5.0;
+
+            let damage = full + if rng::p(partial) { 1 } else { 0 };
+            e.damage(damage)
+        }
+    }
+
 // AI methods /////////////////////////////////////////////////////////
 
     /// Top-level method called each frame to update the entity.
@@ -199,14 +253,28 @@ impl Entity {
         }
 
         if let Some(p) = action::player() {
-            let pathing = Dijkstra::new(vec![p.location().unwrap()], |&loc| !loc.blocks_walk(), 16);
             let loc = self.location().unwrap();
 
-            let steps = pathing.sorted_neighbors(&loc);
-            if steps.len() > 0 {
-                self.step(loc.dir6_towards(steps[0]).unwrap());
-            } else {
-                // TODO: Random dir step
+            let vec_to_enemy = loc.v2_at(p.location().unwrap());
+            if let Some(v) = vec_to_enemy {
+                if v.hex_dist() == 1 {
+                    // Melee range, hit.
+                    self.melee(Dir6::from_v2(v));
+                } else {
+                    // Walk towards.
+                    let pathing_depth = 16;
+                    let pathing = Dijkstra::new(
+                        vec![p.location().unwrap()], |&loc| !loc.blocks_walk(),
+                        pathing_depth);
+
+                    let steps = pathing.sorted_neighbors(&loc);
+                    if steps.len() > 0 {
+                        self.step(loc.dir6_towards(steps[0]).unwrap());
+                    } else {
+                        self.step(rng::with(|ref mut rng| rng.gen::<Dir6>()));
+                        // TODO: Fall asleep if things get boring.
+                    }
+                }
             }
         }
     }
