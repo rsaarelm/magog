@@ -5,6 +5,7 @@ dependencies = [
  "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
  "image 0.1.0 (git+https://github.com/PistonDevelopers/rust-image)",
  "num 0.0.1 (git+https://github.com/rust-lang/num)",
+ "time 0.0.1 (git+https://github.com/rust-lang/time)",
  "uuid 0.0.1 (git+https://github.com/rust-lang/uuid)",
  "world 0.0.1",
 ]
@@ -12,26 +13,32 @@ dependencies = [
 [[package]]
 name = "calx"
 version = "0.0.0"
-source = "git+https://github.com/rsaarelm/calx#9f34205b88f1f0570907b69c47c0e30fa4430e28"
+source = "git+https://github.com/rsaarelm/calx#f5b20b532db09e0ce05d0c8d6dc3b757d2b92d6c"
 dependencies = [
  "gfx 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
  "gl 0.0.1 (git+https://github.com/bjz/gl-rs)",
  "glfw 0.0.1 (git+https://github.com/bjz/glfw-rs)",
  "image 0.1.0 (git+https://github.com/PistonDevelopers/rust-image)",
+ "time 0.0.1 (git+https://github.com/rust-lang/time)",
 ]
 
 [[package]]
 name = "device"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#d91f4719dbec7fc655c9e4843505a9e01a80949d"
+source = "git+https://github.com/gfx-rs/gfx-rs#8c30d07565fcde68a95389ab6baf0e49e0b30c7d"
 dependencies = [
  "gfx_gl 0.1.0 (git+https://github.com/gfx-rs/gfx_gl.git)",
 ]
 
 [[package]]
+name = "gcc"
+version = "0.0.1"
+source = "git+https://github.com/alexcrichton/gcc-rs#f25b3ba9c40303781189cc137fb98fffe5b56de7"
+
+[[package]]
 name = "gfx"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#d91f4719dbec7fc655c9e4843505a9e01a80949d"
+source = "git+https://github.com/gfx-rs/gfx-rs#8c30d07565fcde68a95389ab6baf0e49e0b30c7d"
 dependencies = [
  "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
  "gfx_macros 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
@@ -49,12 +56,12 @@ dependencies = [
 [[package]]
 name = "gfx_macros"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#d91f4719dbec7fc655c9e4843505a9e01a80949d"
+source = "git+https://github.com/gfx-rs/gfx-rs#8c30d07565fcde68a95389ab6baf0e49e0b30c7d"
 
 [[package]]
 name = "gl"
 version = "0.0.1"
-source = "git+https://github.com/bjz/gl-rs#79cd3b3f9f19aa0e39f6af572fc8673a6d9760bc"
+source = "git+https://github.com/bjz/gl-rs#218f14c94d79331fc5487f8564dc71f7ec4a22a8"
 dependencies = [
  "gl_generator 0.0.1 (git+https://github.com/bjz/gl-rs)",
 ]
@@ -62,15 +69,15 @@ dependencies = [
 [[package]]
 name = "gl_common"
 version = "0.0.1"
-source = "git+https://github.com/bjz/gl-rs#79cd3b3f9f19aa0e39f6af572fc8673a6d9760bc"
+source = "git+https://github.com/bjz/gl-rs#218f14c94d79331fc5487f8564dc71f7ec4a22a8"
 
 [[package]]
 name = "gl_generator"
 version = "0.0.1"
-source = "git+https://github.com/bjz/gl-rs#79cd3b3f9f19aa0e39f6af572fc8673a6d9760bc"
+source = "git+https://github.com/bjz/gl-rs#218f14c94d79331fc5487f8564dc71f7ec4a22a8"
 dependencies = [
  "gl_common 0.0.1 (git+https://github.com/bjz/gl-rs)",
- "khronos_api 0.0.1 (git+https://github.com/bjz/gl-rs)",
+ "khronos_api 0.0.2 (git+https://github.com/bjz/gl-rs)",
  "rust-xml 0.1.0 (git+https://github.com/netvl/rust-xml)",
 ]
 
@@ -91,22 +98,22 @@ source = "git+https://github.com/servo/glfw?ref=cargo-3.0.4#765dace7e4125b87c764
 [[package]]
 name = "image"
 version = "0.1.0"
-source = "git+https://github.com/PistonDevelopers/rust-image#4d83ec4e6abc2bdfce3da3e5f49762728b9f5617"
+source = "git+https://github.com/PistonDevelopers/rust-image#3a398831adb22f1200cb68682e446ede187d23b9"
 
 [[package]]
 name = "khronos_api"
-version = "0.0.1"
-source = "git+https://github.com/bjz/gl-rs#79cd3b3f9f19aa0e39f6af572fc8673a6d9760bc"
+version = "0.0.2"
+source = "git+https://github.com/bjz/gl-rs#218f14c94d79331fc5487f8564dc71f7ec4a22a8"
 
 [[package]]
 name = "num"
 version = "0.0.1"
-source = "git+https://github.com/rust-lang/num#da2fcbaa0cff2281aede303204cc7884fb246880"
+source = "git+https://github.com/rust-lang/num#aec75185e5fe4fe2f8a7a1361cba57f73ec13d87"
 
 [[package]]
 name = "render"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#d91f4719dbec7fc655c9e4843505a9e01a80949d"
+source = "git+https://github.com/gfx-rs/gfx-rs#8c30d07565fcde68a95389ab6baf0e49e0b30c7d"
 dependencies = [
  "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
 ]
@@ -122,9 +129,17 @@ version = "0.1.0"
 source = "git+https://github.com/rust-lang/semver#7dca047a9cd40e929a4545b37a1917daff82f156"
 
 [[package]]
+name = "time"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/time#f8c6b514021f0eef55267220b9435cb221d7d6c3"
+dependencies = [
+ "gcc 0.0.1 (git+https://github.com/alexcrichton/gcc-rs)",
+]
+
+[[package]]
 name = "uuid"
 version = "0.0.1"
-source = "git+https://github.com/rust-lang/uuid#7c5af48d4f9074717199e05a1895f42b9fb1c1f0"
+source = "git+https://github.com/rust-lang/uuid#8f2ea67d1bd8a49b01c3d7f0ec96f18803b2e5dd"
 
 [[package]]
 name = "world"
