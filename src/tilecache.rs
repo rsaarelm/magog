@@ -71,6 +71,7 @@ pub mod tile {
     pub static BARREL : uint = 55;
     pub static STALAGMITE : uint = 56;
     pub static GRAVE : uint = 58;
+    pub static SPLATTER : uint = 64;
     pub static STONE : uint = 69;
     pub static MENHIR : uint = 70;
     pub static TALLGRASS : uint = 80;

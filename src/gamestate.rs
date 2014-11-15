@@ -11,7 +11,7 @@ use world::action;
 use world::action::{Step, Melee};
 use world::dir6::*;
 use worldview;
-use sprite::{WorldSprites};
+use sprite::{WorldSprites, GibSprite};
 
 pub struct GameState {
     world_spr: WorldSprites,
@@ -29,6 +29,20 @@ impl GameState {
     pub fn update(&mut self, ctx: &mut Context) {
         ctx.clear(&color::BLACK);
         let camera = world::camera();
+
+        // Process events
+        loop {
+            match world::pop_msg() {
+                Some(world::Gib(loc)) => {
+                    self.world_spr.add(box GibSprite::new(loc));
+                }
+                Some(x) => {
+                    println!("Unhandled Msg type {}", x);
+                }
+                None => break
+            }
+        }
+
         worldview::draw_world(&camera, ctx);
 
         // TODO use FOV for sprite draw.

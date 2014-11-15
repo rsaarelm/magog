@@ -3,6 +3,8 @@ use calx::color;
 use calx::{Context, V2, CanvasUtil};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
+use tilecache;
+use tilecache::tile;
 
 trait WorldSprite {
     fn update(&mut self);
@@ -28,7 +30,7 @@ impl WorldSprites {
         }
     }
 
-    pub fn _add(&mut self, spr: Box<WorldSprite + 'static>) {
+    pub fn add(&mut self, spr: Box<WorldSprite + 'static>) {
         self.sprites.push(spr);
     }
 
@@ -82,6 +84,35 @@ impl WorldSprite for _BeamSprite {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
             ctx.draw_line(3,
                 chart_to_screen(p1), chart_to_screen(p2), FX_Z, &color::LIME);
+        }
+    }
+}
+
+pub struct GibSprite {
+    loc: Location,
+    life: int,
+    footprint: Vec<Location>,
+}
+
+impl GibSprite {
+    pub fn new(loc: Location) -> GibSprite {
+        GibSprite {
+            loc: loc,
+            life: 11,
+            footprint: vec![loc],
+        }
+    }
+}
+
+impl WorldSprite for GibSprite {
+    fn update(&mut self) { self.life -= 1; }
+    fn is_alive(&self) -> bool { self.life >= 0 }
+    fn footprint<'a>(&'a self) -> Items<'a, Location> { self.footprint.iter() }
+    fn draw(&self, chart: &Location, ctx: &mut Context) {
+        if let Some(p) = chart.chart_pos(self.loc) {
+            // TODO: Robust anim cycle with clamping.
+            let idx = tile::SPLATTER + ((11 - self.life) / 3) as uint;
+            ctx.draw_image(chart_to_screen(p), FX_Z, tilecache::get(idx), &color::RED);
         }
     }
 }
