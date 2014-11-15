@@ -203,7 +203,11 @@ impl Entity {
             let loc = self.location().unwrap();
 
             let steps = pathing.sorted_neighbors(&loc);
-            self.step(loc.dir6_towards(steps[0]).unwrap());
+            if steps.len() > 0 {
+                self.step(loc.dir6_towards(steps[0]).unwrap());
+            } else {
+                // TODO: Random dir step
+            }
         }
     }
 
