@@ -1,6 +1,6 @@
 use std::io::File;
 use std::io::fs::PathExtensions;
-
+use std::collections::HashMap;
 use calx::color;
 use calx::Context;
 use calx::event;
@@ -10,11 +10,14 @@ use world;
 use world::action;
 use world::action::{Step, Melee};
 use world::dir6::*;
+use world::{Entity};
 use worldview;
 use sprite::{WorldSprites, GibSprite};
 
 pub struct GameState {
     world_spr: WorldSprites,
+    /// Counters for entities with flashing damage animation.
+    damage_timers: HashMap<Entity, uint>,
 }
 
 impl GameState {
@@ -22,6 +25,7 @@ impl GameState {
         world::init_world(seed);
         GameState {
             world_spr: WorldSprites::new(),
+            damage_timers: HashMap::new(),
         }
     }
 
@@ -36,6 +40,9 @@ impl GameState {
                 Some(world::Gib(loc)) => {
                     self.world_spr.add(box GibSprite::new(loc));
                 }
+                Some(world::Damage(entity)) => {
+                    self.damage_timers.insert(entity, 2);
+                }
                 Some(x) => {
                     println!("Unhandled Msg type {}", x);
                 }
@@ -43,7 +50,7 @@ impl GameState {
             }
         }
 
-        worldview::draw_world(&camera, ctx);
+        worldview::draw_world(&camera, ctx, &self.damage_timers);
 
         // TODO use FOV for sprite draw.
         self.world_spr.draw(|x| (camera + x).fov_status() == Some(world::Seen), &camera, ctx);
@@ -57,6 +64,11 @@ impl GameState {
         if action::control_state() == action::ReadyToUpdate {
             action::update();
         }
+
+        self.damage_timers = self.damage_timers.clone().into_iter()
+            .filter(|&(_, t)| t > 0u)
+            .map(|(e, t)| (e, t - 1))
+            .collect();
     }
 
     pub fn save_game(&self) {

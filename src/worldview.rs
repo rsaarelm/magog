@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use time;
 use calx::{V2};
 use calx::{Context, Rgb};
@@ -16,22 +17,23 @@ use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
 
-pub fn draw_world<C: Chart>(chart: &C, ctx: &mut Context) {
+pub fn draw_world<C: Chart>(chart: &C, ctx: &mut Context, damage_timers: &HashMap<Entity, uint>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
-        let cell_drawable = CellDrawable::new(loc, loc.fov_status());
+        let cell_drawable = CellDrawable::new(loc, loc.fov_status(), damage_timers);
         cell_drawable.draw(ctx, screen_pos);
     }
 }
 
 /// Drawable representation of a single map location.
-pub struct CellDrawable {
+pub struct CellDrawable<'a> {
     loc: Location,
     fov: Option<FovStatus>,
+    damage_timers: &'a HashMap<Entity, uint>
 }
 
-impl Drawable for CellDrawable {
+impl<'a> Drawable for CellDrawable<'a> {
     fn draw(&self, ctx: &mut Context, offset: V2<int>) {
         match self.fov {
             Some(_) => {
@@ -65,15 +67,19 @@ impl Drawable for CellDrawable {
     }
 }
 
-impl CellDrawable {
-    pub fn new(loc: Location, fov: Option<FovStatus>) -> CellDrawable {
+impl<'a> CellDrawable<'a> {
+    pub fn new(
+        loc: Location,
+        fov: Option<FovStatus>,
+        damage_timers: &'a HashMap<Entity, uint>) -> CellDrawable<'a> {
         CellDrawable {
             loc: loc,
             fov: fov,
+            damage_timers: damage_timers,
         }
     }
 
-    fn draw_tile(&self, ctx: &mut Context, idx: uint, offset: V2<int>, z: f32, color: &Rgb) {
+    fn draw_tile(&'a self, ctx: &mut Context, idx: uint, offset: V2<int>, z: f32, color: &Rgb) {
         let color = match self.fov {
             Some(Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
@@ -81,7 +87,7 @@ impl CellDrawable {
         ctx.draw_image(offset, z, tilecache::get(idx), &color);
     }
 
-    fn draw_cell(&self, ctx: &mut Context, offset: V2<int>) {
+    fn draw_cell(&'a self, ctx: &mut Context, offset: V2<int>) {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(Seen) {
@@ -91,7 +97,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_terrain(&self, ctx: &mut Context, offset: V2<int>) {
+    fn draw_terrain(&'a self, ctx: &mut Context, offset: V2<int>) {
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
         match k.center {
             terrain::Void => {
@@ -265,7 +271,7 @@ impl CellDrawable {
         }
     }
 
-    fn draw_entity(&self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
+    fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
         match entity.kind() {
             world::MobKind(m) => {
                 let body_pos =
@@ -275,9 +281,13 @@ impl CellDrawable {
                                 [V2(0, 0), V2(0, -1)]))
                     } else { offset };
 
-                let (icon, color) = (
+                let (icon, mut color) = (
                     mob::SPECS[m as uint].sprite,
                     mob::SPECS[m as uint].color);
+
+                if let Some(&t) = self.damage_timers.get(entity) {
+                    color = if t % 2 == 0 { &WHITE } else { &BLACK };
+                }
 
                 if m == mob::Serpent {
                     // Special case, Serpent sprite is made of two parts.
