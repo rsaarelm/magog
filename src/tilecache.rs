@@ -10,7 +10,7 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (int, int), offset: (int, int)) {
     let mut image = calx::color_key(
         &image::load_from_memory(data, image::PNG).unwrap(),
-        &Rgb::new(0x80u8, 0x80u8, 0x80u8));
+        &Rgb::new(0x00u8, 0xFFu8, 0xFFu8));
     let (w, h) = image.dimensions();
     let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
 
