@@ -50,6 +50,10 @@ impl Entity {
 
     pub fn can_enter(self, loc: Location) -> bool {
         if self.is_mob() && loc.has_mobs() { return false; }
+        if loc.terrain().is_door() && !self.has_intrinsic(intrinsic::Hands) {
+            // Can't open doors without hands.
+            return false;
+        }
         if loc.blocks_walk() { return false; }
         true
     }

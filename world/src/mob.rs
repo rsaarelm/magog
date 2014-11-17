@@ -112,7 +112,7 @@ pub static SPECS: [MobSpec, ..$count] = [
 mob_data! {
     count: 10;
 //  Symbol   power, depth, biome, sprite, color,        intrinsics
-    Player:     6,  -1, Anywhere, 51, &AZURE,            f!();
+    Player:     6,  -1, Anywhere, 51, &AZURE,            f!(Hands);
     Dreg:       1,   1, Anywhere, 72, &OLIVE,            f!(Hands);
     Snake:      1,   1, Overland, 71, &GREEN,            f!();
     Ooze:       3,   3, Dungeon,  77, &LIGHTSEAGREEN,    f!();
