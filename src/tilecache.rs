@@ -75,6 +75,7 @@ pub mod tile {
     pub static STONE : uint = 69;
     pub static MENHIR : uint = 70;
     pub static TALLGRASS : uint = 80;
+    pub static XYWALL : uint = 82;
 }
 
 pub mod icon {

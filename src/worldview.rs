@@ -249,7 +249,13 @@ impl<'a> CellDrawable<'a> {
             } else if !block || !k.s.is_wall() {
                 // NB: This branch has some actual local kernel logic not
                 // handled by wall_flags_lrb.
-                c.draw_tile(ctx, idx + 3, offset, BLOCK_Z, color);
+                let idx = if k.n.is_wall() {
+                    // TODO: Walltile-specific XY-walls
+                    XYWALL
+                } else {
+                    idx + 3
+                };
+                c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             }
         }
 
