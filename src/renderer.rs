@@ -100,7 +100,7 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
     }
 
     pub fn draw_triangles(&mut self, data: &[Vertex]) {
-        self.state.primitive.method = gfx::state::Fill(gfx::state::CullBack);
+        self.state.primitive.method = gfx::state::Fill(gfx::state::CullMode::Back);
         self.draw(data, gfx::TriangleList);
     }
 }

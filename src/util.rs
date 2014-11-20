@@ -1,9 +1,26 @@
 use std::default::{Default};
 use std::cmp::{min, max};
-use std::num::{zero};
+use std::num::{NumCast};
 use image::{GenericImage, Pixel, ImageBuf, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
+
+pub trait Primitive: Add<Self, Self> + Sub<Self, Self> + Mul<Self, Self> +
+    Div<Self, Self> + Rem<Self, Self> + Neg<Self> + PartialEq +
+    Copy + NumCast + PartialOrd + Clone {}
+
+impl Primitive for uint {}
+impl Primitive for u8 {}
+impl Primitive for u16 {}
+impl Primitive for u32 {}
+impl Primitive for u64 {}
+impl Primitive for int {}
+impl Primitive for i8 {}
+impl Primitive for i16 {}
+impl Primitive for i32 {}
+impl Primitive for i64 {}
+impl Primitive for f32 {}
+impl Primitive for f64 {}
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
@@ -60,7 +77,8 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     container_dim: V2<T>,
     dims: &Vec<V2<T>>)
     -> Option<Vec<V2<T>>> {
-    let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(zero::<T>(), |a, b| a + b);
+    let init: T = NumCast::from(0i).unwrap();
+    let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(init, |a, b| a + b);
 
     // Too much rectangle area to fit in container no matter how you pack it.
     // Fail early.
@@ -70,9 +88,9 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     let mut largest_first : Vec<(uint, &V2<T>)> = dims.iter().enumerate().collect();
     largest_first.sort_by(|&(_i, a), &(_j, b)| (b.0 * b.1).cmp(&(a.0 * a.1)));
 
-    let mut slots = vec![Rect(V2(zero::<T>(), zero::<T>()), container_dim)];
+    let mut slots = vec![Rect(V2(NumCast::from(0i).unwrap(), NumCast::from(0i).unwrap()), container_dim)];
 
-    let mut ret = Vec::from_elem(dims.len(), V2(zero::<T>(), zero::<T>()));
+    let mut ret = Vec::from_elem(dims.len(), V2(NumCast::from(0i).unwrap(), NumCast::from(0i).unwrap()));
 
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];

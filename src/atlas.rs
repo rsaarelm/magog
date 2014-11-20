@@ -1,4 +1,4 @@
-use std::num::{next_power_of_two};
+use std::num::{UnsignedInt, Float};
 use image::{GenericImage, SubImage, ImageBuf, Rgba, Pixel};
 use util;
 use geom::{V2, Rect};
@@ -55,7 +55,7 @@ impl Atlas {
 
         // Guesstimate the size for the atlas container.
         let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(0, |a, b| a + b);
-        let mut d = next_power_of_two((total_area as f64).sqrt() as uint) as u32;
+        let mut d = ((total_area as f64).sqrt() as uint).next_power_of_two() as u32;
         let mut offsets;
 
         loop {

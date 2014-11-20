@@ -1,15 +1,16 @@
 extern crate calx;
 
+use std::num::{FloatMath};
 use calx::color;
 use calx::{V2, Rgba, Fonter, CanvasUtil};
-use calx::event;
+use calx::Event;
 
 fn main() {
     let mut t = 0i;
 
     for evt in calx::Canvas::new().run() {
         match evt {
-            event::Render(ctx) => {
+            Event::Render(ctx) => {
                 let img = ctx.font_image('@').unwrap();
 
                 ctx.clear(&calx::Rgb::new(t as u8, 0, 0));
@@ -32,7 +33,7 @@ fn main() {
 
                 t += 1;
             }
-            event::KeyPressed(calx::key::KeyEscape) => {
+            Event::KeyPressed(calx::Key::Escape) => {
                 return;
             }
             _ => ()

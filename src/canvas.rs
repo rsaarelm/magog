@@ -1,5 +1,6 @@
 use time;
 use std::mem;
+use std::num::{FloatMath, Float};
 use sync::comm::Receiver;
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuf, Rgba};
@@ -12,7 +13,6 @@ use atlas::{AtlasBuilder, Atlas};
 use util;
 use geom::{V2, Rect};
 use event::Event;
-use event;
 use rgb::Rgb;
 use renderer::{Renderer, Vertex};
 use glfw_key;
@@ -166,7 +166,7 @@ impl Context {
             atlas: atlas,
             triangle_buf: Vec::new(),
 
-            state: Normal,
+            state: State::Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
             image_dims: dims,
@@ -237,8 +237,8 @@ impl<'a> Iterator<Event<'a>> for Context {
     fn next(&mut self) -> Option<Event<'a>> {
         // After a render event, control will return here on a new
         // iter call. Do post-render work here.
-        if self.state == EndFrame {
-            self.state = Normal;
+        if self.state == State::EndFrame {
+            self.state = State::Normal;
 
             self.renderer.draw_triangles(self.triangle_buf.as_slice());
 
@@ -259,15 +259,15 @@ impl<'a> Iterator<Event<'a>> for Context {
                 Ok((_, event)) => {
                     match event {
                         glfw::CharEvent(ch) => {
-                            return Some(event::Text(String::from_char(1, ch)));
+                            return Some(Event::Text(String::from_char(1, ch)));
                         }
                         glfw::KeyEvent(k, _scan, action, _mods) => {
                             match glfw_key::translate(k).map(|k| {
                                 if action == glfw::Press || action == glfw::Repeat {
-                                    event::KeyPressed(k)
+                                    Event::KeyPressed(k)
                                 }
                                 else {
-                                    event::KeyReleased(k)
+                                    Event::KeyReleased(k)
                                 }
                             }) {
                                 Some(e) => { return Some(e); }
@@ -292,7 +292,7 @@ impl<'a> Iterator<Event<'a>> for Context {
 
                 // Time to render, must return a handle to self.
                 // XXX: Need unsafe hackery to get around lifetimes check.
-                self.state = EndFrame;
+                self.state = State::EndFrame;
 
                 let (w, h) = self.window.get_framebuffer_size();
                 self.window_resolution = V2(w as u32, h as u32);
@@ -300,7 +300,7 @@ impl<'a> Iterator<Event<'a>> for Context {
                 self.renderer.scissor(pixel_perfect(self.resolution, self.window_resolution));
 
                 unsafe {
-                    return Some(event::Render(mem::transmute(self)))
+                    return Some(Event::Render(mem::transmute(self)))
                 }
             }
         }
