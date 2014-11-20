@@ -8,7 +8,7 @@ use spatial::Spatial;
 use comp::Comp;
 use flags::Flags;
 use flags;
-use mob::{Player};
+use mob::MobType::{Player};
 use egg::Egg;
 
 local_data_key!(WORLD_STATE: RefCell<WorldState>)
@@ -72,7 +72,7 @@ impl WorldState {
     pub fn new(seed: u32) -> WorldState {
         WorldState {
             ecs: Ecs::new(),
-            area: Area::new(seed, ::AreaSpec::new(::Overland, 1)),
+            area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
             spatial: Spatial::new(),
             comp: Comp::new(),
             flags: Flags::new(seed),
@@ -96,6 +96,6 @@ pub fn init_world(seed: Option<u32>) {
         egg.hatch(*loc);
     }
     let player_entrance = with(|w| w.area.player_entrance());
-    Egg::new(::MobKind(Player)).hatch(player_entrance);
+    Egg::new(::EntityKind::Mob(Player)).hatch(player_entrance);
     flags::set_camera(player_entrance);
 }

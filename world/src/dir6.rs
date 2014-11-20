@@ -1,8 +1,9 @@
 use std::slice;
-use num::Integer;
-use std::num::FromPrimitive;
+use num::{Integer};
+use std::num::{FloatMath, FromPrimitive, Float};
 use std::f32::consts::PI;
 use calx::V2;
+use self::Dir6::*;
 
 /// Hex grid directions.
 #[deriving(Eq, PartialEq, Clone, Show, FromPrimitive, Rand, Encodable, Decodable)]

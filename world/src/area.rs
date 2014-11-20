@@ -81,7 +81,7 @@ impl Area {
 
         let entrance = opens.swap_remove(0).unwrap();
 
-        let viable_mobs: Vec<MobSpec> = mob::SPECS.iter()
+        let viable_mobs: Vec<MobSpec> = mob::MOB_SPECS.iter()
             .filter(|m| m.area_spec.can_hatch_in(&spec))
             .map(|&x| x).collect();
 
@@ -91,7 +91,7 @@ impl Area {
         for _ in range(0, num_eggs) {
             if let Some(loc) = opens.swap_remove(0) {
                 let mob = rng.choose(viable_mobs.as_slice()).unwrap();
-                eggs.push((Egg::new(::MobKind(mob.typ)), loc));
+                eggs.push((Egg::new(::EntityKind::Mob(mob.typ)), loc));
             } else {
                 // Ran out of open space.
                 break;

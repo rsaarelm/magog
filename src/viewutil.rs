@@ -1,3 +1,4 @@
+use std::num::{Float};
 use std::iter::Map;
 use calx::{V2, Rect};
 

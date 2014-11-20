@@ -2,6 +2,7 @@ use std::collections::{HashMap};
 use entity::{Entity};
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
+use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.

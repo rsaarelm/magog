@@ -3,13 +3,14 @@ use std::io::fs::PathExtensions;
 use std::collections::HashMap;
 use calx::color;
 use calx::Context;
-use calx::event;
-use calx::key;
+use calx::Event;
+use calx::Key;
 use calx::{Fonter, V2};
 use world;
 use world::action;
 use world::action::{Step, Melee};
-use world::dir6::*;
+use world::Dir6;
+use world::Dir6::*;
 use world::{Entity};
 use worldview;
 use sprite::{WorldSprites, GibSprite};
@@ -96,34 +97,34 @@ impl GameState {
     }
 
     /// Process a player control keypress.
-    pub fn process_key(&mut self, key: key::Key) -> bool {
+    pub fn process_key(&mut self, key: Key) -> bool {
         if action::control_state() != action::AwaitingInput {
             return false;
         }
 
         match key {
-            key::KeyQ | key::KeyPad7 => { self.smart_move(NorthWest); }
-            key::KeyW | key::KeyPad8 | key::KeyUp => { self.smart_move(North); }
-            key::KeyE | key::KeyPad9 => { self.smart_move(NorthEast); }
-            key::KeyA | key::KeyPad1 => { self.smart_move(SouthWest); }
-            key::KeyS | key::KeyPad2 | key::KeyDown => { self.smart_move(South); }
-            key::KeyD | key::KeyPad3 => { self.smart_move(SouthEast); }
-            key::KeyF5 => { self.save_game(); }
-            key::KeyF9 => { self.load_game(); }
+            Key::Q | Key::Pad7 => { self.smart_move(NorthWest); }
+            Key::W | Key::Pad8 | Key::Up => { self.smart_move(North); }
+            Key::E | Key::Pad9 => { self.smart_move(NorthEast); }
+            Key::A | Key::Pad1 => { self.smart_move(SouthWest); }
+            Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
+            Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
+            Key::F5 => { self.save_game(); }
+            Key::F9 => { self.load_game(); }
             _ => { return false; }
         }
         return true;
     }
 
-    pub fn process(&mut self, event: event::Event) -> bool {
+    pub fn process(&mut self, event: Event) -> bool {
         match event {
-            event::Render(ctx) => {
+            Event::Render(ctx) => {
                 self.update(ctx);
             }
-            event::KeyPressed(key::KeyEscape) => {
+            Event::KeyPressed(Key::Escape) => {
                 return false;
             }
-            event::KeyPressed(k) => {
+            Event::KeyPressed(k) => {
                 self.process_key(k);
             }
             _ => ()

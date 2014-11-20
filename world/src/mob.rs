@@ -1,6 +1,7 @@
 use calx::Rgb;
 use calx::color::*;
 use {AreaSpec};
+use {Biome};
 
 /// Data component for mobs.
 #[deriving(Clone, Show, Encodable, Decodable)]
@@ -14,8 +15,8 @@ pub struct Mob {
 
 impl Mob {
     pub fn new(t: MobType) -> Mob {
-        let data = SPECS[t as uint];
-        let status = if t != Player { status::Asleep as int } else { 0 };
+        let data = MOB_SPECS[t as uint];
+        let status = if t != MobType::Player { Status::Asleep as int } else { 0 };
         Mob {
             max_hp: data.power,
             hp: data.power,
@@ -25,20 +26,19 @@ impl Mob {
         }
     }
 
-    pub fn has_status(&self, s: status::Status) -> bool {
+    pub fn has_status(&self, s: Status) -> bool {
         self.status as int & s as int != 0
     }
 
-    pub fn add_status(&mut self, s: status::Status) {
+    pub fn add_status(&mut self, s: Status) {
         self.status |= s as int;
     }
 
-    pub fn remove_status(&mut self, s: status::Status) {
+    pub fn remove_status(&mut self, s: Status) {
         self.status &= !(s as int);
     }
 }
 
-pub mod intrinsic {
 #[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
@@ -48,9 +48,7 @@ pub enum Intrinsic {
     /// Can manipulate objects and doors.
     Hands       = 0b100,
 }
-}
 
-pub mod status {
 #[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Status {
     /// Moves 1/3 slower than usual.
@@ -61,7 +59,6 @@ pub enum Status {
     Asleep      = 0b100,
     /// Mob moves erratically.
     Confused    = 0b1000,
-}
 }
 
 pub struct MobSpec {
@@ -76,7 +73,7 @@ pub struct MobSpec {
 
 // Intrinsic flag union.
 macro_rules! f {
-    { $($flag:ident),* } => { 0 $( | intrinsic::$flag as int )* }
+    { $($flag:ident),* } => { 0 $( | Intrinsic::$flag as int )* }
 }
 
 macro_rules! mob_data {
@@ -90,14 +87,14 @@ pub enum MobType {
     $($symbol,)*
 }
 
-pub static SPECS: [MobSpec, ..$count] = [
+pub static MOB_SPECS: [MobSpec, ..$count] = [
     $(MobSpec {
-        typ: $symbol,
+        typ: MobType::$symbol,
         name: stringify!($symbol),
         power: $power,
         area_spec: AreaSpec {
             depth: $depth,
-            biome: ::$biome,
+            biome: Biome::$biome,
         },
         sprite: $sprite,
         color: $color,

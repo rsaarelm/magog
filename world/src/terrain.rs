@@ -1,3 +1,5 @@
+use self::TerrainType::*;
+
 // TODO: Figure out how to not require explicit element count.
 macro_rules! terrain_data {
     {

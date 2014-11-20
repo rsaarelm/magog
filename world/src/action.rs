@@ -14,7 +14,7 @@ pub enum ControlState {
 
 /// Player input action.
 #[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
-pub enum PlayerInput {
+pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
     Melee(Dir6),
@@ -34,17 +34,17 @@ pub fn player() -> Option<Entity> {
 
 /// Get the current control state.
 pub fn control_state() -> ControlState {
-    if world::with(|w| w.flags.player_acted) { return ReadyToUpdate; }
+    if world::with(|w| w.flags.player_acted) { return ControlState::ReadyToUpdate; }
     match player() {
-        Some(p) if p.acts_this_frame() => AwaitingInput,
-        _ => ReadyToUpdate,
+        Some(p) if p.acts_this_frame() => ControlState::AwaitingInput,
+        _ => ControlState::ReadyToUpdate,
     }
 }
 
 /// Top-level game state update function. Only valid to call if
 /// control_state() returned ReadyToUpdate.
 pub fn update() {
-    assert!(control_state() == ReadyToUpdate);
+    assert!(control_state() == ControlState::ReadyToUpdate);
 
     ai_main();
 
@@ -56,15 +56,15 @@ pub fn update() {
 
 /// Give player input. Only valid to call if control_state() returned
 /// AwaitingInput.
-pub fn input(input: PlayerInput) {
-    assert!(control_state() == AwaitingInput);
+pub fn input(input: Input) {
+    assert!(control_state() == ControlState::AwaitingInput);
     let p = player().unwrap();
     match input {
-        Step(d) => {
+        Input::Step(d) => {
             p.step(d);
             flags::set_camera(p.location().unwrap());
         }
-        Melee(d) => {
+        Input::Melee(d) => {
             p.melee(d);
         }
     }
@@ -73,7 +73,7 @@ pub fn input(input: PlayerInput) {
     // Run one world update cycle right away, so that we don't get awkward
     // single frames rendered where the player has acted and the rest of the
     // world hasn't.
-    if control_state() == ReadyToUpdate {
+    if control_state() == ControlState::ReadyToUpdate {
         update();
     }
 }

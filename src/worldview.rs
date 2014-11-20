@@ -1,16 +1,14 @@
+use std::num::{FloatMath};
 use std::collections::HashMap;
 use time;
 use calx::{V2};
 use calx::{Context, Rgb};
 use calx::color::*;
 use calx::timing;
-use world::terrain;
+use world::TerrainType;
 use world::{Location, Chart};
-use world::{FovStatus, Seen, Remembered};
+use world::{FovStatus, EntityKind, MobType, MOB_SPECS};
 use world::{Entity};
-use world::mob;
-use world;
-use world::terrain::TerrainType;
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
@@ -81,7 +79,7 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_tile(&'a self, ctx: &mut Context, idx: uint, offset: V2<int>, z: f32, color: &Rgb) {
         let color = match self.fov {
-            Some(Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
+            Some(FovStatus::Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
         };
         ctx.draw_image(offset, z, tilecache::get(idx), &color);
@@ -90,7 +88,7 @@ impl<'a> CellDrawable<'a> {
     fn draw_cell(&'a self, ctx: &mut Context, offset: V2<int>) {
         self.draw_terrain(ctx, offset);
 
-        if self.fov == Some(Seen) {
+        if self.fov == Some(FovStatus::Seen) {
             for e in self.loc.entities().iter() {
                 self.draw_entity(ctx, offset, e);
             }
@@ -100,118 +98,118 @@ impl<'a> CellDrawable<'a> {
     fn draw_terrain(&'a self, ctx: &mut Context, offset: V2<int>) {
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
         match k.center {
-            terrain::Void => {
+            TerrainType::Void => {
                 self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
             },
-            terrain::Water => {
+            TerrainType::Water => {
                 self.draw_tile(ctx, WATER, offset, FLOOR_Z, &ROYALBLUE);
             },
-            terrain::Shallows => {
+            TerrainType::Shallows => {
                 self.draw_tile(ctx, SHALLOWS, offset, FLOOR_Z, &CORNFLOWERBLUE);
             },
-            terrain::Magma => {
+            TerrainType::Magma => {
                 self.draw_tile(ctx, MAGMA, offset, FLOOR_Z, &DARKRED);
             },
-            terrain::Tree => {
+            TerrainType::Tree => {
                 // A two-toner, with floor, using two z-layers
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, TREE_TRUNK, offset, BLOCK_Z, &SADDLEBROWN);
                 self.draw_tile(ctx, TREE_FOLIAGE, offset, BLOCK_Z, &GREEN);
             },
-            terrain::Floor => {
+            TerrainType::Floor => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
             },
-            terrain::Chasm => {
+            TerrainType::Chasm => {
                 self.draw_tile(ctx, CHASM, offset, FLOOR_Z, &DARKSLATEGRAY);
             },
-            terrain::Grass => {
+            TerrainType::Grass => {
                 self.draw_tile(ctx, GRASS, offset, FLOOR_Z, &DARKGREEN);
             },
-            terrain::Downstairs => {
+            TerrainType::Downstairs => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, DOWNSTAIRS, offset, BLOCK_Z, &SLATEGRAY);
             },
-            terrain::Portal => {
+            TerrainType::Portal => {
                 let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
                 let portal_col = Rgb::new(glow, glow, 255);
                 self.draw_tile(ctx, PORTAL, offset, BLOCK_Z, &portal_col);
             },
-            terrain::Rock => {
+            TerrainType::Rock => {
                 blockform(self, ctx, &k, offset, BLOCK, &DARKGOLDENROD);
             }
-            terrain::Wall => {
+            TerrainType::Wall => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, WALL, &LIGHTSLATEGRAY, true);
             },
-            terrain::RockWall => {
+            TerrainType::RockWall => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, ROCKWALL, &LIGHTSLATEGRAY, true);
             },
-            terrain::Fence => {
+            TerrainType::Fence => {
                 // The floor type beneath the fence tile is visible, make it grass
                 // if there's grass behind the fence. Otherwise make it regular
                 // floor.
-                if k.n == terrain::Grass || k.ne == terrain::Grass || k.nw == terrain::Grass {
+                if k.n == TerrainType::Grass || k.ne == TerrainType::Grass || k.nw == TerrainType::Grass {
                     self.draw_tile(ctx, GRASS, offset, FLOOR_Z, &DARKGREEN);
                 } else {
                     self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 }
                 wallform(self, ctx, &k, offset, FENCE, &DARKGOLDENROD, false);
             },
-            terrain::Bars => {
+            TerrainType::Bars => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, BARS, &GAINSBORO, false);
             },
-            terrain::Stalagmite => {
+            TerrainType::Stalagmite => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, STALAGMITE, offset, BLOCK_Z, &DARKGOLDENROD);
             },
-            terrain::Window => {
+            TerrainType::Window => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, WINDOW, &LIGHTSLATEGRAY, false);
             },
-            terrain::Door => {
+            TerrainType::Door => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
                 wallform(self, ctx, &k, offset, DOOR + 4, &SADDLEBROWN, false);
             },
-            terrain::OpenDoor => {
+            TerrainType::OpenDoor => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
             },
-            terrain::Table => {
+            TerrainType::Table => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, TABLE, offset, BLOCK_Z, &DARKGOLDENROD);
             },
-            terrain::Fountain => {
+            TerrainType::Fountain => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, FOUNTAIN, offset, BLOCK_Z, &GAINSBORO);
             },
-            terrain::Altar => {
+            TerrainType::Altar => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, ALTAR, offset, BLOCK_Z, &GAINSBORO);
             },
-            terrain::Barrel => {
+            TerrainType::Barrel => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, BARREL, offset, BLOCK_Z, &DARKGOLDENROD);
             },
-            terrain::Grave => {
+            TerrainType::Grave => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, GRAVE, offset, BLOCK_Z, &SLATEGRAY);
             },
-            terrain::Stone => {
+            TerrainType::Stone => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, STONE, offset, BLOCK_Z, &SLATEGRAY);
             },
-            terrain::Menhir => {
+            TerrainType::Menhir => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, MENHIR, offset, BLOCK_Z, &SLATEGRAY);
             },
-            terrain::DeadTree => {
+            TerrainType::DeadTree => {
                 self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &SLATEGRAY);
                 self.draw_tile(ctx, TREE_TRUNK, offset, BLOCK_Z, &SADDLEBROWN);
             },
-            terrain::TallGrass => {
+            TerrainType::TallGrass => {
                 self.draw_tile(ctx, TALLGRASS, offset, BLOCK_Z, &GOLD);
             },
         }
@@ -279,23 +277,23 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
         match entity.kind() {
-            world::MobKind(m) => {
+            EntityKind::Mob(m) => {
                 let body_pos =
                     if entity.is_bobbing() {
                         offset + *(timing::cycle_anim(
                                 0.3f64,
-                                [V2(0, 0), V2(0, -1)]))
+                                &[V2(0, 0), V2(0, -1)]))
                     } else { offset };
 
                 let (icon, mut color) = (
-                    mob::SPECS[m as uint].sprite,
-                    mob::SPECS[m as uint].color);
+                    MOB_SPECS[m as uint].sprite,
+                    MOB_SPECS[m as uint].color);
 
                 if let Some(&t) = self.damage_timers.get(entity) {
                     color = if t % 2 == 0 { &WHITE } else { &BLACK };
                 }
 
-                if m == mob::Serpent {
+                if m == MobType::Serpent {
                     // Special case, Serpent sprite is made of two parts.
                     // Body
                     self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);

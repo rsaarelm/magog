@@ -5,11 +5,9 @@ use location::{Location};
 use dir6::Dir6;
 use flags;
 use mob;
-use mob::status;
-use mob::intrinsic;
-use super::MobKind;
+use mob::{Status, Intrinsic, MobType};
 use geom::HexGeom;
-use spatial;
+use spatial::Place;
 use action;
 use fov::Fov;
 use rng;
@@ -50,7 +48,7 @@ impl Entity {
 
     pub fn can_enter(self, loc: Location) -> bool {
         if self.is_mob() && loc.has_mobs() { return false; }
-        if loc.terrain().is_door() && !self.has_intrinsic(intrinsic::Hands) {
+        if loc.terrain().is_door() && !self.has_intrinsic(Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
         }
@@ -61,7 +59,7 @@ impl Entity {
     /// Return whether the entity can move in a direction.
     pub fn can_step(self, dir: Dir6) -> bool {
         let place = world::with(|w| w.spatial.get(self));
-        if let Some(spatial::At(loc)) = place {
+        if let Some(Place::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
             return self.can_enter(new_loc);
         }
@@ -71,7 +69,7 @@ impl Entity {
     /// Try to move the entity in direction.
     pub fn step(self, dir: Dir6) {
         let place = world::with(|w| w.spatial.get(self));
-        if let Some(spatial::At(loc)) = place {
+        if let Some(Place::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
             if self.can_enter(new_loc) {
                 world::with_mut(|w| w.spatial.insert_at(self, new_loc));
@@ -82,8 +80,8 @@ impl Entity {
 
     pub fn location(self) -> Option<Location> {
         match world::with(|w| w.spatial.get(self)) {
-            Some(spatial::At(loc)) => Some(loc),
-            Some(spatial::In(e)) => e.location(),
+            Some(Place::At(loc)) => Some(loc),
+            Some(Place::In(e)) => e.location(),
             _ => None
         }
     }
@@ -114,7 +112,7 @@ impl Entity {
             (amount, false)
         });
 
-        msg::push_msg(::Damage(self));
+        msg::push_msg(::Msg::Damage(self));
         if kill {
             self.kill();
         }
@@ -123,7 +121,7 @@ impl Entity {
     /// Do any game logic stuff related to this entity dying violently before
     /// deleting it.
     pub fn kill(self) {
-        msg::push_msg(::Gib(self.location().unwrap()));
+        msg::push_msg(::Msg::Gib(self.location().unwrap()));
         self.delete();
     }
 
@@ -131,7 +129,7 @@ impl Entity {
 
     pub fn is_mob(self) -> bool {
         world::with(|w| {
-            if let Some(&MobKind(_)) = w.comp.kind.get(self) {
+            if let Some(&::EntityKind::Mob(_)) = w.comp.kind.get(self) {
                 return true;
             }
             return false;
@@ -141,14 +139,14 @@ impl Entity {
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         world::with(|w| {
-            if let Some(&MobKind(mob::Player)) = w.comp.kind.get(self) {
+            if let Some(&::EntityKind::Mob(MobType::Player)) = w.comp.kind.get(self) {
                 return true;
             }
             return false;
         })
     }
 
-    pub fn has_status(self, status: status::Status) -> bool {
+    pub fn has_status(self, status: Status) -> bool {
         world::with(|w| {
             if let Some(&mob) = w.comp.mob.get(self) {
                 return mob.has_status(status);
@@ -157,22 +155,22 @@ impl Entity {
         })
     }
 
-    pub fn add_status(self, status: status::Status) {
+    pub fn add_status(self, status: Status) {
         if !self.is_mob() { return; }
         world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().add_status(status));
         assert!(self.has_status(status));
     }
 
-    pub fn remove_status(self, status: status::Status) {
+    pub fn remove_status(self, status: Status) {
         if !self.is_mob() { return; }
         world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().remove_status(status));
         assert!(!self.has_status(status));
     }
 
-    pub fn has_intrinsic(self, intrinsic: mob::intrinsic::Intrinsic) -> bool {
+    pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
         world::with(|w| {
-            if let Some(&MobKind(mt)) = w.comp.kind.get(self) {
-                return mob::SPECS[mt as uint].intrinsics & intrinsic as int != 0;
+            if let Some(&::EntityKind::Mob(mt)) = w.comp.kind.get(self) {
+                return mob::MOB_SPECS[mt as uint].intrinsics & intrinsic as int != 0;
             }
             return false;
         })
@@ -180,7 +178,7 @@ impl Entity {
 
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
-        self.is_mob() && !self.has_status(status::Asleep)
+        self.is_mob() && !self.has_status(Status::Asleep)
     }
 
     /// Return if the entity is a mob that should get an update this frame
@@ -195,11 +193,11 @@ impl Entity {
         let phase = tick % 5;
         match phase {
             0 => return true,
-            1 => return self.has_intrinsic(intrinsic::Fast),
+            1 => return self.has_intrinsic(Intrinsic::Fast),
             2 => return true,
-            3 => return self.has_status(status::Quick),
-            4 => return !self.has_intrinsic(intrinsic::Slow)
-                        && !self.has_status(status::Slow),
+            3 => return self.has_status(Status::Quick),
+            4 => return !self.has_intrinsic(Intrinsic::Slow)
+                        && !self.has_status(Status::Slow),
             _ => panic!("Invalid action phase"),
         }
     }
@@ -251,13 +249,13 @@ impl Entity {
         assert!(!self.is_player());
         assert!(self.ticks_this_frame());
 
-        if self.has_status(status::Asleep) {
+        if self.has_status(Status::Asleep) {
             if let Some(p) = action::player() {
                 // TODO: Line-of-sight, stealth concerns, other enemies than
                 // player etc.
                 if let Some(d) = p.distance_from(self) {
                     if d < 6 {
-                        self.remove_status(status::Asleep);
+                        self.remove_status(Status::Asleep);
                     }
                 }
             }

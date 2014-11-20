@@ -1,5 +1,5 @@
 use std::cmp::max;
-use std::num::{signum, abs};
+use std::num::{SignedInt};
 use calx::V2;
 
 /// Hex grid geometry for vectors.
@@ -12,10 +12,10 @@ impl HexGeom for V2<int> {
     fn hex_dist(&self) -> int {
         let xd = self.0;
         let yd = self.1;
-        if signum(xd) == signum(yd) {
-            max(abs(xd), abs(yd))
+        if xd.signum() == yd.signum() {
+            max(xd.abs(), yd.abs())
         } else {
-            abs(xd) + abs(yd)
+            xd.abs() + yd.abs()
         }
     }
 }

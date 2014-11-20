@@ -1,5 +1,5 @@
+use num::{Integer};
 use rand::Rng;
-use num::Integer;
 use calx::{V2};
 use geomorph;
 use geomorph::{Chunk};

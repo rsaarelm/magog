@@ -4,7 +4,6 @@ use dir6::Dir6;
 use entity::Entity;
 use terrain::TerrainType;
 use geom::HexGeom;
-use terrain;
 use world;
 use action;
 
@@ -23,8 +22,8 @@ impl Location {
     pub fn terrain(&self) -> TerrainType {
         let mut ret = world::with(|w| w.area.terrain(*self));
         // Mobs standing on doors make the doors open.
-        if ret == terrain::Door && self.has_mobs() {
-            ret = terrain::OpenDoor;
+        if ret == TerrainType::Door && self.has_mobs() {
+            ret = TerrainType::OpenDoor;
         }
         ret
     }
@@ -87,9 +86,9 @@ impl Location {
             match world::with(|w| {
                 if let Some(ref mm) = w.comp.map_memory.get(p) {
                     Ok (if mm.seen.contains(self) {
-                        Some(::Seen)
+                        Some(::FovStatus::Seen)
                     } else if mm.remembered.contains(self) {
-                        Some(::Remembered)
+                        Some(::FovStatus::Remembered)
                     } else {
                         None
                     })
@@ -102,7 +101,7 @@ impl Location {
             };
         }
         // Just show everything by default.
-        Some(::Seen)
+        Some(::FovStatus::Seen)
     }
 }
 

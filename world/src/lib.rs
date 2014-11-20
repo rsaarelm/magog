@@ -5,40 +5,43 @@
 #![feature(if_let)]
 #![comment = "Display independent world logic for Magog"]
 
-extern crate num;
 extern crate rand;
 extern crate serialize;
 extern crate calx;
+extern crate num;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};
+pub use fov::{Fov};
 pub use geom::{HexGeom};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
+pub use terrain::{TerrainType};
 pub use world::{init_world, load, save};
-pub use fov::{Fov};
+pub use dir6::Dir6;
+pub use mob::{Mob, Intrinsic, Status, MobType, MOB_SPECS};
 
 pub mod action;
-pub mod dir6;
-pub mod mob;
-pub mod terrain;
 
 mod area;
 mod comp;
-mod entity;
+mod dir6;
 mod ecs;
 mod egg;
+mod entity;
 mod flags;
 mod fov;
 mod geom;
 mod geomorph;
 mod geomorph_data;
 mod location;
-mod mapgen;
 mod map_memory;
+mod mapgen;
+mod mob;
 mod msg;
 mod rng;
 mod spatial;
+mod terrain;
 mod world;
 
 #[deriving(Eq, PartialEq, Show)]
@@ -51,13 +54,13 @@ pub enum FovStatus {
 #[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum EntityKind {
     /// An active, mobile entity like the player or the NPCs.
-    MobKind(mob::MobType),
+    Mob(mob::MobType),
     /// An entity that can be picked up and used in some way.
-    ItemKind, // TODO ItemType data.
+    Item, // TODO ItemType data.
     /// A background item that doesn't do much.
-    PropKind,
+    Prop,
     /// A static object that does things when stepped on.
-    NodeKind,
+    Node,
 }
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
@@ -74,9 +77,9 @@ pub enum Biome {
 impl Biome {
     pub fn default_terrain(self) -> terrain::TerrainType {
         match self {
-            Overland => terrain::Tree,
-            Dungeon => terrain::Rock,
-            _ => terrain::Void,
+            Biome::Overland => TerrainType::Tree,
+            Biome::Dungeon => TerrainType::Rock,
+            _ => TerrainType::Void,
         }
     }
 }

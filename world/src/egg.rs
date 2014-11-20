@@ -1,8 +1,7 @@
 use location::{Location};
-use {EntityKind, MobKind};
-use mob::Mob;
-use mob;
+use mob::{Mob, MobType};
 use world;
+use EntityKind;
 use entity::{Entity};
 use map_memory::{MapMemory};
 
@@ -25,9 +24,9 @@ impl Egg {
             w.comp.kind.insert(entity, self.kind);
 
             match self.kind {
-                MobKind(m) => {
+                EntityKind::Mob(m) => {
                     w.comp.mob.insert(entity, Mob::new(m));
-                    if m == mob::Player {
+                    if m == MobType::Player {
                         // Player-specific component stuffs.
                         w.comp.map_memory.insert(
                             entity, MapMemory::new());
