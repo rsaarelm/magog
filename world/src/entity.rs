@@ -100,7 +100,7 @@ impl Entity {
         if amount == 0 { return; }
 
         let (_amount, kill) = world::with_mut(|w| {
-            if let Some(&mut mob) = w.comp.mob.get_mut(self) {
+            if let Some(ref mut mob) = w.comp.mob.get_mut(self) {
                 mob.hp -= amount;
                 if mob.hp <= 0 {
                     // Remember this when we're out of the borrow.
