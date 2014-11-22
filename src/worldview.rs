@@ -247,7 +247,7 @@ impl<'a> CellDrawable<'a> {
             } else if !block || !k.s.is_wall() {
                 // NB: This branch has some actual local kernel logic not
                 // handled by wall_flags_lrb.
-                let idx = if k.n.is_wall() {
+                let idx = if k.n.is_wall() && (!k.nw.is_wall() || !k.ne.is_wall()) {
                     // TODO: Walltile-specific XY-walls
                     XYWALL
                 } else {
