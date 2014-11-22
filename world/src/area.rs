@@ -22,14 +22,14 @@ use {AreaSpec};
 
 #[deriving(Decodable, Encodable)]
 struct AreaSeed {
-    rng_seed: u32,
-    spec: AreaSpec,
+    pub rng_seed: u32,
+    pub spec: AreaSpec,
 }
 
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.
-    seed: AreaSeed,
+    pub seed: AreaSeed,
     /// Stored terrain.
     terrain: HashMap<Location, TerrainType>,
     /// Valid slots to spawn things in, basically open floor and connected to

@@ -293,8 +293,14 @@ impl Entity {
 // Callbacks ///////////////////////////////////////////////////////////
 
     /// Called after the entity is moved to a new location.
-    pub fn on_move_to(self, _loc: Location) {
+    pub fn on_move_to(self, loc: Location) {
         self.do_fov();
+
+        if self.is_player() {
+            if loc.terrain().is_exit() {
+                action::next_level();
+            }
+        }
     }
 
 // Misc ////////////////////////////////////////////////////////////////
@@ -321,6 +327,19 @@ impl Entity {
                     }
                 });
             }
+        }
+    }
+
+    pub fn forget_map(self) {
+        if self.has_map_memory() {
+            world::with_mut(|w| {
+                if let Some(ref mut mm) = w.comp.map_memory.get_mut(self) {
+                    mm.seen.clear();
+                    mm.remembered.clear();
+                } else {
+                    panic!("Couldn't bind map memory");
+                }
+            });
         }
     }
 }

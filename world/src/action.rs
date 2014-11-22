@@ -4,6 +4,9 @@ use ecs::EntityIter;
 use world;
 use flags;
 use dir6::Dir6;
+use area::Area;
+use egg::Egg;
+use mob::MobType::Player;
 
 /// Game update control.
 #[deriving(PartialEq)]
@@ -80,10 +83,12 @@ pub fn input(input: Input) {
 
 // Entities ////////////////////////////////////////////////////////////
 
+/// Return an iterator of all the world entities.
 pub fn entities() -> EntityIter {
     world::with(|w| w.ecs.iter())
 }
 
+/// Return an iterator of all the world mobs.
 pub fn mobs<'a>() -> Filter<'a, Entity, EntityIter> {
     entities().filter(|e| e.is_mob())
 }
@@ -93,4 +98,61 @@ fn ai_main() {
     for entity in entities() {
         entity.update();
     }
+}
+
+// World logic /////////////////////////////////////////////////////////
+
+/// Return the current floor depth. Greater depths mean more powerful monsters
+/// and stranger terrain.
+pub fn current_depth() -> int { world::with(|w| w.area.seed.spec.depth) }
+
+pub fn start_level(depth: int) {
+
+    let biome = match depth {
+        1 => ::Biome::Overland,
+        _ => ::Biome::Dungeon,
+    };
+
+    clear_nonplayers();
+
+
+    let seed = world::with(|w| w.flags.seed);
+
+    world::with_mut(|w| {
+        let new_area = Area::new(
+            seed,
+            ::AreaSpec::new(biome, depth));
+        w.area = new_area
+    });
+
+    let eggs = world::with(|w| w.area.get_eggs());
+    for &(ref egg, ref loc) in eggs.iter() {
+        egg.hatch(*loc);
+    }
+
+    let start_loc = world::with(|w| w.area.player_entrance());
+    // Either reuse the existing player or create a new one.
+    match player() {
+        Some(p) => {
+            p.forget_map();
+            p.place(start_loc);
+        }
+        None => { Egg::new(::EntityKind::Mob(Player)).hatch(start_loc); }
+    };
+    flags::set_camera(start_loc);
+}
+
+fn clear_nonplayers() {
+    for e in entities() {
+        if !e.is_player() {
+            e.delete();
+        }
+    }
+}
+
+/// Move the player to the next level.
+pub fn next_level() {
+    // This is assuming a really simple, original Rogue style descent-only, no
+    // persistent maps style world.
+    start_level(current_depth() + 1);
 }
