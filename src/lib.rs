@@ -4,11 +4,10 @@
 #![feature(if_let)]
 
 extern crate time;
-extern crate sync;
 extern crate collections;
 extern crate serialize;
 
-extern crate glfw;
+extern crate glutin;
 extern crate gfx;
 #[phase(plugin)]
 extern crate gfx_macros;
@@ -23,8 +22,9 @@ pub use geom::{Rect, V2, RectIter};
 pub use util::{color_key};
 pub use util::{Primitive};
 pub use fonter::{Fonter, CanvasWriter};
-pub use key::{Key};
 pub use event::{Event};
+
+pub use glutin::VirtualKeyCode as Key;
 
 mod atlas;
 mod canvas;
@@ -32,8 +32,6 @@ mod canvas_util;
 mod event;
 mod fonter;
 mod geom;
-mod glfw_key;
-mod key;
 mod renderer;
 mod rgb;
 mod util;

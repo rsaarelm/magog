@@ -1,12 +1,10 @@
 use time;
 use std::mem;
 use std::num::{FloatMath, Float};
-use sync::comm::Receiver;
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuf, Rgba};
 use image;
-use glfw;
-use glfw::Context as _Context;
+use glutin;
 use gfx;
 use gfx::{CommandBuffer, GlDevice, GlCommandBuffer};
 use atlas::{AtlasBuilder, Atlas};
@@ -15,7 +13,6 @@ use geom::{V2, Rect};
 use event::Event;
 use rgb::Rgb;
 use renderer::{Renderer, Vertex};
-use glfw_key;
 use super::{Color};
 
 pub static FONT_W: uint = 8;
@@ -103,9 +100,8 @@ impl Canvas {
 
 /// Interface to render to a live display.
 pub struct Context {
-    glfw: glfw::Glfw,
-    window: glfw::Window,
-    events: Receiver<(f64, glfw::WindowEvent)>,
+    window: glutin::Window,
+    events: Vec<glutin::Event>,
     renderer: Renderer<GlDevice, GlCommandBuffer>,
 
     atlas: Atlas,
@@ -135,17 +131,14 @@ impl Context {
         frame_interval: Option<f64>,
         atlas: Atlas) -> Context {
 
-        let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-        let (window, events) = glfw
-            .create_window(dim.0, dim.1,
-            title.as_slice(), glfw::Windowed)
-            .expect("Failed to open window");
-        window.make_current();
-        glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
-        window.set_key_polling(true);
-        window.set_char_polling(true);
+        let window = glutin::WindowBuilder::new()
+            .with_title(title.to_string())
+            .with_dimensions(dim.0 as uint, dim.1 as uint)
+            .build().unwrap();
 
-        let (w, h) = window.get_framebuffer_size();
+        unsafe { window.make_current(); }
+
+        let (w, h) = window.get_inner_size().unwrap();
 
         let renderer = Renderer::new(
             gfx::GlDevice::new(|s| window.get_proc_address(s)),
@@ -158,9 +151,8 @@ impl Context {
         }
 
         Context {
-            glfw: glfw,
             window: window,
-            events: events,
+            events: Vec::new(),
             renderer: renderer,
 
             atlas: atlas,
@@ -249,35 +241,29 @@ impl<'a> Iterator<Event<'a>> for Context {
         }
 
         loop {
-            if self.window.should_close() {
+            if self.window.is_closed() {
                 return None;
             }
 
-            self.glfw.poll_events();
+            // XXX: Will aborting the iteration with return keep the remaining
+            // events in the queue?
+            self.events.push_all(self.window.poll_events().collect::<Vec<glutin::Event>>().as_slice());
 
-            match self.events.try_recv() {
-                Ok((_, event)) => {
-                    match event {
-                        glfw::CharEvent(ch) => {
-                            return Some(Event::Text(String::from_char(1, ch)));
+            match self.events.remove(0) {
+                Some(glutin::Event::ReceivedCharacter(ch)) => {
+                    return Some(Event::Char(ch));
+                }
+                Some(glutin::Event::KeyboardInput(action, _scan, vko)) => {
+                    if let Some(vk) = vko {
+                        return Some(if action == glutin::ElementState::Pressed {
+                            Event::KeyPressed(vk)
                         }
-                        glfw::KeyEvent(k, _scan, action, _mods) => {
-                            match glfw_key::translate(k).map(|k| {
-                                if action == glfw::Press || action == glfw::Repeat {
-                                    Event::KeyPressed(k)
-                                }
-                                else {
-                                    Event::KeyReleased(k)
-                                }
-                            }) {
-                                Some(e) => { return Some(e); }
-                                _ => ()
-                            }
-                        }
-                        // TODO Mouse events.
-                        _ => ()
+                        else {
+                            Event::KeyReleased(vk)
+                        })
                     }
                 }
+                // TODO Mouse events.
                 _ => ()
             }
 
@@ -294,9 +280,9 @@ impl<'a> Iterator<Event<'a>> for Context {
                 // XXX: Need unsafe hackery to get around lifetimes check.
                 self.state = State::EndFrame;
 
-                let (w, h) = self.window.get_framebuffer_size();
+                let (w, h) = self.window.get_inner_size().unwrap();
                 self.window_resolution = V2(w as u32, h as u32);
-                self.renderer.set_window_size(self.window.get_framebuffer_size());
+                self.renderer.set_window_size((w as i32, h as i32));
                 self.renderer.scissor(pixel_perfect(self.resolution, self.window_resolution));
 
                 unsafe {
