@@ -36,6 +36,12 @@ fn main() {
             Event::KeyPressed(calx::Key::Escape) => {
                 return;
             }
+            Event::KeyPressed(k) => {
+                println!("Pressed {}", k);
+            }
+            Event::Char(c) => {
+                println!("Typed {}", c);
+            }
             _ => ()
         }
     }
