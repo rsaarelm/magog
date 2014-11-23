@@ -290,6 +290,36 @@ impl Entity {
         }
     }
 
+    /// Return whether this thing wants to fight the other thing.
+    fn is_hostile_to(self, other: Entity) -> bool {
+        if let Some(p) = action::player() {
+            if self.is_mob() && other.is_mob() && self != other &&
+                (self == p || other == p) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// Return whether the mob has hostiles in its immediate vicinity.
+    pub fn is_threatened(self) -> bool {
+        // XXX: Expensive.
+        let range = 12u;
+        let loc = self.location().unwrap();
+        let seen: Vec<Location> = Fov::new(
+            |pt| (loc + pt).blocks_sight(), range)
+            .map(|pt| loc + pt)
+            .collect();
+        for loc in seen.iter() {
+            if let Some(m) = loc.mob_at() {
+                if m.is_hostile_to(self) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
 // Callbacks ///////////////////////////////////////////////////////////
 
     /// Called after the entity is moved to a new location.

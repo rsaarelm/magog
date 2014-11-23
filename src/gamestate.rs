@@ -19,6 +19,10 @@ pub struct GameState {
     world_spr: WorldSprites,
     /// Counters for entities with flashing damage animation.
     damage_timers: HashMap<Entity, uint>,
+
+    // TODO: Probably going to need a general "ongoing activity" system at
+    // some point.
+    exploring: bool,
 }
 
 impl GameState {
@@ -27,6 +31,7 @@ impl GameState {
         GameState {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
+            exploring: false,
         }
     }
 
@@ -66,6 +71,12 @@ impl GameState {
             action::update();
         }
 
+        if self.exploring {
+            if action::control_state() == action::AwaitingInput {
+                self.exploring = self.autoexplore();
+            }
+        }
+
         self.damage_timers = self.damage_timers.clone().into_iter()
             .filter(|&(_, t)| t > 0u)
             .map(|(e, t)| (e, t - 1))
@@ -96,10 +107,33 @@ impl GameState {
         }
     }
 
+    fn autoexplore(&mut self) -> bool {
+        let player = action::player().unwrap();
+        if player.is_threatened() {
+            return false;
+        }
+        if let Some(pathing) = action::autoexplore_map() {
+            let loc = player.location().unwrap();
+            let steps = pathing.sorted_neighbors(&loc);
+            if steps.len() == 0 {
+                return false;
+            }
+
+            action::input(Step(loc.dir6_towards(steps[0]).unwrap()));
+            return true;
+        }
+
+        false
+    }
+
     /// Process a player control keypress.
     pub fn process_key(&mut self, key: Key) -> bool {
         if action::control_state() != action::AwaitingInput {
             return false;
+        }
+
+        if self.exploring {
+            self.exploring = false;
         }
 
         match key {
@@ -111,6 +145,7 @@ impl GameState {
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
             Key::F5 => { self.save_game(); }
             Key::F9 => { self.load_game(); }
+            Key::X => { self.exploring = true; }
             _ => { return false; }
         }
         return true;

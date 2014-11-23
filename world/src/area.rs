@@ -31,7 +31,7 @@ pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.
     pub seed: AreaSeed,
     /// Stored terrain.
-    terrain: HashMap<Location, TerrainType>,
+    pub terrain: HashMap<Location, TerrainType>,
     /// Valid slots to spawn things in, basically open floor and connected to
     /// areas the player can reach. (Does not handle stuff like monsters that
     /// spawn in water for now.)

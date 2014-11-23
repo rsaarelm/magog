@@ -1,4 +1,5 @@
 use std::iter::Filter;
+use calx::dijkstra::Dijkstra;
 use entity::Entity;
 use ecs::EntityIter;
 use world;
@@ -7,6 +8,7 @@ use dir6::Dir6;
 use area::Area;
 use egg::Egg;
 use mob::MobType::Player;
+use location::Location;
 
 /// Game update control.
 #[deriving(PartialEq)]
@@ -155,4 +157,21 @@ pub fn next_level() {
     // This is assuming a really simple, original Rogue style descent-only, no
     // persistent maps style world.
     start_level(current_depth() + 1);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+pub fn autoexplore_map() -> Option<Dijkstra<Location>> {
+    let pathing_depth = 16;
+
+    let locs = world::with(|w| w.area.terrain.iter()
+                           .map(|(&loc, _)| loc)
+                           .filter(|loc| loc.fov_status().is_none())
+                           .collect::<Vec<Location>>());
+
+    if locs.len() == 0 {
+        return None;
+    }
+
+    Some(Dijkstra::new(locs, |&loc| !loc.blocks_walk(), pathing_depth))
 }
