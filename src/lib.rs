@@ -2,6 +2,7 @@
 #![feature(phase)]
 #![feature(tuple_indexing)]
 #![feature(if_let)]
+#![feature(globs)]
 
 extern crate time;
 extern crate collections;
@@ -21,10 +22,9 @@ pub use rgb::{Rgb, Rgba};
 pub use geom::{Rect, V2, RectIter};
 pub use util::{color_key};
 pub use util::{Primitive};
+pub use key::Key;
 pub use fonter::{Fonter, CanvasWriter};
 pub use event::{Event};
-
-pub use glutin::VirtualKeyCode as Key;
 
 mod atlas;
 mod canvas;
@@ -32,8 +32,26 @@ mod canvas_util;
 mod event;
 mod fonter;
 mod geom;
+mod key;
 mod renderer;
 mod rgb;
+
+#[cfg(target_os = "macos")]
+mod scancode_macos;
+#[cfg(target_os = "linux")]
+mod scancode_linux;
+#[cfg(target_os = "windows")]
+mod scancode_windows;
+
+mod scancode {
+#[cfg(target_os = "macos")]
+    pub use scancode_macos::MAP;
+#[cfg(target_os = "linux")]
+    pub use scancode_linux::MAP;
+#[cfg(target_os = "windows")]
+    pub use scancode_windows::MAP;
+}
+
 mod util;
 pub mod color;
 pub mod dijkstra;

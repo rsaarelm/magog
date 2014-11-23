@@ -14,6 +14,8 @@ use event::Event;
 use rgb::Rgb;
 use renderer::{Renderer, Vertex};
 use super::{Color};
+use scancode;
+
 
 pub static FONT_W: uint = 8;
 pub static FONT_H: uint = 8;
@@ -253,14 +255,16 @@ impl<'a> Iterator<Event<'a>> for Context {
                 Some(glutin::Event::ReceivedCharacter(ch)) => {
                     return Some(Event::Char(ch));
                 }
-                Some(glutin::Event::KeyboardInput(action, _scan, vko)) => {
-                    if let Some(vk) = vko {
-                        return Some(if action == glutin::ElementState::Pressed {
-                            Event::KeyPressed(vk)
+                Some(glutin::Event::KeyboardInput(action, scan, _vko)) => {
+                    if (scan as uint) < scancode::MAP.len() {
+                        if let Some(key) = scancode::MAP[scan as uint] {
+                            return Some(if action == glutin::ElementState::Pressed {
+                                Event::KeyPressed(key)
+                            }
+                            else {
+                                Event::KeyReleased(key)
+                            });
                         }
-                        else {
-                            Event::KeyReleased(vk)
-                        })
                     }
                 }
                 // TODO Mouse events.
