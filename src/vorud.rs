@@ -1,4 +1,3 @@
-use std::num::{div_rem};
 use self::Decode::{V, C};
 
 static VS: [char, ..5] = ['a', 'e', 'i', 'o', 'u'];
@@ -40,11 +39,11 @@ static LUT: [Option<Decode>, ..26] = [
 ];
 
 fn vorud_chunk(data: u16) -> String {
-    let (data, c5) = div_rem(data, CS.len() as u16);
-    let (data, v4) = div_rem(data, VS.len() as u16);
-    let (data, c3) = div_rem(data, CS.len() as u16);
-    let (data, v2) = div_rem(data, VS.len() as u16);
-    let (_, c1) = div_rem(data, CS.len() as u16);
+    let (data, c5) = (data / CS.len() as u16, data % CS.len() as u16);
+    let (data, v4) = (data / VS.len() as u16, data % VS.len() as u16);
+    let (data, c3) = (data / CS.len() as u16, data % CS.len() as u16);
+    let (data, v2) = (data / VS.len() as u16, data % VS.len() as u16);
+    let (_, c1) =    (data / CS.len() as u16, data % CS.len() as u16);
     [CS[c1 as uint],
      VS[v2 as uint],
      CS[c3 as uint],
