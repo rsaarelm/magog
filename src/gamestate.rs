@@ -14,6 +14,8 @@ use world::Dir6::*;
 use world::{Entity};
 use worldview;
 use sprite::{WorldSprites, GibSprite};
+use tilecache;
+use tilecache::icon;
 
 pub struct GameState {
     world_spr: WorldSprites,
@@ -32,6 +34,20 @@ impl GameState {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
+        }
+    }
+
+    fn draw_player_ui(&mut self, ctx: &mut Context, player: Entity) {
+        let hp = player.hp();
+        let max_hp = player.max_hp();
+
+        // Draw heart containers.
+        for i in range(0, (max_hp + 1) / 2) {
+            let pos = V2(i * 8, 8);
+            let idx = if hp >= (i + 1) * 2 { icon::HEART }
+                else if hp == i * 2 + 1 { icon::HALF_HEART }
+                else { icon::NO_HEART };
+            ctx.draw_image(pos, 0.0, tilecache::get(idx), &color::FIREBRICK);
         }
     }
 
@@ -62,8 +78,12 @@ impl GameState {
         self.world_spr.draw(|x| (camera + x).fov_status() == Some(world::Seen), &camera, ctx);
         self.world_spr.update();
 
+        if let Some(player) = action::player() {
+            self.draw_player_ui(ctx, player);
+        }
+
         let fps = 1.0 / ctx.render_duration;
-        let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
+        let _ = write!(&mut ctx.text_writer(V2(0, 16), 0.1, color::LIGHTGREEN)
                        .set_border(color::BLACK),
                        "FPS {:.0}", fps);
 
