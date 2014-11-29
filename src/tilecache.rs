@@ -4,7 +4,7 @@ use image::{SubImage, GenericImage};
 use calx::{V2, Canvas, Image, Rgb};
 use calx;
 
-local_data_key!(TILE_CACHE: RefCell<Vec<Image>>)
+thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]))
 
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (int, int), offset: (int, int)) {
@@ -26,16 +26,16 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
 
 /// Initialize global tile cache.
 pub fn init(ctx: &mut Canvas) {
-    let mut tiles: Vec<Image> = vec![];
-    batch(&mut tiles, ctx, include_bin!("../assets/tile.png"), (32, 32), (-16, -16));
-    batch(&mut tiles, ctx, include_bin!("../assets/icon.png"), (8, 8), (0, -8));
-    batch(&mut tiles, ctx, include_bin!("../assets/logo.png"), (92, 25), (0, 0));
-    TILE_CACHE.replace(Some(RefCell::new(tiles)));
+    TILE_CACHE.with(|c| {
+        let mut tiles = c.borrow_mut();
+        batch(tiles.deref_mut(), ctx, include_bin!("../assets/tile.png"), (32, 32), (-16, -16));
+        batch(tiles.deref_mut(), ctx, include_bin!("../assets/icon.png"), (8, 8), (0, -8));
+        batch(tiles.deref_mut(), ctx, include_bin!("../assets/logo.png"), (92, 25), (0, 0));
+    });
 }
 
 pub fn get(idx: uint) -> Image {
-    assert!(TILE_CACHE.get().is_some(), "Tile cache not initialized");
-    (*TILE_CACHE.get().unwrap().borrow())[idx].clone()
+    TILE_CACHE.with(|c| c.borrow()[idx].clone())
 }
 
 pub mod tile {

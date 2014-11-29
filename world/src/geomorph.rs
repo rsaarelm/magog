@@ -1,4 +1,3 @@
-use std::local_data::Ref;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use calx::text::Map2DUtil;
@@ -8,7 +7,7 @@ use {AreaSpec, Biome};
 use geomorph_data;
 use dir6::Dir6;
 
-local_data_key!(CHUNK_CACHE: RefCell<Vec<Chunk>>)
+thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]))
 
 type Cells = HashMap<(int, int), TerrainType>;
 
@@ -20,24 +19,23 @@ pub struct Chunk {
 }
 
 pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
-    assert!(CHUNK_CACHE.get().is_some());
-
-    match Chunk::new(AreaSpec::new(biome, depth), text) {
-        Ok(chunk) => CHUNK_CACHE.get().unwrap().borrow_mut().push(chunk),
-        Err(e) => panic!("Bad chunk cache data: {}", e),
-    }
+    CHUNK_CACHE.with(|c| {
+        match Chunk::new(AreaSpec::new(biome, depth), text) {
+            Ok(chunk) => c.borrow_mut().push(chunk),
+            Err(e) => panic!("Bad chunk cache data: {}", e),
+        }
+    });
 }
 
 // Only use this to access the cache, make sure the lazy init check gets
 // called before access.
-pub fn get_cache() -> Ref<RefCell<Vec<Chunk>>> {
+pub fn with_cache<A>(f: |&Vec<Chunk>| -> A) -> A {
     check_cache();
-    CHUNK_CACHE.get().unwrap()
+    CHUNK_CACHE.with(|c| f(c.borrow().deref()))
 }
 
 fn check_cache() {
-    if CHUNK_CACHE.get().is_none() {
-        CHUNK_CACHE.replace(Some(RefCell::new(vec!())));
+    if CHUNK_CACHE.with(|c| c.borrow().len() == 0) {
         geomorph_data::init_geomorphs();
     }
 }

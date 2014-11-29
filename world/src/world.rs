@@ -9,28 +9,18 @@ use comp::Comp;
 use flags::Flags;
 use action;
 
-local_data_key!(WORLD_STATE: RefCell<WorldState>)
-
-fn check_state() {
-    if WORLD_STATE.get().is_none() {
-        // Lazy init. Use a value from the system rng for the world seed if
-        // none was given by the user.
-        init_world(None);
-    }
-}
+thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
 
 /// Access world state for reading. The world state may not be reaccessed for
 /// writing while within this function.
 pub fn with<A>(f: |&WorldState| -> A) -> A {
-    check_state();
-    f(WORLD_STATE.get().unwrap().borrow().deref())
+    WORLD_STATE.with(|w| f(w.borrow().deref()))
 }
 
 /// Access world state for reading and writing. The world state may not be
 /// reaccessed while within this function.
 pub fn with_mut<A>(f: |&mut WorldState| -> A) -> A {
-    check_state();
-    f(WORLD_STATE.get().unwrap().borrow_mut().deref_mut())
+    WORLD_STATE.with(|w| f(w.borrow_mut().deref_mut()))
 }
 
 /// Save the global world state into a json string.
@@ -42,13 +32,15 @@ pub fn save() -> String {
 /// is successful, the previous world state will be overwritten by the loaded
 /// one.
 pub fn load(json: &str) -> Result<(), json::DecoderError> {
-    match json::decode(json) {
-        Ok(w) => {
-            WORLD_STATE.replace(Some(RefCell::new(w)));
-            Ok(())
+    WORLD_STATE.with(|w| {
+        match json::decode::<WorldState>(json) {
+            Ok(ws) => {
+                *w.borrow_mut() = ws;
+                Ok(())
+            }
+            Err(e) => Err(e)
         }
-        Err(e) => Err(e)
-    }
+    })
 }
 
 /// The internal object that holds all the world state data.
@@ -67,7 +59,12 @@ pub struct WorldState {
 }
 
 impl WorldState {
-    pub fn new(seed: u32) -> WorldState {
+    pub fn new(seed: Option<u32>) -> WorldState {
+        let seed = match seed {
+            Some(s) => s,
+            // Use system rng for seed if the user didn't provide one.
+            None => rand::task_rng().gen()
+        };
         WorldState {
             ecs: Ecs::new(),
             area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
@@ -82,12 +79,6 @@ impl WorldState {
 /// generator seed. Calling init_world will cause any existing world state to
 /// be discarded.
 pub fn init_world(seed: Option<u32>) {
-    let seed = match seed {
-        Some(s) => s,
-        // Use system rng for seed if the user didn't provide one.
-        None => rand::task_rng().gen()
-    };
-
-    WORLD_STATE.replace(Some(RefCell::new(WorldState::new(seed))));
+    WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
     action::start_level(1);
 }

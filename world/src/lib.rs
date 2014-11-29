@@ -3,6 +3,7 @@
 #![feature(macro_rules)]
 #![feature(tuple_indexing)]
 #![feature(if_let)]
+#![feature(unboxed_closures)]
 #![comment = "Display independent world logic for Magog"]
 
 extern crate rand;
