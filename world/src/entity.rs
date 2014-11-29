@@ -136,6 +136,16 @@ impl Entity {
         })
     }
 
+    pub fn mob_spec(self) -> Option<&'static mob::MobSpec> {
+        world::with(|w| {
+            if let Some(&::EntityKind::Mob(mt)) = w.comp.kind.get(self) {
+                Some(&mob::MOB_SPECS[mt as uint])
+            } else {
+                None
+            }
+        })
+    }
+
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         world::with(|w| {
@@ -168,12 +178,10 @@ impl Entity {
     }
 
     pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
-        world::with(|w| {
-            if let Some(&::EntityKind::Mob(mt)) = w.comp.kind.get(self) {
-                return mob::MOB_SPECS[mt as uint].intrinsics & intrinsic as int != 0;
-            }
-            return false;
-        })
+        if let Some(spec) = self.mob_spec() {
+            return spec.intrinsics & intrinsic as int != 0;
+        }
+        return false;
     }
 
     /// Return whether this entity is an awake mob.
@@ -232,6 +240,14 @@ impl Entity {
             let damage = full + if rng::p(partial) { 1 } else { 0 };
             e.damage(damage)
         }
+    }
+
+    pub fn hp(self) -> int {
+        world::with(|w| w.comp.mob.get(self).unwrap().hp)
+    }
+
+    pub fn max_hp(self) -> int {
+        self.mob_spec().unwrap().power
     }
 
 // AI methods /////////////////////////////////////////////////////////
