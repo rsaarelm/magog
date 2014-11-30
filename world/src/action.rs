@@ -9,7 +9,6 @@ use area::Area;
 use egg::Egg;
 use mob::MobType::Player;
 use location::Location;
-use msg;
 
 /// Game update control.
 #[deriving(PartialEq)]
@@ -158,7 +157,7 @@ pub fn next_level() {
     // This is assuming a really simple, original Rogue style descent-only, no
     // persistent maps style world.
     start_level(current_depth() + 1);
-    msg::push_msg(::Msg::Caption(format!("Depth {}", current_depth())));
+    caption!("Depth {}", current_depth());
 }
 
 ////////////////////////////////////////////////////////////////////////

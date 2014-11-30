@@ -13,7 +13,3 @@ pub fn push_msg(msg: ::Msg) {
     // need to use clone here.
     MSG_QUEUE.with(|q| q.borrow_mut().push(msg.clone()));
 }
-
-// TODO: A println! style formatting msg! macro that emits text messages and
-// optionally supports special game system stuff like entity name
-// interpolation and string coloring.

@@ -44,6 +44,13 @@ impl Entity {
         world::with(|w| *w.comp.kind.get(self).unwrap())
     }
 
+    pub fn name(self) -> &'static str {
+        if let Some(spec) = self.mob_spec() {
+            return spec.name;
+        }
+        return "";
+    }
+
 // Spatial methods /////////////////////////////////////////////////////
 
     pub fn can_enter(self, loc: Location) -> bool {
@@ -121,9 +128,7 @@ impl Entity {
     /// Do any game logic stuff related to this entity dying violently before
     /// deleting it.
     pub fn kill(self) {
-        if let Some(spec) = self.mob_spec() {
-            msg::push_msg(::Msg::Text(format!("{} dies.\n", spec.name)));
-        }
+        msgln!("{} dies.", self.name());
         msg::push_msg(::Msg::Gib(self.location().unwrap()));
         self.delete();
     }

@@ -22,6 +22,21 @@ pub use world::{init_world, load, save};
 pub use dir6::Dir6;
 pub use mob::{Mob, Intrinsic, Status, MobType, MOB_SPECS};
 
+macro_rules! msg(
+    ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Text(format!($($arg)*))))
+)
+
+macro_rules! msgln(
+    ($($arg:tt)*) => ({
+        ::msg::push_msg(::Msg::Text(format!($($arg)*)));
+        ::msg::push_msg(::Msg::Text("\n".to_string()));
+    })
+)
+
+macro_rules! caption(
+    ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Caption(format!($($arg)*))))
+)
+
 pub mod action;
 
 mod area;
