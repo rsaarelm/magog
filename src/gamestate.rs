@@ -182,6 +182,16 @@ impl GameState {
             Event::KeyPressed(k) => {
                 self.process_key(k);
             }
+
+            Event::Char(ch) => {
+                // TODO: Chars and keypresses in same lookup (use variants?)
+                match ch {
+                    // Debug
+                    '>' => { action::next_level(); }
+                    _ => ()
+                }
+            }
+
             _ => ()
         }
         true
