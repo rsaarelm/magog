@@ -19,6 +19,7 @@ pub mod worldview;
 mod gamestate;
 //mod titlestate;
 mod sprite;
+mod msg_queue;
 
 // TODO Fix state machine code.
 /*

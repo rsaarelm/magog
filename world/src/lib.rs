@@ -107,7 +107,10 @@ impl AreaSpec {
 /// Various one-off signals the game sends to the UI layer.
 #[deriving(Clone, Show)]
 pub enum Msg {
+    /// Regular event message
     Text(String),
+    /// Important event message to the center of the screen
+    Caption(String),
     // TODO: Type of effect.
     Explosion(Location),
     Damage(Entity),

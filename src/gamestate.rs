@@ -16,6 +16,7 @@ use worldview;
 use sprite::{WorldSprites, GibSprite};
 use tilecache;
 use tilecache::icon;
+use msg_queue::MsgQueue;
 
 pub struct GameState {
     world_spr: WorldSprites,
@@ -25,6 +26,8 @@ pub struct GameState {
     // TODO: Probably going to need a general "ongoing activity" system at
     // some point.
     exploring: bool,
+
+    msg: MsgQueue,
 }
 
 impl GameState {
@@ -34,6 +37,7 @@ impl GameState {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
+            msg: MsgQueue::new(),
         }
     }
 
@@ -65,6 +69,12 @@ impl GameState {
                 Some(world::Damage(entity)) => {
                     self.damage_timers.insert(entity, 2);
                 }
+                Some(world::Text(txt)) => {
+                    self.msg.msg(txt)
+                }
+                Some(world::Caption(txt)) => {
+                    self.msg.caption(txt)
+                }
                 Some(x) => {
                     println!("Unhandled Msg type {}", x);
                 }
@@ -78,6 +88,7 @@ impl GameState {
         self.world_spr.draw(|x| (camera + x).fov_status() == Some(world::Seen), &camera, ctx);
         self.world_spr.update();
 
+        self.msg.draw(ctx);
         if let Some(player) = action::player() {
             self.draw_player_ui(ctx, player);
         }
@@ -101,6 +112,8 @@ impl GameState {
             .filter(|&(_, t)| t > 0u)
             .map(|(e, t)| (e, t - 1))
             .collect();
+
+        self.msg.update();
     }
 
     pub fn save_game(&self) {

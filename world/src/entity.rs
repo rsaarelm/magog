@@ -121,6 +121,9 @@ impl Entity {
     /// Do any game logic stuff related to this entity dying violently before
     /// deleting it.
     pub fn kill(self) {
+        if let Some(spec) = self.mob_spec() {
+            msg::push_msg(::Msg::Text(format!("{} dies.\n", spec.name)));
+        }
         msg::push_msg(::Msg::Gib(self.location().unwrap()));
         self.delete();
     }
