@@ -44,11 +44,11 @@ impl Entity {
         world::with(|w| *w.comp.kind.get(self).unwrap())
     }
 
-    pub fn name(self) -> &'static str {
+    pub fn name(self) -> String {
         if let Some(spec) = self.mob_spec() {
-            return spec.name;
+            return spec.name.to_string();
         }
-        return "";
+        return "".to_string();
     }
 
 // Spatial methods /////////////////////////////////////////////////////

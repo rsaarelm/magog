@@ -88,6 +88,11 @@ impl GameState {
         self.world_spr.draw(|x| (camera + x).fov_status() == Some(world::Seen), &camera, ctx);
         self.world_spr.update();
 
+        let location_name = camera.name();
+        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as int * 8, 8), 0.1, color::LIGHTGRAY)
+                       .set_border(color::BLACK),
+                       "{}", location_name);
+
         self.msg.draw(ctx);
         if let Some(player) = action::player() {
             self.draw_player_ui(ctx, player);

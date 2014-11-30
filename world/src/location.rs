@@ -103,6 +103,15 @@ impl Location {
         // Just show everything by default.
         Some(::FovStatus::Seen)
     }
+
+    /// Area name for the location.
+    pub fn name(&self) -> String {
+        match action::current_depth() {
+            0 => "Limbo".to_string(),
+            1 => "Overworld".to_string(),
+            n => format!("Dungeon {}", n - 1)
+        }
+    }
 }
 
 impl Add<V2<int>, Location> for Location {

@@ -157,7 +157,7 @@ pub fn next_level() {
     // This is assuming a really simple, original Rogue style descent-only, no
     // persistent maps style world.
     start_level(current_depth() + 1);
-    caption!("Depth {}", current_depth());
+    caption!("Depth {}", current_depth() - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////
