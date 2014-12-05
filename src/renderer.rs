@@ -27,12 +27,12 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
         let (w, h) = (640u16, 360u16);
 
         let mut state = gfx::DrawState::new()
-            .depth(gfx::state::LessEqual, true)
+            .depth(gfx::state::Comparison::LessEqual, true)
             ;
-        state.primitive.front_face = gfx::state::Clockwise;
+        state.primitive.front_face = gfx::state::WindingOrder::Clockwise;
 
         let sampler_info = Some(graphics.device.create_sampler(
-            gfx::tex::SamplerInfo::new(gfx::tex::Scale, gfx::tex::Clamp)));
+            gfx::tex::SamplerInfo::new(gfx::tex::FilterMethod::Scale, gfx::tex::WrapMode::Clamp)));
 
         let params = ShaderParam {
             s_texture: (atlas.tex, sampler_info),
@@ -100,8 +100,8 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
     }
 
     pub fn draw_triangles(&mut self, data: &[Vertex]) {
-        self.state.primitive.method = gfx::state::Fill(gfx::state::CullMode::Back);
-        self.draw(data, gfx::TriangleList);
+        self.state.primitive.method = gfx::state::RasterMethod::Fill(gfx::state::CullMode::Back);
+        self.draw(data, gfx::PrimitiveType::TriangleList);
     }
 }
 
@@ -176,7 +176,7 @@ impl Texture {
         let mut info = gfx::tex::TextureInfo::new();
         info.width = w as u16;
         info.height = h as u16;
-        info.kind = gfx::tex::Texture2D;
+        info.kind = gfx::tex::TextureKind::Texture2D;
         info.format = gfx::tex::RGBA8;
 
         let tex = d.create_texture(info).unwrap();

@@ -20,7 +20,7 @@ git = "https://github.com/tomaka/glutin"
 git = "https://github.com/gfx-rs/gfx-rs"
 
 [dependencies.image]
-git = "https://github.com/PistonDevelopers/rust-image"
+git = "https://github.com/PistonDevelopers/image"
 
 [[example]]
 name = "demo"
