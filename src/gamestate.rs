@@ -8,7 +8,9 @@ use calx::Key;
 use calx::{Fonter, V2};
 use world;
 use world::action;
-use world::action::{Step, Melee};
+use world::action::Input::{Step, Melee};
+use world::action::ControlState::*;
+use world::{Msg, FovStatus};
 use world::Dir6;
 use world::Dir6::*;
 use world::{Entity};
@@ -63,16 +65,16 @@ impl GameState {
         // Process events
         loop {
             match world::pop_msg() {
-                Some(world::Gib(loc)) => {
+                Some(Msg::Gib(loc)) => {
                     self.world_spr.add(box GibSprite::new(loc));
                 }
-                Some(world::Damage(entity)) => {
+                Some(Msg::Damage(entity)) => {
                     self.damage_timers.insert(entity, 2);
                 }
-                Some(world::Text(txt)) => {
+                Some(Msg::Text(txt)) => {
                     self.msg.msg(txt)
                 }
-                Some(world::Caption(txt)) => {
+                Some(Msg::Caption(txt)) => {
                     self.msg.caption(txt)
                 }
                 Some(x) => {
@@ -85,7 +87,7 @@ impl GameState {
         worldview::draw_world(&camera, ctx, &self.damage_timers);
 
         // TODO use FOV for sprite draw.
-        self.world_spr.draw(|x| (camera + x).fov_status() == Some(world::Seen), &camera, ctx);
+        self.world_spr.draw(|x| (camera + x).fov_status() == Some(FovStatus::Seen), &camera, ctx);
         self.world_spr.update();
 
         let location_name = camera.name();
@@ -103,12 +105,12 @@ impl GameState {
                        .set_border(color::BLACK),
                        "FPS {:.0}", fps);
 
-        if action::control_state() == action::ReadyToUpdate {
+        if action::control_state() == ReadyToUpdate {
             action::update();
         }
 
         if self.exploring {
-            if action::control_state() == action::AwaitingInput {
+            if action::control_state() == AwaitingInput {
                 self.exploring = self.autoexplore();
             }
         }
@@ -166,7 +168,7 @@ impl GameState {
 
     /// Process a player control keypress.
     pub fn process_key(&mut self, key: Key) -> bool {
-        if action::control_state() != action::AwaitingInput {
+        if action::control_state() != AwaitingInput {
             return false;
         }
 

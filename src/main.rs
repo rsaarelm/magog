@@ -3,7 +3,6 @@
 #![feature(macro_rules)]
 #![feature(tuple_indexing)]
 #![feature(if_let)]
-#![comment = "Magog toplevel and display interface"]
 
 extern crate image;
 extern crate calx;

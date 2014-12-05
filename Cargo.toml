@@ -9,7 +9,7 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "magog"
 
 [dependencies.image]
-git = "https://github.com/PistonDevelopers/rust-image"
+git = "https://github.com/PistonDevelopers/image"
 
 [dependencies.uuid]
 git = "https://github.com/rust-lang/uuid"
