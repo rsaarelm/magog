@@ -8,7 +8,6 @@ authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 name = "calx"
 
 [dependencies.time]
-git = "https://github.com/rust-lang/time"
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"

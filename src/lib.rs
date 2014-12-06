@@ -1,7 +1,5 @@
 #![crate_name="calx"]
 #![feature(phase)]
-#![feature(tuple_indexing)]
-#![feature(if_let)]
 #![feature(globs)]
 
 extern crate time;

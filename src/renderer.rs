@@ -85,7 +85,7 @@ impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
     }
 
     fn draw(&mut self, data: &[Vertex], prim: gfx::PrimitiveType) {
-        let buf = self.graphics.device.create_buffer(data.len(), gfx::UsageStream);
+        let buf = self.graphics.device.create_buffer(data.len(), gfx::BufferUsage::Stream);
         self.graphics.device.update_buffer(buf, data, 0);
         let mesh = gfx::Mesh::from_format(buf, data.len() as u32);
         let batch = self.graphics.make_batch(
