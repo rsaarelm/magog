@@ -106,7 +106,7 @@ impl MsgQueue {
 fn add_time_to_read(old_time: Option<f64>, text: &str) -> f64 {
     // Estimated time it takes the user to read one character in seconds.
     let letter_read_duration = 0.2;
-    let read_time = text.len() as f64 * letter_read_duration;
+    let read_time = text.trim().len() as f64 * letter_read_duration;
 
     return match old_time {
         Some(t) => t,
