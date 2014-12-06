@@ -15,6 +15,13 @@ pub struct Location {
     // TODO: Add third dimension for multiple persistent levels.
 }
 
+fn noise(n: int) -> f32 {
+    // TODO: Move to an utilities library.
+    let n = (n << 13) ^ n;
+    let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
+    1.0 - m as f32 / 1073741824.0
+}
+
 impl Location {
     pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 
@@ -24,6 +31,14 @@ impl Location {
         // Mobs standing on doors make the doors open.
         if ret == TerrainType::Door && self.has_mobs() {
             ret = TerrainType::OpenDoor;
+        }
+        // Grass is only occasionally fancy.
+        // TODO: Make variant tiles into a generic method.
+        if ret == TerrainType::Grass {
+            let n = noise(self.x as int + self.y as int * 57);
+            if n > 0.85 {
+                ret = TerrainType::Grass2;
+            }
         }
         ret
     }

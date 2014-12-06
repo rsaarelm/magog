@@ -25,7 +25,7 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 28;
+    count: 29;
 
     Void, "void";
     Floor, "floor";
@@ -39,6 +39,8 @@ terrain_data! {
     Rock, "rock";
     Tree, "tree";
     Grass, "grass";
+    // Render variant, do not use directly.
+    Grass2, "grass";
     Stalagmite, "stalagmite";
     Portal, "portal";
     Door, "door";
@@ -89,7 +91,7 @@ impl TerrainType {
 
     pub fn blocks_walk(self) -> bool {
         match self {
-            Floor | Shallows | Grass | Downstairs | Portal
+            Floor | Shallows | Grass | Grass2 | Downstairs | Portal
                 | Door | OpenDoor | TallGrass => false,
             _ => true
         }

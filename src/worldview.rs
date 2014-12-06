@@ -123,6 +123,9 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, CHASM, offset, FLOOR_Z, &DARKSLATEGRAY);
             },
             TerrainType::Grass => {
+                self.draw_tile(ctx, FLOOR, offset, FLOOR_Z, &DARKGREEN);
+            },
+            TerrainType::Grass2 => {
                 self.draw_tile(ctx, GRASS, offset, FLOOR_Z, &DARKGREEN);
             },
             TerrainType::Downstairs => {
