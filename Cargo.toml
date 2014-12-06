@@ -12,10 +12,8 @@ name = "magog"
 git = "https://github.com/PistonDevelopers/image"
 
 [dependencies.uuid]
-git = "https://github.com/rust-lang/uuid"
 
 [dependencies.time]
-git = "https://github.com/rust-lang/time"
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"

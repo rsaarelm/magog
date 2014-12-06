@@ -1,8 +1,6 @@
 #![crate_name="magog"]
 #![feature(globs)]
 #![feature(macro_rules)]
-#![feature(tuple_indexing)]
-#![feature(if_let)]
 
 extern crate image;
 extern crate calx;

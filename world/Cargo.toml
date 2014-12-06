@@ -8,10 +8,7 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "world"
 
 [dependencies.num]
-git = "https://github.com/rust-lang/num"
-
 [dependencies.uuid]
-git = "https://github.com/rust-lang/uuid"
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
