@@ -1,0 +1,102 @@
+# vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(A) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
+(A) 2014-12-13 Confusion status effect +Content
+(A) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
+(A) 2014-12-13 Enemy ranged attack +Content
+(A) 2014-12-13 Equipped weapons and armor affect character stats +Content
+(A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
+(A) 2014-12-13 File hosting for Windows binaries +Build
+(A) 2014-12-13 Instahealing drop item +Content
+(A) 2014-12-13 Inventory menu with equipment and backpack slots +UI
+(A) 2014-12-13 Killed mobs drop items +Content
+(A) 2014-12-13 Mouse event support +UI
+(A) 2014-12-13 Mouse-over objects shows object info +UI
+(A) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
+(A) 2014-12-13 Pick up items command +Content
+(A) 2014-12-13 Player level up logic +Content
+(A) 2014-12-13 Projectile attack beam effect +UI
+(A) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
+(A) 2014-12-13 Ranged attacks using ammunition +Content +UI
+(A) 2014-12-13 Recharging mana pool stat for player +Content
+(A) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
+(A) 2014-12-13 Screen state machine: Intro screen / Running game +UI
+(A) 2014-12-13 Spawn item drops +Content
+(A) 2014-12-13 Winning the game +Content
+(B) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
+(B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
+(B) 2014-12-13 Alpha blended primitive rendering +Render
+(B) 2014-12-13 Arena battle level +Content
+(B) 2014-12-13 Aura spells +Content
+(B) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
+(B) 2014-12-13 Blood splatters +Content
+(B) 2014-12-13 Chain lightning spell +Content
+(B) 2014-12-13 Chests that drop goodies +Content
+(B) 2014-12-13 Cmdline parameter for starting fullscreen +UI
+(B) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine
+(B) 2014-12-13 Config setting for starting out fullscreen +Engine
+(B) 2014-12-13 Config settings file +Engine
+(B) 2014-12-13 Corpses +Content
+(B) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
+(B) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
+(B) 2014-12-13 Don't spawn mobs immediately around level entrance point +Content
+(B) 2014-12-13 Dynamic lighting in world state +Engine
+(B) 2014-12-13 Effect for text floating on top of map location +UI
+(B) 2014-12-13 Enemies that explode when dying +Content
+(B) 2014-12-13 Explosions +Content
+(B) 2014-12-13 Flamethrower spell +Content
+(B) 2014-12-13 Flying intrinsic, mobs that fly over chasms (will need to deal with mobs falling into chasms, water or magma if this goes in) +Content
+(B) 2014-12-13 Freeze effects +Content
+(B) 2014-12-13 GUI layout description API (imgui techniques?) +UI
+(B) 2014-12-13 Golem enemy, dumb but very nasty in melee +Content
+(B) 2014-12-13 Keeping score +Content
+(B) 2014-12-13 Knockback attacks +Content
+(B) 2014-12-13 Lair clearing mechanic +Content
+(B) 2014-12-13 Left, center and right justifying text printing cursors +UI
+(B) 2014-12-13 Magic-using mobs +Content
+(B) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
+(B) 2014-12-13 Mobs that eat smaller allies to heal +Content
+(B) 2014-12-13 Money economy +Content
+(B) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine
+(B) 2014-12-13 Nice API for entity factories +Engine
+(B) 2014-12-13 Nova spells +Content
+(B) 2014-12-13 On-map light sources do FOV-traced dynamic light +Engine
+(B) 2014-12-13 On-screen controls allow doing all game actions with mouse +UI
+(B) 2014-12-13 Open world +Content
+(B) 2014-12-13 Pets +Content
+(B) 2014-12-13 Player kill statistics +Engine
+(B) 2014-12-13 Power distributions in spawns, few very rare elements for flavor +Content
+(B) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
+(B) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
+(B) 2014-12-13 Read texture pixels with gfx-rs for screenshots +Render
+(B) 2014-12-13 Render-to-texture using gfx-rs, use for fixed-resolution display and screenshots. gfx-rs render targets API is undocumented and tricky. +Render
+(B) 2014-12-13 Second vertex color to recolor dark parts of sprites +Render
+(B) 2014-12-13 Serialize RNG state with the world state (stdlib RNG doesn't support serializable, either do unsafe cast on it, implement own RNG or do the reseed-on-save trick) +Engine
+(B) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
+(B) 2014-12-13 Sound propagation, sound alarms sleeping mobs +Content +Engine
+(B) 2014-12-13 Swarming pack mobs +Content
+(B) 2014-12-13 Teleport +Content
+(B) 2014-12-13 Unkillable enemy +Content
+(B) 2014-12-13 Waypoint travel +Content
+(B) 2014-12-13 Wizard mode with a debug command-line +UI
+(C) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
+(C) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
+(C) 2014-12-13 Benchmarking code for FOV +Engine
+(C) 2014-12-13 Burrowing mobs +Content
+(C) 2014-12-13 Canyons terrain +Content
+(C) 2014-12-13 Cavern mapgen +Content
+(C) 2014-12-13 Data entry Rust macros without explicit count parameter +Engine
+(C) 2014-12-13 Dual wielding +Content
+(C) 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background) +Engine
+(C) 2014-12-13 Gzip save games +Engine
+(C) 2014-12-13 Interface alarm animation when low on health +UI
+(C) 2014-12-13 Multi-tile mob support +Engine
+(C) 2014-12-13 Named miniboss mobs +Content
+(C) 2014-12-13 Rage meter +Content
+(C) 2014-12-13 Rooms and tunnels mapgen +Content
+(C) 2014-12-13 Save seed + input sequence, reconstruct game state from them +Engine
+(C) 2014-12-13 Simple audio support +UI
+(C) 2014-12-13 Slippery icy ground +Content
+(C) 2014-12-13 Status readout for last enemy attacked in UI +UI
+(C) 2014-12-13 Store steganographic save games in screenshots +Render
+(C) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
+x 2014-12-13 2014-12-01 This is how you write done items
