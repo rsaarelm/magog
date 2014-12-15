@@ -1,3 +1,4 @@
+use std::collections::VecMap;
 use world;
 use entity::{Entity};
 
@@ -85,38 +86,27 @@ impl Iterator<Entity> for EntityIter {
 /// with entities.
 #[deriving(Encodable, Decodable)]
 pub struct Component<T> {
-    data: Vec<Option<T>>,
+    data: VecMap<T>,
 }
 
 impl<T> Component<T> {
     pub fn new() -> Component<T> {
         Component {
-            data: vec![],
+            data: VecMap::new(),
         }
     }
 
     /// Remove an entity's element.
-    pub fn remove(&mut self, Entity(idx): Entity) {
-        if idx < self.data.len() {
-            self.data[idx] = None;
-        }
-    }
+    pub fn remove(&mut self, Entity(idx): Entity) { self.data.remove(&idx); }
 
     /// Insert an element for an entity.
-    pub fn insert(&mut self, Entity(idx): Entity, c: T) {
-        while self.data.len() <= idx { self.data.push(None); }
-        self.data[idx] = Some(c);
-    }
+    pub fn insert(&mut self, Entity(idx): Entity, c: T) { self.data.insert(idx, c); }
 
     /// Get the element for an entity if it exists.
-    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> {
-        if idx >= self.data.len() { return None; }
-        self.data[idx].as_ref()
-    }
+    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> { self.data.get(&idx) }
 
     /// Get a mutable reference to the element for an entity if it exists.
     pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
-        if idx >= self.data.len() { return None; }
-        self.data[idx].as_mut()
+        self.data.get_mut(&idx)
     }
 }

@@ -81,9 +81,7 @@
 (B) 2014-12-13 Unkillable enemy +Content
 (B) 2014-12-13 Waypoint travel +Content
 (B) 2014-12-13 Wizard mode with a debug command-line +UI
-(B) 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 (B) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
-(B) 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 (C) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (C) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (C) 2014-12-13 Benchmarking code for FOV +Engine
@@ -105,4 +103,5 @@
 (C) 2014-12-13 Status readout for last enemy attacked in UI +UI
 (C) 2014-12-13 Store steganographic save games in screenshots +Render
 (C) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
-x 2014-12-13 2014-12-01 This is how you write done items
+x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
+x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine

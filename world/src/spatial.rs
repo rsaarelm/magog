@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, VecMap};
 use entity::{Entity};
 use serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
@@ -15,32 +15,31 @@ pub enum Place {
 /// Spatial index for game entities
 pub struct Spatial {
     place_to_entities: HashMap<Place, Vec<Entity>>,
-    // TODO: Make this a Vec, like with components in mod comp.
-    entity_to_place: HashMap<Entity, Place>,
+    entity_to_place: VecMap<Place>,
 }
 
 impl Spatial {
     pub fn new() -> Spatial {
         Spatial {
             place_to_entities: HashMap::new(),
-            entity_to_place: HashMap::new(),
+            entity_to_place: VecMap::new(),
         }
     }
 
-    fn insert(&mut self, e: Entity, p: Place) {
-        if self.entity_to_place.contains_key(&e) {
-            self.remove(e);
+    fn insert(&mut self, Entity(idx): Entity, p: Place) {
+        if self.entity_to_place.contains_key(&idx) {
+            self.remove(Entity(idx));
         }
 
-        self.entity_to_place.insert(e, p);
+        self.entity_to_place.insert(idx, p);
         match self.place_to_entities.get_mut(&p) {
-            Some(v) => { v.push(e); return; }
+            Some(v) => { v.push(Entity(idx)); return; }
             _ => ()
         };
         // Didn't return above, that means this location isn't indexed
         // yet and needs a brand new container. (Can't do this in match
         // block because borrows.)
-        self.place_to_entities.insert(p, vec![e]);
+        self.place_to_entities.insert(p, vec![Entity(idx)]);
     }
 
     /// Insert an entity into space.
@@ -50,8 +49,8 @@ impl Spatial {
 
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
-    pub fn _contains(&self, parent: Entity, e: Entity) -> bool {
-        match self.entity_to_place.get(&e) {
+    pub fn _contains(&self, parent: Entity, Entity(idx): Entity) -> bool {
+        match self.entity_to_place.get(&idx) {
             Some(&In(p)) if p == parent => true,
             Some(&In(p)) => self._contains(parent, p),
             _ => false
@@ -67,31 +66,31 @@ impl Spatial {
 
     /// Remove an entity from the space. Other entities that were in the
     /// entity to be removed will be added in the place the entity occupied.
-    pub fn remove(&mut self, e: Entity) {
-        if !self.entity_to_place.contains_key(&e) { return; }
+    pub fn remove(&mut self, Entity(idx): Entity) {
+        if !self.entity_to_place.contains_key(&idx) { return; }
 
-        let p = self.entity_to_place[e];
+        let &p = self.entity_to_place.get(&idx).unwrap();
 
         // Pop out the contents.
-        for &content in self.entities_in(e).iter() {
+        for &content in self.entities_in(Entity(idx)).iter() {
             self.insert(content, p);
         }
 
-        self.entity_to_place.remove(&e);
+        self.entity_to_place.remove(&idx);
         {
             let v = self.place_to_entities.get_mut(&p).unwrap();
             assert!(v.len() > 0);
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
-                let idx = v.as_slice().position_elem(&e).unwrap();
-                v.swap_remove(idx);
+                let v_idx = v.as_slice().position_elem(&Entity(idx)).unwrap();
+                v.swap_remove(v_idx);
                 return;
             } else {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
                 // (Need to drop out of scope for borrows reasons)
-                assert!((*v)[0] == e);
+                assert!((*v)[0] == Entity(idx));
             }
         }
         // We only end up here if we need to clear the container for the
@@ -117,15 +116,15 @@ impl Spatial {
     }
 
     /// Return the place of an entity if the entity is present in the space.
-    pub fn get(&self, e: Entity) -> Option<Place> {
-        self.entity_to_place.get(&e).map(|&loc| loc)
+    pub fn get(&self, Entity(idx): Entity) -> Option<Place> {
+        self.entity_to_place.get(&idx).map(|&loc| loc)
     }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
         let mut ret = vec![];
-        for (&e, &loc) in self.entity_to_place.iter() {
-            ret.push(Elt(e, loc));
+        for (idx, &loc) in self.entity_to_place.iter() {
+            ret.push(Elt(Entity(idx), loc));
         }
         ret
     }
