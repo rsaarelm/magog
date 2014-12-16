@@ -24,6 +24,9 @@ impl Ecs {
         }
     }
 
+    /// Create a new entity with an optional parent entity. The parent entity
+    /// implements prototype-based inheritance: Component elements not found
+    /// on the child entity will be searched from the parent entity next.
     pub fn new_entity(&mut self, parent: Option<Entity>) -> Entity {
         // Get the entity idx, reuse old ones to keep the indexing compact.
         let idx = match self.reusable_idxs.pop() {
@@ -93,14 +96,18 @@ impl Iterator<Entity> for EntityIter {
 }
 
 /// Generic component type that holds some simple data elements associated
-/// with entities.
+/// with entities. If an entity does not have an element of a given type,
+/// its parent entity is queried for the same element. If an element is
+/// deleted, the result defaults to the parent entity's element. There is
+/// currently no way to make an entity not show an element that's present in
+/// its parent.
 #[deriving(Encodable, Decodable)]
 pub struct Component<T> {
     data: VecMap<T>,
     ecs: Rc<RefCell<Ecs>>,
 }
 
-impl<T> Component<T> {
+impl<T: Clone> Component<T> {
     pub fn new(ecs: Rc<RefCell<Ecs>>) -> Component<T> {
         Component {
             data: VecMap::new(),
@@ -132,10 +139,15 @@ impl<T> Component<T> {
     pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
         if !self.data.contains_key(&idx) {
             let parent = self.ecs.borrow().parent.get(&idx).map(|&x| x);
-            match parent {
-                Some(parent_idx) => { return self.get_mut(Entity(parent_idx)); }
-                None => { return None; }
+            if let Some(parent_idx) = parent {
+                // Copy-on-write: Make a local copy of inherited component
+                // when asking for mutable access.
+                if let Some(comp) = self.get(Entity(parent_idx)).map(|x| x.clone()) {
+                    self.insert(Entity(idx), comp);
+                    return self.data.get_mut(&idx);
+                }
             }
+            return None;
         }
         self.data.get_mut(&idx)
     }
