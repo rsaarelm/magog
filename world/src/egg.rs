@@ -19,7 +19,7 @@ impl Egg {
 
     pub fn hatch(&self, loc: Location) -> Entity {
         let entity = world::with_mut(|w| {
-            let entity = w.ecs.borrow_mut().new_entity();
+            let entity = w.ecs.borrow_mut().new_entity(None);
 
             w.comp.kind.insert(entity, self.kind);
 
