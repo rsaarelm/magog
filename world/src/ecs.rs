@@ -9,6 +9,7 @@ pub struct Ecs {
     reusable_idxs: Vec<uint>,
     // Could use Bitv for active, but I can't bother to write the serializer...
     active: Vec<bool>,
+    parent: VecMap<uint>,
 }
 
 impl Ecs {
@@ -17,6 +18,7 @@ impl Ecs {
             next_idx: 0,
             reusable_idxs: vec![],
             active: vec![],
+            parent: VecMap::new(),
         }
     }
 
