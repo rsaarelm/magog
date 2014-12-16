@@ -38,6 +38,7 @@ pub mod action;
 
 mod area;
 mod comp;
+mod desc;
 mod dir6;
 mod ecs;
 mod egg;

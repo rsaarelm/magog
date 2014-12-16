@@ -4,6 +4,7 @@ use entity::Entity;
 use ecs::{Ecs, Component};
 use {EntityKind};
 use mob::Mob;
+use desc::Desc;
 use map_memory::MapMemory;
 
 /// Generic components used by the game.
@@ -12,6 +13,7 @@ pub struct Comp {
     pub kind: Component<EntityKind>,
     pub mob: Component<Mob>,
     pub map_memory: Component<MapMemory>,
+    pub desc: Component<Desc>,
 }
 
 impl Comp {
@@ -20,6 +22,7 @@ impl Comp {
             kind: Component::new(ecs.clone()),
             mob: Component::new(ecs.clone()),
             map_memory: Component::new(ecs.clone()),
+            desc: Component::new(ecs.clone()),
         }
     }
 
@@ -30,5 +33,6 @@ impl Comp {
         self.kind.remove(e);
         self.mob.remove(e);
         self.map_memory.remove(e);
+        self.desc.remove(e);
     }
 }
