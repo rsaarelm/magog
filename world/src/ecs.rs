@@ -22,7 +22,7 @@ impl Ecs {
         }
     }
 
-    pub fn new_entity(&mut self) -> Entity {
+    pub fn new_entity(&mut self, parent: Option<Entity>) -> Entity {
         // Get the entity idx, reuse old ones to keep the indexing compact.
         let idx = match self.reusable_idxs.pop() {
             None => {
@@ -32,6 +32,11 @@ impl Ecs {
             }
             Some(idx) => idx
         };
+
+        if let Some(Entity(p_idx)) = parent {
+            assert!(self.active[p_idx]);
+            self.parent.insert(idx, p_idx);
+        }
 
         if self.active.len() <= idx {
             let diff = idx - self.active.len() + 1;
@@ -51,6 +56,7 @@ impl Ecs {
     pub fn delete(&mut self, Entity(idx): Entity) {
         assert!(self.active[idx]);
 
+        self.parent.remove(&idx);
         self.reusable_idxs.push(idx);
         self.active[idx] = false;
     }
