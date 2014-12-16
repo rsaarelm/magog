@@ -117,7 +117,6 @@ pub fn start_level(depth: int) {
 
     clear_nonplayers();
 
-
     let seed = world::with(|w| w.flags.seed);
 
     world::with_mut(|w| {
@@ -146,7 +145,7 @@ pub fn start_level(depth: int) {
 
 fn clear_nonplayers() {
     for e in entities() {
-        if !e.is_player() {
+        if e.location().is_some() && !e.is_player() {
             e.delete();
         }
     }
