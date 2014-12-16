@@ -1,5 +1,7 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use entity::Entity;
-use ecs::{Component};
+use ecs::{Ecs, Component};
 use {EntityKind};
 use mob::Mob;
 use map_memory::MapMemory;
@@ -13,11 +15,11 @@ pub struct Comp {
 }
 
 impl Comp {
-    pub fn new() -> Comp {
+    pub fn new(ecs: Rc<RefCell<Ecs>>) -> Comp {
         Comp {
-            kind: Component::new(),
-            mob: Component::new(),
-            map_memory: Component::new(),
+            kind: Component::new(ecs.clone()),
+            mob: Component::new(ecs.clone()),
+            map_memory: Component::new(ecs.clone()),
         }
     }
 

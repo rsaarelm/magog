@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::collections::VecMap;
 use world;
 use entity::{Entity};
@@ -74,10 +76,10 @@ impl Iterator<Entity> for EntityIter {
         world::with(|w| {
             let &EntityIter(ref mut idx) = self;
             loop {
-                if *idx >= w.ecs.active.len() { return None; }
+                if *idx >= w.ecs.borrow().active.len() { return None; }
                 let ret = Entity(*idx);
                 *idx += 1;
-                if !w.ecs.active[*idx - 1] { continue; }
+                if !w.ecs.borrow().active[*idx - 1] { continue; }
                 return Some(ret);
             }
         })
@@ -89,12 +91,14 @@ impl Iterator<Entity> for EntityIter {
 #[deriving(Encodable, Decodable)]
 pub struct Component<T> {
     data: VecMap<T>,
+    ecs: Rc<RefCell<Ecs>>,
 }
 
 impl<T> Component<T> {
-    pub fn new() -> Component<T> {
+    pub fn new(ecs: Rc<RefCell<Ecs>>) -> Component<T> {
         Component {
             data: VecMap::new(),
+            ecs: ecs,
         }
     }
 
@@ -105,10 +109,28 @@ impl<T> Component<T> {
     pub fn insert(&mut self, Entity(idx): Entity, c: T) { self.data.insert(idx, c); }
 
     /// Get the element for an entity if it exists.
-    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> { self.data.get(&idx) }
+    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> {
+        match self.data.get(&idx) {
+            None => {
+                if let Some(&parent_idx) = self.ecs.borrow().parent.get(&idx) {
+                    self.get(Entity(parent_idx))
+                } else {
+                    None
+                }
+            }
+            ret => ret
+        }
+    }
 
     /// Get a mutable reference to the element for an entity if it exists.
     pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
+        if !self.data.contains_key(&idx) {
+            let parent = self.ecs.borrow().parent.get(&idx).map(|&x| x);
+            match parent {
+                Some(parent_idx) => { return self.get_mut(Entity(parent_idx)); }
+                None => { return None; }
+            }
+        }
         self.data.get_mut(&idx)
     }
 }

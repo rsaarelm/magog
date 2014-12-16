@@ -33,7 +33,7 @@ impl Entity {
         // This needs to call every toplevel component system.
         world::with_mut(|w| w.comp.remove(self));
         world::with_mut(|w| w.spatial.remove(self));
-        world::with_mut(|w| w.ecs.delete(self));
+        world::with_mut(|w| w.ecs.borrow_mut().delete(self));
     }
 
     pub fn blocks_walk(self) -> bool { self.is_mob() }

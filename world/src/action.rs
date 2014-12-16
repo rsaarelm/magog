@@ -28,7 +28,7 @@ pub enum Input {
 
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
-    let mut iter = world::with(|w| w.ecs.iter());
+    let mut iter = world::with(|w| w.ecs.borrow().iter());
     for e in iter {
         if e.is_player() { return Some(e); }
     }
@@ -87,7 +87,7 @@ pub fn input(input: Input) {
 
 /// Return an iterator of all the world entities.
 pub fn entities() -> EntityIter {
-    world::with(|w| w.ecs.iter())
+    world::with(|w| w.ecs.borrow().iter())
 }
 
 /// Return an iterator of all the world mobs.
