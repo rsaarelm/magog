@@ -25,6 +25,7 @@
 (A) 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
 (A) 2014-12-15 Entity prototype inheritance, search component from parent entity if not found on child entity +Engine
 (A) 2014-12-15 Separate prototype entities from live instances that get cleaned up +Engine
+(A) 2014-12-16 Guard against cyclic entity inheritance (only allow setting parent when creating Entity?) +Engine
 (B) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Alpha blended primitive rendering +Render
