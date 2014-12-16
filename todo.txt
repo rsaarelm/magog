@@ -22,9 +22,8 @@
 (A) 2014-12-13 Screen state machine: Intro screen / Running game +UI
 (A) 2014-12-13 Spawn item drops +Content
 (A) 2014-12-13 Winning the game +Content
-(A) 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
-(A) 2014-12-15 Entity prototype inheritance, search component from parent entity if not found on child entity +Engine
-(A) 2014-12-15 Separate prototype entities from live instances that get cleaned up +Engine
+(A) 2014-12-16 Item entities with prototypes +Engine
+(A) 2014-12-16 Mob stats using prototype entities +Engine
 (B) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Alpha blended primitive rendering +Render
@@ -105,4 +104,7 @@
 (C) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
+x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
+x 2014-12-16 2014-12-15 Entity prototype inheritance, search component from parent entity if not found on child entity +Engine
+x 2014-12-16 2014-12-15 Separate prototype entities from live instances that get cleaned up +Engine
 x 2014-12-16 2014-12-16 Guard against cyclic entity inheritance (only allow setting parent when creating Entity?) +Engine
