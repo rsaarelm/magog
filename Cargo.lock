@@ -18,6 +18,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "anymap"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "calx"
 version = "0.0.0"
 source = "git+https://github.com/rsaarelm/calx#703abba8850cb4b22c031aee7b3a8447c2d6b76b"
@@ -174,6 +179,7 @@ source = "git+https://github.com/retep998/winapi-rs#0f5ddc5e80c425da5771bbedad5c
 name = "world"
 version = "0.0.1"
 dependencies = [
+ "anymap 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
  "num 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",

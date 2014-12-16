@@ -9,6 +9,7 @@ name = "world"
 
 [dependencies.num]
 [dependencies.uuid]
+[dependencies.anymap]
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
