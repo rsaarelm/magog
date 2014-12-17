@@ -1,7 +1,7 @@
 use std::default::{Default};
 use std::cmp::{min, max};
 use std::num::{NumCast};
-use image::{GenericImage, Pixel, ImageBuf, Rgba};
+use image::{GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
 
@@ -24,16 +24,15 @@ impl Primitive for f64 {}
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
-    image: &I, color: &Rgb) -> ImageBuf<Rgba<u8>> {
+    image: &I, color: &Rgb) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
     let (w, h) = image.dimensions();
-    let pixels = image.pixels().map(|(_, _, p)| {
-            let (pr, pg, pb, mut pa) = p.channels4();
-            if pr == color.r && pg == color.g && pb == color.b {
-                pa = Default::default();
-            }
-            Pixel::from_channels(pr, pg, pb, pa)
-        }).collect();
-    ImageBuf::from_pixels(pixels, w, h)
+    ImageBuffer::from_fn(w, h, |x, y| {
+        let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
+        if pr == color.r && pg == color.g && pb == color.b {
+            pa = Default::default();
+        }
+        Pixel::from_channels(pr, pg, pb, pa)
+    })
 }
 
 /// Return the rectangle enclosing the parts of the image that aren't fully

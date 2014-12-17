@@ -2,29 +2,29 @@ use std::num::{NumCast};
 use util::Primitive;
 
 /// 2D geometric vector.
-#[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
+#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct V2<T>(pub T, pub T);
 
 impl<T: Eq> Eq for V2<T> { }
 
 impl<T: Add<U, V>, U, V> Add<V2<U>, V2<V>> for V2<T> {
-    fn add(&self, rhs: &V2<U>) -> V2<V> { V2(self.0 + rhs.0, self.1 + rhs.1) }
+    fn add(self, rhs: V2<U>) -> V2<V> { V2(self.0 + rhs.0, self.1 + rhs.1) }
 }
 
 impl<T: Sub<U, V>, U, V> Sub<V2<U>, V2<V>> for V2<T> {
-    fn sub(&self, rhs: &V2<U>) -> V2<V> { V2(self.0 - rhs.0, self.1 - rhs.1) }
+    fn sub(self, rhs: V2<U>) -> V2<V> { V2(self.0 - rhs.0, self.1 - rhs.1) }
 }
 
 impl<T: Neg<U>, U> Neg<V2<U>> for V2<T> {
     fn neg(&self) -> V2<U> { V2(-self.0, -self.1) }
 }
 
-impl<T: Mul<U, V>, U, V> Mul<U, V2<V>> for V2<T> {
-    fn mul(&self, rhs: &U) -> V2<V> { V2(self.0 * *rhs, self.1 * *rhs) }
+impl<T: Mul<U, V>, U: Copy, V> Mul<U, V2<V>> for V2<T> {
+    fn mul(self, rhs: U) -> V2<V> { V2(self.0 * rhs, self.1 * rhs) }
 }
 
-impl<T: Div<U, V>, U, V> Div<U, V2<V>> for V2<T> {
-    fn div(&self, rhs: &U) -> V2<V> { V2(self.0 / *rhs, self.1 / *rhs) }
+impl<T: Div<U, V>, U: Copy, V> Div<U, V2<V>> for V2<T> {
+    fn div(self, rhs: U) -> V2<V> { V2(self.0 / rhs, self.1 / rhs) }
 }
 
 impl<T> V2<T> {
@@ -44,7 +44,7 @@ impl<T: Primitive> V2<T> {
 }
 
 /// A rectangle type consisting of position and size vectors.
-#[deriving(Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
+#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
 impl<T: Eq> Eq for Rect<T> { }
@@ -101,7 +101,7 @@ impl<T: Primitive> Rect<T> {
 }
 
 impl<T: Add<U, T> + Clone, U> Add<V2<U>, Rect<T>> for Rect<T> {
-    fn add(&self, rhs: &V2<U>) -> Rect<T> { Rect(self.0 + *rhs, self.1.clone()) }
+    fn add(self, rhs: V2<U>) -> Rect<T> { Rect(self.0 + rhs, self.1.clone()) }
 }
 
 pub struct RectIter<T> {

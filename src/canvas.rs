@@ -2,7 +2,7 @@ use time;
 use std::mem;
 use std::num::{FloatMath, Float};
 use image::{GenericImage, SubImage, Pixel};
-use image::{ImageBuf, Rgba};
+use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use gfx;
@@ -15,7 +15,6 @@ use rgb::Rgb;
 use renderer::{Renderer, Vertex};
 use super::{Color};
 use scancode;
-
 
 pub static FONT_W: uint = 8;
 pub static FONT_H: uint = 8;
@@ -94,7 +93,7 @@ impl Canvas {
 
     /// Load a solid color element into the texture atlas.
     fn init_solid(&mut self) {
-        let image: ImageBuf<Rgba<u8>> = ImageBuf::from_fn(1, 1, |_, _| Rgba(0xffu8, 0xffu8, 0xffu8, 0xffu8));
+        let image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::from_fn(1, 1, |_, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8]));
         let Image(idx) = self.add_image(V2(0, 0), image);
         assert!(idx == SOLID_IDX);
     }
@@ -298,7 +297,7 @@ impl<'a> Iterator<Event<'a>> for Context {
 }
 
 /// Drawable images stored in the Canvas.
-#[deriving(Clone, PartialEq)]
+#[deriving(Copy, Clone, PartialEq)]
 pub struct Image(uint);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a

@@ -1,4 +1,4 @@
-use image::{GenericImage, ImageBuf, Rgba};
+use image::{GenericImage, ImageBuffer, Rgba};
 use gfx::{Device, DeviceHelper, CommandBuffer, ToSlice};
 use gfx;
 use geom::{Rect, V2};
@@ -17,7 +17,7 @@ pub struct Renderer<D: Device<C>, C: CommandBuffer> {
 impl<D: Device<C>, C: CommandBuffer> Renderer<D, C> {
     pub fn new(
         mut device: D,
-        atlas_image: &ImageBuf<Rgba<u8>>) -> Renderer<D, C> {
+        atlas_image: &ImageBuffer<Vec<u8>, u8, Rgba<u8>>) -> Renderer<D, C> {
         let program = device.link_program(
             VERTEX_SRC.clone(), FRAGMENT_SRC.clone()).unwrap();
         let atlas = Texture::from_rgba8(atlas_image, &mut device);
@@ -158,6 +158,8 @@ pub struct Vertex {
     pub tex_coord: [f32, ..2],
 }
 
+impl Copy for Vertex {}
+
 impl Clone for Vertex {
     fn clone(&self) -> Vertex { *self }
 }
@@ -170,7 +172,7 @@ struct Texture {
 
 impl Texture {
     fn from_rgba8<D: Device<C>, C: CommandBuffer>(
-        img: &ImageBuf<Rgba<u8>>,
+        img: &ImageBuffer<Vec<u8>, u8, Rgba<u8>>,
         d: &mut D) -> Texture {
         let (w, h) = img.dimensions();
         let mut info = gfx::tex::TextureInfo::new();
@@ -180,7 +182,7 @@ impl Texture {
         info.format = gfx::tex::RGBA8;
 
         let tex = d.create_texture(info).unwrap();
-        d.update_texture(&tex, &info.to_image_info(), img.pixelbuf()).unwrap();
+        d.update_texture(&tex, &info.to_image_info(), img.as_slice()).unwrap();
 
         Texture {
             tex: tex,

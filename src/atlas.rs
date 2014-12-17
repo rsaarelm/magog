@@ -1,10 +1,10 @@
 use std::num::{UnsignedInt, Float};
-use image::{GenericImage, SubImage, ImageBuf, Rgba, Pixel};
+use image::{GenericImage, SubImage, ImageBuffer, Rgba, Pixel};
 use util;
 use geom::{V2, Rect};
 
 pub struct AtlasBuilder {
-    images: Vec<ImageBuf<Rgba<u8>>>,
+    images: Vec<ImageBuffer<Vec<u8>, u8, Rgba<u8>>>,
     draw_offsets: Vec<V2<int>>,
 }
 
@@ -24,11 +24,8 @@ impl AtlasBuilder {
             pos.0 as u32, pos.1 as u32, dim.0 as u32, dim.1 as u32);
 
         let (w, h) = cropped.dimensions();
-        let img = ImageBuf::from_pixels(
-            cropped.pixels().map::<Rgba<u8>>(
-                |(_x, _y, p)| p.to_rgba())
-            .collect(),
-            w, h);
+        let img = ImageBuffer::from_fn(
+            w, h, |x, y| cropped.get_pixel(x, y).to_rgba());
         self.images.push(img);
         self.draw_offsets.push(pos + offset);
         self.images.len() - 1
@@ -36,7 +33,7 @@ impl AtlasBuilder {
 }
 
 pub struct Atlas {
-    pub image: ImageBuf<Rgba<u8>>,
+    pub image: ImageBuffer<Vec<u8>, u8, Rgba<u8>>,
     pub vertices: Vec<Rect<int>>,
     pub texcoords: Vec<Rect<f32>>,
 }
@@ -72,7 +69,7 @@ impl Atlas {
         }
 
         // Blit subimages to atlas image.
-        let mut image: ImageBuf<Rgba<u8>> = ImageBuf::new(d, d);
+        let mut image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::new(d, d);
         for (i, &offset) in offsets.iter().enumerate() {
             util::blit(&builder.images[i], &mut image, offset);
         }
