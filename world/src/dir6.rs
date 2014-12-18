@@ -6,7 +6,7 @@ use calx::V2;
 use self::Dir6::*;
 
 /// Hex grid directions.
-#[deriving(Eq, PartialEq, Clone, Show, FromPrimitive, Rand, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, FromPrimitive, Rand, Encodable, Decodable)]
 pub enum Dir6 {
     North = 0,
     NorthEast,

@@ -38,7 +38,7 @@ pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect<'a>(view_rect: Rect<int>) -> Map<'a, V2<int>, V2<int>, ColumnRectIter> {
+pub fn cells_in_view_rect(view_rect: Rect<int>) -> Map<V2<int>, V2<int>, ColumnRectIter, fn(V2<int>) -> V2<int>> {
     let V2(x0, y0) = pixel_to_min_column(view_rect.mn());
     let V2(x1, y1) = pixel_to_max_column(view_rect.mx());
     ColumnRectIter {
@@ -48,10 +48,10 @@ pub fn cells_in_view_rect<'a>(view_rect: Rect<int>) -> Map<'a, V2<int>, V2<int>,
         x0: x0,
         x1: x1,
         y1: y1,
-    }.map(|rc| column_to_chart(rc))
+    }.map(column_to_chart)
 }
 
-pub fn cells_on_screen<'a>() -> Map<'a, V2<int>, V2<int>, ColumnRectIter> {
+pub fn cells_on_screen() -> Map<V2<int>, V2<int>, ColumnRectIter, fn(V2<int>) -> V2<int>> {
     cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
 }
 
@@ -77,6 +77,7 @@ fn column_to_chart(cr: V2<int>) -> V2<int> {
        (-(cr.0 - 1) as f32 / 2f32).floor() as int + cr.1)
 }
 
+#[deriving(Copy)]
 pub struct ColumnRectIter {
     x: int,
     y: int,

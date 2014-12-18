@@ -4,7 +4,7 @@ use {AreaSpec};
 use {Biome};
 
 /// Data component for mobs.
-#[deriving(Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, Encodable, Decodable)]
 pub struct Mob {
     pub max_hp: int,
     pub hp: int,
@@ -39,7 +39,7 @@ impl Mob {
     }
 }
 
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -49,7 +49,7 @@ pub enum Intrinsic {
     Hands       = 0b100,
 }
 
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Status {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -61,6 +61,7 @@ pub enum Status {
     Confused    = 0b1000,
 }
 
+#[deriving(Copy)]
 pub struct MobSpec {
     pub typ: MobType,
     pub name: &'static str,
@@ -82,7 +83,7 @@ macro_rules! mob_data {
         $($symbol:ident: $power:expr, $depth:expr, $biome:ident, $sprite:expr, $color:expr, $flags:expr;)*
 
     } => {
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum MobType {
     $($symbol,)*
 }

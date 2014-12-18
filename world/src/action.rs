@@ -11,14 +11,14 @@ use mob::MobType::Player;
 use location::Location;
 
 /// Game update control.
-#[deriving(PartialEq)]
+#[deriving(Copy, PartialEq)]
 pub enum ControlState {
     AwaitingInput,
     ReadyToUpdate,
 }
 
 /// Player input action.
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
@@ -91,8 +91,9 @@ pub fn entities() -> EntityIter {
 }
 
 /// Return an iterator of all the world mobs.
-pub fn mobs<'a>() -> Filter<'a, Entity, EntityIter> {
-    entities().filter(|e| e.is_mob())
+pub fn mobs() -> Filter<Entity, EntityIter, fn(&Entity) -> bool> {
+    fn is_mob(e: &Entity) -> bool { e.is_mob() }
+    entities().filter(is_mob)
 }
 
 /// Run AI for all autonomous mobs.

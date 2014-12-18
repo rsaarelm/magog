@@ -6,7 +6,7 @@ use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[deriving(Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
 pub enum Place {
     At(Location),
     In(Entity),

@@ -58,14 +58,14 @@ mod spatial;
 mod terrain;
 mod world;
 
-#[deriving(Eq, PartialEq, Show)]
+#[deriving(Copy, Eq, PartialEq, Show)]
 pub enum FovStatus {
     Seen,
     Remembered,
 }
 
 /// General type of a game entity.
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum EntityKind {
     /// An active, mobile entity like the player or the NPCs.
     Mob(mob::MobType),
@@ -79,7 +79,7 @@ pub enum EntityKind {
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[deriving(Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -98,7 +98,7 @@ impl Biome {
     }
 }
 
-#[deriving(Eq, PartialEq, Show, Clone, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Show, Clone, Encodable, Decodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: int,

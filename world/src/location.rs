@@ -8,7 +8,7 @@ use world;
 use action;
 
 /// Unambiguous location in the game world.
-#[deriving(Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
 pub struct Location {
     pub x: i8,
     pub y: i8,
@@ -130,7 +130,7 @@ impl Location {
 }
 
 impl Add<V2<int>, Location> for Location {
-    fn add(&self, other: &V2<int>) -> Location {
+    fn add(self, other: V2<int>) -> Location {
         Location::new(
             (self.x as int + other.0) as i8,
             (self.y as int + other.1) as i8)

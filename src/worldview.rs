@@ -15,7 +15,7 @@ use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
 
-pub fn draw_world<C: Chart>(chart: &C, ctx: &mut Context, damage_timers: &HashMap<Entity, uint>) {
+pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Context, damage_timers: &HashMap<Entity, uint>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
