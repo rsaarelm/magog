@@ -99,7 +99,7 @@ impl Location {
     pub fn fov_status(&self) -> Option<::FovStatus> {
         if let Some(p) = action::player() {
             match world::with(|w| {
-                if let Some(ref mm) = w.comp.map_memory.get(p) {
+                if let Some(ref mm) = w.map_memories().get(p) {
                     Ok (if mm.seen.contains(self) {
                         Some(::FovStatus::Seen)
                     } else if mm.remembered.contains(self) {

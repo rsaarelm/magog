@@ -31,7 +31,9 @@ impl Entity {
     pub fn delete(self) {
         // LABYRINTH OF COMPONENTS
         // This needs to call every toplevel component system.
-        world::with_mut(|w| w.comp.remove(self));
+        world::with_mut(|w| w.kinds_mut().remove(self));
+        world::with_mut(|w| w.mobs_mut().remove(self));
+        world::with_mut(|w| w.map_memories_mut().remove(self));
         world::with_mut(|w| w.spatial.remove(self));
         world::with_mut(|w| w.ecs.delete(self));
     }
@@ -41,7 +43,7 @@ impl Entity {
     /// Return the kind of the entity.
     pub fn kind(self) -> ::EntityKind {
         // XXX: Will crash if an entity has no kind specified.
-        world::with(|w| *w.comp.kind.get(self).unwrap())
+        world::with(|w| *w.kinds().get(self).unwrap())
     }
 
     pub fn name(self) -> String {
@@ -107,7 +109,7 @@ impl Entity {
         if amount == 0 { return; }
 
         let (_amount, kill) = world::with_mut(|w| {
-            if let Some(ref mut mob) = w.comp.mob.get_mut(self) {
+            if let Some(ref mut mob) = w.mobs_mut().get(self) {
                 mob.hp -= amount;
                 if mob.hp <= 0 {
                     // Remember this when we're out of the borrow.
@@ -137,7 +139,7 @@ impl Entity {
 
     pub fn is_mob(self) -> bool {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(_)) = w.comp.kind.get(self) {
+            if let Some(&::EntityKind::Mob(_)) = w.kinds().get(self) {
                 return true;
             }
             return false;
@@ -146,7 +148,7 @@ impl Entity {
 
     pub fn mob_spec(self) -> Option<&'static mob::MobSpec> {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(mt)) = w.comp.kind.get(self) {
+            if let Some(&::EntityKind::Mob(mt)) = w.kinds().get(self) {
                 Some(&mob::MOB_SPECS[mt as uint])
             } else {
                 None
@@ -157,7 +159,7 @@ impl Entity {
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(MobType::Player)) = w.comp.kind.get(self) {
+            if let Some(&::EntityKind::Mob(MobType::Player)) = w.kinds().get(self) {
                 return true;
             }
             return false;
@@ -166,7 +168,7 @@ impl Entity {
 
     pub fn has_status(self, status: Status) -> bool {
         world::with(|w| {
-            if let Some(&mob) = w.comp.mob.get(self) {
+            if let Some(&mob) = w.mobs().get(self) {
                 return mob.has_status(status);
             }
             return false;
@@ -175,13 +177,13 @@ impl Entity {
 
     pub fn add_status(self, status: Status) {
         if !self.is_mob() { return; }
-        world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().add_status(status));
+        world::with_mut(|w| w.mobs_mut().get(self).unwrap().add_status(status));
         assert!(self.has_status(status));
     }
 
     pub fn remove_status(self, status: Status) {
         if !self.is_mob() { return; }
-        world::with_mut(|w| w.comp.mob.get_mut(self).unwrap().remove_status(status));
+        world::with_mut(|w| w.mobs_mut().get(self).unwrap().remove_status(status));
         assert!(!self.has_status(status));
     }
 
@@ -234,7 +236,7 @@ impl Entity {
         let loc = self.location().unwrap() + dir.to_v2();
         if let Some(e) = loc.mob_at() {
             // Attack power
-            let p = world::with(|w| w.comp.mob.get(self).unwrap().power);
+            let p = world::with(|w| w.mobs().get(self).unwrap().power);
             if p == 0 {
                 // No fight capacity.
                 return;
@@ -251,7 +253,7 @@ impl Entity {
     }
 
     pub fn hp(self) -> int {
-        world::with(|w| w.comp.mob.get(self).unwrap().hp)
+        world::with(|w| w.mobs().get(self).unwrap().hp)
     }
 
     pub fn max_hp(self) -> int {
@@ -360,7 +362,7 @@ impl Entity {
 // Misc ////////////////////////////////////////////////////////////////
 
     fn has_map_memory(self) -> bool {
-        world::with(|w| w.comp.map_memory.get(self).is_some())
+        world::with(|w| w.map_memories().get(self).is_some())
     }
 
     fn do_fov(self) {
@@ -372,7 +374,7 @@ impl Entity {
                     .map(|pt| loc + pt)
                     .collect();
                 world::with_mut(|w| {
-                    if let Some(ref mut mm) = w.comp.map_memory.get_mut(self) {
+                    if let Some(ref mut mm) = w.map_memories_mut().get(self) {
                         mm.seen.clear();
                         mm.seen.extend(seen.clone().into_iter());
                         mm.remembered.extend(seen.iter().map(|&x| x));
@@ -387,7 +389,7 @@ impl Entity {
     pub fn forget_map(self) {
         if self.has_map_memory() {
             world::with_mut(|w| {
-                if let Some(ref mut mm) = w.comp.map_memory.get_mut(self) {
+                if let Some(ref mut mm) = w.map_memories_mut().get(self) {
                     mm.seen.clear();
                     mm.remembered.clear();
                 } else {

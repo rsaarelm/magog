@@ -21,14 +21,14 @@ impl Egg {
         let entity = world::with_mut(|w| {
             let entity = w.ecs.new_entity();
 
-            w.comp.kind.insert(entity, self.kind);
+            w.kinds_mut().insert(entity, self.kind);
 
             match self.kind {
                 EntityKind::Mob(m) => {
-                    w.comp.mob.insert(entity, Mob::new(m));
+                    w.mobs_mut().insert(entity, Mob::new(m));
                     if m == MobType::Player {
                         // Player-specific component stuffs.
-                        w.comp.map_memory.insert(
+                        w.map_memories_mut().insert(
                             entity, MapMemory::new());
                     }
                 }

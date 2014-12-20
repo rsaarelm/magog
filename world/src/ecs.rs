@@ -65,6 +65,11 @@ impl Ecs {
     pub fn iter(&self) -> EntityIter {
         EntityIter(0)
     }
+
+    /// Return the optional parent entity of an entity.
+    pub fn parent(&self, Entity(idx): Entity) -> Option<Entity> {
+        self.parent.get(&idx).map(|&idx| Entity(idx))
+    }
 }
 
 pub struct EntityIter(uint);
@@ -81,34 +86,5 @@ impl Iterator<Entity> for EntityIter {
                 return Some(ret);
             }
         })
-    }
-}
-
-/// Generic component type that holds some simple data elements associated
-/// with entities.
-#[deriving(Encodable, Decodable)]
-pub struct Component<T> {
-    data: VecMap<T>,
-}
-
-impl<T> Component<T> {
-    pub fn new() -> Component<T> {
-        Component {
-            data: VecMap::new(),
-        }
-    }
-
-    /// Remove an entity's element.
-    pub fn remove(&mut self, Entity(idx): Entity) { self.data.remove(&idx); }
-
-    /// Insert an element for an entity.
-    pub fn insert(&mut self, Entity(idx): Entity, c: T) { self.data.insert(idx, c); }
-
-    /// Get the element for an entity if it exists.
-    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> { self.data.get(&idx) }
-
-    /// Get a mutable reference to the element for an entity if it exists.
-    pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
-        self.data.get_mut(&idx)
     }
 }
