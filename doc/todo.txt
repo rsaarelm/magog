@@ -84,6 +84,7 @@
 (C) 2014-12-13 Waypoint travel +Content
 (C) 2014-12-13 Wizard mode with a debug command-line +UI
 (C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
+(C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
