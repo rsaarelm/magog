@@ -10,6 +10,7 @@ use egg::Egg;
 use mob;
 use mob::{MobSpec};
 use {AreaSpec};
+use components::{Kind};
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
 // generated to have exactly the same contents every time given the same seed
@@ -91,7 +92,7 @@ impl Area {
         for _ in range(0, num_eggs) {
             if let Some(loc) = opens.swap_remove(0) {
                 let mob = rng.choose(viable_mobs.as_slice()).unwrap();
-                eggs.push((Egg::new(::EntityKind::Mob(mob.typ)), loc));
+                eggs.push((Egg::new(Kind::Mob(mob.typ)), loc));
             } else {
                 // Ran out of open space.
                 break;

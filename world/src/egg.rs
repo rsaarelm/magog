@@ -1,17 +1,16 @@
 use location::{Location};
 use mob::{Mob, MobType};
 use world;
-use EntityKind;
 use entity::{Entity};
-use map_memory::{MapMemory};
+use components::{MapMemory, Kind};
 
 #[deriving(Clone)]
 pub struct Egg {
-    kind: EntityKind,
+    kind: Kind,
 }
 
 impl Egg {
-    pub fn new(kind: EntityKind) -> Egg {
+    pub fn new(kind: Kind) -> Egg {
         Egg {
             kind: kind,
         }
@@ -24,7 +23,7 @@ impl Egg {
             w.kinds_mut().insert(entity, self.kind);
 
             match self.kind {
-                EntityKind::Mob(m) => {
+                Kind::Mob(m) => {
                     w.mobs_mut().insert(entity, Mob::new(m));
                     if m == MobType::Player {
                         // Player-specific component stuffs.

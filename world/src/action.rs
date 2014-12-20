@@ -9,6 +9,7 @@ use area::Area;
 use egg::Egg;
 use mob::MobType::Player;
 use location::Location;
+use components::Kind;
 
 /// Game update control.
 #[deriving(Copy, PartialEq)]
@@ -139,7 +140,7 @@ pub fn start_level(depth: int) {
             p.forget_map();
             p.place(start_loc);
         }
-        None => { Egg::new(::EntityKind::Mob(Player)).hatch(start_loc); }
+        None => { Egg::new(Kind::Mob(Player)).hatch(start_loc); }
     };
     flags::set_camera(start_loc);
 }

@@ -10,9 +10,7 @@ use flags::Flags;
 use mob::Mob;
 use entity::Entity;
 use action;
-use {EntityKind};
-use map_memory::MapMemory;
-use desc::Desc;
+use components::{Desc, MapMemory, Kind};
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
 
@@ -66,7 +64,7 @@ pub struct WorldState {
 #[deriving(Encodable, Decodable)]
 struct Comps {
     mob: VecMap<Mob>,
-    kind: VecMap<EntityKind>,
+    kind: VecMap<Kind>,
     map_memory: VecMap<MapMemory>,
     desc: VecMap<Desc>,
 }
@@ -94,8 +92,8 @@ impl<'a> WorldState {
 
     // COMPONENTS CHECKPOINT
     // XXX: Boilerplate
-    pub fn kinds(&'a self) ->                    ComponentRef<'a, EntityKind>            { ComponentRef::new(&self.ecs, &self.comps.kind) }
-    pub fn kinds_mut(&'a mut self) ->         ComponentRefMut<'a, EntityKind> { ComponentRefMut::new(&mut self.ecs, &mut self.comps.kind) }
+    pub fn kinds(&'a self) ->                    ComponentRef<'a, Kind>                  { ComponentRef::new(&self.ecs, &self.comps.kind) }
+    pub fn kinds_mut(&'a mut self) ->         ComponentRefMut<'a, Kind>       { ComponentRefMut::new(&mut self.ecs, &mut self.comps.kind) }
     pub fn mobs(&'a self) ->                     ComponentRef<'a, Mob>                   { ComponentRef::new(&self.ecs, &self.comps.mob) }
     pub fn mobs_mut(&'a mut self) ->          ComponentRefMut<'a, Mob>        { ComponentRefMut::new(&mut self.ecs, &mut self.comps.mob) }
     pub fn map_memories(&'a self) ->             ComponentRef<'a, MapMemory>             { ComponentRef::new(&self.ecs, &self.comps.map_memory) }
@@ -112,41 +110,51 @@ pub fn init_world(seed: Option<u32>) {
     action::start_level(1);
 }
 
-#[deriving(Copy)]
+/// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {
     ecs: &'a Ecs,
     data: &'a VecMap<C>,
 }
 
 impl<'a, C> ComponentRef<'a, C> {
-    pub fn new(ecs: &'a Ecs, data: &'a VecMap<C>) -> ComponentRef<'a, C> {
+    fn new(ecs: &'a Ecs, data: &'a VecMap<C>) -> ComponentRef<'a, C> {
         ComponentRef {
             ecs: ecs,
             data: data,
         }
     }
 
+    /// Fetch a component from given entity or its parent.
     pub fn get(self, Entity(idx): Entity) -> Option<&'a C> {
         match find_parent(|Entity(idx)| self.data.contains_key(&idx), self.ecs, Entity(idx)) {
             None => { None }
             Some(Entity(idx)) => { self.data.get(&idx) }
         }
     }
+
+    /// Fetch a component from given entity. Do not search parent entities.
+    pub fn get_local(self, Entity(idx): Entity) -> Option<&'a C> {
+        self.data.get(&idx)
+    }
 }
 
+/// Mutable component access.
 pub struct ComponentRefMut<'a, C: 'static> {
     ecs: &'a mut Ecs,
     data: &'a mut VecMap<C>,
 }
 
 impl<'a, C: Clone> ComponentRefMut<'a, C> {
-    pub fn new(ecs: &'a mut Ecs, data: &'a mut VecMap<C>) -> ComponentRefMut<'a, C> {
+    fn new(ecs: &'a mut Ecs, data: &'a mut VecMap<C>) -> ComponentRefMut<'a, C> {
         ComponentRefMut {
             ecs: ecs,
             data: data,
         }
     }
 
+    /// Fetch a component from given entity or its parent. Copy-on-write
+    /// semantics: A component found on a parent entity will be copied on
+    /// local entity for mutation.
     pub fn get(self, Entity(idx): Entity) -> Option<&'a mut C> {
         match find_parent(|Entity(idx)| self.data.contains_key(&idx), self.ecs, Entity(idx)) {
             None => { None }
@@ -161,10 +169,14 @@ impl<'a, C: Clone> ComponentRefMut<'a, C> {
         }
     }
 
+    /// Add a component to entity.
     pub fn insert(self, Entity(idx): Entity, comp: C) {
         self.data.insert(idx, comp);
     }
 
+    /// Remove a component from an entity. This will make a parent entity's
+    /// component visible instead, if there is one. There is currently no way
+    /// to hide components present in a parent entity.
     pub fn remove(self, Entity(idx): Entity) {
         self.data.remove(&idx);
     }

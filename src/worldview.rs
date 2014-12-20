@@ -7,7 +7,8 @@ use calx::color::*;
 use calx::timing;
 use world::TerrainType;
 use world::{Location, Chart};
-use world::{FovStatus, EntityKind, MobType, MOB_SPECS};
+use world::{FovStatus, MobType, MOB_SPECS};
+use world::components::{Kind};
 use world::{Entity};
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
@@ -280,7 +281,7 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
         match entity.kind() {
-            EntityKind::Mob(m) => {
+            Kind::Mob(m) => {
                 let body_pos =
                     if entity.is_bobbing() {
                         offset + *(timing::cycle_anim(

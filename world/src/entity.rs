@@ -6,6 +6,7 @@ use dir6::Dir6;
 use flags;
 use mob;
 use mob::{Status, Intrinsic, MobType};
+use components::{Kind};
 use geom::HexGeom;
 use spatial::Place;
 use action;
@@ -42,7 +43,7 @@ impl Entity {
     pub fn blocks_walk(self) -> bool { self.is_mob() }
 
     /// Return the kind of the entity.
-    pub fn kind(self) -> ::EntityKind {
+    pub fn kind(self) -> Kind {
         // XXX: Will crash if an entity has no kind specified.
         world::with(|w| *w.kinds().get(self).unwrap())
     }
@@ -140,7 +141,7 @@ impl Entity {
 
     pub fn is_mob(self) -> bool {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(_)) = w.kinds().get(self) {
+            if let Some(&Kind::Mob(_)) = w.kinds().get(self) {
                 return true;
             }
             return false;
@@ -149,7 +150,7 @@ impl Entity {
 
     pub fn mob_spec(self) -> Option<&'static mob::MobSpec> {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(mt)) = w.kinds().get(self) {
+            if let Some(&Kind::Mob(mt)) = w.kinds().get(self) {
                 Some(&mob::MOB_SPECS[mt as uint])
             } else {
                 None
@@ -160,7 +161,7 @@ impl Entity {
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         world::with(|w| {
-            if let Some(&::EntityKind::Mob(MobType::Player)) = w.kinds().get(self) {
+            if let Some(&Kind::Mob(MobType::Player)) = w.kinds().get(self) {
                 return true;
             }
             return false;

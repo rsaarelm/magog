@@ -35,9 +35,9 @@ macro_rules! caption(
 )
 
 pub mod action;
+pub mod components;
 
 mod area;
-mod desc;
 mod dir6;
 mod ecs;
 mod egg;
@@ -48,7 +48,6 @@ mod geom;
 mod geomorph;
 mod geomorph_data;
 mod location;
-mod map_memory;
 mod mapgen;
 mod mob;
 mod msg;
@@ -61,19 +60,6 @@ mod world;
 pub enum FovStatus {
     Seen,
     Remembered,
-}
-
-/// General type of a game entity.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
-pub enum EntityKind {
-    /// An active, mobile entity like the player or the NPCs.
-    Mob(mob::MobType),
-    /// An entity that can be picked up and used in some way.
-    Item, // TODO ItemType data.
-    /// A background item that doesn't do much.
-    Prop,
-    /// A static object that does things when stepped on.
-    Node,
 }
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
