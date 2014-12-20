@@ -61,15 +61,6 @@ pub struct WorldState {
     comps: Comps,
 }
 
-#[deriving(Encodable, Decodable)]
-struct Comps {
-    descs: VecMap<Desc>,
-    kinds: VecMap<Kind>,
-    map_memories: VecMap<MapMemory>,
-    mobs: VecMap<Mob>,
-    spawns: VecMap<Spawn>,
-}
-
 impl<'a> WorldState {
     pub fn new(seed: Option<u32>) -> WorldState {
         let seed = match seed {
@@ -82,13 +73,39 @@ impl<'a> WorldState {
             area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
-            comps: Comps {
-                descs: VecMap::new(),
-                kinds: VecMap::new(),
-                map_memories: VecMap::new(),
-                mobs: VecMap::new(),
-                spawns: VecMap::new(),
-            }
+            comps: Comps::new(),
+        }
+    }
+}
+
+/// Set up a fresh start-game world state with an optional fixed random number
+/// generator seed. Calling init_world will cause any existing world state to
+/// be discarded.
+pub fn init_world(seed: Option<u32>) {
+    WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
+
+    action::start_level(1);
+}
+
+// Components stuff ////////////////////////////////////////////////////
+
+#[deriving(Encodable, Decodable)]
+struct Comps {
+    descs: VecMap<Desc>,
+    kinds: VecMap<Kind>,
+    map_memories: VecMap<MapMemory>,
+    mobs: VecMap<Mob>,
+    spawns: VecMap<Spawn>,
+}
+
+impl Comps {
+    pub fn new() -> Comps {
+        Comps {
+            descs: VecMap::new(),
+            kinds: VecMap::new(),
+            map_memories: VecMap::new(),
+            mobs: VecMap::new(),
+            spawns: VecMap::new(),
         }
     }
 }
@@ -114,14 +131,6 @@ comp_api!(kinds, kinds_mut, Kind)
 comp_api!(map_memories, map_memories_mut, MapMemory)
 comp_api!(mobs, mobs_mut, Mob)
 comp_api!(spawns, spawns_mut, Spawn)
-
-/// Set up a fresh start-game world state with an optional fixed random number
-/// generator seed. Calling init_world will cause any existing world state to
-/// be discarded.
-pub fn init_world(seed: Option<u32>) {
-    WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
-    action::start_level(1);
-}
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

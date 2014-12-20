@@ -40,7 +40,7 @@ impl Desc {
 }
 
 /// Spawning properties for prototype objects.
-#[deriving(Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, Encodable, Decodable)]
 pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -70,7 +70,7 @@ pub enum Kind {
 }
 
 /// Unchanging statistics for mobs.
-#[deriving(Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, Encodable, Decodable)]
 pub struct MobStats {
     pub power: int,
     pub intrinsics: i32,
