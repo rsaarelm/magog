@@ -1,6 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-19 Figure out how to do entity inheritance without storing ECS references in comps, ECS aliasing during save breaks stuff +Engine
-x 2014-12-19 2014-12-17 Check if saving ecs refcells in Comps breaks aliasing after loaded save +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -112,3 +111,4 @@ x 2014-12-16 2014-12-15 Separate prototype entities from live instances that get
 x 2014-12-16 2014-12-16 Guard against cyclic entity inheritance (only allow setting parent when creating Entity?) +Engine
 x 2014-12-17 2014-12-17 File link Dropbox TODO to git tree +Admin
 x 2014-12-17 2014-12-17 Reserve A priority for immediate next actions +Admin
+x 2014-12-19 2014-12-17 Check if saving ecs refcells in Comps breaks aliasing after loaded save +Engine
