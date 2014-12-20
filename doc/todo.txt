@@ -1,5 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-19 Figure out how to do entity inheritance without storing ECS references in comps, ECS aliasing during save breaks stuff +Engine
+(A) 2014-12-16 Mob stats using prototype entities +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -15,12 +15,9 @@
 (B) 2014-12-13 Inventory menu with equipment and backpack slots +UI
 (B) 2014-12-13 Keeping score +Content
 (B) 2014-12-13 Killed mobs drop items +Content
-(B) 2014-12-13 Money economy +Content
 (B) 2014-12-13 Mouse event support +UI
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
-(B) 2014-12-13 Open world +Content
-(B) 2014-12-13 Pets +Content
 (B) 2014-12-13 Pick up items command +Content
 (B) 2014-12-13 Player level up logic +Content
 (B) 2014-12-13 Projectile attack beam effect +UI
@@ -33,7 +30,6 @@
 (B) 2014-12-13 Teleport +Content
 (B) 2014-12-13 Winning the game +Content
 (B) 2014-12-16 Item entities with prototypes +Engine
-(B) 2014-12-16 Mob stats using prototype entities +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -63,6 +59,7 @@
 (C) 2014-12-13 Magic-using mobs +Content
 (C) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
 (C) 2014-12-13 Mobs that eat smaller allies to heal +Content
+(C) 2014-12-13 Money economy +Content
 (C) 2014-12-13 Multi-tile mob support +Engine
 (C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine
 (C) 2014-12-13 Nice API for entity factories +Engine
@@ -70,6 +67,8 @@
 (C) 2014-12-13 Nova spells +Content
 (C) 2014-12-13 On-map light sources do FOV-traced dynamic light +Engine
 (C) 2014-12-13 On-screen controls allow doing all game actions with mouse +UI
+(C) 2014-12-13 Open world +Content
+(C) 2014-12-13 Pets +Content
 (C) 2014-12-13 Player kill statistics +Engine
 (C) 2014-12-13 Power distributions in spawns, few very rare elements for flavor +Content
 (C) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
@@ -112,3 +111,4 @@ x 2014-12-16 2014-12-16 Guard against cyclic entity inheritance (only allow sett
 x 2014-12-17 2014-12-17 File link Dropbox TODO to git tree +Admin
 x 2014-12-17 2014-12-17 Reserve A priority for immediate next actions +Admin
 x 2014-12-19 2014-12-17 Check if saving ecs refcells in Comps breaks aliasing after loaded save +Engine
+x 2014-12-20 2014-12-19 Figure out how to do entity inheritance without storing ECS references in comps, ECS aliasing during save breaks stuff +Engine
