@@ -1,5 +1,3 @@
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::collections::VecMap;
 use world;
 use entity::{Entity};
@@ -24,10 +22,7 @@ impl Ecs {
         }
     }
 
-    /// Create a new entity with an optional parent entity. The parent entity
-    /// implements prototype-based inheritance: Component elements not found
-    /// on the child entity will be searched from the parent entity next.
-    pub fn new_entity(&mut self, parent: Option<Entity>) -> Entity {
+    pub fn new_entity(&mut self) -> Entity {
         // Get the entity idx, reuse old ones to keep the indexing compact.
         let idx = match self.reusable_idxs.pop() {
             None => {
@@ -37,11 +32,6 @@ impl Ecs {
             }
             Some(idx) => idx
         };
-
-        if let Some(Entity(p_idx)) = parent {
-            assert!(self.active[p_idx]);
-            self.parent.insert(idx, p_idx);
-        }
 
         if self.active.len() <= idx {
             let diff = idx - self.active.len() + 1;
@@ -61,7 +51,6 @@ impl Ecs {
     pub fn delete(&mut self, Entity(idx): Entity) {
         assert!(self.active[idx]);
 
-        self.parent.remove(&idx);
         self.reusable_idxs.push(idx);
         self.active[idx] = false;
     }
@@ -85,10 +74,10 @@ impl Iterator<Entity> for EntityIter {
         world::with(|w| {
             let &EntityIter(ref mut idx) = self;
             loop {
-                if *idx >= w.ecs.borrow().active.len() { return None; }
+                if *idx >= w.ecs.active.len() { return None; }
                 let ret = Entity(*idx);
                 *idx += 1;
-                if !w.ecs.borrow().active[*idx - 1] { continue; }
+                if !w.ecs.active[*idx - 1] { continue; }
                 return Some(ret);
             }
         })
@@ -96,22 +85,16 @@ impl Iterator<Entity> for EntityIter {
 }
 
 /// Generic component type that holds some simple data elements associated
-/// with entities. If an entity does not have an element of a given type,
-/// its parent entity is queried for the same element. If an element is
-/// deleted, the result defaults to the parent entity's element. There is
-/// currently no way to make an entity not show an element that's present in
-/// its parent.
+/// with entities.
 #[deriving(Encodable, Decodable)]
 pub struct Component<T> {
     data: VecMap<T>,
-    ecs: Rc<RefCell<Ecs>>,
 }
 
-impl<T: Clone> Component<T> {
-    pub fn new(ecs: Rc<RefCell<Ecs>>) -> Component<T> {
+impl<T> Component<T> {
+    pub fn new() -> Component<T> {
         Component {
             data: VecMap::new(),
-            ecs: ecs,
         }
     }
 
@@ -122,33 +105,10 @@ impl<T: Clone> Component<T> {
     pub fn insert(&mut self, Entity(idx): Entity, c: T) { self.data.insert(idx, c); }
 
     /// Get the element for an entity if it exists.
-    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> {
-        match self.data.get(&idx) {
-            None => {
-                if let Some(&parent_idx) = self.ecs.borrow().parent.get(&idx) {
-                    self.get(Entity(parent_idx))
-                } else {
-                    None
-                }
-            }
-            ret => ret
-        }
-    }
+    pub fn get<'a>(&'a self, Entity(idx): Entity) -> Option<&'a T> { self.data.get(&idx) }
 
     /// Get a mutable reference to the element for an entity if it exists.
     pub fn get_mut<'a>(&'a mut self, Entity(idx): Entity) -> Option<&'a mut T> {
-        if !self.data.contains_key(&idx) {
-            let parent = self.ecs.borrow().parent.get(&idx).map(|&x| x);
-            if let Some(parent_idx) = parent {
-                // Copy-on-write: Make a local copy of inherited component
-                // when asking for mutable access.
-                if let Some(comp) = self.get(Entity(parent_idx)).map(|x| x.clone()) {
-                    self.insert(Entity(idx), comp);
-                    return self.data.get_mut(&idx);
-                }
-            }
-            return None;
-        }
         self.data.get_mut(&idx)
     }
 }

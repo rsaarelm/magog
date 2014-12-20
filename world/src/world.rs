@@ -1,6 +1,5 @@
 use serialize::json;
 use std::cell::RefCell;
-use std::rc::Rc;
 use std::rand;
 use rand::Rng;
 use ecs::Ecs;
@@ -48,7 +47,7 @@ pub fn load(json: &str) -> Result<(), json::DecoderError> {
 #[deriving(Encodable, Decodable)]
 pub struct WorldState {
     /// Global entity handler.
-    pub ecs: Rc<RefCell<Ecs>>,
+    pub ecs: Ecs,
     /// World terrain generation and storage.
     pub area: Area,
     /// Spatial index for game entities.
@@ -66,12 +65,11 @@ impl WorldState {
             // Use system rng for seed if the user didn't provide one.
             None => rand::task_rng().gen()
         };
-        let ecs = Rc::new(RefCell::new(Ecs::new()));
         WorldState {
-            ecs: ecs.clone(),
+            ecs: Ecs::new(),
             area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
             spatial: Spatial::new(),
-            comp: Comp::new(ecs.clone()),
+            comp: Comp::new(),
             flags: Flags::new(seed),
         }
     }
