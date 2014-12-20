@@ -12,6 +12,7 @@ use entity::Entity;
 use action;
 use {EntityKind};
 use map_memory::MapMemory;
+use desc::Desc;
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
 
@@ -67,6 +68,7 @@ struct Comps {
     mob: VecMap<Mob>,
     kind: VecMap<EntityKind>,
     map_memory: VecMap<MapMemory>,
+    desc: VecMap<Desc>,
 }
 
 impl<'a> WorldState {
@@ -85,10 +87,12 @@ impl<'a> WorldState {
                 mob: VecMap::new(),
                 kind: VecMap::new(),
                 map_memory: VecMap::new(),
+                desc: VecMap::new(),
             }
         }
     }
 
+    // COMPONENTS CHECKPOINT
     // XXX: Boilerplate
     pub fn kinds(&'a self) ->                    ComponentRef<'a, EntityKind>            { ComponentRef::new(&self.ecs, &self.comps.kind) }
     pub fn kinds_mut(&'a mut self) ->         ComponentRefMut<'a, EntityKind> { ComponentRefMut::new(&mut self.ecs, &mut self.comps.kind) }
@@ -96,6 +100,8 @@ impl<'a> WorldState {
     pub fn mobs_mut(&'a mut self) ->          ComponentRefMut<'a, Mob>        { ComponentRefMut::new(&mut self.ecs, &mut self.comps.mob) }
     pub fn map_memories(&'a self) ->             ComponentRef<'a, MapMemory>             { ComponentRef::new(&self.ecs, &self.comps.map_memory) }
     pub fn map_memories_mut(&'a mut self) ->  ComponentRefMut<'a, MapMemory>  { ComponentRefMut::new(&mut self.ecs, &mut self.comps.map_memory) }
+    pub fn descs(&'a self) ->                    ComponentRef<'a, Desc>                  { ComponentRef::new(&self.ecs, &self.comps.desc) }
+    pub fn descs_mut(&'a mut self) ->         ComponentRefMut<'a, Desc>       { ComponentRefMut::new(&mut self.ecs, &mut self.comps.desc) }
 }
 
 /// Set up a fresh start-game world state with an optional fixed random number

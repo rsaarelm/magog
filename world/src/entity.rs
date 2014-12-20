@@ -29,11 +29,12 @@ impl Entity {
     /// CALLER IS RESPONSIBLE FOR ENSUING THAT AN ENTITY WILL NOT BE
     /// USED FROM ANYWHERE AFTER THE DELETE OPERATION.
     pub fn delete(self) {
-        // LABYRINTH OF COMPONENTS
-        // This needs to call every toplevel component system.
+        // COMPONENTS CHECKPOINT
+        // This needs to call every component system.
         world::with_mut(|w| w.kinds_mut().remove(self));
         world::with_mut(|w| w.mobs_mut().remove(self));
         world::with_mut(|w| w.map_memories_mut().remove(self));
+        world::with_mut(|w| w.descs_mut().remove(self));
         world::with_mut(|w| w.spatial.remove(self));
         world::with_mut(|w| w.ecs.delete(self));
     }
