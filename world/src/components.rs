@@ -53,6 +53,9 @@ pub struct Spawn {
     pub min_depth: uint,
 }
 
+// TODO: Kind can be deprecated eventually I think. Just infer the entity type
+// from components present that do actual stuff.
+
 /// General type of a game entity.
 #[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
 pub enum Kind {
@@ -66,3 +69,9 @@ pub enum Kind {
     Node,
 }
 
+/// Unchanging statistics for mobs.
+#[deriving(Clone, Show, Encodable, Decodable)]
+pub struct MobStats {
+    pub power: int,
+    pub intrinsics: i32,
+}

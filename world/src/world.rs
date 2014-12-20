@@ -10,7 +10,7 @@ use flags::Flags;
 use mob::Mob;
 use entity::Entity;
 use action;
-use components::{Desc, MapMemory, Kind};
+use components::{Desc, MapMemory, Kind, Spawn};
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
 
@@ -63,10 +63,11 @@ pub struct WorldState {
 
 #[deriving(Encodable, Decodable)]
 struct Comps {
-    mob: VecMap<Mob>,
-    kind: VecMap<Kind>,
-    map_memory: VecMap<MapMemory>,
-    desc: VecMap<Desc>,
+    descs: VecMap<Desc>,
+    kinds: VecMap<Kind>,
+    map_memories: VecMap<MapMemory>,
+    mobs: VecMap<Mob>,
+    spawns: VecMap<Spawn>,
 }
 
 impl<'a> WorldState {
@@ -82,25 +83,37 @@ impl<'a> WorldState {
             spatial: Spatial::new(),
             flags: Flags::new(seed),
             comps: Comps {
-                mob: VecMap::new(),
-                kind: VecMap::new(),
-                map_memory: VecMap::new(),
-                desc: VecMap::new(),
+                descs: VecMap::new(),
+                kinds: VecMap::new(),
+                map_memories: VecMap::new(),
+                mobs: VecMap::new(),
+                spawns: VecMap::new(),
             }
         }
     }
-
-    // COMPONENTS CHECKPOINT
-    // XXX: Boilerplate
-    pub fn kinds(&'a self) ->                    ComponentRef<'a, Kind>                  { ComponentRef::new(&self.ecs, &self.comps.kind) }
-    pub fn kinds_mut(&'a mut self) ->         ComponentRefMut<'a, Kind>       { ComponentRefMut::new(&mut self.ecs, &mut self.comps.kind) }
-    pub fn mobs(&'a self) ->                     ComponentRef<'a, Mob>                   { ComponentRef::new(&self.ecs, &self.comps.mob) }
-    pub fn mobs_mut(&'a mut self) ->          ComponentRefMut<'a, Mob>        { ComponentRefMut::new(&mut self.ecs, &mut self.comps.mob) }
-    pub fn map_memories(&'a self) ->             ComponentRef<'a, MapMemory>             { ComponentRef::new(&self.ecs, &self.comps.map_memory) }
-    pub fn map_memories_mut(&'a mut self) ->  ComponentRefMut<'a, MapMemory>  { ComponentRefMut::new(&mut self.ecs, &mut self.comps.map_memory) }
-    pub fn descs(&'a self) ->                    ComponentRef<'a, Desc>                  { ComponentRef::new(&self.ecs, &self.comps.desc) }
-    pub fn descs_mut(&'a mut self) ->         ComponentRefMut<'a, Desc>       { ComponentRefMut::new(&mut self.ecs, &mut self.comps.desc) }
 }
+
+macro_rules! comp_api {
+    // Rust macros can't concatenate "_mut" to $name because reasons, so the
+    // _mut suffix name needs to be passed in explicitly.
+    { $name:ident, $name_mut:ident, $typ:ty } => {
+        impl<'a> WorldState {
+        pub fn $name(&'a self) -> ComponentRef<'a, $typ> {
+            ComponentRef::new(&self.ecs, &self.comps.$name)
+        }
+        pub fn $name_mut(&'a mut self) -> ComponentRefMut<'a, $typ> {
+            ComponentRefMut::new(&mut self.ecs, &mut self.comps.$name)
+        }
+        }
+    }
+}
+
+// COMPONENTS CHECKPOINT
+comp_api!(descs, descs_mut, Desc)
+comp_api!(kinds, kinds_mut, Kind)
+comp_api!(map_memories, map_memories_mut, MapMemory)
+comp_api!(mobs, mobs_mut, Mob)
+comp_api!(spawns, spawns_mut, Spawn)
 
 /// Set up a fresh start-game world state with an optional fixed random number
 /// generator seed. Calling init_world will cause any existing world state to
