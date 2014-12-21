@@ -1,6 +1,7 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-16 Mob stats using prototype entities +Engine
 (A) 2014-12-21 Sensible API for entering prototype object data +Content
+(A) 2014-12-21 Fluent prototype builder with FnMut, components implement add_to_entity trait +Content
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
