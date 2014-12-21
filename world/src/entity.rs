@@ -58,6 +58,13 @@ impl Entity {
         return "".to_string();
     }
 
+    /// Create a cloned entity that uses the current entity as a parent
+    /// prototype. Components not defined in the clone entity will be read
+    /// from the current entity.
+    pub fn clone_instance(self) -> Entity {
+        world::with_mut(|w| w.ecs.new_entity(Some(self)))
+    }
+
 // Spatial methods /////////////////////////////////////////////////////
 
     pub fn can_enter(self, loc: Location) -> bool {
@@ -364,7 +371,7 @@ impl Entity {
         }
     }
 
-// Misc ////////////////////////////////////////////////////////////////
+// FOV and map memory //////////////////////////////////////////////////
 
     fn has_map_memory(self) -> bool {
         world::with(|w| w.map_memories().get(self).is_some())

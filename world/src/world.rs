@@ -3,14 +3,16 @@ use std::cell::RefCell;
 use std::rand;
 use serialize::json;
 use rand::Rng;
+use calx::color;
 use ecs::Ecs;
 use area::Area;
 use spatial::Spatial;
 use flags::Flags;
-use mob::Mob;
+use mob::{Mob, Intrinsic};
 use entity::Entity;
 use action;
-use components::{Desc, MapMemory, Kind, Spawn};
+use components::{Desc, Kind, MapMemory, MobStat, Spawn};
+use {Biome};
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
 
@@ -84,6 +86,42 @@ impl<'a> WorldState {
 pub fn init_world(seed: Option<u32>) {
     WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
 
+    // Init the prototypes
+    // FIXME: Horrible spell out everything first draft, replace with a proper
+    // API that can spec prototypes with oneliners.
+    with_mut(|w| {
+        let p = w.ecs.new_entity(None);
+        w.descs_mut().insert(p,
+            Desc { name: "Player".to_string(), icon: 51, color: color::RED });
+        w.mob_stats_mut().insert(p,
+            MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 });
+
+        let p = w.ecs.new_entity(None);
+        w.descs_mut().insert(p,
+            Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE });
+        w.mob_stats_mut().insert(p,
+            MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 });
+        w.spawns_mut().insert(p,
+            Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1 });
+
+        let p = w.ecs.new_entity(None);
+        w.descs_mut().insert(p,
+            Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN });
+        w.mob_stats_mut().insert(p,
+            MobStat { power: 1, intrinsics: 0 });
+        w.spawns_mut().insert(p,
+            Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1 });
+
+        let p = w.ecs.new_entity(None);
+        w.descs_mut().insert(p,
+            Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN });
+        w.mob_stats_mut().insert(p,
+            MobStat { power: 3, intrinsics: 0 });
+        w.spawns_mut().insert(p,
+            Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3 });
+    });
+
+
     action::start_level(1);
 }
 
@@ -95,6 +133,7 @@ struct Comps {
     kinds: VecMap<Kind>,
     map_memories: VecMap<MapMemory>,
     mobs: VecMap<Mob>,
+    mob_stats: VecMap<MobStat>,
     spawns: VecMap<Spawn>,
 }
 
@@ -105,6 +144,7 @@ impl Comps {
             kinds: VecMap::new(),
             map_memories: VecMap::new(),
             mobs: VecMap::new(),
+            mob_stats: VecMap::new(),
             spawns: VecMap::new(),
         }
     }
@@ -130,6 +170,7 @@ comp_api!(descs, descs_mut, Desc)
 comp_api!(kinds, kinds_mut, Kind)
 comp_api!(map_memories, map_memories_mut, MapMemory)
 comp_api!(mobs, mobs_mut, Mob)
+comp_api!(mob_stats, mob_stats_mut, MobStat)
 comp_api!(spawns, spawns_mut, Spawn)
 
 /// Immutable component access.
