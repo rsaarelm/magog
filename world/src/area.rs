@@ -70,7 +70,7 @@ impl Area {
         // Generate open slots that can be used to spawn stuff.
         let mut opens = Vec::new();
         for (&loc, t) in terrain.iter() {
-            // No connectivity analysis yes, trusting that herringbone map has
+            // No connectivity analysis yet, trusting that herringbone map has
             // total connectivity. Later on, use Dijkstra map that spreads
             // from entrance/exit as a reachability floodfill to do something
             // cleverer here.
