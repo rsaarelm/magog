@@ -176,12 +176,7 @@ impl Entity {
 
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
-        world::with(|w| {
-            if let Some(&Kind::Mob(MobType::Player)) = w.kinds().get(self) {
-                return true;
-            }
-            return false;
-        })
+        self.name() == "Player" && self.location().is_some()
     }
 
     pub fn has_status(self, status: Status) -> bool {
