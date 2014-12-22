@@ -6,10 +6,7 @@ use world;
 use flags;
 use dir6::Dir6;
 use area::Area;
-use egg::Egg;
-use mob::MobType::Player;
 use location::Location;
-use components::Kind;
 
 /// Game update control.
 #[deriving(Copy, PartialEq)]
@@ -153,7 +150,10 @@ pub fn start_level(depth: int) {
             p.forget_map();
             p.place(start_loc);
         }
-        None => { Egg::new(Kind::Mob(Player)).hatch(start_loc); }
+        None => {
+            find_prototype("Player").expect("No Player prototype found!")
+            .clone_at(start_loc);
+        }
     };
     flags::set_camera(start_loc);
 }

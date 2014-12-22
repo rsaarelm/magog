@@ -5,7 +5,7 @@ use location::{Location};
 use dir6::Dir6;
 use flags;
 use mob;
-use mob::{Status, Intrinsic, MobType};
+use mob::{Status, Intrinsic};
 use components::{Kind};
 use geom::HexGeom;
 use spatial::Place;
