@@ -47,8 +47,10 @@ impl Entity {
 
     /// Return the kind of the entity.
     pub fn kind(self) -> Kind {
-        // XXX: Will crash if an entity has no kind specified.
-        world::with(|w| *w.kinds().get(self).unwrap())
+        match world::with(|w| w.kinds().get(self).map(|&k| k)) {
+            Some(kind) => kind,
+            _ => Kind::Unknown,
+        }
     }
 
     pub fn name(self) -> String {
@@ -147,7 +149,7 @@ impl Entity {
     /// deleting it.
     pub fn kill(self) {
         msgln!("{} dies.", self.name());
-        msg::push_msg(::Msg::Gib(self.location().unwrap()));
+        msg::push_msg(::Msg::Gib(self.location().expect("no location")));
         self.delete();
     }
 
@@ -188,13 +190,13 @@ impl Entity {
 
     pub fn add_status(self, status: Status) {
         if !self.is_mob() { return; }
-        world::with_mut(|w| w.mobs_mut().get(self).unwrap().add_status(status));
+        world::with_mut(|w| w.mobs_mut().get(self).expect("no mob").add_status(status));
         assert!(self.has_status(status));
     }
 
     pub fn remove_status(self, status: Status) {
         if !self.is_mob() { return; }
-        world::with_mut(|w| w.mobs_mut().get(self).unwrap().remove_status(status));
+        world::with_mut(|w| w.mobs_mut().get(self).expect("no mob").remove_status(status));
         assert!(!self.has_status(status));
     }
 
@@ -244,10 +246,10 @@ impl Entity {
     }
 
     pub fn melee(self, dir: Dir6) {
-        let loc = self.location().unwrap() + dir.to_v2();
+        let loc = self.location().expect("no location") + dir.to_v2();
         if let Some(e) = loc.mob_at() {
             // Attack power
-            let p = world::with(|w| w.mobs().get(self).unwrap().power);
+            let p = world::with(|w| w.mobs().get(self).expect("no mob").power);
             if p == 0 {
                 // No fight capacity.
                 return;
@@ -264,11 +266,11 @@ impl Entity {
     }
 
     pub fn hp(self) -> int {
-        world::with(|w| w.mobs().get(self).unwrap().hp)
+        world::with(|w| w.mobs().get(self).expect("no mob").hp)
     }
 
     pub fn max_hp(self) -> int {
-        self.mob_spec().unwrap().power
+        self.mob_spec().expect("no mob spec").power
     }
 
 // AI methods /////////////////////////////////////////////////////////
@@ -301,9 +303,9 @@ impl Entity {
         }
 
         if let Some(p) = action::player() {
-            let loc = self.location().unwrap();
+            let loc = self.location().expect("no location");
 
-            let vec_to_enemy = loc.v2_at(p.location().unwrap());
+            let vec_to_enemy = loc.v2_at(p.location().expect("no location"));
             if let Some(v) = vec_to_enemy {
                 if v.hex_dist() == 1 {
                     // Melee range, hit.
@@ -312,12 +314,12 @@ impl Entity {
                     // Walk towards.
                     let pathing_depth = 16;
                     let pathing = Dijkstra::new(
-                        vec![p.location().unwrap()], |&loc| !loc.blocks_walk(),
+                        vec![p.location().expect("no location")], |&loc| !loc.blocks_walk(),
                         pathing_depth);
 
                     let steps = pathing.sorted_neighbors(&loc);
                     if steps.len() > 0 {
-                        self.step(loc.dir6_towards(steps[0]).unwrap());
+                        self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
                     } else {
                         self.step(rng::with(|ref mut rng| rng.gen::<Dir6>()));
                         // TODO: Fall asleep if things get boring.
@@ -342,7 +344,7 @@ impl Entity {
     pub fn is_threatened(self) -> bool {
         // XXX: Expensive.
         let range = 12u;
-        let loc = self.location().unwrap();
+        let loc = self.location().expect("no location");
         let seen: Vec<Location> = Fov::new(
             |pt| (loc + pt).blocks_sight(), range)
             .map(|pt| loc + pt)

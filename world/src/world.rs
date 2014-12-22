@@ -215,7 +215,7 @@ impl<'a, C: Clone> ComponentRefMut<'a, C> {
             Some(Entity(idx2)) => {
                 // Copy-on-write: Make a local copy of inherited component
                 // when asking for mutable access.
-                let cow = self.data.get(&idx2).unwrap().clone();
+                let cow = self.data.get(&idx2).expect("parent component lost").clone();
                 self.data.insert(idx, cow);
                 self.data.get_mut(&idx)
             }

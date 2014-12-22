@@ -56,6 +56,8 @@ pub enum Kind {
     Prop,
     /// A static object that does things when stepped on.
     Node,
+    /// Placeholder while phasing out Kind.
+    Unknown,
 }
 
 /// Map field-of-view and remembered terrain.
