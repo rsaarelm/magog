@@ -91,6 +91,7 @@ pub fn init_world(seed: Option<u32>) {
     Prototype::new()
         (Desc { name: "Player".to_string(), icon: 51, color: color::RED })
         (MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 })
+        (MapMemory::new())
         ;
 
     Prototype::new()
