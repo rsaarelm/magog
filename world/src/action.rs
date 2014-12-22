@@ -36,6 +36,19 @@ pub fn player() -> Option<Entity> {
     None
 }
 
+/// Find the first entity that has a local (not inherited) Desc component with
+/// the given name.
+pub fn find_prototype(name: &str) -> Option<Entity> {
+    world::with(|w|
+        entities().find(|&e| {
+            if let Some(d) = w.descs().get_local(e) {
+                if d.name == name { return true; }
+            }
+            false
+        })
+    )
+}
+
 // World update state machine //////////////////////////////////////////
 
 /// Get the current control state.
