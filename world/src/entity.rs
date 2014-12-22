@@ -64,11 +64,9 @@ impl Entity {
     /// prototype. Components not defined in the clone entity will be read
     /// from the current entity.
     pub fn clone_at(self, loc: Location) -> Entity {
-        world::with_mut(|w| {
-            let e = w.ecs.new_entity(Some(self));
-            w.spatial.insert_at(e, loc);
-            e
-        })
+        let ret = world::with_mut(|w| { w.ecs.new_entity(Some(self)) });
+        ret.place(loc);
+        ret
     }
 
 // Spatial methods /////////////////////////////////////////////////////
