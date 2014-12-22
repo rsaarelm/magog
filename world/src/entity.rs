@@ -52,10 +52,12 @@ impl Entity {
     }
 
     pub fn name(self) -> String {
-        if let Some(spec) = self.mob_spec() {
-            return spec.name.to_string();
-        }
-        return "".to_string();
+        world::with(|w|
+            match w.descs().get(self) {
+                Some(desc) => desc.name.clone(),
+                None => "".to_string()
+            }
+        )
     }
 
     /// Create a cloned entity that uses the current entity as a parent
