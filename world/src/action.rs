@@ -74,11 +74,11 @@ pub fn update() {
 /// AwaitingInput.
 pub fn input(input: Input) {
     assert!(control_state() == ControlState::AwaitingInput);
-    let p = player().unwrap();
+    let p = player().expect("No player to receive input");
     match input {
         Input::Step(d) => {
             p.step(d);
-            flags::set_camera(p.location().unwrap());
+            flags::set_camera(p.location().expect("No player location"));
         }
         Input::Melee(d) => {
             p.melee(d);
