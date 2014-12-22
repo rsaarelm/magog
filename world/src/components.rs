@@ -3,6 +3,24 @@ use calx::Rgb;
 use location::Location;
 use {Biome};
 use mob;
+use entity::Entity;
+use world;
+
+macro_rules! impl_component {
+    { $comp:ty, $method:ident } => {
+        impl Component for $comp {
+            // XXX: Figure out how to move self into the closure to
+            // get rid of the .clone.
+            fn add_to(self, e: Entity) { world::with_mut(|w| w.$method().insert(e, self.clone())) }
+        }
+    }
+}
+
+pub trait Component {
+    /// Create an uniform syntax for attaching components to entities to allow
+    /// a fluent API for constructing prototypes.
+    fn add_to(self, e: Entity);
+}
 
 /// Entity name and appearance.
 #[deriving(Clone, Show, Encodable, Decodable)]
@@ -21,6 +39,8 @@ impl Desc {
         }
     }
 }
+
+impl_component!(Desc, descs_mut)
 
 // TODO: Kind can be deprecated eventually I think. Just infer the entity type
 // from components present that do actual stuff.
@@ -54,12 +74,16 @@ impl MapMemory {
     }
 }
 
+impl_component!(MapMemory, map_memories_mut)
+
 /// Unchanging statistics for mobs.
 #[deriving(Copy, Clone, Show, Encodable, Decodable)]
 pub struct MobStat {
     pub power: int,
     pub intrinsics: i32,
 }
+
+impl_component!(MobStat, mob_stats_mut)
 
 /// Spawning properties for prototype objects.
 #[deriving(Copy, Clone, Show, Encodable, Decodable)]
@@ -73,4 +97,26 @@ pub struct Spawn {
     /// Minimum depth where the entity will show up. More powerful entities
     /// only start showing up in large depths.
     pub min_depth: uint,
+}
+
+impl_component!(Spawn, spawns_mut)
+
+#[deriving(Copy)]
+pub struct Prototype {
+    target: Entity
+}
+
+impl Prototype {
+    pub fn new() -> Prototype {
+        Prototype {
+            target: world::with_mut(|w| w.ecs.new_entity(None))
+        }
+    }
+}
+
+impl<C: Component> Fn(C,) -> Prototype for Prototype {
+    extern "rust-call" fn call(&self, (comp,): (C,)) -> Prototype {
+        comp.add_to(self.target);
+        *self
+    }
 }

@@ -11,6 +11,7 @@ use flags::Flags;
 use mob::{Mob, Intrinsic};
 use entity::Entity;
 use action;
+use components::{Prototype};
 use components::{Desc, Kind, MapMemory, MobStat, Spawn};
 use {Biome};
 
@@ -87,40 +88,28 @@ pub fn init_world(seed: Option<u32>) {
     WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
 
     // Init the prototypes
-    // FIXME: Horrible spell out everything first draft, replace with a proper
-    // API that can spec prototypes with oneliners.
-    with_mut(|w| {
-        let p = w.ecs.new_entity(None);
-        w.descs_mut().insert(p,
-            Desc { name: "Player".to_string(), icon: 51, color: color::RED });
-        w.mob_stats_mut().insert(p,
-            MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 });
+    Prototype::new()
+        (Desc { name: "Player".to_string(), icon: 51, color: color::RED })
+        (MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 })
+        ;
 
-        let p = w.ecs.new_entity(None);
-        w.descs_mut().insert(p,
-            Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE });
-        w.mob_stats_mut().insert(p,
-            MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 });
-        w.spawns_mut().insert(p,
-            Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1 });
+    Prototype::new()
+        (Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE })
+        (MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 })
+        (Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1 })
+        ;
 
-        let p = w.ecs.new_entity(None);
-        w.descs_mut().insert(p,
-            Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN });
-        w.mob_stats_mut().insert(p,
-            MobStat { power: 1, intrinsics: 0 });
-        w.spawns_mut().insert(p,
-            Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1 });
+    Prototype::new()
+        (Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN })
+        (MobStat { power: 1, intrinsics: 0 })
+        (Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1 })
+        ;
 
-        let p = w.ecs.new_entity(None);
-        w.descs_mut().insert(p,
-            Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN });
-        w.mob_stats_mut().insert(p,
-            MobStat { power: 3, intrinsics: 0 });
-        w.spawns_mut().insert(p,
-            Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3 });
-    });
-
+    Prototype::new()
+        (Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
+        (MobStat { power: 3, intrinsics: 0 })
+        (Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3 })
+        ;
 
     action::start_level(1);
 }
