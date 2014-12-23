@@ -1,5 +1,6 @@
 use std::rand::Rng;
 use calx::dijkstra::Dijkstra;
+use calx::Rgb;
 use world;
 use location::{Location};
 use dir6::Dir6;
@@ -58,6 +59,16 @@ impl Entity {
             match w.descs().get(self) {
                 Some(desc) => desc.name.clone(),
                 None => "".to_string()
+            }
+        )
+    }
+
+    pub fn get_icon(self) -> Option<(uint, Rgb)> {
+        world::with(|w|
+            if let Some(desc) = w.descs().get(self) {
+                Some((desc.icon, desc.color))
+            } else {
+                None
             }
         )
     }
@@ -209,6 +220,7 @@ impl Entity {
 
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
+        if self.is_player() { return true; }
         self.is_mob() && !self.has_status(Status::Asleep)
     }
 
@@ -216,6 +228,7 @@ impl Entity {
     /// based on its speed properties. Does not check for status effects like
     /// sleep that might prevent actual action.
     pub fn ticks_this_frame(self) -> bool {
+        if self.is_player() { return true; }
         if !self.is_mob() { return false; }
 
         let tick = flags::get_tick();
@@ -266,10 +279,12 @@ impl Entity {
     }
 
     pub fn hp(self) -> int {
+        return 10;
         world::with(|w| w.mobs().get(self).expect("no mob").hp)
     }
 
     pub fn max_hp(self) -> int {
+        return 10;
         self.mob_spec().expect("no mob spec").power
     }
 

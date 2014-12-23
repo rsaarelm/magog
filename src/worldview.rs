@@ -280,6 +280,7 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
+        // TODO: Get rid of kind, use descs instead.
         match entity.kind() {
             Kind::Mob(m) => {
                 let body_pos =
@@ -307,7 +308,11 @@ impl<'a> CellDrawable<'a> {
                     self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);
                 }
             }
-            todo => { println!("TODO: Draw {} entity", todo) }
+            _ => {
+                if let Some((icon, color)) = entity.get_icon() {
+                    self.draw_tile(ctx, icon, offset, BLOCK_Z, &color);
+                }
+            }
         }
     }
 }
