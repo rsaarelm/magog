@@ -1,7 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-16 Mob stats using prototype entities +Engine
-(A) 2014-12-21 Sensible API for entering prototype object data +Content
-(A) 2014-12-21 Fluent prototype builder with FnMut, components implement add_to_entity trait +Content
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -87,6 +85,7 @@
 (C) 2014-12-13 Wizard mode with a debug command-line +UI
 (C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
+(C) 2014-12-23 Virtual machine environment for testing buildability with lastest Rust nightly, no back-and-forth churn with packages on main dev system +Build
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -116,3 +115,5 @@ x 2014-12-17 2014-12-17 File link Dropbox TODO to git tree +Admin
 x 2014-12-17 2014-12-17 Reserve A priority for immediate next actions +Admin
 x 2014-12-19 2014-12-17 Check if saving ecs refcells in Comps breaks aliasing after loaded save +Engine
 x 2014-12-20 2014-12-19 Figure out how to do entity inheritance without storing ECS references in comps, ECS aliasing during save breaks stuff +Engine
+x 2014-12-22 2014-12-21 Fluent prototype builder with FnMut, components implement add_to_entity trait +Content
+x 2014-12-22 2014-12-21 Sensible API for entering prototype object data +Content
