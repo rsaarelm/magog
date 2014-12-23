@@ -109,9 +109,9 @@ pub struct Prototype {
 }
 
 impl Prototype {
-    pub fn new() -> Prototype {
+    pub fn new(parent: Option<Entity>) -> Prototype {
         Prototype {
-            target: world::with_mut(|w| w.ecs.new_entity(None))
+            target: world::with_mut(|w| w.ecs.new_entity(parent))
         }
     }
 }

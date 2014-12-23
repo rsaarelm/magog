@@ -88,25 +88,25 @@ pub fn init_world(seed: Option<u32>) {
     WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
 
     // Init the prototypes
-    Prototype::new()
+    Prototype::new(None)
         (Desc { name: "Player".to_string(), icon: 51, color: color::RED })
         (MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 })
         (MapMemory::new())
         ;
 
-    Prototype::new()
+    Prototype::new(None)
         (Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE })
         (MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 })
         (Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1 })
         ;
 
-    Prototype::new()
+    Prototype::new(None)
         (Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN })
         (MobStat { power: 1, intrinsics: 0 })
         (Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1 })
         ;
 
-    Prototype::new()
+    Prototype::new(None)
         (Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
         (MobStat { power: 3, intrinsics: 0 })
         (Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3 })
