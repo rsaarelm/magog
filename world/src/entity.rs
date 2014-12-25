@@ -5,9 +5,7 @@ use world;
 use location::{Location};
 use dir6::Dir6;
 use flags;
-use mob;
-use mob::{Status, Intrinsic};
-use components::{Kind};
+use components::{Intrinsic};
 use components::{BrainState};
 use geom::HexGeom;
 use spatial::Place;
@@ -35,9 +33,7 @@ impl Entity {
         // COMPONENTS CHECKPOINT
         // This needs to call every component system.
         world::with_mut(|w| w.descs_mut().remove(self));
-        world::with_mut(|w| w.kinds_mut().remove(self));
         world::with_mut(|w| w.map_memories_mut().remove(self));
-        world::with_mut(|w| w.mobs_mut().remove(self));
         world::with_mut(|w| w.spawns_mut().remove(self));
         world::with_mut(|w| w.healths_mut().remove(self));
         world::with_mut(|w| w.brains_mut().remove(self));
@@ -48,14 +44,6 @@ impl Entity {
     }
 
     pub fn blocks_walk(self) -> bool { self.is_mob() }
-
-    /// Return the kind of the entity.
-    pub fn kind(self) -> Kind {
-        match world::with(|w| w.kinds().get(self).map(|&k| k)) {
-            Some(kind) => kind,
-            _ => Kind::Unknown,
-        }
-    }
 
     pub fn name(self) -> String {
         world::with(|w|
@@ -139,18 +127,12 @@ impl Entity {
 
     pub fn damage(self, amount: int) {
         if amount == 0 { return; }
+        let max_hp = self.max_hp();
 
         let (_amount, kill) = world::with_mut(|w| {
-            if let Some(ref mut mob) = w.mobs_mut().get(self) {
-                mob.hp -= amount;
-                if mob.hp <= 0 {
-                    // Remember this when we're out of the borrow.
-                    return (amount, true);
-                }
-            } else {
-                panic!("Damaging a non-mob");
-            };
-            (amount, false)
+            let health = w.healths_mut().get(self).expect("no health");
+            health.wounds += amount;
+            (amount, health.wounds >= max_hp)
         });
 
         msg::push_msg(::Msg::Damage(self));
@@ -173,21 +155,12 @@ impl Entity {
         world::with(|w| w.brains().get(self).is_some()) && self.location().is_some()
     }
 
-    pub fn mob_spec(self) -> Option<&'static mob::MobSpec> {
-        world::with(|w| {
-            if let Some(&Kind::Mob(mt)) = w.kinds().get(self) {
-                Some(&mob::MOB_SPECS[mt as uint])
-            } else {
-                None
-            }
-        })
-    }
-
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
         self.brain_state() == Some(BrainState::PlayerControl) && self.location().is_some()
     }
 
+    /*
     pub fn has_status(self, status: Status) -> bool {
         world::with(|w| {
             if let Some(&mob) = w.mobs().get(self) {
@@ -208,12 +181,15 @@ impl Entity {
         world::with_mut(|w| w.mobs_mut().get(self).expect("no mob").remove_status(status));
         assert!(!self.has_status(status));
     }
+    */
 
     pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
-        if let Some(spec) = self.mob_spec() {
-            return spec.intrinsics & intrinsic as int != 0;
-        }
-        return false;
+        world::with(|w|
+            if let Some(stat) = w.mob_stats().get(self) {
+                stat.intrinsics & intrinsic as u32 != 0
+            } else {
+                false
+            })
     }
 
     /// Return whether this entity is an awake mob.
@@ -240,9 +216,9 @@ impl Entity {
             0 => return true,
             1 => return self.has_intrinsic(Intrinsic::Fast),
             2 => return true,
-            3 => return self.has_status(Status::Quick),
+            3 => return false,//self.has_status(Status::Quick),
             4 => return !self.has_intrinsic(Intrinsic::Slow)
-                        && !self.has_status(Status::Slow),
+                        /*&& !self.has_status(Status::Slow)*/,
             _ => panic!("Invalid action phase"),
         }
     }
@@ -263,7 +239,7 @@ impl Entity {
         let loc = self.location().expect("no location") + dir.to_v2();
         if let Some(e) = loc.mob_at() {
             // Attack power
-            let p = world::with(|w| w.mobs().get(self).expect("no mob").power);
+            let p = self.power_level();
             if p == 0 {
                 // No fight capacity.
                 return;
@@ -279,14 +255,23 @@ impl Entity {
         }
     }
 
+    pub fn power_level(self) -> int {
+        world::with(|w|
+            if let Some(stat) = w.mob_stats().get(self) { stat.power }
+            else { 0 })
+    }
+
     pub fn hp(self) -> int {
-        return 10;
-        world::with(|w| w.mobs().get(self).expect("no mob").hp)
+        self.max_hp() - world::with(|w|
+            if let Some(health) = w.healths().get(self) {
+                health.wounds
+            } else {
+                0
+            })
     }
 
     pub fn max_hp(self) -> int {
-        return 10;
-        self.mob_spec().expect("no mob spec").power
+        self.power_level()
     }
 
 // AI methods /////////////////////////////////////////////////////////

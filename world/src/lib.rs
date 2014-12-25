@@ -17,7 +17,6 @@ pub use msg::{pop_msg};
 pub use terrain::{TerrainType};
 pub use world::{init_world, load, save};
 pub use dir6::Dir6;
-pub use mob::{Mob, Intrinsic, Status, MobType, MOB_SPECS};
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Text(format!($($arg)*))))
@@ -48,7 +47,6 @@ mod geomorph;
 mod geomorph_data;
 mod location;
 mod mapgen;
-mod mob;
 mod msg;
 mod rng;
 mod spatial;

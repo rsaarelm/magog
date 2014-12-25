@@ -7,8 +7,7 @@ use calx::color::*;
 use calx::timing;
 use world::TerrainType;
 use world::{Location, Chart};
-use world::{FovStatus, MobType, MOB_SPECS};
-use world::components::{Kind};
+use world::{FovStatus};
 use world::{Entity};
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
@@ -280,38 +279,30 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
-        // TODO: Get rid of kind, use descs instead.
-        match entity.kind() {
-            Kind::Mob(m) => {
-                let body_pos =
-                    if entity.is_bobbing() {
-                        offset + *(timing::cycle_anim(
-                                0.3f64,
-                                &[V2(0, 0), V2(0, -1)]))
-                    } else { offset };
+        // SPECIAL CASE: The serpent mob has an extra mound element that
+        // doesn't bob along with the main body.
+        static SERPENT_ICON: uint = 94;
 
-                let (icon, mut color) = (
-                    MOB_SPECS[m as uint].sprite,
-                    MOB_SPECS[m as uint].color);
+        let body_pos =
+            if entity.is_bobbing() {
+                offset + *(timing::cycle_anim(
+                        0.3f64,
+                        &[V2(0, 0), V2(0, -1)]))
+            } else { offset };
 
-                if let Some(&t) = self.damage_timers.get(entity) {
-                    color = if t % 2 == 0 { &WHITE } else { &BLACK };
-                }
-
-                if m == MobType::Serpent {
-                    // Special case, Serpent sprite is made of two parts.
-                    // Body
-                    self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);
-                    // Ground mound, doesn't bob.
-                    self.draw_tile(ctx, icon + 1, offset, BLOCK_Z, color);
-                } else {
-                    self.draw_tile(ctx, icon, body_pos, BLOCK_Z, color);
-                }
+        if let Some((icon, mut color)) = entity.get_icon() {
+            // Damage blink animation.
+            if let Some(&t) = self.damage_timers.get(entity) {
+                color = if t % 2 == 0 { WHITE } else { BLACK };
             }
-            _ => {
-                if let Some((icon, color)) = entity.get_icon() {
-                    self.draw_tile(ctx, icon, offset, BLOCK_Z, &color);
-                }
+
+            if icon == SERPENT_ICON {
+                // Body
+                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
+                // Ground mound, doesn't bob.
+                self.draw_tile(ctx, icon + 1, offset, BLOCK_Z, &color);
+            } else {
+                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
             }
         }
     }

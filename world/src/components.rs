@@ -2,7 +2,6 @@ use std::collections::HashSet;
 use calx::Rgb;
 use location::Location;
 use {Biome};
-use mob;
 use entity::Entity;
 use world;
 
@@ -42,24 +41,6 @@ impl Desc {
 
 impl_component!(Desc, descs_mut)
 
-// TODO: Kind can be deprecated eventually I think. Just infer the entity type
-// from components present that do actual stuff.
-
-/// General type of a game entity.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
-pub enum Kind {
-    /// An active, mobile entity like the player or the NPCs.
-    Mob(mob::MobType),
-    /// An entity that can be picked up and used in some way.
-    Item, // TODO ItemType data.
-    /// A background item that doesn't do much.
-    Prop,
-    /// A static object that does things when stepped on.
-    Node,
-    /// Placeholder while phasing out Kind.
-    Unknown,
-}
-
 /// Map field-of-view and remembered terrain.
 #[deriving(Clone, Show, Encodable, Decodable)]
 pub struct MapMemory {
@@ -82,10 +63,20 @@ impl_component!(MapMemory, map_memories_mut)
 #[deriving(Copy, Clone, Show, Encodable, Decodable)]
 pub struct MobStat {
     pub power: int,
-    pub intrinsics: i32,
+    pub intrinsics: u32,
 }
 
 impl_component!(MobStat, mob_stats_mut)
+
+#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+pub enum Intrinsic {
+    /// Moves 1/3 slower than usual.
+    Slow        = 0b1,
+    /// Moves 1/3 faster than usual, stacks with Quick status.
+    Fast        = 0b10,
+    /// Can manipulate objects and doors.
+    Hands       = 0b100,
+}
 
 /// Spawning properties for prototype objects.
 #[deriving(Copy, Clone, Show, Encodable, Decodable)]
@@ -150,9 +141,9 @@ pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
     /// Wounds component. Probably in MobStat or something.
-    pub wounds: uint,
+    pub wounds: int,
     /// Armor points get eaten away before you start getting wounds.
-    pub armor: uint,
+    pub armor: int,
 }
 
 impl_component!(Health, healths_mut)
