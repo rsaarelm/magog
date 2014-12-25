@@ -6,7 +6,7 @@ use location::{Location};
 use dir6::Dir6;
 use flags;
 use components::{Intrinsic};
-use components::{BrainState};
+use components::{BrainState, Alignment};
 use geom::HexGeom;
 use spatial::Place;
 use action;
@@ -291,6 +291,10 @@ impl Entity {
         world::with_mut(|w| w.brains_mut().get(self).expect("no brains").state = brain_state );
     }
 
+    fn alignment(self) -> Option<Alignment> {
+        world::with(|w| w.brains().get(self).map(|b| b.alignment))
+    }
+
     fn wake_up(self) {
         if self.brain_state() == Some(BrainState::Asleep) {
             self.set_brain_state(BrainState::Hunting);
@@ -346,13 +350,13 @@ impl Entity {
 
     /// Return whether this thing wants to fight the other thing.
     fn is_hostile_to(self, other: Entity) -> bool {
-        if let Some(p) = action::player() {
-            if self.is_mob() && other.is_mob() && self != other &&
-                (self == p || other == p) {
-                return true;
-            }
+        match (self.alignment(), other.alignment()) {
+            (Some(Alignment::Chaotic), Some(_)) => true,
+            (Some(_), Some(Alignment::Chaotic)) => true,
+            (Some(Alignment::Evil), Some(Alignment::Good)) => true,
+            (Some(Alignment::Good), Some(Alignment::Evil)) => true,
+            _ => false,
         }
-        return false;
     }
 
     /// Return whether the mob has hostiles in its immediate vicinity.
