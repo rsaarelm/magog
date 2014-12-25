@@ -1,23 +1,25 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(A) 2014-12-13 Equipped weapons and armor affect character stats +Content
+(A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
+(A) 2014-12-13 Instahealing drop item +Content
+(A) 2014-12-13 Inventory menu with equipment and backpack slots +UI
+(A) 2014-12-13 Killed mobs drop items +Content
+(A) 2014-12-13 Pick up items command +Content
+(A) 2014-12-16 Item entities with prototypes +Engine
+(A) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
 (B) 2014-12-13 Corpses +Content
 (B) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
 (B) 2014-12-13 Enemy ranged attack +Content
-(B) 2014-12-13 Equipped weapons and armor affect character stats +Content
-(B) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (B) 2014-12-13 Explosions +Content
 (B) 2014-12-13 File hosting for Windows binaries +Build
 (B) 2014-12-13 Freeze effects +Content
-(B) 2014-12-13 Instahealing drop item +Content
-(B) 2014-12-13 Inventory menu with equipment and backpack slots +UI
 (B) 2014-12-13 Keeping score +Content
-(B) 2014-12-13 Killed mobs drop items +Content
 (B) 2014-12-13 Mouse event support +UI
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
-(B) 2014-12-13 Pick up items command +Content
 (B) 2014-12-13 Player level up logic +Content
 (B) 2014-12-13 Projectile attack beam effect +UI
 (B) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
@@ -28,9 +30,8 @@
 (B) 2014-12-13 Spawn item drops +Content
 (B) 2014-12-13 Teleport +Content
 (B) 2014-12-13 Winning the game +Content
-(B) 2014-12-16 Item entities with prototypes +Engine
-(B) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial +Engine
 (B) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine
+(B) 2014-12-25 Spell cooldowns +Content
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -87,8 +88,10 @@
 (C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (C) 2014-12-23 Virtual machine environment for testing buildability with lastest Rust nightly, no back-and-forth churn with packages on main dev system +Build
+(C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
+(C) 2014-12-25 Versioned save files +Engine
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
