@@ -26,8 +26,7 @@ pub enum Input {
 
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
-    let mut iter = world::with(|w| w.ecs.iter());
-    for e in iter {
+    for e in entities() {
         if e.is_player() { return Some(e); }
     }
     None
