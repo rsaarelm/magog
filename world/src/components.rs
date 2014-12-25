@@ -99,13 +99,71 @@ pub struct Spawn {
     /// Minimum depth where the entity will show up. More powerful entities
     /// only start showing up in large depths.
     pub min_depth: uint,
+
+    pub category: Category,
 }
 
 impl_component!(Spawn, spawns_mut)
 
+#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+pub enum Category {
+    Mob = 0b1,
+    Item = 0b10,
+
+    Anything = 0b11111111,
+}
+
+#[deriving(Copy, Clone, Show, Encodable, Decodable)]
+pub struct Brain {
+    pub state: BrainState,
+    pub alignment: Alignment
+}
+
+impl_component!(Brain, brains_mut)
+
+/// Mob behavior state.
+#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+pub enum BrainState {
+    /// AI mob is inactive, but can be startled into action by noise or
+    /// motion.
+    Asleep,
+    /// AI mob is looking for a fight.
+    Hunting,
+    /// Mob is under player control.
+    PlayerControl,
+}
+
+/// Used to determine who tries to fight whom.
+#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+pub enum Alignment {
+    /// Attack anything and everything.
+    Chaotic,
+    /// Player alignment. The noble path of slaughtering everything that moves
+    /// and gets in the way of taking their shiny stuff.
+    Good,
+    /// Enemy alignment. The foul cause of working together to defend your
+    /// home and belongings against a powerful and devious intruder.
+    Evil,
+}
+
+/// Damage state component. The default state is undamaged and unarmored.
+#[deriving(Copy, Clone, Show, Default, Encodable, Decodable)]
+pub struct Health {
+    /// The more wounds you have, the more hurt you are. How much damage you
+    /// can take before dying depends on entity power level, not described by
+    /// Wounds component. Probably in MobStat or something.
+    pub wounds: uint,
+    /// Armor points get eaten away before you start getting wounds.
+    pub armor: uint,
+}
+
+impl_component!(Health, healths_mut)
+
+////////////////////////////////////////////////////////////////////////
+
 #[deriving(Copy)]
 pub struct Prototype {
-    target: Entity
+    pub target: Entity
 }
 
 impl Prototype {

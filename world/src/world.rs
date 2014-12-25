@@ -1,6 +1,7 @@
 use std::collections::VecMap;
 use std::cell::RefCell;
 use std::rand;
+use std::default::Default;
 use serialize::json;
 use rand::Rng;
 use calx::color;
@@ -12,7 +13,8 @@ use mob::{Mob, Intrinsic};
 use entity::Entity;
 use action;
 use components::{Prototype};
-use components::{Desc, Kind, MapMemory, MobStat, Spawn};
+use components::{Desc, Kind, MapMemory, MobStat, Spawn, Category, Health};
+use components::{Brain, BrainState, Alignment};
 use {Biome};
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
@@ -87,29 +89,35 @@ impl<'a> WorldState {
 pub fn init_world(seed: Option<u32>) {
     WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
 
+    let base_mob = Prototype::new(None)
+        (Brain { state: BrainState::Asleep, alignment: Alignment::Evil })
+        ({let h: Health = Default::default(); h})
+        .target;
+
     // Init the prototypes
-    Prototype::new(None)
+    Prototype::new(Some(base_mob))
+        (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
         (Desc { name: "Player".to_string(), icon: 51, color: color::RED })
         (MobStat { power: 6, intrinsics: Intrinsic::Hands as i32 })
         (MapMemory::new())
         ;
 
-    Prototype::new(None)
+    Prototype::new(Some(base_mob))
         (Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE })
         (MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 })
-        (Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1 })
+        (Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1, category: Category::Mob })
         ;
 
-    Prototype::new(None)
+    Prototype::new(Some(base_mob))
         (Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN })
         (MobStat { power: 1, intrinsics: 0 })
-        (Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1 })
+        (Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1, category: Category::Mob })
         ;
 
-    Prototype::new(None)
+    Prototype::new(Some(base_mob))
         (Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
         (MobStat { power: 3, intrinsics: 0 })
-        (Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3 })
+        (Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3, category: Category::Mob })
         ;
 
     action::start_level(1);
@@ -125,6 +133,8 @@ struct Comps {
     mobs: VecMap<Mob>,
     mob_stats: VecMap<MobStat>,
     spawns: VecMap<Spawn>,
+    healths: VecMap<Health>,
+    brains: VecMap<Brain>,
 }
 
 impl Comps {
@@ -136,6 +146,8 @@ impl Comps {
             mobs: VecMap::new(),
             mob_stats: VecMap::new(),
             spawns: VecMap::new(),
+            healths: VecMap::new(),
+            brains: VecMap::new(),
         }
     }
 }
@@ -162,6 +174,8 @@ comp_api!(map_memories, map_memories_mut, MapMemory)
 comp_api!(mobs, mobs_mut, Mob)
 comp_api!(mob_stats, mob_stats_mut, MobStat)
 comp_api!(spawns, spawns_mut, Spawn)
+comp_api!(healths, healths_mut, Health)
+comp_api!(brains, brains_mut, Brain)
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

@@ -38,6 +38,8 @@ impl Entity {
         world::with_mut(|w| w.map_memories_mut().remove(self));
         world::with_mut(|w| w.mobs_mut().remove(self));
         world::with_mut(|w| w.spawns_mut().remove(self));
+        world::with_mut(|w| w.healths_mut().remove(self));
+        world::with_mut(|w| w.brains_mut().remove(self));
 
         world::with_mut(|w| w.spatial.remove(self));
 
