@@ -40,7 +40,6 @@ pub mod components;
 mod area;
 mod dir6;
 mod ecs;
-mod egg;
 mod entity;
 mod flags;
 mod fov;

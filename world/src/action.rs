@@ -142,7 +142,7 @@ pub fn random_spawns<R: Rng>(
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
 /// and stranger terrain.
-pub fn current_depth() -> int { world::with(|w| w.area.seed.spec.depth) }
+pub fn current_depth() -> int { world::with(|w| w.area.as_ref().expect("no area").seed.spec.depth) }
 
 pub fn start_level(depth: int) {
     let biome = match depth {
@@ -154,19 +154,19 @@ pub fn start_level(depth: int) {
 
     let seed = world::with(|w| w.flags.seed);
 
+    let new_area = Area::new(
+        seed,
+        ::AreaSpec::new(biome, depth));
+    // XXX: How to move area into the closure without cloning?
     world::with_mut(|w| {
-        let new_area = Area::new(
-            seed,
-            ::AreaSpec::new(biome, depth));
-        w.area = new_area
+        w.area = Some(new_area.clone())
     });
 
-    let eggs = world::with(|w| w.area.get_eggs());
-    for &(ref egg, ref loc) in eggs.iter() {
-        egg.hatch(*loc);
+    for (spawn, loc) in  world::with(|w| w.area.as_ref().expect("no area").get_spawns()).into_iter() {
+        spawn.clone_at(loc);
     }
 
-    let start_loc = world::with(|w| w.area.player_entrance());
+    let start_loc = world::with(|w| w.area.as_ref().expect("no area").player_entrance());
     // Either reuse the existing player or create a new one.
     match player() {
         Some(p) => {
@@ -202,7 +202,7 @@ pub fn next_level() {
 pub fn autoexplore_map() -> Option<Dijkstra<Location>> {
     let pathing_depth = 16;
 
-    let locs = world::with(|w| w.area.terrain.iter()
+    let locs = world::with(|w| w.area.as_ref().expect("no area").terrain.iter()
                            .map(|(&loc, _)| loc)
                            .filter(|loc| loc.fov_status().is_none())
                            .collect::<Vec<Location>>());

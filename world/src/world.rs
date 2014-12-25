@@ -57,7 +57,7 @@ pub struct WorldState {
     /// Global entity handler.
     pub ecs: Ecs,
     /// World terrain generation and storage.
-    pub area: Area,
+    pub area: Option<Area>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
@@ -75,7 +75,7 @@ impl<'a> WorldState {
         };
         WorldState {
             ecs: Ecs::new(),
-            area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
+            area: None,
             spatial: Spatial::new(),
             flags: Flags::new(seed),
             comps: Comps::new(),

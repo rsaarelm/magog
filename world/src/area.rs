@@ -6,11 +6,10 @@ use std::collections::HashMap;
 use terrain::TerrainType;
 use location::Location;
 use mapgen;
-use egg::Egg;
-use mob;
-use mob::{MobSpec};
 use {AreaSpec};
-use components::{Kind};
+use components::{Category};
+use action;
+use entity::Entity;
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
 // generated to have exactly the same contents every time given the same seed
@@ -21,12 +20,13 @@ use components::{Kind};
 // nondeterminism bug that depended on the numerical order of the arbitrary
 // address values.
 
-#[deriving(Decodable, Encodable)]
+#[deriving(Copy, Clone, Decodable, Encodable)]
 struct AreaSeed {
     pub rng_seed: u32,
     pub spec: AreaSpec,
 }
 
+#[deriving(Clone)]
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.
@@ -40,7 +40,7 @@ pub struct Area {
     /// Where the player should enter the area.
     player_entrance: Location,
     /// Non-player entities to create when first initializing the map.
-    eggs: Vec<(Egg, Location)>,
+    spawns: Vec<(Entity, Location)>,
 }
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Area {
@@ -58,7 +58,7 @@ impl<E, S:Encoder<E>> Encodable<S, E> for Area {
 
 impl Area {
     pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
-        let num_eggs = 32i;
+        let num_mobs = 32u;
 
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed([rng_seed as uint + spec.depth as uint].as_slice());
@@ -82,29 +82,24 @@ impl Area {
 
         let entrance = opens.swap_remove(0).unwrap();
 
-        let viable_mobs: Vec<MobSpec> = mob::MOB_SPECS.iter()
-            .filter(|m| m.area_spec.can_hatch_in(&spec))
-            .map(|&x| x).collect();
+        let mob_spawns = action::random_spawns(
+            &mut rng, num_mobs, spec.depth as uint, spec.biome, Category::Mob);
 
-        let mut eggs = vec![];
-
-        assert!(viable_mobs.len() > 0, "Area has no viable mob spawns");
-        for _ in range(0, num_eggs) {
+        let spawns = mob_spawns.into_iter().filter_map(|spawn|
             if let Some(loc) = opens.swap_remove(0) {
-                let mob = rng.choose(viable_mobs.as_slice()).unwrap();
-                eggs.push((Egg::new(Kind::Mob(mob.typ)), loc));
+                Some((spawn, loc))
             } else {
                 // Ran out of open space.
-                break;
+                None
             }
-        }
+        ).collect();
 
         Area {
             seed: AreaSeed { rng_seed: rng_seed, spec: spec },
             terrain: terrain,
             _open_slots: opens,
             player_entrance: entrance,
-            eggs: eggs,
+            spawns: spawns,
         }
     }
 
@@ -118,7 +113,7 @@ impl Area {
 
     /// List the objects that should be hatched in the world during init. This
     /// is tied to map generation, so it goes in the area module.
-    pub fn get_eggs(&self) -> Vec<(Egg, Location)> { self.eggs.clone() }
+    pub fn get_spawns(&self) -> Vec<(Entity, Location)> { self.spawns.clone() }
 
     pub fn player_entrance(&self) -> Location {
         self.player_entrance
