@@ -1,5 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-16 Mob stats using prototype entities +Engine
+(A) 2014-12-16 Mob stats using prototype entities, remove static stats table +Engine
 (A) 2014-12-24 Entity category bitmask enum (Mob, Weapon, Potion, Treasure, ...), goes in Spawn component +Content
 (A) 2014-12-25 Delete Kind component +Engine
 (A) 2014-12-25 Move Sleep status from status flags to AI state +Engine
@@ -94,6 +94,7 @@
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (C) 2014-12-23 Virtual machine environment for testing buildability with lastest Rust nightly, no back-and-forth churn with packages on main dev system +Build
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
+(C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -113,6 +114,7 @@
 (D) 2014-12-13 Store steganographic save games in screenshots +Render
 (D) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
+(D) 2014-12-25 Should AreaSpec.depth be uint? +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
