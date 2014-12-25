@@ -8,6 +8,7 @@ use flags;
 use mob;
 use mob::{Status, Intrinsic};
 use components::{Kind};
+use components::{BrainState};
 use geom::HexGeom;
 use spatial::Place;
 use action;
@@ -169,12 +170,7 @@ impl Entity {
 // Mob methods /////////////////////////////////////////////////////////
 
     pub fn is_mob(self) -> bool {
-        world::with(|w| {
-            if let Some(&Kind::Mob(_)) = w.kinds().get(self) {
-                return true;
-            }
-            return false;
-        })
+        world::with(|w| w.brains().get(self).is_some()) && self.location().is_some()
     }
 
     pub fn mob_spec(self) -> Option<&'static mob::MobSpec> {
@@ -189,7 +185,7 @@ impl Entity {
 
     /// Return whether this mob is the player avatar.
     pub fn is_player(self) -> bool {
-        self.name() == "Player" && self.location().is_some()
+        self.brain_state() == Some(BrainState::PlayerControl) && self.location().is_some()
     }
 
     pub fn has_status(self, status: Status) -> bool {
@@ -222,8 +218,11 @@ impl Entity {
 
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
-        if self.is_player() { return true; }
-        self.is_mob() && !self.has_status(Status::Asleep)
+        match self.brain_state() {
+            Some(BrainState::Asleep) => false,
+            Some(_) => true,
+            _ => false
+        }
     }
 
     /// Return if the entity is a mob that should get an update this frame
@@ -299,19 +298,33 @@ impl Entity {
         }
     }
 
+    fn brain_state(self) -> Option<BrainState> {
+        world::with(|w| w.brains().get(self).map(|b| b.state))
+    }
+
+    fn set_brain_state(self, brain_state: BrainState) {
+        world::with_mut(|w| w.brains_mut().get(self).expect("no brains").state = brain_state );
+    }
+
+    fn wake_up(self) {
+        if self.brain_state() == Some(BrainState::Asleep) {
+            self.set_brain_state(BrainState::Hunting);
+        }
+    }
+
     /// AI routine for autonomous mobs.
     fn mob_ai(self) {
         assert!(self.is_mob());
         assert!(!self.is_player());
         assert!(self.ticks_this_frame());
 
-        if self.has_status(Status::Asleep) {
+        if self.brain_state() == Some(BrainState::Asleep) {
             if let Some(p) = action::player() {
                 // TODO: Line-of-sight, stealth concerns, other enemies than
                 // player etc.
                 if let Some(d) = p.distance_from(self) {
                     if d < 6 {
-                        self.remove_status(Status::Asleep);
+                        self.wake_up();
                     }
                 }
             }
