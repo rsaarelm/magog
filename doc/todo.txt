@@ -115,6 +115,7 @@
 (D) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
 (D) 2014-12-25 Should AreaSpec.depth be uint? +Engine
+(D) 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
