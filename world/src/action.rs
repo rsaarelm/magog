@@ -1,3 +1,5 @@
+use std::rand::Rng;
+use std::rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use std::iter::Filter;
 use calx::dijkstra::Dijkstra;
 use entity::Entity;
@@ -7,6 +9,8 @@ use flags;
 use dir6::Dir6;
 use area::Area;
 use location::Location;
+use Biome;
+use components::{Category};
 
 /// Game update control.
 #[deriving(Copy, PartialEq)]
@@ -113,6 +117,27 @@ fn ai_main() {
     }
 }
 
+/// Spawn n random entities with the give limiting parameters.
+pub fn random_spawns<R: Rng>(
+    rng: &mut R, count: uint,
+    depth: uint, biome_mask: Biome, category_mask: Category)
+    -> Vec<Entity> {
+    let mut items: Vec<Weighted<Entity>> = entities()
+        .filter_map(|e| world::with(|w| {
+            if let Some(spawn) = w.spawns().get_local(e) {
+                if spawn.min_depth <= depth
+                    && (biome_mask as u32) & (spawn.biome as u32) != 0
+                    && (category_mask as u32) & (spawn.category as u32) != 0 {
+                    return Some(Weighted { weight: spawn.commonness, item: e });
+                }
+            }
+            return None;
+        }))
+        .collect();
+    let dist = WeightedChoice::new(items.as_mut_slice());
+    range(0, count).map(|_| dist.ind_sample(rng)).collect()
+}
+
 // World logic /////////////////////////////////////////////////////////
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
@@ -120,7 +145,6 @@ fn ai_main() {
 pub fn current_depth() -> int { world::with(|w| w.area.seed.spec.depth) }
 
 pub fn start_level(depth: int) {
-
     let biome = match depth {
         1 => ::Biome::Overland,
         _ => ::Biome::Dungeon,

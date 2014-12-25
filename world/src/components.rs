@@ -92,10 +92,8 @@ impl_component!(MobStat, mob_stats_mut)
 pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
-    /// Unlikeliness of the entity to spawn. Rarity is the inverse of an
-    /// entity's weight in the spawning probability distribution. Entities
-    /// with rarity zero do not spawn spontaneously.
-    pub rarity: uint,
+    /// Weight of this entity in the random sampling distribution.
+    pub commonness: uint,
     /// Minimum depth where the entity will show up. More powerful entities
     /// only start showing up in large depths.
     pub min_depth: uint,

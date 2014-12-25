@@ -105,19 +105,19 @@ pub fn init_world(seed: Option<u32>) {
     Prototype::new(Some(base_mob))
         (Desc { name: "Dreg".to_string(), icon: 72, color: color::OLIVE })
         (MobStat { power: 1, intrinsics: Intrinsic::Hands as i32 })
-        (Spawn { biome: Biome::Anywhere, rarity: 10, min_depth: 1, category: Category::Mob })
+        (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
         (Desc { name: "Snake".to_string(), icon: 71, color: color::GREEN })
         (MobStat { power: 1, intrinsics: 0 })
-        (Spawn { biome: Biome::Overland, rarity: 10, min_depth: 1, category: Category::Mob })
+        (Spawn { biome: Biome::Overland, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
         (Desc { name: "Ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
         (MobStat { power: 3, intrinsics: 0 })
-        (Spawn { biome: Biome::Dungeon, rarity: 10, min_depth: 3, category: Category::Mob })
+        (Spawn { biome: Biome::Dungeon, commonness: 1000, min_depth: 3, category: Category::Mob })
         ;
 
     action::start_level(1);
