@@ -84,6 +84,10 @@ impl<F: Fn<(V2<int>,), bool>> Iterator<V2<int>> for Fov<F> {
 
                 // Hack for making acute corner tiles of fake-isometric rooms
                 // visible.
+
+                // XXX: Side cells should only be visible with wallform tiles,
+                // but the FOV API can't currently distinguish between
+                // wallform and blockform FOV blockers.
                 if let Some(side_pt) = current.pt.side_point() {
                     // Only do this if both the front tiles and the target
                     // tile are opaque.
