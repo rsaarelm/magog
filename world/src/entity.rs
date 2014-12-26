@@ -13,6 +13,7 @@ use action;
 use fov::Fov;
 use rng;
 use msg;
+use item::ItemType;
 
 /// Game object handle.
 #[deriving(Copy, PartialEq, Eq, Clone, Hash, Show, RustcDecodable, RustcEncodable)]
@@ -126,7 +127,7 @@ impl Entity {
 // Damage and lifetime /////////////////////////////////////////////////
 
     pub fn damage(self, amount: int) {
-        if amount == 0 { return; }
+        if amount <= 0 { return; }
         let max_hp = self.max_hp();
 
         let (_amount, kill) = world::with_mut(|w| {
@@ -139,6 +140,17 @@ impl Entity {
         if kill {
             self.kill();
         }
+    }
+
+    pub fn heal(self, amount: int) {
+        if amount <= 0 { return; }
+        world::with_mut(|w| {
+            let health = w.healths_mut().get(self).expect("no health");
+            health.wounds -= amount;
+            if health.wounds < 0 {
+                health.wounds = 0;
+            }
+        })
     }
 
     /// Do any game logic stuff related to this entity dying violently before
@@ -274,6 +286,29 @@ impl Entity {
         self.power_level()
     }
 
+    pub fn is_wounded(self) -> bool {
+        world::with(|w|
+            if let Some(health) = w.healths().get(self) {
+                health.wounds > 0
+            } else {
+                false
+            }
+        )
+    }
+
+// Item methods ////////////////////////////////////////////////////////
+
+    /// Is this an item that has an instant effect when stepped on.
+    pub fn is_instant_item(self) -> bool {
+        world::with(|w|
+            if let Some(item) = w.items().get(self) {
+                item.item_type == ItemType::Instant
+            } else {
+                false
+            }
+        )
+    }
+
 // AI methods /////////////////////////////////////////////////////////
 
     /// Top-level method called each frame to update the entity.
@@ -384,10 +419,25 @@ impl Entity {
     pub fn on_move_to(self, loc: Location) {
         self.do_fov();
 
+        for &e in loc.entities().iter() {
+            if e != self {
+                e.on_step_on(self);
+            }
+        }
+
         if self.is_player() {
             if loc.terrain().is_exit() {
                 action::next_level();
             }
+        }
+    }
+
+    /// When another entity steps on this one. Useful for traps and
+    /// instaeffect items.
+    pub fn on_step_on(self, collider: Entity) {
+        if self.is_instant_item() {
+            let ability = world::with(|w| w.items().get(self).expect("no item").ability.clone());
+            ability.apply(Some(self), Place::In(collider));
         }
     }
 

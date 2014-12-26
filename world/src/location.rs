@@ -59,6 +59,14 @@ impl Location {
         world::with(|w| w.spatial.entities_at(*self))
     }
 
+    /// Return the most significant entity at the location.
+    pub fn main_entity(&self) -> Option<Entity> {
+        let e = self.entities();
+        // TODO: Actually make the result entity the most significant one (eg.
+        // mob if there are both mobs and items).
+        if e.len() > 0 { Some(e[0]) } else { None }
+    }
+
     pub fn has_entities(&self) -> bool { !self.entities().is_empty() }
 
     pub fn has_mobs(&self) -> bool {

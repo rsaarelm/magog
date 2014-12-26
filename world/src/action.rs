@@ -174,7 +174,7 @@ pub fn start_level(depth: int) {
             p.place(start_loc);
         }
         None => {
-            find_prototype("Player").expect("No Player prototype found!")
+            find_prototype("player").expect("No Player prototype found!")
             .clone_at(start_loc);
         }
     };

@@ -1,9 +1,45 @@
+use entity::Entity;
+use spatial::Place;
+use self::Ability::*;
+
 /// Ability describes some way of affecting the game world. It is generally
 /// attached to a mob or an item.
-#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
+#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Ability {
+    Multi(Vec<Ability>),
     /// Damage a target for a given amount.
     Damage(int),
     /// Heal a target for a given amount.
     Heal(int),
+    /// Heals target and self-destructs if target has wounds.
+    HealInstant(int),
+}
+
+impl Ability {
+    pub fn apply(&self, agent: Option<Entity>, target: Place) {
+        if let &Multi(ref abls) = self {
+            for abl in abls.iter() {
+                abl.apply(agent, target);
+            }
+            return;
+        }
+
+        // Target entity.
+        let te = match target {
+            Place::In(e) => Some(e),
+            Place::At(loc) => loc.main_entity()
+        };
+
+        match (self, te) {
+            (&Damage(n), Some(e)) => { e.damage(n) }
+            (&Heal(n), Some(e))  => { e.heal(n) }
+            (&HealInstant(n), Some(e)) => {
+                if e.is_wounded() {
+                    e.heal(n);
+                    if let Some(a) = agent { a.delete() }
+                }
+            }
+            _ => ()
+        }
+    }
 }

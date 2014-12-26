@@ -3,6 +3,8 @@ use calx::Rgb;
 use location::Location;
 use {Biome};
 use entity::Entity;
+use item::{ItemType};
+use ability::Ability;
 use world;
 
 macro_rules! impl_component {
@@ -20,6 +22,7 @@ pub trait Component {
     /// a fluent API for constructing prototypes.
     fn add_to(self, e: Entity);
 }
+
 
 /// Entity name and appearance.
 #[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
@@ -41,6 +44,7 @@ impl Desc {
 
 impl_component!(Desc, descs_mut);
 
+
 /// Map field-of-view and remembered terrain.
 #[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct MapMemory {
@@ -58,6 +62,7 @@ impl MapMemory {
 }
 
 impl_component!(MapMemory, map_memories_mut);
+
 
 /// Unchanging statistics for mobs.
 #[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
@@ -78,6 +83,7 @@ pub enum Intrinsic {
     Hands       = 0b100,
 }
 
+
 /// Spawning properties for prototype objects.
 #[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Spawn {
@@ -97,10 +103,15 @@ impl_component!(Spawn, spawns_mut);
 #[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Category {
     Mob = 0b1,
-    Item = 0b10,
+
+    Consumable = 0b10,
+    Equipment = 0b100,
+
+    Item = 0b110,
 
     Anything = 0b11111111,
 }
+
 
 #[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Brain {
@@ -135,6 +146,7 @@ pub enum Alignment {
     Evil,
 }
 
+
 /// Damage state component. The default state is undamaged and unarmored.
 #[deriving(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
 pub struct Health {
@@ -147,6 +159,18 @@ pub struct Health {
 }
 
 impl_component!(Health, healths_mut);
+
+
+/// Items can be picked up and carried and they do stuff.
+#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
+pub struct Item {
+    pub power: int,
+    pub item_type: ItemType,
+    pub ability: Ability,
+}
+
+impl_component!(Item, items_mut);
+
 
 ////////////////////////////////////////////////////////////////////////
 

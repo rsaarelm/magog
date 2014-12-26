@@ -59,6 +59,7 @@ impl<E, S:Encoder<E>> Encodable<S, E> for Area {
 impl Area {
     pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
         let num_mobs = 32u;
+        let num_items = 24u;
 
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed([rng_seed as uint + spec.depth as uint].as_slice());
@@ -82,17 +83,22 @@ impl Area {
 
         let entrance = opens.swap_remove(0).unwrap();
 
-        let mob_spawns = action::random_spawns(
-            &mut rng, num_mobs, spec.depth as uint, spec.biome, Category::Mob);
+        let mut spawns = vec![];
 
-        let spawns = mob_spawns.into_iter().filter_map(|spawn|
-            if let Some(loc) = opens.swap_remove(0) {
-                Some((spawn, loc))
-            } else {
-                // Ran out of open space.
-                None
-            }
-        ).collect();
+        // XXX: copy-pasting the space-finding code.
+        spawns.extend(
+            action::random_spawns(
+                &mut rng, num_mobs, spec.depth as uint, spec.biome, Category::Mob)
+            .into_iter().filter_map(|spawn|
+            if let Some(loc) = opens.swap_remove(0) { Some((spawn, loc))
+            } else { None }));
+
+        spawns.extend(
+            action::random_spawns(
+                &mut rng, num_items, spec.depth as uint, spec.biome, Category::Item)
+            .into_iter().filter_map(|spawn|
+            if let Some(loc) = opens.swap_remove(0) { Some((spawn, loc))
+            } else { None }));
 
         Area {
             seed: AreaSeed { rng_seed: rng_seed, spec: spec },
