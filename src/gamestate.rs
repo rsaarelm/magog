@@ -152,7 +152,7 @@ impl GameState {
         if player.is_threatened() {
             return false;
         }
-        if let Some(pathing) = action::autoexplore_map() {
+        if let Some(pathing) = action::autoexplore_map(32) {
             let loc = player.location().unwrap();
             let steps = pathing.sorted_neighbors(&loc);
             if steps.len() == 0 {

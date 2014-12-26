@@ -199,9 +199,12 @@ pub fn next_level() {
 
 ////////////////////////////////////////////////////////////////////////
 
-pub fn autoexplore_map() -> Option<Dijkstra<Location>> {
-    let pathing_depth = 16;
-
+/// Build a Dijkstra map towards the unexplored corners of the player's FOV.
+///
+/// Pathing_depth is the depth of the search map. Low pathing depths may not
+/// reach distant unexplored cells, but high pathing depths take longer to
+/// calculate.
+pub fn autoexplore_map(pathing_depth: uint) -> Option<Dijkstra<Location>> {
     let locs = world::with(|w| w.area.as_ref().expect("no area").terrain.iter()
                            .map(|(&loc, _)| loc)
                            .filter(|loc| loc.fov_status().is_none())
