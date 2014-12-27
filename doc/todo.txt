@@ -32,6 +32,7 @@
 (B) 2014-12-13 Winning the game +Content
 (B) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine
 (B) 2014-12-25 Spell cooldowns +Content
+(B) 2014-12-27 Location::entities() returns an iterator +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -114,6 +115,7 @@
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
 (D) 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
 (D) 2014-12-25 Should AreaSpec.depth be uint? +Engine
+(D) 2014-12-26 Compute improbability rating from input sequence saves where the player does many stupid things and stays alive because of fortunate RNG results, these will probably be the result of save scumming +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
