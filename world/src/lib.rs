@@ -4,7 +4,7 @@
 #![feature(unboxed_closures)]
 
 extern crate rand;
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 extern crate calx;
 extern crate num;
 
@@ -20,18 +20,18 @@ pub use dir6::Dir6;
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Text(format!($($arg)*))))
-)
+);
 
 macro_rules! msgln(
     ($($arg:tt)*) => ({
         ::msg::push_msg(::Msg::Text(format!($($arg)*)));
         ::msg::push_msg(::Msg::Text("\n".to_string()));
     })
-)
+);
 
 macro_rules! caption(
     ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Caption(format!($($arg)*))))
-)
+);
 
 pub mod action;
 pub mod components;
@@ -61,7 +61,7 @@ pub enum FovStatus {
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -80,7 +80,7 @@ impl Biome {
     }
 }
 
-#[deriving(Copy, Eq, PartialEq, Show, Clone, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Show, Clone, RustcEncodable, RustcDecodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: int,

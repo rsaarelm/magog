@@ -15,7 +15,7 @@ use rng;
 use msg;
 
 /// Game object handle.
-#[deriving(Copy, PartialEq, Eq, Clone, Hash, Show, Decodable, Encodable)]
+#[deriving(Copy, PartialEq, Eq, Clone, Hash, Show, RustcDecodable, RustcEncodable)]
 pub struct Entity(pub uint);
 
 impl Entity {

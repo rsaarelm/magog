@@ -7,7 +7,6 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "world"
 
-[dependencies.num]
 [dependencies.uuid]
 
 [dependencies.calx]

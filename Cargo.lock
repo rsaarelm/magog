@@ -3,16 +3,17 @@ name = "magog"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
- "image 0.2.0-alpha.3 (git+https://github.com/PistonDevelopers/image)",
- "time 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "uuid 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "uuid 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "world 0.0.1",
 ]
 
 [[package]]
 name = "android_glue"
 version = "0.0.1"
-source = "git+https://github.com/tomaka/android-rs-glue#b6bf4f0eda54bb064893c75382289d21ddf1979a"
+source = "git+https://github.com/tomaka/android-rs-glue#64698d2cae2ee560371d0ee729e12f3db3aa4dbd"
 dependencies = [
  "compile_msg 0.1.1 (git+https://github.com/huonw/compile_msg)",
 ]
@@ -20,24 +21,25 @@ dependencies = [
 [[package]]
 name = "calx"
 version = "0.0.0"
-source = "git+https://github.com/rsaarelm/calx#4a660648645efbaabba46fdb614c68deb6a63c47"
+source = "git+https://github.com/rsaarelm/calx#f64f2da981a05cb42b6d168ab058d83040a9cc8b"
 dependencies = [
  "gfx 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
  "gl 0.0.2 (git+https://github.com/bjz/gl-rs)",
  "glutin 0.0.2 (git+https://github.com/tomaka/glutin)",
- "image 0.2.0-alpha.3 (git+https://github.com/PistonDevelopers/image)",
- "time 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "cocoa"
 version = "0.1.1"
-source = "git+https://github.com/servo/rust-cocoa#19d6f6977dcedbf29000b65d83df66cf589c20c3"
+source = "git+https://github.com/servo/rust-cocoa#7412734e04a80f6e2166993a71b2bfd387801920"
 
 [[package]]
 name = "compile_msg"
 version = "0.1.1"
-source = "git+https://github.com/huonw/compile_msg#32a98df61c600ca5487487d2b5e8c55f4bc7a91a"
+source = "git+https://github.com/huonw/compile_msg#e12dbf378a0b134e9ee7a6a6e26c40fb283d6f02"
 
 [[package]]
 name = "core_foundation"
@@ -55,30 +57,33 @@ dependencies = [
 [[package]]
 name = "device"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#addf284794692f29f80fb621cd3328e127e5cfc9"
+source = "git+https://github.com/gfx-rs/gfx-rs#af0c3857b34a7c6496b86c77448045619b62d04a"
 dependencies = [
  "gfx_gl 0.1.0 (git+https://github.com/gfx-rs/gfx_gl.git)",
+ "log 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gcc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "gfx"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#addf284794692f29f80fb621cd3328e127e5cfc9"
+source = "git+https://github.com/gfx-rs/gfx-rs#af0c3857b34a7c6496b86c77448045619b62d04a"
 dependencies = [
  "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
  "gfx_macros 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "log 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "render 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "time 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gfx_gl"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx_gl.git#ed681503da2e7ed9343003e78af4767e8e4e33a8"
+source = "git+https://github.com/gfx-rs/gfx_gl.git#71b56127a36ec6a566c1126e61def1b60da5b288"
 dependencies = [
  "gl_generator 0.0.4 (git+https://github.com/bjz/gl-rs)",
 ]
@@ -86,35 +91,37 @@ dependencies = [
 [[package]]
 name = "gfx_macros"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#addf284794692f29f80fb621cd3328e127e5cfc9"
+source = "git+https://github.com/gfx-rs/gfx-rs#af0c3857b34a7c6496b86c77448045619b62d04a"
 
 [[package]]
 name = "gl"
 version = "0.0.2"
-source = "git+https://github.com/bjz/gl-rs#31f3ef8bad2593283d4cd367a5de99ab24a0fa5d"
+source = "git+https://github.com/bjz/gl-rs#32668cf156c9c65d1ae01786cb2820c2250ed21b"
 dependencies = [
+ "gl_common 0.0.3 (git+https://github.com/bjz/gl-rs)",
  "gl_generator 0.0.4 (git+https://github.com/bjz/gl-rs)",
 ]
 
 [[package]]
 name = "gl_common"
 version = "0.0.3"
-source = "git+https://github.com/bjz/gl-rs#31f3ef8bad2593283d4cd367a5de99ab24a0fa5d"
+source = "git+https://github.com/bjz/gl-rs#32668cf156c9c65d1ae01786cb2820c2250ed21b"
 
 [[package]]
 name = "gl_generator"
 version = "0.0.4"
-source = "git+https://github.com/bjz/gl-rs#31f3ef8bad2593283d4cd367a5de99ab24a0fa5d"
+source = "git+https://github.com/bjz/gl-rs#32668cf156c9c65d1ae01786cb2820c2250ed21b"
 dependencies = [
  "gl_common 0.0.3 (git+https://github.com/bjz/gl-rs)",
  "khronos_api 0.0.3 (git+https://github.com/bjz/gl-rs)",
- "xml-rs 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xml-rs 0.1.4 (git+https://github.com/netvl/xml-rs)",
 ]
 
 [[package]]
 name = "glutin"
 version = "0.0.2"
-source = "git+https://github.com/tomaka/glutin#452514a863c310a1fd5096f6967b75caab9abeec"
+source = "git+https://github.com/tomaka/glutin#fce4f0a1298d216b928ccdb25f8e481397981afe"
 dependencies = [
  "android_glue 0.0.1 (git+https://github.com/tomaka/android-rs-glue)",
  "cocoa 0.1.1 (git+https://github.com/servo/rust-cocoa)",
@@ -126,39 +133,69 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.2.0-alpha.3"
-source = "git+https://github.com/PistonDevelopers/image#c06814e23cb02528636b7adaf5aa95fbbe114afa"
+version = "0.2.0-alpha.4"
+source = "git+https://github.com/PistonDevelopers/image#4d4c6237c3c8ff8ff789becdc9ce897aaf203a5c"
+dependencies = [
+ "num 0.1.3 (git+https://github.com/rust-lang/num)",
+]
 
 [[package]]
 name = "khronos_api"
 version = "0.0.3"
-source = "git+https://github.com/bjz/gl-rs#31f3ef8bad2593283d4cd367a5de99ab24a0fa5d"
+source = "git+https://github.com/bjz/gl-rs#32668cf156c9c65d1ae01786cb2820c2250ed21b"
+
+[[package]]
+name = "log"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "regex 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "num"
-version = "0.1.0"
+version = "0.1.3"
+source = "git+https://github.com/rust-lang/num#82d44da2d7e75d4325a4687e8225bf91e0523505"
+dependencies = [
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "render"
 version = "0.1.0"
-source = "git+https://github.com/gfx-rs/gfx-rs#addf284794692f29f80fb621cd3328e127e5cfc9"
+source = "git+https://github.com/gfx-rs/gfx-rs#af0c3857b34a7c6496b86c77448045619b62d04a"
 dependencies = [
  "device 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
+ "log 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
+name = "rustc-serialize"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "time"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "uuid"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "winapi"
@@ -170,12 +207,11 @@ name = "world"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
- "num 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "uuid 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "uuid 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "xml-rs"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.1.4"
+source = "git+https://github.com/netvl/xml-rs#055e786375560fc2f174521069651d6e08c3d15d"
 

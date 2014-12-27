@@ -22,7 +22,7 @@ pub trait Component {
 }
 
 /// Entity name and appearance.
-#[deriving(Clone, Show, Encodable, Decodable)]
+#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
     pub icon: uint,
@@ -39,10 +39,10 @@ impl Desc {
     }
 }
 
-impl_component!(Desc, descs_mut)
+impl_component!(Desc, descs_mut);
 
 /// Map field-of-view and remembered terrain.
-#[deriving(Clone, Show, Encodable, Decodable)]
+#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct MapMemory {
     pub seen: HashSet<Location>,
     pub remembered: HashSet<Location>,
@@ -57,18 +57,18 @@ impl MapMemory {
     }
 }
 
-impl_component!(MapMemory, map_memories_mut)
+impl_component!(MapMemory, map_memories_mut);
 
 /// Unchanging statistics for mobs.
-#[deriving(Copy, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct MobStat {
     pub power: int,
     pub intrinsics: u32,
 }
 
-impl_component!(MobStat, mob_stats_mut)
+impl_component!(MobStat, mob_stats_mut);
 
-#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow        = 0b1,
@@ -79,7 +79,7 @@ pub enum Intrinsic {
 }
 
 /// Spawning properties for prototype objects.
-#[deriving(Copy, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -92,9 +92,9 @@ pub struct Spawn {
     pub category: Category,
 }
 
-impl_component!(Spawn, spawns_mut)
+impl_component!(Spawn, spawns_mut);
 
-#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Category {
     Mob = 0b1,
     Item = 0b10,
@@ -102,16 +102,16 @@ pub enum Category {
     Anything = 0b11111111,
 }
 
-#[deriving(Copy, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment
 }
 
-impl_component!(Brain, brains_mut)
+impl_component!(Brain, brains_mut);
 
 /// Mob behavior state.
-#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum BrainState {
     /// AI mob is inactive, but can be startled into action by noise or
     /// motion.
@@ -123,7 +123,7 @@ pub enum BrainState {
 }
 
 /// Used to determine who tries to fight whom.
-#[deriving(Copy, Clone, Eq, PartialEq, Show, Encodable, Decodable)]
+#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Alignment {
     /// Attack anything and everything.
     Chaotic,
@@ -136,7 +136,7 @@ pub enum Alignment {
 }
 
 /// Damage state component. The default state is undamaged and unarmored.
-#[deriving(Copy, Clone, Show, Default, Encodable, Decodable)]
+#[deriving(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
 pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
@@ -146,7 +146,7 @@ pub struct Health {
     pub armor: int,
 }
 
-impl_component!(Health, healths_mut)
+impl_component!(Health, healths_mut);
 
 ////////////////////////////////////////////////////////////////////////
 

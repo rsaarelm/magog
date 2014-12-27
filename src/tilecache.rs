@@ -4,7 +4,7 @@ use image::{SubImage, GenericImage};
 use calx::{V2, Canvas, Image, Rgb};
 use calx;
 
-thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]))
+thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (int, int), offset: (int, int)) {
@@ -28,9 +28,9 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
 pub fn init(ctx: &mut Canvas) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
-        batch(tiles.deref_mut(), ctx, include_bin!("../assets/tile.png"), (32, 32), (-16, -16));
-        batch(tiles.deref_mut(), ctx, include_bin!("../assets/icon.png"), (8, 8), (0, -8));
-        batch(tiles.deref_mut(), ctx, include_bin!("../assets/logo.png"), (92, 25), (0, 0));
+        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -16));
+        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/icon.png"), (8, 8), (0, -8));
+        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/logo.png"), (92, 25), (0, 0));
     });
 }
 

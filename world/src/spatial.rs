@@ -1,12 +1,12 @@
 use std::collections::{HashMap, VecMap};
 use entity::{Entity};
-use serialize::{Decodable, Decoder, Encodable, Encoder};
+use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
 use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[deriving(Copy, Eq, PartialEq, Clone, Hash, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Hash, Show, RustcEncodable, RustcDecodable)]
 pub enum Place {
     At(Location),
     In(Entity),
@@ -140,7 +140,7 @@ impl Spatial {
     }
 }
 
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone, RustcDecodable, RustcEncodable)]
 struct Elt(Entity, Place);
 
 impl<E, D:Decoder<E>> Decodable<D, E> for Spatial {

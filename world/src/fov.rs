@@ -1,7 +1,7 @@
 use num::{Integer};
 use std::num::{Float};
 use std::iter::{Iterator, Chain};
-use std::option::{Item};
+use std::option::{IntoIter};
 use calx::{V2};
 use dir6::Dir6;
 
@@ -29,7 +29,7 @@ struct Sector {
 /// up to hex grid distance range, with cells for which is_opaque returns true
 /// blocking visibility further away in their direction.
 impl<F: Fn<(V2<int>,), bool>> Fov<F> {
-    pub fn new(is_opaque: F, range: uint) -> Chain<Item<V2<int>>, Fov<F>> {
+    pub fn new(is_opaque: F, range: uint) -> Chain<IntoIter<V2<int>>, Fov<F>> {
         // The origin position V2(0, 0) is a special case for the traversal
         // algorithm, but it's also always present, so instead of adding ugly
         // branches to the actual iterator, we just chain it in right here.

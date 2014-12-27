@@ -20,7 +20,7 @@ pub enum ControlState {
 }
 
 /// Player input action.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, Encodable, Decodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
@@ -107,7 +107,7 @@ pub fn entities() -> EntityIter {
 /// Return an iterator of all the world mobs.
 pub fn mobs() -> Filter<Entity, EntityIter, fn(&Entity) -> bool> {
     fn is_mob(e: &Entity) -> bool { e.is_mob() }
-    entities().filter(is_mob)
+    entities().filter(is_mob as fn(&Entity) -> bool)
 }
 
 /// Run AI for all autonomous mobs.

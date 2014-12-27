@@ -48,7 +48,7 @@ pub fn cells_in_view_rect(view_rect: Rect<int>) -> Map<V2<int>, V2<int>, ColumnR
         x0: x0,
         x1: x1,
         y1: y1,
-    }.map(column_to_chart)
+    }.map(column_to_chart as fn(V2<int>) -> V2<int>)
 }
 
 pub fn cells_on_screen() -> Map<V2<int>, V2<int>, ColumnRectIter, fn(V2<int>) -> V2<int>> {

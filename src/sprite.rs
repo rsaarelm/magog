@@ -1,4 +1,4 @@
-use std::slice::Items;
+use std::slice::Iter;
 use calx::color;
 use calx::{Context, V2, CanvasUtil};
 use world::{Location, Unchart};
@@ -10,7 +10,7 @@ trait WorldSprite {
     fn update(&mut self);
     fn is_alive(&self) -> bool;
 
-    fn footprint<'a>(&'a self) -> Items<'a, Location>;
+    fn footprint<'a>(&'a self) -> Iter<'a, Location>;
     // XXX: Locked to the type of iterator Vecs return for now. It's assumed
     // that implementers use a Vec to cache the footprint points internally.
 
@@ -77,7 +77,7 @@ impl _BeamSprite {
 impl WorldSprite for _BeamSprite {
     fn update(&mut self) { self.life -= 1; }
     fn is_alive(&self) -> bool { self.life >= 0 }
-    fn footprint<'a>(&'a self) -> Items<'a, Location> {
+    fn footprint<'a>(&'a self) -> Iter<'a, Location> {
         self.footprint.iter()
     }
     fn draw(&self, chart: &Location, ctx: &mut Context) {
@@ -107,7 +107,7 @@ impl GibSprite {
 impl WorldSprite for GibSprite {
     fn update(&mut self) { self.life -= 1; }
     fn is_alive(&self) -> bool { self.life >= 0 }
-    fn footprint<'a>(&'a self) -> Items<'a, Location> { self.footprint.iter() }
+    fn footprint<'a>(&'a self) -> Iter<'a, Location> { self.footprint.iter() }
     fn draw(&self, chart: &Location, ctx: &mut Context) {
         if let Some(p) = chart.chart_pos(self.loc) {
             // TODO: Robust anim cycle with clamping.

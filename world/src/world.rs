@@ -2,7 +2,7 @@ use std::collections::VecMap;
 use std::cell::RefCell;
 use std::rand;
 use std::default::Default;
-use serialize::json;
+use rustc_serialize::json;
 use rand::Rng;
 use calx::color;
 use ecs::Ecs;
@@ -18,7 +18,7 @@ use components::{Desc, MapMemory, Health};
 use components::{Brain, BrainState, Alignment};
 use {Biome};
 
-thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)))
+thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)));
 
 /// Access world state for reading. The world state may not be reaccessed for
 /// writing while within this function.
@@ -53,7 +53,7 @@ pub fn load(json: &str) -> Result<(), json::DecoderError> {
 }
 
 /// The internal object that holds all the world state data.
-#[deriving(Encodable, Decodable)]
+#[deriving(RustcEncodable, RustcDecodable)]
 pub struct WorldState {
     /// Global entity handler.
     pub ecs: Ecs,
@@ -140,7 +140,7 @@ pub fn init_world(seed: Option<u32>) {
 
 // Components stuff ////////////////////////////////////////////////////
 
-#[deriving(Encodable, Decodable)]
+#[deriving(RustcEncodable, RustcDecodable)]
 struct Comps {
     descs: VecMap<Desc>,
     map_memories: VecMap<MapMemory>,
@@ -179,12 +179,12 @@ macro_rules! comp_api {
 }
 
 // COMPONENTS CHECKPOINT
-comp_api!(descs, descs_mut, Desc)
-comp_api!(map_memories, map_memories_mut, MapMemory)
-comp_api!(mob_stats, mob_stats_mut, MobStat)
-comp_api!(spawns, spawns_mut, Spawn)
-comp_api!(healths, healths_mut, Health)
-comp_api!(brains, brains_mut, Brain)
+comp_api!(descs, descs_mut, Desc);
+comp_api!(map_memories, map_memories_mut, MapMemory);
+comp_api!(mob_stats, mob_stats_mut, MobStat);
+comp_api!(spawns, spawns_mut, Spawn);
+comp_api!(healths, healths_mut, Health);
+comp_api!(brains, brains_mut, Brain);
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

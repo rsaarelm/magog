@@ -7,7 +7,7 @@ use {AreaSpec, Biome};
 use geomorph_data;
 use dir6::Dir6;
 
-thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]))
+thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 
 type Cells = HashMap<(int, int), TerrainType>;
 

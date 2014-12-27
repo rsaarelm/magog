@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-thread_local!(static MSG_QUEUE: RefCell<Vec<::Msg>> = RefCell::new(vec![]))
+thread_local!(static MSG_QUEUE: RefCell<Vec<::Msg>> = RefCell::new(vec![]));
 
 /// Pop and return the oldest message left in the message queue.
 pub fn pop_msg() -> Option<::Msg> {

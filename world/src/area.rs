@@ -1,7 +1,7 @@
 use std::rand::StdRng;
 use std::rand::Rng;
 use std::rand::SeedableRng;
-use serialize::{Decodable, Decoder, Encodable, Encoder};
+use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::HashMap;
 use terrain::TerrainType;
 use location::Location;
@@ -20,7 +20,7 @@ use entity::Entity;
 // nondeterminism bug that depended on the numerical order of the arbitrary
 // address values.
 
-#[deriving(Copy, Clone, Decodable, Encodable)]
+#[deriving(Copy, Clone, RustcDecodable, RustcEncodable)]
 struct AreaSeed {
     pub rng_seed: u32,
     pub spec: AreaSpec,
