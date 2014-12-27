@@ -4,7 +4,7 @@
 
 extern crate time;
 extern crate collections;
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 
 extern crate glutin;
 extern crate gfx;

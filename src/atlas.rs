@@ -16,7 +16,7 @@ impl AtlasBuilder {
         }
     }
 
-    pub fn push<P: Pixel<u8>, I: GenericImage<P>>(
+    pub fn push<P: Pixel<u8> + 'static, I: GenericImage<P>>(
         &mut self, offset: V2<int>, mut image: I) -> uint {
 
         let Rect(pos, dim) = util::crop_alpha(&image);

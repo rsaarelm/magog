@@ -2,7 +2,7 @@ use std::num::{NumCast};
 use util::Primitive;
 
 /// 2D geometric vector.
-#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
+#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct V2<T>(pub T, pub T);
 
 impl<T: Eq> Eq for V2<T> { }
@@ -16,7 +16,7 @@ impl<T: Sub<U, V>, U, V> Sub<V2<U>, V2<V>> for V2<T> {
 }
 
 impl<T: Neg<U>, U> Neg<V2<U>> for V2<T> {
-    fn neg(&self) -> V2<U> { V2(-self.0, -self.1) }
+    fn neg(self) -> V2<U> { V2(-self.0, -self.1) }
 }
 
 impl<T: Mul<U, V>, U: Copy, V> Mul<U, V2<V>> for V2<T> {
@@ -44,7 +44,7 @@ impl<T: Primitive> V2<T> {
 }
 
 /// A rectangle type consisting of position and size vectors.
-#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, Decodable, Encodable)]
+#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
 impl<T: Eq> Eq for Rect<T> { }

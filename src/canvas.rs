@@ -64,7 +64,7 @@ impl Canvas {
         self
     }
 
-    pub fn add_image<P: Pixel<u8>, I: GenericImage<P>>(
+    pub fn add_image<P: Pixel<u8> + 'static, I: GenericImage<P>>(
         &mut self, offset: V2<int>, image: I) -> Image {
         Image(self.builder.push(offset, image))
     }
@@ -81,7 +81,7 @@ impl Canvas {
     /// Load the default font into the texture atlas.
     fn init_font(&mut self) {
         let mut font_sheet = util::color_key(
-            &image::load_from_memory(include_bin!("../assets/font.png"), image::PNG).unwrap(),
+            &image::load_from_memory(include_bytes!("../assets/font.png"), image::PNG).unwrap(),
             &Rgb::new(0x80u8, 0x80u8, 0x80u8));
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
