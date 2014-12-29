@@ -36,6 +36,7 @@ macro_rules! caption(
 pub mod action;
 pub mod components;
 
+mod ability;
 mod area;
 mod dir6;
 mod ecs;
@@ -50,6 +51,7 @@ mod mapgen;
 mod msg;
 mod rng;
 mod spatial;
+mod stats;
 mod terrain;
 mod world;
 
