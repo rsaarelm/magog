@@ -6,7 +6,7 @@
 (A) 2014-12-13 Killed mobs drop items +Content
 (A) 2014-12-13 Pick up items command +Content
 (A) 2014-12-16 Item entities with prototypes +Engine
-(A) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial +Engine
+(A) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
