@@ -161,7 +161,7 @@ impl_component!(Item, items_mut);
 /// apply.
 pub type StatsCache = Option<Stats>;
 
-impl_component!(StatsCache, stats_cache_mut);
+impl_component!(StatsCache, stats_caches_mut);
 
 
 ////////////////////////////////////////////////////////////////////////

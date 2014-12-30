@@ -164,7 +164,7 @@ struct Comps {
     healths: VecMap<Health>,
     brains: VecMap<Brain>,
     items: VecMap<Item>,
-    stats_cache: VecMap<StatsCache>,
+    stats_caches: VecMap<StatsCache>,
 }
 
 impl Comps {
@@ -177,7 +177,7 @@ impl Comps {
             healths: VecMap::new(),
             brains: VecMap::new(),
             items: VecMap::new(),
-            stats_cache: VecMap::new(),
+            stats_caches: VecMap::new(),
         }
     }
 }
@@ -205,7 +205,7 @@ comp_api!(spawns, spawns_mut, Spawn);
 comp_api!(healths, healths_mut, Health);
 comp_api!(brains, brains_mut, Brain);
 comp_api!(items, items_mut, Item);
-comp_api!(stats_cache, stats_cache_mut, StatsCache);
+comp_api!(stats_caches, stats_caches_mut, StatsCache);
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

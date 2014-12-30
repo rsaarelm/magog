@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::rand::Rng;
 use calx::dijkstra::Dijkstra;
 use calx::Rgb;
@@ -14,6 +15,7 @@ use fov::Fov;
 use rng;
 use msg;
 use item::ItemType;
+use stats::Stats;
 
 /// Game object handle.
 #[deriving(Copy, PartialEq, Eq, Clone, Hash, Show, RustcDecodable, RustcEncodable)]
@@ -40,7 +42,7 @@ impl Entity {
         world::with_mut(|w| w.healths_mut().remove(self));
         world::with_mut(|w| w.brains_mut().remove(self));
         world::with_mut(|w| w.items_mut().remove(self));
-        world::with_mut(|w| w.stats_cache_mut().remove(self));
+        world::with_mut(|w| w.stats_caches_mut().remove(self));
 
         world::with_mut(|w| w.spatial.remove(self));
 
@@ -175,38 +177,6 @@ impl Entity {
         self.brain_state() == Some(BrainState::PlayerControl) && self.location().is_some()
     }
 
-    /*
-    pub fn has_status(self, status: Status) -> bool {
-        world::with(|w| {
-            if let Some(&mob) = w.mobs().get(self) {
-                return mob.has_status(status);
-            }
-            return false;
-        })
-    }
-
-    pub fn add_status(self, status: Status) {
-        if !self.is_mob() { return; }
-        world::with_mut(|w| w.mobs_mut().get(self).expect("no mob").add_status(status));
-        assert!(self.has_status(status));
-    }
-
-    pub fn remove_status(self, status: Status) {
-        if !self.is_mob() { return; }
-        world::with_mut(|w| w.mobs_mut().get(self).expect("no mob").remove_status(status));
-        assert!(!self.has_status(status));
-    }
-    */
-
-    pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
-        world::with(|w|
-            if let Some(stat) = w.stats().get(self) {
-                stat.intrinsics & intrinsic as u32 != 0
-            } else {
-                false
-            })
-    }
-
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
         match self.brain_state() {
@@ -270,12 +240,6 @@ impl Entity {
         }
     }
 
-    pub fn power_level(self) -> i32 {
-        world::with(|w|
-            if let Some(stat) = w.stats().get(self) { stat.power }
-            else { 0 })
-    }
-
     pub fn hp(self) -> i32 {
         self.max_hp() - world::with(|w|
             if let Some(health) = w.healths().get(self) {
@@ -297,6 +261,53 @@ impl Entity {
                 false
             }
         )
+    }
+
+// Stats methods ///////////////////////////////////////////////////////
+
+    pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
+        self.refresh_stats_cache();
+        world::with(|w|
+            if let Some(&Some(ref stat)) = w.stats_caches().get(self) {
+                stat.intrinsics & intrinsic as u32 != 0
+            } else {
+                false
+            })
+    }
+
+    pub fn power_level(self) -> i32 {
+        self.refresh_stats_cache();
+        world::with(|w|
+            if let Some(&Some(ref stat)) = w.stats_caches().get(self) { stat.power }
+            else { 0 })
+    }
+
+    /// Generate cached stats from base stats if they don't exist.
+    /// This must be called by any method that accesses the stats_caches
+    /// component.
+    fn refresh_stats_cache(self) {
+        world::with_mut(|w|
+            if let Some(&Some(_)) = w.stats_caches().get(self) {
+                // Cache is good.
+                return;
+            } else {
+                let mut stats: Stats = Default::default();
+                if let Some(s) = w.stats().get(self) {
+                    stats = stats + *s;
+                }
+                // TODO: Go through entities attached to self, extract their
+                // stats.
+                // TODO: Need to break out of the world lock for this.
+                w.stats_caches_mut().insert(self, Some(stats));
+            }
+        );
+    }
+
+    /// Mark cached stats dirty after changing base stats.
+    fn dirty_stats_cache(self) {
+        world::with_mut(|w|
+            w.stats_caches_mut().insert(self, None)
+        );
     }
 
 // Item methods ////////////////////////////////////////////////////////
