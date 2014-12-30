@@ -4,6 +4,7 @@
 (A) 2014-12-13 Inventory menu with equipment and backpack slots +UI
 (A) 2014-12-13 Killed mobs drop items +Content
 (A) 2014-12-13 Pick up items command +Content
+(A) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -27,12 +28,12 @@
 (B) 2014-12-13 Spawn item drops +Content
 (B) 2014-12-13 Teleport +Content
 (B) 2014-12-13 Winning the game +Content
-(B) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
 (B) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine
 (B) 2014-12-25 Spell cooldowns +Content
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (B) 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
 (B) 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
+(B) 2014-12-31 Binaries know their build version +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -45,7 +46,7 @@
 (C) 2014-12-13 Chests that drop goodies +Content
 (C) 2014-12-13 Cmdline parameter for starting fullscreen +UI
 (C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine
-(C) 2014-12-13 Config setting for starting out fullscreen +Engine
+(C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
 (C) 2014-12-13 Don't spawn mobs immediately around level entrance point +Content
