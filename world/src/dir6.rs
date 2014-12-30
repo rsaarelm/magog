@@ -87,6 +87,14 @@ impl Dir6 {
     }
 }
 
+impl Add<int, Dir6> for Dir6 {
+    fn add(self, other: int) -> Dir6 { Dir6::from_int(self as int + other) }
+}
+
+impl Sub<int, Dir6> for Dir6 {
+    fn sub(self, other: int) -> Dir6 { Dir6::from_int(self as int - other) }
+}
+
 #[cfg(test)]
 mod test {
     use calx::V2;

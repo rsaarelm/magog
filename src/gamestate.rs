@@ -139,11 +139,16 @@ impl GameState {
 
     fn smart_move(&mut self, dir: Dir6) {
         let player = action::player().unwrap();
-        let target_loc = player.location().unwrap() + dir.to_v2();
-        if target_loc.has_mobs() {
-            action::input(Melee(dir));
-        } else {
-            action::input(Step(dir));
+        let loc = player.location().unwrap();
+        for &d in vec![dir, dir + 1, dir - 1].iter() {
+            let target_loc = loc + d.to_v2();
+            if target_loc.has_mobs() {
+                action::input(Melee(d));
+                return;
+            } else if player.can_step(d) {
+                action::input(Step(d));
+                return;
+            }
         }
     }
 
