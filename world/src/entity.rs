@@ -5,7 +5,7 @@ use world;
 use location::{Location};
 use dir6::Dir6;
 use flags;
-use components::{Intrinsic};
+use stats::{Intrinsic};
 use components::{BrainState, Alignment};
 use geom::HexGeom;
 use spatial::Place;
@@ -35,9 +35,12 @@ impl Entity {
         // This needs to call every component system.
         world::with_mut(|w| w.descs_mut().remove(self));
         world::with_mut(|w| w.map_memories_mut().remove(self));
+        world::with_mut(|w| w.stats_mut().remove(self));
         world::with_mut(|w| w.spawns_mut().remove(self));
         world::with_mut(|w| w.healths_mut().remove(self));
         world::with_mut(|w| w.brains_mut().remove(self));
+        world::with_mut(|w| w.items_mut().remove(self));
+        world::with_mut(|w| w.stats_cache_mut().remove(self));
 
         world::with_mut(|w| w.spatial.remove(self));
 
@@ -126,7 +129,7 @@ impl Entity {
 
 // Damage and lifetime /////////////////////////////////////////////////
 
-    pub fn damage(self, amount: int) {
+    pub fn damage(self, amount: i32) {
         if amount <= 0 { return; }
         let max_hp = self.max_hp();
 
@@ -142,7 +145,7 @@ impl Entity {
         }
     }
 
-    pub fn heal(self, amount: int) {
+    pub fn heal(self, amount: i32) {
         if amount <= 0 { return; }
         world::with_mut(|w| {
             let health = w.healths_mut().get(self).expect("no health");
@@ -197,7 +200,7 @@ impl Entity {
 
     pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
         world::with(|w|
-            if let Some(stat) = w.mob_stats().get(self) {
+            if let Some(stat) = w.stats().get(self) {
                 stat.intrinsics & intrinsic as u32 != 0
             } else {
                 false
@@ -267,13 +270,13 @@ impl Entity {
         }
     }
 
-    pub fn power_level(self) -> int {
+    pub fn power_level(self) -> i32 {
         world::with(|w|
-            if let Some(stat) = w.mob_stats().get(self) { stat.power }
+            if let Some(stat) = w.stats().get(self) { stat.power }
             else { 0 })
     }
 
-    pub fn hp(self) -> int {
+    pub fn hp(self) -> i32 {
         self.max_hp() - world::with(|w|
             if let Some(health) = w.healths().get(self) {
                 health.wounds
@@ -282,7 +285,7 @@ impl Entity {
             })
     }
 
-    pub fn max_hp(self) -> int {
+    pub fn max_hp(self) -> i32 {
         self.power_level()
     }
 

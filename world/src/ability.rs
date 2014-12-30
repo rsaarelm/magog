@@ -8,11 +8,11 @@ use self::Ability::*;
 pub enum Ability {
     Multi(Vec<Ability>),
     /// Damage a target for a given amount.
-    Damage(int),
+    Damage(i32),
     /// Heal a target for a given amount.
-    Heal(int),
+    Heal(i32),
     /// Heals target and self-destructs if target has wounds.
-    HealInstant(int),
+    HealInstant(i32),
 }
 
 impl Ability {

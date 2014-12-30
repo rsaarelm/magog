@@ -12,12 +12,13 @@ use flags::Flags;
 use entity::Entity;
 use action;
 use components::{Prototype};
-use components::{MobStat, Intrinsic};
+use components::{StatsCache};
 use components::{Spawn, Category};
 use components::{Desc, MapMemory, Health};
 use components::{Brain, BrainState, Alignment};
 use components::{Item};
 use item::{ItemType};
+use stats::{Stats, Intrinsic};
 use ability::Ability;
 use {Biome};
 
@@ -118,26 +119,26 @@ pub fn init_world(seed: Option<u32>) {
     Prototype::new(Some(base_mob))
         (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
         (Desc { name: "player".to_string(), icon: 51, color: color::AZURE })
-        (MobStat { power: 6, intrinsics: Intrinsic::Hands as u32 })
+        (Stats { power: 6, intrinsics: Intrinsic::Hands as u32 })
         (MapMemory::new())
         ;
 
     // Enemies
     Prototype::new(Some(base_mob))
         (Desc { name: "dreg".to_string(), icon: 72, color: color::OLIVE })
-        (MobStat { power: 1, intrinsics: Intrinsic::Hands as u32 })
+        (Stats { power: 1, intrinsics: Intrinsic::Hands as u32 })
         (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
         (Desc { name: "snake".to_string(), icon: 71, color: color::GREEN })
-        (MobStat { power: 1, intrinsics: 0 })
+        (Stats { power: 1, intrinsics: 0 })
         (Spawn { biome: Biome::Overland, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
         (Desc { name: "ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
-        (MobStat { power: 3, intrinsics: 0 })
+        (Stats { power: 3, intrinsics: 0 })
         (Spawn { biome: Biome::Dungeon, commonness: 1000, min_depth: 3, category: Category::Mob })
         ;
     // TODO: More mob types
@@ -158,11 +159,12 @@ pub fn init_world(seed: Option<u32>) {
 struct Comps {
     descs: VecMap<Desc>,
     map_memories: VecMap<MapMemory>,
-    mob_stats: VecMap<MobStat>,
+    stats: VecMap<Stats>,
     spawns: VecMap<Spawn>,
     healths: VecMap<Health>,
     brains: VecMap<Brain>,
     items: VecMap<Item>,
+    stats_cache: VecMap<StatsCache>,
 }
 
 impl Comps {
@@ -170,11 +172,12 @@ impl Comps {
         Comps {
             descs: VecMap::new(),
             map_memories: VecMap::new(),
-            mob_stats: VecMap::new(),
+            stats: VecMap::new(),
             spawns: VecMap::new(),
             healths: VecMap::new(),
             brains: VecMap::new(),
             items: VecMap::new(),
+            stats_cache: VecMap::new(),
         }
     }
 }
@@ -197,11 +200,12 @@ macro_rules! comp_api {
 // COMPONENTS CHECKPOINT
 comp_api!(descs, descs_mut, Desc);
 comp_api!(map_memories, map_memories_mut, MapMemory);
-comp_api!(mob_stats, mob_stats_mut, MobStat);
+comp_api!(stats, stats_mut, Stats);
 comp_api!(spawns, spawns_mut, Spawn);
 comp_api!(healths, healths_mut, Health);
 comp_api!(brains, brains_mut, Brain);
 comp_api!(items, items_mut, Item);
+comp_api!(stats_cache, stats_cache_mut, StatsCache);
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

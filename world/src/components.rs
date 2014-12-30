@@ -5,6 +5,7 @@ use {Biome};
 use entity::Entity;
 use item::{ItemType};
 use ability::Ability;
+use stats::Stats;
 use world;
 
 macro_rules! impl_component {
@@ -64,24 +65,7 @@ impl MapMemory {
 impl_component!(MapMemory, map_memories_mut);
 
 
-/// Unchanging statistics for mobs.
-#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
-pub struct MobStat {
-    pub power: int,
-    pub intrinsics: u32,
-}
-
-impl_component!(MobStat, mob_stats_mut);
-
-#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
-pub enum Intrinsic {
-    /// Moves 1/3 slower than usual.
-    Slow        = 0b1,
-    /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast        = 0b10,
-    /// Can manipulate objects and doors.
-    Hands       = 0b100,
-}
+impl_component!(Stats, stats_mut);
 
 
 /// Spawning properties for prototype objects.
@@ -153,9 +137,9 @@ pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
     /// Wounds component. Probably in MobStat or something.
-    pub wounds: int,
+    pub wounds: i32,
     /// Armor points get eaten away before you start getting wounds.
-    pub armor: int,
+    pub armor: i32,
 }
 
 impl_component!(Health, healths_mut);
@@ -170,6 +154,14 @@ pub struct Item {
 }
 
 impl_component!(Item, items_mut);
+
+
+/// Stats cache is a transient component made from adding up a mob's intrinsic
+/// stats and the stat bonuses of its equipment and whatever spell effects may
+/// apply.
+pub type StatsCache = Option<Stats>;
+
+impl_component!(StatsCache, stats_cache_mut);
 
 
 ////////////////////////////////////////////////////////////////////////
