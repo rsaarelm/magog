@@ -4,7 +4,6 @@
 (A) 2014-12-13 Inventory menu with equipment and backpack slots +UI
 (A) 2014-12-13 Killed mobs drop items +Content
 (A) 2014-12-13 Pick up items command +Content
-(A) 2014-12-16 Item entities with prototypes +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -31,8 +30,8 @@
 (B) 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
 (B) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine
 (B) 2014-12-25 Spell cooldowns +Content
-(B) 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
+(B) 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
 (B) 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -119,6 +118,7 @@
 (D) 2014-12-26 Compute improbability rating from input sequence saves where the player does many stupid things and stays alive because of fortunate RNG results, these will probably be the result of save scumming +Engine
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
+(D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -138,3 +138,4 @@ x 2014-12-25 2014-12-25 Move Sleep status from status flags to AI state +Engine
 x 2014-12-25 2014-12-25 Wounds component +Content
 x 2014-12-25 2014-12-25 fn spawn_distribution(depth, biome_mask, category_mask) -> WeightedChoice<Entity> +Engine
 x 2014-12-29 2014-12-13 Instahealing drop item +Content
+x 2014-12-30 2014-12-16 Item entities with prototypes +Engine
