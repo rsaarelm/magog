@@ -411,7 +411,7 @@ impl Entity {
     /// Return whether the mob has hostiles in its immediate vicinity.
     pub fn is_threatened(self) -> bool {
         // XXX: Expensive.
-        let range = 12u;
+        let range = 6u;
         let loc = self.location().expect("no location");
         let seen: Vec<Location> = Fov::new(
             |pt| (loc + pt).blocks_sight(), range)
