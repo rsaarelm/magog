@@ -14,6 +14,7 @@ use world::{Msg, FovStatus};
 use world::Dir6;
 use world::Dir6::*;
 use world::{Entity};
+use world::item::{Slot};
 use worldview;
 use sprite::{WorldSprites, GibSprite};
 use tilecache;
@@ -21,15 +22,23 @@ use tilecache::icon;
 use msg_queue::MsgQueue;
 
 pub struct GameState {
+    /// Transient effect sprites drawn in game world view.
     world_spr: WorldSprites,
     /// Counters for entities with flashing damage animation.
     damage_timers: HashMap<Entity, uint>,
 
+    /// Flag for autoexploration.
     // TODO: Probably going to need a general "ongoing activity" system at
     // some point.
     exploring: bool,
 
     msg: MsgQueue,
+    ui_state: UiState,
+}
+
+enum UiState {
+    Gameplay,
+    Inventory
 }
 
 impl GameState {
@@ -40,6 +49,7 @@ impl GameState {
             damage_timers: HashMap::new(),
             exploring: false,
             msg: MsgQueue::new(),
+            ui_state: UiState::Gameplay,
         }
     }
 
@@ -57,11 +67,30 @@ impl GameState {
         }
     }
 
-    /// Repaint view, update game world if needed.
-    pub fn update(&mut self, ctx: &mut Context) {
-        ctx.clear(&color::BLACK);
+    fn base_paint(&mut self, ctx: &mut Context) {
         let camera = world::camera();
+        worldview::draw_world(&camera, ctx, &self.damage_timers);
 
+        self.world_spr.draw(|x| (camera + x).fov_status() == Some(FovStatus::Seen), &camera, ctx);
+        self.world_spr.update();
+
+        let location_name = camera.name();
+        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as int * 8, 8), 0.1, color::LIGHTGRAY)
+                       .set_border(color::BLACK),
+                       "{}", location_name);
+
+        self.msg.draw(ctx);
+        if let Some(player) = action::player() {
+            self.draw_player_ui(ctx, player);
+        }
+
+        let fps = 1.0 / ctx.render_duration;
+        let _ = write!(&mut ctx.text_writer(V2(0, 16), 0.1, color::LIGHTGREEN)
+                       .set_border(color::BLACK),
+                       "FPS {:.0}", fps);
+    }
+
+    fn base_update(&mut self, ctx: &mut Context) {
         // Process events
         loop {
             match world::pop_msg() {
@@ -84,26 +113,7 @@ impl GameState {
             }
         }
 
-        worldview::draw_world(&camera, ctx, &self.damage_timers);
-
-        // TODO use FOV for sprite draw.
-        self.world_spr.draw(|x| (camera + x).fov_status() == Some(FovStatus::Seen), &camera, ctx);
-        self.world_spr.update();
-
-        let location_name = camera.name();
-        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as int * 8, 8), 0.1, color::LIGHTGRAY)
-                       .set_border(color::BLACK),
-                       "{}", location_name);
-
-        self.msg.draw(ctx);
-        if let Some(player) = action::player() {
-            self.draw_player_ui(ctx, player);
-        }
-
-        let fps = 1.0 / ctx.render_duration;
-        let _ = write!(&mut ctx.text_writer(V2(0, 16), 0.1, color::LIGHTGREEN)
-                       .set_border(color::BLACK),
-                       "FPS {:.0}", fps);
+        self.base_paint(ctx);
 
         if action::control_state() == ReadyToUpdate {
             action::update();
@@ -121,6 +131,27 @@ impl GameState {
             .collect();
 
         self.msg.update();
+    }
+
+    fn inventory_update(&mut self, ctx: &mut Context) {
+        // TODO
+        let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO)
+            .set_border(color::BLACK);
+        for slot_data in SLOT_DATA.iter() {
+            let _ = write!(&mut cursor, "{}] {}: {}\n",
+                slot_data.key, slot_data.name, "...");
+        }
+    }
+
+
+    /// Repaint view, update game world if needed.
+    pub fn update(&mut self, ctx: &mut Context) {
+        ctx.clear(&color::BLACK);
+
+        match self.ui_state {
+            UiState::Gameplay => self.base_update(ctx),
+            UiState::Inventory => self.inventory_update(ctx),
+        }
     }
 
     pub fn save_game(&self) {
@@ -172,7 +203,7 @@ impl GameState {
     }
 
     /// Process a player control keypress.
-    pub fn process_key(&mut self, key: Key) -> bool {
+    pub fn gameplay_process_key(&mut self, key: Key) -> bool {
         if action::control_state() != AwaitingInput {
             return false;
         }
@@ -188,6 +219,10 @@ impl GameState {
             Key::A | Key::Pad1 => { self.smart_move(SouthWest); }
             Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
+
+            // Open inventory
+            Key::Tab => { self.ui_state = UiState::Inventory; }
+
             Key::F5 => { self.save_game(); }
             Key::F9 => { self.load_game(); }
             Key::X => { self.exploring = true; }
@@ -196,16 +231,17 @@ impl GameState {
         return true;
     }
 
-    pub fn process(&mut self, event: Event) -> bool {
+    pub fn gameplay_process(&mut self, event: Event) -> bool {
         match event {
             Event::Render(ctx) => {
                 self.update(ctx);
             }
+            // TODO: Better quit confirmation than just pressing esc.
             Event::KeyPressed(Key::Escape) => {
                 return false;
             }
             Event::KeyPressed(k) => {
-                self.process_key(k);
+                self.gameplay_process_key(k);
             }
 
             Event::Char(ch) => {
@@ -221,4 +257,78 @@ impl GameState {
         }
         true
     }
+
+    pub fn inventory_process(&mut self, event: Event) -> bool {
+        match event {
+            Event::Render(ctx) => {
+                self.update(ctx);
+            }
+            Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
+                self.ui_state = UiState::Gameplay
+            }
+            Event::KeyPressed(_) => {}
+
+            Event::Char(ch) => {
+                // TODO: Chars and keypresses in same lookup (use variants?)
+                match ch {
+                    // Debug
+                    '>' => { action::next_level(); }
+                    _ => ()
+                }
+            }
+
+            _ => ()
+        }
+        true
+    }
+
+    pub fn process(&mut self, event: Event) -> bool {
+        match self.ui_state {
+            UiState::Gameplay => self.gameplay_process(event),
+            UiState::Inventory => self.inventory_process(event),
+        }
+    }
 }
+
+struct SlotData {
+    key: char,
+    slot: Slot,
+    name: &'static str,
+}
+
+static SLOT_DATA: [SlotData, ..34] = [
+    SlotData { key: '1', slot: Slot::Spell1, name: "Ability" },
+    SlotData { key: '2', slot: Slot::Spell2, name: "Ability" },
+    SlotData { key: '3', slot: Slot::Spell3, name: "Ability" },
+    SlotData { key: '4', slot: Slot::Spell4, name: "Ability" },
+    SlotData { key: '5', slot: Slot::Spell5, name: "Ability" },
+    SlotData { key: '6', slot: Slot::Spell6, name: "Ability" },
+    SlotData { key: '7', slot: Slot::Spell7, name: "Ability" },
+    SlotData { key: '8', slot: Slot::Spell8, name: "Ability" },
+    SlotData { key: 'a', slot: Slot::Melee, name: "Weapon" },
+    SlotData { key: 'b', slot: Slot::Ranged, name: "Ranged" },
+    SlotData { key: 'c', slot: Slot::Head, name: "Helmet" },
+    SlotData { key: 'd', slot: Slot::Torso, name: "Armor" },
+    SlotData { key: 'e', slot: Slot::Boots, name: "Boots" },
+    SlotData { key: 'f', slot: Slot::TrinketF, name: "Trinket" },
+    SlotData { key: 'g', slot: Slot::TrinketG, name: "Trinket" },
+    SlotData { key: 'h', slot: Slot::TrinketH, name: "Trinket" },
+    SlotData { key: 'i', slot: Slot::TrinketI, name: "Trinket" },
+    SlotData { key: 'j', slot: Slot::InventoryJ, name: "" },
+    SlotData { key: 'k', slot: Slot::InventoryK, name: "" },
+    SlotData { key: 'l', slot: Slot::InventoryL, name: "" },
+    SlotData { key: 'm', slot: Slot::InventoryM, name: "" },
+    SlotData { key: 'n', slot: Slot::InventoryN, name: "" },
+    SlotData { key: 'o', slot: Slot::InventoryO, name: "" },
+    SlotData { key: 'p', slot: Slot::InventoryP, name: "" },
+    SlotData { key: 'q', slot: Slot::InventoryQ, name: "" },
+    SlotData { key: 'r', slot: Slot::InventoryR, name: "" },
+    SlotData { key: 's', slot: Slot::InventoryS, name: "" },
+    SlotData { key: 't', slot: Slot::InventoryT, name: "" },
+    SlotData { key: 'u', slot: Slot::InventoryU, name: "" },
+    SlotData { key: 'v', slot: Slot::InventoryV, name: "" },
+    SlotData { key: 'w', slot: Slot::InventoryW, name: "" },
+    SlotData { key: 'x', slot: Slot::InventoryX, name: "" },
+    SlotData { key: 'y', slot: Slot::InventoryY, name: "" },
+    SlotData { key: 'z', slot: Slot::InventoryZ, name: "" },
+];

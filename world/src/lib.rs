@@ -36,6 +36,7 @@ macro_rules! caption(
 
 pub mod action;
 pub mod components;
+pub mod item;
 
 mod ability;
 mod area;
@@ -47,7 +48,6 @@ mod fov;
 mod geom;
 mod geomorph;
 mod geomorph_data;
-mod item;
 mod location;
 mod mapgen;
 mod msg;
