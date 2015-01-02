@@ -1,0 +1,4 @@
+# World crate unit tests
+cargo test -p world
+# Main program unit tests
+cargo test
