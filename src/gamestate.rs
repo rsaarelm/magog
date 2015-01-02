@@ -135,8 +135,7 @@ impl GameState {
 
     fn inventory_update(&mut self, ctx: &mut Context) {
         let player = action::player().unwrap();
-        let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO)
-            .set_border(color::BLACK);
+        let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO);
         for slot_data in SLOT_DATA.iter() {
             let name = match player.equipped(slot_data.slot) {
                 Some(item) => item.name(),
