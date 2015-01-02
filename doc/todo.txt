@@ -2,8 +2,6 @@
 (A) 2014-12-13 Equipped weapons and armor affect character stats +Content
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (A) 2014-12-13 Killed mobs drop items +Content
-(A) 2015-01-02 Drop item when pressing shift+slot key +UI
-(A) 2015-01-02 Invslot-equip/equipslot-unequip items when pressing slot key +UI
 (A) 2015-01-02 Remove ability field from Item component +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
@@ -34,6 +32,7 @@
 (B) 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
 (B) 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 (B) 2014-12-31 Binaries know their build version +Engine
+(B) 2015-01-02 Always draw mobs on top of items +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -145,3 +144,5 @@ x 2015-01-02 2014-12-13 Inventory menu with equipment and backpack slots +UI
 x 2015-01-02 2014-12-13 Pick up items command +Content
 x 2015-01-02 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
 x 2015-01-02 2015-01-02 Draw font outline sligthly further in Z-buffer so that it won't overdraw main fonts in the same draw layer +Render
+x 2015-01-02 2015-01-02 Drop item when pressing shift+slot key +UI
+x 2015-01-02 2015-01-02 Invslot-equip/equipslot-unequip items when pressing slot key +UI
