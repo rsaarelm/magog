@@ -46,8 +46,11 @@ impl<'a> CanvasWriter<'a> {
              V2(-1,  1), V2( 0,  1), V2( 1,  1)];
         if let Some(img) = self.context.font_image(c) {
             if let Some(b) = self.border {
+                // Put the border a tiny bit further in the z-buffer so it
+                // won't clobber the text on the same layer.
+                let border_z = self.z + 0.00001;
                 for &d in BORDER.iter() {
-                    self.context.draw_image(self.cursor_pos + d, self.z, img, &b);
+                    self.context.draw_image(self.cursor_pos + d, border_z, img, &b);
                 }
             }
             self.context.draw_image(self.cursor_pos, self.z, img, &self.color);
