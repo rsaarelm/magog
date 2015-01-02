@@ -273,6 +273,7 @@ impl Entity {
     /// Equip an item to a slot. Slot must be empty.
     pub fn equip(self, item: Entity, slot: Slot) {
         world::with_mut(|w| w.spatial.equip(item, self, slot));
+        self.dirty_stats_cache();
     }
 
     /// Swap items in two equipment slots
@@ -297,6 +298,7 @@ impl Entity {
                 _ => {}
             }
         });
+        self.dirty_stats_cache();
     }
 
     pub fn pick_up(self, item: Entity) -> bool {
@@ -304,6 +306,18 @@ impl Entity {
             return false;
         }
 
+        match self.free_bag_slot() {
+            Some(slot) => {
+                self.equip(item, slot);
+                return true;
+            }
+            // Inventory full.
+            None => { return false; }
+        }
+    }
+
+    /// Return the first free storage bag inventory slot on this entity.
+    pub fn free_bag_slot(self) -> Option<Slot> {
         for &slot in vec![
             Slot::InventoryJ,
             Slot::InventoryK,
@@ -323,12 +337,10 @@ impl Entity {
             Slot::InventoryY,
             Slot::InventoryZ].iter() {
             if self.equipped(slot).is_none() {
-                self.equip(item, slot);
-                return true;
+                return Some(slot);
             }
         }
-        // Inventory full.
-        return false;
+        None
     }
 
 // Stats methods ///////////////////////////////////////////////////////
@@ -399,6 +411,31 @@ impl Entity {
                 false
             }
         )
+    }
+
+    /// Preferred equipment slot for equippable items.
+    pub fn equip_slots(self) -> Vec<Slot> {
+        world::with(|w|
+            if let Some(item) = w.items().get(self) {
+                match item.item_type {
+                    ItemType::MeleeWeapon => vec![Slot::Melee],
+                    ItemType::RangedWeapon => vec![Slot::Ranged],
+                    ItemType::Helmet => vec![Slot::Head],
+                    ItemType::Armor => vec![Slot::Body],
+                    ItemType::Boots => vec![Slot::Feet],
+                    ItemType::Trinket => vec![
+                        Slot::TrinketF, Slot::TrinketG, Slot::TrinketH, Slot::TrinketI],
+                    ItemType::Spell => vec![
+                        Slot::Spell1, Slot::Spell2, Slot::Spell3, Slot::Spell4,
+                        Slot::Spell5, Slot::Spell6, Slot::Spell7, Slot::Spell8,
+                    ],
+                    _ => vec![]
+                }
+            } else {
+                vec![]
+            }
+        )
+
     }
 
 // AI methods /////////////////////////////////////////////////////////

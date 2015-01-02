@@ -146,6 +146,62 @@ impl GameState {
         }
     }
 
+    pub fn inventory_process(&mut self, event: Event) -> bool {
+        let player = action::player().unwrap();
+        match event {
+            Event::Render(ctx) => {
+                self.update(ctx);
+            }
+            Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
+                self.ui_state = UiState::Gameplay
+            }
+            Event::KeyPressed(_) => {}
+
+            Event::Char(ch) => {
+                for slot_data in SLOT_DATA.iter() {
+                    if ch == slot_data.key {
+                        if slot_data.slot.is_gear_slot() {
+                            // Unequip gear
+                            match player.free_bag_slot() {
+                                None => {
+                                    // No room in bag, can't unequip until
+                                    // drop something.
+                                    // TODO: Message about full bag.
+                                }
+                                Some(swap_slot) => {
+                                    player.swap_equipped(slot_data.slot, swap_slot);
+                                }
+                            }
+                        }
+                        if slot_data.slot.is_bag_slot() {
+                            // Bag items get equipped if they have are gear
+                            // with a preferred slot.
+                            if let Some(item) = player.equipped(slot_data.slot) {
+                                let equip_slots = item.equip_slots();
+                                for &swap_slot in equip_slots.iter() {
+                                    if player.equipped(swap_slot).is_none() {
+                                        player.swap_equipped(slot_data.slot, swap_slot);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ch == slot_data.key.to_uppercase() {
+                        // Drop item in slot.
+                        if let Some(item) = player.equipped(slot_data.slot) {
+                            item.place(player.location().unwrap());
+                        }
+                        break;
+                    }
+                }
+            }
+
+            _ => ()
+        }
+        true
+    }
+
 
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Context) {
@@ -273,30 +329,6 @@ impl GameState {
         true
     }
 
-    pub fn inventory_process(&mut self, event: Event) -> bool {
-        match event {
-            Event::Render(ctx) => {
-                self.update(ctx);
-            }
-            Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
-                self.ui_state = UiState::Gameplay
-            }
-            Event::KeyPressed(_) => {}
-
-            Event::Char(ch) => {
-                // TODO: Chars and keypresses in same lookup (use variants?)
-                match ch {
-                    // Debug
-                    '>' => { action::next_level(); }
-                    _ => ()
-                }
-            }
-
-            _ => ()
-        }
-        true
-    }
-
     pub fn process(&mut self, event: Event) -> bool {
         match self.ui_state {
             UiState::Gameplay => self.gameplay_process(event),
@@ -322,9 +354,9 @@ static SLOT_DATA: [SlotData, ..34] = [
     SlotData { key: '8', slot: Slot::Spell8,     name: "Ability" },
     SlotData { key: 'a', slot: Slot::Melee,      name: "Weapon " },
     SlotData { key: 'b', slot: Slot::Ranged,     name: "Ranged " },
-    SlotData { key: 'c', slot: Slot::Head,       name: "Helmet " },
-    SlotData { key: 'd', slot: Slot::Torso,      name: "Armor  " },
-    SlotData { key: 'e', slot: Slot::Boots,      name: "Boots  " },
+    SlotData { key: 'c', slot: Slot::Head,       name: "Head   " },
+    SlotData { key: 'd', slot: Slot::Body,       name: "Body   " },
+    SlotData { key: 'e', slot: Slot::Feet,       name: "Feet   " },
     SlotData { key: 'f', slot: Slot::TrinketF,   name: "Trinket" },
     SlotData { key: 'g', slot: Slot::TrinketG,   name: "Trinket" },
     SlotData { key: 'h', slot: Slot::TrinketH,   name: "Trinket" },

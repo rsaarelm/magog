@@ -12,8 +12,8 @@ pub enum Slot {
     Melee,
     Ranged,
     Head,
-    Torso,
-    Boots,
+    Body,
+    Feet,
     TrinketF,
     TrinketG,
     TrinketH,
@@ -37,10 +37,24 @@ pub enum Slot {
     InventoryZ,
 }
 
+impl Slot {
+    pub fn is_gear_slot(self) -> bool {
+        (self as uint) <= (Slot::TrinketI as uint)
+    }
+    pub fn is_bag_slot(self) -> bool {
+        (self as uint) >= (Slot::InventoryJ as uint)
+    }
+}
+
 #[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum ItemType {
     MeleeWeapon,
     RangedWeapon,
+    Helmet,
+    Armor,
+    Boots,
+    Trinket,
+    Spell,
     /// Can be carried and used later.
     Consumable,
     /// Consumed instantly when stepped on.
