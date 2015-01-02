@@ -1,9 +1,10 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-13 Equipped weapons and armor affect character stats +Content
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
-(A) 2014-12-13 Inventory menu with equipment and backpack slots +UI
 (A) 2014-12-13 Killed mobs drop items +Content
-(A) 2014-12-13 Pick up items command +Content
+(A) 2015-01-02 Drop item when pressing shift+slot key +UI
+(A) 2015-01-02 Invslot-equip/equipslot-unequip items when pressing slot key +UI
+(A) 2015-01-02 Remove ability field from Item component +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -119,6 +120,7 @@
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
 (D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI
+(D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Enigne
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -139,4 +141,6 @@ x 2014-12-25 2014-12-25 Wounds component +Content
 x 2014-12-25 2014-12-25 fn spawn_distribution(depth, biome_mask, category_mask) -> WeightedChoice<Entity> +Engine
 x 2014-12-29 2014-12-13 Instahealing drop item +Content
 x 2014-12-30 2014-12-16 Item entities with prototypes +Engine
+x 2015-01-02 2014-12-13 Inventory menu with equipment and backpack slots +UI
+x 2015-01-02 2014-12-13 Pick up items command +Content
 x 2015-01-02 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
