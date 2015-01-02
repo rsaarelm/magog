@@ -21,7 +21,7 @@ dependencies = [
 [[package]]
 name = "calx"
 version = "0.0.0"
-source = "git+https://github.com/rsaarelm/calx#f64f2da981a05cb42b6d168ab058d83040a9cc8b"
+source = "git+https://github.com/rsaarelm/calx#28ec94e94118eb2dca78f30619a1acc063c49e16"
 dependencies = [
  "gfx 0.1.0 (git+https://github.com/gfx-rs/gfx-rs)",
  "gl 0.0.2 (git+https://github.com/bjz/gl-rs)",
