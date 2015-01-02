@@ -362,25 +362,39 @@ impl Entity {
             else { 0 })
     }
 
+    pub fn stats(self) -> Stats {
+        world::with(|w|
+            if let Some(s) = w.stats().get(self) {
+                *s
+            } else {
+                Default::default()
+            }
+        )
+    }
+
     /// Generate cached stats from base stats if they don't exist.
     /// This must be called by any method that accesses the stats_caches
     /// component.
     fn refresh_stats_cache(self) {
-        world::with_mut(|w|
-            if let Some(&Some(_)) = w.stats_caches().get(self) {
-                // Cache is good.
-                return;
-            } else {
-                let mut stats: Stats = Default::default();
-                if let Some(s) = w.stats().get(self) {
-                    stats = stats + *s;
-                }
-                // TODO: Go through entities attached to self, extract their
-                // stats.
-                // TODO: Need to break out of the world lock for this.
-                w.stats_caches_mut().insert(self, Some(stats));
+        // If cache is good, do nothing.
+        world::with(|w| if let Some(&Some(_)) = w.stats_caches().get(self) { return; });
+
+        let mut stats = self.stats();
+        for &slot in [
+            Slot::Body,
+            Slot::Feet,
+            Slot::Head,
+            Slot::Melee,
+            Slot::TrinketF,
+            Slot::TrinketG,
+            Slot::TrinketH,
+            Slot::TrinketI].iter() {
+            if let Some(item) = self.equipped(slot) {
+                stats = stats + item.stats();
             }
-        );
+        }
+
+        world::with_mut(|w| w.stats_caches_mut().insert(self, Some(stats)));
     }
 
     /// Mark cached stats dirty after changing base stats.

@@ -1,5 +1,7 @@
 /// Stats specifies static bonuses for an entity. Stats values can be added
-/// together to build composites.
+/// together to build composites. The Default value for Stats must be an
+/// algebraic zero element, adding it to any Stats value must leave that value
+/// unchanged.
 #[deriving(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
 pub struct Stats {
     /// Generic power level
