@@ -121,6 +121,7 @@
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
 (D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI
 (D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Enigne
+(D) 2015-01-02 Draw font outline sligthly further in Z-buffer so that it won't overdraw main fonts in the same draw layer +Render
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
