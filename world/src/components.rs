@@ -148,7 +148,6 @@ impl_component!(Health, healths_mut);
 /// Items can be picked up and carried and they do stuff.
 #[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Item {
-    pub power: int,
     pub item_type: ItemType,
     pub ability: Ability,
 }

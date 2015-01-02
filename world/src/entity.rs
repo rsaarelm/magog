@@ -265,6 +265,11 @@ impl Entity {
 
 // Invetory methods ////////////////////////////////////////////////////
 
+    /// Return whether entity contains another.
+    pub fn contains(self, item: Entity) -> bool {
+        world::with(|w| w.spatial.contains(self, item))
+    }
+
     /// Return the item equipped by this entity in the given inventory slot.
     pub fn equipped(self, slot: Slot) -> Option<Entity> {
         world::with(|w| w.spatial.entity_equipped(self, slot))

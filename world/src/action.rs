@@ -182,8 +182,16 @@ pub fn start_level(depth: int) {
 }
 
 fn clear_nonplayers() {
+    let po = player();
     for e in entities() {
-        if e.location().is_some() && !e.is_player() {
+        // Don't destroy player or player's inventory.
+        if let Some(p) = po {
+            if e == p || p.contains(e) {
+                continue;
+            }
+        }
+
+        if e.location().is_some() {
             e.delete();
         }
     }

@@ -57,17 +57,17 @@ impl Spatial {
 
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
-    pub fn _contains(&self, parent: Entity, Entity(idx): Entity) -> bool {
+    pub fn contains(&self, parent: Entity, Entity(idx): Entity) -> bool {
         match self.entity_to_place.get(&idx) {
             Some(&In(p, _)) if p == parent => true,
-            Some(&In(p, _)) => self._contains(parent, p),
+            Some(&In(p, _)) => self.contains(parent, p),
             _ => false
         }
     }
 
     /// Insert an entity into container.
     pub fn insert_in(&mut self, e: Entity, parent: Entity) {
-        assert!(!self._contains(e, parent), "Trying to create circular containment");
+        assert!(!self.contains(e, parent), "Trying to create circular containment");
         self.insert(e, In(parent, None));
     }
 
