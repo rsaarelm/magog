@@ -99,7 +99,8 @@ impl Sub<int, Dir6> for Dir6 {
 mod test {
     use calx::V2;
     // XXX: Why doesn't super::* work here?
-    use super::{Dir6, North, NorthEast, SouthEast, South, SouthWest, NorthWest};
+    use super::{Dir6};
+    use super::Dir6::*;
 
     #[test]
     fn test_dir6() {
