@@ -150,6 +150,13 @@ pub fn init_world(seed: Option<u32>) {
         (Item { power: 2, item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
         ;
 
+    Prototype::new(None)
+        (Desc { name: "sword".to_string(), icon: 84, color: color::GAINSBORO })
+        (Spawn { biome: Biome::Anywhere, commonness: 500, min_depth: 1, category: Category::Equipment })
+        (Item { power: 5, item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
+        (Stats { power: 5, intrinsics: 0 })
+        ;
+
     action::start_level(1);
 }
 

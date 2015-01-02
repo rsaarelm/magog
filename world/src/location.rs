@@ -67,6 +67,11 @@ impl Location {
         if e.len() > 0 { Some(e[0]) } else { None }
     }
 
+    /// Return an item at the location that can be interacted with.
+    pub fn top_item(&self) -> Option<Entity> {
+        self.entities().iter().find(|e| e.can_be_picked_up()).map(|&x| x)
+    }
+
     pub fn has_entities(&self) -> bool { !self.entities().is_empty() }
 
     pub fn has_mobs(&self) -> bool {

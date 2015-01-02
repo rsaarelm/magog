@@ -299,6 +299,38 @@ impl Entity {
         });
     }
 
+    pub fn pick_up(self, item: Entity) -> bool {
+        if !item.can_be_picked_up() {
+            return false;
+        }
+
+        for &slot in vec![
+            Slot::InventoryJ,
+            Slot::InventoryK,
+            Slot::InventoryL,
+            Slot::InventoryM,
+            Slot::InventoryN,
+            Slot::InventoryO,
+            Slot::InventoryP,
+            Slot::InventoryQ,
+            Slot::InventoryR,
+            Slot::InventoryS,
+            Slot::InventoryT,
+            Slot::InventoryU,
+            Slot::InventoryV,
+            Slot::InventoryW,
+            Slot::InventoryX,
+            Slot::InventoryY,
+            Slot::InventoryZ].iter() {
+            if self.equipped(slot).is_none() {
+                self.equip(item, slot);
+                return true;
+            }
+        }
+        // Inventory full.
+        return false;
+    }
+
 // Stats methods ///////////////////////////////////////////////////////
 
     pub fn has_intrinsic(self, intrinsic: Intrinsic) -> bool {
@@ -353,6 +385,16 @@ impl Entity {
         world::with(|w|
             if let Some(item) = w.items().get(self) {
                 item.item_type == ItemType::Instant
+            } else {
+                false
+            }
+        )
+    }
+
+    pub fn can_be_picked_up(self) -> bool {
+        world::with(|w|
+            if let Some(item) = w.items().get(self) {
+                item.item_type != ItemType::Instant
             } else {
                 false
             }
