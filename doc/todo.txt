@@ -1,8 +1,6 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-13 Equipped weapons and armor affect character stats +Content
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (A) 2014-12-13 Killed mobs drop items +Content
-(A) 2015-01-02 Remove ability field from Item component +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -140,6 +138,7 @@ x 2014-12-25 2014-12-25 Wounds component +Content
 x 2014-12-25 2014-12-25 fn spawn_distribution(depth, biome_mask, category_mask) -> WeightedChoice<Entity> +Engine
 x 2014-12-29 2014-12-13 Instahealing drop item +Content
 x 2014-12-30 2014-12-16 Item entities with prototypes +Engine
+x 2015-01-02 2014-12-13 Equipped weapons and armor affect character stats +Content
 x 2015-01-02 2014-12-13 Inventory menu with equipment and backpack slots +UI
 x 2015-01-02 2014-12-13 Pick up items command +Content
 x 2015-01-02 2014-12-24 Handle inventory slots by changing In(Entity) to In(Entity, Option<Slot>) in Spatial (switch to TreeMap to keep being able to do efficient "all Entities in Parent" queries) +Engine
