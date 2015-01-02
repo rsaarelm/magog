@@ -5,8 +5,9 @@
 
 extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
-extern crate calx;
 extern crate num;
+extern crate collect;
+extern crate calx;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};

@@ -37,6 +37,14 @@ version = "0.1.1"
 source = "git+https://github.com/servo/rust-cocoa#7412734e04a80f6e2166993a71b2bfd387801920"
 
 [[package]]
+name = "collect"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "traverse 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "compile_msg"
 version = "0.1.1"
 source = "git+https://github.com/huonw/compile_msg#e12dbf378a0b134e9ee7a6a6e26c40fb283d6f02"
@@ -190,6 +198,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "traverse"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "uuid"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -207,7 +220,7 @@ name = "world"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.0 (git+https://github.com/rsaarelm/calx)",
- "uuid 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "collect 0.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

@@ -7,7 +7,7 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "world"
 
-[dependencies.uuid]
+[dependencies.collect]
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"

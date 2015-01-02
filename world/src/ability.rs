@@ -26,7 +26,7 @@ impl Ability {
 
         // Target entity.
         let te = match target {
-            Place::In(e) => Some(e),
+            Place::In(e, _) => Some(e),
             Place::At(loc) => loc.main_entity()
         };
 

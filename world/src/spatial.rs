@@ -1,27 +1,29 @@
-use std::collections::{HashMap, VecMap};
+use std::collections::{VecMap};
+use collect::{TreeMap};
 use entity::{Entity};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use location::{Location};
+use item::Slot;
 use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[deriving(Copy, Eq, PartialEq, Clone, Hash, Show, RustcEncodable, RustcDecodable)]
+#[deriving(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]
 pub enum Place {
     At(Location),
-    In(Entity),
+    In(Entity, Option<Slot>),
 }
 
 /// Spatial index for game entities
 pub struct Spatial {
-    place_to_entities: HashMap<Place, Vec<Entity>>,
+    place_to_entities: TreeMap<Place, Vec<Entity>>,
     entity_to_place: VecMap<Place>,
 }
 
 impl Spatial {
     pub fn new() -> Spatial {
         Spatial {
-            place_to_entities: HashMap::new(),
+            place_to_entities: TreeMap::new(),
             entity_to_place: VecMap::new(),
         }
     }
@@ -51,8 +53,8 @@ impl Spatial {
     /// entity contains entity e.
     pub fn _contains(&self, parent: Entity, Entity(idx): Entity) -> bool {
         match self.entity_to_place.get(&idx) {
-            Some(&In(p)) if p == parent => true,
-            Some(&In(p)) => self._contains(parent, p),
+            Some(&In(p, _)) if p == parent => true,
+            Some(&In(p, _)) => self._contains(parent, p),
             _ => false
         }
     }
@@ -61,7 +63,7 @@ impl Spatial {
     /// Insert an entity into container.
     pub fn _insert_in(&mut self, e: Entity, parent: Entity) {
         assert!(!self._contains(e, parent), "Trying to create circular containment");
-        self.insert(e, In(parent));
+        self.insert(e, In(parent, None));
     }
 
     /// Remove an entity from the space. Other entities that were in the
@@ -112,7 +114,17 @@ impl Spatial {
 
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
-        self.entities(In(parent))
+        // XXX: Can't make the API return an iterator (more efficient than
+        // running collect) since the chain depends on a closure that captures
+        // the 'parent' parameter from the outside scope, and closures can't
+        // be typed in the return signature.
+        self.place_to_entities.lower_bound(&In(parent, None))
+            // Consume the contingent elements for the parent container.
+            .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
+            // Flatten the Vec results into a single stream.
+            .flat_map(|(_, ref v)| v.iter())
+            .map(|&x| x)
+            .collect()
     }
 
     /// Return the place of an entity if the entity is present in the space.
@@ -152,5 +164,39 @@ impl<E, D:Decoder<E>> Decodable<D, E> for Spatial {
 impl<E, S:Encoder<E>> Encodable<S, E> for Spatial {
     fn encode(&self, s: &mut S) -> Result<(), E> {
         self.dump().encode(s)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Place};
+    use item::Slot;
+    use entity::Entity;
+    use std::slice::OrdSliceExt;
+
+    #[test]
+    fn test_place_adjacency() {
+        // Test that the Place type gets a lexical ordering where elements in
+        // the same parent entity get sorted next to each other, and that None
+        // is the minimum value for the slot option.
+        //
+        // This needs to be right for the containment logic to function, but
+        // it's not obvious which way the derived lexical order sorts, so put
+        // an unit test here to check it out.
+        let mut places = vec![
+            Place::In(Entity(0), Some(Slot::Melee)),
+            Place::In(Entity(1), None),
+            Place::In(Entity(0), Some(Slot::Ranged)),
+            Place::In(Entity(0), None),
+        ];
+
+        places.sort();
+        assert_eq!(places,
+            vec![
+                Place::In(Entity(0), None),
+                Place::In(Entity(0), Some(Slot::Melee)),
+                Place::In(Entity(0), Some(Slot::Ranged)),
+                Place::In(Entity(1), None),
+            ]);
     }
 }

@@ -18,7 +18,7 @@ use item::ItemType;
 use stats::Stats;
 
 /// Game object handle.
-#[deriving(Copy, PartialEq, Eq, Clone, Hash, Show, RustcDecodable, RustcEncodable)]
+#[deriving(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
 pub struct Entity(pub uint);
 
 impl Entity {
@@ -116,7 +116,7 @@ impl Entity {
     pub fn location(self) -> Option<Location> {
         match world::with(|w| w.spatial.get(self)) {
             Some(Place::At(loc)) => Some(loc),
-            Some(Place::In(e)) => e.location(),
+            Some(Place::In(e, _)) => e.location(),
             _ => None
         }
     }
@@ -451,7 +451,7 @@ impl Entity {
     pub fn on_step_on(self, collider: Entity) {
         if self.is_instant_item() {
             let ability = world::with(|w| w.items().get(self).expect("no item").ability.clone());
-            ability.apply(Some(self), Place::In(collider));
+            ability.apply(Some(self), Place::In(collider, None));
         }
     }
 
