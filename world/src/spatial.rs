@@ -29,8 +29,14 @@ impl Spatial {
     }
 
     fn insert(&mut self, Entity(idx): Entity, p: Place) {
-        if self.entity_to_place.contains_key(&idx) {
-            self.remove(Entity(idx));
+        // Remove the entity from its old position.
+        self.single_remove(Entity(idx));
+
+        if let In(_, Some(_)) = p {
+            // Slotted in-places are a special case that can hold at most one entity.
+            if self.place_to_entities.contains_key(&p) {
+                panic!("Equipping to an occupied inventory slot");
+            }
         }
 
         self.entity_to_place.insert(idx, p);
@@ -59,26 +65,27 @@ impl Spatial {
         }
     }
 
-
     /// Insert an entity into container.
-    pub fn _insert_in(&mut self, e: Entity, parent: Entity) {
+    pub fn insert_in(&mut self, e: Entity, parent: Entity) {
         assert!(!self._contains(e, parent), "Trying to create circular containment");
         self.insert(e, In(parent, None));
     }
 
-    /// Remove an entity from the space. Other entities that were in the
-    /// entity to be removed will be added in the place the entity occupied.
-    pub fn remove(&mut self, Entity(idx): Entity) {
+    /// Insert an entity into an equipment slot. Will panic if there already
+    /// is an item present in the slot.
+    pub fn equip(&mut self, e: Entity, parent: Entity, slot: Slot) {
+        self.insert(e, In(parent, Some(slot)));
+    }
+
+    /// Remove an entity from the local structures but do not pop out its
+    /// items. Unless the entity is added back in or the contents are handled
+    /// somehow, this will leave the spatial index in an inconsistent state.
+    fn single_remove(&mut self, Entity(idx): Entity) {
         if !self.entity_to_place.contains_key(&idx) { return; }
 
         let &p = self.entity_to_place.get(&idx).unwrap();
-
-        // Pop out the contents.
-        for &content in self.entities_in(Entity(idx)).iter() {
-            self.insert(content, p);
-        }
-
         self.entity_to_place.remove(&idx);
+
         {
             let v = self.place_to_entities.get_mut(&p).unwrap();
             assert!(v.len() > 0);
@@ -98,6 +105,16 @@ impl Spatial {
         // We only end up here if we need to clear the container for the
         // location.
         self.place_to_entities.remove(&p);
+    }
+
+    /// Remove an entity from the space. Entities contained in the entity will
+    /// also be removed from the space.
+    pub fn remove(&mut self, Entity(idx): Entity) {
+        // Remove the contents
+        for &content in self.entities_in(Entity(idx)).iter() {
+            self.remove(content);
+        }
+        self.single_remove(Entity(idx));
     }
 
     fn entities(&self, p: Place) -> Vec<Entity> {
@@ -125,6 +142,16 @@ impl Spatial {
             .flat_map(|(_, ref v)| v.iter())
             .map(|&x| x)
             .collect()
+    }
+
+    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
+        match self.place_to_entities.get(&In(parent, Some(slot))) {
+            None => None,
+            Some(v) => {
+                assert!(v.len() == 1, "Slot entity container corrupt");
+                Some(v[0])
+            }
+        }
     }
 
     /// Return the place of an entity if the entity is present in the space.

@@ -14,7 +14,7 @@ use action;
 use fov::Fov;
 use rng;
 use msg;
-use item::ItemType;
+use item::{ItemType, Slot};
 use stats::Stats;
 
 /// Game object handle.
@@ -261,6 +261,42 @@ impl Entity {
                 false
             }
         )
+    }
+
+// Invetory methods ////////////////////////////////////////////////////
+
+    /// Return the item equipped by this entity in the given inventory slot.
+    pub fn equipped(self, slot: Slot) -> Option<Entity> {
+        world::with(|w| w.spatial.entity_equipped(self, slot))
+    }
+
+    /// Equip an item to a slot. Slot must be empty.
+    pub fn equip(self, item: Entity, slot: Slot) {
+        world::with_mut(|w| w.spatial.equip(item, self, slot));
+    }
+
+    /// Swap items in two equipment slots
+    pub fn swap_equipped(self, slot1: Slot, slot2: Slot) {
+        world::with_mut(|w| {
+            let eo1 = w.spatial.entity_equipped(self, slot1);
+            let eo2 = w.spatial.entity_equipped(self, slot2);
+            match (eo1, eo2) {
+                (Some(e1), Some(e2)) => {
+                    // Temporarily shunt one off to non-slotted containment
+                    // space for the switcheroo.
+                    w.spatial.insert_in(self, e1);
+                    w.spatial.equip(e2, self, slot1);
+                    w.spatial.equip(e1, self, slot2);
+                }
+                (None, Some(e2)) => {
+                    w.spatial.equip(e2, self, slot1);
+                }
+                (Some(e1), None) => {
+                    w.spatial.equip(e1, self, slot2);
+                }
+                _ => {}
+            }
+        });
     }
 
 // Stats methods ///////////////////////////////////////////////////////
