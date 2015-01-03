@@ -1,6 +1,6 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
-(A) 2014-12-13 Killed mobs drop items +Content
+(A) 2015-01-11 Clean up obsolete interface bits from Glium renderer +Render
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -11,6 +11,7 @@
 (B) 2014-12-13 File hosting for Windows binaries +Build
 (B) 2014-12-13 Freeze effects +Content
 (B) 2014-12-13 Keeping score +Content
+(B) 2014-12-13 Killed mobs drop items +Content
 (B) 2014-12-13 Mouse event support +UI
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
@@ -31,6 +32,8 @@
 (B) 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 (B) 2014-12-31 Binaries know their build version +Engine
 (B) 2015-01-02 Always draw mobs on top of items +Engine
+(B) 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it.
+(B) 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Alpha blended primitive rendering +Render
@@ -92,6 +95,7 @@
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
+(C) 2015-01-05 App API needs a non-updating repaint method for screenshotting +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -117,7 +121,9 @@
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
 (D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI
-(D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Enigne
+(D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Engine
+(D) 2015-01-03 World has an enum of icons, App uses look-up-table on it, don't hardcode icon indices in entity specs +Content
+(D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -145,3 +151,4 @@ x 2015-01-02 2014-12-24 Handle inventory slots by changing In(Entity) to In(Enti
 x 2015-01-02 2015-01-02 Draw font outline sligthly further in Z-buffer so that it won't overdraw main fonts in the same draw layer +Render
 x 2015-01-02 2015-01-02 Drop item when pressing shift+slot key +UI
 x 2015-01-02 2015-01-02 Invslot-equip/equipslot-unequip items when pressing slot key +UI
+x 2015-01-11 2015-01-05 Glium rendering backend +Render
