@@ -17,6 +17,9 @@ git = "https://github.com/bjz/gl-rs"
 [dependencies.glutin]
 git = "https://github.com/tomaka/glutin"
 
+[dependencies.glium]
+git = "https://github.com/tomaka/glium"
+
 [dependencies.gfx]
 git = "https://github.com/gfx-rs/gfx-rs"
 

@@ -12,6 +12,7 @@ extern crate gfx;
 extern crate gfx_macros;
 extern crate device;
 extern crate image;
+extern crate glium;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};
