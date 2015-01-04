@@ -9,8 +9,7 @@ name = "calx"
 
 [dependencies.time]
 
-[dependencies]
-rustc-serialize = "0.1.1"
+[dependencies.rustc-serialize]
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"
