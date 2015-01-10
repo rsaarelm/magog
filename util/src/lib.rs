@@ -1,4 +1,5 @@
 #![crate_name="util"]
+#![allow(unstable)]
 
 extern crate collections;
 extern crate "rustc-serialize" as rustc_serialize;
