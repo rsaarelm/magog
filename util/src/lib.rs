@@ -17,7 +17,7 @@ mod rgb;
 // mod util;
 
 pub mod color;
-// pub mod dijkstra;
+pub mod dijkstra;
 pub mod text;
 pub mod timing;
 pub mod vorud;
