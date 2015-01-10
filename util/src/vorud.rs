@@ -4,7 +4,7 @@ static VS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
 static CS: [char; 14] = ['b', 'd', 'f', 'g', 'j', 'k', 'm', 'n',
     'p', 'r', 's', 't', 'v', 'z'];
 
-#[deriving(Copy)]
+#[derive(Copy)]
 enum Decode {
     V(u16),
     C(u16),
@@ -86,7 +86,7 @@ fn durov_chunk(s: &str) -> Result<u16, ()> {
     Ok(ret)
 }
 
-#[deriving(PartialEq, Eq, Show)]
+#[derive(PartialEq, Eq, Show)]
 pub struct Vorud(String);
 
 impl Vorud {

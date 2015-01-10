@@ -20,7 +20,7 @@ pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T
     &frames[idx as usize]
 }
 
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Ticker {
     period_s: f64,
     last_t: f64,
@@ -64,7 +64,7 @@ impl Ticker {
     }
 }
 
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct TimePerFrame {
     update_weight: f64,
     start_t: f64,

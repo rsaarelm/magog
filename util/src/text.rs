@@ -1,4 +1,3 @@
-use std::vec::Vec;
 use collections::ring_buf::RingBuf;
 
 pub struct WrapLineIterator<T> {

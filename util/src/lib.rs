@@ -6,17 +6,17 @@ extern crate time;
 extern crate image;
 
 pub use rgb::{Rgb, Rgba};
-pub use geom::{Rect, V2, RectIter};
-pub use util::{color_key};
-pub use util::{Primitive};
+// pub use geom::{Rect, V2, RectIter};
+// pub use util::{color_key};
+// pub use util::{Primitive};
 
-mod atlas;
-mod geom;
+// mod atlas;
+// mod geom;
 mod rgb;
-mod util;
+// mod util;
 
 pub mod color;
-pub mod dijkstra;
+// pub mod dijkstra;
 pub mod text;
 pub mod timing;
 pub mod vorud;
