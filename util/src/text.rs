@@ -5,16 +5,16 @@ pub struct WrapLineIterator<T> {
     /// Input iterator
     iter: T,
     /// Maximum line length
-    line_len: u32,
+    line_len: usize,
     /// Characters output since last newline
-    current_line_len: u32,
+    current_line_len: usize,
     /// Incoming elements
     buffer: RingBuf<char>,
     /// Peek window
     peek: Option<char>,
 }
 
-impl<T: Iterator<char>> WrapLineIterator<T> {
+impl<T: Iterator<Item=char>> WrapLineIterator<T> {
     fn fill_buffer(&mut self) {
         assert!(self.buffer.is_empty());
         let mut seen_text = false;
@@ -65,7 +65,8 @@ impl<T: Iterator<char>> WrapLineIterator<T> {
     }
 }
 
-impl<T: Iterator<char>> Iterator<char> for WrapLineIterator<T> {
+impl<T: Iterator<Item=char>> Iterator for WrapLineIterator<T> {
+    type Item = char;
     fn next(&mut self) -> Option<char> {
         if self.buffer.is_empty() {
             return None;
@@ -90,11 +91,11 @@ impl<T: Iterator<char>> Iterator<char> for WrapLineIterator<T> {
 
 // All char iterators get this trait and the new method.
 pub trait WrapUtil {
-    fn wrap(self, line_len: u32) -> WrapLineIterator<Self>;
+    fn wrap(self, line_len: usize) -> WrapLineIterator<Self>;
 }
 
 impl<T: Iterator<Item=char>> WrapUtil for T {
-    fn wrap(self, line_len: u32) -> WrapLineIterator<T> {
+    fn wrap(self, line_len: usize) -> WrapLineIterator<T> {
         assert!(line_len > 0);
         let mut ret = WrapLineIterator{
             iter: self,
@@ -108,8 +109,8 @@ impl<T: Iterator<Item=char>> WrapUtil for T {
     }
 }
 
-pub fn wrap_lines(line_len: u32, s: &str) -> String {
-    s.chars().wrap(line_len).collect::<Vec<char>>().as_slice().collect()
+pub fn wrap_lines(line_len: usize, s: &str) -> String {
+    s.chars().wrap(line_len).collect()
 }
 
 pub struct Map2DIterator<T> {
