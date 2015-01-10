@@ -5,7 +5,7 @@ use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
-use glium::{DisplayBuild};
+use glium::{self, DisplayBuild};
 use util::{self, AtlasBuilder, Atlas, V2, Rect, Rgb, Color};
 use event::Event;
 use renderer::{Renderer, Vertex};
@@ -96,7 +96,7 @@ impl Canvas {
 
 /// Interface to render to a live display.
 pub struct Context {
-    window: glutin::Window,
+    display: glium::Display,
     events: Vec<glutin::Event>,
     renderer: Renderer,
 
@@ -127,14 +127,12 @@ impl Context {
         frame_interval: Option<f64>,
         atlas: Atlas) -> Context {
 
-        let window = glutin::WindowBuilder::new()
+        let display = glutin::WindowBuilder::new()
             .with_title(title.to_string())
             .with_dimensions(dim.0 as usize, dim.1 as usize)
-            .build().unwrap();
+            .build_glium().unwrap();
 
-        unsafe { window.make_current(); }
-
-        let (w, h) = window.get_inner_size().unwrap();
+        let (w, h) = display.get_framebuffer_dimensions();
 
         let renderer = Renderer::new();
 
@@ -145,7 +143,7 @@ impl Context {
         }
 
         Context {
-            window: window,
+            display: display,
             events: Vec::new(),
             renderer: renderer,
 
@@ -228,22 +226,19 @@ impl<'a> Iterator for Context {
         if self.state == State::EndFrame {
             self.state = State::Normal;
 
-            self.renderer.draw_triangles(self.triangle_buf.as_slice());
+            let mut target = self.display.draw();
 
-            self.renderer.end_frame();
-            self.window.swap_buffers();
+            // TODO: target.draw something
+            //self.renderer.draw_triangles(self.triangle_buf.as_slice());
+
+            //self.renderer.end_frame();
+            target.finish();
 
             self.triangle_buf.clear();
         }
 
         loop {
-            if self.window.is_closed() {
-                return None;
-            }
-
-            // XXX: Will aborting the iteration with return keep the remaining
-            // events in the queue?
-            self.events.push_all(self.window.poll_events().collect::<Vec<glutin::Event>>().as_slice());
+            self.events.push_all(self.display.poll_events().as_slice());
 
             if !self.events.is_empty() {
                 match self.events.remove(0) {
@@ -261,6 +256,9 @@ impl<'a> Iterator for Context {
                                 });
                             }
                         }
+                    }
+                    glutin::Event::Closed => {
+                        return None;
                     }
                     // TODO Mouse events.
                     _ => ()
@@ -280,7 +278,7 @@ impl<'a> Iterator for Context {
                 // XXX: Need unsafe hackery to get around lifetimes check.
                 self.state = State::EndFrame;
 
-                let (w, h) = self.window.get_inner_size().unwrap();
+                let (w, h) = self.display.get_framebuffer_dimensions();
                 self.window_resolution = V2(w as u32, h as u32);
                 self.renderer.set_window_size((w as i32, h as i32));
                 self.renderer.scissor(pixel_perfect(self.resolution, self.window_resolution));
