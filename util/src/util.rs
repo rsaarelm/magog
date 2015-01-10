@@ -1,26 +1,10 @@
 use std::default::{Default};
 use std::cmp::{min, max};
-use std::ops::{Add, Sub, Mul, Div, Neg, Rem};
 use std::num::{NumCast};
 use image::{GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
-
-pub trait Primitive: Add<Self> + Sub<Self> + Mul<Self> + Div<Self> +
-    Rem<Self> + Neg + PartialEq + Copy + NumCast + PartialOrd + Clone {}
-
-impl Primitive for usize {}
-impl Primitive for u8 {}
-impl Primitive for u16 {}
-impl Primitive for u32 {}
-impl Primitive for u64 {}
-impl Primitive for isize {}
-impl Primitive for i8 {}
-impl Primitive for i16 {}
-impl Primitive for i32 {}
-impl Primitive for i64 {}
-impl Primitive for f32 {}
-impl Primitive for f64 {}
+use primitive::Primitive;
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(

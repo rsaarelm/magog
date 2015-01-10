@@ -14,6 +14,7 @@ pub use rgb::{Rgb, Rgba};
 // mod atlas;
 // mod geom;
 mod rgb;
+mod primitive;
 // mod util;
 
 pub mod color;
