@@ -6,14 +6,9 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{DisplayBuild};
-use gfx;
-use atlas::{AtlasBuilder, Atlas};
-use util;
-use geom::{V2, Rect};
+use util::{self, AtlasBuilder, Atlas, V2, Rect, Rgb, Color};
 use event::Event;
-use rgb::Rgb;
 use renderer::{Renderer, Vertex};
-use super::{Color};
 use scancode;
 
 pub static FONT_W: u32 = 8;
@@ -81,7 +76,7 @@ impl Canvas {
     /// Load the default font into the texture atlas.
     fn init_font(&mut self) {
         let mut font_sheet = util::color_key(
-            &image::load_from_memory(include_bytes!("../assets/font.png"), image::PNG).unwrap(),
+            &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
             &Rgb::new(0x80u8, 0x80u8, 0x80u8));
         for i in range(0u32, 96u32) {
             let x = 8u32 * (i % 16u32);
@@ -93,7 +88,7 @@ impl Canvas {
 
     /// Load a solid color element into the texture atlas.
     fn init_solid(&mut self) {
-        let image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::from_fn(1, 1, |_, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8]));
+        let image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::from_fn(1, 1, Box::new(|&: _, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])));
         let Image(idx) = self.add_image(V2(0, 0), image);
         assert!(idx == SOLID_IDX);
     }
@@ -119,7 +114,7 @@ pub struct Context {
     pub render_duration: f64,
 }
 
-#[deriving(PartialEq)]
+#[derive(PartialEq)]
 enum State {
     Normal,
     EndFrame,
@@ -134,7 +129,7 @@ impl Context {
 
         let window = glutin::WindowBuilder::new()
             .with_title(title.to_string())
-            .with_dimensions(dim.0 as u32, dim.1 as u32)
+            .with_dimensions(dim.0 as usize, dim.1 as usize)
             .build().unwrap();
 
         unsafe { window.make_current(); }
@@ -224,7 +219,9 @@ impl Context {
     }
 }
 
-impl<'a> Iterator<Event<'a>> for Context {
+impl<'a> Iterator for Context {
+    type Item=Event<'a>;
+
     fn next(&mut self) -> Option<Event<'a>> {
         // After a render event, control will return here on a new
         // iter call. Do post-render work here.
@@ -248,24 +245,26 @@ impl<'a> Iterator<Event<'a>> for Context {
             // events in the queue?
             self.events.push_all(self.window.poll_events().collect::<Vec<glutin::Event>>().as_slice());
 
-            match self.events.remove(0) {
-                Some(glutin::Event::ReceivedCharacter(ch)) => {
-                    return Some(Event::Char(ch));
-                }
-                Some(glutin::Event::KeyboardInput(action, scan, _vko)) => {
-                    if (scan as usize) < scancode::MAP.len() {
-                        if let Some(key) = scancode::MAP[scan as usize] {
-                            return Some(if action == glutin::ElementState::Pressed {
-                                Event::KeyPressed(key)
+            if !self.events.is_empty() {
+                match self.events.remove(0) {
+                    glutin::Event::ReceivedCharacter(ch) => {
+                        return Some(Event::Char(ch));
+                    }
+                    glutin::Event::KeyboardInput(action, scan, _vko) => {
+                        if (scan as usize) < scancode::MAP.len() {
+                            if let Some(key) = scancode::MAP[scan as usize] {
+                                return Some(if action == glutin::ElementState::Pressed {
+                                    Event::KeyPressed(key)
+                                }
+                                else {
+                                    Event::KeyReleased(key)
+                                });
                             }
-                            else {
-                                Event::KeyReleased(key)
-                            });
                         }
                     }
+                    // TODO Mouse events.
+                    _ => ()
                 }
-                // TODO Mouse events.
-                _ => ()
             }
 
             let t = time::precise_time_s();
@@ -295,7 +294,7 @@ impl<'a> Iterator<Event<'a>> for Context {
 }
 
 /// Drawable images stored in the Canvas.
-#[deriving(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Image(usize);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a

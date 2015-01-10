@@ -16,6 +16,9 @@ git = "https://github.com/tomaka/glutin"
 [dependencies.glium]
 git = "https://github.com/tomaka/glium"
 
+[dependencies.util]
+path = "../util"
+
 [[example]]
 name = "demo"
 path = "examples/demo/main.rs"

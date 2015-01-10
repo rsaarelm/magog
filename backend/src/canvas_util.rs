@@ -1,7 +1,6 @@
 use std::num::Float;
-use geom::V2;
 use canvas::Context;
-use super::{Color};
+use util::{V2, Color};
 
 /// Helper methods for canvas context that do not depend on the underlying
 /// implementation details.

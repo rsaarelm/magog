@@ -1,7 +1,11 @@
 #![crate_name="backend"]
+#![allow(unstable)]
 
 extern crate glutin;
 extern crate glium;
+extern crate util;
+extern crate time;
+extern crate image;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};

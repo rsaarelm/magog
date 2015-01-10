@@ -1,6 +1,5 @@
 use std::io::{Writer, IoResult};
-use super::Rgb;
-use geom::{V2};
+use util::{Rgb, V2};
 use canvas::{Context, FONT_W, FONT_H};
 
 /// Writing text to a graphical context.
