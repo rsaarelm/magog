@@ -8,14 +8,14 @@ extern crate image;
 
 pub use rgb::{Rgb, Rgba};
 pub use geom::{Rect, V2, RectIter};
-pub use util::{color_key};
+pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas};
 
 mod atlas;
 mod geom;
-mod rgb;
+mod img;
 mod primitive;
-mod util;
+mod rgb;
 
 pub mod color;
 pub mod dijkstra;
