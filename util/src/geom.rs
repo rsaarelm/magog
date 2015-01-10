@@ -1,12 +1,11 @@
 use std::num::{NumCast};
 use std::ops::{Add, Sub, Mul, Div, Neg};
-use util::Primitive;
+use primitive::Primitive;
 
 /// 2D geometric vector.
-#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct V2<T>(pub T, pub T);
 
-impl<T: PartialEq> PartialEq for V2<T> { }
 impl<T: Eq> Eq for V2<T> { }
 
 impl<T: Add<U, Output=V>, U, V> Add<V2<U>> for V2<T> {
@@ -53,10 +52,9 @@ impl<T: Primitive> V2<T> {
 }
 
 /// A rectangle type consisting of position and size vectors.
-#[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
-impl<T: PartialEq> PartialEq for Rect<T> { }
 impl<T: Eq> Eq for Rect<T> { }
 
 impl<T: Primitive> Rect<T> {
