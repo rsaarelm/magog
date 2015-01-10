@@ -7,10 +7,6 @@ extern crate collections;
 extern crate "rustc-serialize" as rustc_serialize;
 
 extern crate glutin;
-extern crate gfx;
-#[phase(plugin)]
-extern crate gfx_macros;
-extern crate device;
 extern crate image;
 extern crate glium;
 

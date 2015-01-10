@@ -5,8 +5,8 @@ use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
+use glium::{DisplayBuild};
 use gfx;
-use gfx::{CommandBuffer, GlDevice, GlCommandBuffer};
 use atlas::{AtlasBuilder, Atlas};
 use util;
 use geom::{V2, Rect};
@@ -103,7 +103,7 @@ impl Canvas {
 pub struct Context {
     window: glutin::Window,
     events: Vec<glutin::Event>,
-    renderer: Renderer<GlDevice, GlCommandBuffer>,
+    renderer: Renderer,
 
     atlas: Atlas,
     triangle_buf: Vec<Vertex>,
@@ -141,9 +141,7 @@ impl Context {
 
         let (w, h) = window.get_inner_size().unwrap();
 
-        let renderer = Renderer::new(
-            gfx::GlDevice::new(|s| window.get_proc_address(s)),
-            &atlas.image);
+        let renderer = Renderer::new();
 
         let mut dims = vec![];
 
