@@ -1,29 +1,36 @@
 use std::num::{NumCast};
+use std::ops::{Add, Sub, Mul, Div, Neg};
 use util::Primitive;
 
 /// 2D geometric vector.
 #[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct V2<T>(pub T, pub T);
 
+impl<T: PartialEq> PartialEq for V2<T> { }
 impl<T: Eq> Eq for V2<T> { }
 
-impl<T: Add<U, V>, U, V> Add<V2<U>, V2<V>> for V2<T> {
+impl<T: Add<U, Output=V>, U, V> Add<V2<U>> for V2<T> {
+    type Output = V2<V>;
     fn add(self, rhs: V2<U>) -> V2<V> { V2(self.0 + rhs.0, self.1 + rhs.1) }
 }
 
-impl<T: Sub<U, V>, U, V> Sub<V2<U>, V2<V>> for V2<T> {
+impl<T: Sub<U, Output=V>, U, V> Sub<V2<U>> for V2<T> {
+    type Output = V2<V>;
     fn sub(self, rhs: V2<U>) -> V2<V> { V2(self.0 - rhs.0, self.1 - rhs.1) }
 }
 
-impl<T: Neg<U>, U> Neg<V2<U>> for V2<T> {
+impl<T: Neg<Output=U>, U> Neg<> for V2<T> {
+    type Output = V2<U>;
     fn neg(self) -> V2<U> { V2(-self.0, -self.1) }
 }
 
-impl<T: Mul<U, V>, U: Copy, V> Mul<U, V2<V>> for V2<T> {
+impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V2<T> {
+    type Output = V2<V>;
     fn mul(self, rhs: U) -> V2<V> { V2(self.0 * rhs, self.1 * rhs) }
 }
 
-impl<T: Div<U, V>, U: Copy, V> Div<U, V2<V>> for V2<T> {
+impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V2<T> {
+    type Output = V2<V>;
     fn div(self, rhs: U) -> V2<V> { V2(self.0 / rhs, self.1 / rhs) }
 }
 
@@ -31,8 +38,10 @@ impl<T> V2<T> {
     pub fn to_array(self) -> [T; 2] { [self.0, self.1] }
 }
 
-impl<T, F: Fn(T) -> U> V2<T> {
-    pub fn map<U>(self, f: F) -> V2<U> { V2(f(self.0), f(self.1)) }
+impl<T> V2<T> {
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> V2<U> {
+        V2(f(self.0), f(self.1))
+    }
 }
 
 impl<T: Primitive> V2<T> {
@@ -47,6 +56,7 @@ impl<T: Primitive> V2<T> {
 #[deriving(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
+impl<T: PartialEq> PartialEq for Rect<T> { }
 impl<T: Eq> Eq for Rect<T> { }
 
 impl<T: Primitive> Rect<T> {
@@ -100,7 +110,8 @@ impl<T: Primitive> Rect<T> {
     }
 }
 
-impl<T: Add<U, T> + Clone, U> Add<V2<U>, Rect<T>> for Rect<T> {
+impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
+    type Output = Rect<T>;
     fn add(self, rhs: V2<U>) -> Rect<T> { Rect(self.0 + rhs, self.1.clone()) }
 }
 
@@ -112,7 +123,8 @@ pub struct RectIter<T> {
     y1: T,
 }
 
-impl<T: Primitive> Iterator<V2<T>> for RectIter<T> {
+impl<T: Primitive> Iterator for RectIter<T> {
+    type Item = V2<T>;
     fn next(&mut self) -> Option<V2<T>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
