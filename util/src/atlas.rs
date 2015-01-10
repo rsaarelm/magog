@@ -25,7 +25,7 @@ impl AtlasBuilder {
 
         let (w, h) = cropped.dimensions();
         let img = ImageBuffer::from_fn(
-            w, h, |x, y| cropped.get_pixel(x, y).to_rgba());
+            w, h, Box::new(|&: x, y| cropped.get_pixel(x, y).to_rgba()));
         self.images.push(img);
         self.draw_offsets.push(pos + offset);
         self.images.len() - 1

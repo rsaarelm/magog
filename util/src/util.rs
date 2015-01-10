@@ -1,6 +1,7 @@
 use std::default::{Default};
 use std::cmp::{min, max};
 use std::num::{NumCast};
+use std::iter;
 use image::{GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
@@ -10,13 +11,13 @@ use primitive::Primitive;
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
     image: &I, color: &Rgb) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
     let (w, h) = image.dimensions();
-    ImageBuffer::from_fn(w, h, |x, y| {
+    ImageBuffer::from_fn(w, h, Box::new(|&: x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
         if pr == color.r && pg == color.g && pb == color.b {
             pa = Default::default();
         }
         Pixel::from_channels(pr, pg, pb, pa)
-    })
+    }))
 }
 
 /// Return the rectangle enclosing the parts of the image that aren't fully
@@ -73,7 +74,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     let mut slots = vec![Rect(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap()), container_dim)];
 
-    let mut ret: Vec<V2<i32>> = dims.len().repeat(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap())).collect();
+    let mut ret: Vec<V2<T>> = iter::repeat(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap())).take(dims.len()).collect();
 
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];
