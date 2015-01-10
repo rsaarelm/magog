@@ -1,20 +1,20 @@
 use std::default::{Default};
 use std::cmp::{min, max};
+use std::ops::{Add, Sub, Mul, Div, Neg, Rem};
 use std::num::{NumCast};
 use image::{GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
 
-pub trait Primitive: Add<Self, Self> + Sub<Self, Self> + Mul<Self, Self> +
-    Div<Self, Self> + Rem<Self, Self> + Neg<Self> + PartialEq +
-    Copy + NumCast + PartialOrd + Clone {}
+pub trait Primitive: Add<Self> + Sub<Self> + Mul<Self> + Div<Self> +
+    Rem<Self> + Neg + PartialEq + Copy + NumCast + PartialOrd + Clone {}
 
-impl Primitive for uint {}
+impl Primitive for usize {}
 impl Primitive for u8 {}
 impl Primitive for u16 {}
 impl Primitive for u32 {}
 impl Primitive for u64 {}
-impl Primitive for int {}
+impl Primitive for isize {}
 impl Primitive for i8 {}
 impl Primitive for i16 {}
 impl Primitive for i32 {}
@@ -38,13 +38,13 @@ pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
 /// Return the rectangle enclosing the parts of the image that aren't fully
 /// transparent.
 pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
-    image: &I) -> Rect<int> {
+    image: &I) -> Rect<i32> {
     let (w, h) = image.dimensions();
-    let mut p1 = V2(w as int, h as int);
-    let mut p2 = V2(0i, 0i);
+    let mut p1 = V2(w as i32, h as i32);
+    let mut p2 = V2(0i32, 0i32);
     let transparent: T = Default::default();
-    for y in range(0, h as int) {
-        for x in range(0, w as int) {
+    for y in range(0, h as i32) {
+        for x in range(0, w as i32) {
             let (_, _, _, a) = image.get_pixel(x as u32, y as u32).channels4();
             if a != transparent {
                 p1.0 = min(x, p1.0);
@@ -60,7 +60,7 @@ pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
 }
 
 pub fn blit<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>, J: GenericImage<P>> (
-    image: &I, target: &mut J, offset: V2<int>) {
+    image: &I, target: &mut J, offset: V2<i32>) {
     let (w, h) = image.dimensions();
     // TODO: Check for going over bounds.
     for y in range(0, h) {
@@ -76,7 +76,7 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     container_dim: V2<T>,
     dims: &Vec<V2<T>>)
     -> Option<Vec<V2<T>>> {
-    let init: T = NumCast::from(0i).unwrap();
+    let init: T = NumCast::from(0i32).unwrap();
     let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(init, |a, b| a + b);
 
     // Too much rectangle area to fit in container no matter how you pack it.
@@ -84,12 +84,12 @@ pub fn pack_rectangles<T: Primitive+Ord+Clone>(
     if total_area > container_dim.0 * container_dim.1 { return None; }
 
     // Take enumeration to keep the original indices around.
-    let mut largest_first : Vec<(uint, &V2<T>)> = dims.iter().enumerate().collect();
+    let mut largest_first : Vec<(usize, &V2<T>)> = dims.iter().enumerate().collect();
     largest_first.sort_by(|&(_i, a), &(_j, b)| (b.0 * b.1).cmp(&(a.0 * a.1)));
 
-    let mut slots = vec![Rect(V2(NumCast::from(0i).unwrap(), NumCast::from(0i).unwrap()), container_dim)];
+    let mut slots = vec![Rect(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap()), container_dim)];
 
-    let mut ret = Vec::from_elem(dims.len(), V2(NumCast::from(0i).unwrap(), NumCast::from(0i).unwrap()));
+    let mut ret: Vec<V2<i32>> = dims.len().repeat(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap())).collect();
 
     for i in range(0, largest_first.len()) {
         let (idx, &dim) = largest_first[i];

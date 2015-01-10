@@ -14,13 +14,13 @@ pub trait Node: Hash+Eq+Clone {
 /// where the neighbors of each node must be the adjacent grid cells of that
 /// node.
 pub struct Dijkstra<N> {
-    weights: HashMap<N, uint>,
+    weights: HashMap<N, u32>,
 }
 
-impl<N: Node, F: Fn(&N) -> bool> Dijkstra<N> {
+impl<N: Node> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
-    pub fn new(goals: Vec<N>, is_valid: F, limit: uint) -> Dijkstra<N> {
+    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {
         assert!(goals.len() > 0);
 
         let mut weights = HashMap::new();

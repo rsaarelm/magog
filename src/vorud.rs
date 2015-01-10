@@ -45,18 +45,18 @@ fn vorud_chunk(data: u16) -> String {
     let (data, c3) = (data / CS.len() as u16, data % CS.len() as u16);
     let (data, v2) = (data / VS.len() as u16, data % VS.len() as u16);
     let (_, c1) =    (data / CS.len() as u16, data % CS.len() as u16);
-    [CS[c1 as uint],
-     VS[v2 as uint],
-     CS[c3 as uint],
-     VS[v4 as uint],
-     CS[c5 as uint],
+    [CS[c1 as usize],
+     VS[v2 as usize],
+     CS[c3 as usize],
+     VS[v4 as usize],
+     CS[c5 as usize],
     ].iter().map(|&x| x).collect()
 }
 
 fn decode(c: char) -> Option<Decode> {
-    let idx = c as int - 97;
-    if idx < 0 || idx >= LUT.len() as int { return None; }
-    LUT[idx as uint]
+    let idx = c as isize - 97;
+    if idx < 0 || idx >= LUT.len() as isize { return None; }
+    LUT[idx as usize]
 }
 
 fn v(c: char) -> Result<u16, ()> {

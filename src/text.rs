@@ -5,9 +5,9 @@ pub struct WrapLineIterator<T> {
     /// Input iterator
     iter: T,
     /// Maximum line length
-    line_len: uint,
+    line_len: u32,
     /// Characters output since last newline
-    current_line_len: uint,
+    current_line_len: u32,
     /// Incoming elements
     buffer: RingBuf<char>,
     /// Peek window
@@ -90,11 +90,11 @@ impl<T: Iterator<char>> Iterator<char> for WrapLineIterator<T> {
 
 // All char iterators get this trait and the new method.
 pub trait WrapUtil {
-    fn wrap(self, line_len: uint) -> WrapLineIterator<Self>;
+    fn wrap(self, line_len: u32) -> WrapLineIterator<Self>;
 }
 
-impl<T: Iterator<char>> WrapUtil for T {
-    fn wrap(self, line_len: uint) -> WrapLineIterator<T> {
+impl<T: Iterator<Item=char>> WrapUtil for T {
+    fn wrap(self, line_len: u32) -> WrapLineIterator<T> {
         assert!(line_len > 0);
         let mut ret = WrapLineIterator{
             iter: self,
@@ -108,19 +108,21 @@ impl<T: Iterator<char>> WrapUtil for T {
     }
 }
 
-pub fn wrap_lines(line_len: uint, s: &str) -> String {
-    String::from_chars(s.chars().wrap(line_len).collect::<Vec<char>>().as_slice())
+pub fn wrap_lines(line_len: u32, s: &str) -> String {
+    s.chars().wrap(line_len).collect::<Vec<char>>().as_slice().collect()
 }
 
 pub struct Map2DIterator<T> {
     /// Input iterator
     iter: T,
-    x: int,
-    y: int,
+    x: i32,
+    y: i32,
 }
 
-impl<T: Iterator<char>> Iterator<(char, int, int)> for Map2DIterator<T> {
-    fn next(&mut self) -> Option<(char, int, int)> {
+impl<T: Iterator<Item=char>> Iterator for Map2DIterator<T> {
+    type Item = (char, i32, i32);
+
+    fn next(&mut self) -> Option<(char, i32, i32)> {
         loop {
             match self.iter.next() {
                 None => { return None }
@@ -136,7 +138,7 @@ pub trait Map2DUtil {
     fn map2d(self) -> Map2DIterator<Self>;
 }
 
-impl<T: Iterator<char>> Map2DUtil for T {
+impl<T: Iterator<Item=char>> Map2DUtil for T {
     fn map2d(self) -> Map2DIterator<T> {
         Map2DIterator{ iter: self, x: 0, y: 0 }
     }

@@ -16,14 +16,14 @@ use renderer::{Renderer, Vertex};
 use super::{Color};
 use scancode;
 
-pub static FONT_W: uint = 8;
-pub static FONT_H: uint = 8;
+pub static FONT_W: u32 = 8;
+pub static FONT_H: u32 = 8;
 
 /// The first font image in the atlas image set.
-static FONT_IDX: uint = 0;
+static FONT_IDX: usize = 0;
 
 /// Image index of the solid color texture block.
-static SOLID_IDX: uint = 96;
+static SOLID_IDX: usize = 96;
 
 pub struct Canvas {
     title: String,
@@ -65,7 +65,7 @@ impl Canvas {
     }
 
     pub fn add_image<P: Pixel<u8> + 'static, I: GenericImage<P>>(
-        &mut self, offset: V2<int>, image: I) -> Image {
+        &mut self, offset: V2<i32>, image: I) -> Image {
         Image(self.builder.push(offset, image))
     }
 
@@ -87,7 +87,7 @@ impl Canvas {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
             let Image(idx) = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
-            assert!(idx - i as uint == FONT_IDX);
+            assert!(idx - i as usize == FONT_IDX);
         }
     }
 
@@ -111,7 +111,7 @@ pub struct Context {
     state: State,
     frame_interval: Option<f64>,
     last_render_time: f64,
-    image_dims: Vec<V2<uint>>,
+    image_dims: Vec<V2<u32>>,
     resolution: V2<u32>,
     window_resolution: V2<u32>,
 
@@ -134,7 +134,7 @@ impl Context {
 
         let window = glutin::WindowBuilder::new()
             .with_title(title.to_string())
-            .with_dimensions(dim.0 as uint, dim.1 as uint)
+            .with_dimensions(dim.0 as u32, dim.1 as u32)
             .build().unwrap();
 
         unsafe { window.make_current(); }
@@ -146,7 +146,7 @@ impl Context {
         let mut dims = vec![];
 
         for i in range(0, atlas.vertices.len()) {
-            dims.push(atlas.vertices[i].1.map(|x| x as uint));
+            dims.push(atlas.vertices[i].1.map(|x| x as u32));
         }
 
         Context {
@@ -174,7 +174,7 @@ impl Context {
         self.triangle_buf.clear();
     }
 
-    fn window_to_device(&self, window_pos: V2<int>, z: f32) -> [f32; 3] {
+    fn window_to_device(&self, window_pos: V2<i32>, z: f32) -> [f32; 3] {
         let V2(w, h) = self.window_resolution;
         let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
         let zoom = (rw as f32) / (self.resolution.0 as f32);
@@ -183,7 +183,7 @@ impl Context {
          z]
     }
 
-    fn tri_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
+    fn tri_vtx(&mut self, window_pos: V2<i32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
         let pos = self.window_to_device(window_pos, layer);
         self.triangle_buf.push(Vertex {
             pos: pos,
@@ -191,7 +191,7 @@ impl Context {
             tex_coord: texture_pos.to_array() })
     }
 
-    pub fn draw_image<C: Color>(&mut self, offset: V2<int>, layer: f32, Image(idx): Image, color: &C) {
+    pub fn draw_image<C: Color>(&mut self, offset: V2<i32>, layer: f32, Image(idx): Image, color: &C) {
         let color = color.to_rgba();
         let rect = self.atlas.vertices[idx] + offset;
         let tex = self.atlas.texcoords[idx];
@@ -204,22 +204,22 @@ impl Context {
         self.tri_vtx(rect.p3(), layer, tex.p3(), color);
     }
 
-    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<int>; 3], c: [C; 3]) {
+    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<i32>; 3], c: [C; 3]) {
         let tex = self.atlas.texcoords[SOLID_IDX].0;
         for i in range(0, 3) { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {
-        let idx = c as int;
+        let idx = c as usize;
         // Hardcoded limiting of the font to printable ASCII.
         if idx >= 32 && idx < 128 {
-            Some(Image((idx - 32) as uint + FONT_IDX))
+            Some(Image((idx - 32) as usize + FONT_IDX))
         } else {
             None
         }
     }
 
-    pub fn image_dim(&self, Image(idx): Image) -> V2<uint> {
+    pub fn image_dim(&self, Image(idx): Image) -> V2<u32> {
         self.image_dims[idx]
     }
 }
@@ -253,8 +253,8 @@ impl<'a> Iterator<Event<'a>> for Context {
                     return Some(Event::Char(ch));
                 }
                 Some(glutin::Event::KeyboardInput(action, scan, _vko)) => {
-                    if (scan as uint) < scancode::MAP.len() {
-                        if let Some(key) = scancode::MAP[scan as uint] {
+                    if (scan as usize) < scancode::MAP.len() {
+                        if let Some(key) = scancode::MAP[scan as usize] {
                             return Some(if action == glutin::ElementState::Pressed {
                                 Event::KeyPressed(key)
                             }
@@ -296,7 +296,7 @@ impl<'a> Iterator<Event<'a>> for Context {
 
 /// Drawable images stored in the Canvas.
 #[deriving(Copy, Clone, PartialEq)]
-pub struct Image(uint);
+pub struct Image(usize);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area.

@@ -5,7 +5,7 @@ use geom::{V2, Rect};
 
 pub struct AtlasBuilder {
     images: Vec<ImageBuffer<Vec<u8>, u8, Rgba<u8>>>,
-    draw_offsets: Vec<V2<int>>,
+    draw_offsets: Vec<V2<i32>>,
 }
 
 impl AtlasBuilder {
@@ -17,7 +17,7 @@ impl AtlasBuilder {
     }
 
     pub fn push<P: Pixel<u8> + 'static, I: GenericImage<P>>(
-        &mut self, offset: V2<int>, mut image: I) -> uint {
+        &mut self, offset: V2<i32>, mut image: I) -> usize {
 
         let Rect(pos, dim) = util::crop_alpha(&image);
         let cropped = SubImage::new(&mut image,
@@ -34,14 +34,14 @@ impl AtlasBuilder {
 
 pub struct Atlas {
     pub image: ImageBuffer<Vec<u8>, u8, Rgba<u8>>,
-    pub vertices: Vec<Rect<int>>,
+    pub vertices: Vec<Rect<i32>>,
     pub texcoords: Vec<Rect<f32>>,
 }
 
 impl Atlas {
     pub fn new(builder: &AtlasBuilder) -> Atlas {
-        let dims : Vec<V2<int>> = builder.images.iter()
-            .map(|img| { let (w, h) = img.dimensions(); V2(w as int, h as int) })
+        let dims : Vec<V2<i32>> = builder.images.iter()
+            .map(|img| { let (w, h) = img.dimensions(); V2(w as i32, h as i32) })
             .collect();
 
         // Add 1 pixel edges to images to prevent texturing artifacts from
@@ -52,12 +52,12 @@ impl Atlas {
 
         // Guesstimate the size for the atlas container.
         let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(0, |a, b| a + b);
-        let mut d = ((total_area as f64).sqrt() as uint).next_power_of_two() as u32;
+        let mut d = ((total_area as f64).sqrt() as u32).next_power_of_two();
         let mut offsets;
 
         loop {
             assert!(d < 1000000000); // Sanity check
-            match util::pack_rectangles(V2(d as int, d as int), &expanded_dims) {
+            match util::pack_rectangles(V2(d as i32, d as i32), &expanded_dims) {
                 Some(ret) => {
                     offsets = ret;
                     break;
@@ -81,7 +81,7 @@ impl Atlas {
             .map(|(i, &offset)| Rect(scale_vec(offset, image_dim), scale_vec(dims[i], image_dim)))
             .collect();
 
-        let vertices: Vec<Rect<int>> = builder.draw_offsets.iter().enumerate()
+        let vertices: Vec<Rect<i32>> = builder.draw_offsets.iter().enumerate()
             .map(|(i, &offset)| Rect(offset, dims[i]))
             .collect();
 
@@ -93,7 +93,7 @@ impl Atlas {
             texcoords: texcoords,
         };
 
-        fn scale_vec(pixel_vec: V2<int>, image_dim: V2<u32>) -> V2<f32> {
+        fn scale_vec(pixel_vec: V2<i32>, image_dim: V2<u32>) -> V2<f32> {
             V2(pixel_vec.0 as f32 / image_dim.0 as f32,
               pixel_vec.1 as f32 / image_dim.1 as f32)
         }

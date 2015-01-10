@@ -5,11 +5,11 @@ use canvas::{Context, FONT_W, FONT_H};
 
 /// Writing text to a graphical context.
 pub trait Fonter<'a, W: Writer> {
-    fn text_writer(&'a mut self, origin: V2<int>, z: f32, color: Rgb) -> W;
+    fn text_writer(&'a mut self, origin: V2<i32>, z: f32, color: Rgb) -> W;
 }
 
 impl<'a> Fonter<'a, CanvasWriter<'a>> for Context {
-    fn text_writer(&'a mut self, origin: V2<int>, z: f32, color: Rgb) -> CanvasWriter<'a> {
+    fn text_writer(&'a mut self, origin: V2<i32>, z: f32, color: Rgb) -> CanvasWriter<'a> {
         CanvasWriter {
             context: self,
             origin: origin,
@@ -23,8 +23,8 @@ impl<'a> Fonter<'a, CanvasWriter<'a>> for Context {
 
 pub struct CanvasWriter<'a> {
     context: &'a mut Context,
-    origin: V2<int>,
-    cursor_pos: V2<int>,
+    origin: V2<i32>,
+    cursor_pos: V2<i32>,
     /// Text color
     pub color: Rgb,
     /// Z drawing depth
@@ -40,7 +40,7 @@ impl<'a> CanvasWriter<'a> {
     }
 
     fn draw_char(&mut self, c: char) {
-        static BORDER: [V2<int>; 8] =
+        static BORDER: [V2<i32>; 8] =
             [V2(-1, -1), V2( 0, -1), V2( 1, -1),
              V2(-1,  0),             V2( 1,  0),
              V2(-1,  1), V2( 0,  1), V2( 1,  1)];
@@ -64,10 +64,10 @@ impl<'a> Writer for CanvasWriter<'a> {
         for &b in buf.iter() {
             let c = b as char;
             if c == '\n' {
-                self.cursor_pos = V2(self.origin.0, self.cursor_pos.1 + FONT_H as int);
+                self.cursor_pos = V2(self.origin.0, self.cursor_pos.1 + FONT_H as i32);
             } else {
                 self.draw_char(c);
-                self.cursor_pos.0 += FONT_W as int;
+                self.cursor_pos.0 += FONT_W as i32;
             }
         }
         Ok(())

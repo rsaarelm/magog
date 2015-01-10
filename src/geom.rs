@@ -116,10 +116,10 @@ impl<T: Primitive> Iterator<V2<T>> for RectIter<T> {
     fn next(&mut self) -> Option<V2<T>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
-        self.x = self.x + NumCast::from(1i).unwrap();
+        self.x = self.x + NumCast::from(1).unwrap();
         if self.x >= self.x1 {
             self.x = self.x0;
-            self.y = self.y + NumCast::from(1i).unwrap();
+            self.y = self.y + NumCast::from(1).unwrap();
         }
         ret
     }
