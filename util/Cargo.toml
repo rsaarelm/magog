@@ -1,0 +1,15 @@
+[package]
+
+name = "util"
+version = "0.0.0"
+authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
+
+[lib]
+name = "util"
+
+[dependencies.time]
+
+[dependencies.rustc-serialize]
+
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/image"

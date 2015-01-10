@@ -1,15 +1,11 @@
 [package]
 
-name = "calx"
+name = "backend"
 version = "0.0.0"
 authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 
 [lib]
-name = "calx"
-
-[dependencies.time]
-
-[dependencies.rustc-serialize]
+name = "backend"
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"
@@ -19,9 +15,6 @@ git = "https://github.com/tomaka/glutin"
 
 [dependencies.glium]
 git = "https://github.com/tomaka/glium"
-
-[dependencies.image]
-git = "https://github.com/PistonDevelopers/image"
 
 [[example]]
 name = "demo"

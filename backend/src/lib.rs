@@ -1,33 +1,21 @@
-#![crate_name="calx"]
-
-extern crate time;
-extern crate collections;
-extern crate "rustc-serialize" as rustc_serialize;
+#![crate_name="backend"]
 
 extern crate glutin;
-extern crate image;
 extern crate glium;
 
 pub use canvas::{Canvas, Context};
 pub use canvas::{Image};
 pub use canvas_util::{CanvasUtil};
-pub use rgb::{Rgb, Rgba};
-pub use geom::{Rect, V2, RectIter};
-pub use util::{color_key};
-pub use util::{Primitive};
 pub use key::Key;
 pub use fonter::{Fonter, CanvasWriter};
 pub use event::{Event};
 
-mod atlas;
 mod canvas;
 mod canvas_util;
 mod event;
 mod fonter;
-mod geom;
 mod key;
 mod renderer;
-mod rgb;
 
 #[cfg(target_os = "macos")]
 mod scancode_macos;
@@ -43,15 +31,4 @@ mod scancode {
     pub use scancode_linux::MAP;
 #[cfg(target_os = "windows")]
     pub use scancode_windows::MAP;
-}
-
-mod util;
-pub mod color;
-pub mod dijkstra;
-pub mod text;
-pub mod timing;
-pub mod vorud;
-
-pub trait Color {
-    fn to_rgba(&self) -> [f32; 4];
 }
