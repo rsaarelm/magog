@@ -17,10 +17,10 @@ pub struct Dijkstra<N> {
     weights: HashMap<N, uint>,
 }
 
-impl<N: Node> Dijkstra<N> {
+impl<N: Node, F: Fn(&N) -> bool> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
-    pub fn new(goals: Vec<N>, is_valid: |&N| -> bool, limit: uint) -> Dijkstra<N> {
+    pub fn new(goals: Vec<N>, is_valid: F, limit: uint) -> Dijkstra<N> {
         assert!(goals.len() > 0);
 
         let mut weights = HashMap::new();

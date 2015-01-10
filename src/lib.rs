@@ -1,6 +1,4 @@
 #![crate_name="calx"]
-#![feature(phase)]
-#![feature(globs)]
 
 extern crate time;
 extern crate collections;
@@ -55,5 +53,5 @@ pub mod timing;
 pub mod vorud;
 
 pub trait Color {
-    fn to_rgba(&self) -> [f32, ..4];
+    fn to_rgba(&self) -> [f32; 4];
 }

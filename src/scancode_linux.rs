@@ -1,7 +1,7 @@
 use super::Key::*;
 
 /// Keyboard scancode map for Linux.
-pub static MAP: [Option<::Key>, ..97] = [
+pub static MAP: [Option<::Key>; 97] = [
     None,
     None,
     None,

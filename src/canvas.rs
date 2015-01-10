@@ -1,6 +1,6 @@
 use time;
 use std::mem;
-use std::num::{FloatMath, Float};
+use std::num::{Float};
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
@@ -174,7 +174,7 @@ impl Context {
         self.triangle_buf.clear();
     }
 
-    fn window_to_device(&self, window_pos: V2<int>, z: f32) -> [f32, ..3] {
+    fn window_to_device(&self, window_pos: V2<int>, z: f32) -> [f32; 3] {
         let V2(w, h) = self.window_resolution;
         let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
         let zoom = (rw as f32) / (self.resolution.0 as f32);
@@ -183,7 +183,7 @@ impl Context {
          z]
     }
 
-    fn tri_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32, ..4]) {
+    fn tri_vtx(&mut self, window_pos: V2<int>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
         let pos = self.window_to_device(window_pos, layer);
         self.triangle_buf.push(Vertex {
             pos: pos,
@@ -204,7 +204,7 @@ impl Context {
         self.tri_vtx(rect.p3(), layer, tex.p3(), color);
     }
 
-    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<int>, ..3], c: [C, ..3]) {
+    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<int>; 3], c: [C; 3]) {
         let tex = self.atlas.texcoords[SOLID_IDX].0;
         for i in range(0, 3) { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
     }

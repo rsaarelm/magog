@@ -28,11 +28,11 @@ impl<T: Div<U, V>, U: Copy, V> Div<U, V2<V>> for V2<T> {
 }
 
 impl<T> V2<T> {
-    pub fn to_array(self) -> [T, ..2] { [self.0, self.1] }
+    pub fn to_array(self) -> [T; 2] { [self.0, self.1] }
 }
 
-impl<T> V2<T> {
-    pub fn map<U>(self, f: |T| -> U) -> V2<U> { V2(f(self.0), f(self.1)) }
+impl<T, F: Fn(T) -> U> V2<T> {
+    pub fn map<U>(self, f: F) -> V2<U> { V2(f(self.0), f(self.1)) }
 }
 
 impl<T: Primitive> V2<T> {

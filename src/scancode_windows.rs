@@ -1,7 +1,7 @@
 use super::Key::*;
 
 /// Keyboard scancode map for Microsoft Windows
-pub static MAP: [Option<::Key>, ..89] = [
+pub static MAP: [Option<::Key>; 89] = [
     None,
     Some(Escape),
     Some(Num1),

@@ -1,7 +1,7 @@
 use self::Decode::{V, C};
 
-static VS: [char, ..5] = ['a', 'e', 'i', 'o', 'u'];
-static CS: [char, ..14] = ['b', 'd', 'f', 'g', 'j', 'k', 'm', 'n',
+static VS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
+static CS: [char; 14] = ['b', 'd', 'f', 'g', 'j', 'k', 'm', 'n',
     'p', 'r', 's', 't', 'v', 'z'];
 
 #[deriving(Copy)]
@@ -10,7 +10,7 @@ enum Decode {
     C(u16),
 }
 
-static LUT: [Option<Decode>, ..26] = [
+static LUT: [Option<Decode>; 26] = [
     Some(V(0)),  // a (ASCII 97)
     Some(C(0)),  // b
     None,        // c

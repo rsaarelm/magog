@@ -40,7 +40,7 @@ impl<'a> CanvasWriter<'a> {
     }
 
     fn draw_char(&mut self, c: char) {
-        static BORDER: [V2<int>, ..8] =
+        static BORDER: [V2<int>; 8] =
             [V2(-1, -1), V2( 0, -1), V2( 1, -1),
              V2(-1,  0),             V2( 1,  0),
              V2(-1,  1), V2( 0,  1), V2( 1,  1)];

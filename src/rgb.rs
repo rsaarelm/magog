@@ -8,7 +8,7 @@ impl Rgb {
 }
 
 impl ::Color for Rgb {
-    fn to_rgba(&self) -> [f32, ..4] {
+    fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
@@ -26,7 +26,7 @@ impl Rgba {
 }
 
 impl ::Color for Rgba {
-    fn to_rgba(&self) -> [f32, ..4] {
+    fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
