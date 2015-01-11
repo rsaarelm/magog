@@ -84,7 +84,7 @@ impl Iterator for EntityIter {
     type Item = Entity;
     fn next(&mut self) -> Option<Entity> {
         world::with(|w| {
-            let &EntityIter(ref mut idx) = self;
+            let &mut EntityIter(ref mut idx) = self;
             loop {
                 if *idx >= w.ecs.active.len() { return None; }
                 let ret = Entity(*idx);

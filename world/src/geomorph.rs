@@ -75,7 +75,7 @@ impl Chunk {
         let chunk_w = 11;
         let chunk_h = 22;
 
-        let mut cells = HashMap::new();
+        let mut cells: Cells = HashMap::new();
         for (glyph, x, y) in text.chars().map2d() {
             if x >= chunk_w || y >= chunk_h {
                 println!("{}", text);
@@ -145,13 +145,13 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
 
     for p in set_1.iter() {
         if !r1.contains(p) {
-            return Some(format!("Top region missing connection to cell {}", p));
+            return Some(format!("Top region missing connection to cell {:?}", p));
         }
     }
 
     for p in set_2.iter() {
         if !r2.contains(p) {
-            return Some(format!("Bottom region missing connection to cell {}", p));
+            return Some(format!("Bottom region missing connection to cell {:?}", p));
         }
     }
 
