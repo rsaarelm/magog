@@ -202,7 +202,7 @@ impl GameState {
 
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Context) {
-        ctx.clear(&color::BLACK);
+        ctx.clear();
 
         match self.ui_state {
             UiState::Gameplay => self.base_update(ctx),
