@@ -1,6 +1,5 @@
 #![crate_name="magog"]
-#![feature(globs)]
-#![feature(macro_rules)]
+#![allow(unstable)]
 
 extern crate image;
 extern crate "calx_util" as util;

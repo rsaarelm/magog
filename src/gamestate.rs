@@ -104,7 +104,7 @@ impl GameState {
                     self.msg.caption(txt)
                 }
                 Some(x) => {
-                    println!("Unhandled Msg type {}", x);
+                    println!("Unhandled Msg type {:?}", x);
                 }
                 None => break
             }

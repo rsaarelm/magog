@@ -9,7 +9,7 @@ thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
        elt_dim: (i32, i32), offset: (i32, i32)) {
     let mut image = color_key(
-        &image::load_from_memory(data, image::PNG).unwrap(),
+        &image::load_from_memory(data).unwrap(),
         &Rgb::new(0x00u8, 0xFFu8, 0xFFu8));
     let (w, h) = image.dimensions();
     let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
@@ -28,9 +28,9 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
 pub fn init(ctx: &mut Canvas) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
-        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -16));
-        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/icon.png"), (8, 8), (0, -8));
-        batch(tiles.deref_mut(), ctx, include_bytes!("../assets/logo.png"), (92, 25), (0, 0));
+        batch(&mut *tiles, ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -16));
+        batch(&mut *tiles, ctx, include_bytes!("../assets/icon.png"), (8, 8), (0, -8));
+        batch(&mut *tiles, ctx, include_bytes!("../assets/logo.png"), (92, 25), (0, 0));
     });
 }
 
