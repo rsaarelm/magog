@@ -18,7 +18,7 @@ use item::{ItemType, Slot};
 use stats::Stats;
 
 /// Game object handle.
-#[deriving(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
+#[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
 pub struct Entity(pub uint);
 
 impl Entity {

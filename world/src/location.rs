@@ -8,7 +8,7 @@ use world;
 use action;
 
 /// Unambiguous location in the game world.
-#[deriving(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]
 pub struct Location {
     pub x: i8,
     pub y: i8,

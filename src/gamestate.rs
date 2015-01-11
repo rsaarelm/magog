@@ -343,7 +343,7 @@ struct SlotData {
     name: &'static str,
 }
 
-static SLOT_DATA: [SlotData, ..34] = [
+static SLOT_DATA: [SlotData; 34] = [
     SlotData { key: '1', slot: Slot::Spell1,     name: "Ability" },
     SlotData { key: '2', slot: Slot::Spell2,     name: "Ability" },
     SlotData { key: '3', slot: Slot::Spell3,     name: "Ability" },

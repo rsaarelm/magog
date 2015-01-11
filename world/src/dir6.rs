@@ -6,7 +6,7 @@ use calx::V2;
 use self::Dir6::*;
 
 /// Hex grid directions.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, FromPrimitive, Rand, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Show, FromPrimitive, Rand, RustcEncodable, RustcDecodable)]
 pub enum Dir6 {
     North = 0,
     NorthEast,
@@ -75,7 +75,7 @@ impl Dir6 {
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> {
-        static DIRS: [Dir6, ..6] = [
+        static DIRS: [Dir6; 6] = [
             North,
             NorthEast,
             SouthEast,

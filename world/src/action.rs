@@ -13,14 +13,14 @@ use Biome;
 use components::{Category};
 
 /// Game update control.
-#[deriving(Copy, PartialEq)]
+#[derive(Copy, PartialEq)]
 pub enum ControlState {
     AwaitingInput,
     ReadyToUpdate,
 }
 
 /// Player input action.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),

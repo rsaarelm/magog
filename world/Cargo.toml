@@ -9,5 +9,5 @@ name = "world"
 
 [dependencies.collect]
 
-[dependencies.calx]
+[dependencies.calx_util]
 git = "https://github.com/rsaarelm/calx"

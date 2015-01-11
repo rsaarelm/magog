@@ -57,7 +57,7 @@ mod stats;
 mod terrain;
 mod world;
 
-#[deriving(Copy, Eq, PartialEq, Show)]
+#[derive(Copy, Eq, PartialEq, Show)]
 pub enum FovStatus {
     Seen,
     Remembered,
@@ -65,7 +65,7 @@ pub enum FovStatus {
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -84,7 +84,7 @@ impl Biome {
     }
 }
 
-#[deriving(Copy, Eq, PartialEq, Show, Clone, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Show, Clone, RustcEncodable, RustcDecodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: int,
@@ -104,7 +104,7 @@ impl AreaSpec {
 }
 
 /// Various one-off signals the game sends to the UI layer.
-#[deriving(Clone, Show)]
+#[derive(Clone, Show)]
 pub enum Msg {
     /// Regular event message
     Text(String),

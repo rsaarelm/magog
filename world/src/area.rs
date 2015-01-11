@@ -20,13 +20,13 @@ use entity::Entity;
 // nondeterminism bug that depended on the numerical order of the arbitrary
 // address values.
 
-#[deriving(Copy, Clone, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Clone, RustcDecodable, RustcEncodable)]
 struct AreaSeed {
     pub rng_seed: u32,
     pub spec: AreaSpec,
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 /// Immutable procedurally generated terrain initialized on random seed.
 pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.

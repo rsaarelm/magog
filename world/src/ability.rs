@@ -4,7 +4,7 @@ use self::Ability::*;
 
 /// Ability describes some way of affecting the game world. It is generally
 /// attached to a mob or an item.
-#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum Ability {
     Multi(Vec<Ability>),
     /// Damage a target for a given amount.

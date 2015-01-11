@@ -26,7 +26,7 @@ pub trait Component {
 
 
 /// Entity name and appearance.
-#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
     pub icon: uint,
@@ -47,7 +47,7 @@ impl_component!(Desc, descs_mut);
 
 
 /// Map field-of-view and remembered terrain.
-#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct MapMemory {
     pub seen: HashSet<Location>,
     pub remembered: HashSet<Location>,
@@ -69,7 +69,7 @@ impl_component!(Stats, stats_mut);
 
 
 /// Spawning properties for prototype objects.
-#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -84,7 +84,7 @@ pub struct Spawn {
 
 impl_component!(Spawn, spawns_mut);
 
-#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Category {
     Mob = 0b1,
 
@@ -97,7 +97,7 @@ pub enum Category {
 }
 
 
-#[deriving(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment
@@ -106,7 +106,7 @@ pub struct Brain {
 impl_component!(Brain, brains_mut);
 
 /// Mob behavior state.
-#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum BrainState {
     /// AI mob is inactive, but can be startled into action by noise or
     /// motion.
@@ -118,7 +118,7 @@ pub enum BrainState {
 }
 
 /// Used to determine who tries to fight whom.
-#[deriving(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Alignment {
     /// Attack anything and everything.
     Chaotic,
@@ -132,7 +132,7 @@ pub enum Alignment {
 
 
 /// Damage state component. The default state is undamaged and unarmored.
-#[deriving(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
 pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
@@ -146,7 +146,7 @@ impl_component!(Health, healths_mut);
 
 
 /// Items can be picked up and carried and they do stuff.
-#[deriving(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Item {
     pub item_type: ItemType,
     pub ability: Ability,
@@ -165,7 +165,7 @@ impl_component!(StatsCache, stats_caches_mut);
 
 ////////////////////////////////////////////////////////////////////////
 
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Prototype {
     pub target: Entity
 }

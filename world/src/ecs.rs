@@ -3,7 +3,7 @@ use world;
 use entity::{Entity};
 
 /// Entity component system.
-#[deriving(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable)]
 pub struct Ecs {
     next_idx: uint,
     reusable_idxs: Vec<uint>,

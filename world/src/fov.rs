@@ -128,7 +128,7 @@ impl<F: Fn<(V2<int>,), bool>> Iterator<V2<int>> for Fov<F> {
 }
 
 /// Points on a hex circle expressed in polar coordinates.
-#[deriving(Copy, PartialEq)]
+#[derive(Copy, PartialEq)]
 struct PolarPoint {
     pos: f32,
     radius: uint

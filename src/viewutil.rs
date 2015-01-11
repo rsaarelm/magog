@@ -77,7 +77,7 @@ fn column_to_chart(cr: V2<int>) -> V2<int> {
        (-(cr.0 - 1) as f32 / 2f32).floor() as int + cr.1)
 }
 
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct ColumnRectIter {
     x: int,
     y: int,

@@ -1,11 +1,12 @@
 [package]
-
 name = "magog"
 version = "0.0.1"
-authors = [ "risto.saarelma@iki.fi" ]
+authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
+description = "Roguelike game"
+keywords = ["gamedev"]
+license = "GPL3"
 
 [[bin]]
-
 name = "magog"
 
 [dependencies.image]
@@ -17,7 +18,10 @@ git = "https://github.com/PistonDevelopers/image"
 
 [dependencies.rustc-serialize]
 
-[dependencies.calx]
+[dependencies.calx_util]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx_backend]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.world]

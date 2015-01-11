@@ -57,7 +57,7 @@ pub fn load(json: &str) -> Result<(), json::DecoderError> {
 }
 
 /// The internal object that holds all the world state data.
-#[deriving(RustcEncodable, RustcDecodable)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct WorldState {
     /// Global entity handler.
     pub ecs: Ecs,
@@ -162,7 +162,7 @@ pub fn init_world(seed: Option<u32>) {
 
 // Components stuff ////////////////////////////////////////////////////
 
-#[deriving(RustcEncodable, RustcDecodable)]
+#[derive(RustcEncodable, RustcDecodable)]
 struct Comps {
     descs: VecMap<Desc>,
     map_memories: VecMap<MapMemory>,

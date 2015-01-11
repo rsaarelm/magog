@@ -1,5 +1,5 @@
 /// Inventory slots.
-#[deriving(Copy, Eq, PartialEq, Clone, Show, FromPrimitive, PartialOrd, Ord, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Show, FromPrimitive, PartialOrd, Ord, RustcEncodable, RustcDecodable)]
 pub enum Slot {
     Spell1,
     Spell2,
@@ -46,7 +46,7 @@ impl Slot {
     }
 }
 
-#[deriving(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
 pub enum ItemType {
     MeleeWeapon,
     RangedWeapon,
