@@ -7,7 +7,7 @@ use util::{color_key, V2, Rgb};
 thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 
 fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
-       elt_dim: (int, int), offset: (int, int)) {
+       elt_dim: (i32, i32), offset: (i32, i32)) {
     let mut image = color_key(
         &image::load_from_memory(data, image::PNG).unwrap(),
         &Rgb::new(0x00u8, 0xFFu8, 0xFFu8));
@@ -34,57 +34,57 @@ pub fn init(ctx: &mut Canvas) {
     });
 }
 
-pub fn get(idx: uint) -> Image {
+pub fn get(idx: usize) -> Image {
     TILE_CACHE.with(|c| c.borrow()[idx].clone())
 }
 
 pub mod tile {
-    pub static CUBE : uint = 0;
-    pub static CURSOR_BOTTOM : uint = 1;
-    pub static CURSOR_TOP : uint = 2;
-    pub static BLOCK_NW : uint = 3;
-    pub static BLOCK_N : uint = 4;
-    pub static BLOCK_NE : uint = 5;
-    pub static BLOCK_DARK : uint = 6;
-    pub static CHASM : uint = 7;
-    pub static SHALLOWS : uint = 8;
-    pub static PORTAL : uint = 9;
-    pub static BLANK_FLOOR : uint = 10;
-    pub static FLOOR : uint = 11;
-    pub static GRASS : uint = 12;
-    pub static WATER : uint = 13;
-    pub static MAGMA : uint = 14;
-    pub static DOWNSTAIRS : uint = 15;
-    pub static ROCKWALL : uint = 16;
-    pub static WALL : uint = 20;
-    pub static FENCE : uint = 24;
-    pub static BARS : uint = 28;
-    pub static WINDOW : uint = 32;
-    pub static DOOR : uint = 36;
-    pub static TREE_TRUNK : uint = 48;
-    pub static TREE_FOLIAGE : uint = 49;
-    pub static TABLE : uint = 50;
-    pub static AVATAR : uint = 51;
-    pub static BLOCK : uint = 52;
-    pub static FOUNTAIN : uint = 53;
-    pub static ALTAR : uint = 54;
-    pub static BARREL : uint = 55;
-    pub static STALAGMITE : uint = 56;
-    pub static GRAVE : uint = 58;
-    pub static SPLATTER : uint = 64;
-    pub static STONE : uint = 69;
-    pub static MENHIR : uint = 70;
-    pub static TALLGRASS : uint = 80;
-    pub static XYWALL : uint = 82;
+    pub static CUBE : usize = 0;
+    pub static CURSOR_BOTTOM : usize = 1;
+    pub static CURSOR_TOP : usize = 2;
+    pub static BLOCK_NW : usize = 3;
+    pub static BLOCK_N : usize = 4;
+    pub static BLOCK_NE : usize = 5;
+    pub static BLOCK_DARK : usize = 6;
+    pub static CHASM : usize = 7;
+    pub static SHALLOWS : usize = 8;
+    pub static PORTAL : usize = 9;
+    pub static BLANK_FLOOR : usize = 10;
+    pub static FLOOR : usize = 11;
+    pub static GRASS : usize = 12;
+    pub static WATER : usize = 13;
+    pub static MAGMA : usize = 14;
+    pub static DOWNSTAIRS : usize = 15;
+    pub static ROCKWALL : usize = 16;
+    pub static WALL : usize = 20;
+    pub static FENCE : usize = 24;
+    pub static BARS : usize = 28;
+    pub static WINDOW : usize = 32;
+    pub static DOOR : usize = 36;
+    pub static TREE_TRUNK : usize = 48;
+    pub static TREE_FOLIAGE : usize = 49;
+    pub static TABLE : usize = 50;
+    pub static AVATAR : usize = 51;
+    pub static BLOCK : usize = 52;
+    pub static FOUNTAIN : usize = 53;
+    pub static ALTAR : usize = 54;
+    pub static BARREL : usize = 55;
+    pub static STALAGMITE : usize = 56;
+    pub static GRAVE : usize = 58;
+    pub static SPLATTER : usize = 64;
+    pub static STONE : usize = 69;
+    pub static MENHIR : usize = 70;
+    pub static TALLGRASS : usize = 80;
+    pub static XYWALL : usize = 82;
 }
 
 pub mod icon {
-    pub static HEART : uint = 256;
-    pub static HALF_HEART : uint = 257;
-    pub static NO_HEART : uint = 258;
-    pub static SHARD : uint = 259;
-    pub static HALF_SHARD : uint = 260;
-    pub static NO_SHARD : uint = 261;
+    pub static HEART : usize = 256;
+    pub static HALF_HEART : usize = 257;
+    pub static NO_HEART : usize = 258;
+    pub static SHARD : usize = 259;
+    pub static HALF_SHARD : usize = 260;
+    pub static NO_SHARD : usize = 261;
 }
 
-pub static LOGO: uint = 256 + 128;
+pub static LOGO: usize = 256 + 128;

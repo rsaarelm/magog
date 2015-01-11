@@ -2,11 +2,11 @@ use std::num::{Float};
 use std::iter::Map;
 use util::{V2, Rect};
 
-pub static SCREEN_W: int = 640;
-pub static SCREEN_H: int = 360;
+pub static SCREEN_W: i32 = 640;
+pub static SCREEN_H: i32 = 360;
 
 /// Useful general constant for cell dimension ops.
-static PIXEL_UNIT: int = 16;
+static PIXEL_UNIT: i32 = 16;
 
 /// Draw layer for floor tiles.
 pub static FLOOR_Z: f32 = 0.500f32;
@@ -17,28 +17,28 @@ pub static FX_Z: f32 = 0.300f32;
 
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
-pub fn chart_to_view(chart_pos: V2<int>) -> V2<int> {
+pub fn chart_to_view(chart_pos: V2<i32>) -> V2<i32> {
     V2(chart_pos.0 * PIXEL_UNIT - chart_pos.1 * PIXEL_UNIT,
        chart_pos.0 * PIXEL_UNIT / 2 + chart_pos.1 * PIXEL_UNIT / 2)
 }
 
 /// Transform from chart space into the default on-screen space centered on
 /// window center.
-pub fn chart_to_screen(chart_pos: V2<int>) -> V2<int> {
+pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<i32> {
     chart_to_view(chart_pos) + V2(SCREEN_W / 2, SCREEN_H / 2)
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).
-pub fn view_to_chart(view_pos: V2<int>) -> V2<int> {
+pub fn view_to_chart(view_pos: V2<i32>) -> V2<i32> {
     let c = PIXEL_UNIT as f32 / 2.0;
     let column = ((view_pos.0 as f32 + c) / (c * 2.0)).floor();
     let row = ((view_pos.1 as f32 - column * c) / (c * 2.0)).floor();
-    V2((column + row) as int, row as int)
+    V2((column + row) as i32, row as i32)
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect(view_rect: Rect<int>) -> Map<V2<int>, V2<int>, ColumnRectIter, fn(V2<int>) -> V2<int>> {
+pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<V2<i32>, V2<i32>, ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
     let V2(x0, y0) = pixel_to_min_column(view_rect.mn());
     let V2(x1, y1) = pixel_to_max_column(view_rect.mx());
     ColumnRectIter {
@@ -48,17 +48,17 @@ pub fn cells_in_view_rect(view_rect: Rect<int>) -> Map<V2<int>, V2<int>, ColumnR
         x0: x0,
         x1: x1,
         y1: y1,
-    }.map(column_to_chart as fn(V2<int>) -> V2<int>)
+    }.map(column_to_chart as fn(V2<i32>) -> V2<i32>)
 }
 
-pub fn cells_on_screen() -> Map<V2<int>, V2<int>, ColumnRectIter, fn(V2<int>) -> V2<int>> {
+pub fn cells_on_screen() -> Map<V2<i32>, V2<i32>, ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
     cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
 }
 
 /// Transform to the column space point that contains the pixel space point
 /// when looking for minimum column space point. (The column space rows
 /// overlap, so minimum and maximum points differ.)
-fn pixel_to_min_column(pixel_pos: V2<int>) -> V2<int> {
+fn pixel_to_min_column(pixel_pos: V2<i32>) -> V2<i32> {
     V2((pixel_pos.0 - PIXEL_UNIT) / PIXEL_UNIT,
        (pixel_pos.1 - PIXEL_UNIT * 2) / PIXEL_UNIT)
 }
@@ -66,33 +66,33 @@ fn pixel_to_min_column(pixel_pos: V2<int>) -> V2<int> {
 /// Transform to the column space point that contains the pixel space point
 /// when looking for maximum column space point. (The column space rows
 /// overlap, so minimum and maximum points differ.)
-fn pixel_to_max_column(pixel_pos: V2<int>) -> V2<int> {
+fn pixel_to_max_column(pixel_pos: V2<i32>) -> V2<i32> {
     V2((pixel_pos.0 + PIXEL_UNIT) / PIXEL_UNIT,
        (pixel_pos.1 + PIXEL_UNIT) / PIXEL_UNIT)
 }
 
 /// Transform a column space point to a chart space point.
-fn column_to_chart(cr: V2<int>) -> V2<int> {
-    V2(((1 + cr.0 + 2 * cr.1) as f32 / 2f32).floor() as int,
-       (-(cr.0 - 1) as f32 / 2f32).floor() as int + cr.1)
+fn column_to_chart(cr: V2<i32>) -> V2<i32> {
+    V2(((1 + cr.0 + 2 * cr.1) as f32 / 2f32).floor() as i32,
+       (-(cr.0 - 1) as f32 / 2f32).floor() as i32 + cr.1)
 }
 
 #[derive(Copy)]
 pub struct ColumnRectIter {
-    x: int,
-    y: int,
+    x: i32,
+    y: i32,
     // To prevent ordering artifacts, a hex column layout iterator needs to
     // return each row in two parts, first the upper row of hexes offsetted
     // up, then the lower row.
     upper_row: bool,
-    x0: int,
-    x1: int,
-    y1: int,
+    x0: i32,
+    x1: i32,
+    y1: i32,
 }
 
 impl Iterator for ColumnRectIter {
-    type Item = V2<int>;
-    fn next(&mut self) -> Option<V2<int>> {
+    type Item = V2<i32>;
+    fn next(&mut self) -> Option<V2<i32>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
         self.x = self.x + 2;

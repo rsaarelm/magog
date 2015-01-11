@@ -22,7 +22,7 @@ pub struct GameState {
     /// Transient effect sprites drawn in game world view.
     world_spr: WorldSprites,
     /// Counters for entities with flashing damage animation.
-    damage_timers: HashMap<Entity, uint>,
+    damage_timers: HashMap<Entity, u32>,
 
     /// Flag for autoexploration.
     // TODO: Probably going to need a general "ongoing activity" system at
@@ -56,7 +56,7 @@ impl GameState {
 
         // Draw heart containers.
         for i in range(0, (max_hp + 1) / 2) {
-            let pos = V2(i as int * 8, 8);
+            let pos = V2(i as i32 * 8, 8);
             let idx = if hp >= (i + 1) * 2 { icon::HEART }
                 else if hp == i * 2 + 1 { icon::HALF_HEART }
                 else { icon::NO_HEART };
@@ -72,7 +72,7 @@ impl GameState {
         self.world_spr.update();
 
         let location_name = camera.name();
-        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as int * 8, 8), 0.1, color::LIGHTGRAY)
+        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as i32 * 8, 8), 0.1, color::LIGHTGRAY)
                        .set_border(color::BLACK),
                        "{}", location_name);
 
@@ -123,7 +123,7 @@ impl GameState {
         }
 
         self.damage_timers = self.damage_timers.clone().into_iter()
-            .filter(|&(_, t)| t > 0u)
+            .filter(|&(_, t)| t > 0)
             .map(|(e, t)| (e, t - 1))
             .collect();
 

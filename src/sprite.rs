@@ -35,7 +35,7 @@ impl WorldSprites {
     }
 
     pub fn draw<F>(&self, is_visible: F, chart: &Location, ctx: &mut Context)
-        where F: Fn(V2<int>) -> bool {
+        where F: Fn(V2<i32>) -> bool {
         // XXX: Ineffective if there are many sprites outside the visible
         // area.
         for s in self.sprites.iter() {
@@ -57,12 +57,12 @@ impl WorldSprites {
 pub struct _BeamSprite {
     p1: Location,
     p2: Location,
-    life: int,
+    life: i32,
     footprint: Vec<Location>,
 }
 
 impl _BeamSprite {
-    pub fn _new(p1: Location, p2: Location, life: int) -> _BeamSprite {
+    pub fn _new(p1: Location, p2: Location, life: i32) -> _BeamSprite {
         _BeamSprite {
             p1: p1,
             p2: p2,
@@ -91,7 +91,7 @@ impl WorldSprite for _BeamSprite {
 
 pub struct GibSprite {
     loc: Location,
-    life: int,
+    life: i32,
     footprint: Vec<Location>,
 }
 
@@ -112,7 +112,7 @@ impl WorldSprite for GibSprite {
     fn draw(&self, chart: &Location, ctx: &mut Context) {
         if let Some(p) = chart.chart_pos(self.loc) {
             // TODO: Robust anim cycle with clamping.
-            let idx = tile::SPLATTER + ((11 - self.life) / 3) as uint;
+            let idx = tile::SPLATTER + ((11 - self.life) / 3) as usize;
             ctx.draw_image(chart_to_screen(p), FX_Z, tilecache::get(idx), &color::RED);
         }
     }

@@ -14,7 +14,7 @@ use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
 
-pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Context, damage_timers: &HashMap<Entity, uint>) {
+pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Context, damage_timers: &HashMap<Entity, u32>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
@@ -27,11 +27,11 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Context, damage_timers: &H
 pub struct CellDrawable<'a> {
     loc: Location,
     fov: Option<FovStatus>,
-    damage_timers: &'a HashMap<Entity, uint>
+    damage_timers: &'a HashMap<Entity, u32>
 }
 
 impl<'a> Drawable for CellDrawable<'a> {
-    fn draw(&self, ctx: &mut Context, offset: V2<int>) {
+    fn draw(&self, ctx: &mut Context, offset: V2<i32>) {
         match self.fov {
             Some(_) => {
                 self.draw_cell(ctx, offset)
@@ -68,7 +68,7 @@ impl<'a> CellDrawable<'a> {
     pub fn new(
         loc: Location,
         fov: Option<FovStatus>,
-        damage_timers: &'a HashMap<Entity, uint>) -> CellDrawable<'a> {
+        damage_timers: &'a HashMap<Entity, u32>) -> CellDrawable<'a> {
         CellDrawable {
             loc: loc,
             fov: fov,
@@ -76,7 +76,7 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_tile(&'a self, ctx: &mut Context, idx: uint, offset: V2<int>, z: f32, color: &Rgb) {
+    fn draw_tile(&'a self, ctx: &mut Context, idx: usize, offset: V2<i32>, z: f32, color: &Rgb) {
         let color = match self.fov {
             Some(FovStatus::Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
             _ => *color,
@@ -84,7 +84,7 @@ impl<'a> CellDrawable<'a> {
         ctx.draw_image(offset, z, tilecache::get(idx), &color);
     }
 
-    fn draw_cell(&'a self, ctx: &mut Context, offset: V2<int>) {
+    fn draw_cell(&'a self, ctx: &mut Context, offset: V2<i32>) {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(FovStatus::Seen) {
@@ -94,7 +94,7 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_terrain(&'a self, ctx: &mut Context, offset: V2<int>) {
+    fn draw_terrain(&'a self, ctx: &mut Context, offset: V2<i32>) {
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
         match k.center {
             TerrainType::Void => {
@@ -216,7 +216,7 @@ impl<'a> CellDrawable<'a> {
             },
         }
 
-        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<int>, idx: uint, color: &Rgb) {
+        fn blockform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<i32>, idx: usize, color: &Rgb) {
             c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
@@ -230,7 +230,7 @@ impl<'a> CellDrawable<'a> {
             }
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<int>, idx: uint, color: &Rgb, opaque: bool) {
+        fn wallform(c: &CellDrawable, ctx: &mut Context, k: &Kernel<TerrainType>, offset: V2<i32>, idx: usize, color: &Rgb, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {
@@ -277,10 +277,10 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_entity(&'a self, ctx: &mut Context, offset: V2<int>, entity: &Entity) {
+    fn draw_entity(&'a self, ctx: &mut Context, offset: V2<i32>, entity: &Entity) {
         // SPECIAL CASE: The serpent mob has an extra mound element that
         // doesn't bob along with the main body.
-        static SERPENT_ICON: uint = 94;
+        static SERPENT_ICON: usize = 94;
 
         let body_pos =
             if entity.is_bobbing() {

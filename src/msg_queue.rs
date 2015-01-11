@@ -64,7 +64,7 @@ impl MsgQueue {
 
     fn draw_caption(&self, ctx: &mut Context) {
         if !self.captions.is_empty() {
-            let width = self.captions[0].text.len() as int * 8;
+            let width = self.captions[0].text.len() as i32 * 8;
             let origin = V2(320 - width / 2, 180);
             // TODO: Wrap and center-justify multiline caption
 
