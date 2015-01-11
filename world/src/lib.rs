@@ -1,5 +1,6 @@
 #![crate_name="world"]
 #![feature(unboxed_closures)]
+#![allow(unstable)]
 
 extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
