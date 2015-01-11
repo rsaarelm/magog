@@ -81,7 +81,7 @@ impl Area {
         }
         rng.shuffle(opens.as_mut_slice());
 
-        let entrance = opens.swap_remove(0).unwrap();
+        let entrance = opens.pop().unwrap();
 
         let mut spawns = vec![];
 
@@ -90,14 +90,14 @@ impl Area {
             action::random_spawns(
                 &mut rng, num_mobs, spec.depth as uint, spec.biome, Category::Mob)
             .into_iter().filter_map(|spawn|
-            if let Some(loc) = opens.swap_remove(0) { Some((spawn, loc))
+            if let Some(loc) = opens.pop() { Some((spawn, loc))
             } else { None }));
 
         spawns.extend(
             action::random_spawns(
                 &mut rng, num_items, spec.depth as uint, spec.biome, Category::Item)
             .into_iter().filter_map(|spawn|
-            if let Some(loc) = opens.swap_remove(0) { Some((spawn, loc))
+            if let Some(loc) = opens.pop() { Some((spawn, loc))
             } else { None }));
 
         Area {

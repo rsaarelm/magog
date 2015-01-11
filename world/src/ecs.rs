@@ -40,7 +40,7 @@ impl Ecs {
 
         if self.active.len() <= idx {
             let diff = idx - self.active.len() + 1;
-            self.active.grow(diff, false);
+            self.active.resize(idx + 1, false);
         }
         assert!(!self.active[idx]);
         self.active[idx] = true;
