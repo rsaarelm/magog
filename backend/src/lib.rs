@@ -1,3 +1,7 @@
+/*!
+Window-wrangling, polygon-pushing and input-grabbing.
+
+*/
 #![crate_name="backend"]
 #![allow(unstable)]
 #![feature(plugin)]

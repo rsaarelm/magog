@@ -1,3 +1,8 @@
+/*!
+Miscellaneous utilities grab-bag.
+
+ */
+
 #![crate_name="util"]
 #![allow(unstable)]
 
