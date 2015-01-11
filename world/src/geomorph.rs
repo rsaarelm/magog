@@ -9,7 +9,7 @@ use dir6::Dir6;
 
 thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 
-type Cells = HashMap<(int, int), TerrainType>;
+type Cells = HashMap<(i32, i32), TerrainType>;
 
 pub struct Chunk {
     pub cells: Cells,
@@ -110,7 +110,7 @@ impl Chunk {
     }
 }
 
-fn verify_topology(regions: &Vec<HashSet<(int, int)>>) -> Option<String> {
+fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
     let chunk_dim = 11;
     let span_1 = 3;
     let span_2 = 7;
@@ -158,8 +158,8 @@ fn verify_topology(regions: &Vec<HashSet<(int, int)>>) -> Option<String> {
     None
 }
 
-fn make_topology(cells: &Cells) -> Vec<HashSet<(int, int)>> {
-    let mut open : HashSet<(int, int)> = cells.iter()
+fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
+    let mut open : HashSet<(i32, i32)> = cells.iter()
         .filter(|&(_p, t)| !t.blocks_walk())
         .map(|(&p, _t)| p)
         .collect();
@@ -182,8 +182,8 @@ fn make_topology(cells: &Cells) -> Vec<HashSet<(int, int)>> {
 }
 
 /// Split a point set into an arbitrary connected region and the remaining set.
-fn split_connected(set: &HashSet<(int, int)>) ->
-(HashSet<(int, int)>, HashSet<(int, int)>) {
+fn split_connected(set: &HashSet<(i32, i32)>) ->
+(HashSet<(i32, i32)>, HashSet<(i32, i32)>) {
     if set.is_empty() {
         return (HashSet::new(), HashSet::new());
     }

@@ -16,7 +16,7 @@ pub struct Location {
     // TODO: Add third dimension for multiple persistent levels.
 }
 
-fn noise(n: int) -> f32 {
+fn noise(n: i32) -> f32 {
     // TODO: Move to an utilities library.
     let n = (n << 13) ^ n;
     let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
@@ -36,7 +36,7 @@ impl Location {
         // Grass is only occasionally fancy.
         // TODO: Make variant tiles into a generic method.
         if ret == TerrainType::Grass {
-            let n = noise(self.x as int + self.y as int * 57);
+            let n = noise(self.x as i32 + self.y as i32 * 57);
             if n > 0.85 {
                 ret = TerrainType::Grass2;
             }
@@ -93,14 +93,14 @@ impl Location {
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
-    pub fn v2_at(&self, other: Location) -> Option<V2<int>> {
+    pub fn v2_at(&self, other: Location) -> Option<V2<i32>> {
         // Return None for pairs on different floors if multi-floor support is
         // added.
-        Some(V2(other.x as int, other.y as int) - V2(self.x as int, self.y as int))
+        Some(V2(other.x as i32, other.y as i32) - V2(self.x as i32, self.y as i32))
     }
 
     /// Hex distance from this location to the other one, if applicable.
-    pub fn distance_from(&self, other: Location) -> Option<int> {
+    pub fn distance_from(&self, other: Location) -> Option<i32> {
         if let Some(v) = self.v2_at(other) { Some(v.hex_dist()) } else { None }
     }
 
@@ -143,12 +143,12 @@ impl Location {
     }
 }
 
-impl Add<V2<int>> for Location {
+impl Add<V2<i32>> for Location {
     type Output = Location;
-    fn add(self, other: V2<int>) -> Location {
+    fn add(self, other: V2<i32>) -> Location {
         Location::new(
-            (self.x as int + other.0) as i8,
-            (self.y as int + other.1) as i8)
+            (self.x as i32 + other.0) as i8,
+            (self.y as i32 + other.1) as i8)
     }
 }
 
@@ -156,7 +156,7 @@ impl Add<V2<int>> for Location {
 /// be just a straightforward mapping, or it can involve something exotic like
 /// a non-Euclidean space where the lines from the Chart origin are raycast
 /// through portals.
-pub trait Chart: Add<V2<int>, Output=Location> {}
+pub trait Chart: Add<V2<i32>, Output=Location> {}
 
 impl Chart for Location {}
 
@@ -164,12 +164,12 @@ impl Chart for Location {}
 /// mapping exists. It depends on the weirdness of a space how trivial this is
 /// to do.
 pub trait Unchart {
-    fn chart_pos(&self, loc: Location) -> Option<V2<int>>;
+    fn chart_pos(&self, loc: Location) -> Option<V2<i32>>;
 }
 
 impl Unchart for Location {
-    fn chart_pos(&self, loc: Location) -> Option<V2<int>> {
-        Some(V2(loc.x as int - self.x as int, loc.y as int - self.y as int))
+    fn chart_pos(&self, loc: Location) -> Option<V2<i32>> {
+        Some(V2(loc.x as i32 - self.x as i32, loc.y as i32 - self.y as i32))
     }
 }
 

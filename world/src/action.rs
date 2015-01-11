@@ -212,7 +212,7 @@ pub fn next_level() {
 /// Pathing_depth is the depth of the search map. Low pathing depths may not
 /// reach distant unexplored cells, but high pathing depths take longer to
 /// calculate.
-pub fn autoexplore_map(pathing_depth: uint) -> Option<Dijkstra<Location>> {
+pub fn autoexplore_map(pathing_depth: u32) -> Option<Dijkstra<Location>> {
     let locs = world::with(|w| w.area.as_ref().expect("no area").terrain.iter()
                            .map(|(&loc, _)| loc)
                            .filter(|loc| loc.fov_status().is_none())

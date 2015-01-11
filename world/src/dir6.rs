@@ -40,12 +40,12 @@ impl Dir6 {
     /// Vectors that are in a space between two hex direction vectors are
     /// rounded to a hexadecant, then assigned the hex direction whose vector
     /// is nearest to that hexadecant.
-    pub fn from_v2(v: V2<int>) -> Dir6 {
+    pub fn from_v2(v: V2<i32>) -> Dir6 {
         let hexadecant = {
             let width = PI / 8.0;
             let mut radian = (v.0 as f32).atan2(-v.1 as f32);
             if radian < 0.0 { radian += 2.0 * PI }
-            (radian / width).floor() as int
+            (radian / width).floor() as i32
         };
 
         Dir6::from_int(match hexadecant {
@@ -60,18 +60,18 @@ impl Dir6 {
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
-    pub fn from_int(i: int) -> Dir6 {
-        FromPrimitive::from_int(i.mod_floor(&6)).unwrap()
+    pub fn from_int(i: i32) -> Dir6 {
+        FromPrimitive::from_i32(i.mod_floor(&6)).unwrap()
     }
 
     /// Convert a hex dir into the corresponding unit vector.
-    pub fn to_v2(&self) -> V2<int> {
+    pub fn to_v2(&self) -> V2<i32> {
         [V2(-1, -1),
          V2( 0, -1),
          V2( 1,  0),
          V2( 1,  1),
          V2( 0,  1),
-         V2(-1,  0)][*self as uint]
+         V2(-1,  0)][*self as usize]
     }
 
     /// Iterate through the six hex dirs in the standard order.
@@ -124,7 +124,7 @@ mod test {
             let v2 = Dir6::from_int(i + 1).to_v2();
 
             // Test static iter
-            assert_eq!(Some(d), Dir6::iter().nth(i as uint).map(|&x| x));
+            assert_eq!(Some(d), Dir6::iter().nth(i as usize).map(|&x| x));
 
             // Test vector mapping.
             assert_eq!(d, Dir6::from_v2(v));

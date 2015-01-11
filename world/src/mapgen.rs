@@ -26,8 +26,8 @@ pub fn gen_herringbone<R: Rng, F>(
         let exit_x = rng.gen_range(-2, 2);
         let exit_y = rng.gen_range(-2, 2);
 
-        for cy in range(-2i, 2) {
-            for cx in range(-2i, 2) {
+        for cy in range(-2, 2) {
+            for cx in range(-2, 2) {
                 let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
 
                 let chunk = rng.choose(
@@ -46,7 +46,7 @@ pub fn gen_herringbone<R: Rng, F>(
 
 // Map in-chunk coordinates to on-map coordinates based on chunk position in
 // the herringbone chunk grid.
-fn herringbone_map(chunk_pos: (int, int), in_chunk_pos: (int, int)) -> V2<int> {
+fn herringbone_map(chunk_pos: (i32, i32), in_chunk_pos: (i32, i32)) -> V2<i32> {
     let (cx, cy) = chunk_pos;
     let (div, m) = cx.div_mod_floor(&2);
     let (x, y) = in_chunk_pos;
@@ -61,4 +61,4 @@ fn herringbone_map(chunk_pos: (int, int), in_chunk_pos: (int, int)) -> V2<int> {
     }
 }
 
-static CHUNK_W: int = 11;
+static CHUNK_W: i32 = 11;

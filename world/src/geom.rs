@@ -5,11 +5,11 @@ use util::V2;
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
     /// Hex distance represented by a vector.
-    fn hex_dist(&self) -> int;
+    fn hex_dist(&self) -> i32;
 }
 
-impl HexGeom for V2<int> {
-    fn hex_dist(&self) -> int {
+impl HexGeom for V2<i32> {
+    fn hex_dist(&self) -> i32 {
         let xd = self.0;
         let yd = self.1;
         if xd.signum() == yd.signum() {

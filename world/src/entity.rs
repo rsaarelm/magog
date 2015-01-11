@@ -121,7 +121,7 @@ impl Entity {
         }
     }
 
-    pub fn distance_from(self, other: Entity) -> Option<int> {
+    pub fn distance_from(self, other: Entity) -> Option<i32> {
         if let (Some(loc1), Some(loc2)) = (self.location(), other.location()) {
             loc1.distance_from(loc2)
         } else {
@@ -545,7 +545,7 @@ impl Entity {
     /// Return whether the mob has hostiles in its immediate vicinity.
     pub fn is_threatened(self) -> bool {
         // XXX: Expensive.
-        let range = 6u;
+        let range = 6;
         let loc = self.location().expect("no location");
         let seen: Vec<Location> = Fov::new(
             |pt| (loc + pt).blocks_sight(), range)
@@ -596,7 +596,7 @@ impl Entity {
     }
 
     fn do_fov(self) {
-        let range = 12u;
+        let range = 12;
         if let Some(loc) = self.location() {
             if self.has_map_memory() {
                 let seen: Vec<Location> = Fov::new(
