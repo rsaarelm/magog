@@ -1,3 +1,4 @@
+use glium::texture;
 use util::{Color, Rect, V2};
 
 pub struct Renderer;
@@ -31,4 +32,9 @@ pub struct Vertex {
 
     #[name = "a_tex_coord"]
     pub tex_coord: [f32; 2],
+}
+
+#[uniforms]
+struct Uniforms<'a> {
+    s_texture: &'a texture::Texture2d,
 }

@@ -1,7 +1,10 @@
 #![crate_name="backend"]
 #![allow(unstable)]
+#![feature(plugin)]
 
 extern crate glutin;
+#[plugin]
+extern crate glium_macros;
 extern crate glium;
 extern crate util;
 extern crate time;
