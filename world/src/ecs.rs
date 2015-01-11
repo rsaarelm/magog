@@ -5,11 +5,11 @@ use entity::{Entity};
 /// Entity component system.
 #[derive(RustcDecodable, RustcEncodable)]
 pub struct Ecs {
-    next_idx: uint,
-    reusable_idxs: Vec<uint>,
+    next_idx: usize,
+    reusable_idxs: Vec<usize>,
     // Could use Bitv for active, but I can't bother to write the serializer...
     active: Vec<bool>,
-    parent: VecMap<uint>,
+    parent: VecMap<usize>,
 }
 
 impl Ecs {
@@ -39,7 +39,6 @@ impl Ecs {
         }
 
         if self.active.len() <= idx {
-            let diff = idx - self.active.len() + 1;
             self.active.resize(idx + 1, false);
         }
         assert!(!self.active[idx]);
@@ -78,7 +77,7 @@ impl Ecs {
     }
 }
 
-pub struct EntityIter(uint);
+pub struct EntityIter(usize);
 
 impl Iterator for EntityIter {
     type Item = Entity;

@@ -18,7 +18,7 @@ pub struct Chunk {
     pub spec: AreaSpec,
 }
 
-pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
+pub fn add_cache_chunk(biome: Biome, depth: i32, text: &str) {
     CHUNK_CACHE.with(|c| {
         match Chunk::new(AreaSpec::new(biome, depth), text) {
             Ok(chunk) => c.borrow_mut().push(chunk),

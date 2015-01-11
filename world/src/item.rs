@@ -39,10 +39,10 @@ pub enum Slot {
 
 impl Slot {
     pub fn is_gear_slot(self) -> bool {
-        (self as uint) <= (Slot::TrinketI as uint)
+        (self as u32) <= (Slot::TrinketI as u32)
     }
     pub fn is_bag_slot(self) -> bool {
-        (self as uint) >= (Slot::InventoryJ as uint)
+        (self as u32) >= (Slot::InventoryJ as u32)
     }
 }
 

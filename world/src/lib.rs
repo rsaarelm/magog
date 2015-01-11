@@ -86,11 +86,11 @@ impl Biome {
 #[derive(Copy, Eq, PartialEq, Show, Clone, RustcEncodable, RustcDecodable)]
 pub struct AreaSpec {
     pub biome: Biome,
-    pub depth: int,
+    pub depth: i32,
 }
 
 impl AreaSpec {
-    pub fn new(biome: Biome, depth: int) -> AreaSpec {
+    pub fn new(biome: Biome, depth: i32) -> AreaSpec {
         AreaSpec { biome: biome, depth: depth }
     }
 
@@ -98,7 +98,7 @@ impl AreaSpec {
     /// with the given spec.
     pub fn can_hatch_in(&self, environment: &AreaSpec) -> bool {
         self.depth >= 0 && self.depth <= environment.depth &&
-        (self.biome as int & environment.biome as int) != 0
+        (self.biome as i32 & environment.biome as i32) != 0
     }
 }
 

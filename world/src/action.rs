@@ -119,8 +119,8 @@ fn ai_main() {
 
 /// Spawn n random entities with the give limiting parameters.
 pub fn random_spawns<R: Rng>(
-    rng: &mut R, count: uint,
-    depth: uint, biome_mask: Biome, category_mask: Category)
+    rng: &mut R, count: u32,
+    depth: i32, biome_mask: Biome, category_mask: Category)
     -> Vec<Entity> {
     let mut items: Vec<Weighted<Entity>> = entities()
         .filter_map(|e| world::with(|w| {
@@ -128,7 +128,7 @@ pub fn random_spawns<R: Rng>(
                 if spawn.min_depth <= depth
                     && (biome_mask as u32) & (spawn.biome as u32) != 0
                     && (category_mask as u32) & (spawn.category as u32) != 0 {
-                    return Some(Weighted { weight: spawn.commonness, item: e });
+                    return Some(Weighted { weight: spawn.commonness as usize, item: e });
                 }
             }
             return None;
@@ -142,9 +142,9 @@ pub fn random_spawns<R: Rng>(
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
 /// and stranger terrain.
-pub fn current_depth() -> int { world::with(|w| w.area.as_ref().expect("no area").seed.spec.depth) }
+pub fn current_depth() -> i32 { world::with(|w| w.area.as_ref().expect("no area").seed.spec.depth) }
 
-pub fn start_level(depth: int) {
+pub fn start_level(depth: i32) {
     let biome = match depth {
         1 => ::Biome::Overland,
         _ => ::Biome::Dungeon,

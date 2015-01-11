@@ -19,7 +19,7 @@ use stats::Stats;
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
-pub struct Entity(pub uint);
+pub struct Entity(pub usize);
 
 impl Entity {
     /// Place the entity in a location in the game world.
@@ -60,7 +60,7 @@ impl Entity {
         )
     }
 
-    pub fn get_icon(self) -> Option<(uint, Rgb)> {
+    pub fn get_icon(self) -> Option<(usize, Rgb)> {
         world::with(|w|
             if let Some(desc) = w.descs().get(self) {
                 Some((desc.icon, desc.color))

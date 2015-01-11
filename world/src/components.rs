@@ -29,12 +29,12 @@ pub trait Component {
 #[derive(Clone, Show, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
-    pub icon: uint,
+    pub icon: usize,
     pub color: Rgb,
 }
 
 impl Desc {
-    pub fn new(name: String, icon: uint, color: Rgb) -> Desc {
+    pub fn new(name: String, icon: usize, color: Rgb) -> Desc {
         Desc {
             name: name,
             icon: icon,
@@ -74,10 +74,10 @@ pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
     /// Weight of this entity in the random sampling distribution.
-    pub commonness: uint,
+    pub commonness: u32,
     /// Minimum depth where the entity will show up. More powerful entities
     /// only start showing up in large depths.
-    pub min_depth: uint,
+    pub min_depth: i32,
 
     pub category: Category,
 }
