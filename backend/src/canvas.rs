@@ -161,8 +161,9 @@ impl Context {
     }
 
     /// Clear the screen
-    pub fn clear<C: Color>(&mut self, color: &C) {
-        self.renderer.clear(color);
+    pub fn clear(&mut self) {
+        // TODO: use the color.
+        self.renderer.clear();
     }
 
     fn window_to_device(&self, window_pos: V2<i32>, z: f32) -> [f32; 3] {
@@ -274,8 +275,6 @@ impl<'a> Iterator for Context {
 
                 let (w, h) = self.display.get_framebuffer_dimensions();
                 self.window_resolution = V2(w as u32, h as u32);
-                self.renderer.set_window_size((w as i32, h as i32));
-                self.renderer.scissor(pixel_perfect(self.resolution, self.window_resolution));
 
                 unsafe {
                     return Some(Event::Render(mem::transmute(self)))

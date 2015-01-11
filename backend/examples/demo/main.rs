@@ -4,7 +4,7 @@ extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;
 
 use std::num::{Float};
-use util::{color, V2, Rgba, Rgb};
+use util::{color, V2, Rgba};
 use backend::{Canvas, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
@@ -15,7 +15,7 @@ fn main() {
             Event::Render(ctx) => {
                 let img = ctx.font_image('@').unwrap();
 
-                ctx.clear(&Rgb::new(t as u8, 0, 0));
+                ctx.clear();
                 for y in range(0, 360/8) {
                     for x in range(0, 640/8) {
                         ctx.draw_image(V2(x * 8, y * 8), 0.4, img, &color::ORANGE);
