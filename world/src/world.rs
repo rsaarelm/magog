@@ -26,16 +26,16 @@ thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState:
 
 /// Access world state for reading. The world state may not be reaccessed for
 /// writing while within this function.
-pub fn with<A, F>(f: F) -> A
-    where F: FnOnce(&WorldState) -> A {
-    WORLD_STATE.with(|w| f(w.borrow().deref()))
+pub fn with<A, F>(mut f: F) -> A
+    where F: FnMut(&WorldState) -> A {
+    WORLD_STATE.with(|w| f(& *w.borrow()))
 }
 
 /// Access world state for reading and writing. The world state may not be
 /// reaccessed while within this function.
-pub fn with_mut<A, F>(f: F) -> A
-    where F: FnOnce(&WorldState) -> A {
-    WORLD_STATE.with(|w| f(w.borrow_mut().deref_mut()))
+pub fn with_mut<A, F>(mut f: F) -> A
+    where F: FnMut(&mut WorldState) -> A {
+    WORLD_STATE.with(|w| f(&mut *w.borrow_mut()))
 }
 
 /// Save the global world state into a json string.

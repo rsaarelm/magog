@@ -29,10 +29,10 @@ pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
 
 // Only use this to access the cache, make sure the lazy init check gets
 // called before access.
-pub fn with_cache<A, F>(f: F) -> A
-    where F: Fn(&Vec<Chunk>) -> A {
+pub fn with_cache<A, F>(mut f: F) -> A
+    where F: FnMut(&Vec<Chunk>) -> A {
     check_cache();
-    CHUNK_CACHE.with(|c| f(c.borrow().deref()))
+    CHUNK_CACHE.with(|c| f(&*c.borrow()))
 }
 
 fn check_cache() {

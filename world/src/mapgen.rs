@@ -6,8 +6,8 @@ use geomorph::{Chunk};
 use terrain::TerrainType;
 
 pub fn gen_herringbone<R: Rng, F>(
-    rng: &mut R, spec: &::AreaSpec, set_terrain: F)
-    where F: Fn(V2<int>, TerrainType) {
+    rng: &mut R, spec: &::AreaSpec, mut set_terrain: F)
+    where F: FnMut(V2<i32>, TerrainType) {
     geomorph::with_cache(|cs| {
         let chunks = cs.iter().filter(
                 |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
