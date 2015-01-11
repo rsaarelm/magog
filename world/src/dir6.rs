@@ -1,8 +1,8 @@
 use std::slice;
 use num::{Integer};
-use std::num::{FloatMath, FromPrimitive, Float};
+use std::num::{FromPrimitive, Float};
 use std::f32::consts::PI;
-use calx::V2;
+use util::V2;
 use self::Dir6::*;
 
 /// Hex grid directions.
@@ -97,7 +97,7 @@ impl Sub<int, Dir6> for Dir6 {
 
 #[cfg(test)]
 mod test {
-    use calx::V2;
+    use util::V2;
     // XXX: Why doesn't super::* work here?
     use super::{Dir6};
     use super::Dir6::*;

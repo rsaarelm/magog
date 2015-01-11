@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use calx::text::Map2DUtil;
+use util::text::Map2DUtil;
 use terrain::TerrainType::*;
 use terrain::TerrainType;
 use {AreaSpec, Biome};
@@ -29,7 +29,8 @@ pub fn add_cache_chunk(biome: Biome, depth: int, text: &str) {
 
 // Only use this to access the cache, make sure the lazy init check gets
 // called before access.
-pub fn with_cache<A>(f: |&Vec<Chunk>| -> A) -> A {
+pub fn with_cache<A, F>(f: F) -> A
+    where F: Fn(&Vec<Chunk>) -> A {
     check_cache();
     CHUNK_CACHE.with(|c| f(c.borrow().deref()))
 }

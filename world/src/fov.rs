@@ -2,7 +2,7 @@ use num::{Integer};
 use std::num::{Float};
 use std::iter::{Iterator, Chain};
 use std::option::{IntoIter};
-use calx::{V2};
+use util::{V2};
 use dir6::Dir6;
 
 pub struct Fov<F> {

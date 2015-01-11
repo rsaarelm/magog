@@ -1,13 +1,11 @@
 #![crate_name="world"]
-#![feature(globs)]
-#![feature(macro_rules)]
 #![feature(unboxed_closures)]
 
 extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate num;
 extern crate collect;
-extern crate calx;
+extern crate "calx_util" as util;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};

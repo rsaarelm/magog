@@ -3,7 +3,8 @@
 #![feature(macro_rules)]
 
 extern crate image;
-extern crate calx;
+extern crate "calx_util" as util;
+extern crate "calx_backend" as backend;
 extern crate world;
 extern crate time;
 
@@ -31,7 +32,7 @@ pub enum Transition {
 */
 
 pub fn main() {
-    let mut canvas = calx::Canvas::new()
+    let mut canvas = backend::Canvas::new()
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state = GameState::new(None);

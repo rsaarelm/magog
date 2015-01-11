@@ -1,12 +1,13 @@
 use num::{Integer};
 use rand::Rng;
-use calx::{V2};
+use util::{V2};
 use geomorph;
 use geomorph::{Chunk};
 use terrain::TerrainType;
 
-pub fn gen_herringbone<R: Rng>(
-    rng: &mut R, spec: &::AreaSpec, set_terrain: |V2<int>, TerrainType|) {
+pub fn gen_herringbone<R: Rng, F>(
+    rng: &mut R, spec: &::AreaSpec, set_terrain: F)
+    where F: Fn(V2<int>, TerrainType) {
     geomorph::with_cache(|cs| {
         let chunks = cs.iter().filter(
                 |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)

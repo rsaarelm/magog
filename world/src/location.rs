@@ -1,5 +1,5 @@
-use calx::dijkstra;
-use calx::V2;
+use util::dijkstra;
+use util::V2;
 use dir6::Dir6;
 use entity::Entity;
 use terrain::TerrainType;

@@ -17,7 +17,7 @@ macro_rules! terrain_data {
             }
         }
 
-        pub static TERRAINS: [TerrainType, ..$count] = [
+        pub static TERRAINS: [TerrainType; $count] = [
             $($symbol,)*
             ];
 

@@ -3,7 +3,8 @@ use std::rand::TaskRng;
 use std::rand::Rng;
 
 /// Execute a closure with the world RNG.
-pub fn with<A>(f: |&mut TaskRng| -> A) -> A {
+pub fn with<A, F>(f: F) -> A
+    where F: Fn(&mut TaskRng) -> A {
     // TODO: Have a persistent seedable RNG in Flags that is used here. Will
     // need serialization of Rng state figured out.
     f(&mut rand::task_rng())
