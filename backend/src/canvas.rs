@@ -101,7 +101,6 @@ pub struct Context {
     renderer: Renderer,
 
     atlas: Atlas,
-    triangle_buf: Vec<Vertex>,
 
     state: State,
     frame_interval: Option<f64>,
@@ -134,7 +133,8 @@ impl Context {
 
         let (w, h) = display.get_framebuffer_dimensions();
 
-        let renderer = Renderer::new();
+        let tex_image = image::imageops::flip_vertical(&atlas.image);
+        let renderer = Renderer::new(&display, tex_image);
 
         let mut dims = vec![];
 
@@ -148,7 +148,6 @@ impl Context {
             renderer: renderer,
 
             atlas: atlas,
-            triangle_buf: Vec::new(),
 
             state: State::Normal,
             frame_interval: frame_interval,
@@ -164,7 +163,6 @@ impl Context {
     /// Clear the screen
     pub fn clear<C: Color>(&mut self, color: &C) {
         self.renderer.clear(color);
-        self.triangle_buf.clear();
     }
 
     fn window_to_device(&self, window_pos: V2<i32>, z: f32) -> [f32; 3] {
@@ -178,10 +176,12 @@ impl Context {
 
     fn tri_vtx(&mut self, window_pos: V2<i32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
         let pos = self.window_to_device(window_pos, layer);
-        self.triangle_buf.push(Vertex {
+        let vertex = Vertex {
             pos: pos,
             color: color,
-            tex_coord: texture_pos.to_array() })
+            tex_coord: texture_pos.to_array() };
+        self.renderer.vertices.push(vertex);
+        self.renderer.indices.push(self.renderer.vertices.len() as u16 - 1);
     }
 
     pub fn draw_image<C: Color>(&mut self, offset: V2<i32>, layer: f32, Image(idx): Image, color: &C) {
@@ -227,14 +227,8 @@ impl<'a> Iterator for Context {
             self.state = State::Normal;
 
             let mut target = self.display.draw();
-
-            // TODO: target.draw something
-            //self.renderer.draw_triangles(self.triangle_buf.as_slice());
-
-            //self.renderer.end_frame();
+            self.renderer.draw(&self.display, &mut target);
             target.finish();
-
-            self.triangle_buf.clear();
         }
 
         loop {
