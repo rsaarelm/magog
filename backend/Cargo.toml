@@ -1,11 +1,11 @@
 [package]
 
-name = "backend"
-version = "0.0.0"
+name = "calx_backend"
+version = "0.0.1"
 authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 
 [lib]
-name = "backend"
+name = "calx_backend"
 
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"
@@ -19,8 +19,8 @@ git = "https://github.com/tomaka/glium"
 [dependencies.glium_macros]
 git = "https://github.com/tomaka/glium"
 
-[dependencies.util]
-path = "../util"
+[dependencies.calx_util]
+path = "../"
 
 [[example]]
 name = "demo"

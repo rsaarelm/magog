@@ -1,7 +1,7 @@
 #![allow(unstable)]
 
-extern crate util;
-extern crate backend;
+extern crate "calx_util" as util;
+extern crate "calx_backend" as backend;
 
 use std::num::{Float};
 use util::{color, V2, Rgba, Rgb};

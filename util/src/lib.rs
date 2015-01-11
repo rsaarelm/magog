@@ -3,7 +3,7 @@ Miscellaneous utilities grab-bag.
 
  */
 
-#![crate_name="util"]
+#![crate_name="calx_util"]
 #![allow(unstable)]
 
 extern crate collections;

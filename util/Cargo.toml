@@ -1,11 +1,11 @@
 [package]
 
-name = "util"
-version = "0.0.0"
+name = "calx_util"
+version = "0.0.1"
 authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 
 [lib]
-name = "util"
+name = "calx_util"
 
 [dependencies.time]
 

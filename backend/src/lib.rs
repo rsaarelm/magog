@@ -2,7 +2,7 @@
 Window-wrangling, polygon-pushing and input-grabbing.
 
 */
-#![crate_name="backend"]
+#![crate_name="calx_backend"]
 #![allow(unstable)]
 #![feature(plugin)]
 
@@ -10,7 +10,7 @@ extern crate glutin;
 #[plugin]
 extern crate glium_macros;
 extern crate glium;
-extern crate util;
+extern crate "calx_util" as util;
 extern crate time;
 extern crate image;
 
