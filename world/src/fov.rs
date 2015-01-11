@@ -48,7 +48,7 @@ impl<F: Fn<(V2<int>,), bool>> Fov<F> {
     }
 }
 
-impl<F: Fn<(V2<int>,), bool>> Iterator<V2<int>> for Fov<F> {
+impl<F: Fn<(V2<int>,), bool>> Iterator for Fov<F> {
     fn next(&mut self) -> Option<V2<int>> {
         if let Some(ret) = self.side_channel.pop() {
             return Some(ret);

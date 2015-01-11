@@ -182,14 +182,14 @@ impl Spatial {
 #[derive(Clone, RustcDecodable, RustcEncodable)]
 struct Elt(Entity, Place);
 
-impl<E, D:Decoder<E>> Decodable<D, E> for Spatial {
-    fn decode(d: &mut D) -> Result<Spatial, E> {
+impl Decodable for Spatial {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Spatial, D::Error> {
         Ok(Spatial::slurp(try!(Decodable::decode(d))))
     }
 }
 
-impl<E, S:Encoder<E>> Encodable<S, E> for Spatial {
-    fn encode(&self, s: &mut S) -> Result<(), E> {
+impl Encodable for Spatial {
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
         self.dump().encode(s)
     }
 }

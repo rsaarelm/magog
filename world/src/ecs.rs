@@ -80,7 +80,8 @@ impl Ecs {
 
 pub struct EntityIter(uint);
 
-impl Iterator<Entity> for EntityIter {
+impl Iterator for EntityIter {
+    type Item = Entity;
     fn next(&mut self) -> Option<Entity> {
         world::with(|w| {
             let &EntityIter(ref mut idx) = self;

@@ -1,6 +1,7 @@
 use std::slice;
 use num::{Integer};
 use std::num::{FromPrimitive, Float};
+use std::ops::{Add, Sub};
 use std::f32::consts::PI;
 use util::V2;
 use self::Dir6::*;
@@ -87,12 +88,14 @@ impl Dir6 {
     }
 }
 
-impl Add<int, Dir6> for Dir6 {
-    fn add(self, other: int) -> Dir6 { Dir6::from_int(self as int + other) }
+impl Add<i32> for Dir6 {
+    type Output = Dir6;
+    fn add(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 + other) }
 }
 
-impl Sub<int, Dir6> for Dir6 {
-    fn sub(self, other: int) -> Dir6 { Dir6::from_int(self as int - other) }
+impl Sub<i32> for Dir6 {
+    type Output = Dir6;
+    fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
 }
 
 #[cfg(test)]

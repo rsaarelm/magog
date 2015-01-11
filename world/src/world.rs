@@ -78,7 +78,7 @@ impl<'a> WorldState {
         let seed = match seed {
             Some(s) => s,
             // Use system rng for seed if the user didn't provide one.
-            None => rand::task_rng().gen()
+            None => rand::thread_rng().gen()
         };
         WorldState {
             ecs: Ecs::new(),

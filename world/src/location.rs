@@ -1,3 +1,4 @@
+use std::ops::{Add};
 use util::dijkstra;
 use util::V2;
 use dir6::Dir6;
@@ -142,7 +143,8 @@ impl Location {
     }
 }
 
-impl Add<V2<int>, Location> for Location {
+impl Add<V2<int>> for Location {
+    type Output = Location;
     fn add(self, other: V2<int>) -> Location {
         Location::new(
             (self.x as int + other.0) as i8,
@@ -154,7 +156,7 @@ impl Add<V2<int>, Location> for Location {
 /// be just a straightforward mapping, or it can involve something exotic like
 /// a non-Euclidean space where the lines from the Chart origin are raycast
 /// through portals.
-pub trait Chart: Add<V2<int>, Location> {}
+pub trait Chart: Add<V2<int>, Output=Location> {}
 
 impl Chart for Location {}
 

@@ -43,15 +43,15 @@ pub struct Area {
     spawns: Vec<(Entity, Location)>,
 }
 
-impl<E, D:Decoder<E>> Decodable<D, E> for Area {
-    fn decode(d: &mut D) -> Result<Area, E> {
+impl Decodable for Area {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Area, D::Error> {
         let seed: AreaSeed = try!(Decodable::decode(d));
         Ok(Area::new(seed.rng_seed, seed.spec))
     }
 }
 
-impl<E, S:Encoder<E>> Encodable<S, E> for Area {
-    fn encode(&self, s: &mut S) -> Result<(), E> {
+impl Encodable for Area {
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
         self.seed.encode(s)
     }
 }
