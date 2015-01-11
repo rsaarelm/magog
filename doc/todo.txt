@@ -1,6 +1,13 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(A) 2014-12-13 Dynamic lighting in world state +Engine
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
-(A) 2015-01-11 Clean up obsolete interface bits from Glium renderer +Render
+(A) 2014-12-13 Mouse event support +UI +Gimmie
+(A) 2014-12-13 Projectile attack beam effect +UI
+(A) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine +Gimmie
+(A) 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
+(A) 2015-01-02 Always draw mobs on top of items +Engine +Gimmie
+(A) 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it. +Content +Gimmie
+(A) 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine +Gimmie
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -12,31 +19,23 @@
 (B) 2014-12-13 Freeze effects +Content
 (B) 2014-12-13 Keeping score +Content
 (B) 2014-12-13 Killed mobs drop items +Content
-(B) 2014-12-13 Mouse event support +UI
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
+(B) 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
+(B) 2014-12-13 Paint screen using render-to-texture, pixel-perfect fixed resolution and nice screenshot data +Render
 (B) 2014-12-13 Player level up logic +Content
-(B) 2014-12-13 Projectile attack beam effect +UI
 (B) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (B) 2014-12-13 Ranged attacks using ammunition +Content +UI
 (B) 2014-12-13 Recharging mana pool stat for player +Content
 (B) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
 (B) 2014-12-13 Screen state machine: Intro screen / Running game +UI
-(B) 2014-12-13 Spawn item drops +Content
 (B) 2014-12-13 Teleport +Content
 (B) 2014-12-13 Winning the game +Content
-(B) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine
 (B) 2014-12-25 Spell cooldowns +Content
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
-(B) 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
-(B) 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
-(B) 2014-12-31 Binaries know their build version +Engine
-(B) 2015-01-02 Always draw mobs on top of items +Engine
-(B) 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it.
-(B) 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine
+(B) 2014-12-31 Binaries know their build version +Engine +Gimmie
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
-(C) 2014-12-13 Alpha blended primitive rendering +Render
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
 (C) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
@@ -44,13 +43,12 @@
 (C) 2014-12-13 Burrowing mobs +Content
 (C) 2014-12-13 Chain lightning spell +Content
 (C) 2014-12-13 Chests that drop goodies +Content
-(C) 2014-12-13 Cmdline parameter for starting fullscreen +UI
-(C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine
+(C) 2014-12-13 Cmdline parameter for starting fullscreen +UI +Gimmie
+(C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine +Gimmie
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
 (C) 2014-12-13 Don't spawn mobs immediately around level entrance point +Content
-(C) 2014-12-13 Dynamic lighting in world state +Engine
 (C) 2014-12-13 Effect for text floating on top of map location +UI
 (C) 2014-12-13 Enemies that explode when dying +Content
 (C) 2014-12-13 Flamethrower spell +Content
@@ -65,7 +63,7 @@
 (C) 2014-12-13 Mobs that eat smaller allies to heal +Content
 (C) 2014-12-13 Money economy +Content
 (C) 2014-12-13 Multi-tile mob support +Engine
-(C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine
+(C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine +Gimmie
 (C) 2014-12-13 Nice API for entity factories +Engine
 (C) 2014-12-13 Noise propagation, noise alarms sleeping mobs +Content +Engine
 (C) 2014-12-13 Nova spells +Content
@@ -77,10 +75,8 @@
 (C) 2014-12-13 Power distributions in spawns, few very rare elements for flavor +Content
 (C) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
 (C) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
-(C) 2014-12-13 Read texture pixels with gfx-rs for screenshots +Render
-(C) 2014-12-13 Render-to-texture using gfx-rs, use for fixed-resolution display and screenshots. gfx-rs render targets API is undocumented and tricky. +Render
-(C) 2014-12-13 Second vertex color to recolor dark parts of sprites +Render
-(C) 2014-12-13 Serialize RNG state with the world state (stdlib RNG doesn't support serializable, either do unsafe cast on it, implement own RNG or do the reseed-on-save trick) +Engine
+(C) 2014-12-13 Second vertex color to recolor dark parts of sprites +Render +Gimmie
+(C) 2014-12-13 Serialize RNG state with the world state (stdlib RNG doesn't support serializable, either do unsafe cast on it, implement own RNG or do the reseed-on-save trick) +Engine +Gimmie
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
 (C) 2014-12-13 Slippery icy ground +Content
 (C) 2014-12-13 Swarming pack mobs +Content
@@ -90,12 +86,13 @@
 (C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (C) 2014-12-23 Virtual machine environment for testing buildability with lastest Rust nightly, no back-and-forth churn with packages on main dev system +Build
-(C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine
+(C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine +Gimmie
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
-(C) 2015-01-05 App API needs a non-updating repaint method for screenshotting +UI
+(C) 2015-01-05 App API needs a non-updating repaint method for screenshotting (or just to always hold on to the last rendered frame) +UI
+(C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -115,8 +112,6 @@
 (D) 2014-12-13 Store steganographic save games in screenshots +Render
 (D) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
-(D) 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
-(D) 2014-12-25 Should AreaSpec.depth be uint? +Engine
 (D) 2014-12-26 Compute improbability rating from input sequence saves where the player does many stupid things and stays alive because of fortunate RNG results, these will probably be the result of save scumming +Engine
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
@@ -151,4 +146,9 @@ x 2015-01-02 2014-12-24 Handle inventory slots by changing In(Entity) to In(Enti
 x 2015-01-02 2015-01-02 Draw font outline sligthly further in Z-buffer so that it won't overdraw main fonts in the same draw layer +Render
 x 2015-01-02 2015-01-02 Drop item when pressing shift+slot key +UI
 x 2015-01-02 2015-01-02 Invslot-equip/equipslot-unequip items when pressing slot key +UI
+x 2015-01-11 2014-12-13 Alpha blended primitive rendering +Render
+x 2015-01-11 2014-12-13 Spawn item drops +Content
+x 2015-01-11 2014-12-30 No int/uint in data structures, "default to int" is bad practice +Engine
+x 2015-01-11 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 x 2015-01-11 2015-01-05 Glium rendering backend +Render
+x 2015-01-11 2015-01-11 Clean up obsolete interface bits from Glium renderer +Render
