@@ -117,7 +117,7 @@ impl Iterator for ColumnRectIter {
 
 #[cfg(test)]
 mod test {
-    use calx::V2;
+    use util::V2;
     use super::column_to_chart;
 
     #[test]

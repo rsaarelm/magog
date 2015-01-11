@@ -199,7 +199,6 @@ mod test {
     use super::{Place};
     use item::Slot;
     use entity::Entity;
-    use std::slice::OrdSliceExt;
 
     #[test]
     fn test_place_adjacency() {
