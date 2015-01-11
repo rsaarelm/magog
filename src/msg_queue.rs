@@ -1,7 +1,6 @@
 use time;
-use calx::{Fonter, V2, Context};
-use calx::text;
-use calx::color;
+use backend::{Fonter, Context};
+use util::{color, V2, text};
 
 struct Msg {
     pub text: String,

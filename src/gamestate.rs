@@ -1,11 +1,8 @@
 use std::io::File;
 use std::io::fs::PathExtensions;
 use std::collections::HashMap;
-use calx::color;
-use calx::Context;
-use calx::Event;
-use calx::Key;
-use calx::{Fonter, V2};
+use util::{color, V2};
+use backend::{Context, Event, Key, Fonter};
 use world;
 use world::action;
 use world::action::Input::{Step, Melee};
@@ -95,7 +92,7 @@ impl GameState {
         loop {
             match world::pop_msg() {
                 Some(Msg::Gib(loc)) => {
-                    self.world_spr.add(box GibSprite::new(loc));
+                    self.world_spr.add(Box::new(GibSprite::new(loc)));
                 }
                 Some(Msg::Damage(entity)) => {
                     self.damage_timers.insert(entity, 2);

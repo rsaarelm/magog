@@ -1,10 +1,9 @@
-use std::num::{FloatMath};
+use std::num::{Float};
 use std::collections::HashMap;
 use time;
-use calx::{V2};
-use calx::{Context, Rgb};
-use calx::color::*;
-use calx::timing;
+use util::{V2, Rgb, timing};
+use util::color::*;
+use backend::{Context};
 use world::TerrainType;
 use world::{Location, Chart};
 use world::{FovStatus};
@@ -323,7 +322,8 @@ struct Kernel<C> {
 }
 
 impl<C: Clone> Kernel<C> {
-    pub fn new(get: |Location| -> C, loc: Location) -> Kernel<C> {
+    pub fn new<F>(get: F, loc: Location) -> Kernel<C>
+        where F: Fn(Location) -> C {
         Kernel {
             n: get(loc + V2(-1, -1)),
             ne: get(loc + V2(0, -1)),

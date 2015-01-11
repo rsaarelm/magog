@@ -1,7 +1,5 @@
-use calx::{V2};
-use calx::event;
-use calx::color;
-use calx::key;
+use util::{V2, color};
+use backend::{key, event};
 use super::{State, Transition};
 use gamestate::GameState;
 use tilecache;

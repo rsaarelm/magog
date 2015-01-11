@@ -1,6 +1,6 @@
 use std::slice::Iter;
-use calx::color;
-use calx::{Context, V2, CanvasUtil};
+use util::{color, V2};
+use backend::{Context, CanvasUtil};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
 use tilecache;
@@ -34,7 +34,8 @@ impl WorldSprites {
         self.sprites.push(spr);
     }
 
-    pub fn draw(&self, is_visible: |V2<int>| -> bool, chart: &Location, ctx: &mut Context) {
+    pub fn draw<F>(&self, is_visible: F, chart: &Location, ctx: &mut Context)
+        where F: Fn(V2<int>) -> bool {
         // XXX: Ineffective if there are many sprites outside the visible
         // area.
         for s in self.sprites.iter() {

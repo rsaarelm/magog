@@ -1,6 +1,6 @@
 use std::num::{Float};
 use std::iter::Map;
-use calx::{V2, Rect};
+use util::{V2, Rect};
 
 pub static SCREEN_W: int = 640;
 pub static SCREEN_H: int = 360;
@@ -90,7 +90,8 @@ pub struct ColumnRectIter {
     y1: int,
 }
 
-impl Iterator<V2<int>> for ColumnRectIter {
+impl Iterator for ColumnRectIter {
+    type Item = V2<int>;
     fn next(&mut self) -> Option<V2<int>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
