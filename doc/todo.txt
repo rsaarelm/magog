@@ -22,7 +22,7 @@
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
 (B) 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
-(B) 2014-12-13 Paint screen using render-to-texture, pixel-perfect fixed resolution and nice screenshot data +Render
+(B) 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
 (B) 2014-12-13 Player level up logic +Content
 (B) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (B) 2014-12-13 Ranged attacks using ammunition +Content +UI
@@ -34,6 +34,8 @@
 (B) 2014-12-25 Spell cooldowns +Content
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (B) 2014-12-31 Binaries know their build version +Engine +Gimmie
+(B) 2015-01-13 Base context API just gives image vertices & uvs, utility layer uses polygon pushing for nice image drawing (make sure to reuse vertices instead of the old individual twin triangles) +Render +Gimmie
+(B) 2015-01-13 Vertex & index pushing Canvas API for free drawing +Render +Gimmie
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Arena battle level +Content
@@ -48,7 +50,7 @@
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
-(C) 2014-12-13 Don't spawn mobs immediately around level entrance point +Content
+(C) 2014-12-13 Don't spawn mobs immediately around level entrance point (make a general no free mapgen spawns zone concept) +Content
 (C) 2014-12-13 Effect for text floating on top of map location +UI
 (C) 2014-12-13 Enemies that explode when dying +Content
 (C) 2014-12-13 Flamethrower spell +Content
@@ -93,6 +95,11 @@
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
 (C) 2015-01-05 App API needs a non-updating repaint method for screenshotting (or just to always hold on to the last rendered frame) +UI
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
+(C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
+(C) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
+(C) 2015-01-12 Use vorud functions to display and accept human-readable worldgen seeds +Gimmie +UI
+(C) 2015-01-12 Vaults in mapgen (preset entity spawns, no freespawns in zone, mapgen is aware that vaults change game balance and must be doled out carefully) +Content
+(C) 2015-01-13 See if FnOnce can be used with the 'with' fns to solve problems with moving resources into inner state +Engine
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -100,7 +107,7 @@
 (D) 2014-12-13 Cavern mapgen +Content
 (D) 2014-12-13 Data entry Rust macros without explicit count parameter +Engine
 (D) 2014-12-13 Dual wielding +Content
-(D) 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background) +Engine
+(D) 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
 (D) 2014-12-13 Gzip save games +Engine
 (D) 2014-12-13 Interface alarm animation when low on health +UI
 (D) 2014-12-13 Named miniboss mobs +Content
@@ -119,6 +126,8 @@
 (D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Engine
 (D) 2015-01-03 World has an enum of icons, App uses look-up-table on it, don't hardcode icon indices in entity specs +Content
 (D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine
+(D) 2015-01-12 (Temporary) terrain creating spell +Content
+(D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -152,3 +161,4 @@ x 2015-01-11 2014-12-30 No int/uint in data structures, "default to int" is bad 
 x 2015-01-11 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 x 2015-01-11 2015-01-05 Glium rendering backend +Render
 x 2015-01-11 2015-01-11 Clean up obsolete interface bits from Glium renderer +Render
+x 2015-01-12 2015-01-12 +Render Did the transparency bug get fixed? Also put a comment in the frag shader that we need the discard in order not to write z-buffer.
