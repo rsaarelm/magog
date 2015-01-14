@@ -4,7 +4,7 @@ use std::collections::hash_map::Hasher;
 use std::collections::HashSet;
 
 /// A grid node for the Dijkstra map.
-pub trait Node: Eq+Clone+Hash<Hasher> {
+pub trait DijkstraNode: Eq+Clone+Hash<Hasher> {
     /// List the neighbor nodes of this graph node.
     fn neighbors(&self) -> Vec<Self>;
 }
@@ -18,7 +18,7 @@ pub struct Dijkstra<N> {
     weights: HashMap<N, u32>,
 }
 
-impl<N: Node> Dijkstra<N> {
+impl<N: DijkstraNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
     pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {

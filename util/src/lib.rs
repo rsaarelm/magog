@@ -15,15 +15,16 @@ pub use rgb::{Rgb, Rgba};
 pub use geom::{Rect, V2, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas};
+pub use dijkstra::{DijkstraNode, Dijkstra};
 
 mod atlas;
+mod dijkstra;
 mod geom;
 mod img;
 mod primitive;
 mod rgb;
 
 pub mod color;
-pub mod dijkstra;
 pub mod text;
 pub mod timing;
 pub mod vorud;
