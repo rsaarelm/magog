@@ -1,5 +1,5 @@
 use std::ops::{Add};
-use util::dijkstra;
+use util::DijkstraNode;
 use util::V2;
 use dir6::Dir6;
 use entity::Entity;
@@ -173,7 +173,7 @@ impl Unchart for Location {
     }
 }
 
-impl dijkstra::Node for Location {
+impl DijkstraNode for Location {
     fn neighbors(&self) -> Vec<Location> {
         Dir6::iter().map(|d| *self + d.to_v2()).collect()
     }

@@ -1,6 +1,6 @@
 use std::default::Default;
 use std::rand::Rng;
-use util::dijkstra::Dijkstra;
+use util::Dijkstra;
 use util::Rgb;
 use world;
 use location::{Location};

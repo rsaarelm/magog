@@ -1,7 +1,7 @@
 use std::rand::Rng;
 use std::rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use std::iter::Filter;
-use util::dijkstra::Dijkstra;
+use util::Dijkstra;
 use entity::Entity;
 use ecs::EntityIter;
 use world;

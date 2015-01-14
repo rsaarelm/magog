@@ -7,7 +7,6 @@
 (A) 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
 (A) 2015-01-02 Always draw mobs on top of items +Engine +Gimmie
 (A) 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it. +Content +Gimmie
-(A) 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine +Gimmie
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
@@ -162,3 +161,4 @@ x 2015-01-11 2014-12-30 Smart move tries side dirs if main dir is blocked +UI
 x 2015-01-11 2015-01-05 Glium rendering backend +Render
 x 2015-01-11 2015-01-11 Clean up obsolete interface bits from Glium renderer +Render
 x 2015-01-12 2015-01-12 +Render Did the transparency bug get fixed? Also put a comment in the frag shader that we need the discard in order not to write z-buffer.
+x 2015-01-14 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine +Gimmie
