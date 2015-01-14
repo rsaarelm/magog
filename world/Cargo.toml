@@ -9,5 +9,9 @@ name = "world"
 
 [dependencies.collect]
 
+[dependencies.rustc-serialize]
+
+[dependencies.num]
+
 [dependencies.calx_util]
 git = "https://github.com/rsaarelm/calx"
