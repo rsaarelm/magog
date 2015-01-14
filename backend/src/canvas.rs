@@ -128,7 +128,7 @@ impl Context {
 
         let display = glutin::WindowBuilder::new()
             .with_title(title.to_string())
-            .with_dimensions(dim.0 as usize, dim.1 as usize)
+            .with_dimensions(dim.0 as u32, dim.1 as u32)
             .build_glium().unwrap();
 
         let (w, h) = display.get_framebuffer_dimensions();
