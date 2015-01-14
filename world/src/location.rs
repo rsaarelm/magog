@@ -28,7 +28,7 @@ impl Location {
 
     /// Return terrain at the location.
     pub fn terrain(&self) -> TerrainType {
-        let mut ret = world::with(|w| w.area.as_ref().expect("no area").terrain(*self));
+        let mut ret = world::with(|w| w.area.terrain(*self));
         // Mobs standing on doors make the doors open.
         if ret == TerrainType::Door && self.has_mobs() {
             ret = TerrainType::OpenDoor;
