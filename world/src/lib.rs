@@ -52,6 +52,7 @@ mod mapgen;
 mod msg;
 mod rng;
 mod spatial;
+mod spawn;
 mod stats;
 mod terrain;
 mod world;
@@ -70,7 +71,7 @@ pub enum Biome {
     Dungeon  = 0b10,
 
     // For things showing up at a biome.
-    Anywhere = 0b11111111,
+    Anywhere = -1,
 }
 
 impl Biome {

@@ -24,6 +24,7 @@ pub struct Entity(pub usize);
 impl Entity {
     /// Place the entity in a location in the game world.
     pub fn place(self, loc: Location) {
+        assert!(!self.is_prototype(), "Tried to field a prototype");
         world::with_mut(|w| w.spatial.insert_at(self, loc));
         self.on_move_to(loc);
     }
@@ -77,6 +78,10 @@ impl Entity {
         let ret = world::with_mut(|w| { w.ecs.new_entity(Some(self)) });
         ret.place(loc);
         ret
+    }
+
+    pub fn is_prototype(self) -> bool {
+        world::with(|w| w.spawns().get_local(self).is_some())
     }
 
 // Spatial methods /////////////////////////////////////////////////////

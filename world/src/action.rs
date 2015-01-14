@@ -1,5 +1,5 @@
-use std::rand::Rng;
-use std::rand::distributions::{Weighted, WeightedChoice, IndependentSample};
+use std::rand::StdRng;
+use std::rand::SeedableRng;
 use std::iter::Filter;
 use util::Dijkstra;
 use entity::Entity;
@@ -9,8 +9,6 @@ use flags;
 use dir6::Dir6;
 use area::Area;
 use location::Location;
-use Biome;
-use components::{Category};
 
 /// Game update control.
 #[derive(Copy, PartialEq)]
@@ -117,27 +115,6 @@ fn ai_main() {
     }
 }
 
-/// Spawn n random entities with the give limiting parameters.
-pub fn random_spawns<R: Rng>(
-    rng: &mut R, count: u32,
-    depth: i32, biome_mask: Biome, category_mask: Category)
-    -> Vec<Entity> {
-    let mut items: Vec<Weighted<Entity>> = entities()
-        .filter_map(|e| world::with(|w| {
-            if let Some(spawn) = w.spawns().get_local(e) {
-                if spawn.min_depth <= depth
-                    && (biome_mask as u32) & (spawn.biome as u32) != 0
-                    && (category_mask as u32) & (spawn.category as u32) != 0 {
-                    return Some(Weighted { weight: spawn.commonness as usize, item: e });
-                }
-            }
-            return None;
-        }))
-        .collect();
-    let dist = WeightedChoice::new(items.as_mut_slice());
-    range(0, count).map(|_| dist.ind_sample(rng)).collect()
-}
-
 // World logic /////////////////////////////////////////////////////////
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
@@ -162,8 +139,9 @@ pub fn start_level(depth: i32) {
         w.area = Some(new_area.clone())
     });
 
-    for (spawn, loc) in  world::with(|w| w.area.as_ref().expect("no area").get_spawns()).into_iter() {
-        spawn.clone_at(loc);
+    let mut rng: StdRng = SeedableRng::from_seed([seed as usize + depth as usize].as_slice());
+    for (spawn, loc) in world::with(|w| w.area.as_ref().expect("no area").get_spawns()).into_iter() {
+        spawn.spawn(&mut rng, loc);
     }
 
     let start_loc = world::with(|w| w.area.as_ref().expect("no area").player_entrance());

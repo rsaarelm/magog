@@ -93,7 +93,7 @@ pub enum Category {
 
     Item = 0b110,
 
-    Anything = 0b11111111,
+    Anything = -1,
 }
 
 
