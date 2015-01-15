@@ -16,42 +16,8 @@ impl Renderer {
     pub fn new<T>(display: &glium::Display, texture_image: T) -> Renderer
         where T: texture::Texture2dData {
         let shader = glium::Program::from_source(display,
-            // Vertex
-            "
-                #version 120
-
-                attribute vec3 pos;
-                attribute vec4 color;
-                attribute vec2 tex_coord;
-
-                varying vec2 v_tex_coord;
-                varying vec4 v_color;
-
-                void main() {
-                    v_tex_coord = tex_coord;
-                    v_color = color;
-                    gl_Position = vec4(pos, 1.0);
-                }
-            ",
-            // Fragment
-            "
-                #version 120
-
-                uniform sampler2D texture;
-
-                varying vec2 v_tex_coord;
-                varying vec4 v_color;
-
-                void main() {
-                    vec4 tex_color = texture2D(texture, v_tex_coord);
-
-                    // Discard fully transparent pixels to keep them from
-                    // writing into the depth buffer.
-                    if (tex_color.a == 0.0) discard;
-
-                    gl_FragColor = v_color * tex_color;
-                }
-            ",
+            include_str!("sprite.vert"),
+            include_str!("sprite.frag"),
             None).unwrap();
         let texture = texture::Texture2d::new(display, texture_image);
 
