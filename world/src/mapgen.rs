@@ -26,8 +26,8 @@ pub fn gen_herringbone<R: Rng, F>(
         let exit_x = rng.gen_range(-2, 2);
         let exit_y = rng.gen_range(-2, 2);
 
-        for cy in range(-2, 2) {
-            for cx in range(-2, 2) {
+        for cy in -2..2 {
+            for cx in -2..2 {
                 let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
 
                 let chunk = rng.choose(

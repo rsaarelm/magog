@@ -55,7 +55,7 @@ impl GameState {
         let max_hp = player.max_hp();
 
         // Draw heart containers.
-        for i in range(0, (max_hp + 1) / 2) {
+        for i in 0..((max_hp + 1) / 2) {
             let pos = V2(i as i32 * 8, 8);
             let idx = if hp >= (i + 1) * 2 { icon::HEART }
                 else if hp == i * 2 + 1 { icon::HALF_HEART }

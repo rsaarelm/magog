@@ -117,7 +117,7 @@ mod test {
         assert_eq!(North, Dir6::from_v2(V2(-10, -10)));
         assert_eq!(South, Dir6::from_v2(V2(1, 1)));
 
-        for i in range(0, 6) {
+        for i in 0..6 {
             let d = Dir6::from_int(i);
             let v = d.to_v2();
             let v1 = Dir6::from_int(i - 1).to_v2();
