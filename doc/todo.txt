@@ -162,3 +162,4 @@ x 2015-01-12 2015-01-12 +Render Did the transparency bug get fixed? Also put a c
 x 2015-01-14 2014-12-25 Resolve staging headache where Area is part of core WorldState but Area init depends on prototype entities fetched from core WorldState (split to inner state with prototypes, outer state with Area) +Engine
 x 2015-01-14 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it. +Content +Gimmie
 x 2015-01-14 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine +Gimmie
+x 2015-01-15 2015-01-15 Use include_str! and put shader sources in their own files +Gimmie +Render
