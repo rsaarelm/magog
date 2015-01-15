@@ -125,7 +125,7 @@ fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     let mut ret: Vec<V2<T>> = iter::repeat(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap())).take(dims.len()).collect();
 
-    for i in range(0, largest_first.len()) {
+    for i in 0..(largest_first.len()) {
         let (idx, &dim) = largest_first[i];
         match place(dim, &mut slots) {
             Some(pos) => { ret[idx] = pos; }
@@ -141,7 +141,7 @@ fn pack_rectangles<T: Primitive+Ord+Clone>(
     /// item.
     fn place<T: Primitive+Ord>(
         dim: V2<T>, slots: &mut Vec<Rect<T>>) -> Option<V2<T>> {
-        for i in range(0, slots.len()) {
+        for i in 0..(slots.len()) {
             let Rect(slot_pos, slot_dim) = slots[i];
             if fits(dim, slot_dim) {
                 // Remove the original slot, it gets the item. Add the two new

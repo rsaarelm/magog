@@ -119,7 +119,7 @@ pub trait ToVorud {
 impl<'a> ToVorud for &'a [u8] {
     fn to_vorud(&self) -> Vorud {
         let mut ret = String::new();
-        for i in range(0, self.len() / 2) {
+        for i in 0..(self.len() / 2) {
             if ret.len() > 0 { ret.push_str("-"); }
             let b0 = self[i * 2] as u16;
             let b1 = if self.len() == i * 2 + 1 { 0 } else { self[i * 2 + 1] as u16 };

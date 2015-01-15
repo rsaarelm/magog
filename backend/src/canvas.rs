@@ -78,7 +78,7 @@ impl Canvas {
         let mut font_sheet = util::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
             &Rgb::new(0x80u8, 0x80u8, 0x80u8));
-        for i in range(0u32, 96u32) {
+        for i in 0..96 {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
             let Image(idx) = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
@@ -138,7 +138,7 @@ impl Context {
 
         let mut dims = vec![];
 
-        for i in range(0, atlas.vertices.len()) {
+        for i in 0..(atlas.vertices.len()) {
             dims.push(atlas.vertices[i].1.map(|x| x as u32));
         }
 
@@ -200,7 +200,7 @@ impl Context {
 
     pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<i32>; 3], c: [C; 3]) {
         let tex = self.atlas.texcoords[SOLID_IDX].0;
-        for i in range(0, 3) { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
+        for i in 0..3 { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
     }
 
     pub fn font_image(&self, c: char) -> Option<Image> {

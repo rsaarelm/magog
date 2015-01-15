@@ -31,7 +31,7 @@ impl<N: DijkstraNode> Dijkstra<N> {
             edge.insert(n);
         }
 
-        for dist in range(0, limit) {
+        for dist in 0..(limit) {
             for n in edge.iter() {
                 weights.insert(n.clone(), dist);
             }

@@ -26,8 +26,8 @@ pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
     let mut p1 = V2(w as i32, h as i32);
     let mut p2 = V2(0i32, 0i32);
     let transparent: T = Default::default();
-    for y in range(0, h as i32) {
-        for x in range(0, w as i32) {
+    for y in 0..(h as i32) {
+        for x in 0..(w as i32) {
             let (_, _, _, a) = image.get_pixel(x as u32, y as u32).channels4();
             if a != transparent {
                 p1.0 = min(x, p1.0);
@@ -46,8 +46,8 @@ pub fn blit<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>, J: GenericIma
     image: &I, target: &mut J, offset: V2<i32>) {
     let (w, h) = image.dimensions();
     // TODO: Check for going over bounds.
-    for y in range(0, h) {
-        for x in range(0, w) {
+    for y in 0..(h) {
+        for x in 0..(w) {
             target.put_pixel(x + offset.0 as u32, y + offset.1 as u32, image.get_pixel(x, y));
         }
     }
