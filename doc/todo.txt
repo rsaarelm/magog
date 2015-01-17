@@ -97,6 +97,10 @@
 (C) 2015-01-12 Use vorud functions to display and accept human-readable worldgen seeds +Gimmie +UI
 (C) 2015-01-12 Vaults in mapgen (preset entity spawns, no freespawns in zone, mapgen is aware that vaults change game balance and must be doled out carefully) +Content
 (C) 2015-01-13 See if FnOnce can be used with the 'with' fns to solve problems with moving resources into inner state +Engine
+(C) 2015-01-17 Fire and burning +Engine
+(C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
+(C) 2015-01-17 Move entity factory code & Prototype type into own module +Engine
+(C) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -125,6 +129,7 @@
 (D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
+(D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
