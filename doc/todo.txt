@@ -3,7 +3,6 @@
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (A) 2014-12-13 Mouse event support +UI +Gimmie
 (A) 2014-12-13 Projectile attack beam effect +UI
-(A) 2014-12-25 One god macro for defining the component type set and the interface methods +Engine +Gimmie
 (A) 2015-01-02 Always draw mobs on top of items +Engine +Gimmie
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
@@ -168,3 +167,4 @@ x 2015-01-14 2014-12-25 Resolve staging headache where Area is part of core Worl
 x 2015-01-14 2015-01-08 Mapgen doesn't do concrete entity sampling, just emits spawn profile values. Init level code does sampling, prototypes are set up when entering it. +Content +Gimmie
 x 2015-01-14 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra, DijkstraNode +Engine +Gimmie
 x 2015-01-15 2015-01-15 Use include_str! and put shader sources in their own files +Gimmie +Render
+x 2015-01-17 2014-12-25 One god macro for defining the component type set and the interface methods +Engine +Gimmie
