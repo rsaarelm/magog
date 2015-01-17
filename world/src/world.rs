@@ -1,4 +1,3 @@
-use std::collections::VecMap;
 use std::cell::RefCell;
 use std::rand;
 use std::default::Default;
@@ -9,10 +8,8 @@ use ecs::Ecs;
 use area::Area;
 use spatial::Spatial;
 use flags::Flags;
-use entity::Entity;
 use action;
-use components::{Prototype};
-use components::{StatsCache};
+use components::{Comps, Prototype};
 use components::{Spawn, Category};
 use components::{Desc, MapMemory, Health};
 use components::{Brain, BrainState, Alignment};
@@ -70,7 +67,7 @@ pub struct WorldState {
     /// Global gamestate flags.
     pub flags: Flags,
 
-    comps: Comps,
+    pub comps: Comps,
 }
 
 impl<'a> WorldState {
@@ -160,141 +157,4 @@ pub fn init_world(seed: Option<u32>) {
         ;
 
     action::start_level(1);
-}
-
-// Components stuff ////////////////////////////////////////////////////
-
-#[derive(RustcEncodable, RustcDecodable)]
-struct Comps {
-    descs: VecMap<Desc>,
-    map_memories: VecMap<MapMemory>,
-    stats: VecMap<Stats>,
-    spawns: VecMap<Spawn>,
-    healths: VecMap<Health>,
-    brains: VecMap<Brain>,
-    items: VecMap<Item>,
-    stats_caches: VecMap<StatsCache>,
-}
-
-impl Comps {
-    pub fn new() -> Comps {
-        Comps {
-            descs: VecMap::new(),
-            map_memories: VecMap::new(),
-            stats: VecMap::new(),
-            spawns: VecMap::new(),
-            healths: VecMap::new(),
-            brains: VecMap::new(),
-            items: VecMap::new(),
-            stats_caches: VecMap::new(),
-        }
-    }
-}
-
-macro_rules! comp_api {
-    // Rust macros can't concatenate "_mut" to $name because reasons, so the
-    // _mut suffix name needs to be passed in explicitly.
-    { $name:ident, $name_mut:ident, $typ:ty } => {
-        impl<'a> WorldState {
-        pub fn $name(&'a self) -> ComponentRef<'a, $typ> {
-            ComponentRef::new(&self.ecs, &self.comps.$name)
-        }
-        pub fn $name_mut(&'a mut self) -> ComponentRefMut<'a, $typ> {
-            ComponentRefMut::new(&mut self.ecs, &mut self.comps.$name)
-        }
-        }
-    }
-}
-
-// COMPONENTS CHECKPOINT
-comp_api!(descs, descs_mut, Desc);
-comp_api!(map_memories, map_memories_mut, MapMemory);
-comp_api!(stats, stats_mut, Stats);
-comp_api!(spawns, spawns_mut, Spawn);
-comp_api!(healths, healths_mut, Health);
-comp_api!(brains, brains_mut, Brain);
-comp_api!(items, items_mut, Item);
-comp_api!(stats_caches, stats_caches_mut, StatsCache);
-
-/// Immutable component access.
-pub struct ComponentRef<'a, C: 'static> {
-    ecs: &'a Ecs,
-    data: &'a VecMap<C>,
-}
-
-impl<'a, C> ComponentRef<'a, C> {
-    fn new(ecs: &'a Ecs, data: &'a VecMap<C>) -> ComponentRef<'a, C> {
-        ComponentRef {
-            ecs: ecs,
-            data: data,
-        }
-    }
-
-    /// Fetch a component from given entity or its parent.
-    pub fn get(self, Entity(idx): Entity) -> Option<&'a C> {
-        match find_parent(|Entity(idx)| self.data.contains_key(&idx), self.ecs, Entity(idx)) {
-            None => { None }
-            Some(Entity(idx)) => { self.data.get(&idx) }
-        }
-    }
-
-    /// Fetch a component from given entity. Do not search parent entities.
-    pub fn get_local(self, Entity(idx): Entity) -> Option<&'a C> {
-        self.data.get(&idx)
-    }
-}
-
-/// Mutable component access.
-pub struct ComponentRefMut<'a, C: 'static> {
-    ecs: &'a mut Ecs,
-    data: &'a mut VecMap<C>,
-}
-
-impl<'a, C: Clone> ComponentRefMut<'a, C> {
-    fn new(ecs: &'a mut Ecs, data: &'a mut VecMap<C>) -> ComponentRefMut<'a, C> {
-        ComponentRefMut {
-            ecs: ecs,
-            data: data,
-        }
-    }
-
-    /// Fetch a component from given entity or its parent. Copy-on-write
-    /// semantics: A component found on a parent entity will be copied on
-    /// local entity for mutation.
-    pub fn get(self, Entity(idx): Entity) -> Option<&'a mut C> {
-        match find_parent(|Entity(idx)| self.data.contains_key(&idx), self.ecs, Entity(idx)) {
-            None => { None }
-            Some(Entity(idx2)) if idx2 == idx => { self.data.get_mut(&idx2) }
-            Some(Entity(idx2)) => {
-                // Copy-on-write: Make a local copy of inherited component
-                // when asking for mutable access.
-                let cow = self.data.get(&idx2).expect("parent component lost").clone();
-                self.data.insert(idx, cow);
-                self.data.get_mut(&idx)
-            }
-        }
-    }
-
-    /// Add a component to entity.
-    pub fn insert(self, Entity(idx): Entity, comp: C) {
-        self.data.insert(idx, comp);
-    }
-
-    /// Remove a component from an entity. This will make a parent entity's
-    /// component visible instead, if there is one. There is currently no way
-    /// to hide components present in a parent entity.
-    pub fn remove(self, Entity(idx): Entity) {
-        self.data.remove(&idx);
-    }
-}
-
-fn find_parent<P: Fn<(Entity,), bool>>(p: P, ecs: &Ecs, e: Entity) -> Option<Entity> {
-    let mut current = e;
-    loop {
-        if p(current) { return Some(current); }
-        match ecs.parent(current) {
-            Some(parent) => { current = parent; }
-            None => { return None; }
-        }
-    }
 }

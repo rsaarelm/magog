@@ -1,3 +1,4 @@
+use std::collections::VecMap;
 use std::collections::HashSet;
 use util::Rgb;
 use location::Location;
@@ -6,14 +7,71 @@ use entity::Entity;
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
-use world;
+use component_ref::{ComponentRef, ComponentRefMut};
+use world::{self, WorldState};
 
-macro_rules! impl_component {
-    { $comp:ty, $method:ident } => {
-        impl Component for $comp {
-            // XXX: Figure out how to move self into the closure to
-            // get rid of the .clone.
-            fn add_to(self, e: Entity) { world::with_mut(|w| w.$method().insert(e, self.clone())) }
+macro_rules! components {
+    {
+        // Declare the list of types which are included as components in the
+        // game's entity component system. Also declare the non-mutable and
+        // mutable accessor names for them. Example
+        //
+        // ```notrust
+        //     [Mesh, meshes, meshes_mut],
+        // ```
+        $([$comp:ty, $access:ident, $access_mut:ident],)+
+    } => {
+        // The master container for all the components.
+#[derive(RustcEncodable, RustcDecodable)]
+        pub struct Comps {
+            $($access: VecMap<$comp>,)+
+        }
+
+        /// Container for all regular entity components.
+        impl Comps {
+            pub fn new() -> Comps {
+                Comps {
+                    $($access: VecMap::new(),)+
+                }
+            }
+
+            /// Remove the given entity from all the contained components.
+            pub fn remove(&mut self, Entity(idx): Entity) {
+                $(self.$access.remove(&idx);)+
+            }
+        }
+
+
+        // Implement the Componet trait for the type, this provides an uniform
+        // syntax for adding component values to entities used by the entity
+        // factory.
+        $(
+            impl Component for $comp {
+                // XXX: Figure out how to move self into the closure to
+                // get rid of the .clone.
+                fn add_to(self, e: Entity) { world::with_mut(|w| w.$access_mut().insert(e, self.clone())) }
+            }
+        )+
+
+
+        // Implement the trait for accessing all the components that
+        // WorldState will implement
+        pub trait ComponentAccess<'a> {
+            $(
+            fn $access(&'a self) -> ComponentRef<'a, $comp>;
+            fn $access_mut(&'a mut self) -> ComponentRefMut<'a, $comp>;
+            )+
+        }
+
+        impl<'a> ComponentAccess<'a> for WorldState {
+            $(
+            fn $access(&'a self) -> ComponentRef<'a, $comp> {
+                ComponentRef::new(&self.ecs, &self.comps.$access)
+            }
+            fn $access_mut(&'a mut self) -> ComponentRefMut<'a, $comp> {
+                ComponentRefMut::new(&mut self.ecs, &mut self.comps.$access)
+            }
+            )+
         }
     }
 }
@@ -24,6 +82,7 @@ pub trait Component {
     fn add_to(self, e: Entity);
 }
 
+////////////////////////////////////////////////////////////////////////
 
 /// Entity name and appearance.
 #[derive(Clone, Show, RustcEncodable, RustcDecodable)]
@@ -43,8 +102,6 @@ impl Desc {
     }
 }
 
-impl_component!(Desc, descs_mut);
-
 
 /// Map field-of-view and remembered terrain.
 #[derive(Clone, Show, RustcEncodable, RustcDecodable)]
@@ -62,11 +119,6 @@ impl MapMemory {
     }
 }
 
-impl_component!(MapMemory, map_memories_mut);
-
-
-impl_component!(Stats, stats_mut);
-
 
 /// Spawning properties for prototype objects.
 #[derive(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
@@ -81,8 +133,6 @@ pub struct Spawn {
 
     pub category: Category,
 }
-
-impl_component!(Spawn, spawns_mut);
 
 #[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Category {
@@ -102,8 +152,6 @@ pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment
 }
-
-impl_component!(Brain, brains_mut);
 
 /// Mob behavior state.
 #[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
@@ -142,8 +190,6 @@ pub struct Health {
     pub armor: i32,
 }
 
-impl_component!(Health, healths_mut);
-
 
 /// Items can be picked up and carried and they do stuff.
 #[derive(Clone, Show, RustcEncodable, RustcDecodable)]
@@ -152,16 +198,25 @@ pub struct Item {
     pub ability: Ability,
 }
 
-impl_component!(Item, items_mut);
-
 
 /// Stats cache is a transient component made from adding up a mob's intrinsic
 /// stats and the stat bonuses of its equipment and whatever spell effects may
 /// apply.
 pub type StatsCache = Option<Stats>;
 
-impl_component!(StatsCache, stats_caches_mut);
+////////////////////////////////////////////////////////////////////////
 
+// Component loadout for the game.
+components! {
+    [Desc, descs, descs_mut],
+    [MapMemory, map_memories, map_memories_mut],
+    [Stats, stats, stats_mut],
+    [Spawn, spawns, spawns_mut],
+    [Health, healths, healths_mut],
+    [Brain, brains, brains_mut],
+    [Item, items, items_mut],
+    [StatsCache, stats_caches, stats_caches_mut],
+}
 
 ////////////////////////////////////////////////////////////////////////
 

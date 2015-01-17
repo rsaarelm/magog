@@ -39,6 +39,7 @@ pub mod item;
 
 mod ability;
 mod area;
+mod component_ref;
 mod dir6;
 mod ecs;
 mod entity;

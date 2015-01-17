@@ -16,6 +16,7 @@ use rng;
 use msg;
 use item::{ItemType, Slot};
 use stats::Stats;
+use components::{ComponentAccess};
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
@@ -34,19 +35,8 @@ impl Entity {
     /// CALLER IS RESPONSIBLE FOR ENSUING THAT AN ENTITY WILL NOT BE
     /// USED FROM ANYWHERE AFTER THE DELETE OPERATION.
     pub fn delete(self) {
-        // COMPONENTS CHECKPOINT
-        // This needs to call every component system.
-        world::with_mut(|w| w.descs_mut().remove(self));
-        world::with_mut(|w| w.map_memories_mut().remove(self));
-        world::with_mut(|w| w.stats_mut().remove(self));
-        world::with_mut(|w| w.spawns_mut().remove(self));
-        world::with_mut(|w| w.healths_mut().remove(self));
-        world::with_mut(|w| w.brains_mut().remove(self));
-        world::with_mut(|w| w.items_mut().remove(self));
-        world::with_mut(|w| w.stats_caches_mut().remove(self));
-
+        world::with_mut(|w| w.comps.remove(self));
         world::with_mut(|w| w.spatial.remove(self));
-
         world::with_mut(|w| w.ecs.delete(self));
     }
 
