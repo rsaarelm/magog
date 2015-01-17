@@ -88,7 +88,10 @@ impl<'a> CellDrawable<'a> {
         self.draw_terrain(ctx, offset);
 
         if self.fov == Some(FovStatus::Seen) {
-            for e in self.loc.entities().iter() {
+            // Sort mobs on top of items for drawing.
+            let mut es = self.loc.entities();
+            es.sort_by(|a, b| a.is_mob().cmp(&b.is_mob()));
+            for e in es.iter() {
                 self.draw_entity(ctx, offset, e);
             }
         }
