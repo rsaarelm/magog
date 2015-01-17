@@ -7,9 +7,6 @@ authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 [lib]
 name = "calx_backend"
 
-[dependencies.gl]
-git = "https://github.com/bjz/gl-rs"
-
 [dependencies.glutin]
 git = "https://github.com/tomaka/glutin"
 

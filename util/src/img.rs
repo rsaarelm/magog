@@ -1,9 +1,8 @@
 use std::default::{Default};
 use std::cmp::{min, max};
-use image::{GenericImage, Pixel, ImageBuffer, Rgba};
+use image::{Primitive, GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
 use rgb::Rgb;
-use primitive::Primitive;
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(

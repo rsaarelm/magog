@@ -2,6 +2,7 @@ use std::default::Default;
 use std::mem;
 use glium;
 use glium::texture;
+use glium::LinearBlendingFactor::*;
 
 pub struct Renderer {
     shader: glium::Program,
@@ -24,7 +25,8 @@ impl Renderer {
         let mut params: glium::DrawParameters = Default::default();
         params.backface_culling = glium::BackfaceCullingMode::CullCounterClockWise;
         params.depth_function = glium::DepthFunction::IfLessOrEqual;
-        params.blending_function = Some(glium::BlendingFunction::LerpBySourceAlpha);
+        params.blending_function = Some(glium::BlendingFunction::Addition {
+            source: SourceAlpha, destination: OneMinusSourceAlpha });
 
         Renderer {
             shader: shader,
