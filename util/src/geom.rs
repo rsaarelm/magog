@@ -96,6 +96,11 @@ impl<T: Primitive> Rect<T> {
           mx.1 <= rmn.1 || mn.1 >= rmx.1)
     }
 
+    pub fn contains(&self, p: &V2<T>) -> bool {
+        let (mn, mx) = (self.mn(), self.mx());
+        p.0 >= mn.0 && p.1 >= mn.1 && p.0 < mx.0 && p.1 < mx.1
+    }
+
     /// Return an iterator for all the points in the rectangle.
     pub fn iter(&self) -> RectIter<T> {
         RectIter {
