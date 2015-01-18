@@ -1,7 +1,6 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (A) 2014-12-13 Dynamic lighting in world state +Engine
 (A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
-(A) 2014-12-13 Mouse event support +UI +Gimmie
 (A) 2014-12-13 Projectile attack beam effect +UI
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
@@ -99,6 +98,7 @@
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
 (C) 2015-01-17 Move entity factory code & Prototype type into own module +Engine
 (C) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
+(C) 2015-01-18 Color scheme for item rarity, white-common, green-uncommon, blue-rare, purple-epic, orange-legendary +Content
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -168,3 +168,4 @@ x 2015-01-14 2015-01-11 Rename dijkstra::Dijksra and dijkstra::Node to Dijkstra,
 x 2015-01-15 2015-01-15 Use include_str! and put shader sources in their own files +Gimmie +Render
 x 2015-01-17 2014-12-25 One god macro for defining the component type set and the interface methods +Engine +Gimmie
 x 2015-01-17 2015-01-02 Always draw mobs on top of items +Engine +Gimmie
+x 2015-01-18 2014-12-13 Mouse event support +UI +Gimmie

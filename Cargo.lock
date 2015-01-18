@@ -22,7 +22,7 @@ dependencies = [
 [[package]]
 name = "calx_backend"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#d8aedce52b03cb2ad42820c06ff5439ebf0bcb4d"
+source = "git+https://github.com/rsaarelm/calx#19bb7d71740862910093f1a2e809756b937e6277"
 dependencies = [
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "glium 0.0.2 (git+https://github.com/tomaka/glium)",
@@ -33,7 +33,7 @@ dependencies = [
 [[package]]
 name = "calx_util"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#d8aedce52b03cb2ad42820c06ff5439ebf0bcb4d"
+source = "git+https://github.com/rsaarelm/calx#19bb7d71740862910093f1a2e809756b937e6277"
 dependencies = [
  "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -103,7 +103,7 @@ dependencies = [
 [[package]]
 name = "glium"
 version = "0.0.2"
-source = "git+https://github.com/tomaka/glium#708bb60e936b3928af67d5415d9007ba6cdbe033"
+source = "git+https://github.com/tomaka/glium#6ffdc393b63d1c21245c791b7cc679e28c5b43b0"
 dependencies = [
  "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs)",
  "compile_msg 0.1.3 (git+https://github.com/huonw/compile_msg)",
@@ -118,12 +118,12 @@ dependencies = [
 [[package]]
 name = "glium_macros"
 version = "0.0.1"
-source = "git+https://github.com/tomaka/glium#708bb60e936b3928af67d5415d9007ba6cdbe033"
+source = "git+https://github.com/tomaka/glium#6ffdc393b63d1c21245c791b7cc679e28c5b43b0"
 
 [[package]]
 name = "glutin"
 version = "0.0.4-pre"
-source = "git+https://github.com/tomaka/glutin#f1ec5db5858ce679f33614bbcb978d37ff96143f"
+source = "git+https://github.com/tomaka/glutin#0d114c72b3362fb6e5094bf225e323941135b81a"
 dependencies = [
  "android_glue 0.0.1 (git+https://github.com/tomaka/android-rs-glue)",
  "cocoa 0.1.1 (git+https://github.com/servo/rust-cocoa)",
@@ -131,13 +131,14 @@ dependencies = [
  "core_graphics 0.1.0 (git+https://github.com/servo/rust-core-graphics)",
  "gl_common 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gl_generator 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "khronos_api 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "image"
 version = "0.2.0-alpha.4"
-source = "git+https://github.com/PistonDevelopers/image#66f55358f41b97dae4441c0d2aee55caec3217d9"
+source = "git+https://github.com/PistonDevelopers/image#2b1b6bfb00441ba9f678dfc745e9aa1ce9a29927"
 dependencies = [
  "num 0.1.8 (git+https://github.com/rust-lang/num)",
 ]
@@ -163,7 +164,7 @@ dependencies = [
 [[package]]
 name = "nalgebra"
 version = "0.1.0"
-source = "git+https://github.com/sebcrozet/nalgebra#7b07d4d847403e3ce64398ee9e968f6dfe672f67"
+source = "git+https://github.com/sebcrozet/nalgebra#08049e515ea473b3502fede02de1bd7d79dcd50f"
 dependencies = [
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
