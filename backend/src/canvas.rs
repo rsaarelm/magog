@@ -7,7 +7,7 @@ use image;
 use glutin;
 use glium::{self, DisplayBuild};
 use util::{self, AtlasBuilder, Atlas, V2, Rect, Rgb, Color};
-use event::Event;
+use event::{Event, MouseButton};
 use renderer::{Renderer, Vertex};
 use scancode;
 
@@ -22,7 +22,7 @@ static SOLID_IDX: usize = 96;
 
 pub struct Canvas {
     title: String,
-    dim: V2<u32>,
+    dim: V2<i32>,
     frame_interval: Option<f64>,
     builder: AtlasBuilder,
 }
@@ -54,7 +54,7 @@ impl Canvas {
     }
 
     /// Set the resolution.
-    pub fn set_dim(mut self, dim: V2<u32>) -> Canvas {
+    pub fn set_dim(mut self, dim: V2<i32>) -> Canvas {
         self.dim = dim;
         self
     }
@@ -106,8 +106,8 @@ pub struct Context {
     frame_interval: Option<f64>,
     last_render_time: f64,
     image_dims: Vec<V2<u32>>,
-    resolution: V2<u32>,
-    window_resolution: V2<u32>,
+    resolution: V2<i32>,
+    window_resolution: V2<i32>,
 
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
@@ -121,7 +121,7 @@ enum State {
 
 impl Context {
     fn new(
-        dim: V2<u32>,
+        dim: V2<i32>,
         title: &str,
         frame_interval: Option<f64>,
         atlas: Atlas) -> Context {
@@ -154,7 +154,7 @@ impl Context {
             last_render_time: time::precise_time_s(),
             image_dims: dims,
             resolution: dim,
-            window_resolution: V2(w as u32, h as u32),
+            window_resolution: V2(w as i32, h as i32),
 
             render_duration: 0.1f64,
         }
@@ -164,6 +164,15 @@ impl Context {
     pub fn clear(&mut self) {
         // TODO: use the color.
         self.renderer.clear();
+    }
+
+    /// Transform screen coordinates from the scaled-up window into
+    /// pixel-perfect coordinates of the actual graphics.
+    fn screen_to_pixel(&self, V2(sx, sy): V2<i32>) -> V2<i32> {
+        let Rect(V2(rx, ry), V2(rw, rh)) = pixel_perfect(self.resolution, self.window_resolution);
+
+        V2(((sx - rx) as f32 * self.resolution.0 as f32 / rw as f32) as i32,
+           ((sy - ry) as f32 * self.resolution.1 as f32 / rh as f32) as i32)
     }
 
     fn window_to_device(&self, window_pos: V2<i32>, z: f32) -> [f32; 3] {
@@ -252,10 +261,35 @@ impl<'a> Iterator for Context {
                             }
                         }
                     }
+                    glutin::Event::MouseMoved((x, y)) => {
+                        let pixel_pos = self.screen_to_pixel(V2(x, y));
+                        return Some(Event::MouseMoved((pixel_pos.0, pixel_pos.1)));
+                    }
+                    glutin::Event::MouseWheel(x) => {
+                        return Some(Event::MouseWheel(x));
+                    }
+                    glutin::Event::MouseInput(state, button) => {
+                        let button = match button {
+                            glutin::MouseButton::LeftMouseButton => MouseButton::Left,
+                            glutin::MouseButton::RightMouseButton => MouseButton::Right,
+                            glutin::MouseButton::MiddleMouseButton => MouseButton::Middle,
+                            glutin::MouseButton::OtherMouseButton(x) => MouseButton::Other(x),
+                        };
+                        match state {
+                            glutin::ElementState::Pressed => {
+                                return Some(Event::MousePressed(button));
+                            }
+                            glutin::ElementState::Released => {
+                                return Some(Event::MouseReleased(button));
+                            }
+                        }
+                    }
+                    glutin::Event::Focused(b) => {
+                        return Some(Event::FocusChanged(b));
+                    }
                     glutin::Event::Closed => {
                         return None;
                     }
-                    // TODO Mouse events.
                     _ => ()
                 }
             }
@@ -274,7 +308,7 @@ impl<'a> Iterator for Context {
                 self.state = State::EndFrame;
 
                 let (w, h) = self.display.get_framebuffer_dimensions();
-                self.window_resolution = V2(w as u32, h as u32);
+                self.window_resolution = V2(w as i32, h as i32);
 
                 unsafe {
                     return Some(Event::Render(mem::transmute(self)))
@@ -290,7 +324,7 @@ pub struct Image(usize);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area.
-fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<u32> {
+fn pixel_perfect(canvas: V2<i32>, window: V2<i32>) -> Rect<i32> {
     let mut scale = (window.0 as f32 / canvas.0 as f32)
         .min(window.1 as f32 / canvas.1 as f32);
 
@@ -299,7 +333,7 @@ fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<u32> {
         scale = scale.floor();
     }
 
-    let dim = V2((scale * canvas.0 as f32) as u32, (scale * canvas.1 as f32) as u32);
+    let dim = V2((scale * canvas.0 as f32) as i32, (scale * canvas.1 as f32) as i32);
     let offset = (window - dim) / 2;
     Rect(offset, dim)
 }

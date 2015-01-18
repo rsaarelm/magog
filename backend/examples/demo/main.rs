@@ -4,11 +4,12 @@ extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;
 
 use std::num::{Float};
-use util::{color, V2, Rgba};
+use util::{color, V2, Rgba, Rect};
 use backend::{Canvas, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
     let mut t = 0i32;
+    let mut mouse_pos = V2(-1i32, -1i32);
 
     for evt in Canvas::new().run() {
         match evt {
@@ -16,9 +17,11 @@ fn main() {
                 let img = ctx.font_image('@').unwrap();
 
                 ctx.clear();
-                for y in range(0, 360/8) {
-                    for x in range(0, 640/8) {
-                        ctx.draw_image(V2(x * 8, y * 8), 0.4, img, &color::ORANGE);
+                for y in 0..(360/8) {
+                    for x in 0..(640/8) {
+                        let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
+                            color::WHITE } else { color::ORANGE };
+                        ctx.draw_image(V2(x * 8, y * 8 + 8), 0.4, img, &col);
                     }
                 }
                 let center = V2(320, 180);
@@ -43,6 +46,9 @@ fn main() {
             }
             Event::Char(c) => {
                 println!("Typed {:?}", c);
+            }
+            Event::MouseMoved((x, y)) => {
+                mouse_pos = V2(x, y);
             }
             _ => ()
         }
