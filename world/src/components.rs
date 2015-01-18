@@ -10,6 +10,8 @@ use stats::Stats;
 use component_ref::{ComponentRef, ComponentRefMut};
 use world::{self, WorldState};
 
+// The one big macro for defining the full set of available entity components
+// in one place.
 macro_rules! components {
     {
         // Declare the list of types which are included as components in the
