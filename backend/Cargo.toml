@@ -7,6 +7,11 @@ authors = [ "rsaarelm <risto.saarelma@iki.fi>" ]
 [lib]
 name = "calx_backend"
 
+[dependencies.time]
+
+[dependencies.image]
+git = "https://github.com/PistonDevelopers/image"
+
 [dependencies.glutin]
 git = "https://github.com/tomaka/glutin"
 

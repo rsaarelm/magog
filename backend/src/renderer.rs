@@ -61,7 +61,7 @@ impl Renderer {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
                 .. Default::default() }));
 
-        target.draw(&vertices, &indices, &self.shader, &uniforms, &self.params);
+        target.draw(&vertices, &indices, &self.shader, &uniforms, &self.params).unwrap();
     }
 }
 
