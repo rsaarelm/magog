@@ -72,9 +72,9 @@ impl GameState {
         self.world_spr.update();
 
         let location_name = camera.name();
-        let _ = write!(&mut ctx.text_writer(V2(640 - location_name.len() as i32 * 8, 8), 0.1, color::LIGHTGRAY)
+        write!(&mut ctx.text_writer(V2(640 - location_name.len() as i32 * 8, 8), 0.1, color::LIGHTGRAY)
                        .set_border(color::BLACK),
-                       "{}", location_name);
+                       "{}", location_name).unwrap();
 
         self.msg.draw(ctx);
         if let Some(player) = action::player() {
@@ -132,14 +132,21 @@ impl GameState {
 
     fn inventory_update(&mut self, ctx: &mut Context) {
         let player = action::player().unwrap();
-        let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO);
-        for slot_data in SLOT_DATA.iter() {
-            let name = match player.equipped(slot_data.slot) {
-                Some(item) => item.name(),
-                None => "".to_string()
-            };
-            let _ = write!(&mut cursor, "{}] {}: {}\n",
-                slot_data.key, slot_data.name, name);
+        {
+            let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO);
+            for slot_data in SLOT_DATA.iter() {
+                let name = match player.equipped(slot_data.slot) {
+                    Some(item) => item.name(),
+                    None => "".to_string()
+                };
+                write!(&mut cursor, "{}] {}: {}\n",
+                    slot_data.key, slot_data.name, name).unwrap();
+            }
+        }
+
+        {
+            let mut cursor = ctx.text_writer(V2(0, 360), 0.1, color::GAINSBORO);
+            write!(&mut cursor, "Press letter to equip/unequip item. Press shift+letter to drop item.").unwrap();
         }
     }
 
