@@ -28,8 +28,8 @@
 (B) 2014-12-25 Spell cooldowns +Content
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (B) 2014-12-31 Binaries know their build version +Engine +Gimmie
-(B) 2015-01-13 Base context API just gives image vertices & uvs, utility layer uses polygon pushing for nice image drawing (make sure to reuse vertices instead of the old individual twin triangles) +Render +Gimmie
-(B) 2015-01-13 Vertex & index pushing Canvas API for free drawing +Render +Gimmie
+(B) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
+(B) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in inventory +UI
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Arena battle level +Content
@@ -71,7 +71,6 @@
 (C) 2014-12-13 Power distributions in spawns, few very rare elements for flavor +Content
 (C) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
 (C) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
-(C) 2014-12-13 Second vertex color to recolor dark parts of sprites +Render +Gimmie
 (C) 2014-12-13 Serialize RNG state with the world state (stdlib RNG doesn't support serializable, either do unsafe cast on it, implement own RNG or do the reseed-on-save trick) +Engine +Gimmie
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
 (C) 2014-12-13 Slippery icy ground +Content
@@ -128,6 +127,7 @@
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 (D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
+(D) 2015-01-19 Set up benchmarks, see if inline pragmas optimize eg. image drawing and Rect::pn +Render
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -169,3 +169,6 @@ x 2015-01-15 2015-01-15 Use include_str! and put shader sources in their own fil
 x 2015-01-17 2014-12-25 One god macro for defining the component type set and the interface methods +Engine +Gimmie
 x 2015-01-17 2015-01-02 Always draw mobs on top of items +Engine +Gimmie
 x 2015-01-18 2014-12-13 Mouse event support +UI +Gimmie
+x 2015-01-20 2014-12-13 Second vertex color to recolor dark parts of sprites +Render +Gimmie
+x 2015-01-20 2015-01-13 Base context API just gives image vertices & uvs, utility layer uses polygon pushing for nice image drawing (make sure to reuse vertices instead of the old individual twin triangles) +Render +Gimmie
+x 2015-01-20 2015-01-13 Vertex & index pushing Canvas API for free drawing +Render +Gimmie
