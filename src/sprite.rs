@@ -1,6 +1,6 @@
 use std::slice::Iter;
 use util::{color, V2};
-use backend::{Context, CanvasUtil};
+use backend::{Canvas, CanvasUtil};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
 use tilecache;
@@ -14,7 +14,7 @@ trait WorldSprite {
     // XXX: Locked to the type of iterator Vecs return for now. It's assumed
     // that implementers use a Vec to cache the footprint points internally.
 
-    fn draw(&self, chart: &Location, ctx: &mut Context);
+    fn draw(&self, chart: &Location, ctx: &mut Canvas);
     // XXX: Can't parametrize to Unchart since trait objects can't have
     // parameterized methods.
 }
@@ -34,7 +34,7 @@ impl WorldSprites {
         self.sprites.push(spr);
     }
 
-    pub fn draw<F>(&self, is_visible: F, chart: &Location, ctx: &mut Context)
+    pub fn draw<F>(&self, is_visible: F, chart: &Location, ctx: &mut Canvas)
         where F: Fn(V2<i32>) -> bool {
         // XXX: Ineffective if there are many sprites outside the visible
         // area.
@@ -81,7 +81,7 @@ impl WorldSprite for _BeamSprite {
     fn footprint<'a>(&'a self) -> Iter<'a, Location> {
         self.footprint.iter()
     }
-    fn draw(&self, chart: &Location, ctx: &mut Context) {
+    fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
             ctx.draw_line(3,
                 chart_to_screen(p1), chart_to_screen(p2), FX_Z, &color::LIME);
@@ -109,11 +109,11 @@ impl WorldSprite for GibSprite {
     fn update(&mut self) { self.life -= 1; }
     fn is_alive(&self) -> bool { self.life >= 0 }
     fn footprint<'a>(&'a self) -> Iter<'a, Location> { self.footprint.iter() }
-    fn draw(&self, chart: &Location, ctx: &mut Context) {
+    fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let Some(p) = chart.chart_pos(self.loc) {
             // TODO: Robust anim cycle with clamping.
             let idx = tile::SPLATTER + ((11 - self.life) / 3) as usize;
-            ctx.draw_image(chart_to_screen(p), FX_Z, tilecache::get(idx), &color::RED);
+            ctx.draw_image(tilecache::get(idx), chart_to_screen(p), FX_Z, &color::RED, &color::BLACK);
         }
     }
 }

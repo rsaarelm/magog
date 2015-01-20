@@ -24,8 +24,8 @@ pub fn chart_to_view(chart_pos: V2<i32>) -> V2<i32> {
 
 /// Transform from chart space into the default on-screen space centered on
 /// window center.
-pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<i32> {
-    chart_to_view(chart_pos) + V2(SCREEN_W / 2, SCREEN_H / 2)
+pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
+    (chart_to_view(chart_pos) + V2(SCREEN_W / 2, SCREEN_H / 2)).map(|x| x as f32)
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one

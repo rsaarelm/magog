@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 use image;
 use image::{SubImage, GenericImage};
-use backend::{Canvas, Image};
+use backend::{CanvasBuilder, Image};
 use util::{color_key, V2, Rgb};
 
 thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 
-fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
+fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
        elt_dim: (i32, i32), offset: (i32, i32)) {
     let mut image = color_key(
         &image::load_from_memory(data).unwrap(),
@@ -25,7 +25,7 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut Canvas, data: &[u8],
 }
 
 /// Initialize global tile cache.
-pub fn init(ctx: &mut Canvas) {
+pub fn init(ctx: &mut CanvasBuilder) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
         batch(&mut *tiles, ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -16));

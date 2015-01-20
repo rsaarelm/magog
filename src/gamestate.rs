@@ -2,7 +2,7 @@ use std::io::File;
 use std::io::fs::PathExtensions;
 use std::collections::HashMap;
 use util::{color, V2};
-use backend::{Context, Event, Key, Fonter};
+use backend::{Canvas, CanvasUtil, Event, Key, Fonter};
 use world;
 use world::action;
 use world::action::Input::{Step, Melee};
@@ -50,21 +50,21 @@ impl GameState {
         }
     }
 
-    fn draw_player_ui(&mut self, ctx: &mut Context, player: Entity) {
+    fn draw_player_ui(&mut self, ctx: &mut Canvas, player: Entity) {
         let hp = player.hp();
         let max_hp = player.max_hp();
 
         // Draw heart containers.
         for i in 0..((max_hp + 1) / 2) {
-            let pos = V2(i as i32 * 8, 8);
+            let pos = V2(i as f32 * 8.0, 8.0);
             let idx = if hp >= (i + 1) * 2 { icon::HEART }
                 else if hp == i * 2 + 1 { icon::HALF_HEART }
                 else { icon::NO_HEART };
-            ctx.draw_image(pos, 0.0, tilecache::get(idx), &color::FIREBRICK);
+            ctx.draw_image(tilecache::get(idx), pos, 0.0, &color::FIREBRICK, &color::BLACK);
         }
     }
 
-    fn base_paint(&mut self, ctx: &mut Context) {
+    fn base_paint(&mut self, ctx: &mut Canvas) {
         let camera = world::camera();
         worldview::draw_world(&camera, ctx, &self.damage_timers);
 
@@ -87,7 +87,7 @@ impl GameState {
                        "FPS {:.0}", fps);
     }
 
-    fn base_update(&mut self, ctx: &mut Context) {
+    fn base_update(&mut self, ctx: &mut Canvas) {
         // Process events
         loop {
             match world::pop_msg() {
@@ -130,7 +130,7 @@ impl GameState {
         self.msg.update();
     }
 
-    fn inventory_update(&mut self, ctx: &mut Context) {
+    fn inventory_update(&mut self, ctx: &mut Canvas) {
         let player = action::player().unwrap();
         {
             let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO);
@@ -208,7 +208,7 @@ impl GameState {
 
 
     /// Repaint view, update game world if needed.
-    pub fn update(&mut self, ctx: &mut Context) {
+    pub fn update(&mut self, ctx: &mut Canvas) {
         ctx.clear();
 
         match self.ui_state {

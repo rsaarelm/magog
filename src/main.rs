@@ -31,7 +31,7 @@ pub enum Transition {
 */
 
 pub fn main() {
-    let mut canvas = backend::Canvas::new()
+    let mut canvas = backend::CanvasBuilder::new()
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state = GameState::new(None);

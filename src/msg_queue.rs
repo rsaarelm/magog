@@ -1,5 +1,5 @@
 use time;
-use backend::{Fonter, Context};
+use backend::{Fonter, Canvas};
 use util::{color, V2, text};
 
 struct Msg {
@@ -54,7 +54,7 @@ impl MsgQueue {
         self.caption_done_time = Some(timeout);
     }
 
-    fn draw_msgs(&self, ctx: &mut Context) {
+    fn draw_msgs(&self, ctx: &mut Canvas) {
         let msg_columns = 32;
         let msg_rows = 16;
         let msg_origin = V2(0, 360 - (msg_rows - 1) * 8);
@@ -67,7 +67,7 @@ impl MsgQueue {
         }
     }
 
-    fn draw_caption(&self, ctx: &mut Context) {
+    fn draw_caption(&self, ctx: &mut Canvas) {
         if !self.captions.is_empty() {
             let width = self.captions[0].text.len() as i32 * 8;
             let origin = V2(320 - width / 2, 180);
@@ -80,7 +80,7 @@ impl MsgQueue {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context) {
+    pub fn draw(&self, ctx: &mut Canvas) {
         self.draw_msgs(ctx);
         self.draw_caption(ctx);
     }
