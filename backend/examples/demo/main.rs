@@ -21,13 +21,14 @@ fn main() {
                     for x in 0..(640/8) {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
                             color::WHITE } else { color::ORANGE };
-                        ctx.draw_image(V2(x * 8, y * 8 + 8), 0.4, img, &col);
+                        ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
+                            0.4, &col, &color::BLACK);
                     }
                 }
-                let center = V2(320, 180);
+                let center = V2(320.0, 180.0);
                 let offset = V2(
-                    ((t as f32 / 16.0).cos() * 128.0) as i32,
-                    ((t as f32 / 16.0).sin() * 128.0) as i32);
+                    ((t as f32 / 160.0).cos() * 128.0),
+                    ((t as f32 / 160.0).sin() * 128.0));
 
                 ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0, 255, 255, 128));
 

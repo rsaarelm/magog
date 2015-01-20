@@ -6,7 +6,7 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use util::{self, AtlasBuilder, Atlas, V2, Rect, Rgb, Color};
+use util::{self, AtlasBuilder, Atlas, AtlasItem, V2, Rect, Rgb, Color};
 use event::{Event, MouseButton};
 use renderer::{Renderer, Vertex};
 use scancode;
@@ -105,9 +105,11 @@ pub struct Canvas {
     state: State,
     frame_interval: Option<f64>,
     last_render_time: f64,
-    image_dims: Vec<V2<u32>>,
     resolution: V2<i32>,
     window_resolution: V2<i32>,
+
+    vertices: Vec<Vertex>,
+    indices: Vec<u16>,
 
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
@@ -136,12 +138,6 @@ impl Canvas {
         let tex_image = image::imageops::flip_vertical(&atlas.image);
         let renderer = Renderer::new(&display, tex_image);
 
-        let mut dims = vec![];
-
-        for i in 0..(atlas.items.len()) {
-            dims.push(atlas.items[i].pos.1.map(|x| x as u32));
-        }
-
         Canvas {
             display: display,
             events: Vec::new(),
@@ -152,18 +148,21 @@ impl Canvas {
             state: State::Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
-            image_dims: dims,
             resolution: dim,
             window_resolution: V2(w as i32, h as i32),
+
+            vertices: Vec::new(),
+            indices: Vec::new(),
 
             render_duration: 0.1f64,
         }
     }
 
-    /// Clear the screen
+    /// Clear the screen.
     pub fn clear(&mut self) {
         // TODO: use the color.
-        self.renderer.clear();
+        self.vertices.clear();
+        self.indices.clear();
     }
 
     /// Transform screen coordinates from the scaled-up window into
@@ -184,36 +183,32 @@ impl Canvas {
          z]
     }
 
-    fn tri_vtx(&mut self, window_pos: V2<f32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
-        // TODO: back_color API
-        let pos = self.window_to_device(window_pos, layer);
-        let vertex = Vertex {
+    /// Add a vertex to the geometry data of the current frame.
+    pub fn push_vertex<C: Color, C2: Color>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
+                                 color: &C, back_color: &C2) {
+        let pos = self.window_to_device(pos, layer);
+
+        self.vertices.push(Vertex {
             pos: pos,
-            color: color,
-            back_color: [0.0, 0.0, 0.0, 1.0],
-            tex_coord: texture_pos.to_array() };
-        self.renderer.vertices.push(vertex);
-        self.renderer.indices.push(self.renderer.vertices.len() as u16 - 1);
+            tex_coord: [tex_coord.0, tex_coord.1],
+            color: color.to_rgba(),
+            back_color: back_color.to_rgba(),
+        });
     }
 
-    pub fn draw_image<C: Color>(&mut self, offset: V2<i32>, layer: f32, Image(idx): Image, color: &C) {
-        let color = color.to_rgba();
-        let rect = self.atlas.items[idx].pos + offset.map(|x| x as f32);
-        let tex = self.atlas.items[idx].tex;
+    /// Return the current vertex count, important for determining the indices
+    /// for newly inserted vertices.
+    pub fn num_vertices(&self) -> u16 { self.vertices.len() as u16 }
 
-        self.tri_vtx(rect.p0(), layer, tex.p0(), color);
-        self.tri_vtx(rect.p1(), layer, tex.p1(), color);
-        self.tri_vtx(rect.p2(), layer, tex.p2(), color);
-        self.tri_vtx(rect.p0(), layer, tex.p0(), color);
-        self.tri_vtx(rect.p2(), layer, tex.p2(), color);
-        self.tri_vtx(rect.p3(), layer, tex.p3(), color);
+    /// Add a triangle defined by index values into the list of vertices
+    /// inserted with push_vertex.
+    pub fn push_triangle(&mut self, p0: u16, p1: u16, p2: u16) {
+        self.indices.push(p0);
+        self.indices.push(p1);
+        self.indices.push(p2);
     }
 
-    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<f32>; 3], c: [C; 3]) {
-        let tex = self.atlas.items[SOLID_IDX].tex.0;
-        for i in 0..3 { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
-    }
-
+    /// Return the image corresponding to a char in the built-in font.
     pub fn font_image(&self, c: char) -> Option<Image> {
         let idx = c as usize;
         // Hardcoded limiting of the font to printable ASCII.
@@ -224,8 +219,12 @@ impl Canvas {
         }
     }
 
-    pub fn image_dim(&self, Image(idx): Image) -> V2<u32> {
-        self.image_dims[idx]
+    /// Return a texture coordinate to a #FFFFFFFF texel for solid color
+    /// graphics.
+    pub fn solid_tex_coord(&self) -> V2<f32> { self.atlas.items[SOLID_IDX].tex.0 }
+
+    pub fn image_data<'a>(&'a self, Image(idx): Image) -> &'a AtlasItem {
+        &self.atlas.items[idx]
     }
 }
 
@@ -239,7 +238,12 @@ impl<'a> Iterator for Canvas {
             self.state = State::Normal;
 
             let mut target = self.display.draw();
-            self.renderer.draw(&self.display, &mut target);
+
+            // Move out the accumulated geometry data.
+            let vertices = mem::replace(&mut self.vertices, Vec::new());
+            let indices = mem::replace(&mut self.indices, Vec::new());
+            self.renderer.draw(&self.display, &mut target, vertices, indices);
+
             target.finish();
         }
 

@@ -1,5 +1,4 @@
 use std::default::Default;
-use std::mem;
 use glium;
 use glium::texture;
 use glium::LinearBlendingFactor::*;
@@ -8,9 +7,6 @@ pub struct Renderer {
     shader: glium::Program,
     texture: texture::Texture2d,
     params: glium::DrawParameters,
-
-    pub vertices: Vec<Vertex>,
-    pub indices: Vec<u16>,
 }
 
 impl Renderer {
@@ -32,29 +28,20 @@ impl Renderer {
             shader: shader,
             texture: texture,
             params: params,
-            vertices: Vec::new(),
-            indices: Vec::new(),
         }
     }
 
-    pub fn clear(&mut self) {
-        self.vertices = Vec::new();
-        self.indices = Vec::new();
-    }
-
-    /// Draw the accumulated geometry and clear the accum buffers.
-    pub fn draw<S>(&mut self, display: &glium::Display, target: &mut S)
+    /// Draw a geometry buffer.
+    pub fn draw<S>(&mut self, display: &glium::Display, target: &mut S,
+                   vertices: Vec<Vertex>, indices: Vec<u16>)
         where S: glium::Surface {
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         target.clear_depth(1.0);
         // Extract the geometry accumulation buffers and convert into
         // temporary Glium buffers.
-        let vertices = glium::VertexBuffer::new(
-            display, mem::replace(&mut self.vertices, Vec::new()));
+        let vertices = glium::VertexBuffer::new(display, vertices);
         let indices = glium::IndexBuffer::new(
-            display,
-            glium::index_buffer::TrianglesList(
-                mem::replace(&mut self.indices, Vec::new())));
+            display, glium::index_buffer::TrianglesList(indices));
 
         let uniforms = glium::uniforms::UniformsStorage::new("texture",
             glium::uniforms::Sampler(&self.texture, glium::uniforms::SamplerBehavior {
