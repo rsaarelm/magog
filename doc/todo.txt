@@ -1,23 +1,20 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-13 Dynamic lighting in world state +Engine
-(A) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
-(A) 2014-12-13 Projectile attack beam effect +UI
+(A) 2015-01-17 Move entity factory code & Prototype type into own module +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
-(B) 2014-12-13 Corpses +Content
-(B) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
+(B) 2014-12-13 Dynamic lighting in world state +Engine
 (B) 2014-12-13 Enemy ranged attack +Content
+(B) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (B) 2014-12-13 Explosions +Content
 (B) 2014-12-13 File hosting for Windows binaries +Build
 (B) 2014-12-13 Freeze effects +Content
-(B) 2014-12-13 Keeping score +Content
-(B) 2014-12-13 Killed mobs drop items +Content
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
 (B) 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
 (B) 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
 (B) 2014-12-13 Player level up logic +Content
+(B) 2014-12-13 Projectile attack beam effect +UI
 (B) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (B) 2014-12-13 Ranged attacks using ammunition +Content +UI
 (B) 2014-12-13 Recharging mana pool stat for player +Content
@@ -28,8 +25,8 @@
 (B) 2014-12-25 Spell cooldowns +Content
 (B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (B) 2014-12-31 Binaries know their build version +Engine +Gimmie
-(B) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
 (B) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in inventory +UI
+(B) 2015-01-20 Spell items that can be equipped and activated +Content
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Arena battle level +Content
@@ -42,15 +39,19 @@
 (C) 2014-12-13 Cmdline parameter for starting fullscreen +UI +Gimmie
 (C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine +Gimmie
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
+(C) 2014-12-13 Corpses +Content
 (C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
 (C) 2014-12-13 Don't spawn mobs immediately around level entrance point (make a general no free mapgen spawns zone concept) +Content
+(C) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
 (C) 2014-12-13 Effect for text floating on top of map location +UI
 (C) 2014-12-13 Enemies that explode when dying +Content
 (C) 2014-12-13 Flamethrower spell +Content
 (C) 2014-12-13 Flying intrinsic, mobs that fly over chasms (will need to deal with mobs falling into chasms, water or magma if this goes in) +Content
 (C) 2014-12-13 GUI layout description API (imgui techniques?) +UI
 (C) 2014-12-13 Golem enemy, dumb but very nasty in melee +Content
+(C) 2014-12-13 Keeping score +Content
+(C) 2014-12-13 Killed mobs drop items +Content
 (C) 2014-12-13 Knockback attacks +Content
 (C) 2014-12-13 Lair clearing mechanic +Content
 (C) 2014-12-13 Left, center and right justifying text printing cursors +UI
@@ -86,7 +87,7 @@
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
-(C) 2015-01-05 App API needs a non-updating repaint method for screenshotting (or just to always hold on to the last rendered frame) +UI
+(C) 2015-01-05 Canvas stores last rendered frame in texture for saving a screenshot +Render
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
 (C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
 (C) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
@@ -95,9 +96,7 @@
 (C) 2015-01-13 See if FnOnce can be used with the 'with' fns to solve problems with moving resources into inner state +Engine
 (C) 2015-01-17 Fire and burning +Engine
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
-(C) 2015-01-17 Move entity factory code & Prototype type into own module +Engine
-(C) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
-(C) 2015-01-18 Color scheme for item rarity, white-common, green-uncommon, blue-rare, purple-epic, orange-legendary +Content
+(C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -127,6 +126,8 @@
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 (D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
+(D) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
+(D) 2015-01-18 Color scheme for item rarity, white-common, green-uncommon, blue-rare, purple-epic, orange-legendary +Content
 (D) 2015-01-19 Set up benchmarks, see if inline pragmas optimize eg. image drawing and Rect::pn +Render
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
