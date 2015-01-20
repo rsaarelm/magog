@@ -67,8 +67,14 @@ impl Renderer {
 
 #[vertex_format]
 #[derive(Copy)]
+/// Geometry vertex in on-screen graphics.
 pub struct Vertex {
+    /// Coordinates on screen
     pub pos: [f32; 3],
-    pub color: [f32; 4],
+    /// Texture coordinates
     pub tex_coord: [f32; 2],
+    /// Color for the light parts of the texture
+    pub color: [f32; 4],
+    /// Color for the dark parts of the texture
+    pub back_color: [f32; 4],
 }

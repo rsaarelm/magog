@@ -185,10 +185,12 @@ impl Context {
     }
 
     fn tri_vtx(&mut self, window_pos: V2<i32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
+        // TODO: back_color API
         let pos = self.window_to_device(window_pos, layer);
         let vertex = Vertex {
             pos: pos,
             color: color,
+            back_color: [0.0, 0.0, 0.0, 1.0],
             tex_coord: texture_pos.to_array() };
         self.renderer.vertices.push(vertex);
         self.renderer.indices.push(self.renderer.vertices.len() as u16 - 1);
