@@ -5,13 +5,13 @@ extern crate "calx_backend" as backend;
 
 use std::num::{Float};
 use util::{color, V2, Rgba, Rect};
-use backend::{Canvas, Key, Event, Fonter, CanvasUtil};
+use backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
     let mut t = 0i32;
     let mut mouse_pos = V2(-1i32, -1i32);
 
-    for evt in Canvas::new().run() {
+    for evt in CanvasBuilder::new().run() {
         match evt {
             Event::Render(ctx) => {
                 let img = ctx.font_image('@').unwrap();

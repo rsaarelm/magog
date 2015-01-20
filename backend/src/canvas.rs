@@ -20,7 +20,7 @@ static FONT_IDX: usize = 0;
 /// Image index of the solid color texture block.
 static SOLID_IDX: usize = 96;
 
-pub struct Canvas {
+pub struct CanvasBuilder {
     title: String,
     dim: V2<i32>,
     frame_interval: Option<f64>,
@@ -28,9 +28,9 @@ pub struct Canvas {
 }
 
 /// Toplevel graphics drawing and input reading context.
-impl Canvas {
-    pub fn new() -> Canvas {
-        let mut ret = Canvas {
+impl CanvasBuilder {
+    pub fn new() -> CanvasBuilder {
+        let mut ret = CanvasBuilder {
             title: "window".to_string(),
             dim: V2(640, 360),
             frame_interval: None,
@@ -41,20 +41,20 @@ impl Canvas {
         ret
     }
 
-    pub fn set_title(mut self, title: &str) -> Canvas {
+    pub fn set_title(mut self, title: &str) -> CanvasBuilder {
         self.title = title.to_string();
         self
     }
 
     /// Set the frame rate.
-    pub fn set_frame_interval(mut self, interval_s: f64) -> Canvas {
+    pub fn set_frame_interval(mut self, interval_s: f64) -> CanvasBuilder {
         assert!(interval_s > 0.00001);
         self.frame_interval = Some(interval_s);
         self
     }
 
     /// Set the resolution.
-    pub fn set_dim(mut self, dim: V2<i32>) -> Canvas {
+    pub fn set_dim(mut self, dim: V2<i32>) -> CanvasBuilder {
         self.dim = dim;
         self
     }
@@ -65,8 +65,8 @@ impl Canvas {
     }
 
     /// Start running the engine, return an event iteration.
-    pub fn run(&mut self) -> Context {
-        Context::new(
+    pub fn run(&mut self) -> Canvas {
+        Canvas::new(
             self.dim,
             self.title.as_slice(),
             self.frame_interval,
@@ -95,7 +95,7 @@ impl Canvas {
 }
 
 /// Interface to render to a live display.
-pub struct Context {
+pub struct Canvas {
     display: glium::Display,
     events: Vec<glutin::Event>,
     renderer: Renderer,
@@ -119,12 +119,12 @@ enum State {
     EndFrame,
 }
 
-impl Context {
+impl Canvas {
     fn new(
         dim: V2<i32>,
         title: &str,
         frame_interval: Option<f64>,
-        atlas: Atlas) -> Context {
+        atlas: Atlas) -> Canvas {
 
         let display = glutin::WindowBuilder::new()
             .with_title(title.to_string())
@@ -142,7 +142,7 @@ impl Context {
             dims.push(atlas.vertices[i].1.map(|x| x as u32));
         }
 
-        Context {
+        Canvas {
             display: display,
             events: Vec::new(),
             renderer: renderer,
@@ -229,7 +229,7 @@ impl Context {
     }
 }
 
-impl<'a> Iterator for Context {
+impl<'a> Iterator for Canvas {
     type Item=Event<'a>;
 
     fn next(&mut self) -> Option<Event<'a>> {

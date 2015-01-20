@@ -14,7 +14,7 @@ extern crate "calx_util" as util;
 extern crate time;
 extern crate image;
 
-pub use canvas::{Canvas, Context};
+pub use canvas::{CanvasBuilder, Canvas};
 pub use canvas::{Image};
 pub use canvas_util::{CanvasUtil};
 pub use key::Key;
