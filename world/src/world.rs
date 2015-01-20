@@ -117,26 +117,26 @@ pub fn init_world(seed: Option<u32>) {
     // Player
     Prototype::new(Some(base_mob))
         (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
-        (Desc { name: "player".to_string(), icon: 51, color: color::AZURE })
+        (Desc::new("player", 51, color::AZURE))
         (Stats { power: 6, intrinsics: Intrinsic::Hands as u32 })
         (MapMemory::new())
         ;
 
     // Enemies
     Prototype::new(Some(base_mob))
-        (Desc { name: "dreg".to_string(), icon: 72, color: color::OLIVE })
+        (Desc::new("dreg", 72, color::OLIVE))
         (Stats { power: 1, intrinsics: Intrinsic::Hands as u32 })
         (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc { name: "snake".to_string(), icon: 71, color: color::GREEN })
+        (Desc::new("snake", 71, color::GREEN))
         (Stats { power: 1, intrinsics: 0 })
         (Spawn { biome: Biome::Overland, commonness: 1000, min_depth: 1, category: Category::Mob })
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc { name: "ooze".to_string(), icon: 77, color: color::LIGHTSEAGREEN })
+        (Desc::new("ooze", 77, color::LIGHTSEAGREEN))
         (Stats { power: 3, intrinsics: 0 })
         (Spawn { biome: Biome::Dungeon, commonness: 1000, min_depth: 3, category: Category::Mob })
         ;
@@ -144,13 +144,13 @@ pub fn init_world(seed: Option<u32>) {
 
     // Items
     Prototype::new(None)
-        (Desc { name: "heart".to_string(), icon: 89, color: color::RED })
+        (Desc::new("heart", 89, color::RED))
         (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Consumable })
         (Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
         ;
 
     Prototype::new(None)
-        (Desc { name: "sword".to_string(), icon: 84, color: color::GAINSBORO })
+        (Desc::new("sword", 84, color::GAINSBORO))
         (Spawn { biome: Biome::Anywhere, commonness: 500, min_depth: 1, category: Category::Equipment })
         (Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
         (Stats { power: 5, intrinsics: 0 })

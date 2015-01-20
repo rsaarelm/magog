@@ -15,9 +15,13 @@ pub struct Desc {
 }
 
 impl Desc {
-    pub fn new(name: String, icon: usize, color: Rgb) -> Desc {
+    pub fn new(name: &str, icon: usize, color: Rgb) -> Desc {
+        // XXX: Not idiomatic to set this to be called with a non-owned
+        // &str instead of a String, I just want to get away from typing
+        // .to_string() everywhere with the calls that mostly use string
+        // literals.
         Desc {
-            name: name,
+            name: name.to_string(),
             icon: icon,
             color: color,
         }
