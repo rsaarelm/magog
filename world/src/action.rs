@@ -9,7 +9,7 @@ use flags;
 use dir6::Dir6;
 use area::Area;
 use location::Location;
-use components::{ComponentAccess};
+use ecs::{ComponentAccess};
 
 /// Game update control.
 #[derive(Copy, PartialEq)]

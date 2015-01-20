@@ -51,6 +51,7 @@ mod geomorph_data;
 mod location;
 mod mapgen;
 mod msg;
+mod prototype;
 mod rng;
 mod spatial;
 mod spawn;

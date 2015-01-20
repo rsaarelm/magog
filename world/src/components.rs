@@ -1,90 +1,10 @@
-use std::collections::VecMap;
 use std::collections::HashSet;
 use util::Rgb;
 use location::Location;
 use {Biome};
-use entity::Entity;
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
-use component_ref::{ComponentRef, ComponentRefMut};
-use world::{self, WorldState};
-
-// The one big macro for defining the full set of available entity components
-// in one place.
-macro_rules! components {
-    {
-        // Declare the list of types which are included as components in the
-        // game's entity component system. Also declare the non-mutable and
-        // mutable accessor names for them. Example
-        //
-        // ```notrust
-        //     [Mesh, meshes, meshes_mut],
-        // ```
-        $([$comp:ty, $access:ident, $access_mut:ident],)+
-    } => {
-        // The master container for all the components.
-#[derive(RustcEncodable, RustcDecodable)]
-        pub struct Comps {
-            $($access: VecMap<$comp>,)+
-        }
-
-        /// Container for all regular entity components.
-        impl Comps {
-            pub fn new() -> Comps {
-                Comps {
-                    $($access: VecMap::new(),)+
-                }
-            }
-
-            /// Remove the given entity from all the contained components.
-            pub fn remove(&mut self, Entity(idx): Entity) {
-                $(self.$access.remove(&idx);)+
-            }
-        }
-
-
-        // Implement the Componet trait for the type, this provides an uniform
-        // syntax for adding component values to entities used by the entity
-        // factory.
-        $(
-            impl Component for $comp {
-                // XXX: Figure out how to move self into the closure to
-                // get rid of the .clone.
-                fn add_to(self, e: Entity) { world::with_mut(|w| w.$access_mut().insert(e, self.clone())) }
-            }
-        )+
-
-
-        // Implement the trait for accessing all the components that
-        // WorldState will implement
-        pub trait ComponentAccess<'a> {
-            $(
-            fn $access(&'a self) -> ComponentRef<'a, $comp>;
-            fn $access_mut(&'a mut self) -> ComponentRefMut<'a, $comp>;
-            )+
-        }
-
-        impl<'a> ComponentAccess<'a> for WorldState {
-            $(
-            fn $access(&'a self) -> ComponentRef<'a, $comp> {
-                ComponentRef::new(&self.ecs, &self.comps.$access)
-            }
-            fn $access_mut(&'a mut self) -> ComponentRefMut<'a, $comp> {
-                ComponentRefMut::new(&mut self.ecs, &mut self.comps.$access)
-            }
-            )+
-        }
-    }
-}
-
-pub trait Component {
-    /// Create an uniform syntax for attaching components to entities to allow
-    /// a fluent API for constructing prototypes.
-    fn add_to(self, e: Entity);
-}
-
-////////////////////////////////////////////////////////////////////////
 
 /// Entity name and appearance.
 #[derive(Clone, Show, RustcEncodable, RustcDecodable)]
@@ -205,39 +125,3 @@ pub struct Item {
 /// stats and the stat bonuses of its equipment and whatever spell effects may
 /// apply.
 pub type StatsCache = Option<Stats>;
-
-////////////////////////////////////////////////////////////////////////
-
-// Component loadout for the game.
-components! {
-    [Desc, descs, descs_mut],
-    [MapMemory, map_memories, map_memories_mut],
-    [Stats, stats, stats_mut],
-    [Spawn, spawns, spawns_mut],
-    [Health, healths, healths_mut],
-    [Brain, brains, brains_mut],
-    [Item, items, items_mut],
-    [StatsCache, stats_caches, stats_caches_mut],
-}
-
-////////////////////////////////////////////////////////////////////////
-
-#[derive(Copy)]
-pub struct Prototype {
-    pub target: Entity
-}
-
-impl Prototype {
-    pub fn new(parent: Option<Entity>) -> Prototype {
-        Prototype {
-            target: world::with_mut(|w| w.ecs.new_entity(parent))
-        }
-    }
-}
-
-impl<C: Component> Fn(C,) -> Prototype for Prototype {
-    extern "rust-call" fn call(&self, (comp,): (C,)) -> Prototype {
-        comp.add_to(self.target);
-        *self
-    }
-}

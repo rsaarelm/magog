@@ -7,7 +7,7 @@ use terrain::TerrainType;
 use geom::HexGeom;
 use world;
 use action;
-use components::{ComponentAccess};
+use ecs::{ComponentAccess};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]

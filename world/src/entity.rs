@@ -16,7 +16,7 @@ use rng;
 use msg;
 use item::{ItemType, Slot};
 use stats::Stats;
-use components::{ComponentAccess};
+use ecs::{ComponentAccess};
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
