@@ -14,7 +14,7 @@ extern crate image;
 pub use rgb::{Rgb, Rgba};
 pub use geom::{Rect, V2, RectIter};
 pub use img::{color_key};
-pub use atlas::{AtlasBuilder, Atlas};
+pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 
 mod atlas;

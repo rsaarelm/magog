@@ -38,8 +38,16 @@ impl AtlasBuilder {
 
 pub struct Atlas {
     pub image: ImageBuffer<Vec<u8>, u8, Rgba<u8>>,
-    pub vertices: Vec<Rect<i32>>,
-    pub texcoords: Vec<Rect<f32>>,
+    pub items: Vec<AtlasItem>,
+}
+
+/// One image stored in a texture atlas
+#[derive(Copy, Clone, Show)]
+pub struct AtlasItem {
+    /// Vertices for the image rectangle when drawn at origin
+    pub pos: Rect<f32>,
+    /// Texture coordinates for the image rectangle on the atlas texture
+    pub tex: Rect<f32>,
 }
 
 impl Atlas {
@@ -80,21 +88,18 @@ impl Atlas {
 
         let image_dim = V2(d, d);
 
-        // Construct subimage rectangles.
-        let texcoords: Vec<Rect<f32>> = offsets.iter().enumerate()
-            .map(|(i, &offset)| Rect(scale_vec(offset, image_dim), scale_vec(dims[i], image_dim)))
-            .collect();
+        assert!(offsets.len() == builder.draw_offsets.len());
 
-        let vertices: Vec<Rect<i32>> = builder.draw_offsets.iter().enumerate()
-            .map(|(i, &offset)| Rect(offset, dims[i]))
+        let items: Vec<AtlasItem> = (0..(offsets.len()))
+            .map(|i| AtlasItem {
+                pos: Rect(builder.draw_offsets[i].map(|x| x as f32), dims[i].map(|x| x as f32)),
+                tex: Rect(scale_vec(offsets[i], image_dim), scale_vec(dims[i], image_dim))
+            })
             .collect();
-
-        assert!(texcoords.len() == vertices.len());
 
         return Atlas {
             image: image,
-            vertices: vertices,
-            texcoords: texcoords,
+            items: items,
         };
 
         fn scale_vec(pixel_vec: V2<i32>, image_dim: V2<u32>) -> V2<f32> {

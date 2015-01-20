@@ -138,8 +138,8 @@ impl Canvas {
 
         let mut dims = vec![];
 
-        for i in 0..(atlas.vertices.len()) {
-            dims.push(atlas.vertices[i].1.map(|x| x as u32));
+        for i in 0..(atlas.items.len()) {
+            dims.push(atlas.items[i].pos.1.map(|x| x as u32));
         }
 
         Canvas {
@@ -175,16 +175,16 @@ impl Canvas {
            ((sy - ry) as f32 * self.resolution.1 as f32 / rh as f32) as i32)
     }
 
-    fn window_to_device(&self, window_pos: V2<i32>, z: f32) -> [f32; 3] {
+    fn window_to_device(&self, window_pos: V2<f32>, z: f32) -> [f32; 3] {
         let V2(w, h) = self.window_resolution;
         let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
         let zoom = (rw as f32) / (self.resolution.0 as f32);
-        [-1.0 + (2.0 * (rx as f32 + window_pos.0 as f32 * zoom) / w as f32),
-          1.0 - (2.0 * (ry as f32 + window_pos.1 as f32 * zoom) / h as f32),
+        [-1.0 + (2.0 * (rx as f32 + window_pos.0 * zoom) / w as f32),
+          1.0 - (2.0 * (ry as f32 + window_pos.1 * zoom) / h as f32),
          z]
     }
 
-    fn tri_vtx(&mut self, window_pos: V2<i32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
+    fn tri_vtx(&mut self, window_pos: V2<f32>, layer: f32, texture_pos: V2<f32>, color: [f32; 4]) {
         // TODO: back_color API
         let pos = self.window_to_device(window_pos, layer);
         let vertex = Vertex {
@@ -198,8 +198,8 @@ impl Canvas {
 
     pub fn draw_image<C: Color>(&mut self, offset: V2<i32>, layer: f32, Image(idx): Image, color: &C) {
         let color = color.to_rgba();
-        let rect = self.atlas.vertices[idx] + offset;
-        let tex = self.atlas.texcoords[idx];
+        let rect = self.atlas.items[idx].pos + offset.map(|x| x as f32);
+        let tex = self.atlas.items[idx].tex;
 
         self.tri_vtx(rect.p0(), layer, tex.p0(), color);
         self.tri_vtx(rect.p1(), layer, tex.p1(), color);
@@ -209,8 +209,8 @@ impl Canvas {
         self.tri_vtx(rect.p3(), layer, tex.p3(), color);
     }
 
-    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<i32>; 3], c: [C; 3]) {
-        let tex = self.atlas.texcoords[SOLID_IDX].0;
+    pub fn draw_tri<C: Color>(&mut self, layer: f32, p: [V2<f32>; 3], c: [C; 3]) {
+        let tex = self.atlas.items[SOLID_IDX].tex.0;
         for i in 0..3 { self.tri_vtx(p[i], layer, tex, c[i].to_rgba()); }
     }
 

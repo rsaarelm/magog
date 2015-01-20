@@ -20,15 +20,15 @@ impl CanvasUtil for Canvas {
 
         self.draw_tri(
             layer,
-            [(orig + v2).map(|x| x as i32),
-             (orig - v2).map(|x| x as i32),
-             (orig + v2 + v1).map(|x| x as i32)],
+            [(orig + v2),
+             (orig - v2),
+             (orig + v2 + v1)],
             [color.clone(), color.clone(), color.clone()]);
         self.draw_tri(
             layer,
-            [(orig - v2).map(|x| x as i32),
-             (orig - v2 + v1).map(|x| x as i32),
-             (orig + v2 + v1).map(|x| x as i32)],
+            [(orig - v2),
+             (orig - v2 + v1),
+             (orig + v2 + v1)],
             [color.clone(), color.clone(), color.clone()]);
     }
 }
