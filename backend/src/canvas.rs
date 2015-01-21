@@ -174,6 +174,7 @@ impl Canvas {
            ((sy - ry) as f32 * self.resolution.1 as f32 / rh as f32) as i32)
     }
 
+    #[inline(always)]
     fn window_to_device(&self, window_pos: V2<f32>, z: f32) -> [f32; 3] {
         let V2(w, h) = self.window_resolution;
         let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
@@ -330,6 +331,7 @@ pub struct Image(usize);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area.
+#[inline(always)]
 fn pixel_perfect(canvas: V2<i32>, window: V2<i32>) -> Rect<i32> {
     let mut scale = (window.0 as f32 / canvas.0 as f32)
         .min(window.1 as f32 / canvas.1 as f32);
