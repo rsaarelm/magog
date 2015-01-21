@@ -2,6 +2,10 @@ A fantasy roguelike game in Rust
 
 Work in progress.
 
+To run, with Rust compiler and Cargo package manager installed:
+
+$ cargo run --release
+
 Screenshots
 -----------
 
