@@ -4,7 +4,7 @@ version = "0.0.1"
 dependencies = [
  "calx_backend 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
- "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -27,22 +27,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx_backend"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#59a2114c5a513d91dceb0a7da889ab78a520d7cb"
+source = "git+https://github.com/rsaarelm/calx#6ba1a33cf2bd6f4dbe5e6e51548644b2c58908c8"
 dependencies = [
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "glium 0.0.2 (git+https://github.com/tomaka/glium)",
  "glium_macros 0.0.1 (git+https://github.com/tomaka/glium)",
  "glutin 0.0.4-pre (git+https://github.com/tomaka/glutin)",
- "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "time 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "calx_util"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#59a2114c5a513d91dceb0a7da889ab78a520d7cb"
+source = "git+https://github.com/rsaarelm/calx#6ba1a33cf2bd6f4dbe5e6e51548644b2c58908c8"
 dependencies = [
- "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -58,7 +58,10 @@ dependencies = [
 [[package]]
 name = "cocoa"
 version = "0.1.1"
-source = "git+https://github.com/servo/rust-cocoa#06ad6e2863c58aab102b76f766bd8809b822a805"
+source = "git+https://github.com/servo/rust-cocoa#57b80f2480e94bbdc3076a67260b1ebc66e541e3"
+dependencies = [
+ "bitflags 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "collect"
@@ -110,14 +113,14 @@ dependencies = [
 [[package]]
 name = "glium"
 version = "0.0.2"
-source = "git+https://github.com/tomaka/glium#628c122cd7a8201d5ea02639ef7726a71aaa0f51"
+source = "git+https://github.com/tomaka/glium#44059709c3d15757f09f1599163ec63f435f0cbc"
 dependencies = [
  "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs)",
  "compile_msg 0.1.3 (git+https://github.com/huonw/compile_msg)",
  "gl_common 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gl_generator 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.0.4-pre (git+https://github.com/tomaka/glutin)",
- "image 0.2.0-alpha.4 (git+https://github.com/PistonDevelopers/image)",
+ "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "khronos_api 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.2.0 (git+https://github.com/sebcrozet/nalgebra)",
 ]
@@ -125,12 +128,12 @@ dependencies = [
 [[package]]
 name = "glium_macros"
 version = "0.0.1"
-source = "git+https://github.com/tomaka/glium#628c122cd7a8201d5ea02639ef7726a71aaa0f51"
+source = "git+https://github.com/tomaka/glium#44059709c3d15757f09f1599163ec63f435f0cbc"
 
 [[package]]
 name = "glutin"
 version = "0.0.4-pre"
-source = "git+https://github.com/tomaka/glutin#b6f3bfa76811db8c249af08066bfb37bb1385165"
+source = "git+https://github.com/tomaka/glutin#862baf82204c373d17e2878871826a457529a03f"
 dependencies = [
  "android_glue 0.0.1 (git+https://github.com/tomaka/android-rs-glue)",
  "cocoa 0.1.1 (git+https://github.com/servo/rust-cocoa)",
@@ -144,10 +147,10 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.2.0-alpha.4"
-source = "git+https://github.com/PistonDevelopers/image#2b1b6bfb00441ba9f678dfc745e9aa1ce9a29927"
+version = "0.2.0-alpha.6"
+source = "git+https://github.com/PistonDevelopers/image#ae89bf96cd2d653384e68cf569fac8b4894e139a"
 dependencies = [
- "num 0.1.8 (git+https://github.com/rust-lang/num)",
+ "num 0.1.9 (git+https://github.com/rust-lang/num)",
 ]
 
 [[package]]
@@ -178,15 +181,15 @@ dependencies = [
 
 [[package]]
 name = "num"
-version = "0.1.8"
-source = "git+https://github.com/rust-lang/num#bde434903d496bee0466cfeaeb1346638c0d247f"
+version = "0.1.9"
+source = "git+https://github.com/rust-lang/num#51b94c5e2e00204c7159a13ba0671d8e3fed10df"
 dependencies = [
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "num"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -234,7 +237,7 @@ version = "0.0.1"
 dependencies = [
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "collect 0.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
