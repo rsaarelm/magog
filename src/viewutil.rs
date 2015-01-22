@@ -1,9 +1,7 @@
 use std::num::{Float};
 use std::iter::Map;
 use util::{V2, Rect};
-
-pub static SCREEN_W: i32 = 640;
-pub static SCREEN_H: i32 = 360;
+use ::{SCREEN_W, SCREEN_H};
 
 /// Useful general constant for cell dimension ops.
 static PIXEL_UNIT: i32 = 16;
