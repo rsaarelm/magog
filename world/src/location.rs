@@ -7,6 +7,7 @@ use terrain::TerrainType;
 use geom::HexGeom;
 use world;
 use action;
+use flags;
 use ecs::{ComponentAccess};
 use {Light};
 
@@ -146,7 +147,19 @@ impl Location {
 
     /// Light level for the location.
     pub fn light(&self) -> Light {
-        Light::new(1.0)
+        if action::current_depth() == 1 {
+            // Topside, full light.
+            return Light::new(1.0);
+        }
+        if self.terrain().is_luminous() {
+            return Light::new(1.0);
+        }
+
+        if let Some(d) = self.distance_from(flags::camera()) {
+            let lum = 1.0 - d as f32 / 10.0;
+            return Light::new(if lum >= 0.0 { lum } else { 0.0 });
+        }
+        return Light::new(1.0);
     }
 }
 

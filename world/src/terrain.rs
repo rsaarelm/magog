@@ -106,5 +106,7 @@ impl TerrainType {
 
     pub fn is_door(self) -> bool { self == Door }
 
+    pub fn is_luminous(self) -> bool { self == Magma }
+
     pub fn name(self) -> &'static str { terrain_name(self) }
 }
