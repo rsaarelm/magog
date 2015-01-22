@@ -60,7 +60,6 @@
 (C) 2014-12-13 Money economy +Content
 (C) 2014-12-13 Multi-tile mob support +Engine
 (C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine +Gimmie
-(C) 2014-12-13 Nice API for entity factories +Engine
 (C) 2014-12-13 Noise propagation, noise alarms sleeping mobs +Content +Engine
 (C) 2014-12-13 Nova spells +Content
 (C) 2014-12-13 On-map light sources do FOV-traced dynamic light +Engine
@@ -103,7 +102,6 @@
 (D) 2014-12-13 Cavern mapgen +Content
 (D) 2014-12-13 Data entry Rust macros without explicit count parameter +Engine
 (D) 2014-12-13 Dual wielding +Content
-(D) 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
 (D) 2014-12-13 Gzip save games +Engine
 (D) 2014-12-13 Interface alarm animation when low on health +UI
 (D) 2014-12-13 Named miniboss mobs +Content
@@ -173,3 +171,5 @@ x 2015-01-20 2014-12-13 Second vertex color to recolor dark parts of sprites +Re
 x 2015-01-20 2015-01-13 Base context API just gives image vertices & uvs, utility layer uses polygon pushing for nice image drawing (make sure to reuse vertices instead of the old individual twin triangles) +Render +Gimmie
 x 2015-01-20 2015-01-13 Vertex & index pushing Canvas API for free drawing +Render +Gimmie
 x 2015-01-21 2015-01-17 Move entity factory code & Prototype type into own module +Engine
+x 2015-01-22 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
+x 2015-01-22 2014-12-13 Nice API for entity factories +Engine
