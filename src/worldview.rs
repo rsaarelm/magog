@@ -41,7 +41,7 @@ impl<'a> Drawable for CellDrawable<'a> {
                 if front_of_wall && !is_door {
                     self.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
                 } else if !front_of_wall {
-                    self.draw_tile(ctx, BLOCK_DARK, offset, BLOCK_Z, &BLACK);
+                    self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
                 }
             }
         }
