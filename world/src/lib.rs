@@ -132,10 +132,11 @@ impl Light {
 
     pub fn apply(&self, color: &util::Rgb) -> util::Rgb {
         if self.lum <= 1.0 {
+            // Make the darkness blue instead of totally black.
             util::Rgb::new(
                 (color.r as f32 * self.lum) as u8,
-                (color.g as f32 * self.lum) as u8,
-                (color.b as f32 * self.lum) as u8)
+                (color.g as f32 * util::clamp(0.0, 1.0, self.lum + 0.2)) as u8,
+                (color.b as f32 * util::clamp(0.0, 1.0, self.lum + 0.4)) as u8)
         } else {
             util::Rgb::new(
                 255 - ((255 - color.r) as f32 * (2.0 - self.lum)) as u8,

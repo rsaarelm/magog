@@ -1,6 +1,7 @@
 use std::ops::{Add};
 use util::DijkstraNode;
 use util::V2;
+use util;
 use dir6::Dir6;
 use entity::Entity;
 use terrain::TerrainType;
@@ -19,13 +20,6 @@ pub struct Location {
     // TODO: Add third dimension for multiple persistent levels.
 }
 
-fn noise(n: i32) -> f32 {
-    // TODO: Move to an utilities library.
-    let n = (n << 13) ^ n;
-    let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
-    1.0 - m as f32 / 1073741824.0
-}
-
 impl Location {
     pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 
@@ -39,7 +33,7 @@ impl Location {
         // Grass is only occasionally fancy.
         // TODO: Make variant tiles into a generic method.
         if ret == TerrainType::Grass {
-            let n = noise(self.x as i32 + self.y as i32 * 57);
+            let n = util::noise(self.x as i32 + self.y as i32 * 57);
             if n > 0.85 {
                 ret = TerrainType::Grass2;
             }
