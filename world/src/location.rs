@@ -8,6 +8,7 @@ use geom::HexGeom;
 use world;
 use action;
 use ecs::{ComponentAccess};
+use {Light};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]
@@ -141,6 +142,11 @@ impl Location {
             1 => "Overworld".to_string(),
             n => format!("Dungeon {}", n - 1)
         }
+    }
+
+    /// Light level for the location.
+    pub fn light(&self) -> Light {
+        Light::new(1.0)
     }
 }
 

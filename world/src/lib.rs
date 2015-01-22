@@ -117,3 +117,30 @@ pub enum Msg {
     Damage(Entity),
     Gib(Location),
 }
+
+/// Light level value.
+#[derive(Copy, Show, RustcEncodable, RustcDecodable)]
+pub struct Light {
+    lum: f32,
+}
+
+impl Light {
+    pub fn new(lum: f32) -> Light {
+        assert!(lum >= 0.0 && lum <= 2.0);
+        Light { lum: lum }
+    }
+
+    pub fn apply(&self, color: &util::Rgb) -> util::Rgb {
+        if self.lum <= 1.0 {
+            util::Rgb::new(
+                (color.r as f32 * self.lum) as u8,
+                (color.g as f32 * self.lum) as u8,
+                (color.b as f32 * self.lum) as u8)
+        } else {
+            util::Rgb::new(
+                255 - ((255 - color.r) as f32 * (2.0 - self.lum)) as u8,
+                255 - ((255 - color.g) as f32 * (2.0 - self.lum)) as u8,
+                255 - ((255 - color.b) as f32 * (2.0 - self.lum)) as u8)
+        }
+    }
+}

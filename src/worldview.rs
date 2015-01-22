@@ -8,6 +8,7 @@ use world::TerrainType;
 use world::{Location, Chart};
 use world::{FovStatus};
 use world::{Entity};
+use world::{Light};
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
@@ -18,7 +19,8 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
-        let cell_drawable = CellDrawable::new(loc, loc.fov_status(), damage_timers);
+        let cell_drawable = CellDrawable::new(
+            loc, loc.fov_status(), loc.light(), damage_timers);
         cell_drawable.draw(ctx, screen_pos);
     }
 }
@@ -27,7 +29,8 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
 pub struct CellDrawable<'a> {
     loc: Location,
     fov: Option<FovStatus>,
-    damage_timers: &'a HashMap<Entity, u32>
+    light: Light,
+    damage_timers: &'a HashMap<Entity, u32>,
 }
 
 impl<'a> Drawable for CellDrawable<'a> {
@@ -68,10 +71,12 @@ impl<'a> CellDrawable<'a> {
     pub fn new(
         loc: Location,
         fov: Option<FovStatus>,
+        light: Light,
         damage_timers: &'a HashMap<Entity, u32>) -> CellDrawable<'a> {
         CellDrawable {
             loc: loc,
             fov: fov,
+            light: light,
             damage_timers: damage_timers,
         }
     }
@@ -82,13 +87,17 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
                   color: &Rgb, back_color: &Rgb) {
-        let (color, back_color) = match self.fov {
+        let (mut color, mut back_color) = match self.fov {
             // XXX: Special case for the solid-black objects that are used to
             // block out stuff to not get recolored. Don't use total black as
             // an actual object color, have something like #010101 instead.
             Some(FovStatus::Remembered) if *color != BLACK => (BLACK, Rgb::new(0x33, 0x22, 0x00)),
             _ => (*color, *back_color),
         };
+        if self.fov == Some(FovStatus::Seen) {
+            color = self.light.apply(&color);
+            back_color = self.light.apply(&back_color);
+        }
         ctx.draw_image(tilecache::get(idx), offset, z, &color, &back_color);
     }
 
