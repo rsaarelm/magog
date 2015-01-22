@@ -32,3 +32,17 @@ pub mod vorud;
 pub trait Color {
     fn to_rgba(&self) -> [f32; 4];
 }
+
+/// Clamp a value to range.
+pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
+    if x < mn { mn }
+    else if x > mx { mx }
+    else { x }
+}
+
+/// Deterministic noise.
+pub fn noise(n: i32) -> f32 {
+    let n = (n << 13) ^ n;
+    let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
+    1.0 - m as f32 / 1073741824.0
+}
