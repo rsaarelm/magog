@@ -3,7 +3,6 @@
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
-(B) 2014-12-13 Dynamic lighting in world state +Engine
 (B) 2014-12-13 Enemy ranged attack +Content
 (B) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (B) 2014-12-13 Explosions +Content
@@ -95,6 +94,7 @@
 (C) 2015-01-17 Fire and burning +Engine
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
 (C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
+(C) 2015-01-22 Entities can be light sources +Engine
 (C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
@@ -172,5 +172,6 @@ x 2015-01-20 2014-12-13 Second vertex color to recolor dark parts of sprites +Re
 x 2015-01-20 2015-01-13 Base context API just gives image vertices & uvs, utility layer uses polygon pushing for nice image drawing (make sure to reuse vertices instead of the old individual twin triangles) +Render +Gimmie
 x 2015-01-20 2015-01-13 Vertex & index pushing Canvas API for free drawing +Render +Gimmie
 x 2015-01-21 2015-01-17 Move entity factory code & Prototype type into own module +Engine
+x 2015-01-22 2014-12-13 Dynamic lighting in world state +Engine
 x 2015-01-22 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
 x 2015-01-22 2014-12-13 Nice API for entity factories +Engine
