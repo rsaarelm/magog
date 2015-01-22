@@ -150,7 +150,7 @@ impl Location {
         }
 
         if let Some(d) = self.distance_from(flags::camera()) {
-            let lum = 1.0 - d as f32 / 10.0;
+            let lum = 0.8 - d as f32 / 10.0;
             return Light::new(if lum >= 0.0 { lum } else { 0.0 });
         }
         return Light::new(1.0);
