@@ -1,5 +1,6 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
+(B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Config settings file +Engine
 (B) 2014-12-13 Confusion status effect +Content
 (B) 2014-12-13 Dynamic lighting in world state +Engine
@@ -27,7 +28,6 @@
 (B) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in inventory +UI
 (B) 2015-01-20 Spell items that can be equipped and activated +Content
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
-(C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
 (C) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
@@ -95,6 +95,7 @@
 (C) 2015-01-17 Fire and burning +Engine
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
 (C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
+(C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
