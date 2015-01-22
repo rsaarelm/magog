@@ -96,6 +96,7 @@
 (C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
 (C) 2015-01-22 Entities can be light sources +Engine
 (C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI
+(C) 2015-01-22 Map scrolling or minimap to view remembered terrain outside the screen +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +UI
 (D) 2014-12-13 Benchmarking code for FOV +Engine
