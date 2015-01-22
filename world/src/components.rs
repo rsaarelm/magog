@@ -70,15 +70,22 @@ impl Spawn {
         }
     }
 
+    /// Set the biome(s) where this entity can be spawned. By default entities
+    /// can spawn anywhere.
     pub fn biome(mut self, biome: Biome) -> Spawn {
         self.biome = biome; self
     }
 
+    /// Set the minimum depth where the entity can spawn. More powerful
+    /// entities should only spawn in greater depths. By default this is 1.
     pub fn depth(mut self, min_depth: i32) -> Spawn {
         self.min_depth = min_depth; self
     }
 
+    /// Set the probability for this entity to spawn. Twice as large is twice
+    /// as common. The default is 1000.
     pub fn commonness(mut self, commonness: u32) -> Spawn {
+        assert!(commonness > 0);
         self.commonness = commonness; self
     }
 }

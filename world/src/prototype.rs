@@ -35,21 +35,6 @@ impl<C: Component> Fn(C,) -> Prototype for Prototype {
 
 /// Only call at world init!
 pub fn init() {
-
-    /*
-//  Symbol   power, depth, biome, sprite, color,        intrinsics
-    Player:     6,  -1, Anywhere, 51, &AZURE,            f!(Hands);
-    Dreg:       1,   1, Anywhere, 72, &OLIVE,            f!(Hands);
-    Snake:      1,   1, Overland, 71, &GREEN,            f!();
-    Ooze:       3,   3, Dungeon,  77, &LIGHTSEAGREEN,    f!();
-    Flayer:     4,   4, Anywhere, 75, &INDIANRED,        f!();
-    Ogre:       6,   5, Anywhere, 73, &DARKSLATEGRAY,    f!(Hands);
-    Wraith:     8,   6, Dungeon,  74, &HOTPINK,          f!(Hands);
-    Octopus:    10,  7, Anywhere, 63, &DARKTURQUOISE,    f!();
-    Efreet:     12,  8, Anywhere, 78, &ORANGE,           f!();
-    Serpent:    15,  9, Dungeon,  94, &CORAL,            f!();
-    */
-
     let base_mob = Prototype::new(None)
         (Brain { state: BrainState::Asleep, alignment: Alignment::Evil })
         ({let h: Health = Default::default(); h})
@@ -83,7 +68,36 @@ pub fn init() {
         (Stats::new(3, &[]))
         (Spawn::new(Category::Mob).biome(Dungeon).depth(3))
         ;
-    // TODO: More mob types
+
+    Prototype::new(Some(base_mob))
+        (Desc::new("ogre", 73, color::DARKSLATEGRAY))
+        (Stats::new(6, &[Hands]))
+        (Spawn::new(Category::Mob).depth(5))
+        ;
+
+    Prototype::new(Some(base_mob))
+        (Desc::new("wraith", 74, color::HOTPINK))
+        (Stats::new(8, &[Hands]))
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(6))
+        ;
+
+    Prototype::new(Some(base_mob))
+        (Desc::new("octopus", 63, color::DARKTURQUOISE))
+        (Stats::new(10, &[]))
+        (Spawn::new(Category::Mob).depth(7))
+        ;
+
+    Prototype::new(Some(base_mob))
+        (Desc::new("efreet", 78, color::ORANGE))
+        (Stats::new(12, &[]))
+        (Spawn::new(Category::Mob).depth(8))
+        ;
+
+    Prototype::new(Some(base_mob))
+        (Desc::new("serpent", 94, color::CORAL))
+        (Stats::new(15, &[]))
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(9))
+        ;
 
     // Items
     Prototype::new(None)
