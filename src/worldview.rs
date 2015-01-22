@@ -83,7 +83,10 @@ impl<'a> CellDrawable<'a> {
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
                   color: &Rgb, back_color: &Rgb) {
         let (color, back_color) = match self.fov {
-            Some(FovStatus::Remembered) => (Rgb::new(0x22u8, 0x22u8, 0x11u8), BLACK),
+            // XXX: Special case for the solid-black objects that are used to
+            // block out stuff to not get recolored. Don't use total black as
+            // an actual object color, have something like #010101 instead.
+            Some(FovStatus::Remembered) if *color != BLACK => (BLACK, Rgb::new(0x33, 0x22, 0x00)),
             _ => (*color, *back_color),
         };
         ctx.draw_image(tilecache::get(idx), offset, z, &color, &back_color);
@@ -242,7 +245,7 @@ impl<'a> CellDrawable<'a> {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {
-                    c.draw_tile(ctx, CUBE, offset, BLOCK_Z, color);
+                    c.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
                 } else {
                     c.draw_tile(ctx, idx + 2, offset, BLOCK_Z, color);
                     return;
