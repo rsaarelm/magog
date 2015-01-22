@@ -7,9 +7,10 @@ use components::{Desc, MapMemory, Health};
 use components::{Brain, BrainState, Alignment};
 use components::{Item};
 use item::{ItemType};
-use stats::{Stats, Intrinsic};
+use stats::{Stats};
+use stats::Intrinsic::*;
 use ability::Ability;
-use {Biome};
+use Biome::*;
 use world;
 
 #[derive(Copy)]
@@ -60,41 +61,41 @@ pub fn init() {
     Prototype::new(Some(base_mob))
         (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
         (Desc::new("player", 51, color::AZURE))
-        (Stats { power: 6, intrinsics: Intrinsic::Hands as u32 })
+        (Stats::new(6, &[Hands]))
         (MapMemory::new())
         ;
 
     // Enemies
     Prototype::new(Some(base_mob))
         (Desc::new("dreg", 72, color::OLIVE))
-        (Stats { power: 1, intrinsics: Intrinsic::Hands as u32 })
-        (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Mob })
+        (Stats::new(1, &[Hands]))
+        (Spawn::new(Category::Mob))
         ;
 
     Prototype::new(Some(base_mob))
         (Desc::new("snake", 71, color::GREEN))
-        (Stats { power: 1, intrinsics: 0 })
-        (Spawn { biome: Biome::Overland, commonness: 1000, min_depth: 1, category: Category::Mob })
+        (Stats::new(1, &[]))
+        (Spawn::new(Category::Mob).biome(Overland))
         ;
 
     Prototype::new(Some(base_mob))
         (Desc::new("ooze", 77, color::LIGHTSEAGREEN))
-        (Stats { power: 3, intrinsics: 0 })
-        (Spawn { biome: Biome::Dungeon, commonness: 1000, min_depth: 3, category: Category::Mob })
+        (Stats::new(3, &[]))
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(3))
         ;
     // TODO: More mob types
 
     // Items
     Prototype::new(None)
         (Desc::new("heart", 89, color::RED))
-        (Spawn { biome: Biome::Anywhere, commonness: 1000, min_depth: 1, category: Category::Consumable })
+        (Spawn::new(Category::Consumable))
         (Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
         ;
 
     Prototype::new(None)
         (Desc::new("sword", 84, color::GAINSBORO))
-        (Spawn { biome: Biome::Anywhere, commonness: 500, min_depth: 1, category: Category::Equipment })
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(5, &[]))
         (Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
-        (Stats { power: 5, intrinsics: 0 })
         ;
 }

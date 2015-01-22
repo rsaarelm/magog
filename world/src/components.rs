@@ -60,6 +60,29 @@ pub struct Spawn {
     pub category: Category,
 }
 
+impl Spawn {
+    pub fn new(category: Category) -> Spawn {
+        Spawn {
+            biome: Biome::Anywhere,
+            commonness: 1000,
+            min_depth: 1,
+            category: category,
+        }
+    }
+
+    pub fn biome(mut self, biome: Biome) -> Spawn {
+        self.biome = biome; self
+    }
+
+    pub fn depth(mut self, min_depth: i32) -> Spawn {
+        self.min_depth = min_depth; self
+    }
+
+    pub fn commonness(mut self, commonness: u32) -> Spawn {
+        self.commonness = commonness; self
+    }
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
 pub enum Category {
     Mob = 0b1,

@@ -12,6 +12,17 @@ pub struct Stats {
     pub intrinsics: u32,
 }
 
+impl Stats {
+    pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
+        let mut intr = 0u32;
+        for &i in intrinsics.iter() { intr = intr | (i as u32); }
+        Stats {
+            power: power,
+            intrinsics: intr,
+        }
+    }
+}
+
 impl Add<Stats> for Stats {
     type Output = Stats;
     fn add(self, other: Stats) -> Stats {
