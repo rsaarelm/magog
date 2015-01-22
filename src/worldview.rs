@@ -77,11 +77,16 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_tile(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgb) {
-        let color = match self.fov {
-            Some(FovStatus::Remembered) => Rgb::new(0x22u8, 0x22u8, 0x11u8),
-            _ => *color,
+        self.draw_tile2(ctx, idx, offset, z, color, &BLACK);
+    }
+
+    fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
+                  color: &Rgb, back_color: &Rgb) {
+        let (color, back_color) = match self.fov {
+            Some(FovStatus::Remembered) => (Rgb::new(0x22u8, 0x22u8, 0x11u8), BLACK),
+            _ => (*color, *back_color),
         };
-        ctx.draw_image(tilecache::get(idx), offset, z, &color, &BLACK);
+        ctx.draw_image(tilecache::get(idx), offset, z, &color, &back_color);
     }
 
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
@@ -110,7 +115,7 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, SHALLOWS, offset, FLOOR_Z, &CORNFLOWERBLUE);
             },
             TerrainType::Magma => {
-                self.draw_tile(ctx, MAGMA, offset, FLOOR_Z, &DARKRED);
+                self.draw_tile2(ctx, MAGMA, offset, FLOOR_Z, &DARKRED, &YELLOW);
             },
             TerrainType::Tree => {
                 // A two-toner, with floor, using two z-layers
