@@ -228,6 +228,7 @@ impl<'a> CellDrawable<'a> {
         }
 
         fn blockform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb) {
+            c.draw_tile(ctx, BLOCK_DARK, offset, BLOCK_Z, &BLACK);
             c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
             // Back lines for blocks with open floor behind them.
             if !k.nw.is_wall() {
