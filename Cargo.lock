@@ -14,7 +14,7 @@ dependencies = [
 [[package]]
 name = "android_glue"
 version = "0.0.1"
-source = "git+https://github.com/tomaka/android-rs-glue#7e930d2822adb791a515c24dfefe6ae37493f40f"
+source = "git+https://github.com/tomaka/android-rs-glue#8fc770e4c1412293e459bc12ca4fcf57780e2186"
 dependencies = [
  "compile_msg 0.1.3 (git+https://github.com/huonw/compile_msg)",
 ]
@@ -27,7 +27,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx_backend"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#52aa939d46ebb112ccba5c1db2def312a92257bb"
+source = "git+https://github.com/rsaarelm/calx#1a8ee7aa5115c34e1d037311e38353d648bc3650"
 dependencies = [
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "glium 0.0.2 (git+https://github.com/tomaka/glium)",
@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "calx_util"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#52aa939d46ebb112ccba5c1db2def312a92257bb"
+source = "git+https://github.com/rsaarelm/calx#1a8ee7aa5115c34e1d037311e38353d648bc3650"
 dependencies = [
  "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "rustc-serialize 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -113,7 +113,7 @@ dependencies = [
 [[package]]
 name = "glium"
 version = "0.0.2"
-source = "git+https://github.com/tomaka/glium#44059709c3d15757f09f1599163ec63f435f0cbc"
+source = "git+https://github.com/tomaka/glium#fe9e2b5b5a20a73c7552a5404e9aad7e7de181b5"
 dependencies = [
  "cgmath 0.0.1 (git+https://github.com/bjz/cgmath-rs)",
  "compile_msg 0.1.3 (git+https://github.com/huonw/compile_msg)",
@@ -128,12 +128,12 @@ dependencies = [
 [[package]]
 name = "glium_macros"
 version = "0.0.1"
-source = "git+https://github.com/tomaka/glium#44059709c3d15757f09f1599163ec63f435f0cbc"
+source = "git+https://github.com/tomaka/glium#fe9e2b5b5a20a73c7552a5404e9aad7e7de181b5"
 
 [[package]]
 name = "glutin"
 version = "0.0.4-pre"
-source = "git+https://github.com/tomaka/glutin#862baf82204c373d17e2878871826a457529a03f"
+source = "git+https://github.com/tomaka/glutin#36538b5634dfc9823771d237174816c7ed00f454"
 dependencies = [
  "android_glue 0.0.1 (git+https://github.com/tomaka/android-rs-glue)",
  "cocoa 0.1.1 (git+https://github.com/servo/rust-cocoa)",
@@ -148,7 +148,7 @@ dependencies = [
 [[package]]
 name = "image"
 version = "0.2.0-alpha.6"
-source = "git+https://github.com/PistonDevelopers/image#ae89bf96cd2d653384e68cf569fac8b4894e139a"
+source = "git+https://github.com/PistonDevelopers/image#52fe43246575732cc42ba8aa66e2ab1faaab179a"
 dependencies = [
  "num 0.1.9 (git+https://github.com/rust-lang/num)",
 ]

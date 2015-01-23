@@ -9,8 +9,8 @@ extern crate time;
 
 use gamestate::GameState;
 
-pub static SCREEN_W: i32 = 640;
-pub static SCREEN_H: i32 = 360;
+pub static SCREEN_W: u32 = 640;
+pub static SCREEN_H: u32 = 360;
 
 pub mod drawable;
 pub mod tilecache;
@@ -35,7 +35,7 @@ pub enum Transition {
 
 pub fn main() {
     let mut canvas = backend::CanvasBuilder::new()
-        .set_dim(util::V2(SCREEN_W, SCREEN_H))
+        .set_size(SCREEN_W, SCREEN_H)
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state = GameState::new(None);

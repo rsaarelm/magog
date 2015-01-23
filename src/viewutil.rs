@@ -23,7 +23,7 @@ pub fn chart_to_view(chart_pos: V2<i32>) -> V2<i32> {
 /// Transform from chart space into the default on-screen space centered on
 /// window center.
 pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
-    (chart_to_view(chart_pos) + V2(SCREEN_W / 2, SCREEN_H / 2)).map(|x| x as f32)
+    (chart_to_view(chart_pos) + V2(SCREEN_W as i32 / 2, SCREEN_H as i32 / 2)).map(|x| x as f32)
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
@@ -50,7 +50,9 @@ pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<V2<i32>, V2<i32>, ColumnR
 }
 
 pub fn cells_on_screen() -> Map<V2<i32>, V2<i32>, ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
-    cells_in_view_rect(Rect(V2(-SCREEN_W / 2, -SCREEN_H / 2), V2(SCREEN_W, SCREEN_H)))
+    cells_in_view_rect(Rect(
+        V2(-(SCREEN_W as i32) / 2, -(SCREEN_H as i32) / 2),
+        V2(SCREEN_W as i32, SCREEN_H as i32)))
 }
 
 /// Transform to the column space point that contains the pixel space point
