@@ -31,6 +31,9 @@ pub struct GameState {
 
     msg: MsgQueue,
     ui_state: UiState,
+
+    // Hacky thing to wait for next time Canvas reference is available.
+    screenshot_requested: bool,
 }
 
 enum UiState {
@@ -47,6 +50,7 @@ impl GameState {
             exploring: false,
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
+            screenshot_requested: false,
         }
     }
 
@@ -153,12 +157,11 @@ impl GameState {
     pub fn inventory_process(&mut self, event: Event) -> bool {
         let player = action::player().unwrap();
         match event {
-            Event::Render(ctx) => {
-                self.update(ctx);
-            }
+            Event::Render(ctx) => { self.update(ctx); }
             Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
                 self.ui_state = UiState::Gameplay
             }
+            Event::KeyPressed(Key::F12) => { self.screenshot_requested = true; }
             Event::KeyPressed(_) => {}
 
             Event::Char(ch) => {
@@ -209,6 +212,16 @@ impl GameState {
 
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Canvas) {
+        if self.screenshot_requested {
+            use std::io::File;
+            use image;
+            let shot = ctx.screenshot();
+            let file = File::create(&Path::new("/tmp/shot.png")).unwrap();
+            let _ = image::ImageRgb8(shot).save(file, image::PNG);
+
+            self.screenshot_requested = false;
+        }
+
         ctx.clear();
 
         match self.ui_state {
@@ -301,6 +314,7 @@ impl GameState {
 
             Key::F5 => { self.save_game(); }
             Key::F9 => { self.load_game(); }
+            Key::F12 => { self.screenshot_requested = true; }
             _ => { return false; }
         }
         return true;
