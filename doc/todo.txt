@@ -1,6 +1,4 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
-(A) 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
 (A) 2014-12-31 Binaries know their build version +Engine +Gimmie
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -84,7 +82,6 @@
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
-(C) 2015-01-05 Canvas stores last rendered frame in texture for saving a screenshot +Render
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
 (C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
 (C) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
@@ -176,3 +173,6 @@ x 2015-01-21 2015-01-17 Move entity factory code & Prototype type into own modul
 x 2015-01-22 2014-12-13 Dynamic lighting in world state +Engine
 x 2015-01-22 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
 x 2015-01-22 2014-12-13 Nice API for entity factories +Engine
+x 2015-01-23 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
+x 2015-01-23 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
+x 2015-01-23 2015-01-05 Canvas stores last rendered frame in texture for saving a screenshot +Render
