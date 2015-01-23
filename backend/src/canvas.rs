@@ -252,7 +252,7 @@ impl<'a> Iterator for Canvas {
         }
 
         loop {
-            self.events.push_all(self.display.poll_events().as_slice());
+            self.events.push_all(self.display.poll_events().collect::<Vec<glutin::Event>>().as_slice());
 
             if !self.events.is_empty() {
                 match self.events.remove(0) {
