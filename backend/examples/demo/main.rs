@@ -25,6 +25,14 @@ fn main() {
                             0.4, &col, &color::BLACK);
                     }
                 }
+
+                // These should be clipped off the screen.
+                let img = ctx.font_image('#').unwrap();
+                ctx.draw_image(img, V2(316.0, 0.0), 0.4, &color::GREEN, &color::BLACK);
+                ctx.draw_image(img, V2(316.0, 368.0), 0.4, &color::GREEN, &color::BLACK);
+                ctx.draw_image(img, V2(-8.0, 184.0), 0.4, &color::GREEN, &color::BLACK);
+                ctx.draw_image(img, V2(640.0, 184.0), 0.4, &color::GREEN, &color::BLACK);
+
                 let center = V2(320.0, 180.0);
                 let offset = V2(
                     ((t as f32 / 160.0).cos() * 128.0),
