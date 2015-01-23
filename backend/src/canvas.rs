@@ -31,7 +31,7 @@ pub struct CanvasBuilder {
 impl CanvasBuilder {
     pub fn new() -> CanvasBuilder {
         let mut ret = CanvasBuilder {
-            title: "window".to_string(),
+            title: "".to_string(),
             dim: V2(640, 360),
             frame_interval: None,
             builder: AtlasBuilder::new(),
@@ -41,6 +41,7 @@ impl CanvasBuilder {
         ret
     }
 
+    /// Set the window title.
     pub fn set_title(mut self, title: &str) -> CanvasBuilder {
         self.title = title.to_string();
         self
@@ -53,12 +54,14 @@ impl CanvasBuilder {
         self
     }
 
-    /// Set the resolution.
-    pub fn set_dim(mut self, dim: V2<i32>) -> CanvasBuilder {
-        self.dim = dim;
+    /// Set the size of the logical canvas.
+    pub fn set_size(mut self, width: i32, height: i32) -> CanvasBuilder {
+        assert!(width > 0 && height > 0);
+        self.dim = V2(width, height);
         self
     }
 
+    /// Add an image into the canvas image atlas.
     pub fn add_image<P: Pixel<u8> + 'static, I: GenericImage<P>>(
         &mut self, offset: V2<i32>, image: I) -> Image {
         Image(self.builder.push(offset, image))
