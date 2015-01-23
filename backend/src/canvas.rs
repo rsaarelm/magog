@@ -218,7 +218,7 @@ impl Canvas {
     }
 
     /// Return a screenshot image of the last frame rendered.
-    pub fn screenshot(&self) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
+    pub fn screenshot(&self) -> ImageBuffer<Vec<u8>, u8, image::Rgb<u8>> {
         self.renderer.canvas_pixels()
     }
 }
