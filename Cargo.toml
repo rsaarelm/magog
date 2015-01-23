@@ -1,10 +1,11 @@
 [package]
 name = "magog"
-version = "0.0.1"
+version = "0.1.0"
 authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
 description = "Roguelike game"
 keywords = ["gamedev"]
 license = "GPL3"
+build = "build.rs"
 
 [[bin]]
 name = "magog"

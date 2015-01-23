@@ -33,6 +33,19 @@ pub enum Transition {
 }
 */
 
+pub fn version() -> String {
+    let next_release = "0.1.0";
+    let git_hash = include_str!("version.inc");
+    // Set is_release to true for one commit to make a release.
+    let is_release = false;
+
+    if is_release {
+        format!("{}", next_release)
+    } else {
+        format!("{}-alpha+g{}", next_release, git_hash)
+    }
+}
+
 pub fn main() {
     let mut canvas = backend::CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)

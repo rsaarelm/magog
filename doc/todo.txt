@@ -1,5 +1,4 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2014-12-31 Binaries know their build version +Engine +Gimmie
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Config settings file +Engine
@@ -125,6 +124,7 @@
 (D) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
 (D) 2015-01-18 Color scheme for item rarity, white-common, green-uncommon, blue-rare, purple-epic, orange-legendary +Content
 (D) 2015-01-19 Set up benchmarks, see if inline pragmas optimize eg. image drawing and Rect::pn +Render
+(D) 2015-01-23 Dynamic lighting from floor (eg. magma) illuminates upright things but not floor tiles +Engine
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -175,4 +175,5 @@ x 2015-01-22 2014-12-13 Experimental display showing "ink on parchment" render f
 x 2015-01-22 2014-12-13 Nice API for entity factories +Engine
 x 2015-01-23 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
 x 2015-01-23 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
+x 2015-01-23 2014-12-31 Binaries know their build version +Engine +Gimmie
 x 2015-01-23 2015-01-05 Canvas stores last rendered frame in texture for saving a screenshot +Render

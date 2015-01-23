@@ -1,6 +1,6 @@
 [root]
 name = "magog"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "calx_backend 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",

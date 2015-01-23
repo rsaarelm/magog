@@ -89,6 +89,9 @@ impl GameState {
         let _ = write!(&mut ctx.text_writer(V2(0, 16), 0.1, color::LIGHTGREEN)
                        .set_border(color::BLACK),
                        "FPS {:.0}", fps);
+        let _ = write!(&mut ctx.text_writer(V2(0, 360), 0.1, color::LIGHTGRAY)
+                      .set_border(color::BLACK),
+                      "MAGOG v{}", ::version());
     }
 
     fn base_update(&mut self, ctx: &mut Canvas) {
