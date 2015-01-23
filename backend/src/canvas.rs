@@ -1,12 +1,11 @@
 use time;
 use std::mem;
-use std::num::{Float};
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use util::{self, AtlasBuilder, Atlas, AtlasItem, V2, Rect, Rgb, Color};
+use util::{self, AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
 use event::{Event, MouseButton};
 use renderer::{Renderer, Vertex};
 use scancode;
@@ -22,7 +21,7 @@ static SOLID_IDX: usize = 96;
 
 pub struct CanvasBuilder {
     title: String,
-    dim: V2<i32>,
+    size: V2<u32>,
     frame_interval: Option<f64>,
     builder: AtlasBuilder,
 }
@@ -32,7 +31,7 @@ impl CanvasBuilder {
     pub fn new() -> CanvasBuilder {
         let mut ret = CanvasBuilder {
             title: "".to_string(),
-            dim: V2(640, 360),
+            size: V2(640, 360),
             frame_interval: None,
             builder: AtlasBuilder::new(),
         };
@@ -55,9 +54,8 @@ impl CanvasBuilder {
     }
 
     /// Set the size of the logical canvas.
-    pub fn set_size(mut self, width: i32, height: i32) -> CanvasBuilder {
-        assert!(width > 0 && height > 0);
-        self.dim = V2(width, height);
+    pub fn set_size(mut self, width: u32, height: u32) -> CanvasBuilder {
+        self.size = V2(width, height);
         self
     }
 
@@ -70,7 +68,7 @@ impl CanvasBuilder {
     /// Start running the engine, return an event iteration.
     pub fn run(&mut self) -> Canvas {
         Canvas::new(
-            self.dim,
+            self.size,
             self.title.as_slice(),
             self.frame_interval,
             Atlas::new(&self.builder))
@@ -108,7 +106,7 @@ pub struct Canvas {
     state: State,
     frame_interval: Option<f64>,
     last_render_time: f64,
-    resolution: V2<i32>,
+    size: V2<u32>,
     window_resolution: V2<i32>,
 
     vertices: Vec<Vertex>,
@@ -126,20 +124,20 @@ enum State {
 
 impl Canvas {
     fn new(
-        dim: V2<i32>,
+        size: V2<u32>,
         title: &str,
         frame_interval: Option<f64>,
         atlas: Atlas) -> Canvas {
 
         let display = glutin::WindowBuilder::new()
             .with_title(title.to_string())
-            .with_dimensions(dim.0 as u32, dim.1 as u32)
+            .with_dimensions(size.0, size.1)
             .build_glium().unwrap();
 
         let (w, h) = display.get_framebuffer_dimensions();
 
         let tex_image = image::imageops::flip_vertical(&atlas.image);
-        let renderer = Renderer::new(&display, tex_image);
+        let renderer = Renderer::new(size, &display, tex_image);
 
         Canvas {
             display: display,
@@ -151,7 +149,7 @@ impl Canvas {
             state: State::Normal,
             frame_interval: frame_interval,
             last_render_time: time::precise_time_s(),
-            resolution: dim,
+            size: size,
             window_resolution: V2(w as i32, h as i32),
 
             vertices: Vec::new(),
@@ -168,29 +166,17 @@ impl Canvas {
         self.indices.clear();
     }
 
-    /// Transform screen coordinates from the scaled-up window into
-    /// pixel-perfect coordinates of the actual graphics.
-    fn screen_to_pixel(&self, V2(sx, sy): V2<i32>) -> V2<i32> {
-        let Rect(V2(rx, ry), V2(rw, rh)) = pixel_perfect(self.resolution, self.window_resolution);
-
-        V2(((sx - rx) as f32 * self.resolution.0 as f32 / rw as f32) as i32,
-           ((sy - ry) as f32 * self.resolution.1 as f32 / rh as f32) as i32)
-    }
-
     #[inline(always)]
-    fn window_to_device(&self, window_pos: V2<f32>, z: f32) -> [f32; 3] {
-        let V2(w, h) = self.window_resolution;
-        let Rect(V2(rx, ry), V2(rw, _)) = pixel_perfect(self.resolution, self.window_resolution);
-        let zoom = (rw as f32) / (self.resolution.0 as f32);
-        [-1.0 + (2.0 * (rx as f32 + window_pos.0 * zoom) / w as f32),
-          1.0 - (2.0 * (ry as f32 + window_pos.1 * zoom) / h as f32),
+    fn canvas_to_device(&self, pos: V2<f32>, z: f32) -> [f32; 3] {
+        [-1.0 + (2.0 * (pos.0 as f32) / self.size.0 as f32),
+          1.0 - (2.0 * (pos.1 as f32) / self.size.1 as f32),
          z]
     }
 
     /// Add a vertex to the geometry data of the current frame.
     pub fn push_vertex<C: Color, C2: Color>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
                                  color: &C, back_color: &C2) {
-        let pos = self.window_to_device(pos, layer);
+        let pos = self.canvas_to_device(pos, layer);
 
         self.vertices.push(Vertex {
             pos: pos,
@@ -272,7 +258,7 @@ impl<'a> Iterator for Canvas {
                         }
                     }
                     glutin::Event::MouseMoved((x, y)) => {
-                        let pixel_pos = self.screen_to_pixel(V2(x, y));
+                        let pixel_pos = self.renderer.screen_to_canvas(V2(x, y));
                         return Some(Event::MouseMoved((pixel_pos.0, pixel_pos.1)));
                     }
                     glutin::Event::MouseWheel(x) => {
@@ -331,20 +317,3 @@ impl<'a> Iterator for Canvas {
 /// Drawable images stored in the Canvas.
 #[derive(Copy, Clone, PartialEq)]
 pub struct Image(usize);
-
-/// A pixel perfect centered and scaled rectangle of resolution dim in a
-/// window of size area.
-#[inline(always)]
-fn pixel_perfect(canvas: V2<i32>, window: V2<i32>) -> Rect<i32> {
-    let mut scale = (window.0 as f32 / canvas.0 as f32)
-        .min(window.1 as f32 / canvas.1 as f32);
-
-    if scale > 1.0 {
-        // Snap to pixel scale if more than 1 window pixel per canvas pixel.
-        scale = scale.floor();
-    }
-
-    let dim = V2((scale * canvas.0 as f32) as i32, (scale * canvas.1 as f32) as i32);
-    let offset = (window - dim) / 2;
-    Rect(offset, dim)
-}
