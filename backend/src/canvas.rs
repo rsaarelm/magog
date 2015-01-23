@@ -216,6 +216,11 @@ impl Canvas {
     pub fn image_data<'a>(&'a self, Image(idx): Image) -> &'a AtlasItem {
         &self.atlas.items[idx]
     }
+
+    /// Return a screenshot image of the last frame rendered.
+    pub fn screenshot(&self) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
+        self.renderer.canvas_pixels()
+    }
 }
 
 impl<'a> Iterator for Canvas {

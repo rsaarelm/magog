@@ -1,5 +1,6 @@
 use std::num::{Float};
 use std::default::Default;
+use image::{ImageBuffer, Rgba};
 use glium;
 use glium::texture;
 use glium::framebuffer;
@@ -153,6 +154,10 @@ impl Renderer {
 
         V2(((sx - rx) * self.size.0 as f32 / rw) as i32,
            ((sy - ry) * self.size.1 as f32 / rh) as i32)
+    }
+
+    pub fn canvas_pixels(&self) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
+        self.buffer.read()
     }
 }
 
