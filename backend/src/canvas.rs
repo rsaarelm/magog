@@ -79,7 +79,7 @@ impl CanvasBuilder {
         let mut font_sheet = util::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
             &Rgb::new(0x80u8, 0x80u8, 0x80u8));
-        for i in 0..96 {
+        for i in 0u32..96 {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
             let Image(idx) = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));

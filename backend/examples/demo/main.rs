@@ -17,8 +17,8 @@ fn main() {
                 let img = ctx.font_image('@').unwrap();
 
                 ctx.clear();
-                for y in 0..(360/8) {
-                    for x in 0..(640/8) {
+                for y in 0i32..(360/8) {
+                    for x in 0i32..(640/8) {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
                             color::WHITE } else { color::ORANGE };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
