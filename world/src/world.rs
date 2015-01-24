@@ -27,7 +27,7 @@ pub fn with_mut<A, F>(mut f: F) -> A
 
 /// Save the global world state into a json string.
 pub fn save() -> String {
-    with(|w| json::encode(w))
+    with(|w| json::encode(w).unwrap())
 }
 
 /// Load the global world state from a json string. If the load operation
