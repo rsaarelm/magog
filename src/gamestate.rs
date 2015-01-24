@@ -91,7 +91,9 @@ impl GameState {
                        "FPS {:.0}", fps);
         let _ = write!(&mut ctx.text_writer(V2(0, 360), 0.1, color::LIGHTGRAY)
                       .set_border(color::BLACK),
-                      "MAGOG v{}", ::version());
+                      "MAGOG v{}{}",
+                      ::version(),
+                      if !cfg!(ndebug) { " ***DEBUG build***" } else { "" });
     }
 
     fn base_update(&mut self, ctx: &mut Canvas) {
