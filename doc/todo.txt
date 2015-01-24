@@ -1,29 +1,26 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2015-01-24 Make combat logic part of Stats impl +Engine
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
-(B) 2014-12-13 Config settings file +Engine
-(B) 2014-12-13 Confusion status effect +Content
+(B) 2014-12-13 Can only equip items up to current mana pool +Content
 (B) 2014-12-13 Enemy ranged attack +Content
-(B) 2014-12-13 Equipping items binds mana, bound mana recharges after unequip +Content
 (B) 2014-12-13 Explosions +Content
-(B) 2014-12-13 File hosting for Windows binaries +Build
-(B) 2014-12-13 Freeze effects +Content
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
 (B) 2014-12-13 Player level up logic +Content
 (B) 2014-12-13 Projectile attack beam effect +UI
 (B) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (B) 2014-12-13 Ranged attacks using ammunition +Content +UI
-(B) 2014-12-13 Recharging mana pool stat for player +Content
 (B) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
 (B) 2014-12-13 Screen state machine: Intro screen / Running game +UI
-(B) 2014-12-13 Teleport +Content
 (B) 2014-12-13 Winning the game +Content
-(B) 2014-12-25 Spell cooldowns +Content
-(B) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
-(B) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in inventory +UI
 (B) 2015-01-20 Spell items that can be equipped and activated +Content
+(B) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
+(B) 2015-01-24 +Multilevel display shows lower level terrain through chasm tiles
+(B) 2015-01-24 Location values carry z coordinate for +Multilevel
+(B) 2015-01-24 Multiple area structures exist at the same time for +Multilevel
+(B) 2015-01-24 Proof-of-concept display for +Multilevel with a preset map
+(B) 2015-01-24 Retouch wall tiles to have repeating 16-pixel vertical texture and blockforms 8 pixels for +Multilevel tiling (lower level doubles blockforms) +Gimmie
+(B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
@@ -35,6 +32,8 @@
 (C) 2014-12-13 Cmdline parameter for starting fullscreen +UI +Gimmie
 (C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine +Gimmie
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
+(C) 2014-12-13 Config settings file +Engine
+(C) 2014-12-13 Confusion status effect +Content
 (C) 2014-12-13 Corpses +Content
 (C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
@@ -42,8 +41,10 @@
 (C) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
 (C) 2014-12-13 Effect for text floating on top of map location +UI
 (C) 2014-12-13 Enemies that explode when dying +Content
+(C) 2014-12-13 File hosting for Windows binaries +Build
 (C) 2014-12-13 Flamethrower spell +Content
 (C) 2014-12-13 Flying intrinsic, mobs that fly over chasms (will need to deal with mobs falling into chasms, water or magma if this goes in) +Content
+(C) 2014-12-13 Freeze effects +Content
 (C) 2014-12-13 GUI layout description API (imgui techniques?) +UI
 (C) 2014-12-13 Golem enemy, dumb but very nasty in melee +Content
 (C) 2014-12-13 Keeping score +Content
@@ -52,6 +53,7 @@
 (C) 2014-12-13 Lair clearing mechanic +Content
 (C) 2014-12-13 Left, center and right justifying text printing cursors +UI
 (C) 2014-12-13 Magic-using mobs +Content
+(C) 2014-12-13 Mana dissipates and recharges, can't instaswap gear +Content
 (C) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
 (C) 2014-12-13 Mobs that eat smaller allies to heal +Content
 (C) 2014-12-13 Money economy +Content
@@ -71,6 +73,7 @@
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
 (C) 2014-12-13 Slippery icy ground +Content
 (C) 2014-12-13 Swarming pack mobs +Content
+(C) 2014-12-13 Teleport +Content
 (C) 2014-12-13 Unkillable enemy +Content
 (C) 2014-12-13 Waypoint travel +Content
 (C) 2014-12-13 Wizard mode with a debug command-line +UI
@@ -78,10 +81,12 @@
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (C) 2014-12-23 Virtual machine environment for testing buildability with lastest Rust nightly, no back-and-forth churn with packages on main dev system +Build
 (C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine +Gimmie
+(C) 2014-12-25 Spell cooldowns +Content
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
+(C) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
 (C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
 (C) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
@@ -91,11 +96,21 @@
 (C) 2015-01-17 Fire and burning +Engine
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
 (C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
+(C) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in +Inventory
 (C) 2015-01-22 Entities can be light sources +Engine
 (C) 2015-01-22 Map scrolling or minimap to view remembered terrain outside the screen +UI
 (C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI +Gimmie
+(C) 2015-01-24 Black floor tile edge gets clipped into isometric wall front on wallform tiles with a chasm immediately on front for +Multilevel view
+(C) 2015-01-24 Blockform rear like edges on wall tiles on back ends of +Multilevel edges down (special case into isometric-like edges if there's a wallform in the Z+1?)
+(C) 2015-01-24 Color-code +Inventory UI, red: gear with too high mana req, white: equippable gear, blue/cyan: Un-id'd consumable/gear, yellow: consumable, gray: other
 (C) 2015-01-24 Color-cycling animation for water and magma +Render
 (C) 2015-01-24 Convert light level to color value on client side, not in world crate +Render +Gimmie
+(C) 2015-01-24 Heart drops mostly come from killed enemies, rarely found unattended +Content
+(C) 2015-01-24 Separate floor's texture tile and black base tile for reshaping the base for +Multilevel edge cases (doesn't work for full-textured floors like water and magma)
+(C) 2015-01-24 Tint lower level +Multilevel graphics with a distinct shade, turn the black into gray?
+(C) 2015-01-24 Use consumable dialog when selecting consumable item in +Inventory, enter to accept esc to cancel
+(C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
+(C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
