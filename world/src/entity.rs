@@ -218,11 +218,16 @@ impl Entity {
     pub fn melee(self, dir: Dir6) {
         let loc = self.location().expect("no location") + dir.to_v2();
         if let Some(e) = loc.mob_at() {
-            // Attack power
-            let p = self.power_level();
-            if p == 0 {
-                // No fight capacity.
-                return;
+            let us = self.stats();
+            let them = e.stats();
+
+            // Attack power and target damage reduction.
+            let mut p = us.power + us.attack - them.protection;
+
+            if p < 1 {
+                // Give damage a bit under the reduction an off-chance to hit.
+                // Power that's too low can't do anything though.
+                if p >= -5 { p = 1; } else { return; }
             }
 
             // Every five points of power is one certain hit.
@@ -362,7 +367,22 @@ impl Entity {
             else { 0 })
     }
 
+    /// Return the stats structure for the entity. Stats-less entities return
+    /// the defalt value of the Stats type.
     pub fn stats(self) -> Stats {
+        self.refresh_stats_cache();
+        world::with(|w|
+            if let Some(&Some(composite_stats)) = w.stats_caches().get(self) {
+                composite_stats
+            } else {
+                self.base_stats()
+            }
+        )
+    }
+
+    /// Return the base stats, if any, of the entity. Does not try to generate
+    /// or fetch composite stats.
+    fn base_stats(self) -> Stats {
         world::with(|w|
             if let Some(s) = w.stats().get(self) {
                 *s
@@ -376,10 +396,13 @@ impl Entity {
     /// This must be called by any method that accesses the stats_caches
     /// component.
     fn refresh_stats_cache(self) {
+        // If stats cache doesn't exist, do nothing.
+        world::with(|w| if w.stats_caches().get(self).is_none() { return; });
+
         // If cache is good, do nothing.
         world::with(|w| if let Some(&Some(_)) = w.stats_caches().get(self) { return; });
 
-        let mut stats = self.stats();
+        let mut stats = self.base_stats();
         for &slot in [
             Slot::Body,
             Slot::Feet,

@@ -46,7 +46,7 @@ pub fn init() {
     Prototype::new(Some(base_mob))
         (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
         (Desc::new("player", 51, AZURE))
-        (Stats::new(6, &[Hands]))
+        (Stats::new(10, &[Hands]).mana(5))
         (MapMemory::new())
         ;
 
@@ -109,7 +109,21 @@ pub fn init() {
     Prototype::new(None)
         (Desc::new("sword", 84, GAINSBORO))
         (Spawn::new(Category::Equipment).commonness(100))
-        (Stats::new(5, &[]))
+        (Stats::new(0, &[]).attack(5).mana(-3))
         (Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("helmet", 85, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(0, &[]).protection(2).mana(-1))
+        (Item { item_type: ItemType::Helmet, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("armor", 91, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(0, &[]).protection(5).mana(-3))
+        (Item { item_type: ItemType::Armor, ability: Ability::Multi(vec![]) })
         ;
 }

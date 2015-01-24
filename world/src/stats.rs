@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::ops::{Add};
 
 /// Stats specifies static bonuses for an entity. Stats values can be added
@@ -8,6 +9,13 @@ use std::ops::{Add};
 pub struct Stats {
     /// Generic power level
     pub power: i32,
+    /// Attack bonus
+    pub attack: i32,
+    /// Damage reduction
+    pub protection: i32,
+    /// Mana pool / mana drain
+    pub mana: i32,
+
     /// Bit flags for intrinsics
     pub intrinsics: u32,
 }
@@ -19,8 +27,13 @@ impl Stats {
         Stats {
             power: power,
             intrinsics: intr,
+            .. Default::default()
         }
     }
+
+    pub fn mana(self, mana: i32) -> Stats { Stats { mana: mana, .. self } }
+    pub fn protection(self, protection: i32) -> Stats { Stats { protection: protection, .. self } }
+    pub fn attack(self, attack: i32) -> Stats { Stats { attack: attack, .. self } }
 }
 
 impl Add<Stats> for Stats {
@@ -28,6 +41,9 @@ impl Add<Stats> for Stats {
     fn add(self, other: Stats) -> Stats {
         Stats {
             power: self.power + other.power,
+            attack: self.attack + other.attack,
+            protection: self.protection + other.protection,
+            mana: self.mana + other.mana,
             intrinsics: self.intrinsics | other.intrinsics,
         }
     }
