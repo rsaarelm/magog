@@ -48,7 +48,7 @@ pub mod tile {
     pub static BLOCK_DARK : usize = 6;
     pub static CHASM : usize = 7;
     pub static SHALLOWS : usize = 8;
-    pub static PORTAL : usize = 9;
+    pub static FLOOR_FRONT : usize = 9;
     pub static BLANK_FLOOR : usize = 10;
     pub static FLOOR : usize = 11;
     pub static GRASS : usize = 12;
