@@ -1,3 +1,4 @@
+use std::iter::range_step;
 use std::collections::HashMap;
 use util::{V2, Rgb, timing};
 use util::color::*;
@@ -14,12 +15,25 @@ use tilecache;
 use tilecache::tile::*;
 
 pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, u32>) {
-    for pt in cells_on_screen() {
-        let screen_pos = chart_to_screen(pt);
-        let loc = *chart + pt;
-        let cell_drawable = CellDrawable::new(
-            loc, 0, loc.fov_status(), loc.light(), damage_timers);
-        cell_drawable.draw(ctx, screen_pos);
+    // Draw stuff at most this deep.
+    static MIN_DRAWN_DEPTH: i32 = -3;
+
+    for depth in range_step(0, MIN_DRAWN_DEPTH, -1) {
+        let mut hole_seen = false;
+        for pt in cells_on_screen() {
+            // Displace stuff deeper down to compensate for the projection
+            // that shifts lower z-levels off-screen.
+            let pt = pt + V2(depth, depth);
+            let screen_pos = chart_to_screen(pt);
+            let mut loc = *chart + pt;
+            loc.z += depth as i8;
+            if !hole_seen && loc.terrain().is_hole() { hole_seen = true; }
+            let cell_drawable = CellDrawable::new(
+                loc, 0, loc.fov_status(), loc.light(), damage_timers);
+            cell_drawable.draw(ctx, screen_pos);
+        }
+        // Don't draw the lower level unless there was at least one hole.
+        if !hole_seen { return; }
     }
 }
 
