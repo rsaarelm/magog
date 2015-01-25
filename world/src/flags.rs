@@ -1,7 +1,7 @@
 use location::Location;
 use world;
 
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Copy, RustcEncodable, RustcDecodable)]
 pub struct Flags {
     pub seed: u32,
     pub camera: Location,
