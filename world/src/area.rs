@@ -66,7 +66,7 @@ impl Area {
         mapgen::gen_herringbone(
             &mut rng,
             &spec,
-            |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
+            |p, t| {terrain.insert(Location::new(0, 0, 0) + p, t);});
 
         // Generate open slots that can be used to spawn stuff.
         let mut opens = Vec::new();
