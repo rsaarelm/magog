@@ -105,7 +105,13 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgb) {
-        self.draw_tile(ctx, idx, offset, z, color);
+        // Gray out the back color for lower-depth floor to highlight that
+        // it's not real floor.
+        let back_color = Rgb::new(
+            0x10 * -self.depth as u8,
+            0x10 * -self.depth as u8,
+            0x10 * -self.depth as u8);
+        self.draw_tile2(ctx, idx, offset, z, color, &back_color);
         self.floor_edges(ctx, offset, color);
     }
 
@@ -122,10 +128,6 @@ impl<'a> CellDrawable<'a> {
             color = self.light.apply(&color);
             back_color = self.light.apply(&back_color);
             if self.depth != 0 && color != BLACK {
-                back_color = Rgb::new(
-                    0x20 * -self.depth as u8,
-                    0x20 * -self.depth as u8,
-                    0x20 * -self.depth as u8);
                 color = Rgb::new(
                     (color.r as f32 * 0.5) as u8,
                     (color.g as f32 * 0.5) as u8,
