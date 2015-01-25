@@ -15,11 +15,8 @@
 (B) 2014-12-13 Winning the game +Content
 (B) 2015-01-20 Spell items that can be equipped and activated +Content
 (B) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
-(B) 2015-01-24 +Multilevel display shows lower level terrain through chasm tiles
 (B) 2015-01-24 Location values carry z coordinate for +Multilevel
 (B) 2015-01-24 Multiple area structures exist at the same time for +Multilevel
-(B) 2015-01-24 Proof-of-concept display for +Multilevel with a preset map
-(B) 2015-01-24 Retouch wall tiles to have repeating 16-pixel vertical texture and blockforms 8 pixels for +Multilevel tiling (lower level doubles blockforms) +Gimmie
 (B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Arena battle level +Content
@@ -100,14 +97,10 @@
 (C) 2015-01-22 Entities can be light sources +Engine
 (C) 2015-01-22 Map scrolling or minimap to view remembered terrain outside the screen +UI
 (C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI +Gimmie
-(C) 2015-01-24 Black floor tile edge gets clipped into isometric wall front on wallform tiles with a chasm immediately on front for +Multilevel view
-(C) 2015-01-24 Blockform rear like edges on wall tiles on back ends of +Multilevel edges down (special case into isometric-like edges if there's a wallform in the Z+1?)
 (C) 2015-01-24 Color-code +Inventory UI, red: gear with too high mana req, white: equippable gear, blue/cyan: Un-id'd consumable/gear, yellow: consumable, gray: other
 (C) 2015-01-24 Color-cycling animation for water and magma +Render
 (C) 2015-01-24 Convert light level to color value on client side, not in world crate +Render +Gimmie
 (C) 2015-01-24 Heart drops mostly come from killed enemies, rarely found unattended +Content
-(C) 2015-01-24 Separate floor's texture tile and black base tile for reshaping the base for +Multilevel edge cases (doesn't work for full-textured floors like water and magma)
-(C) 2015-01-24 Tint lower level +Multilevel graphics with a distinct shade, turn the black into gray?
 (C) 2015-01-24 Use consumable dialog when selecting consumable item in +Inventory, enter to accept esc to cancel
 (C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
 (C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
@@ -196,3 +189,9 @@ x 2015-01-23 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Re
 x 2015-01-23 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
 x 2015-01-23 2014-12-31 Binaries know their build version +Engine +Gimmie
 x 2015-01-23 2015-01-05 Canvas stores last rendered frame in texture for saving a screenshot +Render
+x 2015-01-25 2015-01-24 +Multilevel display shows lower level terrain through chasm tiles
+x 2015-01-25 2015-01-24 Blockform rear like edges on wall tiles on back ends of +Multilevel edges down (special case into isometric-like edges if there's a wallform in the Z+1?)
+x 2015-01-25 2015-01-24 Don't draw floors behind half-wall wallform tiles when there's a chasm behind them on +Multilevel view (do they need the floor tile at all?)
+x 2015-01-25 2015-01-24 Proof-of-concept display for +Multilevel with a preset map
+x 2015-01-25 2015-01-24 Retouch wall tiles to have repeating 16-pixel vertical texture and blockforms 8 pixels for +Multilevel tiling (lower level doubles blockforms) +Gimmie
+x 2015-01-25 2015-01-24 Tint lower level +Multilevel graphics with a distinct shade, turn the black into gray?
