@@ -69,7 +69,7 @@ impl<'a, C: Clone> ComponentRefMut<'a, C> {
     /// Remove a component from an entity. This will make a parent entity's
     /// component visible instead, if there is one. There is currently no way
     /// to hide components present in a parent entity.
-    pub fn remove(self, Entity(idx): Entity) {
+    pub fn _remove(self, Entity(idx): Entity) {
         self.data.remove(&idx);
     }
 }
