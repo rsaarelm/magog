@@ -178,7 +178,6 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_terrain(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
-        let front_of_hole = k.nw.is_hole() || k.n.is_hole() || k.ne.is_hole();
 
         match k.center {
             TerrainType::Void => {
@@ -220,17 +219,18 @@ impl<'a> CellDrawable<'a> {
                 blockform(self, ctx, &k, offset, BLOCK, &DARKGOLDENROD);
             }
             TerrainType::Wall => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, WALL, &LIGHTSLATEGRAY, true);
             },
             TerrainType::RockWall => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, ROCKWALL, &LIGHTSLATEGRAY, true);
             },
             TerrainType::Fence => {
                 // The floor type beneath the fence tile is visible, make it grass
                 // if there's grass behind the fence. Otherwise make it regular
                 // floor.
+                let front_of_hole = k.nw.is_hole() || k.n.is_hole() || k.ne.is_hole();
                 if !front_of_hole {
                     if k.n == TerrainType::Grass || k.ne == TerrainType::Grass || k.nw == TerrainType::Grass {
                         self.draw_floor(ctx, GRASS, offset, &DARKGREEN, true);
@@ -241,7 +241,7 @@ impl<'a> CellDrawable<'a> {
                 wallform(self, ctx, &k, offset, FENCE, &DARKGOLDENROD, false);
             },
             TerrainType::Bars => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, BARS, &GAINSBORO, false);
             },
             TerrainType::Stalagmite => {
@@ -249,16 +249,16 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, STALAGMITE, offset, BLOCK_Z, &DARKGOLDENROD);
             },
             TerrainType::Window => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, WINDOW, &LIGHTSLATEGRAY, false);
             },
             TerrainType::Door => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
                 wallform(self, ctx, &k, offset, DOOR + 4, &SADDLEBROWN, false);
             },
             TerrainType::OpenDoor => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
+                wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
             },
             TerrainType::Table => {
@@ -316,6 +316,12 @@ impl<'a> CellDrawable<'a> {
             if !k.ne.is_wall() {
                 c.draw_tile(ctx, BLOCK_NE, offset, BLOCK_Z, color);
             }
+        }
+
+        fn wallfloor(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>) {
+            // In front of a hole, no floor.
+            if k.nw.is_hole() || k.n.is_hole() || k.ne.is_hole() { return; }
+            c.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false);
         }
 
         fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb, opaque: bool) {
