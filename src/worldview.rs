@@ -30,7 +30,7 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
             // XXX: Grab FOV and light from zero z layer. Not sure what the
             // really right approach here is.
             let cell_drawable = CellDrawable::new(
-                depth_loc, depth, loc.fov_status(), loc.light(), damage_timers);
+                depth_loc, depth, Some(FovStatus::Seen), loc.light(), damage_timers);
             cell_drawable.draw(ctx, screen_pos);
         }
         // Don't draw the lower level unless there was at least one hole.

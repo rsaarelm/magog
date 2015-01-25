@@ -63,10 +63,16 @@ impl Area {
 
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed([rng_seed as usize + spec.depth as usize].as_slice());
+
+        if false {
         mapgen::gen_herringbone(
             &mut rng,
             &spec,
             |p, t| {terrain.insert(Location::new(0, 0, 0) + p, t);});
+        } else {
+            mapgen::gen_prefab(
+                |x, y, z, t| {terrain.insert(Location::new(x as i8, y as i8, z as i8), t);});
+        }
 
         // Generate open slots that can be used to spawn stuff.
         let mut opens = Vec::new();
@@ -81,7 +87,7 @@ impl Area {
         }
         rng.shuffle(opens.as_mut_slice());
 
-        let entrance = opens.pop().unwrap();
+        let entrance = Location::new(8, 8, -1);
 
         let mut spawns = vec![];
 
@@ -123,7 +129,11 @@ impl Area {
         self.player_entrance
     }
 
-    fn default_terrain(&self, _loc: Location) -> TerrainType {
-        self.seed.spec.biome.default_terrain()
+    fn default_terrain(&self, loc: Location) -> TerrainType {
+        match loc.z {
+            -3 => TerrainType::Tree,
+            x if x < -3 => TerrainType::Rock,
+            _ => TerrainType::Space,
+        }
     }
 }

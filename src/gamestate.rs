@@ -13,6 +13,7 @@ use world::Dir6;
 use world::Dir6::*;
 use world::{Entity};
 use world::item::{Slot};
+use world::flags;
 use worldview;
 use sprite::{WorldSprites, GibSprite};
 use tilecache;
@@ -337,9 +338,25 @@ impl GameState {
             Event::KeyPressed(Key::Escape) => {
                 return false;
             }
+            Event::KeyPressed(Key::F1) => {
+                let player = action::player().unwrap();
+                let mut loc = player.location().unwrap();
+                loc.z += 1;
+                player.place(loc);
+                flags::set_camera(loc);
+            }
+            Event::KeyPressed(Key::F2) => {
+                let player = action::player().unwrap();
+                let mut loc = player.location().unwrap();
+                loc.z -= 1;
+                player.place(loc);
+                flags::set_camera(loc);
+            }
+
             Event::KeyPressed(k) => {
                 self.gameplay_process_key(k);
             }
+
 
             Event::Char(ch) => {
                 // TODO: Chars and keypresses in same lookup (use variants?)

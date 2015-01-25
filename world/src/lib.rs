@@ -36,6 +36,7 @@ macro_rules! caption(
 pub mod action;
 pub mod components;
 pub mod item;
+pub mod flags;
 
 mod ability;
 mod area;
@@ -43,7 +44,6 @@ mod component_ref;
 mod dir6;
 mod ecs;
 mod entity;
-mod flags;
 mod fov;
 mod geom;
 mod geomorph;
