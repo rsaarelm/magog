@@ -4,12 +4,16 @@ use util::{V2, Rect};
 use ::{SCREEN_W, SCREEN_H};
 
 /// Useful general constant for cell dimension ops.
-static PIXEL_UNIT: i32 = 16;
+pub static PIXEL_UNIT: i32 = 16;
 
 /// Draw layer for floor tiles.
-pub static FLOOR_Z: f32 = 0.500f32;
+pub static FLOOR_Z: f32 = 0.312f32;
 /// Draw layer for wall and object tiles.
-pub static BLOCK_Z: f32 = 0.400f32;
+pub static BLOCK_Z: f32 = 0.311f32;
+
+/// For drawing lower levels, z = FLOOR_Z + level_depth * DEPTH_Z_MODIFIER;
+pub static DEPTH_Z_MODIFIER: f32 = -0.002f32;
+
 /// Draw layer for visual effects
 pub static FX_Z: f32 = 0.300f32;
 
@@ -25,6 +29,9 @@ pub fn chart_to_view(chart_pos: V2<i32>) -> V2<i32> {
 pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
     (chart_to_view(chart_pos) + V2(SCREEN_W as i32 / 2, SCREEN_H as i32 / 2)).map(|x| x as f32)
 }
+
+/// Convert depth difference to pixel offset.
+pub fn level_z_to_view(z: i32) -> V2<i32> { V2(0, z * -PIXEL_UNIT) }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).
