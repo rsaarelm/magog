@@ -18,6 +18,7 @@
 (B) 2015-01-24 Location values carry z coordinate for +Multilevel
 (B) 2015-01-24 Multiple area structures exist at the same time for +Multilevel
 (B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
+(B) 2015-01-25 Player status display, show attack/defense values
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
