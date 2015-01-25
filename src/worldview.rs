@@ -104,7 +104,7 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, color: &Rgb) {
+    fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, color: &Rgb, edges: bool) {
         // Gray out the back color for lower-depth floor to highlight that
         // it's not real floor.
         let back_color = Rgb::new(
@@ -112,7 +112,9 @@ impl<'a> CellDrawable<'a> {
             0x10 * -self.depth as u8,
             0x10 * -self.depth as u8);
         self.draw_tile2(ctx, idx, offset, FLOOR_Z, color, &back_color);
-        self.floor_edges(ctx, offset, color);
+        if edges {
+            self.floor_edges(ctx, offset, color);
+        }
     }
 
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
@@ -165,10 +167,10 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
             },
             TerrainType::Water => {
-                self.draw_floor(ctx, WATER, offset, &ROYALBLUE);
+                self.draw_floor(ctx, WATER, offset, &ROYALBLUE, true);
             },
             TerrainType::Shallows => {
-                self.draw_floor(ctx, SHALLOWS, offset, &CORNFLOWERBLUE);
+                self.draw_floor(ctx, SHALLOWS, offset, &CORNFLOWERBLUE, true);
             },
             TerrainType::Magma => {
                 self.draw_tile2(ctx, MAGMA, offset, FLOOR_Z, &DARKRED, &YELLOW);
@@ -176,35 +178,35 @@ impl<'a> CellDrawable<'a> {
             },
             TerrainType::Tree => {
                 // A two-toner, with floor, using two z-layers
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, TREE_TRUNK, offset, BLOCK_Z, &SADDLEBROWN);
                 self.draw_tile(ctx, TREE_FOLIAGE, offset, BLOCK_Z, &GREEN);
             },
             TerrainType::Floor => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
             },
             TerrainType::Chasm => {
                 self.draw_tile(ctx, CHASM, offset, FLOOR_Z, &DARKSLATEGRAY);
             },
             TerrainType::Grass => {
-                self.draw_floor(ctx, FLOOR, offset, &DARKGREEN);
+                self.draw_floor(ctx, FLOOR, offset, &DARKGREEN, true);
             },
             TerrainType::Grass2 => {
-                self.draw_floor(ctx, GRASS, offset, &DARKGREEN);
+                self.draw_floor(ctx, GRASS, offset, &DARKGREEN, true);
             },
             TerrainType::Downstairs => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, DOWNSTAIRS, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::Rock => {
                 blockform(self, ctx, &k, offset, BLOCK, &DARKGOLDENROD);
             }
             TerrainType::Wall => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, WALL, &LIGHTSLATEGRAY, true);
             },
             TerrainType::RockWall => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, ROCKWALL, &LIGHTSLATEGRAY, true);
             },
             TerrainType::Fence => {
@@ -213,64 +215,64 @@ impl<'a> CellDrawable<'a> {
                 // floor.
                 if !front_of_hole {
                     if k.n == TerrainType::Grass || k.ne == TerrainType::Grass || k.nw == TerrainType::Grass {
-                        self.draw_floor(ctx, GRASS, offset, &DARKGREEN);
+                        self.draw_floor(ctx, GRASS, offset, &DARKGREEN, true);
                     } else {
-                        self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                        self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                     }
                 }
                 wallform(self, ctx, &k, offset, FENCE, &DARKGOLDENROD, false);
             },
             TerrainType::Bars => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, BARS, &GAINSBORO, false);
             },
             TerrainType::Stalagmite => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, STALAGMITE, offset, BLOCK_Z, &DARKGOLDENROD);
             },
             TerrainType::Window => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, WINDOW, &LIGHTSLATEGRAY, false);
             },
             TerrainType::Door => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
                 wallform(self, ctx, &k, offset, DOOR + 4, &SADDLEBROWN, false);
             },
             TerrainType::OpenDoor => {
-                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY); }
+                if !front_of_hole { self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false); }
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
             },
             TerrainType::Table => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, TABLE, offset, BLOCK_Z, &DARKGOLDENROD);
             },
             TerrainType::Fountain => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, FOUNTAIN, offset, BLOCK_Z, &GAINSBORO);
             },
             TerrainType::Altar => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, ALTAR, offset, BLOCK_Z, &GAINSBORO);
             },
             TerrainType::Barrel => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, BARREL, offset, BLOCK_Z, &DARKGOLDENROD);
             },
             TerrainType::Grave => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, GRAVE, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::Stone => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, STONE, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::Menhir => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, MENHIR, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::DeadTree => {
-                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY);
+                self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
                 self.draw_tile(ctx, TREE_TRUNK, offset, BLOCK_Z, &SADDLEBROWN);
             },
             TerrainType::TallGrass => {
