@@ -18,7 +18,8 @@
 (B) 2015-01-24 Location values carry z coordinate for +Multilevel
 (B) 2015-01-24 Multiple area structures exist at the same time for +Multilevel
 (B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
-(B) 2015-01-25 Player status display, show attack/defense values
+(B) 2015-01-25 +Multilevel and FOV interactions, show the stuff below current visible cells
+(B) 2015-01-25 Player status display, show attack/defense values +UI
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
@@ -105,6 +106,7 @@
 (C) 2015-01-24 Use consumable dialog when selecting consumable item in +Inventory, enter to accept esc to cancel
 (C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
 (C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
+(C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
