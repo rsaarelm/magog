@@ -119,11 +119,14 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
                   color: &Rgb, back_color: &Rgb) {
+        let map_color = if self.depth == 0 {
+            Rgb::new(0x33, 0x22, 0x00) } else { Rgb::new(0x22, 0x11, 0x00) };
+
         let (mut color, mut back_color) = match self.fov {
             // XXX: Special case for the solid-black objects that are used to
             // block out stuff to not get recolored. Don't use total black as
             // an actual object color, have something like #010101 instead.
-            Some(FovStatus::Remembered) if *color != BLACK => (BLACK, Rgb::new(0x33, 0x22, 0x00)),
+            Some(FovStatus::Remembered) if *color != BLACK => (BLACK, map_color),
             _ => (*color, *back_color),
         };
         if self.fov == Some(FovStatus::Seen) {
@@ -137,7 +140,6 @@ impl<'a> CellDrawable<'a> {
             }
         }
         let z = z + self.depth as f32 * DEPTH_Z_MODIFIER;
-        if self.depth != 0 && self.fov != Some(FovStatus::Seen) { return; }
 
         let offset = offset + level_z_to_view(self.depth).map(|x| x as f32);
         ctx.draw_image(tilecache::get(idx), offset, z, &color, &back_color);
