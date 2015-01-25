@@ -182,7 +182,7 @@ impl<'a> CellDrawable<'a> {
 
         match k.center {
             TerrainType::Void => {
-                self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
+                //self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
             },
             TerrainType::Water => {
                 self.draw_floor(ctx, WATER, offset, &ROYALBLUE, true);
