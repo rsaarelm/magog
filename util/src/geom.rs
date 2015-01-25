@@ -54,6 +54,58 @@ impl<T: Primitive> V2<T> {
     pub fn dot(self, rhs: V2<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 }
 }
 
+/// 3D geometric vector
+#[derive(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
+pub struct V3<T>(pub T, pub T, pub T);
+
+impl<T: Eq> Eq for V3<T> { }
+
+impl<T: Add<U, Output=V>, U, V> Add<V3<U>> for V3<T> {
+    type Output = V3<V>;
+    fn add(self, rhs: V3<U>) -> V3<V> { V3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2) }
+}
+
+impl<T: Sub<U, Output=V>, U, V> Sub<V3<U>> for V3<T> {
+    type Output = V3<V>;
+    fn sub(self, rhs: V3<U>) -> V3<V> { V3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2) }
+}
+
+impl<T: Neg<Output=U>, U> Neg<> for V3<T> {
+    type Output = V3<U>;
+    fn neg(self) -> V3<U> { V3(-self.0, -self.1, -self.2) }
+}
+
+impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V3<T> {
+    type Output = V3<V>;
+    fn mul(self, rhs: U) -> V3<V> { V3(self.0 * rhs, self.1 * rhs, self.2 * rhs) }
+}
+
+impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V3<T> {
+    type Output = V3<V>;
+    fn div(self, rhs: U) -> V3<V> { V3(self.0 / rhs, self.1 / rhs, self.2 / rhs) }
+}
+
+impl<T> V3<T> {
+    pub fn to_array(self) -> [T; 3] { [self.0, self.1, self.2] }
+}
+
+impl<T> V3<T> {
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> V3<U> {
+        V3(f(self.0), f(self.1), f(self.2))
+    }
+}
+
+impl<T: Primitive> V3<T> {
+    /// Componentwise multiplication.
+    pub fn mul(self, rhs: V3<T>) -> V3<T> { V3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2) }
+
+    /// Componentwise division.
+    pub fn div(self, rhs: V3<T>) -> V3<T> { V3(self.0 / rhs.0, self.1 / rhs.1, self.2 / rhs.2) }
+
+    /// Dot product.
+    pub fn dot(self, rhs: V3<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2 }
+}
+
 /// A rectangle type consisting of position and size vectors.
 #[derive(Copy, Show, PartialEq, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);

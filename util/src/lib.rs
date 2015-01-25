@@ -12,7 +12,7 @@ extern crate time;
 extern crate image;
 
 pub use rgb::{Rgb, Rgba};
-pub use geom::{Rect, V2, RectIter};
+pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
