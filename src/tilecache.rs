@@ -76,6 +76,7 @@ pub mod tile {
     pub static MENHIR : usize = 70;
     pub static TALLGRASS : usize = 80;
     pub static XYWALL : usize = 82;
+    pub static BATTLEMENT : usize = 96;
 }
 
 pub mod icon {

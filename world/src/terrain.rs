@@ -25,7 +25,7 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 28;
+    count: 29;
 
     Void, "void";
     Floor, "floor";
@@ -56,6 +56,7 @@ terrain_data! {
     Menhir, "menhir";
     DeadTree, "dead tree";
     TallGrass, "tall grass";
+    Battlement, "battlement";
 }
 
 
@@ -69,7 +70,8 @@ impl TerrainType {
 
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
+            Wall | RockWall | Rock | Door | OpenDoor | Window |
+                Bars | Fence | Battlement => true,
             _ => false
         }
     }
@@ -91,7 +93,7 @@ impl TerrainType {
     pub fn blocks_walk(self) -> bool {
         match self {
             Floor | Shallows | Grass | Grass2 | Downstairs
-                | Door | OpenDoor | TallGrass => false,
+                | Door | OpenDoor | TallGrass | Battlement => false,
             _ => true
         }
     }

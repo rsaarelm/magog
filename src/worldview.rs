@@ -296,6 +296,10 @@ impl<'a> CellDrawable<'a> {
             TerrainType::TallGrass => {
                 self.draw_tile(ctx, TALLGRASS, offset, BLOCK_Z, &GOLD);
             },
+            TerrainType::Battlement => {
+                wallfloor(self, ctx, &k, offset);
+                wallform(self, ctx, &k, offset, BATTLEMENT, &LIGHTSLATEGRAY, true);
+            },
         }
 
         fn blockform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, mut offset: V2<f32>, idx: usize, color: &Rgb) {
@@ -326,20 +330,24 @@ impl<'a> CellDrawable<'a> {
 
         fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
+            // HACK: You can walk on top of battlements, so place them between
+            // the regular block z and floor z so that they show below the
+            // entity sprites.
+            let z = if idx == BATTLEMENT { BLOCK_Z + 0.0005 } else { BLOCK_Z };
             if block {
                 if opaque {
-                    c.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
+                    c.draw_tile(ctx, CUBE, offset, z, &BLACK);
                 } else {
-                    c.draw_tile(ctx, idx + 2, offset, BLOCK_Z, color);
+                    c.draw_tile(ctx, idx + 2, offset, z, color);
                     return;
                 }
             }
             if left_wall && right_wall {
-                c.draw_tile(ctx, idx + 2, offset, BLOCK_Z, color);
+                c.draw_tile(ctx, idx + 2, offset, z, color);
             } else if left_wall {
-                c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
+                c.draw_tile(ctx, idx, offset, z, color);
             } else if right_wall {
-                c.draw_tile(ctx, idx + 1, offset, BLOCK_Z, color);
+                c.draw_tile(ctx, idx + 1, offset, z, color);
             } else if !block || !k.s.is_wall() {
                 // NB: This branch has some actual local kernel logic not
                 // handled by wall_flags_lrb.
@@ -349,7 +357,7 @@ impl<'a> CellDrawable<'a> {
                 } else {
                     idx + 3
                 };
-                c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
+                c.draw_tile(ctx, idx, offset, z, color);
             }
         }
 
