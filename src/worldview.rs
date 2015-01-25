@@ -25,11 +25,13 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
             // that shifts lower z-levels off-screen.
             let pt = pt + V2(depth, depth);
             let screen_pos = chart_to_screen(pt);
-            let mut loc = *chart + pt;
-            loc.z += depth as i8;
-            if !hole_seen && loc.terrain().is_hole() { hole_seen = true; }
+            let loc = *chart + pt;
+            let depth_loc = Location { z: loc.z + depth as i8, ..loc };
+            if !hole_seen && depth_loc.terrain().is_hole() { hole_seen = true; }
+            // XXX: Grab FOV and light from zero z layer. Not sure what the
+            // really right approach here is.
             let cell_drawable = CellDrawable::new(
-                loc, 0, loc.fov_status(), loc.light(), damage_timers);
+                depth_loc, depth, loc.fov_status(), loc.light(), damage_timers);
             cell_drawable.draw(ctx, screen_pos);
         }
         // Don't draw the lower level unless there was at least one hole.
