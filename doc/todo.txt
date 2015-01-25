@@ -15,7 +15,6 @@
 (B) 2014-12-13 Winning the game +Content
 (B) 2015-01-20 Spell items that can be equipped and activated +Content
 (B) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
-(B) 2015-01-24 Location values carry z coordinate for +Multilevel
 (B) 2015-01-24 Multiple area structures exist at the same time for +Multilevel
 (B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
 (B) 2015-01-25 +Multilevel and FOV interactions, show the stuff below current visible cells
@@ -195,6 +194,7 @@ x 2015-01-23 2015-01-05 Canvas stores last rendered frame in texture for saving 
 x 2015-01-25 2015-01-24 +Multilevel display shows lower level terrain through chasm tiles
 x 2015-01-25 2015-01-24 Blockform rear like edges on wall tiles on back ends of +Multilevel edges down (special case into isometric-like edges if there's a wallform in the Z+1?)
 x 2015-01-25 2015-01-24 Don't draw floors behind half-wall wallform tiles when there's a chasm behind them on +Multilevel view (do they need the floor tile at all?)
+x 2015-01-25 2015-01-24 Location values carry z coordinate for +Multilevel
 x 2015-01-25 2015-01-24 Proof-of-concept display for +Multilevel with a preset map
 x 2015-01-25 2015-01-24 Retouch wall tiles to have repeating 16-pixel vertical texture and blockforms 8 pixels for +Multilevel tiling (lower level doubles blockforms) +Gimmie
 x 2015-01-25 2015-01-24 Tint lower level +Multilevel graphics with a distinct shade, turn the black into gray?
