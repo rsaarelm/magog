@@ -27,7 +27,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx_backend"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#6a29ba6f4e5c6f983e5a464d03d10173299fa806"
+source = "git+https://github.com/rsaarelm/calx#be54a2f388854dd44284230b6945b1579fb7651f"
 dependencies = [
  "calx_util 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "glium 0.0.2 (git+https://github.com/tomaka/glium)",
@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "calx_util"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#6a29ba6f4e5c6f983e5a464d03d10173299fa806"
+source = "git+https://github.com/rsaarelm/calx#be54a2f388854dd44284230b6945b1579fb7651f"
 dependencies = [
  "image 0.2.0-alpha.6 (git+https://github.com/PistonDevelopers/image)",
  "rustc-serialize 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
