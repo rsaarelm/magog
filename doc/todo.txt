@@ -1,4 +1,15 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(A) 2015-01-26 +Cubes flat walls no longer need to worry about floors below them. Solid wall constructions will form a floor above though. Hm. No XY-walls, just use hulls for that stuff.
+(A) 2015-01-26 +Cubes hulls draw front faces if they face open space, top floor if top is below z-2 (normal floor, steppable ramp, or levels below), lines on back of top floor if space in back
+(A) 2015-01-26 +Cubes hulls that face open space to NW, SW get their left side cut off, same for right. Draw an edge line. If both halves are open, the hull collapses into a single-cell hex form.
+(A) 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here?
+(A) 2015-01-26 +Engine Z coordinate grows downwards to match depth
+(A) 2015-01-26 Floors should also use +Cubes logic, isometric base, but edged (water, magma) clip to half when side is unsupported and collapse to clipped hex base when unconnected
+(A) 2015-01-26 Oh and this whole +Cubes business involves setting the Z basis vector to (0, 8) in pixel space.
+(A) 2015-01-26 Start a new sprite sheet for +Cubes with 32x24 plan, these are half-height iso cubes. Use the vertically touching iso floor base.
+(A) 2015-01-26 Switch the base of the geometry from hex prisms into +Cubes, it'll be great, just you see.
+(A) 2015-01-26 Unless I come up with something clever, wall tiles will need to be cut to vertical halves for +Cubes. On the other hand, we get to be more creative with reusing bits.
+(A) 2015-01-26 With +Cubes, the things that aren't hulls or walls, like trees, tables etc. are called props. A prop standing on a ramp at z-1 won't be drawn and the ramp will not get a floor.
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Can only equip items up to current mana pool +Content
