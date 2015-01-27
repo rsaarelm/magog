@@ -1,10 +1,6 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2015-01-26 +Cubes flat walls no longer need to worry about floors below them. Solid wall constructions will form a floor above though. Hm. No XY-walls, just use hulls for that stuff.
-(A) 2015-01-26 +Cubes hulls draw front faces if they face open space, top floor if top is below z-2 (normal floor, steppable ramp, or levels below), lines on back of top floor if space in back
-(A) 2015-01-26 +Cubes hulls that face open space to NW, SW get their left side cut off, same for right. Draw an edge line. If both halves are open, the hull collapses into a single-cell hex form.
 (A) 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here?
-(A) 2015-01-26 +Engine Z coordinate grows downwards to match depth
-(A) 2015-01-26 Oh and this whole +Cubes business involves setting the Z basis vector to (0, 8) in pixel space.
+(A) 2015-01-26 Draw wall-style stuff for +Cubes
 (A) 2015-01-26 Switch the base of the geometry from hex prisms into +Cubes, it'll be great, just you see.
 (A) 2015-01-26 Unless I come up with something clever, wall tiles will need to be cut to vertical halves for +Cubes. On the other hand, we get to be more creative with reusing bits.
 (A) 2015-01-26 With +Cubes, the things that aren't hulls or walls, like trees, tables etc. are called props. A prop standing on a ramp at z-1 won't be drawn and the ramp will not get a floor.
@@ -209,4 +205,8 @@ x 2015-01-25 2015-01-24 Location values carry z coordinate for +Multilevel
 x 2015-01-25 2015-01-24 Proof-of-concept display for +Multilevel with a preset map
 x 2015-01-25 2015-01-24 Retouch wall tiles to have repeating 16-pixel vertical texture and blockforms 8 pixels for +Multilevel tiling (lower level doubles blockforms) +Gimmie
 x 2015-01-25 2015-01-24 Tint lower level +Multilevel graphics with a distinct shade, turn the black into gray?
+x 2015-01-27 2015-01-26 +Cubes hulls draw front faces if they face open space, top floor if top is below z-2 (normal floor, steppable ramp, or levels below), lines on back of top floor if space in back
+x 2015-01-27 2015-01-26 +Cubes hulls that face open space to NW, SW get their left side cut off, same for right. Draw an edge line. If both halves are open, the hull collapses into a single-cell hex form.
+x 2015-01-27 2015-01-26 +Engine Z coordinate grows downwards to match depth
+x 2015-01-27 2015-01-26 Oh and this whole +Cubes business involves setting the Z basis vector to (0, 8) in pixel space.
 x 2015-01-27 2015-01-26 Start a new sprite sheet for +Cubes with 32x24 plan, these are half-height iso cubes. Use the vertically touching iso floor base.
