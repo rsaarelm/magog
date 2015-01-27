@@ -16,7 +16,7 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
 
     for y in 0..(rows) {
         for x in 0..(columns) {
-            tiles.push(ctx.add_image(V2(offset.0, offset.1), SubImage::new(
+            tiles.push(ctx.add_image(V2(offset.0, offset.1), &SubImage::new(
                 &mut image,
                 x * elt_dim.0 as u32, y * elt_dim.1 as u32,
                 elt_dim.0 as u32, elt_dim.1 as u32)));
