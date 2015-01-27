@@ -1,3 +1,4 @@
+use time;
 use std::io::File;
 use std::io::fs::PathExtensions;
 use std::collections::HashMap;
@@ -221,7 +222,9 @@ impl GameState {
             use std::io::File;
             use image;
             let shot = ctx.screenshot();
-            let file = File::create(&Path::new("/tmp/shot.png")).unwrap();
+            let file = File::create(&Path::new(
+                    format!("/tmp/shot-{}.png", time::precise_time_s() as u64)))
+                    .unwrap();
             let _ = image::ImageRgb8(shot).save(file, image::PNG);
 
             self.screenshot_requested = false;
