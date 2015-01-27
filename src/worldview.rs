@@ -224,10 +224,6 @@ impl<'a> CellDrawable<'a> {
 
         // Left half.
         if draw_left {
-            if !k.nw.is_hull() && k.below_nw.is_hull() {
-                self.draw_tile(ctx, BACK_EDGE, offset, BLOCK_Z, wall_color);
-            }
-
             if !k.sw.is_hull() {
                 self.draw_tile(ctx, wall_idx, offset, BLOCK_Z, wall_color);
             }
@@ -244,11 +240,6 @@ impl<'a> CellDrawable<'a> {
             }
 
             if !draw_right {
-                if !k.e.is_hull() && k.below_e.is_hull() {
-                    self.draw_tile(ctx, SIDE_EDGE, offset,
-                        BLOCK_Z, wall_color);
-                }
-
                 if draw_top {
                     self.draw_tile2(ctx, SIDE_EDGE, offset, BLOCK_Z,
                         self.depth - 1, top_color, &BLACK);
@@ -258,10 +249,6 @@ impl<'a> CellDrawable<'a> {
 
         // Right half
         if draw_right {
-            if !k.ne.is_hull() && k.below_ne.is_hull() {
-                self.draw_tile(ctx, BACK_EDGE + 1, offset, BLOCK_Z, wall_color);
-            }
-
             if !k.se.is_hull() {
                 self.draw_tile(ctx, wall_idx + 1, offset, BLOCK_Z, wall_color);
             }
@@ -277,11 +264,6 @@ impl<'a> CellDrawable<'a> {
             }
 
             if !draw_left {
-                if !k.w.is_hull() && k.below_w.is_hull() {
-                    self.draw_tile(ctx, SIDE_EDGE + 1, offset,
-                        BLOCK_Z, wall_color);
-                }
-
                 if draw_top {
                     self.draw_tile2(ctx, SIDE_EDGE + 1, offset,
                         BLOCK_Z, self.depth - 1, top_color, &BLACK);
@@ -312,9 +294,6 @@ impl<'a> CellDrawable<'a> {
         let is_thick = extend_left && extend_right && k.n.is_hull();
 
         // Left half.
-        if !k.nw.is_hull() && k.below_nw.is_hull() {
-            self.draw_tile(ctx, BACK_EDGE, offset, BLOCK_Z, wall_color);
-        }
 
         if !k.sw.is_hull() {
             let idx = if extend_left { wall_idx } else { wall_idx + 2 };
@@ -341,9 +320,6 @@ impl<'a> CellDrawable<'a> {
         }
 
         // Right half.
-        if !k.ne.is_hull() && k.below_ne.is_hull() {
-            self.draw_tile(ctx, BACK_EDGE + 1, offset, BLOCK_Z, wall_color);
-        }
 
         if !k.se.is_hull() {
             let idx = if extend_right { wall_idx + 1 } else { wall_idx + 3 };
@@ -585,15 +561,11 @@ impl<'a> CellDrawable<'a> {
 struct Kernel<C> {
     n: C,
     ne: C,
-    below_ne: C,
     e: C,
-    below_e: C,
     nw: C,
-    below_nw: C,
     center: C,
     se: C,
     w: C,
-    below_w: C,
     sw: C,
     s: C,
     up: C,
@@ -605,15 +577,11 @@ impl<C: Clone> Kernel<C> {
         Kernel {
             n: get(loc + V2(-1, -1)),
             ne: get(loc + V2(0, -1)),
-            below_ne: get(Location { z: loc.z + 1, ..loc + V2(0, -1) }),
             e: get(loc + V2(1, -1)),
-            below_e: get(Location { z: loc.z + 1, ..loc + V2(1, -1) }),
             nw: get(loc + V2(-1, 0)),
-            below_nw: get(Location { z: loc.z + 1, ..loc + V2(-1, 0) }),
             center: get(loc),
             se: get(loc + V2(1, 0)),
             w: get(loc + V2(-1, 1)),
-            below_w: get(Location { z: loc.z + 1, ..loc + V2(-1, 1) }),
             sw: get(loc + V2(0, 1)),
             s: get(loc + V2(1, 1)),
             up: get(Location { z: loc.z - 1, ..loc }),
