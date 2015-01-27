@@ -2,13 +2,13 @@ use std::num::{UnsignedInt, Float};
 use std::iter;
 use std::cmp::{max};
 use std::num::{NumCast};
-use image::{GenericImage, SubImage, ImageBuffer, Rgba, Pixel};
+use image::{GenericImage, ImageBuffer, Rgba, Pixel};
 use img;
 use geom::{V2, Rect};
 use primitive::Primitive;
 
 pub struct AtlasBuilder {
-    images: Vec<ImageBuffer<Vec<u8>, u8, Rgba<u8>>>,
+    images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     draw_offsets: Vec<V2<i32>>,
 }
 
@@ -20,24 +20,21 @@ impl AtlasBuilder {
         }
     }
 
-    pub fn push<P: Pixel<u8> + 'static, I: GenericImage<P>>(
-        &mut self, offset: V2<i32>, mut image: I) -> usize {
-
-        let Rect(pos, dim) = img::crop_alpha(&image);
-        let cropped = SubImage::new(&mut image,
-            pos.0 as u32, pos.1 as u32, dim.0 as u32, dim.1 as u32);
-
-        let (w, h) = cropped.dimensions();
-        let img = ImageBuffer::from_fn(
-            w, h, Box::new(|&: x, y| cropped.get_pixel(x, y).to_rgba()));
-        self.images.push(img);
+    pub fn push<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
+        &mut self, offset: V2<i32>, image: &I) -> usize {
+        let Rect(pos, dim) = img::crop_alpha(image);
+        let image = ImageBuffer::from_fn(
+            dim.0 as u32, dim.1 as u32,
+            Box::new(|&: x, y| image.get_pixel(
+                pos.0 as u32 + x, pos.1 as u32 + y).to_rgba()));
+        self.images.push(image);
         self.draw_offsets.push(pos + offset);
         self.images.len() - 1
     }
 }
 
 pub struct Atlas {
-    pub image: ImageBuffer<Vec<u8>, u8, Rgba<u8>>,
+    pub image: ImageBuffer<Rgba<u8>, Vec<u8>>,
     pub items: Vec<AtlasItem>,
 }
 
@@ -81,7 +78,7 @@ impl Atlas {
         }
 
         // Blit subimages to atlas image.
-        let mut image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::new(d, d);
+        let mut image: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(d, d);
         for (i, &offset) in offsets.iter().enumerate() {
             img::blit(&builder.images[i], &mut image, offset);
         }

@@ -5,8 +5,8 @@ use geom::{V2, Rect};
 use rgb::Rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
-pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
-    image: &I, color: &Rgb) -> ImageBuffer<Vec<u8>, u8, Rgba<u8>> {
+pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>>(
+    image: &I, color: &Rgb) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let (w, h) = image.dimensions();
     ImageBuffer::from_fn(w, h, Box::new(|&: x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
@@ -19,7 +19,7 @@ pub fn color_key<P: Pixel<u8>, I: GenericImage<P>>(
 
 /// Return the rectangle enclosing the parts of the image that aren't fully
 /// transparent.
-pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
+pub fn crop_alpha<T: Primitive+Default, P: Pixel<Subpixel=T>, I: GenericImage<Pixel=P>>(
     image: &I) -> Rect<i32> {
     let (w, h) = image.dimensions();
     let mut p1 = V2(w as i32, h as i32);
@@ -41,8 +41,11 @@ pub fn crop_alpha<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>>(
     else { Rect(p1, p2 - p1) }
 }
 
-pub fn blit<T: Primitive+Default, P: Pixel<T>, I: GenericImage<P>, J: GenericImage<P>> (
-    image: &I, target: &mut J, offset: V2<i32>) {
+pub fn blit<T, P, I, J>(image: &I, target: &mut J, offset: V2<i32>)
+    where T: Primitive+Default,
+          P: Pixel<Subpixel=T>,
+          I: GenericImage<Pixel=P>,
+          J: GenericImage<Pixel=P> {
     let (w, h) = image.dimensions();
     // TODO: Check for going over bounds.
     for y in 0..(h) {

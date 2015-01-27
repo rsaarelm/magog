@@ -156,7 +156,7 @@ impl Renderer {
            ((sy - ry) * self.size.1 as f32 / rh) as i32)
     }
 
-    pub fn canvas_pixels(&self) -> ImageBuffer<Vec<u8>, u8, Rgb<u8>> {
+    pub fn canvas_pixels(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         self.buffer.read()
     }
 }

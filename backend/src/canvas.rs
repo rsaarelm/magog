@@ -60,8 +60,8 @@ impl CanvasBuilder {
     }
 
     /// Add an image into the canvas image atlas.
-    pub fn add_image<P: Pixel<u8> + 'static, I: GenericImage<P>>(
-        &mut self, offset: V2<i32>, image: I) -> Image {
+    pub fn add_image<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
+        &mut self, offset: V2<i32>, image: &I) -> Image {
         Image(self.builder.push(offset, image))
     }
 
@@ -82,15 +82,17 @@ impl CanvasBuilder {
         for i in 0u32..96 {
             let x = 8u32 * (i % 16u32);
             let y = 8u32 * (i / 16u32);
-            let Image(idx) = self.add_image(V2(0, -8), SubImage::new(&mut font_sheet, x, y, 8, 8));
+            let Image(idx) = self.add_image(
+                V2(0, -8),
+                &SubImage::new(&mut font_sheet, x, y, 8, 8));
             assert!(idx - i as usize == FONT_IDX);
         }
     }
 
     /// Load a solid color element into the texture atlas.
     fn init_solid(&mut self) {
-        let image: ImageBuffer<Vec<u8>, u8, Rgba<u8>> = ImageBuffer::from_fn(1, 1, Box::new(|&: _, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])));
-        let Image(idx) = self.add_image(V2(0, 0), image);
+        let image: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(1, 1, Box::new(|&: _, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])));
+        let Image(idx) = self.add_image(V2(0, 0), &image);
         assert!(idx == SOLID_IDX);
     }
 }
@@ -218,7 +220,7 @@ impl Canvas {
     }
 
     /// Return a screenshot image of the last frame rendered.
-    pub fn screenshot(&self) -> ImageBuffer<Vec<u8>, u8, image::Rgb<u8>> {
+    pub fn screenshot(&self) -> ImageBuffer<image::Rgb<u8>, Vec<u8>> {
         self.renderer.canvas_pixels()
     }
 }
