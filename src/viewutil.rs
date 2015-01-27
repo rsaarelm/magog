@@ -12,7 +12,7 @@ pub static FLOOR_Z: f32 = 0.312f32;
 pub static BLOCK_Z: f32 = 0.311f32;
 
 /// For drawing lower levels, z = FLOOR_Z + level_depth * DEPTH_Z_MODIFIER;
-pub static DEPTH_Z_MODIFIER: f32 = -0.002f32;
+pub static DEPTH_Z_MODIFIER: f32 = 0.002f32;
 
 /// Draw layer for visual effects
 pub static FX_Z: f32 = 0.300f32;
@@ -31,7 +31,7 @@ pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
 }
 
 /// Convert depth difference to pixel offset.
-pub fn level_z_to_view(z: i32) -> V2<i32> { V2(0, z * -PIXEL_UNIT) }
+pub fn level_z_to_view(z: i32) -> V2<i32> { V2(0, z * PIXEL_UNIT / 2) }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).

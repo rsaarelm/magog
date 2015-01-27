@@ -24,11 +24,32 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
     }
 }
 
+// XXX Copy-paste code to get alternating offsets for block tiles.
+fn batch2(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
+       elt_dim: (i32, i32), offset: (i32, i32)) {
+    let mut image = color_key(
+        &image::load_from_memory(data).unwrap(),
+        &Rgb::new(0x00u8, 0xFFu8, 0xFFu8));
+    let (w, h) = image.dimensions();
+    let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
+
+    for y in 0..(rows) {
+        for x in 0..(columns) {
+            let offset = V2(offset.0 + if x % 2 == 1 { 16 } else { 0 }, offset.1);
+            tiles.push(ctx.add_image(offset, &SubImage::new(
+                &mut image,
+                x * elt_dim.0 as u32, y * elt_dim.1 as u32,
+                elt_dim.0 as u32, elt_dim.1 as u32)));
+        }
+    }
+}
+
 /// Initialize global tile cache.
 pub fn init(ctx: &mut CanvasBuilder) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
         batch(&mut *tiles, ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -16));
+        batch2(&mut *tiles, ctx, include_bytes!("../assets/block.png"), (16, 24), (-16, -8));
         batch(&mut *tiles, ctx, include_bytes!("../assets/icon.png"), (8, 8), (0, -8));
         batch(&mut *tiles, ctx, include_bytes!("../assets/logo.png"), (92, 25), (0, 0));
     });
@@ -77,15 +98,28 @@ pub mod tile {
     pub static TALLGRASS : usize = 80;
     pub static XYWALL : usize = 82;
     pub static BATTLEMENT : usize = 96;
+
+    // Block tiles, these are half-width for clip effects. Assume render code
+    // will use (idx + 1)s as needed.
+    pub static ROCK_BLOCK : usize = 256;
+    pub static BACK_EDGE : usize = 260;
+    pub static SIDE_EDGE : usize = 262;
+    pub static FRONT_EDGE : usize = 264;
+    pub static BLANK_BLOCK_TOP : usize = 266;
+    pub static WALL_BLOCK_TOP : usize = 270;
+    pub static FLOOR_BLOCK_TOP : usize = 288;
+    pub static WALL_BLOCK : usize = 294;
+    pub static WINDOW_BLOCK : usize = 298;
+    pub static DOORWAY_BLOCK : usize = 302;
 }
 
 pub mod icon {
-    pub static HEART : usize = 256;
-    pub static HALF_HEART : usize = 257;
-    pub static NO_HEART : usize = 258;
-    pub static SHARD : usize = 259;
-    pub static HALF_SHARD : usize = 260;
-    pub static NO_SHARD : usize = 261;
+    pub static HEART : usize = 384;
+    pub static HALF_HEART : usize = 385;
+    pub static NO_HEART : usize = 386;
+    pub static SHARD : usize = 387;
+    pub static HALF_SHARD : usize = 388;
+    pub static NO_SHARD : usize = 389;
 }
 
 pub static LOGO: usize = 256 + 128;

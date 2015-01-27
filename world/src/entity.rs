@@ -82,8 +82,9 @@ impl Entity {
             // Can't open doors without hands.
             return false;
         }
-        if loc.blocks_walk() { return false; }
-        true
+        return loc.terrain().is_space()
+            && loc.above().terrain().is_space()
+            && loc.below().terrain().is_ground();
     }
 
     /// Return whether the entity can move in a direction.
@@ -91,7 +92,9 @@ impl Entity {
         let place = world::with(|w| w.spatial.get(self));
         if let Some(Place::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
-            return self.can_enter(new_loc);
+            return self.can_enter(new_loc) ||
+                self.can_enter(new_loc.above()) ||
+                self.can_enter(new_loc.below());
         }
         return false;
     }
@@ -100,11 +103,19 @@ impl Entity {
     pub fn step(self, dir: Dir6) {
         let place = world::with(|w| w.spatial.get(self));
         if let Some(Place::At(loc)) = place {
-            let new_loc = loc + dir.to_v2();
-            if self.can_enter(new_loc) {
-                world::with_mut(|w| w.spatial.insert_at(self, new_loc));
-                self.on_move_to(new_loc);
+            let mut new_loc = loc + dir.to_v2();
+            // Try stepping up or down.
+            if !self.can_enter(new_loc) {
+                if self.can_enter(new_loc.above()) {
+                    new_loc = new_loc.above();
+                } else if self.can_enter(new_loc.below()) {
+                    new_loc = new_loc.below();
+                } else {
+                    return;
+                }
             }
+            world::with_mut(|w| w.spatial.insert_at(self, new_loc));
+            self.on_move_to(new_loc);
         }
     }
 

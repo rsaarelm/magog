@@ -155,6 +155,9 @@ impl Location {
         }
         return Light::new(1.0);
     }
+
+    pub fn below(&self) -> Location { Location { z: self.z + 1, ..*self } }
+    pub fn above(&self) -> Location { Location { z: self.z - 1, ..*self } }
 }
 
 impl Add<V2<i32>> for Location {

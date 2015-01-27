@@ -25,11 +25,10 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 29;
+    count: 28;
 
-    Void, "void";
+    Space, "space";
     Floor, "floor";
-    Chasm, "chasm";
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";
@@ -59,7 +58,6 @@ terrain_data! {
     Battlement, "battlement";
 }
 
-
 impl TerrainType {
     pub fn from_name(name: &str) -> Option<TerrainType> {
         for &t in TERRAINS.iter() {
@@ -68,9 +66,23 @@ impl TerrainType {
         None
     }
 
+    /// Is this terrain a solid block of mass? Hull terrain gets shaped based
+    /// on its surroundings when drawn.
+    pub fn is_hull(self) -> bool { self.is_block() || self.is_wall() }
+
+    /// Is this terrain a natural landscape hull that gets shaped hexagonally?
+    pub fn is_block(self) -> bool {
+        match self {
+            // TODO: Figure out the rest of the terrains.
+            Rock
+                => true,
+            _ => false
+        }
+    }
+
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | RockWall | Rock | Door | OpenDoor | Window |
+            Wall | RockWall | Door | OpenDoor | Window |
                 Bars | Fence | Battlement => true,
             _ => false
         }
@@ -109,7 +121,12 @@ impl TerrainType {
 
     pub fn is_luminous(self) -> bool { self == Magma }
 
-    pub fn is_hole(self) -> bool { self == Chasm }
+    pub fn is_space(self) -> bool { self == Space }
+
+    pub fn is_ground(self) -> bool {
+        // TODO: Liquids are hulls but not ground.
+        self.is_hull()
+    }
 
     pub fn name(self) -> &'static str { terrain_name(self) }
 }

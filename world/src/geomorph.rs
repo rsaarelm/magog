@@ -65,7 +65,7 @@ fn legend(glyph: char) -> Option<TerrainType> {
         '!' => Some(Stalagmite),
         ';' => Some(TallGrass),
         '>' => Some(Downstairs),
-        'q' => Some(Void),
+        'q' => Some(Space),
         _ => None
     }
 }
