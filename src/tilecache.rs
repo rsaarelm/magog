@@ -96,11 +96,11 @@ pub mod tile {
     pub static WALL : usize = 256;
     pub static WINDOW : usize = 274;
     pub static DOOR : usize = 262;
+    pub static BARS : usize = 288;
 
     // TODO: Make own tiles for these
     pub static ROCKWALL : usize = 256;
     pub static FENCE : usize = 256;
-    pub static BARS : usize = 256;
     pub static BATTLEMENT : usize = 256;
 }
 
