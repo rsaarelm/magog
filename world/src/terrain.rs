@@ -25,10 +25,9 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 27;
+    count: 26;
 
     Space, "space";
-    Floor, "floor";
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";
@@ -68,8 +67,17 @@ impl TerrainType {
 
     pub fn is_block(self) -> bool {
         match self {
-            Rock => true,
+            Rock | Water | Shallows | Magma | Grass | Grass2 => true,
             _ => false
+        }
+    }
+
+    /// Can you stand on this terrain?
+    pub fn is_solid(self) -> bool {
+        match self {
+            Water | Magma => false,
+            Wall => true,
+            _ => self.is_block()
         }
     }
 
@@ -80,6 +88,8 @@ impl TerrainType {
             _ => false
         }
     }
+
+    pub fn is_hull(self) -> bool { self.is_wall() || self.is_block() }
 
     pub fn blocks_sight(self) -> bool {
         match self {
@@ -97,8 +107,7 @@ impl TerrainType {
 
     pub fn blocks_walk(self) -> bool {
         match self {
-            Floor | Shallows | Grass | Grass2 | Downstairs
-                | Door | OpenDoor | TallGrass => false,
+            Space | Downstairs | Door | OpenDoor | TallGrass => false,
             _ => true
         }
     }

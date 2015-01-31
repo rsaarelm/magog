@@ -66,7 +66,7 @@ impl Area {
         mapgen::gen_herringbone(
             &mut rng,
             &spec,
-            |p, t| {terrain.insert(Location::new(0, 0, 0) + p, t);});
+            |x, y, z, t| {terrain.insert(Location::new(x as i8, y as i8, z as i8), t);});
 
         // Generate open slots that can be used to spawn stuff.
         let mut opens = Vec::new();
@@ -75,7 +75,8 @@ impl Area {
             // total connectivity. Later on, use Dijkstra map that spreads
             // from entrance/exit as a reachability floodfill to do something
             // cleverer here.
-            if !t.blocks_walk() {
+            if loc.z == 0 && !t.blocks_walk() &&
+                terrain.get(&loc.below()).map_or(false, |t| t.is_solid()) {
                 opens.push(loc);
             }
         }
@@ -123,7 +124,11 @@ impl Area {
         self.player_entrance
     }
 
-    fn default_terrain(&self, _loc: Location) -> TerrainType {
-        self.seed.spec.biome.default_terrain()
+    fn default_terrain(&self, loc: Location) -> TerrainType {
+        match loc.z {
+            0 => self.seed.spec.biome.default_terrain(),
+            x if x < 0 => TerrainType::Space,
+            _ => TerrainType::Rock,
+        }
     }
 }

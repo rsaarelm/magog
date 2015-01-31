@@ -77,6 +77,7 @@ pub mod tile {
     pub static MAGMA : usize = 14;
     pub static DOWNSTAIRS : usize = 15;
     pub static ROCK : usize = 16;
+    pub static BLANK_BLOCK : usize = 19;
     pub static TREE_TRUNK : usize = 48;
     pub static TREE_FOLIAGE : usize = 49;
     pub static TABLE : usize = 50;
@@ -100,7 +101,6 @@ pub mod tile {
 
     // TODO: Make own tiles for these
     pub static ROCKWALL : usize = 256;
-    pub static FENCE : usize = 256;
     pub static BATTLEMENT : usize = 256;
 }
 

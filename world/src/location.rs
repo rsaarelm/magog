@@ -46,7 +46,7 @@ impl Location {
     }
 
     pub fn blocks_walk(&self) -> bool {
-        if self.terrain().blocks_walk() { return true; }
+        if self.terrain().blocks_walk() || !self.below().terrain().is_solid() { return true; }
         if self.entities().iter().any(|e| e.blocks_walk()) {
             return true;
         }
