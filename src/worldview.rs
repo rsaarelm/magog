@@ -1,4 +1,3 @@
-use std::iter::range_step;
 use std::collections::HashMap;
 use util::{V2, Rgb, timing};
 use util::color::*;
@@ -16,10 +15,15 @@ use tilecache::tile::*;
 
 pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, u32>) {
     // Draw stuff at most this deep.
-    static MIN_DRAWN_DEPTH: i32 = -3;
+    static MAX_DRAWN_DEPTH: i32 = 8;
 
-    for depth in range_step(0, MIN_DRAWN_DEPTH, -1) {
-        let mut hole_seen = false;
+    for depth in -1..(MAX_DRAWN_DEPTH) {
+        // TODO: Special draw for the above-ground layer (just ramps)
+        if depth == -1 { continue; }
+
+        // Automatically go through from depth -1, beyond that must see a hole
+        // to bother continuing.
+        let mut hole_seen = depth < 0;
         for pt in cells_on_screen() {
             // Displace stuff deeper down to compensate for the projection
             // that shifts lower z-levels off-screen.
@@ -27,11 +31,18 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
             let screen_pos = chart_to_screen(pt);
             let loc = *chart + pt;
             let depth_loc = Location { z: loc.z + depth as i8, ..loc };
-            if !hole_seen && depth_loc.terrain().is_hole() { hole_seen = true; }
-            // XXX: Grab FOV and light from zero z layer. Not sure what the
-            // really right approach here is.
+            hole_seen |= depth_loc.below().terrain().is_space();
+
+            // TODO: Light for lower levels. Currently just grabbing it from
+            // the z = 0 layer.
+            let light = loc.light();
+
+            // Deeper layers get Seen fov. If they are visible through holes,
+            // they get drawn.
+            let fov = if depth == 0 { loc.fov_status() } else { Some(FovStatus::Seen) };
+
             let cell_drawable = CellDrawable::new(
-                depth_loc, depth, loc.fov_status(), loc.light(), damage_timers);
+                depth_loc, depth, fov, light, damage_timers);
             cell_drawable.draw(ctx, screen_pos);
         }
         // Don't draw the lower level unless there was at least one hole.
@@ -88,13 +99,13 @@ impl<'a> CellDrawable<'a> {
         // Shift edge offset from block top level to floor level.
         let offset = offset + V2(0, PIXEL_UNIT / 2).map(|x| x as f32);
 
-        if (self.loc + V2(-1, -1)).terrain().is_hole() {
+        if (self.loc + V2(-1, -1)).terrain().is_space() {
             self.draw_tile(ctx, BLOCK_N, offset, FLOOR_Z, color);
         }
-        if (self.loc + V2(-1, 0)).terrain().is_hole() {
+        if (self.loc + V2(-1, 0)).terrain().is_space() {
             self.draw_tile(ctx, BLOCK_NW, offset, FLOOR_Z, color);
         }
-        if (self.loc + V2(0, -1)).terrain().is_hole() {
+        if (self.loc + V2(0, -1)).terrain().is_space() {
             self.draw_tile(ctx, BLOCK_NE, offset, FLOOR_Z, color);
         }
     }
@@ -141,7 +152,7 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
-        if !self.loc.terrain().is_hole() {
+        if !self.loc.terrain().is_space() {
             self.draw_terrain(ctx, offset);
         }
 
@@ -159,7 +170,7 @@ impl<'a> CellDrawable<'a> {
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
 
         match k.center {
-            TerrainType::Void => {
+            TerrainType::Space => {
                 //self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
             },
             TerrainType::Water => {
@@ -180,9 +191,6 @@ impl<'a> CellDrawable<'a> {
             },
             TerrainType::Floor => {
                 self.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, true);
-            },
-            TerrainType::Chasm => {
-                self.draw_tile(ctx, CHASM, offset, FLOOR_Z, &DARKSLATEGRAY);
             },
             TerrainType::Grass => {
                 self.draw_floor(ctx, FLOOR, offset, &DARKGREEN, true);
@@ -209,7 +217,7 @@ impl<'a> CellDrawable<'a> {
                 // The floor type beneath the fence tile is visible, make it grass
                 // if there's grass behind the fence. Otherwise make it regular
                 // floor.
-                let front_of_hole = k.nw.is_hole() || k.n.is_hole() || k.ne.is_hole();
+                let front_of_hole = k.nw.is_space() || k.n.is_space() || k.ne.is_space();
                 if !front_of_hole {
                     if k.n == TerrainType::Grass || k.ne == TerrainType::Grass || k.nw == TerrainType::Grass {
                         self.draw_floor(ctx, GRASS, offset, &DARKGREEN, true);
@@ -275,10 +283,6 @@ impl<'a> CellDrawable<'a> {
             TerrainType::TallGrass => {
                 self.draw_tile(ctx, TALLGRASS, offset, BLOCK_Z, &GOLD);
             },
-            TerrainType::Battlement => {
-                wallfloor(self, ctx, &k, offset);
-                wallform(self, ctx, &k, offset, BATTLEMENT, &LIGHTSLATEGRAY, true);
-            },
         }
 
         fn blockform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, mut offset: V2<f32>, idx: usize, color: &Rgb) {
@@ -314,7 +318,7 @@ impl<'a> CellDrawable<'a> {
 
         fn wallfloor(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>) {
             // In front of a hole, no floor.
-            if k.nw.is_hole() || k.n.is_hole() || k.ne.is_hole() { return; }
+            if k.nw.is_space() || k.n.is_space() || k.ne.is_space() { return; }
             c.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false);
         }
 
