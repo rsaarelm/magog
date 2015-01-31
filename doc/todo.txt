@@ -1,13 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2015-01-26 With +Cubes, the things that aren't blocks or walls, like trees, tables etc. are called props. A prop standing on a ramp at z-1 won't be drawn and the ramp will not get a floor.
-(A) 2015-01-27 Clean up the old wallform etc. cruft from worldview +Cubes
-(A) 2015-01-27 Get doors working with +Cubes. Open/closed doors, walking through doors.
-(A) 2015-01-27 Procedural mapgen generates +Cubes maps (just drop down triple stacks of things per glyph initially?)
-(A) 2015-01-27 Re-enable FOV with +Cubes
-(A) 2015-01-27 Single-place recoloring function that takes z-depth, world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels.
-(A) 2015-01-28 Restore old terrain elements in +Cubes worldview draw, get old mapgen working again
 (B) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
-(B) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (B) 2014-12-13 Can only equip items up to current mana pool +Content
 (B) 2014-12-13 Enemy ranged attack +Content
 (B) 2014-12-13 Explosions +Content
@@ -26,9 +18,11 @@
 (B) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
 (B) 2015-01-25 +Multilevel and FOV interactions, show the stuff below current visible cells
 (B) 2015-01-25 Player status display, show attack/defense values +UI
-(B) 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull.
-(B) 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes
+(B) 2015-01-27 Single-place recoloring function that takes z-depth, world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels.
+(B) 2015-01-31 Transparent ramp floors with multilevel, don't draw unless ramp is walkable +Render
+(B) 2015-01-31 Walk up and down logic with multilevel +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
+(C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
 (C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
 (C) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
@@ -92,7 +86,6 @@
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
-(C) 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render
 (C) 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
 (C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
@@ -116,6 +109,8 @@
 (C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI
 (C) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
+(C) 2015-01-31 Color drop edge to a lower layer differently if you can walk down it or if it's a long drop +Render
+(C) 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Build
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -216,3 +211,13 @@ x 2015-01-27 2015-01-26 Oh and this whole +Cubes business involves setting the Z
 x 2015-01-27 2015-01-26 Start a new sprite sheet for +Cubes with 32x24 plan, these are half-height iso cubes. Use the vertically touching iso floor base.
 x 2015-01-27 2015-01-26 Switch the base of the geometry from hex prisms into +Cubes, it'll be great, just you see.
 x 2015-01-27 2015-01-26 Unless I come up with something clever, wall tiles will need to be cut to vertical halves for +Cubes. On the other hand, we get to be more creative with reusing bits.
+x 2015-01-31 2015-01-26 With +Cubes, the things that aren't blocks or walls, like trees, tables etc. are called props. A prop standing on a ramp at z-1 won't be drawn and the ramp will not get a floor.
+x 2015-01-31 2015-01-27 Clean up the old wallform etc. cruft from worldview +Cubes
+x 2015-01-31 2015-01-27 Get doors working with +Cubes. Open/closed doors, walking through doors.
+x 2015-01-31 2015-01-27 Procedural mapgen generates +Cubes maps (just drop down triple stacks of things per glyph initially?)
+x 2015-01-31 2015-01-27 Re-enable FOV with +Cubes
+x 2015-01-31 2015-01-28 Restore old terrain elements in +Cubes worldview draw, get old mapgen working again
+z 0000 === Cancelled items ===
+z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
+z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
+z 2015-02-01 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render +Cancel
