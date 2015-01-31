@@ -6,13 +6,11 @@ use ::{SCREEN_W, SCREEN_H};
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
 
-/// Draw layer for floor tiles.
-pub static FLOOR_Z: f32 = 0.312f32;
-/// Draw layer for wall and object tiles.
-pub static BLOCK_Z: f32 = 0.311f32;
+/// Draw layer for tile objects.
+pub static TILE_Z: f32 = 0.302f32;
 
 /// For drawing lower levels, z = FLOOR_Z + level_depth * DEPTH_Z_MODIFIER;
-pub static DEPTH_Z_MODIFIER: f32 = 0.002f32;
+pub static DEPTH_Z_MODIFIER: f32 = 0.001f32;
 
 /// Draw layer for visual effects
 pub static FX_Z: f32 = 0.300f32;
