@@ -68,9 +68,16 @@ impl TerrainType {
         None
     }
 
+    pub fn is_block(self) -> bool {
+        match self {
+            Rock => true,
+            _ => false
+        }
+    }
+
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | RockWall | Rock | Door | OpenDoor | Window |
+            Wall | RockWall | Door | OpenDoor | Window |
                 Bars | Fence | Battlement => true,
             _ => false
         }

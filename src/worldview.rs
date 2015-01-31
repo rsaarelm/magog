@@ -55,29 +55,8 @@ impl<'a> Drawable for CellDrawable<'a> {
                 self.draw_cell(ctx, offset)
             }
             None => {
-                let (front_of_wall, is_door) = classify(self);
-                if front_of_wall && !is_door {
-                    self.draw_tile(ctx, CUBE, offset, BLOCK_Z, &BLACK);
-                } else if !front_of_wall {
-                    self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
-                }
+                self.draw_tile(ctx, BLANK_FLOOR, offset, FLOOR_Z, &BLACK);
             }
-        }
-
-        fn classify(c: &CellDrawable) -> (bool, bool) {
-            let mut front_of_wall = false;
-            let mut is_door = false;
-            let nw = c.loc + V2(-1, 0);
-            let ne = c.loc + V2(0, -1);
-
-            for &p in vec![nw, ne].iter() {
-                let t = p.terrain();
-                if t.is_wall() {
-                    front_of_wall = true;
-                    if !t.blocks_walk() { is_door = true; }
-                }
-            }
-            (front_of_wall, is_door)
         }
     }
 }
@@ -216,7 +195,7 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, DOWNSTAIRS, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::Rock => {
-                blockform(self, ctx, &k, offset, BLOCK, &DARKGOLDENROD);
+                blockform(self, ctx, &k, offset, ROCK, &DARKGOLDENROD);
             }
             TerrainType::Wall => {
                 wallfloor(self, ctx, &k, offset);
@@ -255,7 +234,7 @@ impl<'a> CellDrawable<'a> {
             TerrainType::Door => {
                 wallfloor(self, ctx, &k, offset);
                 wallform(self, ctx, &k, offset, DOOR, &LIGHTSLATEGRAY, true);
-                wallform(self, ctx, &k, offset, DOOR + 4, &SADDLEBROWN, false);
+                wallform(self, ctx, &k, offset, DOOR + 6, &SADDLEBROWN, false);
             },
             TerrainType::OpenDoor => {
                 wallfloor(self, ctx, &k, offset);
@@ -308,18 +287,29 @@ impl<'a> CellDrawable<'a> {
                 // Double blockforms in sub-levels.
                 offset = offset + V2(0, -PIXEL_UNIT/2).map(|x| x as f32);
             }
-            c.draw_tile(ctx, BLOCK_DARK, offset, BLOCK_Z, &BLACK);
-            c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
+            c.draw_tile(ctx, BLANK_FLOOR, offset, BLOCK_Z, &BLACK);
             // Back lines for blocks with open floor behind them.
-            if !k.nw.is_wall() {
+            if !k.nw.is_block() {
                 c.draw_tile(ctx, BLOCK_NW, offset, BLOCK_Z, color);
             }
-            if !k.n.is_wall() {
+            if !k.n.is_block() {
                 c.draw_tile(ctx, BLOCK_N, offset, BLOCK_Z, color);
             }
-            if !k.ne.is_wall() {
+            if !k.ne.is_block() {
                 c.draw_tile(ctx, BLOCK_NE, offset, BLOCK_Z, color);
             }
+
+            // Front faces if visible.
+            if !k.sw.is_block() {
+                c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
+            }
+            if !k.s.is_block() {
+                c.draw_tile(ctx, idx + 1, offset, BLOCK_Z, color);
+            }
+            if !k.se.is_block() {
+                c.draw_tile(ctx, idx + 2, offset, BLOCK_Z, color);
+            }
+
         }
 
         fn wallfloor(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>) {
@@ -328,53 +318,27 @@ impl<'a> CellDrawable<'a> {
             c.draw_floor(ctx, FLOOR, offset, &SLATEGRAY, false);
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb, opaque: bool) {
-            let (left_wall, right_wall, block) = wall_flags_lrb(k);
-            // HACK: You can walk on top of battlements, so place them between
-            // the regular block z and floor z so that they show below the
-            // entity sprites.
-            let z = if idx == BATTLEMENT { BLOCK_Z + 0.0005 } else { BLOCK_Z };
-            if block {
-                if opaque {
-                    c.draw_tile(ctx, CUBE, offset, z, &BLACK);
-                } else {
-                    c.draw_tile(ctx, idx + 2, offset, z, color);
-                    return;
-                }
-            }
-            if left_wall && right_wall {
-                c.draw_tile(ctx, idx + 2, offset, z, color);
-            } else if left_wall {
-                c.draw_tile(ctx, idx, offset, z, color);
-            } else if right_wall {
-                c.draw_tile(ctx, idx + 1, offset, z, color);
-            } else if !block || !k.s.is_wall() {
-                // NB: This branch has some actual local kernel logic not
-                // handled by wall_flags_lrb.
-                let idx = if k.n.is_wall() && (!k.nw.is_wall() || !k.ne.is_wall()) {
-                    // TODO: Walltile-specific XY-walls
-                    XYWALL
-                } else {
-                    idx + 3
-                };
-                c.draw_tile(ctx, idx, offset, z, color);
-            }
-        }
+        fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb, _opaque: bool) {
+            // Create a connectivity bit mask where the bit positions match
+            // the wall tile fragments indices.
+            let flags =
+                if k.nw.is_wall() { 1 } else { 0 } +
+                if k.se.is_wall() { 2 } else { 0 } +
+                if k.sw.is_wall() { 4 } else { 0 } +
+                if k.ne.is_wall() { 8 } else { 0 };
 
-        // Return code:
-        // (there is a wall piece to the left front of the tile,
-        //  there is a wall piece to the right front of the tile,
-        //  there is a solid block in the tile)
-        fn wall_flags_lrb(k: &Kernel<TerrainType>) -> (bool, bool, bool) {
-            if k.nw.is_wall() && k.n.is_wall() && k.ne.is_wall() {
-                // If there is open space to east or west, even if this block
-                // has adjacent walls to the southeast or the southwest, those
-                // will be using thin wall sprites, so this block needs to have
-                // the corresponding wall bit to make the wall line not have
-                // gaps.
-                (!k.w.is_wall() || !k.sw.is_wall(), !k.e.is_wall() || !k.se.is_wall(), true)
-            } else {
-                (k.nw.is_wall(), k.ne.is_wall(), false)
+            // Draw the segments. Make sure the order does the back parts
+            // before the front parts.
+            for &i in [0, 3, 2, 1].iter() {
+                if i == 2 {
+                    // Always draw the center pillar after the back walls are
+                    // drawn.
+                    c.draw_tile(ctx, idx + 4, offset, BLOCK_Z, color);
+                    c.draw_tile(ctx, idx + 5, offset, BLOCK_Z, color);
+                }
+                if flags & (1 << i) != 0 {
+                    c.draw_tile(ctx, idx + i, offset, BLOCK_Z, color);
+                }
             }
         }
     }
@@ -414,11 +378,9 @@ impl<'a> CellDrawable<'a> {
 struct Kernel<C> {
     n: C,
     ne: C,
-    e: C,
     nw: C,
     center: C,
     se: C,
-    w: C,
     sw: C,
     s: C,
 }
@@ -429,11 +391,9 @@ impl<C: Clone> Kernel<C> {
         Kernel {
             n: get(loc + V2(-1, -1)),
             ne: get(loc + V2(0, -1)),
-            e: get(loc + V2(1, -1)),
             nw: get(loc + V2(-1, 0)),
             center: get(loc),
             se: get(loc + V2(1, 0)),
-            w: get(loc + V2(-1, 1)),
             sw: get(loc + V2(0, 1)),
             s: get(loc + V2(1, 1)),
         }
