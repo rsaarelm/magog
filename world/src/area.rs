@@ -124,11 +124,7 @@ impl Area {
         self.player_entrance
     }
 
-    fn default_terrain(&self, loc: Location) -> TerrainType {
-        match loc.z {
-            0 => self.seed.spec.biome.default_terrain(),
-            x if x < 0 => TerrainType::Space,
-            _ => TerrainType::Rock,
-        }
+    fn default_terrain(&self, _loc: Location) -> TerrainType {
+        self.seed.spec.biome.default_terrain()
     }
 }

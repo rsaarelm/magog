@@ -37,9 +37,9 @@ pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &Ha
             // the z = 0 layer.
             let light = loc.light();
 
-            // Deeper layers get Seen fov. If they are visible through holes,
-            // they get drawn.
-            let fov = if depth == 0 { loc.fov_status() } else { Some(FovStatus::Seen) };
+            // TODO: More principled FOV status setting than just taking the
+            // status of the z=0 cell.
+            let fov = loc.fov_status();
 
             let cell_drawable = CellDrawable::new(
                 depth_loc, depth, fov, light, damage_timers);
