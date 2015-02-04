@@ -81,7 +81,7 @@ impl Biome {
         match self {
             Biome::Overland => TerrainType::Tree,
             Biome::Dungeon => TerrainType::Rock,
-            _ => TerrainType::Space,
+            _ => TerrainType::Void,
         }
     }
 }

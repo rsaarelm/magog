@@ -17,11 +17,11 @@ use {Light};
 pub struct Location {
     pub x: i8,
     pub y: i8,
-    pub z: i8,
+    // TODO: Add third dimension for multiple persistent levels.
 }
 
 impl Location {
-    pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x: x, y: y, z: z } }
+    pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 
     /// Return terrain at the location.
     pub fn terrain(&self) -> TerrainType {
@@ -46,7 +46,7 @@ impl Location {
     }
 
     pub fn blocks_walk(&self) -> bool {
-        if self.terrain().blocks_walk() || !self.below().terrain().is_solid() { return true; }
+        if self.terrain().blocks_walk() { return true; }
         if self.entities().iter().any(|e| e.blocks_walk()) {
             return true;
         }
@@ -155,9 +155,6 @@ impl Location {
         }
         return Light::new(1.0);
     }
-
-    pub fn below(&self) -> Location { Location { z: self.z + 1, ..*self } }
-    pub fn above(&self) -> Location { Location { z: self.z - 1, ..*self } }
 }
 
 impl Add<V2<i32>> for Location {
@@ -165,8 +162,7 @@ impl Add<V2<i32>> for Location {
     fn add(self, other: V2<i32>) -> Location {
         Location::new(
             (self.x as i32 + other.0) as i8,
-            (self.y as i32 + other.1) as i8,
-            self.z)
+            (self.y as i32 + other.1) as i8)
     }
 }
 

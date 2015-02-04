@@ -25,9 +25,11 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 26;
+    count: 29;
 
-    Space, "space";
+    Void, "void";
+    Floor, "floor";
+    Chasm, "chasm";
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";
@@ -40,6 +42,7 @@ terrain_data! {
     // Render variant, do not use directly.
     Grass2, "grass";
     Stalagmite, "stalagmite";
+    Portal, "portal";
     Door, "door";
     OpenDoor, "open door";
     Window, "window";
@@ -65,31 +68,12 @@ impl TerrainType {
         None
     }
 
-    pub fn is_block(self) -> bool {
-        match self {
-            Rock | Water | Shallows | Magma | Grass | Grass2 => true,
-            _ => false
-        }
-    }
-
-    /// Can you stand on this terrain?
-    pub fn is_solid(self) -> bool {
-        match self {
-            Water | Magma => false,
-            Wall => true,
-            _ => self.is_block()
-        }
-    }
-
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | RockWall | Door | OpenDoor | Window |
-                Bars | Fence => true,
+            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
             _ => false
         }
     }
-
-    pub fn is_hull(self) -> bool { self.is_wall() || self.is_block() }
 
     pub fn blocks_sight(self) -> bool {
         match self {
@@ -107,7 +91,8 @@ impl TerrainType {
 
     pub fn blocks_walk(self) -> bool {
         match self {
-            Space | Downstairs | Door | OpenDoor | TallGrass => false,
+            Floor | Shallows | Grass | Grass2 | Downstairs | Portal
+                | Door | OpenDoor | TallGrass => false,
             _ => true
         }
     }
@@ -123,7 +108,7 @@ impl TerrainType {
 
     pub fn is_luminous(self) -> bool { self == Magma }
 
-    pub fn is_space(self) -> bool { self == Space }
+    pub fn is_hole(self) -> bool { self == Chasm }
 
     pub fn name(self) -> &'static str { terrain_name(self) }
 }

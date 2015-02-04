@@ -7,7 +7,7 @@ use terrain::TerrainType;
 
 pub fn gen_herringbone<R: Rng, F>(
     rng: &mut R, spec: &::AreaSpec, mut set_terrain: F)
-    where F: FnMut(i32, i32, i32, TerrainType) {
+    where F: FnMut(V2<i32>, TerrainType) {
     geomorph::with_cache(|cs| {
         let chunks = cs.iter().filter(
                 |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
@@ -36,10 +36,7 @@ pub fn gen_herringbone<R: Rng, F>(
                     else { inner.as_slice() }).unwrap();
 
                 for (&(x, y), &terrain) in chunk.cells.iter() {
-                    let V2(x, y) = herringbone_map((cx, cy), (x, y));
-                    for z in 0i32..3 {
-                        set_terrain(x, y, 1 - z, terrain[z as usize]);
-                    }
+                    set_terrain(herringbone_map((cx, cy), (x, y)), terrain);
                 }
             }
         }

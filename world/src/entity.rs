@@ -91,9 +91,7 @@ impl Entity {
         let place = world::with(|w| w.spatial.get(self));
         if let Some(Place::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
-            return self.can_enter(new_loc) ||
-                (self.can_enter(new_loc.below()) && !new_loc.terrain().is_solid()) ||
-                (self.can_enter(new_loc.above()) && !loc.above().terrain().is_solid());
+            return self.can_enter(new_loc);
         }
         return false;
     }
@@ -102,19 +100,11 @@ impl Entity {
     pub fn step(self, dir: Dir6) {
         let place = world::with(|w| w.spatial.get(self));
         if let Some(Place::At(loc)) = place {
-            let mut new_loc = loc + dir.to_v2();
-            // Try stepping up or down.
-            if !self.can_enter(new_loc) {
-                if self.can_enter(new_loc.above()) {
-                    new_loc = new_loc.above();
-                } else if self.can_enter(new_loc.below()) {
-                    new_loc = new_loc.below();
-                } else {
-                    return;
-                }
+            let new_loc = loc + dir.to_v2();
+            if self.can_enter(new_loc) {
+                world::with_mut(|w| w.spatial.insert_at(self, new_loc));
+                self.on_move_to(new_loc);
             }
-            world::with_mut(|w| w.spatial.insert_at(self, new_loc));
-            self.on_move_to(new_loc);
         }
     }
 

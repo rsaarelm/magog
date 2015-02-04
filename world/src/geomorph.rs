@@ -9,7 +9,7 @@ use dir6::Dir6;
 
 thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 
-type Cells = HashMap<(i32, i32), [TerrainType; 3]>;
+type Cells = HashMap<(i32, i32), TerrainType>;
 
 pub struct Chunk {
     pub cells: Cells,
@@ -41,31 +41,31 @@ fn check_cache() {
     }
 }
 
-fn legend(glyph: char) -> Option<[TerrainType; 3]> {
+fn legend(glyph: char) -> Option<TerrainType> {
     match glyph {
-        '.' => Some([Rock, Space, Space]),
-        '#' => Some([Rock, Wall, Wall]),
-        '~' => Some([Shallows, Space, Space]),
-        '=' => Some([Water, Space, Space]),
-        ',' => Some([Grass, Space, Space]),
-        '+' => Some([Rock, Door, Wall]),
-        '*' => Some([Rock, Rock, Rock]),
-        'X' => Some([Magma, Space, Space]),
-        '|' => Some([Rock, Window, Window]),
-        '%' => Some([Grass, Tree, Space]),
-        '/' => Some([Rock, DeadTree, Space]),
-        'x' => Some([Grass, Fence, Space]),
-        'o' => Some([Rock, Stone, Space]),
-        'A' => Some([Rock, Menhir, Space]),
-        'g' => Some([Rock, Grave, Space]),
-        'b' => Some([Rock, Barrel, Space]),
-        'T' => Some([Rock, Table, Space]),
-        'a' => Some([Rock, Altar, Space]),
-        'I' => Some([Rock, Bars, Bars]),
-        '!' => Some([Rock, Stalagmite, Space]),
-        ';' => Some([Grass, TallGrass, Space]),
-        '>' => Some([Rock, Downstairs, Space]),
-        '_' => Some([Space, Space, Space]),
+        '.' => Some(Floor),
+        '#' => Some(Wall),
+        '~' => Some(Shallows),
+        '=' => Some(Water),
+        ',' => Some(Grass),
+        '+' => Some(Door),
+        '*' => Some(Rock),
+        'X' => Some(Magma),
+        '|' => Some(Window),
+        '%' => Some(Tree),
+        '/' => Some(DeadTree),
+        'x' => Some(Fence),
+        'o' => Some(Stone),
+        'A' => Some(Menhir),
+        'g' => Some(Grave),
+        'b' => Some(Barrel),
+        'T' => Some(Table),
+        'a' => Some(Altar),
+        'I' => Some(Bars),
+        '!' => Some(Stalagmite),
+        ';' => Some(TallGrass),
+        '>' => Some(Downstairs),
+        'q' => Some(Void),
         _ => None
     }
 }
@@ -99,7 +99,7 @@ impl Chunk {
             None => (),
         }
 
-        let exit = cells.iter().any(|(_p, t)| t[1].is_exit());
+        let exit = cells.iter().any(|(_p, t)| t.is_exit());
 
         Ok(Chunk {
             cells: cells,
@@ -159,9 +159,8 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
 }
 
 fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
-    // TODO: Working walkability test with new terrain spec.
     let mut open : HashSet<(i32, i32)> = cells.iter()
-        .filter(|&(_p, t)| t[0].is_solid() && !t[1].blocks_walk())
+        .filter(|&(_p, t)| !t.blocks_walk())
         .map(|(&p, _t)| p)
         .collect();
     let mut ret = vec!();

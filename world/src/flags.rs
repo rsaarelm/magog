@@ -1,7 +1,7 @@
 use location::Location;
 use world;
 
-#[derive(Copy, RustcEncodable, RustcDecodable)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct Flags {
     pub seed: u32,
     pub camera: Location,
@@ -13,7 +13,7 @@ impl Flags {
     pub fn new(seed: u32) -> Flags {
         Flags {
             seed: seed,
-            camera: Location::new(0, 0, 0),
+            camera: Location::new(0, 0),
             tick: 0,
             player_acted: false,
         }
