@@ -31,9 +31,9 @@ pub fn gen_herringbone<R: Rng, F>(
                 let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
 
                 let chunk = rng.choose(
-                    if (cx, cy) == (exit_x, exit_y) { exit.as_slice() }
-                    else if on_edge { edge.as_slice() }
-                    else { inner.as_slice() }).unwrap();
+                    if (cx, cy) == (exit_x, exit_y) { &exit[] }
+                    else if on_edge { &edge[] }
+                    else { &inner[] }).unwrap();
 
                 for (&(x, y), &terrain) in chunk.cells.iter() {
                     set_terrain(herringbone_map((cx, cy), (x, y)), terrain);

@@ -26,7 +26,8 @@ impl Prototype {
     }
 }
 
-impl<C: Component> Fn(C,) -> Prototype for Prototype {
+impl<C: Component> Fn<(C,)> for Prototype {
+    type Output = Prototype;
     extern "rust-call" fn call(&self, (comp,): (C,)) -> Prototype {
         comp.add_to(self.target);
         *self

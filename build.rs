@@ -1,9 +1,9 @@
-#![allow(unstable)]
+#![feature(io, path)]
 
 // Generate the git version string.
 
-use std::io::process::{Command, ProcessOutput};
-use std::io::{File};
+use std::old_io::process::{Command, ProcessOutput};
+use std::old_io::{File};
 
 fn get_version() -> String {
     match Command::new("git")

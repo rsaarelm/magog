@@ -7,7 +7,7 @@ use ability::Ability;
 use stats::Stats;
 
 /// Entity name and appearance.
-#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
     pub icon: usize,
@@ -30,7 +30,7 @@ impl Desc {
 
 
 /// Map field-of-view and remembered terrain.
-#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct MapMemory {
     pub seen: HashSet<Location>,
     pub remembered: HashSet<Location>,
@@ -47,7 +47,7 @@ impl MapMemory {
 
 
 /// Spawning properties for prototype objects.
-#[derive(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Spawn {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -90,7 +90,7 @@ impl Spawn {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
 pub enum Category {
     Mob = 0b1,
 
@@ -103,14 +103,14 @@ pub enum Category {
 }
 
 
-#[derive(Copy, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment
 }
 
 /// Mob behavior state.
-#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
 pub enum BrainState {
     /// AI mob is inactive, but can be startled into action by noise or
     /// motion.
@@ -122,7 +122,7 @@ pub enum BrainState {
 }
 
 /// Used to determine who tries to fight whom.
-#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
 pub enum Alignment {
     /// Attack anything and everything.
     Chaotic,
@@ -136,7 +136,7 @@ pub enum Alignment {
 
 
 /// Damage state component. The default state is undamaged and unarmored.
-#[derive(Copy, Clone, Show, Default, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Default, RustcEncodable, RustcDecodable)]
 pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
@@ -148,7 +148,7 @@ pub struct Health {
 
 
 /// Items can be picked up and carried and they do stuff.
-#[derive(Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Item {
     pub item_type: ItemType,
     pub ability: Ability,

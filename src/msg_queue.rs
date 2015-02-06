@@ -38,13 +38,13 @@ impl MsgQueue {
     }
 
     pub fn msg(&mut self, text: String) {
-        let timeout = add_time_to_read(self.msg_done_time, text.as_slice());
+        let timeout = add_time_to_read(self.msg_done_time, &text[]);
         self.msgs.push(Msg::new(text, timeout));
         self.msg_done_time = Some(timeout);
     }
 
     pub fn caption(&mut self, text: String) {
-        let timeout = add_time_to_read(self.caption_done_time, text.as_slice());
+        let timeout = add_time_to_read(self.caption_done_time, &text[]);
         // Showing up a caption for a thing after all the previous ones have
         // gone away doesn't look right. Just clearing the old captions for
         // now. A better approach might be showing several captions below each
@@ -63,7 +63,7 @@ impl MsgQueue {
             .set_border(color::BLACK);
 
         for msg in self.msgs.iter() {
-            let _ = write!(&mut writer, "{}", text::wrap_lines(msg_columns, msg.text.as_slice()).as_slice());
+            let _ = write!(&mut writer, "{}", &text::wrap_lines(msg_columns, &msg.text[])[]);
         }
     }
 
@@ -76,7 +76,7 @@ impl MsgQueue {
             let mut writer = ctx.text_writer(origin, 0.1, color::LIGHTGRAY)
                 .set_border(color::BLACK);
 
-            let _ = write!(&mut writer, "{}", self.captions[0].text.as_slice());
+            let _ = write!(&mut writer, "{}", &self.captions[0].text[]);
         }
     }
 

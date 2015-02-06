@@ -1,5 +1,5 @@
 use std::default::Default;
-use std::rand::Rng;
+use rand::Rng;
 use util::Dijkstra;
 use util::Rgb;
 use world;
@@ -19,7 +19,7 @@ use stats::Stats;
 use ecs::{ComponentAccess};
 
 /// Game object handle.
-#[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Show, RustcDecodable, RustcEncodable)]
+#[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entity(pub usize);
 
 impl Entity {

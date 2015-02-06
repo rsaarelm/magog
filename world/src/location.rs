@@ -13,7 +13,7 @@ use ecs::{ComponentAccess};
 use {Light};
 
 /// Unambiguous location in the game world.
-#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub struct Location {
     pub x: i8,
     pub y: i8,

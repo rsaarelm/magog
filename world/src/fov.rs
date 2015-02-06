@@ -28,7 +28,7 @@ struct Sector {
 /// An iterator that will yield the field of view around the origin V2(0, 0)
 /// up to hex grid distance range, with cells for which is_opaque returns true
 /// blocking visibility further away in their direction.
-impl<F: Fn<(V2<i32>,), bool>> Fov<F> {
+impl<F: Fn<(V2<i32>,), Output=bool>> Fov<F> {
     pub fn new(is_opaque: F, range: u32) -> Chain<IntoIter<V2<i32>>, Fov<F>> {
         // The origin position V2(0, 0) is a special case for the traversal
         // algorithm, but it's also always present, so instead of adding ugly
@@ -48,7 +48,7 @@ impl<F: Fn<(V2<i32>,), bool>> Fov<F> {
     }
 }
 
-impl<F: Fn<(V2<i32>,), bool>> Iterator for Fov<F> {
+impl<F: Fn<(V2<i32>,), Output=bool>> Iterator for Fov<F> {
     type Item = V2<i32>;
     fn next(&mut self) -> Option<V2<i32>> {
         if let Some(ret) = self.side_channel.pop() {

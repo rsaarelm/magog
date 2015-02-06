@@ -1,7 +1,7 @@
 use std::cell::RefCell;
-use std::rand;
-use rustc_serialize::json;
+use rand;
 use rand::Rng;
+use rustc_serialize::json;
 use ecs::{Ecs, Comps};
 use area::Area;
 use spatial::Spatial;

@@ -1,6 +1,6 @@
-use std::rand::StdRng;
-use std::rand::Rng;
-use std::rand::SeedableRng;
+use rand::StdRng;
+use rand::Rng;
+use rand::SeedableRng;
 use std::iter;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::HashMap;
@@ -62,7 +62,7 @@ impl Area {
         let num_items = 24;
 
         let mut terrain = HashMap::new();
-        let mut rng: StdRng = SeedableRng::from_seed([rng_seed as usize + spec.depth as usize].as_slice());
+        let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][]);
         mapgen::gen_herringbone(
             &mut rng,
             &spec,

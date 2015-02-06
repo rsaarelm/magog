@@ -43,7 +43,7 @@ pub fn view_to_chart(view_pos: V2<i32>) -> V2<i32> {
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<V2<i32>, V2<i32>, ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
+pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
     let V2(x0, y0) = pixel_to_min_column(view_rect.mn());
     let V2(x1, y1) = pixel_to_max_column(view_rect.mx());
     ColumnRectIter {
@@ -56,7 +56,7 @@ pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<V2<i32>, V2<i32>, ColumnR
     }.map(column_to_chart as fn(V2<i32>) -> V2<i32>)
 }
 
-pub fn cells_on_screen() -> Map<V2<i32>, V2<i32>, ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
+pub fn cells_on_screen() -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
     cells_in_view_rect(Rect(
         V2(-(SCREEN_W as i32) / 2, -(SCREEN_H as i32) / 2),
         V2(SCREEN_W as i32, SCREEN_H as i32)))

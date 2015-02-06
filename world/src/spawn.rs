@@ -1,5 +1,5 @@
-use std::rand::Rng;
-use std::rand::distributions::{Weighted, WeightedChoice, IndependentSample};
+use rand::Rng;
+use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use components::{Category};
 use entity::Entity;
 use action;
@@ -11,7 +11,7 @@ use ecs::{ComponentAccess};
 /// Representation for an abstract spawnable object. Does not refer to
 /// concrete entity prototypes and can be used before the prototype set has
 /// been initialized.
-#[derive(Copy, Clone, Eq, PartialEq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Spawn {
     // XXX: this is almost the exact same thing as the component Spawn...
     // Though this one can become more complex if we want greater detail, the

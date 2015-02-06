@@ -1,6 +1,6 @@
 use time;
-use std::io::File;
-use std::io::fs::PathExtensions;
+use std::old_io::File;
+use std::old_io::fs::PathExtensions;
 use std::collections::HashMap;
 use util::{color, V2};
 use backend::{Canvas, CanvasUtil, Event, Key, Fonter};
@@ -219,7 +219,6 @@ impl GameState {
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Canvas) {
         if self.screenshot_requested {
-            use std::io::File;
             use image;
             let shot = ctx.screenshot();
             let file = File::create(&Path::new(
@@ -241,7 +240,7 @@ impl GameState {
     pub fn save_game(&self) {
         let save_data = world::save();
         let mut file = File::create(&Path::new("/tmp/magog_save.json"));
-        file.write_str(save_data.as_slice()).unwrap();
+        file.write_str(&save_data[]).unwrap();
     }
 
     pub fn load_game(&mut self) {
@@ -249,7 +248,7 @@ impl GameState {
         if !path.exists() { return; }
         let save_data = File::open(&path).read_to_string().unwrap();
         // TODO: Handle failed load nicely.
-        world::load(save_data.as_slice()).unwrap();
+        world::load(&save_data[]).unwrap();
     }
 
     fn smart_move(&mut self, dir: Dir6) {

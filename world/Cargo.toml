@@ -13,5 +13,9 @@ name = "world"
 
 [dependencies.num]
 
+[dependencies.rand]
+
+[dependencies.rand_macros]
+
 [dependencies.calx_util]
 git = "https://github.com/rsaarelm/calx"

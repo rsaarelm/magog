@@ -1,7 +1,8 @@
 #![crate_name="world"]
-#![feature(unboxed_closures)]
-#![allow(unstable)]
+#![feature(unboxed_closures, plugin)]
+#![feature(core, collections, hash)]
 
+#[plugin] #[no_link] extern crate rand_macros;
 extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate num;
@@ -59,7 +60,7 @@ mod stats;
 mod terrain;
 mod world;
 
-#[derive(Copy, Eq, PartialEq, Show)]
+#[derive(Copy, Eq, PartialEq, Debug)]
 pub enum FovStatus {
     Seen,
     Remembered,
@@ -67,7 +68,7 @@ pub enum FovStatus {
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[derive(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon  = 0b10,
@@ -86,7 +87,7 @@ impl Biome {
     }
 }
 
-#[derive(Copy, Eq, PartialEq, Show, Clone, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Debug, Clone, RustcEncodable, RustcDecodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: i32,
@@ -106,7 +107,7 @@ impl AreaSpec {
 }
 
 /// Various one-off signals the game sends to the UI layer.
-#[derive(Clone, Show)]
+#[derive(Clone, Debug)]
 pub enum Msg {
     /// Regular event message
     Text(String),
@@ -119,7 +120,7 @@ pub enum Msg {
 }
 
 /// Light level value.
-#[derive(Copy, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Debug, RustcEncodable, RustcDecodable)]
 pub struct Light {
     lum: f32,
 }

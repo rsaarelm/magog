@@ -1,5 +1,5 @@
-use std::rand::StdRng;
-use std::rand::SeedableRng;
+use rand::StdRng;
+use rand::SeedableRng;
 use std::iter::Filter;
 use util::Dijkstra;
 use entity::Entity;
@@ -19,7 +19,7 @@ pub enum ControlState {
 }
 
 /// Player input action.
-#[derive(Copy, Eq, PartialEq, Clone, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
@@ -104,7 +104,7 @@ pub fn entities() -> EntityIter {
 }
 
 /// Return an iterator of all the world mobs.
-pub fn mobs() -> Filter<Entity, EntityIter, fn(&Entity) -> bool> {
+pub fn mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
     fn is_mob(e: &Entity) -> bool { e.is_mob() }
     entities().filter(is_mob as fn(&Entity) -> bool)
 }
@@ -140,7 +140,7 @@ pub fn start_level(depth: i32) {
         w.area = new_area.clone();
     });
 
-    let mut rng: StdRng = SeedableRng::from_seed([seed as usize + depth as usize].as_slice());
+    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][]);
     for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
         spawn.spawn(&mut rng, loc);
     }

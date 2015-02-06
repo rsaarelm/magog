@@ -1,6 +1,6 @@
-use std::rand;
-use std::rand::ThreadRng;
-use std::rand::Rng;
+use rand;
+use rand::ThreadRng;
+use rand::Rng;
 
 /// Execute a closure with the world RNG.
 pub fn with<A, F>(f: F) -> A
