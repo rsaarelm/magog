@@ -1,4 +1,4 @@
-#![allow(unstable)]
+#![feature(core, io)]
 
 extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;

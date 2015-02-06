@@ -39,7 +39,7 @@ pub struct Atlas {
 }
 
 /// One image stored in a texture atlas
-#[derive(Copy, Clone, Show)]
+#[derive(Copy, Clone, Debug)]
 pub struct AtlasItem {
     /// Vertices for the image rectangle when drawn at origin
     pub pos: Rect<f32>,

@@ -69,7 +69,7 @@ impl CanvasBuilder {
     pub fn run(&mut self) -> Canvas {
         Canvas::new(
             self.size,
-            self.title.as_slice(),
+            &self.title[],
             self.frame_interval,
             Atlas::new(&self.builder))
     }
@@ -245,7 +245,7 @@ impl<'a> Iterator for Canvas {
         }
 
         loop {
-            self.events.push_all(self.display.poll_events().collect::<Vec<glutin::Event>>().as_slice());
+            self.events.push_all(&self.display.poll_events().collect::<Vec<glutin::Event>>()[]);
 
             if !self.events.is_empty() {
                 match self.events.remove(0) {
@@ -273,10 +273,10 @@ impl<'a> Iterator for Canvas {
                     }
                     glutin::Event::MouseInput(state, button) => {
                         let button = match button {
-                            glutin::MouseButton::LeftMouseButton => MouseButton::Left,
-                            glutin::MouseButton::RightMouseButton => MouseButton::Right,
-                            glutin::MouseButton::MiddleMouseButton => MouseButton::Middle,
-                            glutin::MouseButton::OtherMouseButton(x) => MouseButton::Other(x),
+                            glutin::MouseButton::Left => MouseButton::Left,
+                            glutin::MouseButton::Right => MouseButton::Right,
+                            glutin::MouseButton::Middle => MouseButton::Middle,
+                            glutin::MouseButton::Other(x) => MouseButton::Other(x),
                         };
                         match state {
                             glutin::ElementState::Pressed => {

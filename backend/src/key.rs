@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, PartialEq, Eq, Show)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Key {
     Space = 2,
     Apostrophe = 3,

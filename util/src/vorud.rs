@@ -86,13 +86,13 @@ fn durov_chunk(s: &str) -> Result<u16, ()> {
     Ok(ret)
 }
 
-#[derive(PartialEq, Eq, Show)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Vorud(String);
 
 impl Vorud {
     pub fn new(s: String) -> Result<Vorud, ()> {
         if s.len() == 0 { return Ok(Vorud("".to_string())); }
-        let ch = s.as_slice().chars().collect::<Vec<char>>();
+        let ch = &s[].chars().collect::<Vec<char>>();
         let mut i = 0;
         loop {
             if i > ch.len() - 5 { return Err(()); }
@@ -123,7 +123,7 @@ impl<'a> ToVorud for &'a [u8] {
             if ret.len() > 0 { ret.push_str("-"); }
             let b0 = self[i * 2] as u16;
             let b1 = if self.len() == i * 2 + 1 { 0 } else { self[i * 2 + 1] as u16 };
-            ret.push_str(vorud_chunk(b1 + (b0 << 8)).as_slice());
+            ret.push_str(&vorud_chunk(b1 + (b0 << 8))[]);
         }
         Vorud(ret)
     }
@@ -132,7 +132,7 @@ impl<'a> ToVorud for &'a [u8] {
 impl FromVorud<()> for Vec<u8> {
     fn from_vorud(&Vorud(ref s): &Vorud) -> Result<Vec<u8>, ()> {
         let mut ret = Vec::new();
-        for chunk in s.as_slice().split('-') {
+        for chunk in (&s[]).split('-') {
             let x = try!(durov_chunk(chunk));
             ret.push((x / 0xff) as u8);
             ret.push((x % 0xff) as u8);
@@ -148,7 +148,7 @@ impl ToVorud for u32 {
         vec.push(((*self >> 16) % 0xff) as u8);
         vec.push(((*self >> 8) % 0xff) as u8);
         vec.push((*self % 0xff) as u8);
-        vec.as_slice().to_vorud()
+        (&vec[]).to_vorud()
     }
 }
 
@@ -169,11 +169,11 @@ mod test {
     fn test_vorud() {
         use super::ToVorud;
 
-        assert_eq!("babab", super::vorud_chunk(0).as_slice());
-        assert_eq!("babad", super::vorud_chunk(1).as_slice());
+        assert_eq!("babab", &super::vorud_chunk(0)[]);
+        assert_eq!("babad", &super::vorud_chunk(1)[]);
         assert_eq!(Ok(0u16), super::durov_chunk("babab"));
-        assert_eq!(Ok(1234u16), super::durov_chunk(super::vorud_chunk(1234).as_slice()));
-        assert_eq!("togas", super::vorud_chunk(super::durov_chunk("togas").unwrap()).as_slice());
+        assert_eq!(Ok(1234u16), &super::durov_chunk(super::vorud_chunk(1234)[]));
+        assert_eq!("togas", &super::vorud_chunk(super::durov_chunk("togas").unwrap())[]);
         assert_eq!(super::Vorud("babab-babab".to_string()), 0u32.to_vorud());
         assert_eq!(super::Vorud("babab-babad".to_string()), 1u32.to_vorud());
         assert_eq!(Ok(1u32), super::FromVorud::from_vorud(&super::Vorud("babab-babad".to_string())));

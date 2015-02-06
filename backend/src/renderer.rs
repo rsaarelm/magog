@@ -26,8 +26,8 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn new<T>(size: V2<u32>, display: &glium::Display, texture_image: T) -> Renderer
-        where T: texture::Texture2dData {
+    pub fn new<'a, T>(size: V2<u32>, display: &glium::Display, texture_image: T) -> Renderer
+        where T: texture::Texture2dDataSource<'a> {
 
         let sprite_shader = glium::Program::from_source(display,
             include_str!("sprite.vert"),

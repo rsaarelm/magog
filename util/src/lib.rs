@@ -4,7 +4,7 @@ Miscellaneous utilities grab-bag.
  */
 
 #![crate_name="calx_util"]
-#![allow(unstable)]
+#![feature(core, collections, hash, io, std_misc)]
 
 extern crate collections;
 extern crate "rustc-serialize" as rustc_serialize;

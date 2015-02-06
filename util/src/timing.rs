@@ -1,6 +1,6 @@
 use time;
 use std::time::duration::Duration;
-use std::io::timer;
+use std::old_io::timer;
 
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
     assert!(period_s > 0.0);

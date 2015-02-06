@@ -1,4 +1,4 @@
-use std::io::{Writer, IoResult};
+use std::old_io::{Writer, IoResult};
 use util::{Rgb, V2, color};
 use canvas::{Canvas, FONT_W, FONT_H};
 use canvas_util::{CanvasUtil};
@@ -60,7 +60,7 @@ impl<'a> CanvasWriter<'a> {
 }
 
 impl<'a> Writer for CanvasWriter<'a> {
-    fn write(&mut self, buf: &[u8]) -> IoResult<()> {
+    fn write_all(&mut self, buf: &[u8]) -> IoResult<()> {
         // TODO: Support multibyte stuff.
         for &b in buf.iter() {
             let c = b as char;

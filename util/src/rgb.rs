@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, PartialEq, Eq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
 
 impl Rgb {
@@ -16,7 +16,7 @@ impl ::Color for Rgb {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Show, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgba { pub r: u8, pub g: u8, pub b: u8, pub a: u8 }
 
 impl Rgba {
