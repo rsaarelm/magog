@@ -111,6 +111,7 @@
 (C) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
 (C) 2015-01-31 Color drop edge to a lower layer differently if you can walk down it or if it's a long drop +Render
 (C) 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Build
+(C) 2015-02-06 Remove "using feature" pragmas for unstable items @Rust1.0
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
