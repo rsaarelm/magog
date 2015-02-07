@@ -1,30 +1,26 @@
 use util::{V2, color};
-use backend::{key, event};
-use super::{State, Transition};
-use gamestate::GameState;
+use backend::{Key, Event};
+use backend::{CanvasUtil};
 use tilecache;
 
 pub struct TitleState;
 
 impl TitleState {
     pub fn new() -> TitleState { TitleState }
-}
 
-impl State for TitleState {
-    fn process(&mut self, event: event::Event) -> Option<Transition> {
+    pub fn process(&mut self, event: Event) -> bool {
         match event {
-            event::Render(ctx) => {
-                ctx.clear(&color::BLACK);
-                ctx.draw_image(V2(280, 180), 0.0, tilecache::get(tilecache::LOGO), &color::FIREBRICK);
+            Event::Render(ctx) => {
+                ctx.draw_image(tilecache::get(tilecache::LOGO), V2(280.0, 180.0), 0.0, &color::FIREBRICK, &color::BLACK);
             }
-            event::KeyPressed(key::KeyEscape) => {
-                return Some(super::Quit);
+            Event::KeyPressed(Key::Escape) => {
+                return false;
             }
-            event::KeyPressed(_) => {
-                return Some(super::NewState(box GameState::new(None)));
+            Event::KeyPressed(_) => {
+                return false;
             }
             _ => ()
         }
-        None
+        true
     }
 }
