@@ -9,6 +9,7 @@ Miscellaneous utilities grab-bag.
 extern crate collections;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate time;
+extern crate rand;
 extern crate image;
 
 pub use rgb::{Rgb, Rgba};
@@ -16,10 +17,12 @@ pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
+pub use encode_rng::{EncodeRng};
 
 mod atlas;
 mod dijkstra;
 mod geom;
+mod encode_rng;
 mod img;
 mod primitive;
 mod rgb;

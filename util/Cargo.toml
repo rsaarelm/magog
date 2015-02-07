@@ -9,6 +9,8 @@ name = "calx_util"
 
 [dependencies.time]
 
+[dependencies.rand]
+
 [dependencies.rustc-serialize]
 
 [dependencies.image]
