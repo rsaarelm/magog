@@ -10,6 +10,11 @@ pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
     &frames[idx]
 }
 
+/// Time-plot that spikes at given intervals for the given time.
+pub fn spike(down_s: f64, up_s: f64) -> bool {
+    time::precise_time_s() % (down_s + up_s) > down_s
+}
+
 pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T {
     assert!(period_s > 0.0);
     assert!(frames.len() > 0);
