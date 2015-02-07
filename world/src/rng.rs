@@ -1,13 +1,11 @@
-use rand;
-use rand::ThreadRng;
-use rand::Rng;
+use rand::{Rng, XorShiftRng};
+use util::EncodeRng;
+use world;
 
 /// Execute a closure with the world RNG.
 pub fn with<A, F>(f: F) -> A
-    where F: Fn(&mut ThreadRng) -> A {
-    // TODO: Have a persistent seedable RNG in Flags that is used here. Will
-    // need serialization of Rng state figured out.
-    f(&mut rand::thread_rng())
+    where F: Fn(&mut EncodeRng<XorShiftRng>) -> A {
+    world::with_mut(|w| f(&mut w.flags.rng))
 }
 
 /// Return a floating-point value between 0 and 1.
