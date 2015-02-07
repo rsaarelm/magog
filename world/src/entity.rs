@@ -434,6 +434,8 @@ impl Entity {
 
 // Item methods ////////////////////////////////////////////////////////
 
+    pub fn is_item(self) -> bool { world::with(|w| w.items().get(self).is_some()) }
+
     /// Is this an item that has an instant effect when stepped on.
     pub fn is_instant_item(self) -> bool {
         world::with(|w|

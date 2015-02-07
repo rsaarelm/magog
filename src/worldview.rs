@@ -357,19 +357,36 @@ impl<'a> CellDrawable<'a> {
             } else { offset };
 
         if let Some((icon, mut color)) = entity.get_icon() {
+            let mut back_color = BLACK;
+
             // Damage blink animation.
             if let Some(&t) = self.damage_timers.get(entity) {
-                color = if t % 2 == 0 { WHITE } else { BLACK };
+                if t % 2 == 0 {
+                    color = WHITE;
+                    back_color = WHITE;
+                } else {
+                    color = BLACK;
+                    back_color = BLACK;
+                }
+            }
+
+            if entity.is_item() {
+                // Blink pickups intermittently to draw attention.
+                if timing::spike(1.5, 0.1) {
+                    color = WHITE;
+                    back_color = WHITE;
+                }
             }
 
             if icon == SERPENT_ICON {
                 // Body
-                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
+                self.draw_tile2(ctx, icon, body_pos, BLOCK_Z, &color, &back_color);
                 // Ground mound, doesn't bob.
-                self.draw_tile(ctx, icon + 1, offset, BLOCK_Z, &color);
-            } else {
-                self.draw_tile(ctx, icon, body_pos, BLOCK_Z, &color);
+                self.draw_tile2(ctx, icon + 1, offset, BLOCK_Z, &color, &back_color);
+                return;
             }
+
+            self.draw_tile2(ctx, icon, body_pos, BLOCK_Z, &color, &back_color);
         }
     }
 }
