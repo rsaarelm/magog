@@ -20,3 +20,5 @@ pub fn unit() -> f64 {
 
 /// Returns true with probability prob.
 pub fn p(prob: f64) -> bool { unit() < prob }
+
+pub fn one_chance_in(x: u32) -> bool { unit() * (x as f64) < 1.0 }

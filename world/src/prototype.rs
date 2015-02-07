@@ -103,7 +103,7 @@ pub fn init() {
     // Items
     Prototype::new(None)
         (Desc::new("heart", 89, RED))
-        (Spawn::new(Category::Consumable))
+        (Spawn::new(Category::Consumable).commonness(50))
         (Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
         ;
 

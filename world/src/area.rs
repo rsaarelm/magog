@@ -59,7 +59,7 @@ impl Encodable for Area {
 impl Area {
     pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
         let num_mobs = 32;
-        let num_items = 24;
+        let num_items = 12;
 
         let mut terrain = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][]);

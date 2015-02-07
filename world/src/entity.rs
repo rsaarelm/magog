@@ -156,8 +156,13 @@ impl Entity {
     /// Do any game logic stuff related to this entity dying violently before
     /// deleting it.
     pub fn kill(self) {
+        let loc = self.location().expect("no location");
         msgln!("{} dies.", self.name());
-        msg::push_msg(::Msg::Gib(self.location().expect("no location")));
+        msg::push_msg(::Msg::Gib(loc));
+        if rng::one_chance_in(6) {
+            // Drop a heart.
+            action::spawn_named("heart", loc);
+        }
         self.delete();
     }
 

@@ -48,6 +48,12 @@ pub fn find_prototype(name: &str) -> Option<Entity> {
     )
 }
 
+/// Spawn a specific type of entity
+pub fn spawn_named(name: &str, loc: Location) {
+    find_prototype(name).expect(&format!("Spawn prototype '{}' not found", name)[])
+        .clone_at(loc);
+}
+
 // World update state machine //////////////////////////////////////////
 
 /// Get the current control state.
