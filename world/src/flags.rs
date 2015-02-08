@@ -1,6 +1,7 @@
 use rand::{XorShiftRng, SeedableRng};
 use location::Location;
 use util::EncodeRng;
+use entity::Entity;
 use world;
 
 #[derive(RustcEncodable, RustcDecodable)]
@@ -9,6 +10,8 @@ pub struct Flags {
     pub camera: Location,
     pub tick: u64,
     pub player_acted: bool,
+    /// Store the player entity here for fast access.
+    pub player: Option<Entity>,
     pub rng: EncodeRng<XorShiftRng>,
 }
 
@@ -19,6 +22,7 @@ impl Flags {
             camera: Location::new(0, 0),
             tick: 0,
             player_acted: false,
+            player: None,
             rng: SeedableRng::from_seed([seed, seed, seed, seed]),
         }
     }

@@ -29,10 +29,7 @@ pub enum Input {
 
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
-    for e in entities() {
-        if e.is_player() { return Some(e); }
-    }
-    None
+    world::with(|w| w.flags.player)
 }
 
 /// Find the first entity that has a local (not inherited) Desc component with
@@ -159,8 +156,9 @@ pub fn start_level(depth: i32) {
             p.place(start_loc);
         }
         None => {
-            find_prototype("player").expect("No Player prototype found!")
+            let player = find_prototype("player").expect("No Player prototype found!")
             .clone_at(start_loc);
+            world::with_mut(|w| w.flags.player = Some(player));
         }
     };
     flags::set_camera(start_loc);
