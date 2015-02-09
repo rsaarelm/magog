@@ -14,7 +14,7 @@ use world::Dir6::*;
 use world::{Entity};
 use world::item::{Slot};
 use worldview;
-use sprite::{WorldSprites, GibSprite};
+use sprite::{WorldSprites, GibSprite, BeamSprite};
 use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
@@ -112,6 +112,12 @@ impl GameState {
                 }
                 Some(Msg::Caption(txt)) => {
                     self.msg.caption(txt)
+                }
+                Some(Msg::Beam(loc1, loc2)) => {
+                    self.world_spr.add(Box::new(BeamSprite::new(loc1, loc2, 10)));
+                }
+                Some(Msg::Sparks(_loc)) => {
+                    // TODO
                 }
                 Some(x) => {
                     println!("Unhandled Msg type {:?}", x);
@@ -266,6 +272,15 @@ impl GameState {
         }
     }
 
+    fn shoot(&mut self, dir: Dir6) {
+        let player = action::player().unwrap();
+        let loc = player.location().unwrap();
+
+        // TODO: Figure out if you actually can shoot and how powerful the
+        // shot is from the player equipment.
+        action::shoot(loc, dir, 8, 10);
+    }
+
     fn autoexplore(&mut self) -> bool {
         let player = action::player().unwrap();
         if player.is_threatened() {
@@ -312,6 +327,14 @@ impl GameState {
             Key::A | Key::Pad1 => { self.smart_move(SouthWest); }
             Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
+
+            // TODO: Shift + move for shoot (need to pass shift-state here)
+            Key::U => { self.shoot(NorthWest); }
+            Key::I => { self.shoot(North); }
+            Key::O => { self.shoot(NorthEast); }
+            Key::J => { self.shoot(SouthWest); }
+            Key::K => { self.shoot(South); }
+            Key::L => { self.shoot(SouthEast); }
 
             Key::Enter => { self.interact(); }
             Key::X => { self.exploring = true; }

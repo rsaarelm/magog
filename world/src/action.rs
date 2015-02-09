@@ -10,6 +10,7 @@ use dir6::Dir6;
 use area::Area;
 use location::Location;
 use ecs::{ComponentAccess};
+use msg;
 
 /// Game update control.
 #[derive(Copy, PartialEq)]
@@ -186,6 +187,26 @@ pub fn next_level() {
     // persistent maps style world.
     start_level(current_depth() + 1);
     caption!("Depth {}", current_depth() - 1);
+}
+
+// Effects /////////////////////////////////////////////////////////////
+
+/// Create a projectile arc in dir from origin.
+pub fn shoot(origin: Location, dir: Dir6, range: usize, power: i32) {
+    let mut loc = origin;
+    if range == 0 { return; }
+    for i in 1..(range + 1) {
+        loc = origin + dir.to_v2() * (i as i32);
+        if loc.terrain().blocks_shot() {
+            msg::push(::Msg::Sparks(loc));
+            break;
+        }
+        if let Some(e) = loc.mob_at() {
+            e.damage(power);
+            break;
+        }
+    }
+    msg::push(::Msg::Beam(origin, loc));
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -20,18 +20,18 @@ pub use world::{init_world, load, save};
 pub use dir6::Dir6;
 
 macro_rules! msg(
-    ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Text(format!($($arg)*))))
+    ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))
 );
 
 macro_rules! msgln(
     ($($arg:tt)*) => ({
-        ::msg::push_msg(::Msg::Text(format!($($arg)*)));
-        ::msg::push_msg(::Msg::Text("\n".to_string()));
+        ::msg::push(::Msg::Text(format!($($arg)*)));
+        ::msg::push(::Msg::Text("\n".to_string()));
     })
 );
 
 macro_rules! caption(
-    ($($arg:tt)*) => ( ::msg::push_msg(::Msg::Caption(format!($($arg)*))))
+    ($($arg:tt)*) => ( ::msg::push(::Msg::Caption(format!($($arg)*))))
 );
 
 pub mod action;
@@ -117,6 +117,9 @@ pub enum Msg {
     Explosion(Location),
     Damage(Entity),
     Gib(Location),
+    Beam(Location, Location),
+    /// Beam hitting a wall.
+    Sparks(Location),
 }
 
 /// Light level value.

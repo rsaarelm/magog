@@ -54,16 +54,16 @@ impl WorldSprites {
     }
 }
 
-pub struct _BeamSprite {
+pub struct BeamSprite {
     p1: Location,
     p2: Location,
     life: i32,
     footprint: Vec<Location>,
 }
 
-impl _BeamSprite {
-    pub fn _new(p1: Location, p2: Location, life: i32) -> _BeamSprite {
-        _BeamSprite {
+impl BeamSprite {
+    pub fn new(p1: Location, p2: Location, life: i32) -> BeamSprite {
+        BeamSprite {
             p1: p1,
             p2: p2,
             life: life,
@@ -75,7 +75,7 @@ impl _BeamSprite {
     }
 }
 
-impl WorldSprite for _BeamSprite {
+impl WorldSprite for BeamSprite {
     fn update(&mut self) { self.life -= 1; }
     fn is_alive(&self) -> bool { self.life >= 0 }
     fn footprint<'a>(&'a self) -> Iter<'a, Location> {
@@ -83,8 +83,11 @@ impl WorldSprite for _BeamSprite {
     }
     fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
-            ctx.draw_line(3,
-                chart_to_screen(p1), chart_to_screen(p2), FX_Z, &color::LIME);
+            let pixel_adjust = V2(0.0, 4.0);
+            ctx.draw_line(2,
+                chart_to_screen(p1) + pixel_adjust,
+                chart_to_screen(p2) + pixel_adjust,
+                FX_Z, &color::ORANGE);
         }
     }
 }

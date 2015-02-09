@@ -11,7 +11,7 @@ pub fn pop_msg() -> Option<::Msg> {
 }
 
 /// Insert a new message to the back of the message queue.
-pub fn push_msg(msg: ::Msg) {
+pub fn push(msg: ::Msg) {
     // XXX: Haven't figured out how to move values into Key::with blocks, so
     // need to use clone here.
     MSG_QUEUE.with(|q| q.borrow_mut().push(msg.clone()));

@@ -126,7 +126,29 @@ impl Entity {
 
 // Damage and lifetime /////////////////////////////////////////////////
 
-    pub fn damage(self, amount: i32) {
+    /// Apply damage to entity, subject to damage reduction.
+    pub fn damage(self, mut power: i32) {
+        let stats = self.stats();
+        power -= stats.protection;
+
+        if power < 1 {
+            // Give damage a bit under the reduction an off-chance to hit.
+            // Power that's too low can't do anything though.
+            if power >= -5 { power = 1; } else { return; }
+        }
+
+        // Every five points of power is one certain hit.
+        let full = power / 5;
+        // The fractional points are one probabilistic hit.
+        let partial = (power % 5) as f64 / 5.0;
+
+        let damage = full + if rng::p(partial) { 1 } else { 0 };
+        self.apply_damage(damage)
+    }
+
+    /// Actually subtract points from the entity's hit points. Called from
+    /// damage method.
+    fn apply_damage(self, amount: i32) {
         if amount <= 0 { return; }
         let max_hp = self.max_hp();
 
@@ -136,7 +158,7 @@ impl Entity {
             (amount, health.wounds >= max_hp)
         });
 
-        msg::push_msg(::Msg::Damage(self));
+        msg::push(::Msg::Damage(self));
         if kill {
             self.kill();
         }
@@ -158,7 +180,7 @@ impl Entity {
     pub fn kill(self) {
         let loc = self.location().expect("no location");
         msgln!("{} dies.", self.name());
-        msg::push_msg(::Msg::Gib(loc));
+        msg::push(::Msg::Gib(loc));
         if rng::one_chance_in(6) {
             // Drop a heart.
             action::spawn_named("heart", loc);
@@ -224,24 +246,7 @@ impl Entity {
         let loc = self.location().expect("no location") + dir.to_v2();
         if let Some(e) = loc.mob_at() {
             let us = self.stats();
-            let them = e.stats();
-
-            // Attack power and target damage reduction.
-            let mut p = us.power + us.attack - them.protection;
-
-            if p < 1 {
-                // Give damage a bit under the reduction an off-chance to hit.
-                // Power that's too low can't do anything though.
-                if p >= -5 { p = 1; } else { return; }
-            }
-
-            // Every five points of power is one certain hit.
-            let full = p / 5;
-            // The fractional points are one probabilistic hit.
-            let partial = (p % 5) as f64 / 5.0;
-
-            let damage = full + if rng::p(partial) { 1 } else { 0 };
-            e.damage(damage)
+            e.damage(us.power + us.attack);
         }
     }
 
