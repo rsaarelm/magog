@@ -221,10 +221,10 @@ impl GameState {
         if self.screenshot_requested {
             use image;
             let shot = ctx.screenshot();
-            let file = File::create(&Path::new(
+            let mut file = File::create(&Path::new(
                     format!("/tmp/shot-{}.png", time::precise_time_s() as u64)))
                     .unwrap();
-            let _ = image::ImageRgb8(shot).save(file, image::PNG);
+            let _ = image::ImageRgb8(shot).save(&mut file, image::PNG);
 
             self.screenshot_requested = false;
         }
