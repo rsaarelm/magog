@@ -35,6 +35,8 @@ impl Entity {
     /// CALLER IS RESPONSIBLE FOR ENSUING THAT AN ENTITY WILL NOT BE
     /// USED FROM ANYWHERE AFTER THE DELETE OPERATION.
     pub fn delete(self) {
+        world::with_mut(|w|
+            if w.flags.player == Some(self) { w.flags.player = None; });
         world::with_mut(|w| w.comps.remove(self));
         world::with_mut(|w| w.spatial.remove(self));
         world::with_mut(|w| w.ecs.delete(self));
