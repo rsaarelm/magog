@@ -1,13 +1,10 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(B) 2014-12-13 Can only equip items up to current mana pool +Content
 (B) 2014-12-13 Mouse-over objects shows object info +UI
-(B) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
-(B) 2014-12-13 Player level up logic +Content
-(B) 2014-12-13 Projectile attack beam effect +UI
-(B) 2014-12-13 Screen state machine: Intro screen / Running game +UI
-(B) 2015-01-25 Player status display, show attack/defense values +UI
 (B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels.
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +UI
+(B) 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
+(B) 2015-02-11 Export trivial +Color-macro macro from calx
+(B) 2015-02-11 Figure out if exported macros need to have a separate crate +Color-macro
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -16,10 +13,11 @@
 (C) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
 (C) 2014-12-13 Blood splatters remain on map +Content
 (C) 2014-12-13 Burrowing mobs +Content
+(C) 2014-12-13 Can only equip items up to current mana pool +Content
 (C) 2014-12-13 Chain lightning spell +Content
 (C) 2014-12-13 Chests that drop goodies +Content
 (C) 2014-12-13 Cmdline parameter for starting fullscreen +UI +Gimmie
-(C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Engine +Gimmie
+(C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Config settings file +Engine
 (C) 2014-12-13 Confusion status effect +Content
@@ -47,6 +45,7 @@
 (C) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
 (C) 2014-12-13 Mobs that eat smaller allies to heal +Content
 (C) 2014-12-13 Money economy +Content
+(C) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
 (C) 2014-12-13 Multi-tile mob support +Engine
 (C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine +Gimmie
 (C) 2014-12-13 Noise propagation, noise alarms sleeping mobs +Content +Engine
@@ -56,12 +55,14 @@
 (C) 2014-12-13 Open world +Content
 (C) 2014-12-13 Pets +Content
 (C) 2014-12-13 Player kill statistics +Engine
+(C) 2014-12-13 Player level up logic +Content
 (C) 2014-12-13 Power distributions in spawns, few very rare elements for flavor +Content
 (C) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (C) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
 (C) 2014-12-13 Ranged attacks using ammunition +Content +UI
 (C) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
 (C) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
+(C) 2014-12-13 Screen state machine: Intro screen / Running game +UI
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
 (C) 2014-12-13 Slippery icy ground +Content
 (C) 2014-12-13 Swarming pack mobs +Content
@@ -99,6 +100,7 @@
 (C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
 (C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI
+(C) 2015-01-25 Player status display, show attack/defense values +UI
 (C) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
 (C) 2015-02-06 Remove "using feature" pragmas for unstable items @Rust1.0
 (C) 2015-02-06 Windows build is blocked by glium bug, probably https://github.com/tomaka/glium/issues/423 +Waiting +Build
@@ -109,6 +111,7 @@
 (C) 2015-02-07 Indicate status effects with recolored mob sprite black outline, Ultima VII style (eg. poison == green) +Render
 (C) 2015-02-07 Make autoexplore search depth long enough to always find the unexplored space left on current map +Engine
 (C) 2015-02-07 World message API that checks player's perception status (can see, thing happens in FOV) +Engine
+(C) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -221,6 +224,7 @@ x 2015-02-07 2014-12-13 Serialize RNG state with the world state (stdlib RNG doe
 x 2015-02-07 2014-12-30 Color cycling animation highlighting for pick-upable items +UI
 x 2015-02-07 2015-01-24 Heart drops mostly come from killed enemies, rarely found unattended +Content
 x 2015-02-07 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Build
+x 2015-02-09 2014-12-13 Projectile attack beam effect +UI
 z 0000 === Cancelled items ===
 z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
