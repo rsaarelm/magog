@@ -3,8 +3,8 @@ Window-wrangling, polygon-pushing and input-grabbing.
 
 */
 #![crate_name="calx_backend"]
-#![feature(plugin)]
 #![feature(collections, io)]
+#![feature(plugin)]
 #![plugin(glium_macros)]
 
 extern crate glutin;

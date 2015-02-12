@@ -5,11 +5,15 @@ Miscellaneous utilities grab-bag.
 
 #![crate_name="calx_util"]
 #![feature(core, collections, hash, io, std_misc)]
+#![feature(plugin)]
+#![plugin(regex_macros)]
 
 extern crate collections;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate time;
 extern crate rand;
+extern crate regex_macros;
+extern crate regex;
 extern crate image;
 
 pub use rgb::{Rgb, Rgba};

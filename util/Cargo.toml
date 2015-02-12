@@ -11,6 +11,10 @@ name = "calx_util"
 
 [dependencies.rand]
 
+[dependencies.regex_macros]
+
+[dependencies.regex]
+
 [dependencies.rustc-serialize]
 
 [dependencies.image]
