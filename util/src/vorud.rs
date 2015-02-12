@@ -172,7 +172,7 @@ mod test {
         assert_eq!("babab", &super::vorud_chunk(0)[]);
         assert_eq!("babad", &super::vorud_chunk(1)[]);
         assert_eq!(Ok(0u16), super::durov_chunk("babab"));
-        assert_eq!(Ok(1234u16), &super::durov_chunk(super::vorud_chunk(1234)[]));
+        assert_eq!(Ok(1234u16), super::durov_chunk(&super::vorud_chunk(1234)[]));
         assert_eq!("togas", &super::vorud_chunk(super::durov_chunk("togas").unwrap())[]);
         assert_eq!(super::Vorud("babab-babab".to_string()), 0u32.to_vorud());
         assert_eq!(super::Vorud("babab-babad".to_string()), 1u32.to_vorud());
