@@ -4,10 +4,10 @@ Window-wrangling, polygon-pushing and input-grabbing.
 */
 #![crate_name="calx_backend"]
 #![feature(plugin)]
-#![feature(core, collections, io)]
+#![feature(collections, io)]
+#![plugin(glium_macros)]
 
 extern crate glutin;
-#[plugin]
 extern crate glium_macros;
 extern crate glium;
 extern crate "calx_util" as util;

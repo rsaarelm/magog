@@ -1,4 +1,4 @@
-#![feature(core, io)]
+#![feature(io)]
 
 extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;
