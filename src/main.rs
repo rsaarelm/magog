@@ -1,5 +1,5 @@
 #![crate_name="magog"]
-#![feature(core, io, path, unicode)]
+#![feature(io, path, unicode)]
 
 extern crate image;
 extern crate "calx_util" as util;
