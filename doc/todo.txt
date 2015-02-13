@@ -1,10 +1,9 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (B) 2014-12-13 Mouse-over objects shows object info +UI
-(B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels.
-(B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +UI
+(B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
+(B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
-(B) 2015-02-11 Export trivial +Color-macro macro from calx
-(B) 2015-02-11 Figure out if exported macros need to have a separate crate +Color-macro
+(B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -17,7 +16,6 @@
 (C) 2014-12-13 Chain lightning spell +Content
 (C) 2014-12-13 Chests that drop goodies +Content
 (C) 2014-12-13 Cmdline parameter for starting fullscreen +UI +Gimmie
-(C) 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Config settings file +Engine
 (C) 2014-12-13 Confusion status effect +Content
@@ -95,11 +93,10 @@
 (C) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
 (C) 2015-01-24 Color-code +Inventory UI, red: gear with too high mana req, white: equippable gear, blue/cyan: Un-id'd consumable/gear, yellow: consumable, gray: other
 (C) 2015-01-24 Color-cycling animation for water and magma +Render
-(C) 2015-01-24 Convert light level to color value on client side, not in world crate +Render +Gimmie
 (C) 2015-01-24 Use consumable dialog when selecting consumable item in +Inventory, enter to accept esc to cancel
 (C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
 (C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
-(C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI
+(C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI +Gimmie
 (C) 2015-01-25 Player status display, show attack/defense values +UI
 (C) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
 (C) 2015-02-06 Remove "using feature" pragmas for unstable items @Rust1.0
@@ -112,6 +109,7 @@
 (C) 2015-02-07 Make autoexplore search depth long enough to always find the unexplored space left on current map +Engine
 (C) 2015-02-07 World message API that checks player's perception status (can see, thing happens in FOV) +Engine
 (C) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
+(C) 2015-02-12 Forthy lang for +Console ?
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Benchmarking code for FOV +Engine
@@ -120,24 +118,24 @@
 (D) 2014-12-13 Data entry Rust macros without explicit count parameter +Engine
 (D) 2014-12-13 Dual wielding +Content
 (D) 2014-12-13 Flying intrinsic, mobs that fly over chasms (will need to deal with mobs falling into chasms, water or magma if this goes in) +Content
-(D) 2014-12-13 Gzip save games +Engine
+(D) 2014-12-13 Gzip save games +Engine +Gimmie
 (D) 2014-12-13 Interface alarm animation when low on health +UI
 (D) 2014-12-13 Named miniboss mobs +Content
 (D) 2014-12-13 Rage meter +Content
-(D) 2014-12-13 Rooms and tunnels mapgen +Content
-(D) 2014-12-13 Save seed + input sequence, reconstruct game state from them +Engine
+(D) 2014-12-13 Rooms and tunnels mapgen +Content +Gimmie
+(D) 2014-12-13 Save seed + input sequence, reconstruct game state from them +Engine +Gimmie
 (D) 2014-12-13 Simple audio support, look into CPAL library +UI
 (D) 2014-12-13 Status readout for last enemy attacked in UI +UI
-(D) 2014-12-13 Store steganographic save games in screenshots +Render
+(D) 2014-12-13 Store steganographic save games in screenshots +Render +Gimmie
 (D) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
 (D) 2014-12-26 Compute improbability rating from input sequence saves where the player does many stupid things and stays alive because of fortunate RNG results, these will probably be the result of save scumming +Engine
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
 (D) 2014-12-29 Make animation rate fixed to desired FPS even if game slows down below target framerate due to debug mode slowness +Render
-(D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI
+(D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI +Gimmie
 (D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Engine
 (D) 2015-01-03 World has an enum of icons, App uses look-up-table on it, don't hardcode icon indices in entity specs +Content
-(D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine
+(D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine +Gimmie
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 (D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
@@ -225,6 +223,8 @@ x 2015-02-07 2014-12-30 Color cycling animation highlighting for pick-upable ite
 x 2015-02-07 2015-01-24 Heart drops mostly come from killed enemies, rarely found unattended +Content
 x 2015-02-07 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Build
 x 2015-02-09 2014-12-13 Projectile attack beam effect +UI
+x 2015-02-12 2015-02-12 Color string construction "red", "#F00", "#F00F", "#FF0000", "#FF0000FF" +Gimmie
+x 2015-02-13 2015-02-12 Try a move-to-shoot interface when a ranged weapon is equipped +UI
 z 0000 === Cancelled items ===
 z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
@@ -234,3 +234,4 @@ z 2015-02-07 2015-01-25 +Multilevel and FOV interactions, show the stuff below c
 z 2015-02-07 2015-01-31 Color drop edge to a lower layer differently if you can walk down it or if it's a long drop +Render +Cancelled
 z 2015-02-07 2015-01-31 Transparent ramp floors with multilevel, don't draw unless ramp is walkable +Render +Cancelled
 z 2015-02-07 2015-01-31 Walk up and down logic with multilevel +Engine +Cancelled
+z 2015-02-12 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
