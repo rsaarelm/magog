@@ -260,6 +260,16 @@ impl GameState {
     fn smart_move(&mut self, dir: Dir6) {
         let player = action::player().unwrap();
         let loc = player.location().unwrap();
+
+        let shoot_range = 8;
+        let shoot_damage = 10;
+
+        if let Some(e) = action::find_target(player, dir, shoot_range) {
+            // Shoot instead of moving if you'd hit an enemy.
+            action::shoot(loc, dir, shoot_range, shoot_damage);
+            return;
+        }
+
         for &d in vec![dir, dir + 1, dir - 1].iter() {
             let target_loc = loc + d.to_v2();
             if target_loc.has_mobs() {
@@ -270,15 +280,6 @@ impl GameState {
                 return;
             }
         }
-    }
-
-    fn shoot(&mut self, dir: Dir6) {
-        let player = action::player().unwrap();
-        let loc = player.location().unwrap();
-
-        // TODO: Figure out if you actually can shoot and how powerful the
-        // shot is from the player equipment.
-        action::shoot(loc, dir, 8, 10);
     }
 
     fn autoexplore(&mut self) -> bool {
@@ -327,14 +328,6 @@ impl GameState {
             Key::A | Key::Pad1 => { self.smart_move(SouthWest); }
             Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
-
-            // TODO: Shift + move for shoot (need to pass shift-state here)
-            Key::U => { self.shoot(NorthWest); }
-            Key::I => { self.shoot(North); }
-            Key::O => { self.shoot(NorthEast); }
-            Key::J => { self.shoot(SouthWest); }
-            Key::K => { self.shoot(South); }
-            Key::L => { self.shoot(SouthEast); }
 
             Key::Enter => { self.interact(); }
             Key::X => { self.exploring = true; }

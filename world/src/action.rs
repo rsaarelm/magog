@@ -228,3 +228,18 @@ pub fn autoexplore_map(pathing_depth: u32) -> Option<Dijkstra<Location>> {
 
     Some(Dijkstra::new(locs, |&loc| !loc.blocks_walk(), pathing_depth))
 }
+
+/// Look for targets to shoot in a direction.
+pub fn find_target(shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
+    let origin = shooter.location().unwrap();
+    for i in 1..(range + 1) {
+        let loc = origin + dir.to_v2() * (i as i32);
+        if loc.terrain().blocks_shot() {
+            break;
+        }
+        if let Some(e) = loc.mob_at() {
+            if shooter.is_hostile_to(e) { return Some(e); }
+        }
+    }
+    None
+}

@@ -564,7 +564,7 @@ impl Entity {
     }
 
     /// Return whether this thing wants to fight the other thing.
-    fn is_hostile_to(self, other: Entity) -> bool {
+    pub fn is_hostile_to(self, other: Entity) -> bool {
         match (self.alignment(), other.alignment()) {
             (Some(Alignment::Chaotic), Some(_)) => true,
             (Some(_), Some(Alignment::Chaotic)) => true,
