@@ -3,7 +3,10 @@
 
 extern crate image;
 extern crate "calx_util" as util;
+
+#[macro_use]
 extern crate "calx_backend" as backend;
+
 extern crate world;
 extern crate time;
 
