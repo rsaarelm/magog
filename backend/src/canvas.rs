@@ -1,5 +1,6 @@
 use time;
 use std::mem;
+use std::default::Default;
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
@@ -9,6 +10,7 @@ use util::{self, AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
 use event::{Event, MouseButton};
 use renderer::{Renderer, Vertex};
 use scancode;
+use ::{WidgetId};
 
 pub static FONT_W: u32 = 8;
 pub static FONT_H: u32 = 8;
@@ -116,6 +118,15 @@ pub struct Canvas {
 
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
+
+    pub mouse_pos: V2<f32>,
+    pub mouse_pressed: bool,
+    /// Imgui widget currently under mouse cursor.
+    pub hot_widget: Option<WidgetId>,
+    /// Imgui widget currently being interacted with.
+    pub active_widget: Option<WidgetId>,
+    /// Previous imgui widget.
+    pub last_widget: Option<WidgetId>,
 }
 
 #[derive(PartialEq)]
@@ -158,6 +169,12 @@ impl Canvas {
             indices: Vec::new(),
 
             render_duration: 0.1f64,
+
+            mouse_pos: Default::default(),
+            mouse_pressed: false,
+            hot_widget: None,
+            active_widget: None,
+            last_widget: None,
         }
     }
 
@@ -223,6 +240,23 @@ impl Canvas {
     pub fn screenshot(&self) -> ImageBuffer<image::Rgb<u8>, Vec<u8>> {
         self.renderer.canvas_pixels()
     }
+
+    fn imgui_prepare(&mut self) {
+        // Initial setup for imgui.
+        self.hot_widget = None;
+    }
+
+    fn imgui_finish(&mut self) {
+        if !self.mouse_pressed {
+            self.active_widget = None;
+        } else {
+            // Setup a dummy widget so that dragging a mouse onto a widget
+            // with the button held down won't activate that widget.
+            if self.active_widget.is_none() {
+                self.active_widget = Some(WidgetId::dummy());
+            }
+        }
+    }
 }
 
 impl<'a> Iterator for Canvas {
@@ -242,6 +276,8 @@ impl<'a> Iterator for Canvas {
             self.renderer.draw(&self.display, &mut target, vertices, indices);
 
             target.finish();
+
+            self.imgui_finish();
         }
 
         loop {
@@ -266,6 +302,7 @@ impl<'a> Iterator for Canvas {
                     }
                     glutin::Event::MouseMoved((x, y)) => {
                         let pixel_pos = self.renderer.screen_to_canvas(V2(x, y));
+                        self.mouse_pos = pixel_pos.map(|x| x as f32);
                         return Some(Event::MouseMoved((pixel_pos.0, pixel_pos.1)));
                     }
                     glutin::Event::MouseWheel(x) => {
@@ -278,6 +315,9 @@ impl<'a> Iterator for Canvas {
                             glutin::MouseButton::Middle => MouseButton::Middle,
                             glutin::MouseButton::Other(x) => MouseButton::Other(x),
                         };
+                        self.mouse_pressed =
+                            button == MouseButton::Left &&
+                            state == glutin::ElementState::Pressed;
                         match state {
                             glutin::ElementState::Pressed => {
                                 return Some(Event::MousePressed(button));
@@ -313,6 +353,9 @@ impl<'a> Iterator for Canvas {
                 let (w, h) = self.display.get_framebuffer_dimensions();
                 self.window_resolution = V2(w as i32, h as i32);
 
+                self.imgui_prepare();
+
+                // Return the render callback.
                 unsafe {
                     return Some(Event::Render(mem::transmute(self)))
                 }
