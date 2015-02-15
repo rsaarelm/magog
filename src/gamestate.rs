@@ -264,10 +264,15 @@ impl GameState {
         let shoot_range = 8;
         let shoot_damage = 10;
 
-        if let Some(e) = action::find_target(player, dir, shoot_range) {
-            // Shoot instead of moving if you'd hit an enemy.
-            action::shoot(loc, dir, shoot_range, shoot_damage);
-            return;
+        if !(loc + dir.to_v2()).has_mobs() {
+            // Shoot instead of moving if you'd hit an enemy and there's no
+            // melee target.
+            if let Some(e) = action::find_target(player, dir, shoot_range) {
+                if player.is_hostile_to(e) {
+                    action::shoot(loc, dir, shoot_range, shoot_damage);
+                    return;
+                }
+            }
         }
 
         for &d in vec![dir, dir + 1, dir - 1].iter() {
