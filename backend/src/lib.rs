@@ -3,7 +3,7 @@ Window-wrangling, polygon-pushing and input-grabbing.
 
 */
 #![crate_name="calx_backend"]
-#![feature(collections, io)]
+#![feature(collections, io, std_misc)]
 #![feature(plugin)]
 #![plugin(glium_macros)]
 

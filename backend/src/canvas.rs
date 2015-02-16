@@ -1,5 +1,7 @@
 use time;
 use std::mem;
+use std::time::duration::Duration;
+use std::old_io::timer;
 use std::default::Default;
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
@@ -358,6 +360,15 @@ impl<'a> Iterator for Canvas {
                 // Return the render callback.
                 unsafe {
                     return Some(Event::Render(mem::transmute(self)))
+                }
+            } else {
+                // Go to sleep if there's time left.
+                if let Some(mut remaining_s) = self.frame_interval {
+                    remaining_s -= t - self.last_render_time;
+                    if remaining_s > 0.0 {
+                        timer::sleep(
+                            Duration::nanoseconds((remaining_s * 1e9) as i64));
+                    }
                 }
             }
         }
