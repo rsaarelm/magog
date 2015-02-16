@@ -282,11 +282,14 @@ impl<'a> Iterator for Canvas {
             self.imgui_finish();
         }
 
+        let mut app_focused = true;
         loop {
             self.events.push_all(&self.display.poll_events().collect::<Vec<glutin::Event>>()[]);
 
             if !self.events.is_empty() {
+                app_focused = true;
                 match self.events.remove(0) {
+                    glutin::Event::Focused(false) => { app_focused = false; }
                     glutin::Event::ReceivedCharacter(ch) => {
                         return Some(Event::Char(ch));
                     }
@@ -340,7 +343,7 @@ impl<'a> Iterator for Canvas {
             }
 
             let t = time::precise_time_s();
-            if self.frame_interval.map_or(true,
+            if app_focused && self.frame_interval.map_or(true,
                 |x| t - self.last_render_time >= x) {
                 let delta = t - self.last_render_time;
                 let sensitivity = 0.25f64;
