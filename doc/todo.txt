@@ -71,7 +71,7 @@
 (C) 2014-12-13 Wizard mode with a debug command-line +UI
 (C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
 (C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
-(C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine +Gimmie
+(C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine +Gimmie +Waiting for glutin focus events
 (C) 2014-12-25 Spell cooldowns +Content
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
 (C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
@@ -135,7 +135,7 @@
 (D) 2014-12-30 When trying to fast-move with enemies in range, the enemy sprites blink once to notify that they're currently blocking the action +UI +Gimmie
 (D) 2015-01-02 Autoexplore needs to add the edge wall cells that are formed from the implicit area background tile into the search set +Engine
 (D) 2015-01-03 World has an enum of icons, App uses look-up-table on it, don't hardcode icon indices in entity specs +Content
-(D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine +Gimmie
+(D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine +Gimmie +Waiting for glutin focus events
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 (D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
