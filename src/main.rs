@@ -11,6 +11,7 @@ extern crate world;
 extern crate time;
 
 use gamestate::GameState;
+use titlestate::TitleState;
 
 pub static SCREEN_W: u32 = 640;
 pub static SCREEN_H: u32 = 360;
@@ -20,21 +21,19 @@ pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
 mod gamestate;
-//mod titlestate;
+mod titlestate;
 mod sprite;
 mod msg_queue;
 
-// TODO Fix state machine code.
-/*
 pub trait State {
-    fn process(&mut self, event: event::Event) -> Option<Transition>;
+    fn process(&mut self, event: backend::Event) -> Option<Transition>;
 }
 
 pub enum Transition {
-    NewState(State),
-    Quit,
+    Game(Option<u32>),
+    Title,
+    Exit,
 }
-*/
 
 pub fn version() -> String {
     let next_release = "0.1.0";
@@ -54,11 +53,14 @@ pub fn main() {
         .set_size(SCREEN_W, SCREEN_H)
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
-    let mut state = GameState::new(None);
+    let mut state: Box<State> = Box::new(TitleState::new());
 
     for evt in canvas.run() {
         match state.process(evt) {
-            false => { return; }
+            Some(Transition::Title) => { state = Box::new(TitleState::new()); }
+            Some(Transition::Game(seed)) => {
+                state = Box::new(GameState::new(seed)); }
+            Some(Transition::Exit) => { break; }
             _ => ()
         }
     }

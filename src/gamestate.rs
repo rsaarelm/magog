@@ -18,6 +18,7 @@ use sprite::{WorldSprites, GibSprite, BeamSprite};
 use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
+use ::{State, Transition};
 
 pub struct GameState {
     /// Transient effect sprites drawn in game world view.
@@ -374,11 +375,19 @@ impl GameState {
         }
         true
     }
+}
 
-    pub fn process(&mut self, event: Event) -> bool {
-        match self.ui_state {
+impl State for GameState {
+    fn process(&mut self, event: Event) -> Option<Transition> {
+        let running = match self.ui_state {
             UiState::Gameplay => self.gameplay_process(event),
             UiState::Inventory => self.inventory_process(event),
+        };
+
+        if !running {
+            Some(Transition::Title)
+        } else {
+            None
         }
     }
 }
