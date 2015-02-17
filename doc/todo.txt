@@ -61,7 +61,6 @@
 (C) 2014-12-13 Ranged attacks using ammunition +Content +UI
 (C) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
 (C) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
-(C) 2014-12-13 Screen state machine: Intro screen / Running game +UI
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
 (C) 2014-12-13 Slippery icy ground +Content
 (C) 2014-12-13 Swarming pack mobs +Content
@@ -226,6 +225,7 @@ x 2015-02-07 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Buil
 x 2015-02-09 2014-12-13 Projectile attack beam effect +UI
 x 2015-02-12 2015-02-12 Color string construction "red", "#F00", "#F00F", "#FF0000", "#FF0000FF" +Gimmie
 x 2015-02-13 2015-02-12 Try a move-to-shoot interface when a ranged weapon is equipped +UI
+x 2015-02-17 2014-12-13 Screen state machine: Intro screen / Running game +UI
 z 0000 === Cancelled items ===
 z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
