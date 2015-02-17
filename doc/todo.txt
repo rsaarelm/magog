@@ -4,6 +4,7 @@
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
+(B) 2015-02-16 Make shooting an input action
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
