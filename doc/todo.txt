@@ -1,18 +1,17 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(B) 2014-12-13 Left, center and right justifying text printing cursors +UI
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
 (B) 2015-02-16 Make shooting an input action
+(B) 2015-02-18 Wait turn action
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
-(C) 2014-12-13 Arena battle level +Content
 (C) 2014-12-13 Aura spells +Content
-(C) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
 (C) 2014-12-13 Blood splatters remain on map +Content
-(C) 2014-12-13 Burrowing mobs +Content
 (C) 2014-12-13 Can only equip items up to current mana pool +Content
 (C) 2014-12-13 Chain lightning spell +Content
 (C) 2014-12-13 Chests that drop goodies +Content
@@ -20,11 +19,7 @@
 (C) 2014-12-13 Config setting for starting out fullscreen +Render
 (C) 2014-12-13 Config settings file +Engine
 (C) 2014-12-13 Confusion status effect +Content
-(C) 2014-12-13 Corpses +Content
-(C) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
-(C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content
-(C) 2014-12-13 Don't spawn mobs immediately around level entrance point (make a general no free mapgen spawns zone concept) +Content
-(C) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
+(C) 2014-12-13 Day/night cycle in overworld, with seriously dangerous mobs out at night +Content +Overland
 (C) 2014-12-13 Effect for text floating on top of map location +UI
 (C) 2014-12-13 Enemies that explode when dying +Content
 (C) 2014-12-13 Enemy ranged attack +Content
@@ -38,20 +33,12 @@
 (C) 2014-12-13 Killed mobs drop items +Content
 (C) 2014-12-13 Knockback attacks +Content
 (C) 2014-12-13 Lair clearing mechanic +Content
-(C) 2014-12-13 Left, center and right justifying text printing cursors +UI
 (C) 2014-12-13 Magic-using mobs +Content
 (C) 2014-12-13 Mana bound by equipped gear takes a few turns to recharge after unequip, can't instaswap gear mid-combat. +Content
-(C) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
-(C) 2014-12-13 Mobs that eat smaller allies to heal +Content
-(C) 2014-12-13 Money economy +Content
 (C) 2014-12-13 Movement using mouse with path highlight and auto-move to destination +UI
-(C) 2014-12-13 Multi-tile mob support +Engine
-(C) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine +Gimmie
-(C) 2014-12-13 Noise propagation, noise alarms sleeping mobs +Content +Engine
 (C) 2014-12-13 Nova spells +Content
 (C) 2014-12-13 On-map light sources do FOV-traced dynamic light +Engine
 (C) 2014-12-13 On-screen controls allow doing all game actions with mouse +UI
-(C) 2014-12-13 Open world +Content
 (C) 2014-12-13 Pets +Content
 (C) 2014-12-13 Player kill statistics +Engine
 (C) 2014-12-13 Player level up logic +Content
@@ -59,75 +46,90 @@
 (C) 2014-12-13 Proper save/reload logic, eliminate saves after load +UI
 (C) 2014-12-13 Ranged attack mob with AI that keeps its distance +Content
 (C) 2014-12-13 Ranged attacks using ammunition +Content +UI
-(C) 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
 (C) 2014-12-13 Respawn dead player, remember state at first death as the end of the ironman run +Content
 (C) 2014-12-13 Set up Windows build toolchain with Wine, no need for actual Windows box +Build
-(C) 2014-12-13 Slippery icy ground +Content
-(C) 2014-12-13 Swarming pack mobs +Content
 (C) 2014-12-13 Teleport +Content
-(C) 2014-12-13 Unkillable enemy +Content
-(C) 2014-12-13 Waypoint travel +Content
 (C) 2014-12-13 Winning the game +Content
 (C) 2014-12-13 Wizard mode with a debug command-line +UI
-(C) 2014-12-14 Persistent levels, add third dimension to Location type +Engine
-(C) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (C) 2014-12-25 Recognize going out of focus and stop updating screen +Engine +Gimmie +Waiting for glutin focus events
 (C) 2014-12-25 Spell cooldowns +Content
 (C) 2014-12-25 Standard entity iterator only iterates entities with places in world, don't have prototypes messing up live logic +Engine
-(C) 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 (C) 2014-12-25 Versioned save files +Engine
 (C) 2015-01-11 Mapgen API supports multiple map generator types +Engine
-(C) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
-(C) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
 (C) 2015-01-12 Use vorud functions to display and accept human-readable worldgen seeds +Gimmie +UI
 (C) 2015-01-12 Vaults in mapgen (preset entity spawns, no freespawns in zone, mapgen is aware that vaults change game balance and must be doled out carefully) +Content
 (C) 2015-01-13 See if FnOnce can be used with the 'with' fns to solve problems with moving resources into inner state +Engine
 (C) 2015-01-17 Fire and burning +Engine
 (C) 2015-01-17 Gas clouds (FOV-blocking smoke, burning steam, corrosive gas, poison cloud) +Engine
 (C) 2015-01-19 Inventory screen can print feedback messages for being unable to equip item due to insufficient mana etc +UI
-(C) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in +Inventory
 (C) 2015-01-20 Spell items that can be equipped and activated +Content
 (C) 2015-01-22 Entities can be light sources +Engine
-(C) 2015-01-22 Map scrolling or minimap to view remembered terrain outside the screen +UI
-(C) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI +Gimmie
-(C) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
-(C) 2015-01-24 Color-code +Inventory UI, red: gear with too high mana req, white: equippable gear, blue/cyan: Un-id'd consumable/gear, yellow: consumable, gray: other
 (C) 2015-01-24 Color-cycling animation for water and magma +Render
 (C) 2015-01-24 Use consumable dialog when selecting consumable item in +Inventory, enter to accept esc to cancel
-(C) 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
-(C) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (C) 2015-01-25 Calx doesn't support PageUp/PageDown keys? +UI +Gimmie
 (C) 2015-01-25 Player status display, show attack/defense values +UI
-(C) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
 (C) 2015-02-06 Remove "using feature" pragmas for unstable items @Rust1.0
 (C) 2015-02-06 Windows build is blocked by glium bug, probably https://github.com/tomaka/glium/issues/423 +Waiting +Build
 (C) 2015-02-07 Borderless fullscreen window mode to get full resolution on Windows, needs support from Glutin +UI
 (C) 2015-02-07 Darkness makes FOV shorter +Engine
 (C) 2015-02-07 Error message +UI support for eg. bad save game
 (C) 2015-02-07 Handle corrupt save games gracefully instead of panicing the app +Engine
-(C) 2015-02-07 Indicate status effects with recolored mob sprite black outline, Ultima VII style (eg. poison == green) +Render
 (C) 2015-02-07 Make autoexplore search depth long enough to always find the unexplored space left on current map +Engine
-(C) 2015-02-07 World message API that checks player's perception status (can see, thing happens in FOV) +Engine
-(C) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
-(C) 2015-02-12 Forthy lang for +Console ?
+(C) 2015-02-18 Conflict effect on NPCs
+(C) 2015-02-18 Enchating items
+(C) 2015-02-18 Invisibility
+(C) 2015-02-18 Item identification using prototype properties
+(C) 2015-02-18 Item stacking
+(C) 2015-02-18 Map blips with ESP, need icons for "monster", "item" etc.
+(C) 2015-02-18 Non-sleeping wandering monsters
+(C) 2015-02-18 Paralysis effect
+(C) 2015-02-18 Player can hide in shadowy areas
+(C) 2015-02-18 Pressure plates linked to nefarious mechanisms
+(C) 2015-02-18 Proper sneak system, can sneak up on sleeping enemies with good stealth
+(C) 2015-02-18 Status effect countdown bar in UI
+(C) 2015-02-18 Sticky ESP, you can be bonded to an entity and will see it as a blip when out of FOV
+(C) 2015-02-18 Throwing items, on top of pressure plates etc. (How will you specify where it should land?)
+(C) 2015-02-18 Turrets
+(C) 2015-02-18 Underwater enemies
+(C) 2015-02-18 Warding glyphs monsters can't cross
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
+(D) 2014-12-13 Arena battle level +Content
+(D) 2014-12-13 Autostep dodge that actually moves the dodging mob +Content
 (D) 2014-12-13 Benchmarking code for FOV +Engine
+(D) 2014-12-13 Burrowing mobs +Content
 (D) 2014-12-13 Canyons terrain +Content
 (D) 2014-12-13 Cavern mapgen +Content
+(D) 2014-12-13 Corpses +Content
+(D) 2014-12-13 Crystal cluster terrain that explodes when hit +Content
 (D) 2014-12-13 Data entry Rust macros without explicit count parameter +Engine
+(D) 2014-12-13 Don't spawn mobs immediately around level entrance point (make a general no free mapgen spawns zone concept) +Content
 (D) 2014-12-13 Dual wielding +Content
+(D) 2014-12-13 Eat food items to trigger health regeneration of the current HP difference from full health +Content
 (D) 2014-12-13 Flying intrinsic, mobs that fly over chasms (will need to deal with mobs falling into chasms, water or magma if this goes in) +Content
 (D) 2014-12-13 Gzip save games +Engine +Gimmie
 (D) 2014-12-13 Interface alarm animation when low on health +UI
+(D) 2014-12-13 Melee weapon types give special attack styles, pierce, whirlwind etc. +Content
+(D) 2014-12-13 Mobs that eat smaller allies to heal +Content
+(D) 2014-12-13 Money economy +Content
+(D) 2014-12-13 Multi-tile mob support +Engine
+(D) 2014-12-13 Named icons, icon!("grass") macro for referring to them in code +Engine +Gimmie
 (D) 2014-12-13 Named miniboss mobs +Content
+(D) 2014-12-13 Noise propagation, noise alarms sleeping mobs +Content +Engine
+(D) 2014-12-13 Open world +Content +Overland
 (D) 2014-12-13 Rage meter +Content
 (D) 2014-12-13 Rooms and tunnels mapgen +Content +Gimmie
 (D) 2014-12-13 Save seed + input sequence, reconstruct game state from them +Engine +Gimmie
 (D) 2014-12-13 Simple audio support, look into CPAL library +UI
+(D) 2014-12-13 Slippery icy ground +Content
 (D) 2014-12-13 Status readout for last enemy attacked in UI +UI
 (D) 2014-12-13 Store steganographic save games in screenshots +Render +Gimmie
+(D) 2014-12-13 Swarming pack mobs +Content
 (D) 2014-12-13 Temporary visual effects can also create light map changes around them +UI
+(D) 2014-12-13 Unkillable enemy +Content
+(D) 2014-12-13 Waypoint travel +Content +Overland
+(D) 2014-12-14 Persistent levels, add third dimension to Location type +Engine +Overland
+(D) 2014-12-20 Macro flags!(Foo, Bar, ...) that expands to "Foo as i64 | Bar as i64 | ..." for setting intrinsics etc. +Content
 (D) 2014-12-22 Get rid of as many .unwrap() calls as possible +Engine
 (D) 2014-12-26 Compute improbability rating from input sequence saves where the player does many stupid things and stays alive because of fortunate RNG results, these will probably be the result of save scumming +Engine
 (D) 2014-12-27 Location::entities() returns an iterator (quite tricky, can't bring references to Spatial innards outside world closuse blocks) +Engine
@@ -137,14 +139,28 @@
 (D) 2015-01-03 World has an enum of icons, App uses look-up-table on it, don't hardcode icon indices in entity specs +Content
 (D) 2015-01-05 Track wall clock play time, clock out when app loses focus or there's no input for several minutes +Engine +Gimmie +Waiting for glutin focus events
 (D) 2015-01-12 (Temporary) terrain creating spell +Content
+(D) 2015-01-12 Chunks mapgen supports different chunk sizes, either fused multiple herringbone chunks or go for a fully freeform chunk connector gen +Content
+(D) 2015-01-12 Dungeon features: mines, homes and nests, temples, workshops, barracks, gated fortresses, crypts, vaults and hoards, halls, trap complexes, alien lairs +Content
 (D) 2015-01-12 Key remapping with a config file, needs runtime key names and some way to separate layout and hardware keys +UI
 (D) 2015-01-17 Chunky health model, health bar made of chunks that regenerate if partially depleted but need resources to restore if fully depleted (alternative to other models, see how this works) +Engine
 (D) 2015-01-17 Put macros in separate module, keep data modules clean +Engine +Gimmie
 (D) 2015-01-18 Color scheme for item rarity, white-common, green-uncommon, blue-rare, purple-epic, orange-legendary +Content
 (D) 2015-01-19 Set up benchmarks, see if inline pragmas optimize eg. image drawing and Rect::pn +Render
+(D) 2015-01-19 Swap bag item with equipped item for single-per-type equipment slots in +Inventory to allow swapping equips without dropping anything even with a full bag
+(D) 2015-01-22 Map scrolling or minimap to view remembered terrain outside the screen +UI
+(D) 2015-01-22 Show world seed string in permanent onscreen status, other people can replay the game a screenshot is from +UI +Gimmie
 (D) 2015-01-23 Dynamic lighting from floor (eg. magma) illuminates upright things but not floor tiles +Gfx
+(D) 2015-01-24 +Inventory shows a popup with all item statistics, stats get color-coded on whether they're better or worse than what's currently equipped (need to specify comparison slot for trinkets)
+(D) 2015-01-24 Color-code +Inventory UI, red: gear with too high mana req, white: equippable gear, blue/cyan: Un-id'd consumable/gear, yellow: consumable, gray: other
 (D) 2015-01-24 Terrain altering magic can create ditches into which water or magma can flow (these will eventually dissipate, don't make maps impassable with new magma rivers) +Engine +Content
+(D) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (D) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
+(D) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
+(D) 2015-02-07 Indicate status effects with recolored mob sprite black outline, Ultima VII style (eg. poison == green) +Render
+(D) 2015-02-07 World message API that checks player's perception status (seen things, heard things, altered perception?) +Engine
+(D) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
+(D) 2015-02-12 Forthy lang for +Console ?
+(D) 2015-02-18 Fix bad slowdowns during autoexplore
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -193,6 +209,7 @@ x 2015-01-21 2015-01-17 Move entity factory code & Prototype type into own modul
 x 2015-01-22 2014-12-13 Dynamic lighting in world state +Engine
 x 2015-01-22 2014-12-13 Experimental display showing "ink on parchment" render for the off-FOV map (probably a bad idea since it loses the ubiquitous black background which is important for masking the lack of proper edge transition tiles) +Engine
 x 2015-01-22 2014-12-13 Nice API for entity factories +Engine
+x 2015-01-22 2014-12-25 Utilities module with things like deterministic noise from location.rs +Engine
 x 2015-01-23 2014-12-13 Onscreen pixel dumping API in Canvas for screenshots +Render
 x 2015-01-23 2014-12-13 Paint screen using render-to-texture, get zooming invariant fixed resolution pixel graphics and nice screenshot data +Render
 x 2015-01-23 2014-12-31 Binaries know their build version +Engine +Gimmie
@@ -224,6 +241,7 @@ x 2015-02-07 2015-01-24 Heart drops mostly come from killed enemies, rarely foun
 x 2015-02-07 2015-02-01 Remove [allow(unstable)] pragmas, fix the warnings +Build
 x 2015-02-09 2014-12-13 Projectile attack beam effect +UI
 x 2015-02-12 2015-02-12 Color string construction "red", "#F00", "#F00F", "#FF0000", "#FF0000FF" +Gimmie
+x 2015-02-13 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
 x 2015-02-13 2015-02-12 Try a move-to-shoot interface when a ranged weapon is equipped +UI
 x 2015-02-17 2014-12-13 Screen state machine: Intro screen / Running game +UI
 z 0000 === Cancelled items ===
@@ -236,3 +254,4 @@ z 2015-02-07 2015-01-31 Color drop edge to a lower layer differently if you can 
 z 2015-02-07 2015-01-31 Transparent ramp floors with multilevel, don't draw unless ramp is walkable +Render +Cancelled
 z 2015-02-07 2015-01-31 Walk up and down logic with multilevel +Engine +Cancelled
 z 2015-02-12 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
+z 2015-02-18 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
