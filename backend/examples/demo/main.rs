@@ -1,17 +1,41 @@
 #![feature(io)]
 
+extern crate time;
 extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;
 
 use std::num::{Float};
+use std::ascii::OwnedAsciiExt;
 use util::{color, V2, Rgba, Rect};
 use backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
     let mut t = 0i32;
     let mut mouse_pos = V2(-1i32, -1i32);
+    let pangrams = vec![
+        "the quick brown fox jumps over the lazy dog",
+        "the five boxing wizards jump quickly",
+        "five quacking zephyrs jolt my wax bed",
+        "jackdaws love my big sphinx of quartz",
+        "the quick onyx goblin jumps over the lazy dwarf",
+        "who packed five dozen old quart jugs in my box",
+        "heavy boxes perform quick waltzes and jigs",
+        "fix problem quickly with galvanized jets",
+        "pack my red box with five dozen quality jugs",
+        "why shouldn't a quixotic kazakh vampire jog barefoot",
+        "have a pick: twenty-six letters - no forcing a jumbled quiz",
+        "crazy frederick bought many very exquisite opal jewels",
+        "grumpy wizards make toxic brew for the evil queen and jack",
+        "just keep examining every low bid quoted for zinc etchings",
+        "sylvia wagt quick den jux bei pforzheim",
+        "franz jagt im komplett verwahrlosten taxi quer durch",
+        "sic fugiens, dux, zelotypos, quam karus haberis",
+        ".o'i mu xagji sofybakni cu zvati le purdi",
+    ];
 
     for evt in CanvasBuilder::new().run() {
+        // Change pangram every 10 seconds.
+        let pangram_idx = (time::precise_time_s() / 10.0) as usize % pangrams.len();
         match evt {
             Event::Render(ctx) => {
                 let img = ctx.font_image('@').unwrap();
@@ -41,9 +65,13 @@ fn main() {
                 ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0, 255, 255, 128));
 
                 let fps = 1.0 / ctx.render_duration;
-                let _ = write!(&mut ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN)
-                               .set_border(color::BLACK),
-                    "FPS {:.0}", fps);
+                let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::LIGHTGREEN).set_border(color::BLACK);
+                write!(&mut cursor, "FPS {:.0}\n", fps).unwrap();
+                write!(&mut cursor, "{}\n", pangrams[pangram_idx].to_string().into_ascii_uppercase()).unwrap();
+                write!(&mut cursor, "{}\n", pangrams[pangram_idx]).unwrap();
+                write!(&mut cursor, "!\"#$%&'()*+,-./\n").unwrap();
+                write!(&mut cursor, "1234567890:;<=>?\n").unwrap();
+                write!(&mut cursor, "[\\]^_`{{|}}~\n").unwrap();
 
                 t += 1;
             }
