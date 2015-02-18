@@ -149,16 +149,18 @@ impl GameState {
 
     fn inventory_update(&mut self, ctx: &mut Canvas) {
         let player = action::player().unwrap();
-        {
-            let mut cursor = ctx.text_writer(V2(0, 8), 0.1, color::GAINSBORO);
-            for slot_data in SLOT_DATA.iter() {
-                let name = match player.equipped(slot_data.slot) {
-                    Some(item) => item.name(),
-                    None => "".to_string()
-                };
-                write!(&mut cursor, "{}] {}: {}\n",
-                    slot_data.key, slot_data.name, name).unwrap();
-            }
+        for (i, slot_data) in SLOT_DATA.iter().enumerate() {
+            let mut cursor = ctx.text_writer(V2(0, 8 * (i + 1) as i32), 0.1, color::GAINSBORO);
+            let name = match player.equipped(slot_data.slot) {
+                Some(item) => item.name(),
+                None => "".to_string()
+            };
+            // Center.
+            let w = cursor.width(&slot_data.key.to_string()); cursor.set_x((8.0 - w) / 2.0);
+            write!(&mut cursor, "{}", slot_data.key).unwrap();
+            cursor.set_x(8.0); write!(&mut cursor, "]").unwrap();
+            cursor.set_x(16.0); write!(&mut cursor, "{}", slot_data.name).unwrap();
+            cursor.set_x(80.0); write!(&mut cursor, "{}", name).unwrap();
         }
 
         {
@@ -407,30 +409,30 @@ static SLOT_DATA: [SlotData; 34] = [
     SlotData { key: '6', slot: Slot::Spell6,     name: "Ability" },
     SlotData { key: '7', slot: Slot::Spell7,     name: "Ability" },
     SlotData { key: '8', slot: Slot::Spell8,     name: "Ability" },
-    SlotData { key: 'a', slot: Slot::Melee,      name: "Weapon " },
-    SlotData { key: 'b', slot: Slot::Ranged,     name: "Ranged " },
-    SlotData { key: 'c', slot: Slot::Head,       name: "Head   " },
-    SlotData { key: 'd', slot: Slot::Body,       name: "Body   " },
-    SlotData { key: 'e', slot: Slot::Feet,       name: "Feet   " },
+    SlotData { key: 'a', slot: Slot::Melee,      name: "Weapon" },
+    SlotData { key: 'b', slot: Slot::Ranged,     name: "Ranged" },
+    SlotData { key: 'c', slot: Slot::Head,       name: "Head" },
+    SlotData { key: 'd', slot: Slot::Body,       name: "Body" },
+    SlotData { key: 'e', slot: Slot::Feet,       name: "Feet" },
     SlotData { key: 'f', slot: Slot::TrinketF,   name: "Trinket" },
     SlotData { key: 'g', slot: Slot::TrinketG,   name: "Trinket" },
     SlotData { key: 'h', slot: Slot::TrinketH,   name: "Trinket" },
     SlotData { key: 'i', slot: Slot::TrinketI,   name: "Trinket" },
-    SlotData { key: 'j', slot: Slot::InventoryJ, name: "       " },
-    SlotData { key: 'k', slot: Slot::InventoryK, name: "       " },
-    SlotData { key: 'l', slot: Slot::InventoryL, name: "       " },
-    SlotData { key: 'm', slot: Slot::InventoryM, name: "       " },
-    SlotData { key: 'n', slot: Slot::InventoryN, name: "       " },
-    SlotData { key: 'o', slot: Slot::InventoryO, name: "       " },
-    SlotData { key: 'p', slot: Slot::InventoryP, name: "       " },
-    SlotData { key: 'q', slot: Slot::InventoryQ, name: "       " },
-    SlotData { key: 'r', slot: Slot::InventoryR, name: "       " },
-    SlotData { key: 's', slot: Slot::InventoryS, name: "       " },
-    SlotData { key: 't', slot: Slot::InventoryT, name: "       " },
-    SlotData { key: 'u', slot: Slot::InventoryU, name: "       " },
-    SlotData { key: 'v', slot: Slot::InventoryV, name: "       " },
-    SlotData { key: 'w', slot: Slot::InventoryW, name: "       " },
-    SlotData { key: 'x', slot: Slot::InventoryX, name: "       " },
-    SlotData { key: 'y', slot: Slot::InventoryY, name: "       " },
-    SlotData { key: 'z', slot: Slot::InventoryZ, name: "       " },
+    SlotData { key: 'j', slot: Slot::InventoryJ, name: "" },
+    SlotData { key: 'k', slot: Slot::InventoryK, name: "" },
+    SlotData { key: 'l', slot: Slot::InventoryL, name: "" },
+    SlotData { key: 'm', slot: Slot::InventoryM, name: "" },
+    SlotData { key: 'n', slot: Slot::InventoryN, name: "" },
+    SlotData { key: 'o', slot: Slot::InventoryO, name: "" },
+    SlotData { key: 'p', slot: Slot::InventoryP, name: "" },
+    SlotData { key: 'q', slot: Slot::InventoryQ, name: "" },
+    SlotData { key: 'r', slot: Slot::InventoryR, name: "" },
+    SlotData { key: 's', slot: Slot::InventoryS, name: "" },
+    SlotData { key: 't', slot: Slot::InventoryT, name: "" },
+    SlotData { key: 'u', slot: Slot::InventoryU, name: "" },
+    SlotData { key: 'v', slot: Slot::InventoryV, name: "" },
+    SlotData { key: 'w', slot: Slot::InventoryW, name: "" },
+    SlotData { key: 'x', slot: Slot::InventoryX, name: "" },
+    SlotData { key: 'y', slot: Slot::InventoryY, name: "" },
+    SlotData { key: 'z', slot: Slot::InventoryZ, name: "" },
 ];
