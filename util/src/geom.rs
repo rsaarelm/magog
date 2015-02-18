@@ -116,8 +116,8 @@ impl<T: Primitive> Rect<T> {
     pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
 
     pub fn mn(&self) -> V2<T> { self.0 }
-
     pub fn mx(&self) -> V2<T> { self.0 + self.1 }
+    pub fn dim(&self) -> V2<T> { self.1 }
 
     pub fn p0(&self) -> V2<T> { self.mn() }
     pub fn p1(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1) }
