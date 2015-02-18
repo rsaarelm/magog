@@ -6,7 +6,7 @@ extern crate "calx_backend" as backend;
 
 use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
-use util::{color, V2, Rgba, Rect};
+use util::{color, V2, Rgba, Rgb, Rect};
 use backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
@@ -32,6 +32,7 @@ fn main() {
         "sic fugiens, dux, zelotypos, quam karus haberis",
         ".o'i mu xagji sofybakni cu zvati le purdi",
     ];
+    let pattern_col = Rgb::parse("#420");
 
     for evt in CanvasBuilder::new().run() {
         // Change pangram every 10 seconds.
@@ -44,7 +45,7 @@ fn main() {
                 for y in 0i32..(360/8) {
                     for x in 0i32..(640/8) {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
-                            color::WHITE } else { color::ORANGE };
+                            color::WHITE } else { pattern_col };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
                             0.4, &col, &color::BLACK);
                     }
