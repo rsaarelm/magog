@@ -1,115 +1,76 @@
-use collections::ring_buf::RingBuf;
+/// Divide a string into the longest slice that fits within maximum line
+/// length and the rest of the string. Place the split before a whitespace or
+/// after a hyphen if possible. Any whitespace between the two segments is
+/// trimmed. Newlines will cause a segment split when encountered.
+pub fn split_line<'a, F>(text: &'a str, char_width: F, max_len: f32) -> (&'a str, &'a str)
+    where F: Fn(char) -> f32 {
+    assert!(max_len >= 0.0);
 
-pub struct WrapLineIterator<T> {
-    /// Input iterator
-    iter: T,
-    /// Maximum line length
-    line_len: usize,
-    /// Characters output since last newline
-    current_line_len: usize,
-    /// Incoming elements
-    buffer: RingBuf<char>,
-    /// Peek window
-    peek: Option<char>,
-}
+    if text.len() == 0 { return (text, text); }
 
-impl<T: Iterator<Item=char>> WrapLineIterator<T> {
-    fn fill_buffer(&mut self) {
-        assert!(self.buffer.is_empty());
-        let mut seen_text = false;
-        let mut text_length = 0;
-        match self.peek {
-            Some(c) => {
-                assert!(c.is_whitespace());
-                self.buffer.push_back(c);
-                self.peek = None;
-            },
-            None => ()
+    // Init the split position to 1 because we always want to return at least
+    // 1 character in the head partition.
+    let mut head_end = 1;
+    let mut tail_start = 1;
+    // Is the iteration currently consuming whitespace inside a possible
+    // break.
+    let mut eat_whitespace = false;
+    let mut length = 0.0;
+
+    for (i, c) in text.chars().enumerate() {
+        length = length + char_width(c);
+
+        // Invariant: head_end and tail_start describe a valid, but possibly
+        // suboptimal return value at this point.
+        if eat_whitespace {
+            if c.is_whitespace() {
+                tail_start = i + 1;
+                if c == '\n' { return (&text[..head_end], &text[tail_start..]); }
+                continue;
+            } else {
+                eat_whitespace = false;
+            }
         }
-        loop {
-            let c = match self.iter.next() {
-                None => break,
-                Some(c) => c
-            };
 
-            // Break before non-newline whitespace after
-            // non-whitespace text has been seen. (Newlines will be
-            // included in the buffer.)
-            if seen_text && c.is_whitespace() && c != '\n' {
-                self.peek = Some(c);
-                break;
-            }
-            self.buffer.push_back(c);
-            if !c.is_whitespace() {
-                seen_text = true;
-                text_length += 1;
+        // We're either just encountering the first whitespace after a block
+        // of text, or over non-whitespace text.
+        assert!(!eat_whitespace);
+
+        // Invariant: The length of the string processed up to this point is
+        // still short enough to return.
+
+        // Encounter the first whitespace, set head_end marker.
+        if c.is_whitespace() {
+            head_end = i;
+            tail_start = i + 1;
+            if c == '\n' { return (&text[..head_end], &text[tail_start..]); }
+            eat_whitespace = true;
+            continue;
+        }
+
+        assert!(!c.is_whitespace());
+
+        // Went over the allowed length.
+        if length > max_len {
+            if i > 1 && head_end == 1 && tail_start == 1 {
+                // Didn't encounter any better cut points, so just place cut
+                // in the middle of the word where we're at.
+                head_end = i;
+                tail_start = i;
             }
 
-            if text_length >= self.line_len {
-                // The word is longer than the allowed line length,
-                // need to break it.
-                break;
-            }
-            // Break after hyphen or newline.
-            if c == '-' || c == '\n' {
-                break;
-            }
+            // Use the last good result.
+            return (&text[..head_end], &text[tail_start..]);
+        }
+
+        // Hyphens are a possible cut point.
+        if c == '-' {
+            head_end = i;
+            tail_start = i;
         }
     }
 
-    fn trim_buffer_left(&mut self) {
-        while !self.buffer.is_empty() && self.buffer.front().unwrap().is_whitespace() {
-            self.buffer.pop_front();
-        }
-    }
-}
-
-impl<T: Iterator<Item=char>> Iterator for WrapLineIterator<T> {
-    type Item = char;
-    fn next(&mut self) -> Option<char> {
-        if self.buffer.is_empty() {
-            return None;
-        }
-        if self.current_line_len + self.buffer.len() > self.line_len {
-            // Next word won't fit, insert a newline.
-            self.current_line_len = 0;
-            self.trim_buffer_left();
-            return Some('\n');
-        }
-        let c = self.buffer.pop_front().unwrap();
-        self.current_line_len += 1;
-        if c == '\n' {
-            self.current_line_len = 0;
-        }
-        if self.buffer.is_empty() {
-            self.fill_buffer();
-        }
-        Some(c)
-    }
-}
-
-// All char iterators get this trait and the new method.
-pub trait WrapUtil {
-    fn wrap(self, line_len: usize) -> WrapLineIterator<Self>;
-}
-
-impl<T: Iterator<Item=char>> WrapUtil for T {
-    fn wrap(self, line_len: usize) -> WrapLineIterator<T> {
-        assert!(line_len > 0);
-        let mut ret = WrapLineIterator{
-            iter: self,
-            line_len: line_len,
-            current_line_len: 0,
-            buffer: RingBuf::new(),
-            peek: None,
-        };
-        ret.fill_buffer();
-        ret
-    }
-}
-
-pub fn wrap_lines(line_len: usize, s: &str) -> String {
-    s.chars().wrap(line_len).collect()
+    (&text, &""[])
 }
 
 pub struct Map2DIterator<T> {
@@ -141,5 +102,26 @@ pub trait Map2DUtil {
 impl<T: Iterator<Item=char>> Map2DUtil for T {
     fn map2d(self) -> Map2DIterator<T> {
         Map2DIterator{ iter: self, x: 0, y: 0 }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_split_line() {
+        use super::split_line;
+
+        assert_eq!(("", ""), split_line("", |_| 1.0, 12.0));
+        assert_eq!(("a", ""), split_line("a", |_| 1.0, 5.0));
+        assert_eq!(("the", "cat"), split_line("the cat", |_| 1.0, 5.0));
+        assert_eq!(("the", "cat"), split_line("the     cat", |_| 1.0, 5.0));
+        assert_eq!(("the", "cat"), split_line("the  \t cat", |_| 1.0, 5.0));
+        assert_eq!(("the", "cat"), split_line("the \ncat", |_| 1.0, 32.0));
+        assert_eq!(("the", "   cat"), split_line("the \n   cat", |_| 1.0, 32.0));
+        assert_eq!(("the  cat", ""), split_line("the  cat", |_| 1.0, 32.0));
+        assert_eq!(("the", "cat sat"), split_line("the cat sat", |_| 1.0, 6.0));
+        assert_eq!(("the cat", "sat"), split_line("the cat sat", |_| 1.0, 7.0));
+        assert_eq!(("a", "bc"), split_line("abc", |_| 1.0, 0.01));
+        assert_eq!(("dead", "beef"), split_line("deadbeef", |_| 1.0, 4.0));
     }
 }
