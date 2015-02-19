@@ -119,10 +119,16 @@ impl<T: Primitive> Rect<T> {
     pub fn mx(&self) -> V2<T> { self.0 + self.1 }
     pub fn dim(&self) -> V2<T> { self.1 }
 
-    pub fn p0(&self) -> V2<T> { self.mn() }
-    pub fn p1(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1) }
-    pub fn p2(&self) -> V2<T> { self.mx() }
-    pub fn p3(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1) }
+    pub fn top_left(&self) -> V2<T> { self.mn() }
+    pub fn top_right(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1) }
+    pub fn bottom_right(&self) -> V2<T> { self.mx() }
+    pub fn bottom_left(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1) }
+
+    pub fn top(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1) }
+    pub fn bottom(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1) }
+    pub fn left(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
+    pub fn right(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
+    pub fn center(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
 
     /// Grow the rectangle to enclose point p.
     pub fn grow(&mut self, p: V2<T>) {

@@ -58,10 +58,10 @@ impl CanvasUtil for Canvas {
 
         let ind0 = self.num_vertices();
 
-        self.push_vertex(pos.p0(), z, tex.p0(), color, back_color);
-        self.push_vertex(pos.p1(), z, tex.p1(), color, back_color);
-        self.push_vertex(pos.p2(), z, tex.p2(), color, back_color);
-        self.push_vertex(pos.p3(), z, tex.p3(), color, back_color);
+        self.push_vertex(pos.top_left(), z, tex.top_left(), color, back_color);
+        self.push_vertex(pos.top_right(), z, tex.top_right(), color, back_color);
+        self.push_vertex(pos.bottom_right(), z, tex.bottom_right(), color, back_color);
+        self.push_vertex(pos.bottom_left(), z, tex.bottom_left(), color, back_color);
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
@@ -71,10 +71,10 @@ impl CanvasUtil for Canvas {
         let tex = self.solid_tex_coord();
         let ind0 = self.num_vertices();
 
-        self.push_vertex(rect.p0(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.p1(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.p2(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.p3(), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.top_left(), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.top_right(), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.bottom_right(), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.bottom_left(), z, tex, color, &color::BLACK);
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
