@@ -55,16 +55,18 @@ impl MsgQueue {
     }
 
     fn draw_msgs(&self, ctx: &mut Canvas) {
-        let msg_columns = 32;
+        let msg_area_width = 320.0;
         let msg_rows = 16;
         let msg_origin = V2(0, 360 - (msg_rows - 1) * 8);
 
+        let mut text = String::new();
+        for msg in self.msgs.iter() {
+            text = text + &text::wrap_lines(&msg.text[], &|c| ctx.char_width(c), msg_area_width)[] + "\n";
+        }
+
         let mut writer = ctx.text_writer(msg_origin, 0.1, color::LIGHTGRAY)
             .set_border(color::BLACK);
-
-        for msg in self.msgs.iter() {
-            let _ = write!(&mut writer, "{}", &text::wrap_lines(msg_columns, &msg.text[])[]);
-        }
+        write!(&mut writer, "{}", text).unwrap();
     }
 
     fn draw_caption(&self, ctx: &mut Canvas) {
