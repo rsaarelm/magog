@@ -6,6 +6,7 @@ use canvas_util::{CanvasUtil};
 /// Writing text to a graphical context.
 pub trait Fonter<'a, W: Writer> {
     fn text_writer(&'a mut self, origin: V2<i32>, z: f32, color: Rgb) -> W;
+    fn char_width(&self, c: char) -> f32;
 }
 
 impl<'a> Fonter<'a, CanvasWriter<'a>> for Canvas {
@@ -19,6 +20,22 @@ impl<'a> Fonter<'a, CanvasWriter<'a>> for Canvas {
             z: z,
             border: None,
         }
+    }
+
+    fn char_width(&self, c: char) -> f32 {
+        // Special case for space, the atlas image won't have a width.
+        if c == ' ' { return (FONT_W / 2) as f32; }
+
+        // Infer letter width from the cropped atlas image. (Use mx instead of
+        // dim on the pos rectangle so that the left-side space will be
+        // preserved and the letters are kept slightly apart.)
+        if let Some(img) = self.font_image(c) {
+            let width = self.image_data(img).pos.mx().0;
+            return width;
+        }
+
+        // Not a valid letter.
+        FONT_W as f32
     }
 }
 
@@ -47,7 +64,7 @@ impl<'a> CanvasWriter<'a> {
 
     /// Calculate rendered width of the given string.
     pub fn width(&self, string: &str) -> f32 {
-        string.chars().fold(0.0, |a, c| a + self.char_width(c))
+        string.chars().fold(0.0, |a, c| a + self.canvas.char_width(c))
     }
 
     fn draw_char(&mut self, c: char) {
@@ -67,22 +84,6 @@ impl<'a> CanvasWriter<'a> {
             self.canvas.draw_image(img, self.cursor_pos, self.z, &self.color, &color::BLACK);
         }
     }
-
-    fn char_width(&self, c: char) -> f32 {
-        // Special case for space, the atlas image won't have a width.
-        if c == ' ' { return (FONT_W / 2) as f32; }
-
-        // Infer letter width from the cropped atlas image. (Use mx instead of
-        // dim on the pos rectangle so that the left-side space will be
-        // preserved and the letters are kept slightly apart.)
-        if let Some(img) = self.canvas.font_image(c) {
-            let width = self.canvas.image_data(img).pos.mx().0;
-            return width;
-        }
-
-        // Not a valid letter.
-        FONT_W as f32
-    }
 }
 
 impl<'a> Writer for CanvasWriter<'a> {
@@ -94,7 +95,7 @@ impl<'a> Writer for CanvasWriter<'a> {
                 self.cursor_pos = V2(self.origin.0, self.cursor_pos.1 + FONT_H as f32);
             } else {
                 self.draw_char(c);
-                self.cursor_pos.0 += self.char_width(c);
+                self.cursor_pos.0 += self.canvas.char_width(c);
             }
         }
         Ok(())
