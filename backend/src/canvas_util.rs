@@ -2,6 +2,7 @@ use std::num::Float;
 use canvas::{Canvas, Image};
 use util::{V2, Rect, Color, Rgba, color};
 use ::{WidgetId};
+use util::Anchor::*;
 
 /// Helper methods for canvas context that do not depend on the underlying
 /// implementation details.
@@ -58,10 +59,10 @@ impl CanvasUtil for Canvas {
 
         let ind0 = self.num_vertices();
 
-        self.push_vertex(pos.top_left(), z, tex.top_left(), color, back_color);
-        self.push_vertex(pos.top_right(), z, tex.top_right(), color, back_color);
-        self.push_vertex(pos.bottom_right(), z, tex.bottom_right(), color, back_color);
-        self.push_vertex(pos.bottom_left(), z, tex.bottom_left(), color, back_color);
+        self.push_vertex(pos.point(TopLeft), z, tex.point(TopLeft), color, back_color);
+        self.push_vertex(pos.point(TopRight), z, tex.point(TopRight), color, back_color);
+        self.push_vertex(pos.point(BottomRight), z, tex.point(BottomRight), color, back_color);
+        self.push_vertex(pos.point(BottomLeft), z, tex.point(BottomLeft), color, back_color);
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
@@ -71,10 +72,10 @@ impl CanvasUtil for Canvas {
         let tex = self.solid_tex_coord();
         let ind0 = self.num_vertices();
 
-        self.push_vertex(rect.top_left(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.top_right(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.bottom_right(), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.bottom_left(), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.point(TopLeft), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.point(TopRight), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.point(BottomRight), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.point(BottomLeft), z, tex, color, &color::BLACK);
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);

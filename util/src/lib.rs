@@ -53,3 +53,16 @@ pub fn noise(n: i32) -> f32 {
     let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
     1.0 - m as f32 / 1073741824.0
 }
+
+/// Rectangle anchoring points.
+pub enum Anchor {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Top,
+    Left,
+    Right,
+    Bottom,
+    Center
+}

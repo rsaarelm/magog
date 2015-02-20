@@ -1,6 +1,7 @@
 use std::num::{NumCast};
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use primitive::Primitive;
+use ::{Anchor};
 
 /// 2D geometric vector.
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, RustcDecodable, RustcEncodable)]
@@ -119,16 +120,19 @@ impl<T: Primitive> Rect<T> {
     pub fn mx(&self) -> V2<T> { self.0 + self.1 }
     pub fn dim(&self) -> V2<T> { self.1 }
 
-    pub fn top_left(&self) -> V2<T> { self.mn() }
-    pub fn top_right(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1) }
-    pub fn bottom_right(&self) -> V2<T> { self.mx() }
-    pub fn bottom_left(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1) }
-
-    pub fn top(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1) }
-    pub fn bottom(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1) }
-    pub fn left(&self) -> V2<T> { V2((self.0).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
-    pub fn right(&self) -> V2<T> { V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
-    pub fn center(&self) -> V2<T> { V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()) }
+    pub fn point(&self, anchor: Anchor) -> V2<T> {
+        match anchor {
+            Anchor::TopLeft => self.mn(),
+            Anchor::TopRight => V2((self.0).0 + (self.1).0, (self.0).1),
+            Anchor::BottomLeft => V2((self.0).0, (self.0).1 + (self.1).1),
+            Anchor::BottomRight => self.mx(),
+            Anchor::Top => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1),
+            Anchor::Left => V2((self.0).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()),
+            Anchor::Right => V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()),
+            Anchor::Bottom => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1),
+            Anchor::Center => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1 / NumCast::from(2).unwrap())
+        }
+    }
 
     /// Grow the rectangle to enclose point p.
     pub fn grow(&mut self, p: V2<T>) {
