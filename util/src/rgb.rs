@@ -1,6 +1,7 @@
 use std::num::{from_str_radix};
 use std::ascii::{OwnedAsciiExt};
 use color;
+use ::Color;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
@@ -17,12 +18,17 @@ impl Rgb {
     }
 }
 
-impl ::Color for Rgb {
+impl Color for Rgb {
     fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
          1.0]
+    }
+
+    fn from_color<C: Color>(color: &C) -> Rgb {
+        let rgba = color.to_rgba();
+        Rgb { r: (rgba[0] * 255.0) as u8, g: (rgba[1] * 255.0) as u8, b: (rgba[2] * 255.0) as u8 }
     }
 }
 
@@ -44,12 +50,17 @@ impl Rgba {
     }
 }
 
-impl ::Color for Rgba {
+impl Color for Rgba {
     fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
          self.a as f32 / 255.0]
+    }
+
+    fn from_color<C: Color>(color: &C) -> Rgba {
+        let rgba = color.to_rgba();
+        Rgba { r: (rgba[0] * 255.0) as u8, g: (rgba[1] * 255.0) as u8, b: (rgba[2] * 255.0) as u8, a: (rgba[3] * 255.0) as u8 }
     }
 }
 

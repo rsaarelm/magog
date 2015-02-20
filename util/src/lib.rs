@@ -38,6 +38,7 @@ pub mod vorud;
 
 pub trait Color {
     fn to_rgba(&self) -> [f32; 4];
+    fn from_color<C: Color>(color: &C) -> Self;
 }
 
 /// Clamp a value to range.
