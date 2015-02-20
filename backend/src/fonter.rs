@@ -1,103 +1,122 @@
-use std::old_io::{Writer, IoResult};
-use util::{Rgb, V2, color};
+use util::{Rgba, V2, Color, color, Anchor};
+use util::text;
 use canvas::{Canvas, FONT_W, FONT_H};
 use canvas_util::{CanvasUtil};
 
-/// Writing text to a graphical context.
-pub trait Fonter<'a, W: Writer> {
-    fn text_writer(&'a mut self, origin: V2<i32>, z: f32, color: Rgb) -> W;
-    fn char_width(&self, c: char) -> f32;
+pub enum Align {
+    Left,
+    Right,
+    Center
 }
 
-impl<'a> Fonter<'a, CanvasWriter<'a>> for Canvas {
-    fn text_writer(&'a mut self, origin: V2<i32>, z: f32, color: Rgb) -> CanvasWriter<'a> {
-        let origin = origin.map(|x| x as f32);
-        CanvasWriter {
-            canvas: self,
-            origin: origin,
-            cursor_pos: origin,
-            color: color,
-            z: z,
-            border: None,
-        }
-    }
-
-    fn char_width(&self, c: char) -> f32 {
-        // Special case for space, the atlas image won't have a width.
-        if c == ' ' { return (FONT_W / 2) as f32; }
-
-        // Infer letter width from the cropped atlas image. (Use mx instead of
-        // dim on the pos rectangle so that the left-side space will be
-        // preserved and the letters are kept slightly apart.)
-        if let Some(img) = self.font_image(c) {
-            let width = self.image_data(img).pos.mx().0;
-            return width;
-        }
-
-        // Not a valid letter.
-        FONT_W as f32
-    }
-}
-
-pub struct CanvasWriter<'a> {
+pub struct Fonter<'a> {
     canvas: &'a mut Canvas,
-    origin: V2<f32>,
-    cursor_pos: V2<f32>,
-    /// Text color
-    pub color: Rgb,
-    /// Z drawing depth
-    pub z: f32,
-    /// Border color (if any)
-    pub border: Option<Rgb>,
+    anchor: Anchor,
+    align: Align,
+    color: Rgba,
+    z: f32,
+    max_lines: Option<usize>,
+    border: Option<Rgba>,
+    max_width: Option<f32>,
+    lines: Vec<String>,
 }
 
-impl<'a> CanvasWriter<'a> {
-    pub fn set_border(mut self, c: Rgb) -> CanvasWriter<'a> {
-        self.border = Some(c);
+impl<'a> Fonter<'a> {
+    pub fn new(canvas: &'a mut Canvas) -> Fonter<'a> {
+        Fonter {
+            canvas: canvas,
+            anchor: Anchor::TopLeft,
+            align: Align::Left,
+            color: Color::from_color(&color::WHITE),
+            z: 0.1,
+            max_lines: None,
+            border: None,
+            max_width: None,
+            lines: vec![String::new()],
+        }
+    }
+
+    /// Set the point of the text box which draw offset will anchor to.
+    pub fn anchor(mut self, anchor: Anchor) -> Fonter<'a> {
+        self.anchor = anchor; self
+    }
+
+    /// Set the text alignment
+    pub fn align(mut self, align: Align) -> Fonter<'a> {
+        self.align = align; self
+    }
+
+    /// Set text color. The default color is white.
+    pub fn color<C: Color>(mut self, color: &C) -> Fonter<'a> {
+        self.color = Color::from_color(color); self
+    }
+
+    /// Set border color. Before this is set, the drawn text will not be drawn
+    /// with a border.
+    pub fn border<C: Color>(mut self, color: &C) -> Fonter<'a> {
+        self.border = Some(Color::from_color(color)); self
+    }
+
+    /// Set the z-layer to draw in.
+    pub fn layer(mut self, z: f32) -> Fonter<'a> {
+        self.z = z; self
+    }
+
+    /// Set the maximum width of the text area in pixels
+    pub fn width(mut self, w: f32) -> Fonter<'a> {
+        self.max_width = Some(w); self
+    }
+
+    /// Set the maximum number of lines to draw (lines of text before this are
+    /// dropped).
+    pub fn max_lines(mut self, max_lines: usize) -> Fonter<'a> {
+        self.max_lines = Some(max_lines);
+        self.cull_lines();
         self
     }
 
-    /// Set cursor X pixel position relative to the cursor origin.
-    pub fn set_x(&mut self, x: f32) {
-        self.cursor_pos.0 = self.origin.0 + x;
-    }
-
-    /// Calculate rendered width of the given string.
-    pub fn width(&self, string: &str) -> f32 {
-        string.chars().fold(0.0, |a, c| a + self.canvas.char_width(c))
-    }
-
-    fn draw_char(&mut self, c: char) {
-        static BORDER: [V2<f32>; 8] =
-            [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
-             V2(-1.0,  0.0),                 V2( 1.0,  0.0),
-             V2(-1.0,  1.0), V2( 0.0,  1.0), V2( 1.0,  1.0)];
-        if let Some(img) = self.canvas.font_image(c) {
-            if let Some(b) = self.border {
-                // Put the border a tiny bit further in the z-buffer so it
-                // won't clobber the text on the same layer.
-                let border_z = self.z + 0.00001;
-                for &d in BORDER.iter() {
-                    self.canvas.draw_image(img, self.cursor_pos + d, border_z, &b, &color::BLACK);
-                }
-            }
-            self.canvas.draw_image(img, self.cursor_pos, self.z, &self.color, &color::BLACK);
+    /// Append to the fonter text.
+    pub fn text(mut self, text: &str) -> Fonter<'a> {
+        assert!(self.lines.len() > 0);
+        // The last line can be added to, snip it off.
+        let mut new_text = format!("{}{}", self.lines[self.lines.len() - 1], text);
+        let new_len = self.lines.len() - 1;
+        self.lines.truncate(new_len);
+        if let Some(w) = self.max_width {
+            new_text = text::wrap_lines(&new_text[], &|c| self.canvas.char_width(c), w);
         }
-    }
-}
 
-impl<'a> Writer for CanvasWriter<'a> {
-    fn write_all(&mut self, buf: &[u8]) -> IoResult<()> {
-        // TODO: Support multibyte stuff.
-        for &b in buf.iter() {
-            let c = b as char;
-            if c == '\n' {
-                self.cursor_pos = V2(self.origin.0, self.cursor_pos.1 + FONT_H as f32);
-            } else {
-                self.draw_char(c);
-                self.cursor_pos.0 += self.canvas.char_width(c);
+        self.lines.append(&mut new_text.split('\n').map(|s| s.to_string()).collect());
+        assert!(self.lines.len() > 0);
+
+        self.cull_lines();
+        self
+    }
+
+    fn cull_lines(&mut self) {
+        if let Some(n) = self.max_lines {
+            if self.lines.len() > n {
+                let new_len = self.lines.len() - n;
+                self.lines = self.lines.split_off(new_len);
             }
         }
-        Ok(())
     }
+
+    pub fn draw(&mut self, offset: V2<f32>) {
+        // TODO Anchoring
+        for (row, s) in self.lines.iter().enumerate() {
+            let y = offset.1 + FONT_H as f32 + row as f32 * FONT_H as f32;
+            let mut x = offset.0;
+            for c in s.chars() {
+                self.canvas.draw_char(c, V2(x, y), self.z, &self.color, self.border.as_ref());
+                x += self.canvas.char_width(c);
+            }
+        }
+    }
+
+
+    fn str_width(&self, s: &str) -> f32 {
+        s.chars().fold(0.0, |a, c| a + self.canvas.char_width(c))
+    }
+
 }

@@ -1,5 +1,5 @@
 use std::num::Float;
-use canvas::{Canvas, Image};
+use canvas::{Canvas, Image, FONT_W};
 use util::{V2, Rect, Color, Rgba, color};
 use ::{WidgetId};
 use util::Anchor::*;
@@ -13,14 +13,18 @@ pub trait CanvasUtil {
     fn image_dim(&self, img: Image) -> V2<u32>;
 
     /// Draw a stored image on the canvas.
-    fn draw_image<C: Color+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: &C, back_color: &C);
+    fn draw_image<C: Color+Copy, D: Color+Copy>(&mut self, img: Image,
+        offset: V2<f32>, z: f32, color: &C, back_color: &D);
 
     /// Draw a filled rectangle
     fn fill_rect<C: Color+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
 
     // TODO: More specs
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
+
+    fn draw_char<C: Color+Copy, D: Color+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>);
+
+    fn char_width(&self, c: char) -> f32;
 }
 
 impl CanvasUtil for Canvas {
@@ -47,8 +51,8 @@ impl CanvasUtil for Canvas {
         self.image_data(img).pos.1.map(|x| x as u32)
     }
 
-    fn draw_image<C: Color+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: &C, back_color: &C) {
+    fn draw_image<C: Color+Copy, D: Color+Copy>(&mut self, img: Image,
+        offset: V2<f32>, z: f32, color: &C, back_color: &D) {
         let mut pos;
         let mut tex;
         {
@@ -98,5 +102,39 @@ impl CanvasUtil for Canvas {
         return !self.mouse_pressed // Mouse is released
             && self.active_widget == Some(id) // But this button is hot and active
             && self.hot_widget == Some(id);
+    }
+
+    fn draw_char<C: Color+Copy, D: Color+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>) {
+        static BORDER: [V2<f32>; 8] =
+            [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
+             V2(-1.0,  0.0),                 V2( 1.0,  0.0),
+             V2(-1.0,  1.0), V2( 0.0,  1.0), V2( 1.0,  1.0)];
+        if let Some(img) = self.font_image(c) {
+            if let Some(b) = border {
+                // Put the border a tiny bit further in the z-buffer so it
+                // won't clobber the text on the same layer.
+                let border_z = z + 0.00001;
+                for &d in BORDER.iter() {
+                    self.draw_image(img, offset + d, border_z, b, &color::BLACK);
+                }
+            }
+            self.draw_image(img, offset, z, color, &color::BLACK);
+        }
+    }
+
+    fn char_width(&self, c: char) -> f32 {
+        // Special case for space, the atlas image won't have a width.
+        if c == ' ' { return (FONT_W / 2) as f32; }
+
+        // Infer letter width from the cropped atlas image. (Use mx instead of
+        // dim on the pos rectangle so that the left-side space will be
+        // preserved and the letters are kept slightly apart.)
+        if let Some(img) = self.font_image(c) {
+            let width = self.image_data(img).pos.mx().0;
+            return width;
+        }
+
+        // Not a valid letter.
+        (FONT_W / 2) as f32
     }
 }
