@@ -46,7 +46,7 @@ impl Rgba {
     /// "#FF0000" and "#FF0000FF" all correspond to the same opaque pure
     /// red color.
     pub fn parse(name: &str) -> Rgba {
-        parse_color(name).expect(&format!("Invalid color name {}", name)[])
+        parse_color(name).expect(&format!("Invalid color name {}", name)[..])
     }
 }
 
@@ -65,7 +65,7 @@ impl Color for Rgba {
 }
 
 fn parse_color(name: &str) -> Option<Rgba> {
-    if let Some(Rgb { r, g, b }) = parse_color_name(&name.to_string().into_ascii_lowercase()[]) {
+    if let Some(Rgb { r, g, b }) = parse_color_name(&name.to_string().into_ascii_lowercase()[..]) {
         return Some(Rgba { r: r, g: g, b: b, a: 0xFF });
     }
 

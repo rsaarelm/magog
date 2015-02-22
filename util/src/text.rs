@@ -70,7 +70,7 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
         }
     }
 
-    (&text, &""[])
+    (&text, &""[..])
 }
 
 

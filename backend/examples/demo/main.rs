@@ -1,3 +1,4 @@
+#![feature(std_misc)]
 extern crate time;
 extern crate "calx_util" as util;
 extern crate "calx_backend" as backend;
@@ -70,12 +71,12 @@ fn main() {
                         .border(&color::BLACK)
                         .layer(0.1)
                         //.width(64.0)
-                        .text(&format!("FPS {:.0}\n", fps)[])
-                        .text(&format!("{}\n", pangrams[pangram_idx].to_string().into_ascii_uppercase())[])
-                        .text(&format!("{}\n", pangrams[pangram_idx])[])
-                        .text(&format!("!\"#$%&'()*+,-./\n")[])
-                        .text(&format!("1234567890:;<=>?\n")[])
-                        .text(&format!("[\\]^_`{{|}}~\n")[]);
+                        .text(&format!("FPS {:.0}\n", fps)[..])
+                        .text(&format!("{}\n", pangrams[pangram_idx].to_string().into_ascii_uppercase())[..])
+                        .text(&format!("{}\n", pangrams[pangram_idx])[..])
+                        .text(&format!("!\"#$%&'()*+,-./\n")[..])
+                        .text(&format!("1234567890:;<=>?\n")[..])
+                        .text(&format!("[\\]^_`{{|}}~\n")[..]);
                     fonter.draw(V2(0.0, 0.0));
                 }
 

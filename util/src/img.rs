@@ -8,13 +8,13 @@ use rgb::Rgb;
 pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>>(
     image: &I, color: &Rgb) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let (w, h) = image.dimensions();
-    ImageBuffer::from_fn(w, h, Box::new(|&: x, y| {
+    ImageBuffer::from_fn(w, h, |x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
         if pr == color.r && pg == color.g && pb == color.b {
             pa = Default::default();
         }
         Pixel::from_channels(pr, pg, pb, pa)
-    }))
+    })
 }
 
 /// Return the rectangle enclosing the parts of the image that aren't fully

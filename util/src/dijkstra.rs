@@ -1,10 +1,9 @@
 use std::hash::Hash;
 use std::collections::HashMap;
-use std::collections::hash_map::Hasher;
 use std::collections::HashSet;
 
 /// A grid node for the Dijkstra map.
-pub trait DijkstraNode: Eq+Clone+Hash<Hasher> {
+pub trait DijkstraNode: Eq+Clone+Hash {
     /// List the neighbor nodes of this graph node.
     fn neighbors(&self) -> Vec<Self>;
 }

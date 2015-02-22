@@ -46,7 +46,8 @@ impl Renderer {
 
         let mut params: glium::DrawParameters = Default::default();
         params.backface_culling = glium::BackfaceCullingMode::CullCounterClockWise;
-        params.depth_function = glium::DepthFunction::IfLessOrEqual;
+        params.depth_test = glium::DepthTest::IfLessOrEqual;
+        params.depth_write = true;
         params.blending_function = Some(glium::BlendingFunction::Addition {
             source: SourceAlpha, destination: OneMinusSourceAlpha });
 

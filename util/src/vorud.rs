@@ -92,7 +92,7 @@ pub struct Vorud(String);
 impl Vorud {
     pub fn new(s: String) -> Result<Vorud, ()> {
         if s.len() == 0 { return Ok(Vorud("".to_string())); }
-        let ch = &s[].chars().collect::<Vec<char>>();
+        let ch = &s[..].chars().collect::<Vec<char>>();
         let mut i = 0;
         loop {
             if i > ch.len() - 5 { return Err(()); }
@@ -123,7 +123,7 @@ impl<'a> ToVorud for &'a [u8] {
             if ret.len() > 0 { ret.push_str("-"); }
             let b0 = self[i * 2] as u16;
             let b1 = if self.len() == i * 2 + 1 { 0 } else { self[i * 2 + 1] as u16 };
-            ret.push_str(&vorud_chunk(b1 + (b0 << 8))[]);
+            ret.push_str(&vorud_chunk(b1 + (b0 << 8))[..]);
         }
         Vorud(ret)
     }
@@ -132,7 +132,7 @@ impl<'a> ToVorud for &'a [u8] {
 impl FromVorud<()> for Vec<u8> {
     fn from_vorud(&Vorud(ref s): &Vorud) -> Result<Vec<u8>, ()> {
         let mut ret = Vec::new();
-        for chunk in (&s[]).split('-') {
+        for chunk in (&s[..]).split('-') {
             let x = try!(durov_chunk(chunk));
             ret.push((x / 0xff) as u8);
             ret.push((x % 0xff) as u8);
@@ -148,7 +148,7 @@ impl ToVorud for u32 {
         vec.push(((*self >> 16) % 0xff) as u8);
         vec.push(((*self >> 8) % 0xff) as u8);
         vec.push((*self % 0xff) as u8);
-        (&vec[]).to_vorud()
+        (&vec[..]).to_vorud()
     }
 }
 

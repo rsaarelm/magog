@@ -83,7 +83,7 @@ impl<'a> Fonter<'a> {
         let new_len = self.lines.len() - 1;
         self.lines.truncate(new_len);
         if let Some(w) = self.max_width {
-            new_text = text::wrap_lines(&new_text[], &|c| self.canvas.char_width(c), w);
+            new_text = text::wrap_lines(&new_text[..], &|c| self.canvas.char_width(c), w);
         }
 
         self.lines.append(&mut new_text.split('\n').map(|s| s.to_string()).collect());

@@ -73,7 +73,7 @@ impl CanvasBuilder {
     pub fn run(&mut self) -> Canvas {
         Canvas::new(
             self.size,
-            &self.title[],
+            &self.title[..],
             self.frame_interval,
             Atlas::new(&self.builder))
     }
@@ -95,7 +95,7 @@ impl CanvasBuilder {
 
     /// Load a solid color element into the texture atlas.
     fn init_solid(&mut self) {
-        let image: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(1, 1, Box::new(|&: _, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])));
+        let image: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(1, 1, |_, _| Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8]));
         let Image(idx) = self.add_image(V2(0, 0), &image);
         assert!(idx == SOLID_IDX);
     }
@@ -284,7 +284,7 @@ impl<'a> Iterator for Canvas {
 
         let mut app_focused = true;
         loop {
-            self.events.push_all(&self.display.poll_events().collect::<Vec<glutin::Event>>()[]);
+            self.events.push_all(&self.display.poll_events().collect::<Vec<glutin::Event>>()[..]);
 
             if !self.events.is_empty() {
                 app_focused = true;

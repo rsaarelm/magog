@@ -25,8 +25,8 @@ impl AtlasBuilder {
         let Rect(pos, dim) = img::crop_alpha(image);
         let image = ImageBuffer::from_fn(
             dim.0 as u32, dim.1 as u32,
-            Box::new(|&: x, y| image.get_pixel(
-                pos.0 as u32 + x, pos.1 as u32 + y).to_rgba()));
+            |x, y| image.get_pixel(
+                pos.0 as u32 + x, pos.1 as u32 + y).to_rgba());
         self.images.push(image);
         self.draw_offsets.push(pos + offset);
         self.images.len() - 1
