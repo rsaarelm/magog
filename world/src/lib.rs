@@ -1,6 +1,6 @@
 #![crate_name="world"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections, hash)]
+#![feature(core, collections)]
 #![plugin(rand_macros)]
 
 #[no_link] extern crate rand_macros;

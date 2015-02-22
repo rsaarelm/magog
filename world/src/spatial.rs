@@ -92,7 +92,7 @@ impl Spatial {
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
-                let v_idx = (&v[]).position_elem(&Entity(idx)).unwrap();
+                let v_idx = (&v[..]).position_elem(&Entity(idx)).unwrap();
                 v.swap_remove(v_idx);
                 return;
             } else {

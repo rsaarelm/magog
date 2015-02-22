@@ -48,7 +48,7 @@ pub fn find_prototype(name: &str) -> Option<Entity> {
 
 /// Spawn a specific type of entity
 pub fn spawn_named(name: &str, loc: Location) {
-    find_prototype(name).expect(&format!("Spawn prototype '{}' not found", name)[])
+    find_prototype(name).expect(&format!("Spawn prototype '{}' not found", name)[..])
         .clone_at(loc);
 }
 
@@ -144,7 +144,7 @@ pub fn start_level(depth: i32) {
         w.area = new_area.clone();
     });
 
-    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][]);
+    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][..]);
     for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
         spawn.spawn(&mut rng, loc);
     }

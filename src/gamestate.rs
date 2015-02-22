@@ -249,7 +249,7 @@ impl GameState {
     pub fn save_game(&self) {
         let save_data = world::save();
         let mut file = File::create(&Path::new("/tmp/magog_save.json"));
-        file.write_str(&save_data[]).unwrap();
+        file.write_str(&save_data[..]).unwrap();
     }
 
     pub fn load_game(&mut self) {
@@ -257,7 +257,7 @@ impl GameState {
         if !path.exists() { return; }
         let save_data = File::open(&path).read_to_string().unwrap();
         // TODO: Handle failed load nicely.
-        world::load(&save_data[]).unwrap();
+        world::load(&save_data[..]).unwrap();
     }
 
     fn smart_move(&mut self, dir: Dir6) {

@@ -38,13 +38,13 @@ impl MsgQueue {
     }
 
     pub fn msg(&mut self, text: String) {
-        let timeout = add_time_to_read(self.msg_done_time, &text[]);
+        let timeout = add_time_to_read(self.msg_done_time, &text[..]);
         self.msgs.push(Msg::new(text, timeout));
         self.msg_done_time = Some(timeout);
     }
 
     pub fn caption(&mut self, text: String) {
-        let timeout = add_time_to_read(self.caption_done_time, &text[]);
+        let timeout = add_time_to_read(self.caption_done_time, &text[..]);
         // Showing up a caption for a thing after all the previous ones have
         // gone away doesn't look right. Just clearing the old captions for
         // now. A better approach might be showing several captions below each
