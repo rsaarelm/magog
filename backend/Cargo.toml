@@ -26,4 +26,4 @@ path = "../"
 
 [[example]]
 name = "demo"
-path = "examples/demo/main.rs"
+path = "examples/demo.rs"
