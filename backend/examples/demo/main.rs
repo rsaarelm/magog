@@ -70,7 +70,6 @@ fn main() {
                         .color(&color::LIGHTGREEN)
                         .border(&color::BLACK)
                         .layer(0.1)
-                        //.width(64.0)
                         .text(&format!("FPS {:.0}\n", fps)[..])
                         .text(&format!("{}\n", pangrams[pangram_idx].to_string().into_ascii_uppercase())[..])
                         .text(&format!("{}\n", pangrams[pangram_idx])[..])
