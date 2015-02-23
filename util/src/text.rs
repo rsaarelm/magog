@@ -22,6 +22,9 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
 
         // Invariant: head_end and tail_start describe a valid, but possibly
         // suboptimal return value at this point.
+        assert!(text[..head_end].len() > 0);
+        assert!(head_end <= tail_start);
+
         if eat_whitespace {
             if c.is_whitespace() {
                 tail_start = i + 1;
@@ -65,8 +68,8 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
 
         // Hyphens are a possible cut point.
         if c == '-' {
-            head_end = i;
-            tail_start = i;
+            head_end = i + 1;
+            tail_start = i + 1;
         }
     }
 
@@ -80,8 +83,14 @@ pub fn wrap_lines<F>(mut text: &str, char_width: &F, max_len: f32) -> String
     loop {
         let (head, tail) = split_line(text, char_width, max_len);
         if head.len() == 0 && tail.len() == 0 { break; }
+        assert!(head.len() > 0, "Line splitter caught in infinite loop");
+        assert!(tail.len() < text.len(), "Line splitter not shrinking string");
         result = result + head;
+        // Must preserve a hard newline at the end if the input string had
+        // one. The else branch checks for the very last char being a newline,
+        // this would be clipped off otherwise.
         if tail.len() != 0 { result = result + "\n"; }
+        else if text.chars().last() == Some('\n') { result = result + "\n"; }
         text = tail;
     }
     result
@@ -137,5 +146,6 @@ mod test {
         assert_eq!(("the cat", "sat"), split_line("the cat sat", &|_| 1.0, 7.0));
         assert_eq!(("a", "bc"), split_line("abc", &|_| 1.0, 0.01));
         assert_eq!(("dead", "beef"), split_line("deadbeef", &|_| 1.0, 4.0));
+        assert_eq!(("the-", "cat"), split_line("the-cat", &|_| 1.0, 5.0));
     }
 }
