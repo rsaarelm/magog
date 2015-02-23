@@ -19,7 +19,7 @@ pub use canvas::{CanvasBuilder, Canvas};
 pub use canvas::{Image};
 pub use canvas_util::{CanvasUtil};
 pub use key::Key;
-pub use fonter::{Fonter};
+pub use fonter::{Fonter, Align};
 pub use event::{Event, MouseButton};
 
 mod canvas;

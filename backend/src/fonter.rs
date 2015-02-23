@@ -1,6 +1,6 @@
 use util::{Rgba, V2, Color, color, Anchor};
 use util::text;
-use canvas::{Canvas, FONT_W, FONT_H};
+use canvas::{Canvas, FONT_H};
 use canvas_util::{CanvasUtil};
 
 pub enum Align {
@@ -18,7 +18,9 @@ pub struct Fonter<'a> {
     max_lines: Option<usize>,
     border: Option<Rgba>,
     max_width: Option<f32>,
-    lines: Vec<String>,
+    /// (Text, width) pairs.
+    lines: Vec<(String, f32)>,
+    longest_line_width: f32,
 }
 
 impl<'a> Fonter<'a> {
@@ -32,7 +34,8 @@ impl<'a> Fonter<'a> {
             max_lines: None,
             border: None,
             max_width: None,
-            lines: vec![String::new()],
+            lines: vec![(String::new(), 0.0)],
+            longest_line_width: 0.0,
         }
     }
 
@@ -79,14 +82,15 @@ impl<'a> Fonter<'a> {
     pub fn text(mut self, text: &str) -> Fonter<'a> {
         assert!(self.lines.len() > 0);
         // The last line can be added to, snip it off.
-        let mut new_text = format!("{}{}", self.lines[self.lines.len() - 1], text);
+        let mut new_text = format!("{}{}", self.lines[self.lines.len() - 1].0, text);
         let new_len = self.lines.len() - 1;
         self.lines.truncate(new_len);
         if let Some(w) = self.max_width {
             new_text = text::wrap_lines(&new_text[..], &|c| self.canvas.char_width(c), w);
         }
 
-        self.lines.append(&mut new_text.split('\n').map(|s| s.to_string()).collect());
+        let mut new_lines: Vec<(String, f32)> = new_text.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();
+        self.lines.append(&mut new_lines);
         assert!(self.lines.len() > 0);
 
         self.cull_lines();
@@ -100,14 +104,25 @@ impl<'a> Fonter<'a> {
                 self.lines = self.lines.split_off(new_len);
             }
         }
+        self.set_longest_width();
+    }
+
+    fn set_longest_width(&mut self) {
+        self.longest_line_width = self.lines.iter().map(|x| x.1)
+            .fold(0.0, |a, w| if w > a { w } else { a });
     }
 
     pub fn draw(&mut self, offset: V2<f32>) {
         // TODO Anchoring
         for (row, s) in self.lines.iter().enumerate() {
             let y = offset.1 + FONT_H as f32 + row as f32 * FONT_H as f32;
-            let mut x = offset.0;
-            for c in s.chars() {
+            let line_width = s.1;
+            let mut x = offset.0 + match self.align {
+                Align::Left => 0.0,
+                Align::Right => (self.longest_line_width - line_width),
+                Align::Center => (self.longest_line_width - line_width) / 2.0,
+            };
+            for c in s.0.chars() {
                 self.canvas.draw_char(c, V2(x, y), self.z, &self.color, self.border.as_ref());
                 x += self.canvas.char_width(c);
             }

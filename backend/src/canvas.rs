@@ -14,7 +14,10 @@ use renderer::{Renderer, Vertex};
 use scancode;
 use ::{WidgetId};
 
+/// Width of the full font cell. Actual variable-width letters occupy some
+/// portion of the left side of the cell.
 pub static FONT_W: u32 = 8;
+/// Height of the font.
 pub static FONT_H: u32 = 8;
 
 /// The first font image in the atlas image set.
