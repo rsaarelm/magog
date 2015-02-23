@@ -2,8 +2,8 @@ use time;
 use std::old_io::File;
 use std::old_io::fs::PathExtensions;
 use std::collections::HashMap;
-use util::{color, V2};
-use backend::{Canvas, CanvasUtil, Event, Key, Fonter};
+use util::{color, V2, Anchor};
+use backend::{Canvas, CanvasUtil, Event, Key, Fonter, Align};
 use world;
 use world::action;
 use world::action::Input::{Step, Melee};
@@ -78,24 +78,25 @@ impl GameState {
         self.world_spr.update();
 
         let location_name = camera.name();
-        write!(&mut ctx.text_writer(V2(640 - location_name.len() as i32 * 8, 8), 0.1, color::LIGHTGRAY)
-                       .set_border(color::BLACK),
-                       "{}", location_name).unwrap();
+
+        Fonter::new(ctx)
+            .color(&color::LIGHTGRAY).border(&color::BLACK)
+            .anchor(Anchor::TopRight).align(Align::Right)
+            .text(location_name)
+            .draw(V2(638.0, 0.0));
 
         self.msg.draw(ctx);
         if let Some(player) = action::player() {
             self.draw_player_ui(ctx, player);
         }
 
+        /*
         let fps = 1.0 / ctx.render_duration;
-        let _ = write!(&mut ctx.text_writer(V2(0, 16), 0.1, color::LIGHTGREEN)
-                       .set_border(color::BLACK),
-                       "FPS {:.0}", fps);
-        let _ = write!(&mut ctx.text_writer(V2(0, 360), 0.1, color::LIGHTGRAY)
-                      .set_border(color::BLACK),
-                      "MAGOG v{}{}",
-                      ::version(),
-                      if !cfg!(ndebug) { " ***DEBUG build***" } else { "" });
+        Fonter::new(ctx)
+            .color(&color::LIGHTGRAY).border(&color::BLACK)
+            .text(format!("FPS {:.0}", fps))
+            .draw(V2(0.0, 8.0));
+        */
     }
 
     fn base_update(&mut self, ctx: &mut Canvas) {
@@ -150,23 +151,31 @@ impl GameState {
     fn inventory_update(&mut self, ctx: &mut Canvas) {
         let player = action::player().unwrap();
         for (i, slot_data) in SLOT_DATA.iter().enumerate() {
-            let mut cursor = ctx.text_writer(V2(0, 8 * (i + 1) as i32), 0.1, color::GAINSBORO);
-            let name = match player.equipped(slot_data.slot) {
-                Some(item) => item.name(),
-                None => "".to_string()
-            };
-            // Center.
-            let w = cursor.width(&slot_data.key.to_string()); cursor.set_x((8.0 - w) / 2.0);
-            write!(&mut cursor, "{}", slot_data.key).unwrap();
-            cursor.set_x(8.0); write!(&mut cursor, "]").unwrap();
-            cursor.set_x(16.0); write!(&mut cursor, "{}", slot_data.name).unwrap();
-            cursor.set_x(80.0); write!(&mut cursor, "{}", name).unwrap();
+            let y = 8.0 * (i as f32);
+            Fonter::new(ctx).color(&color::LIGHTGRAY)
+                .align(Align::Center).anchor(Anchor::Top)
+                .text(format!("{}", slot_data.key))
+                .draw(V2(4.0, y));
+            Fonter::new(ctx).color(&color::LIGHTGRAY)
+                .text("]".to_string())
+                .draw(V2(8.0, y));
+            Fonter::new(ctx).color(&color::LIGHTGRAY)
+                .align(Align::Right).anchor(Anchor::TopRight)
+                .text(format!("{}:", slot_data.name))
+                .draw(V2(76.0, 8.0 * (i as f32)));
+
+            Fonter::new(ctx).color(&color::LIGHTGRAY)
+                .text(match player.equipped(slot_data.slot) {
+                    Some(item) => item.name(),
+                    None => "".to_string()
+                })
+                .draw(V2(80.0, 8.0 * (i as f32)));
         }
 
-        {
-            let mut cursor = ctx.text_writer(V2(0, 360), 0.1, color::GAINSBORO);
-            write!(&mut cursor, "Press letter to equip/unequip item. Press shift+letter to drop item.").unwrap();
-        }
+        Fonter::new(ctx).color(&color::LIGHTGRAY)
+            .anchor(Anchor::BottomLeft)
+            .text("Press letter to equip/unequip item. Press shift+letter to drop item.".to_string())
+            .draw(V2(0.0, 360.0));
     }
 
     pub fn inventory_process(&mut self, event: Event) -> bool {

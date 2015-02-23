@@ -1,6 +1,6 @@
 use time;
-use backend::{Fonter, Canvas};
-use util::{color, V2, text};
+use backend::{Fonter, Align, Canvas};
+use util::{color, V2, Anchor};
 
 struct Msg {
     pub text: String,
@@ -55,30 +55,19 @@ impl MsgQueue {
     }
 
     fn draw_msgs(&self, ctx: &mut Canvas) {
-        let msg_area_width = 320.0;
-        let msg_rows = 16;
-        let msg_origin = V2(0, 360 - (msg_rows - 1) * 8);
-
-        let mut text = String::new();
-        for msg in self.msgs.iter() {
-            text = text + &text::wrap_lines(&msg.text[], &|c| ctx.char_width(c), msg_area_width)[] + "\n";
-        }
-
-        let mut writer = ctx.text_writer(msg_origin, 0.1, color::LIGHTGRAY)
-            .set_border(color::BLACK);
-        write!(&mut writer, "{}", text).unwrap();
+        Fonter::new(ctx).color(&color::LIGHTGRAY).border(&color::BLACK)
+            .width(320.0).max_lines(16)
+            .anchor(Anchor::BottomLeft)
+            .text(self.msgs.iter().fold(String::new(), |a, m| a + &m.text))
+            .draw(V2(0.0, 360.0));
     }
 
     fn draw_caption(&self, ctx: &mut Canvas) {
         if !self.captions.is_empty() {
-            let width = self.captions[0].text.len() as i32 * 8;
-            let origin = V2(320 - width / 2, 180);
-            // TODO: Wrap and center-justify multiline caption
-
-            let mut writer = ctx.text_writer(origin, 0.1, color::LIGHTGRAY)
-                .set_border(color::BLACK);
-
-            let _ = write!(&mut writer, "{}", &self.captions[0].text[]);
+            Fonter::new(ctx).color(&color::LIGHTGRAY).border(&color::BLACK).width(160.0)
+                .align(Align::Center).anchor(Anchor::Bottom)
+                .text(self.captions[0].text.clone())
+                .draw(V2(320.0, 172.0));
         }
     }
 
