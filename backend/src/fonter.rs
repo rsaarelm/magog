@@ -80,17 +80,17 @@ impl<'a> Fonter<'a> {
     }
 
     /// Append to the fonter text.
-    pub fn text(mut self, text: &str) -> Fonter<'a> {
+    pub fn text(mut self, txt: String) -> Fonter<'a> {
         assert!(self.lines.len() > 0);
         // The last line can be added to, snip it off.
-        let mut new_text = format!("{}{}", self.lines[self.lines.len() - 1].0, text);
+        let mut new_txt = format!("{}{}", self.lines[self.lines.len() - 1].0, txt);
         let new_len = self.lines.len() - 1;
         self.lines.truncate(new_len);
         if let Some(w) = self.max_width {
-            new_text = text::wrap_lines(&new_text[..], &|c| self.canvas.char_width(c), w);
+            new_txt = text::wrap_lines(&new_txt[..], &|c| self.canvas.char_width(c), w);
         }
 
-        let mut new_lines: Vec<(String, f32)> = new_text.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();
+        let mut new_lines: Vec<(String, f32)> = new_txt.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();
         self.lines.append(&mut new_lines);
         assert!(self.lines.len() > 0);
 
