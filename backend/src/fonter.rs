@@ -1,4 +1,5 @@
-use util::{Rgba, V2, Color, color, Anchor};
+use std::num::Float;
+use util::{Rgba, V2, Rect, Color, color, Anchor};
 use util::text;
 use canvas::{Canvas, FONT_H};
 use canvas_util::{CanvasUtil};
@@ -113,6 +114,11 @@ impl<'a> Fonter<'a> {
     }
 
     pub fn draw(&mut self, offset: V2<f32>) {
+        let anchor_points = Rect(
+            V2(0.0, 0.0),
+            V2(self.longest_line_width,
+               (self.lines.len() * FONT_H as usize) as f32));
+        let offset = offset - anchor_points.point(self.anchor).map(|x| x.floor());
         // TODO Anchoring
         for (row, s) in self.lines.iter().enumerate() {
             let y = offset.1 + FONT_H as f32 + row as f32 * FONT_H as f32;

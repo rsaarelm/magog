@@ -55,6 +55,7 @@ pub fn noise(n: i32) -> f32 {
 }
 
 /// Rectangle anchoring points.
+#[derive(Copy, PartialEq, Debug)]
 pub enum Anchor {
     TopLeft,
     TopRight,
