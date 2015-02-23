@@ -1,5 +1,5 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(B) 2014-12-13 Left, center and right justifying text printing cursors +UI
+(A) 2015-02-23 Use glium's method to blit framebuffer to screen +Render
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
@@ -244,6 +244,7 @@ x 2015-02-12 2015-02-12 Color string construction "red", "#F00", "#F00F", "#FF00
 x 2015-02-13 2014-12-13 Ranged weapon autoattack when moving towards an enemy in attack range +UI
 x 2015-02-13 2015-02-12 Try a move-to-shoot interface when a ranged weapon is equipped +UI
 x 2015-02-17 2014-12-13 Screen state machine: Intro screen / Running game +UI
+x 2015-02-23 2014-12-13 Left, center and right justifying text printing cursors +UI
 z 0000 === Cancelled items ===
 z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
