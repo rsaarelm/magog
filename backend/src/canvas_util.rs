@@ -53,6 +53,8 @@ impl CanvasUtil for Canvas {
 
     fn draw_image<C: Color+Copy, D: Color+Copy>(&mut self, img: Image,
         offset: V2<f32>, z: f32, color: &C, back_color: &D) {
+        // Use round numbers, fractions seem to cause artifacts to pixels.
+        let offset = offset.map(|x| x.floor());
         let mut pos;
         let mut tex;
         {
