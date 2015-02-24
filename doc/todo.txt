@@ -1,12 +1,10 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
-(A) 2015-02-23 Use glium's method to blit framebuffer to screen +Render
 (B) 2014-12-13 Mouse-over objects shows object info +UI
 (B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
-(B) 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
-(B) 2015-02-16 Make shooting an input action
 (B) 2015-02-18 Wait turn action
+(B) 2015-02-24 Stacking objects, need stacking and depleting ammo for ranged attacks
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -161,6 +159,18 @@
 (D) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
 (D) 2015-02-12 Forthy lang for +Console ?
 (D) 2015-02-18 Fix bad slowdowns during autoexplore
+w 0000 === Cancelled items ===
+w 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
+w 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
+w 2015-02-01 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render +Cancelled
+w 2015-02-07 2015-01-24 Multiple area structures exist at the same time for +Multilevel +Cancelled
+w 2015-02-07 2015-01-25 +Multilevel and FOV interactions, show the stuff below current visible cells +Cancelled
+w 2015-02-07 2015-01-31 Color drop edge to a lower layer differently if you can walk down it or if it's a long drop +Render +Cancelled
+w 2015-02-07 2015-01-31 Transparent ramp floors with multilevel, don't draw unless ramp is walkable +Render +Cancelled
+w 2015-02-07 2015-01-31 Walk up and down logic with multilevel +Engine +Cancelled
+w 2015-02-12 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
+w 2015-02-18 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
+w 2015-02-24 2015-02-10 Make a framebufferless render version to run on Windows, Glium framebuffer is bugged +Render
 x 2014-12-15 2014-12-14 Make the component storage in Spatial match the one in Comp +Engine
 x 2014-12-15 2014-12-14 Use VecMap instead of Vec for component keys +Engine
 x 2014-12-16 2014-12-15 COW entity inheritance, a mut access to a component found on a parent automatically makes a copy of component on child +Engine
@@ -245,14 +255,5 @@ x 2015-02-13 2014-12-13 Ranged weapon autoattack when moving towards an enemy in
 x 2015-02-13 2015-02-12 Try a move-to-shoot interface when a ranged weapon is equipped +UI
 x 2015-02-17 2014-12-13 Screen state machine: Intro screen / Running game +UI
 x 2015-02-23 2014-12-13 Left, center and right justifying text printing cursors +UI
-z 0000 === Cancelled items ===
-z 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
-z 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
-z 2015-02-01 2014-12-26 Perfect isometric wall tile formatting, try to get rid of every artifact corner case where wall bits get drawn inside the visible boundary +Render +Cancelled
-z 2015-02-07 2015-01-24 Multiple area structures exist at the same time for +Multilevel +Cancelled
-z 2015-02-07 2015-01-25 +Multilevel and FOV interactions, show the stuff below current visible cells +Cancelled
-z 2015-02-07 2015-01-31 Color drop edge to a lower layer differently if you can walk down it or if it's a long drop +Render +Cancelled
-z 2015-02-07 2015-01-31 Transparent ramp floors with multilevel, don't draw unless ramp is walkable +Render +Cancelled
-z 2015-02-07 2015-01-31 Walk up and down logic with multilevel +Engine +Cancelled
-z 2015-02-12 2014-12-13 Color literal macro, accept color!("red"), color!("#F00"), color!("#F00F"), color!("#FF0000"), color!("#FF0000FF") +Color-macro +Gimmie
-z 2015-02-18 2015-01-24 Use positions of open floor cells to determine the subset of lower-level cells that actually need to be drawn for +Multilevel
+x 2015-02-24 2015-02-16 Make shooting an input action
+x 2015-02-24 2015-02-23 Use glium's method to blit framebuffer to screen +Render
