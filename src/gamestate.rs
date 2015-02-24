@@ -6,7 +6,7 @@ use util::{color, V2, Anchor};
 use backend::{Canvas, CanvasUtil, Event, Key, Fonter, Align};
 use world;
 use world::action;
-use world::action::Input::{Step, Melee};
+use world::action::Input::*;
 use world::action::ControlState::*;
 use world::{Msg, FovStatus};
 use world::Dir6;
@@ -273,15 +273,13 @@ impl GameState {
         let player = action::player().unwrap();
         let loc = player.location().unwrap();
 
-        let shoot_range = 8;
-        let shoot_damage = 10;
-
         if !(loc + dir.to_v2()).has_mobs() {
             // Shoot instead of moving if you'd hit an enemy and there's no
             // melee target.
+            let shoot_range = player.stats().ranged_range as usize;
             if let Some(e) = action::find_target(player, dir, shoot_range) {
                 if player.is_hostile_to(e) {
-                    action::shoot(loc, dir, shoot_range, shoot_damage);
+                    action::input(Shoot(dir));
                     return;
                 }
             }

@@ -115,6 +115,13 @@ pub fn init() {
         ;
 
     Prototype::new(None)
+        (Desc::new("throwing knives", 90, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(500))
+        (Stats::new(0, &[]).ranged_range(5).ranged_power(5))
+        (Item { item_type: ItemType::RangedWeapon, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
         (Desc::new("helmet", 85, GAINSBORO))
         (Spawn::new(Category::Equipment).commonness(100))
         (Stats::new(0, &[]).protection(2).mana(-1))

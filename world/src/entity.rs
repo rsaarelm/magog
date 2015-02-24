@@ -252,6 +252,14 @@ impl Entity {
         }
     }
 
+    pub fn shoot(self, dir: Dir6) {
+        let stats = self.stats();
+
+        if stats.ranged_range > 0 {
+            action::shoot(self.location().unwrap(), dir, stats.ranged_range, stats.ranged_power);
+        }
+    }
+
     pub fn hp(self) -> i32 {
         self.max_hp() - world::with(|w|
             if let Some(health) = w.healths().get(self) {
@@ -420,6 +428,7 @@ impl Entity {
             Slot::Feet,
             Slot::Head,
             Slot::Melee,
+            Slot::Ranged,
             Slot::TrinketF,
             Slot::TrinketG,
             Slot::TrinketH,

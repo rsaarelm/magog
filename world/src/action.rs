@@ -25,6 +25,7 @@ pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
     Melee(Dir6),
+    Shoot(Dir6),
     // TODO: More
 }
 
@@ -88,6 +89,9 @@ pub fn input(input: Input) {
         }
         Input::Melee(d) => {
             p.melee(d);
+        }
+        Input::Shoot(d) => {
+            p.shoot(d);
         }
     }
     world::with_mut(|w| w.flags.player_acted = true);
@@ -192,7 +196,7 @@ pub fn next_level() {
 // Effects /////////////////////////////////////////////////////////////
 
 /// Create a projectile arc in dir from origin.
-pub fn shoot(origin: Location, dir: Dir6, range: usize, power: i32) {
+pub fn shoot(origin: Location, dir: Dir6, range: u32, power: i32) {
     let mut loc = origin;
     if range == 0 { return; }
     for i in 1..(range + 1) {

@@ -15,6 +15,10 @@ pub struct Stats {
     pub protection: i32,
     /// Mana pool / mana drain
     pub mana: i32,
+    /// Ranged attack range. Zero means no ranged capability.
+    pub ranged_range: u32,
+    /// Ranged attack power
+    pub ranged_power: i32,
 
     /// Bit flags for intrinsics
     pub intrinsics: u32,
@@ -34,6 +38,8 @@ impl Stats {
     pub fn mana(self, mana: i32) -> Stats { Stats { mana: mana, .. self } }
     pub fn protection(self, protection: i32) -> Stats { Stats { protection: protection, .. self } }
     pub fn attack(self, attack: i32) -> Stats { Stats { attack: attack, .. self } }
+    pub fn ranged_range(self, ranged_range: u32) -> Stats { Stats { ranged_range: ranged_range, .. self } }
+    pub fn ranged_power(self, ranged_power: i32) -> Stats { Stats { ranged_power: ranged_power, .. self } }
 }
 
 impl Add<Stats> for Stats {
@@ -44,6 +50,13 @@ impl Add<Stats> for Stats {
             attack: self.attack + other.attack,
             protection: self.protection + other.protection,
             mana: self.mana + other.mana,
+            // XXX: Must be careful to have exactly one "ranged weapon" item
+            // in the mix. A mob with a natural ranged attack equipping a
+            // ranged weapon should *not* have the ranges added together.
+            // On the other hand a "sniper scope" trinket could be a +2 range
+            // type dealie.
+            ranged_range: self.ranged_range + other.ranged_range,
+            ranged_power: self.ranged_power + other.ranged_power,
             intrinsics: self.intrinsics | other.intrinsics,
         }
     }
