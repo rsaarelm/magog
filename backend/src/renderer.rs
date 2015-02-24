@@ -6,7 +6,7 @@ use glium::texture;
 use glium::framebuffer;
 use glium::render_buffer;
 use glium::LinearBlendingFactor::*;
-use util::{V2, Rect};
+use util::{V2};
 
 pub struct Renderer {
     /// Canvas size.
@@ -15,8 +15,6 @@ pub struct Renderer {
     resolution: V2<u32>,
     /// Shader for drawing atlas images.
     sprite_shader: glium::Program,
-    /// Shader for blitting the canvas texture to screen.
-    blit_shader: glium::Program,
     /// Atlas texture, contains all the sprites. Calx is a low-rent operation
     /// so we only have one.
     atlas: texture::Texture2d,
@@ -32,10 +30,6 @@ impl Renderer {
         let sprite_shader = glium::Program::from_source(display,
             include_str!("sprite.vert"),
             include_str!("sprite.frag"),
-            None).unwrap();
-        let blit_shader = glium::Program::from_source(display,
-            include_str!("blit.vert"),
-            include_str!("blit.frag"),
             None).unwrap();
         let atlas = texture::Texture2d::new(display, texture_image);
 
@@ -55,7 +49,6 @@ impl Renderer {
             size: size,
             resolution: size,
             sprite_shader: sprite_shader,
-            blit_shader: blit_shader,
             atlas: atlas,
             buffer: buffer,
             params: params,
@@ -83,52 +76,11 @@ impl Renderer {
         target.draw(&vertices, &indices, &self.sprite_shader, &uniforms, &self.params).unwrap();
     }
 
-    /// Blit the buffer texture to target.
-    fn blit_buffer<S>(&self, display: &glium::Display, target: &mut S)
-        where S: glium::Surface {
-        // TODO: Pixel-perfect scaling to target dimensions.
-        //
-        let Rect(V2(sx, sy), V2(sw, sh)) = pixel_perfect(self.size, self.resolution);
-
-        let vertices = {
-            #[vertex_format]
-            #[derive(Copy)]
-            struct BlitVertex { pos: [f32; 2], tex_coord: [f32; 2] }
-
-            glium::VertexBuffer::new(display,
-            vec![
-                BlitVertex { pos: [sx,    sy   ], tex_coord: [0.0, 0.0] },
-                BlitVertex { pos: [sx+sw, sy   ], tex_coord: [1.0, 0.0] },
-                BlitVertex { pos: [sx+sw, sy+sh], tex_coord: [1.0, 1.0] },
-                BlitVertex { pos: [sx,    sy+sh], tex_coord: [0.0, 1.0] },
-            ])
-        };
-
-        let indices = glium::IndexBuffer::new(display,
-            glium::index_buffer::TrianglesList(vec![0u16, 1, 2, 0, 2, 3]));
-
-        let mut params: glium::DrawParameters = Default::default();
-        // Set an explicit viewport to apply the custom resolution that fixes
-        // pixel perfect rounding errors.
-        params.viewport = Some(glium::Rect{
-            left: 0, bottom: 0,
-            width: self.resolution.0,
-            height: self.resolution.1 });
-
-        let uniforms = glium::uniforms::UniformsStorage::new("texture",
-            glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
-                magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
-                .. Default::default() }));
-
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
-        target.clear_depth(1.0);
-        target.draw(&vertices, &indices, &self.blit_shader, &uniforms, &params).unwrap();
-    }
-
     /// Draw a geometry buffer.
     pub fn draw<S>(&mut self, display: &glium::Display, target: &mut S,
                    vertices: Vec<Vertex>, indices: Vec<u16>)
         where S: glium::Surface {
+        use glium::Surface;
 
         // Render the graphics to a texture to keep the pixels pure and
         // untainted.
@@ -142,19 +94,23 @@ impl Renderer {
         // Clip viewport dimensions to even to prevent rounding errors in
         // pixel perfect scaling.
         self.resolution = V2(w & !1, h & !1);
+
         // Render the texture to screen.
-        self.blit_buffer(display, target);
+
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        sprite_target.blit_whole_color_to(
+            target,
+            &pixel_perfect(self.size, self.resolution),
+            glium::uniforms::MagnifySamplerFilter::Nearest);
     }
 
     /// Map screen position (eg. of a mouse cursor) to canvas position.
     pub fn screen_to_canvas(&self, V2(sx, sy): V2<i32>) -> V2<i32> {
-        let Rect(V2(rx, ry), V2(rw, rh)) = pixel_perfect(self.size, self.resolution);
-        // Transform to device coordinates.
-        let sx = sx as f32 * 2.0 / self.resolution.0 as f32 - 1.0;
-        let sy = sy as f32 * 2.0 / self.resolution.1 as f32 - 1.0;
+        let glium::BlitTarget { left: rx, bottom: ry, width: rw, height: rh }
+            = pixel_perfect(self.size, self.resolution);
 
-        V2(((sx - rx) * self.size.0 as f32 / rw) as i32,
-           ((sy - ry) * self.size.1 as f32 / rh) as i32)
+        V2(((sx - rx as i32) * self.size.0 as i32 / rw),
+           ((sy - ry as i32) * self.size.1 as i32 / rh))
     }
 
     pub fn canvas_pixels(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -176,10 +132,12 @@ pub struct Vertex {
     pub back_color: [f32; 4],
 }
 
-/// A pixel perfect centered and scaled rectangle of resolution dim in a
-/// window of size area, mapped to OpenGL device coordinates.
+/// Create a target rectangle on a given window for a give canvas size that
+/// keeps the graphics pixel-perfect. Pixel-perfect scaling maintains the
+/// aspect ratio of the canvas and only scales the graphics up with integer
+/// factors.
 #[inline(always)]
-fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<f32> {
+fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> glium::BlitTarget {
     // Scale based on whichever of X or Y axis is the tighter fit.
     let mut scale = (window.0 as f32 / canvas.0 as f32)
         .min(window.1 as f32 / canvas.1 as f32);
@@ -189,8 +147,13 @@ fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<f32> {
         scale = scale.floor();
     }
 
-    let dim = V2((scale * canvas.0 as f32) * 2.0 / window.0 as f32,
-                 (scale * canvas.1 as f32) * 2.0 / window.1 as f32);
-    let offset = -dim / 2.0;
-    Rect(offset, dim)
+    let w = ((canvas.0 as f32) * scale) as u32;
+    let h = ((canvas.1 as f32) * scale) as u32;
+
+    glium::BlitTarget {
+        left: (window.0 - w) / 2,
+        bottom: (window.1 - h) / 2,
+        width: w as i32,
+        height: h as i32,
+    }
 }
