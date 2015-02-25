@@ -47,6 +47,6 @@ fn open(path: &str) -> File {
 
 pub fn main() {
     // Write the current Git HEAD hash into the version file.
-    write!(&mut open("src/git_version.inc"), "{}", git_version()).unwrap();
+    write!(&mut open("src/git_hash.inc"), "{}", git_version()).unwrap();
     write!(&mut open("src/rustc_version.inc"), "{}", rustc_version()).unwrap();
 }

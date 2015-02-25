@@ -1,3 +1,4 @@
 target/
 build
-src/version.inc
+src/git_hash.inc
+src/rustc_version.inc
