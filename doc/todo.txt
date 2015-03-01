@@ -1,10 +1,11 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (B) 2014-12-13 Mouse-over objects shows object info +UI
-(B) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
-(B) 2015-02-18 Wait turn action
+(B) 2015-02-18 Wait turn action +Gimmie
+(B) 2015-02-24 Never spawn items on stairs
 (B) 2015-02-24 Stacking objects, need stacking and depleting ammo for ranged attacks
+(B) 2015-03-01 Print version strings to stdout when running
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -90,6 +91,7 @@
 (C) 2015-02-18 Turrets
 (C) 2015-02-18 Underwater enemies
 (C) 2015-02-18 Warding glyphs monsters can't cross
+(C) 2015-02-24 Independently colorable wall facets + directional lighting, baked-in shading looks wrong in dark areas
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Arena battle level +Content
@@ -154,6 +156,7 @@
 (D) 2015-01-24 When swapping +Inventory trinket to a filled trinket slot, prompt for the trinket slot to swap from
 (D) 2015-01-24 Working Windows +Build setup, Wine-based install has Cargo SSL problems, but these might be a temporary problem
 (D) 2015-01-27 Need a less painful way to deal with tile definitions than manually entering indices +Render
+(D) 2015-01-27 Single-place recoloring function that takes world lighting and returns an altered color for +Render. Lerp to desaturated grayish blue for deep levels. Remove world-crate color modifier func.
 (D) 2015-02-07 Indicate status effects with recolored mob sprite black outline, Ultima VII style (eg. poison == green) +Render
 (D) 2015-02-07 World message API that checks player's perception status (seen things, heard things, altered perception?) +Engine
 (D) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
@@ -257,3 +260,4 @@ x 2015-02-17 2014-12-13 Screen state machine: Intro screen / Running game +UI
 x 2015-02-23 2014-12-13 Left, center and right justifying text printing cursors +UI
 x 2015-02-24 2015-02-16 Make shooting an input action
 x 2015-02-24 2015-02-23 Use glium's method to blit framebuffer to screen +Render
+x 2015-02-25 2015-02-24 rustc version in version string
