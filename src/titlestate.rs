@@ -20,7 +20,7 @@ impl State for TitleState {
                     .color(&color::DARKRED)
                     .anchor(Anchor::Bottom)
                     .align(Align::Center)
-                    .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}\n{}", ::version(), if !cfg!(ndebug) { " debug" } else { "" }, ::compiler_version()))
+                    .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}", ::version(), if !cfg!(ndebug) { " debug" } else { "" }))
                     .draw(V2(320.0, 352.0));
             }
             Event::KeyPressed(Key::Escape) => {
