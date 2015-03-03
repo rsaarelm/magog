@@ -104,6 +104,8 @@ impl TerrainType {
         }
     }
 
+    pub fn valid_spawn_spot(self) -> bool { !self.blocks_walk() && !self.is_exit() }
+
     pub fn is_door(self) -> bool { self == Door }
 
     pub fn is_luminous(self) -> bool { self == Magma }

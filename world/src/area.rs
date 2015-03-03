@@ -69,16 +69,15 @@ impl Area {
             |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
 
         // Generate open slots that can be used to spawn stuff.
-        let mut opens = Vec::new();
-        for (&loc, t) in terrain.iter() {
-            // No connectivity analysis yet, trusting that herringbone map has
-            // total connectivity. Later on, use Dijkstra map that spreads
-            // from entrance/exit as a reachability floodfill to do something
-            // cleverer here.
-            if !t.blocks_walk() {
-                opens.push(loc);
-            }
-        }
+
+        // No connectivity analysis yet, trusting that herringbone map has
+        // total connectivity. Later on, use Dijkstra map that spreads from
+        // entrance/exit as a reachability floodfill to do something cleverer
+        // here.
+        let mut opens: Vec<Location> = terrain.iter()
+            .filter(|&(_, &t)| t.valid_spawn_spot())
+            .map(|(&loc, _)| loc)
+            .collect();
         rng.shuffle(opens.as_mut_slice());
 
         let entrance = opens.pop().unwrap();
