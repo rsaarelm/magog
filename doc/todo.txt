@@ -3,9 +3,8 @@
 (B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
 (B) 2015-02-18 Wait turn action +Gimmie
-(B) 2015-02-24 Never spawn items on stairs
+x 2015-03-03 2015-02-24 Never spawn items on stairs
 (B) 2015-02-24 Stacking objects, need stacking and depleting ammo for ranged attacks
-(B) 2015-03-01 Print version strings to stdout when running
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -261,3 +260,4 @@ x 2015-02-23 2014-12-13 Left, center and right justifying text printing cursors 
 x 2015-02-24 2015-02-16 Make shooting an input action
 x 2015-02-24 2015-02-23 Use glium's method to blit framebuffer to screen +Render
 x 2015-02-25 2015-02-24 rustc version in version string
+x 2015-03-03 2015-03-01 Print version strings to stdout when running
