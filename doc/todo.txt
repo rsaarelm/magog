@@ -1,10 +1,9 @@
 # vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
 (B) 2014-12-13 Mouse-over objects shows object info +UI
-(B) 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
 (B) 2015-02-12 Ammo drops, shooting consumes ammo +Content
 (B) 2015-02-18 Wait turn action +Gimmie
-x 2015-03-03 2015-02-24 Never spawn items on stairs
 (B) 2015-02-24 Stacking objects, need stacking and depleting ammo for ranged attacks
+(B) 2015-03-04 Draw game view below console when console is visible (need some type wrangling to get ctx value from Event::Render visible for both) +Gimmie
 (C) 2014-12-13 AI has more diverse enemy determination than player-vs-world +Engine
 (C) 2014-12-13 Action RPG style show all item names when Alt is held down +UI
 (C) 2014-12-13 Add unique IDs to entity handles, make them invalidable +Engine
@@ -161,6 +160,7 @@ x 2015-03-03 2015-02-24 Never spawn items on stairs
 (D) 2015-02-09 Sparks sprite effect in +UI for shots hitting walls +Gimmie
 (D) 2015-02-12 Forthy lang for +Console ?
 (D) 2015-02-18 Fix bad slowdowns during autoexplore
+(D) 2015-03-03 Elastic tab stops in fonter for columnar data with the variable-width font
 w 0000 === Cancelled items ===
 w 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 w 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
@@ -260,4 +260,6 @@ x 2015-02-23 2014-12-13 Left, center and right justifying text printing cursors 
 x 2015-02-24 2015-02-16 Make shooting an input action
 x 2015-02-24 2015-02-23 Use glium's method to blit framebuffer to screen +Render
 x 2015-02-25 2015-02-24 rustc version in version string
+x 2015-03-03 2015-02-24 Never spawn items on stairs
 x 2015-03-03 2015-03-01 Print version strings to stdout when running
+x 2015-03-04 2015-02-07 Text input prompt widget, leading up to a wizard mode +Console
