@@ -24,6 +24,7 @@ mod gamestate;
 mod titlestate;
 mod sprite;
 mod msg_queue;
+mod console;
 
 pub trait State {
     fn process(&mut self, event: backend::Event) -> Option<Transition>;

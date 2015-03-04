@@ -19,6 +19,7 @@ use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
 use ::{State, Transition};
+use console::Console;
 
 pub struct GameState {
     /// Transient effect sprites drawn in game world view.
@@ -36,11 +37,14 @@ pub struct GameState {
 
     // Hacky thing to wait for next time Canvas reference is available.
     screenshot_requested: bool,
+
+    console: Console,
 }
 
 enum UiState {
     Gameplay,
-    Inventory
+    Inventory,
+    Console,
 }
 
 impl GameState {
@@ -53,6 +57,7 @@ impl GameState {
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
             screenshot_requested: false,
+            console: Console::new(),
         }
     }
 
@@ -252,6 +257,10 @@ impl GameState {
         match self.ui_state {
             UiState::Gameplay => self.base_update(ctx),
             UiState::Inventory => self.inventory_update(ctx),
+            UiState::Console => {
+                self.base_update(ctx);
+                self.console.update(ctx);
+            }
         }
     }
 
@@ -376,6 +385,13 @@ impl GameState {
                 match ch {
                     // Debug
                     '>' => { action::next_level(); }
+
+                    // Open console
+                    // (Make this be a typed-key instead of a pressed-key
+                    // event so that the event will have been consumed and
+                    // console won't start with an inputted '`'.)
+                    '`' => { self.ui_state = UiState::Console; }
+
                     _ => ()
                 }
             }
@@ -391,6 +407,10 @@ impl State for GameState {
         let running = match self.ui_state {
             UiState::Gameplay => self.gameplay_process(event),
             UiState::Inventory => self.inventory_process(event),
+            UiState::Console => {
+                if !self.console.process(event) { self.ui_state = UiState::Gameplay; }
+                true
+            }
         };
 
         if !running {
