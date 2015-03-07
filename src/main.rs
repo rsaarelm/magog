@@ -50,7 +50,7 @@ pub fn version() -> String {
 }
 
 pub fn compiler_version() -> String {
-    include_str!("rustc_version.inc").to_string()
+    include_str!("../rustc_version.txt").to_string()
 }
 
 pub fn main() {
