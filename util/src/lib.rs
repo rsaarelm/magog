@@ -35,9 +35,17 @@ pub mod text;
 pub mod timing;
 pub mod vorud;
 
-pub trait Color {
+pub trait Color: Sized {
     fn to_rgba(&self) -> [f32; 4];
     fn from_color<C: Color>(color: &C) -> Self;
+
+    fn from_rgba(rgba: [f32; 4]) -> Self {
+        Color::from_color(&rgb::Rgba::new(
+                (rgba[0] * 255.0) as u8,
+                (rgba[1] * 255.0) as u8,
+                (rgba[2] * 255.0) as u8,
+                (rgba[3] * 255.0) as u8))
+    }
 }
 
 /// Clamp a value to range.
