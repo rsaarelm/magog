@@ -24,9 +24,12 @@ pub enum ControlState {
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
+    /// Melee attack in the given direction.
     Melee(Dir6),
+    /// Shoot in the given direction.
     Shoot(Dir6),
-    // TODO: More
+    /// Do nothing for a turn.
+    Pass,
 }
 
 /// Return the player entity if one exists.
@@ -91,6 +94,8 @@ pub fn input(input: Input) {
         }
         Input::Shoot(d) => {
             p.shoot(d);
+        }
+        Input::Pass => {
         }
     }
     world::with_mut(|w| w.flags.player_acted = true);

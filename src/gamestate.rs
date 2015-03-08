@@ -354,6 +354,7 @@ impl GameState {
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
 
             Key::Enter => { self.interact(); }
+            Key::Space => { action::input(Pass); }
             Key::X => { self.exploring = true; }
 
             // Open inventory
