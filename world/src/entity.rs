@@ -618,6 +618,7 @@ impl Entity {
             if loc.terrain().is_exit() {
                 action::next_level();
             }
+            flags::set_camera(self.location().expect("No player location"));
         }
     }
 

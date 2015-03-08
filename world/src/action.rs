@@ -85,7 +85,6 @@ pub fn input(input: Input) {
     match input {
         Input::Step(d) => {
             p.step(d);
-            flags::set_camera(p.location().expect("No player location"));
         }
         Input::Melee(d) => {
             p.melee(d);
