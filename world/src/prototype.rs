@@ -1,8 +1,8 @@
 use std::default::Default;
 use util::color::*;
-use ecs::{Component};
+use ecs::{Component, ComponentAccess};
 use entity::{Entity};
-use components::{Spawn, Category};
+use components::{Spawn, Category, IsPrototype};
 use components::{Desc, MapMemory, Health};
 use components::{Brain, BrainState, Alignment};
 use components::{Item};
@@ -21,7 +21,11 @@ pub struct Prototype {
 impl Prototype {
     pub fn new(parent: Option<Entity>) -> Prototype {
         Prototype {
-            target: world::with_mut(|w| w.ecs.new_entity(parent))
+            target: world::with_mut(|w| {
+                let e = w.ecs.new_entity(parent);
+                w.prototypes_mut().insert(e, IsPrototype);
+                e
+            }),
         }
     }
 }

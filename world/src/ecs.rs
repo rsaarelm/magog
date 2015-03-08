@@ -182,6 +182,7 @@ pub trait Component {
 
 // Component loadout for the game.
 components! {
+    [components::IsPrototype, prototypes, prototypes_mut],
     [components::Desc, descs, descs_mut],
     [components::MapMemory, map_memories, map_memories_mut],
     [stats::Stats, stats, stats_mut],

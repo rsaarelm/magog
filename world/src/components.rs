@@ -6,6 +6,10 @@ use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
 
+/// Dummy component to mark prototype objects
+#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
+pub struct IsPrototype;
+
 /// Entity name and appearance.
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Desc {

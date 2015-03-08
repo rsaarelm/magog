@@ -73,7 +73,7 @@ impl Entity {
     }
 
     pub fn is_prototype(self) -> bool {
-        world::with(|w| w.spawns().get_local(self).is_some())
+        world::with(|w| w.prototypes().get_local(self).is_some())
     }
 
     pub fn parent(self) -> Option<Entity> {
