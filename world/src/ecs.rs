@@ -122,7 +122,7 @@ macro_rules! components {
         // The master container for all the components.
 #[derive(RustcEncodable, RustcDecodable)]
         pub struct Comps {
-            $($access: VecMap<$comp>,)+
+            $($access: VecMap<Option<$comp>>,)+
         }
 
         /// Container for all regular entity components.
