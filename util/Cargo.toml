@@ -18,4 +18,3 @@ name = "calx_util"
 [dependencies.rustc-serialize]
 
 [dependencies.image]
-git = "https://github.com/PistonDevelopers/image"
