@@ -10,6 +10,8 @@ extern crate "calx_backend" as backend;
 extern crate world;
 extern crate time;
 
+use backend::{Canvas};
+
 use gamestate::GameState;
 use titlestate::TitleState;
 
@@ -51,6 +53,18 @@ pub fn version() -> String {
 
 pub fn compiler_version() -> String {
     include_str!("../rustc_version.txt").to_string()
+}
+
+pub fn screenshot(ctx: &mut Canvas) {
+    use time;
+    use std::old_io::File;
+    use image;
+
+    let shot = ctx.screenshot();
+    let mut file = File::create(&Path::new(
+            format!("/tmp/shot-{}.png", time::precise_time_s() as u64)))
+            .unwrap();
+    let _ = image::ImageRgb8(shot).save(&mut file, image::PNG);
 }
 
 pub fn main() {
