@@ -15,6 +15,8 @@ extern crate rand;
 extern crate regex;
 extern crate image;
 
+use std::num::wrapping::Wrapping;
+
 pub use rgb::{Rgb, Rgba};
 pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
@@ -57,8 +59,11 @@ pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
 
 /// Deterministic noise.
 pub fn noise(n: i32) -> f32 {
+    let n = Wrapping(n);
     let n = (n << 13) ^ n;
-    let m = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
+    let m = (n * (n * n * Wrapping(15731) + Wrapping(789221)) + Wrapping(1376312589))
+        & Wrapping(0x7fffffff);
+    let Wrapping(m) = m;
     1.0 - m as f32 / 1073741824.0
 }
 
@@ -74,4 +79,16 @@ pub enum Anchor {
     Right,
     Bottom,
     Center
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_noise() {
+        use super::noise;
+
+        for i in 0i32..100 {
+            assert!(noise(i) >= -1.0 && noise(i) <= 1.0);
+        }
+    }
 }
