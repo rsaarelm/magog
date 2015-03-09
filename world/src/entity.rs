@@ -6,7 +6,6 @@ use world;
 use location::{Location};
 use dir6::Dir6;
 use flags;
-use stats::{Intrinsic};
 use components::{BrainState, Alignment};
 use geom::HexGeom;
 use spatial::Place;
@@ -15,7 +14,7 @@ use fov::Fov;
 use rng;
 use msg;
 use item::{ItemType, Slot};
-use stats::Stats;
+use stats::{Stats, Intrinsic};
 use ecs::{ComponentAccess};
 
 /// Game object handle.
@@ -387,6 +386,14 @@ impl Entity {
             } else {
                 false
             })
+    }
+
+    pub fn set_intrinsic(self, intrinsic: Intrinsic) {
+        world::with_mut(|w|
+            if let Some(x) = w.stats_mut().get(self) {
+                x.intrinsics |= intrinsic as u32;
+            }
+        );
     }
 
     pub fn power_level(self) -> i32 {
