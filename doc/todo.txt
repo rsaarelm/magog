@@ -90,6 +90,7 @@
 (C) 2015-02-18 Underwater enemies
 (C) 2015-02-18 Warding glyphs monsters can't cross
 (C) 2015-02-24 Independently colorable wall facets + directional lighting, baked-in shading looks wrong in dark areas
+(C) 2015-03-08 By default wizard mode debug keys work in debug builds and not in release builds
 (D) 2014-12-13 API for rendering a whole soft-rendered screen pixel array +Render
 (D) 2014-12-13 Animated flickering light effect summed into light map using enum types, UI shows as color cycling +Engine +Render
 (D) 2014-12-13 Arena battle level +Content
@@ -161,6 +162,7 @@
 (D) 2015-02-12 Forthy lang for +Console ?
 (D) 2015-02-18 Fix bad slowdowns during autoexplore
 (D) 2015-03-03 Elastic tab stops in fonter for columnar data with the variable-width font
+(D) 2015-03-07 Make calx Color::from_rgba the trait method you must implement and from_color have a default impl in terms of that
 w 0000 === Cancelled items ===
 w 2015-01-31 2015-01-26 +Cubes so water and magma are hulls as well, but they treat the solid surroundings as non-hull for connectivity, some kind of equality group tag needed here? Also need to fill the gap if next to non-connecting hull. +Cancelled
 w 2015-01-31 2015-01-29 Thin walls with a solid hull mass below them need to have a blank floor drawn on top, in general thinwall backline logic needs to get pretty clever about figuring out just how the tile below is going to be shaped. +Cubes +Cancelled
