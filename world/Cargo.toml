@@ -7,7 +7,9 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "world"
 
+# TODO: Use crates.io version once it's updated
 [dependencies.collect]
+git = "https://github.com/Gankro/collect-rs"
 
 [dependencies.rustc-serialize]
 
