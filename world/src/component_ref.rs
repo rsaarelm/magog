@@ -1,15 +1,15 @@
-use std::collections::VecMap;
+use std::collections::HashMap;
 use ecs::Ecs;
 use entity::Entity;
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {
     ecs: &'a Ecs,
-    data: &'a VecMap<Option<C>>,
+    data: &'a HashMap<usize, Option<C>>,
 }
 
 impl<'a, C> ComponentRef<'a, C> {
-    pub fn new(ecs: &'a Ecs, data: &'a VecMap<Option<C>>) -> ComponentRef<'a, C> {
+    pub fn new(ecs: &'a Ecs, data: &'a HashMap<usize, Option<C>>) -> ComponentRef<'a, C> {
         ComponentRef {
             ecs: ecs,
             data: data,
@@ -37,11 +37,11 @@ pub struct ComponentRefMut<'a, C: 'static> {
     /// that there is no local component and that the component will not be
     /// searched from the parent entity either. If the value is not present,
     /// the component will be searched from a entity object if one exists.
-    data: &'a mut VecMap<Option<C>>,
+    data: &'a mut HashMap<usize, Option<C>>,
 }
 
 impl<'a, C: Clone> ComponentRefMut<'a, C> {
-    pub fn new(ecs: &'a mut Ecs, data: &'a mut VecMap<Option<C>>) -> ComponentRefMut<'a, C> {
+    pub fn new(ecs: &'a mut Ecs, data: &'a mut HashMap<usize, Option<C>>) -> ComponentRefMut<'a, C> {
         ComponentRefMut {
             ecs: ecs,
             data: data,

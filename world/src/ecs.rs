@@ -1,4 +1,4 @@
-use std::collections::VecMap;
+use std::collections::HashMap;
 use world;
 use entity::{Entity};
 use components;
@@ -13,7 +13,7 @@ pub struct Ecs {
     reusable_idxs: Vec<usize>,
     // Could use Bitv for active, but I can't bother to write the serializer...
     active: Vec<bool>,
-    parent: VecMap<usize>,
+    parent: HashMap<usize, usize>,
 }
 
 impl Ecs {
@@ -22,7 +22,7 @@ impl Ecs {
             next_idx: 0,
             reusable_idxs: vec![],
             active: vec![],
-            parent: VecMap::new(),
+            parent: HashMap::new(),
         }
     }
 
@@ -122,14 +122,14 @@ macro_rules! components {
         // The master container for all the components.
 #[derive(RustcEncodable, RustcDecodable)]
         pub struct Comps {
-            $($access: VecMap<Option<$comp>>,)+
+            $($access: HashMap<usize, Option<$comp>>,)+
         }
 
         /// Container for all regular entity components.
         impl Comps {
             pub fn new() -> Comps {
                 Comps {
-                    $($access: VecMap::new(),)+
+                    $($access: HashMap::new(),)+
                 }
             }
 
