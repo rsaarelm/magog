@@ -45,13 +45,12 @@ impl MsgQueue {
 
     pub fn caption(&mut self, text: String) {
         let timeout = add_time_to_read(self.caption_done_time, &text[..]);
-        // Showing up a caption for a thing after all the previous ones have
-        // gone away doesn't look right. Just clearing the old captions for
-        // now. A better approach might be showing several captions below each
-        // other when multiple are live.
-        self.captions.clear();
         self.captions.push(Msg::new(text, timeout));
         self.caption_done_time = Some(timeout);
+    }
+
+    pub fn clear_captions(&mut self) {
+        self.captions.clear();
     }
 
     fn draw_msgs(&self, ctx: &mut Canvas) {
