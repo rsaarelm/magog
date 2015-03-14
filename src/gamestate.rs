@@ -1,5 +1,3 @@
-use std::old_io::File;
-use std::old_io::fs::PathExtensions;
 use std::collections::HashMap;
 use util::{color, V2, Anchor};
 use backend::{Canvas, CanvasUtil, Event, Key, Fonter, Align};
@@ -257,20 +255,6 @@ impl GameState {
         }
     }
 
-    pub fn save_game(&self) {
-        let save_data = world::save();
-        let mut file = File::create(&Path::new("/tmp/magog_save.json"));
-        file.write_str(&save_data[..]).unwrap();
-    }
-
-    pub fn load_game(&mut self) {
-        let path = Path::new("/tmp/magog_save.json");
-        if !path.exists() { return; }
-        let save_data = File::open(&path).read_to_string().unwrap();
-        // TODO: Handle failed load nicely.
-        world::load(&save_data[..]).unwrap();
-    }
-
     fn smart_move(&mut self, dir: Dir6) {
         let player = action::player().unwrap();
         let loc = player.location().unwrap();
@@ -353,8 +337,8 @@ impl GameState {
             // Open inventory
             Key::Tab => { self.ui_state = UiState::Inventory; }
 
-            Key::F5 => { self.save_game(); }
-            Key::F9 => { self.load_game(); }
+            Key::F5 if !cfg!(ndebug) => { action::save_game(); }
+            Key::F9 if !cfg!(ndebug) => { action::load_game(); }
             Key::F12 => { self.screenshot_requested = true; }
             _ => { return false; }
         }
