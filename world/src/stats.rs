@@ -68,6 +68,8 @@ pub enum Intrinsic {
     Slow        = 0b1,
     /// Moves 1/3 faster than usual, stacks with Quick status.
     Fast        = 0b10,
+    /// Moves 1/3 faster than usual, stacks with Fast status.
+    Quick       = 0b100,
     /// Can manipulate objects and doors.
-    Hands       = 0b100,
+    Hands       = 0b1000,
 }

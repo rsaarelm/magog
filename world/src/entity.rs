@@ -222,7 +222,6 @@ impl Entity {
     /// based on its speed properties. Does not check for status effects like
     /// sleep that might prevent actual action.
     pub fn ticks_this_frame(self) -> bool {
-        if self.is_player() { return true; }
         if !self.is_mob() { return false; }
 
         let tick = flags::get_tick();
@@ -233,9 +232,8 @@ impl Entity {
             0 => return true,
             1 => return self.has_intrinsic(Intrinsic::Fast),
             2 => return true,
-            3 => return false,//self.has_status(Status::Quick),
-            4 => return !self.has_intrinsic(Intrinsic::Slow)
-                        /*&& !self.has_status(Status::Slow)*/,
+            3 => return self.has_intrinsic(Intrinsic::Quick),
+            4 => return !self.has_intrinsic(Intrinsic::Slow),
             _ => panic!("Invalid action phase"),
         }
     }
