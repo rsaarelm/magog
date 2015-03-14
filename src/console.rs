@@ -64,7 +64,7 @@ impl Console {
         //writeln!(self.text, "]{}", self.command).unwrap();
         //writeln!(self.text, "TODO: Handle input");
         self.text.write_str(&format!("]{}\n", self.command)[..]).unwrap();
-        self.text.write_str("TODO: Handle input").unwrap();
+        self.text.write_str("TODO: Handle input\n").unwrap();
         self.command = "".to_string();
     }
 
