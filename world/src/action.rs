@@ -138,7 +138,10 @@ fn ai_main() {
 pub fn current_depth() -> i32 { world::with(|w| w.area.seed.spec.depth) }
 
 pub fn start_level(depth: i32) {
-    let biome = ::Biome::Overland;
+    let biome = match depth {
+        1 => ::Biome::Overland,
+        _ => ::Biome::Dungeon,
+    };
 
     clear_nonplayers();
 
@@ -165,7 +168,7 @@ pub fn start_level(depth: i32) {
             p.place(start_loc);
         }
         None => {
-            let player = find_prototype("phage").expect("No Player prototype found!")
+            let player = find_prototype("player").expect("No Player prototype found!")
             .clone_at(start_loc);
             world::with_mut(|w| w.flags.player = Some(player));
         }
@@ -187,6 +190,14 @@ fn clear_nonplayers() {
             e.delete();
         }
     }
+}
+
+/// Move the player to the next level.
+pub fn next_level() {
+    // This is assuming a really simple, original Rogue style descent-only, no
+    // persistent maps style world.
+    start_level(current_depth() + 1);
+    caption!("Depth {}", current_depth() - 1);
 }
 
 // Effects /////////////////////////////////////////////////////////////
@@ -244,27 +255,22 @@ pub fn find_target(shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
     None
 }
 
-///////////////////////////////////////////////////////////////////////
-
-pub fn terrans_left() -> u32 { world::with(|w| w.flags.terrans_left) }
-
 ////////////////////////////////////////////////////////////////////////
 
 pub fn save_game() {
     // Only save if there's still a living player around.
     if let Some(p) = player() {
-        if p.is_corpse() { return; }
     } else {
         return;
     }
 
     let save_data = world::save();
-    let mut file = File::create(&Path::new("phage_save.json"));
+    let mut file = File::create(&Path::new("magog_save.json"));
     file.write_str(&save_data[..]).unwrap();
 }
 
 pub fn load_game() {
-    let path = Path::new("phage_save.json");
+    let path = Path::new("magog_save.json");
     if !path.exists() { return; }
     let save_data = File::open(&path).read_to_string().unwrap();
     // TODO: Handle failed load nicely.
@@ -272,7 +278,7 @@ pub fn load_game() {
 }
 
 pub fn delete_save() {
-    fs::remove_file("phage_save.json");
+    fs::remove_file("magog_save.json");
 }
 
-pub fn save_exists() -> bool  { Path::new("phage_save.json").exists() }
+pub fn save_exists() -> bool  { Path::new("magog_save.json").exists() }

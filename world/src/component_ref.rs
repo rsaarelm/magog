@@ -76,13 +76,13 @@ impl<'a, C: Clone> ComponentRefMut<'a, C> {
 
     /// Clear a component from an entity. This will make a parent entity's
     /// component visible instead, if there is one.
-    pub fn clear(self, Entity(idx): Entity) {
+    pub fn _clear(self, Entity(idx): Entity) {
         self.data.remove(&idx);
     }
 
     /// Make a component not show up on an entity even if it is present in the
     /// parent entity. Hiding will be reset if the component is cleared.
-    pub fn hide(self, Entity(idx): Entity) {
+    pub fn _hide(self, Entity(idx): Entity) {
         self.data.insert(idx, None);
     }
 }

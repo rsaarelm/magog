@@ -25,7 +25,7 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 28;
+    count: 29;
 
     Void, "void";
     Floor, "floor";
@@ -33,29 +33,30 @@ terrain_data! {
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";
+    Downstairs, "stairs down";
     Wall, "wall";
+    RockWall, "rock wall";
     Rock, "rock";
     Tree, "tree";
     Grass, "grass";
     // Render variant, do not use directly.
     Grass2, "grass";
     Stalagmite, "stalagmite";
+    Portal, "portal";
     Door, "door";
     OpenDoor, "open door";
     Window, "window";
     Table, "table";
+    Fence, "fence";
+    Bars, "bars";
+    Fountain, "fountain";
+    Altar, "altar";
     Barrel, "barrel";
+    Grave, "grave";
     Stone, "stone";
+    Menhir, "menhir";
     DeadTree, "dead tree";
     TallGrass, "tall grass";
-    CraterN, "crater";
-    CraterNE, "crater";
-    CraterSE, "crater";
-    CraterS, "crater";
-    CraterSW, "crater";
-    CraterNW, "crater";
-    Crater, "crater";
-    Pod, "pod";
 }
 
 
@@ -69,36 +70,39 @@ impl TerrainType {
 
     pub fn is_wall(self) -> bool {
         match self {
-            Wall | Rock | Door | OpenDoor | Window => true,
+            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
             _ => false
         }
     }
 
     pub fn blocks_sight(self) -> bool {
         match self {
-            Wall | Rock | Door | Tree | DeadTree | TallGrass => true,
+            Wall | RockWall | Rock | Door | Tree | DeadTree | TallGrass => true,
             _ => false
         }
     }
 
     pub fn blocks_shot(self) -> bool {
         match self {
-            Wall | Rock | Tree | Stalagmite | Door | DeadTree => true,
+            Wall | RockWall | Rock | Tree | Stalagmite | Door | Menhir | DeadTree => true,
             _ => false
         }
     }
 
     pub fn blocks_walk(self) -> bool {
         match self {
-            Floor | Shallows | Grass | Grass2 | Crater
-                | CraterN | CraterNE | CraterSE
-                | CraterS | CraterSW | CraterNW | Pod
+            Floor | Shallows | Grass | Grass2 | Downstairs | Portal
                 | Door | OpenDoor | TallGrass => false,
             _ => true
         }
     }
 
-    pub fn is_exit(self) -> bool { false }
+    pub fn is_exit(self) -> bool {
+        match self {
+            Downstairs => true,
+            _ => false
+        }
+    }
 
     pub fn valid_spawn_spot(self) -> bool { !self.blocks_walk() && !self.is_exit() }
 

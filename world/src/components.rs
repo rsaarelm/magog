@@ -67,7 +67,7 @@ pub struct Spawn {
 impl Spawn {
     pub fn new(category: Category) -> Spawn {
         Spawn {
-            biome: Biome::Overland,
+            biome: Biome::Anywhere,
             commonness: 1000,
             min_depth: 1,
             category: category,
@@ -121,8 +121,6 @@ pub enum BrainState {
     Asleep,
     /// AI mob is looking for a fight.
     Hunting,
-    /// AI mob is wandering around.
-    Roaming,
     /// Mob is under player control.
     PlayerControl,
 }
@@ -130,10 +128,14 @@ pub enum BrainState {
 /// Used to determine who tries to fight whom.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
 pub enum Alignment {
-    Berserk,
-    Phage,
-    Indigenous,
-    Colonist,
+    /// Attack anything and everything.
+    Chaotic,
+    /// Player alignment. The noble path of slaughtering everything that moves
+    /// and gets in the way of taking their shiny stuff.
+    Good,
+    /// Enemy alignment. The foul cause of working together to defend your
+    /// home and belongings against a powerful and devious intruder.
+    Evil,
 }
 
 
@@ -161,15 +163,3 @@ pub struct Item {
 /// stats and the stat bonuses of its equipment and whatever spell effects may
 /// apply.
 pub type StatsCache = Option<Stats>;
-
-
-/// Belong to a zone.
-#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
-pub struct Colonist {
-    pub home_base: String,
-}
-
-impl Colonist {
-    // Bases will be assigned when the unit is deployed.
-    pub fn new() -> Colonist { Colonist { home_base: String::new() } }
-}

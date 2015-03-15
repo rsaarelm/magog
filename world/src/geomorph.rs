@@ -54,15 +54,18 @@ fn legend(glyph: char) -> Option<TerrainType> {
         '|' => Some(Window),
         '%' => Some(Tree),
         '/' => Some(DeadTree),
-        'x' => Some(Wall),
+        'x' => Some(Fence),
         'o' => Some(Stone),
+        'A' => Some(Menhir),
+        'g' => Some(Grave),
         'b' => Some(Barrel),
         'T' => Some(Table),
-        'I' => Some(Wall),
+        'a' => Some(Altar),
+        'I' => Some(Bars),
         '!' => Some(Stalagmite),
         ';' => Some(TallGrass),
+        '>' => Some(Downstairs),
         'q' => Some(Void),
-        'c' => Some(Crater),
         _ => None
     }
 }
@@ -77,25 +80,6 @@ impl Chunk {
             if x >= chunk_w || y >= chunk_h {
                 println!("{}", text);
                 return Err("Bad chunk size.".to_string());
-            }
-
-            // Don't insert anything. Use around big crater to not overwrite
-            // the edges.
-            if glyph == ' ' {
-                continue;
-            }
-
-            // Special case, big crater
-            if glyph == 'C' {
-                cells.insert((x, y), Floor);
-                cells.insert((x - 1, y - 1), CraterN);
-                cells.insert((x    , y - 1), CraterNE);
-                cells.insert((x + 1, y    ), CraterSE);
-                cells.insert((x + 1, y + 1), CraterS);
-                cells.insert((x    , y + 1), CraterSW);
-                cells.insert((x - 1, y    ), CraterNW);
-
-                continue;
             }
             cells.insert((x, y), match legend(glyph) {
                 Some(t) => t,

@@ -4,9 +4,12 @@ use ecs::{Component, ComponentAccess};
 use entity::{Entity};
 use components::{Spawn, Category, IsPrototype};
 use components::{Desc, MapMemory, Health};
-use components::{Brain, BrainState, Alignment, Colonist};
+use components::{Brain, BrainState, Alignment};
+use components::{Item};
+use item::{ItemType};
 use stats::{Stats};
 use stats::Intrinsic::*;
+use ability::Ability;
 use Biome::*;
 use world;
 
@@ -38,12 +41,7 @@ impl<C: Component> Fn<(C,)> for Prototype {
 /// Only call at world init!
 pub fn init() {
     let base_mob = Prototype::new(None)
-        (Brain { state: BrainState::Asleep, alignment: Alignment::Indigenous })
-        ({let h: Health = Default::default(); h})
-        .target;
-
-    let colonist = Prototype::new(None)
-        (Brain { state: BrainState::Asleep, alignment: Alignment::Colonist })
+        (Brain { state: BrainState::Asleep, alignment: Alignment::Evil })
         ({let h: Health = Default::default(); h})
         .target;
 
@@ -51,84 +49,93 @@ pub fn init() {
 
     // Player
     Prototype::new(Some(base_mob))
-        (Brain { state: BrainState::PlayerControl, alignment: Alignment::Phage })
-        (Desc::new("phage", 40, CYAN))
-        (Stats::new(2, &[Fast]).attack(3))
+        (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
+        (Desc::new("player", 51, AZURE))
+        (Stats::new(10, &[Hands]).mana(5))
         (MapMemory::new())
         ;
 
     // Enemies
-
-    // Indigenous
     Prototype::new(Some(base_mob))
-        (Desc::new("hopper", 32, YELLOW))
-        (Stats::new(4, &[]).protection(-2))
-        (Spawn::new(Category::Mob).commonness(2000))
-        ;
-
-    Prototype::new(Some(base_mob))
-        (Desc::new("stalker", 60, ORCHID))
-        (Stats::new(4, &[]))
+        (Desc::new("dreg", 72, OLIVE))
+        (Stats::new(1, &[Hands]))
         (Spawn::new(Category::Mob))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("metawasp", 58, ORANGERED))
-        // Glass cannon
-        (Stats::new(4, &[Fast]).protection(-1).attack(2))
-        (Spawn::new(Category::Mob).commonness(600))
-        ;
-
-    // Can open doors, good for base attack.
-    Prototype::new(Some(base_mob))
-        (Desc::new("space monkey", 46, LAWNGREEN))
-        (Stats::new(6, &[Hands]))
-        (Spawn::new(Category::Mob).commonness(600))
+        (Desc::new("snake", 71, GREEN))
+        (Stats::new(1, &[]))
+        (Spawn::new(Category::Mob).biome(Overland))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("rumbler", 38, OLIVE))
-        (Stats::new(8, &[Slow]))
-        (Spawn::new(Category::Mob).commonness(100))
+        (Desc::new("ooze", 77, LIGHTSEAGREEN))
+        (Stats::new(3, &[]))
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(3))
         ;
 
-    // Colonist enemies
-
-    Prototype::new(Some(colonist))
-        (Desc::new("colonist", 34, DARKORANGE))
+    Prototype::new(Some(base_mob))
+        (Desc::new("ogre", 73, DARKSLATEGRAY))
         (Stats::new(6, &[Hands]))
-        (Spawn::new(Category::Mob).biome(Base))
-        (Colonist::new())
+        (Spawn::new(Category::Mob).depth(5))
         ;
 
-    // TODO: Ranged attack
-    Prototype::new(Some(colonist))
-        (Desc::new("marine", 36, DARKOLIVEGREEN))
+    Prototype::new(Some(base_mob))
+        (Desc::new("wraith", 74, HOTPINK))
         (Stats::new(8, &[Hands]))
-        (Spawn::new(Category::Mob).biome(Base).commonness(400))
-        (Colonist::new())
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(6))
         ;
 
-    // TODO: Ranged attack
-    Prototype::new(Some(colonist))
-        (Desc::new("cyber controller", 42, LIGHTSLATEGRAY))
-        (Stats::new(12, &[Slow, Hands, Robotic]))
-        (Colonist::new())
-        (Spawn::new(Category::Mob).biome(Base).commonness(40))
+    Prototype::new(Some(base_mob))
+        (Desc::new("octopus", 63, DARKTURQUOISE))
+        (Stats::new(10, &[]))
+        (Spawn::new(Category::Mob).depth(7))
         ;
 
-    // Dogs count as colonists because of terran DNA
-    Prototype::new(Some(colonist))
-        (Desc::new("dog", 44, OLIVE))
-        (Stats::new(4, &[]))
-        (Spawn::new(Category::Mob).biome(Base))
-        (Colonist::new())
+    Prototype::new(Some(base_mob))
+        (Desc::new("efreet", 78, ORANGE))
+        (Stats::new(12, &[]))
+        (Spawn::new(Category::Mob).depth(8))
         ;
 
-    // Robots don't count as colonists, being completely inorganic
-    Prototype::new(Some(colonist))
-        (Desc::new("robot", 62, SILVER))
-        (Stats::new(6, &[Hands, Robotic, Slow]))
-        (Spawn::new(Category::Mob).biome(Base).commonness(200))
+    Prototype::new(Some(base_mob))
+        (Desc::new("serpent", 94, CORAL))
+        (Stats::new(15, &[]))
+        (Spawn::new(Category::Mob).biome(Dungeon).depth(9))
+        ;
+
+    // Items
+    Prototype::new(None)
+        (Desc::new("heart", 89, RED))
+        (Spawn::new(Category::Consumable).commonness(50))
+        (Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("sword", 84, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(0, &[]).attack(5).mana(-3))
+        (Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("throwing knives", 90, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(500))
+        (Stats::new(0, &[]).ranged_range(5).ranged_power(5))
+        (Item { item_type: ItemType::RangedWeapon, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("helmet", 85, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(0, &[]).protection(2).mana(-1))
+        (Item { item_type: ItemType::Helmet, ability: Ability::Multi(vec![]) })
+        ;
+
+    Prototype::new(None)
+        (Desc::new("armor", 91, GAINSBORO))
+        (Spawn::new(Category::Equipment).commonness(100))
+        (Stats::new(0, &[]).protection(5).mana(-3))
+        (Item { item_type: ItemType::Armor, ability: Ability::Multi(vec![]) })
         ;
 }

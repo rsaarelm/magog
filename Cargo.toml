@@ -1,14 +1,14 @@
 [package]
-name = "phage"
+name = "magog"
 version = "0.1.0"
 authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
-description = "Roguelike game for 7DRL 2015"
+description = "Roguelike game"
 keywords = ["gamedev"]
 license = "GPL3"
 build = "build.rs"
 
 [[bin]]
-name = "phage"
+name = "magog"
 
 [profile.release]
 lto = true
