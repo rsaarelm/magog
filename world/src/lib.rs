@@ -73,7 +73,7 @@ pub enum FovStatus {
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
-    Dungeon  = 0b10,
+    Base     = 0b10,
 
     // For things showing up at a biome.
     Anywhere = -1,
@@ -82,9 +82,7 @@ pub enum Biome {
 impl Biome {
     pub fn default_terrain(self) -> terrain::TerrainType {
         match self {
-            Biome::Overland => TerrainType::Tree,
-            Biome::Dungeon => TerrainType::Rock,
-            _ => TerrainType::Void,
+            _ => TerrainType::Rock,
         }
     }
 }

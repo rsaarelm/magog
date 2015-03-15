@@ -1,4 +1,4 @@
-use rand::{Rng, XorShiftRng};
+use rand::{Rng, XorShiftRng, Rand};
 use util::EncodeRng;
 use world;
 
@@ -6,6 +6,11 @@ use world;
 pub fn with<A, F>(f: F) -> A
     where F: Fn(&mut EncodeRng<XorShiftRng>) -> A {
     world::with_mut(|w| f(&mut w.flags.rng))
+}
+
+/// Generate values from a Rand trait type using the world RNG.
+pub fn gen<T: Rand>() -> T {
+    with(|ref mut rng| rng.gen())
 }
 
 /// Return a floating-point value between 0 and 1.

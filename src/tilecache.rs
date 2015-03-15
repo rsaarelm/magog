@@ -55,16 +55,13 @@ pub mod tile {
     pub static WATER : usize = 13;
     pub static MAGMA : usize = 14;
     pub static DOWNSTAIRS : usize = 15;
-    pub static ROCKWALL : usize = 16;
-    pub static WALL : usize = 20;
-    pub static FENCE : usize = 24;
-    pub static BARS : usize = 28;
-    pub static WINDOW : usize = 32;
-    pub static DOOR : usize = 36;
+    pub static WALL : usize = 16;
+    pub static WINDOW : usize = 20;
+    pub static DOOR : usize = 24;
     pub static TREE_TRUNK : usize = 48;
     pub static TREE_FOLIAGE : usize = 49;
     pub static TABLE : usize = 50;
-    pub static AVATAR : usize = 51;
+    pub static POD : usize = 51;
     pub static BLOCK : usize = 52;
     pub static FOUNTAIN : usize = 53;
     pub static ALTAR : usize = 54;
@@ -76,6 +73,13 @@ pub mod tile {
     pub static MENHIR : usize = 70;
     pub static TALLGRASS : usize = 80;
     pub static XYWALL : usize = 82;
+    pub static CRATER_N : usize = 96;
+    pub static CRATER_NE : usize = 97;
+    pub static CRATER_SE : usize = 98;
+    pub static CRATER_S : usize = 99;
+    pub static CRATER_SW : usize = 100;
+    pub static CRATER_NW : usize = 101;
+    pub static CRATER : usize = 102;
 }
 
 pub mod icon {

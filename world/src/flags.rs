@@ -13,6 +13,7 @@ pub struct Flags {
     /// Store the player entity here for fast access.
     pub player: Option<Entity>,
     pub rng: EncodeRng<XorShiftRng>,
+    pub terrans_left: u32,
 }
 
 impl Flags {
@@ -24,6 +25,7 @@ impl Flags {
             player_acted: false,
             player: None,
             rng: SeedableRng::from_seed([seed, seed, seed, seed]),
+            terrans_left: 0,
         }
     }
 }

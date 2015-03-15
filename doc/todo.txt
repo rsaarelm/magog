@@ -1,0 +1,42 @@
+# vim:formatoptions-=t:showbreak=\ \ :linebreak:wrap
+(A) 2015-03-13 Improve screenshot, use local dir, 00 count after seconds
+(B) 2015-03-07 Ranged combat AI for marines
+(B) 2015-03-09 Corpses rot away after a while
+(B) 2015-03-10 Tag the final release version with as v1.0.0
+(B) 2015-03-10 Upload release-build binaries for windows and linux when done
+(C) 2015-03-09 Ammo clip reload mechanic when inhabiting ranged attacker
+(C) 2015-03-09 Detection state for human-form phage, can infiltrate bases until a human sees you do something suspicious. Alert goes down after a while.
+(C) 2015-03-09 Human enemies get radioed in at your location on alert
+(C) 2015-03-09 Lifeform radar minimap
+(C) 2015-03-09 Mob infighting, humans fight alien life
+(C) 2015-03-10 Health bar display for enemies
+(C) 2015-03-10 Named bases in location name, when in the wilderness, "Outside", when inside a base, show "Delta Base" etc.
+(C) 2015-03-11 Phage has emergency burrow power that does a short-range teleport, has cooldown.
+(C) 2015-03-11 Sentry guns, immobile ranged robots
+(C) 2015-03-11 Triffids, slow ranged attack indigenous (spit thorns)
+(C) 2015-03-13 Flying critters are always roaming, won't sleep
+x 2015-03-07 2015-03-07 Cool title screen
+x 2015-03-08 2015-03-07 New player avatar sprite
+x 2015-03-08 2015-03-07 Possession mechanic, change player avatar properties (reparenting?)
+x 2015-03-08 2015-03-07 Techy walls for bases
+x 2015-03-09 2015-03-07 Alien mobs
+x 2015-03-09 2015-03-07 Corpse objects from killed enemies (remove brain component to de-mob entity) ((Oh, but we can't remove inherited components... Better figure out something for that))
+x 2015-03-09 2015-03-07 Human colonist mobs
+x 2015-03-09 2015-03-09 Phage possesses corpses, not live mobs
+x 2015-03-10 2015-03-07 New terrain tiles
+x 2015-03-10 2015-03-07 Remove item system (mostly the inventory key at this point)
+x 2015-03-10 2015-03-09 Remove debug keys
+x 2015-03-11 2015-03-07 Colony base terrain, mapgen clumps base terrain
+x 2015-03-11 2015-03-07 Open-world alien planet terrain
+x 2015-03-11 2015-03-07 Spawn human mobs only around human base terrain
+x 2015-03-11 2015-03-09 Large mobs can smash doors
+x 2015-03-11 2015-03-10 Door smashing logic
+x 2015-03-11 2015-03-10 Oops, multitile craters don't survive geomorph rotation. Either figure out a fix (norotate flag?) or drop the craters (which don't really make geological sense anyway)
+x 2015-03-11 2015-03-10 Phage can smash doors with prob 1/4, doors aren't an absolute obstacle just a slowdown
+x 2015-03-12 2015-03-07 Kill counter
+x 2015-03-12 2015-03-10 End-game condition when everything is dead
+x 2015-03-12 2015-03-11 Mobs get tired of chasing you and switch to roaming or sleep
+x 2015-03-12 2015-03-11 There seems to be a performance crash when too many mobs get AI activated, investigate (possible that two mobs end up somehow busy-looping the thing by not finding paths and not ending turn?) (couldn't reproduce) +Cancelled
+x 2015-03-13 2015-03-07 Autosave and resume, save when exiting game
+x 2015-03-13 2015-03-07 Title screen has [New game] and if there's a valid save file, [Continue game]
+x 2015-03-13 2015-03-09 Game over after-death process, mobs wander randomly, after a few seconds back to title

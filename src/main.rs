@@ -1,4 +1,4 @@
-#![crate_name="magog"]
+#![crate_name="phage"]
 #![feature(old_io, old_path, unicode)]
 
 extern crate image;
@@ -39,7 +39,7 @@ pub enum Transition {
 }
 
 pub fn version() -> String {
-    let next_release = "0.1.0";
+    let next_release = "0.1.0-RC1";
     let git_hash = include_str!("git_hash.inc");
     // Set is_release to true for one commit to make a release.
     let is_release = false;
@@ -68,10 +68,11 @@ pub fn screenshot(ctx: &mut Canvas) {
 }
 
 pub fn main() {
-    println!("Magog v{}", version());
+    println!("Phage v{}", version());
     println!("{}", compiler_version());
     let mut canvas = backend::CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
+        .set_title("Phage")
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state: Box<State> = Box::new(TitleState::new());

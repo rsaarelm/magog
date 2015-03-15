@@ -1,12 +1,12 @@
 use std::default::Default;
-use rand::Rng;
 use util::Dijkstra;
 use util::Rgb;
+use util::color;
 use world;
 use location::{Location};
 use dir6::Dir6;
 use flags;
-use components::{BrainState, Alignment};
+use components::{BrainState, Alignment, Brain};
 use geom::HexGeom;
 use spatial::Place;
 use action;
@@ -16,6 +16,7 @@ use msg;
 use item::{ItemType, Slot};
 use stats::{Stats, Intrinsic};
 use ecs::{ComponentAccess};
+use terrain::TerrainType;
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
@@ -68,6 +69,11 @@ impl Entity {
     pub fn clone_at(self, loc: Location) -> Entity {
         let ret = world::with_mut(|w| { w.ecs.new_entity(Some(self)) });
         ret.place(loc);
+
+        if ret.is_terran() {
+            world::with_mut(|w| w.flags.terrans_left += 1);
+        }
+
         ret
     }
 
@@ -101,7 +107,8 @@ impl Entity {
         let place = world::with(|w| w.spatial.get(self));
         if let Some(Place::At(loc)) = place {
             let new_loc = loc + dir.to_v2();
-            return self.can_enter(new_loc);
+            return self.can_enter(new_loc) ||
+                (self.is_player() && new_loc.terrain() == TerrainType::Door);
         }
         return false;
     }
@@ -114,6 +121,16 @@ impl Entity {
             if self.can_enter(new_loc) {
                 world::with_mut(|w| w.spatial.insert_at(self, new_loc));
                 self.on_move_to(new_loc);
+            } else if new_loc.terrain() == TerrainType::Door && self.is_player() {
+                // Player can force doors even in unsuitable form.
+                let force_difficulty = 5 - self.stats().power / 2;
+                if force_difficulty <= 1 || rng::one_chance_in(force_difficulty as u32) {
+                    world::with_mut(|w| w.spatial.insert_at(self, new_loc));
+                    self.on_move_to(new_loc);
+                    msgln!("Door forced.");
+                } else {
+                    msgln!("Morph has trouble with doors.");
+                }
             }
         }
     }
@@ -153,6 +170,7 @@ impl Entity {
         let partial = (power % 5) as f64 / 5.0;
 
         let damage = full + if rng::p(partial) { 1 } else { 0 };
+
         self.apply_damage(damage)
     }
 
@@ -189,16 +207,58 @@ impl Entity {
     /// deleting it.
     pub fn kill(self) {
         let loc = self.location().expect("no location");
-        msgln!("{} dies.", self.name());
-        msg::push(::Msg::Gib(loc));
-        if rng::one_chance_in(6) {
-            // Drop a heart.
-            action::spawn_named("heart", loc);
+
+        if self.is_player() && !self.is_exposed_phage() {
+            // Phage is just re-exposed when host dies.
+            self.exit_host();
+            return;
         }
-        self.delete();
+
+        if self.is_player() {
+            caption!("Phage lost");
+            action::delete_save();
+        } else if self.has_intrinsic(Intrinsic::Robotic) {
+            msgln!("{} destroyed.", capitalize(&self.name()));
+        } else {
+            msgln!("{} dies.", capitalize(&self.name()));
+        }
+
+        if self.is_terran() {
+            let terrans_left = world::with_mut(|w| {
+                w.flags.terrans_left -= 1;
+                w.flags.terrans_left
+            });
+
+            if terrans_left == 0 {
+                caption!("Zero terran DNA signatures detected. Phage has secured the zone.");
+            }
+        }
+
+        msg::push(::Msg::Gib(loc));
+
+        // Turn into corpse.
+        world::with_mut(|w| {
+            w.brains_mut().hide(self);
+            // Corpses are always icon + 1.
+            w.descs_mut().get(self).expect("no desc").icon += 1;
+        });
+
+        // Try to have one corpse per cell, spill out if dying on top of
+        // another corpse. (If there's no room left around, the corpses will
+        // just stack.)
+        if let Some(loc) = self.location().unwrap().spill(
+            |loc| self.can_enter(loc) &&
+            loc.entities().iter().find(|&x| x != &self && x.is_corpse()).is_none()) {
+            self.place(loc);
+        }
+
+        self.set_intrinsic(Intrinsic::Dead);
+        //self.delete();
     }
 
 // Mob methods /////////////////////////////////////////////////////////
+
+    pub fn is_corpse(self) -> bool { self.has_intrinsic(Intrinsic::Dead) }
 
     pub fn is_mob(self) -> bool {
         world::with(|w| w.brains().get(self).is_some()) && self.location().is_some()
@@ -211,6 +271,10 @@ impl Entity {
 
     /// Return whether this entity is an awake mob.
     pub fn is_active(self) -> bool {
+        if self.has_intrinsic(Intrinsic::Dead) {
+            return false;
+        }
+
         match self.brain_state() {
             Some(BrainState::Asleep) => false,
             Some(_) => true,
@@ -519,6 +583,20 @@ impl Entity {
         if self.is_mob() && !self.is_player() && self.ticks_this_frame() {
             self.mob_ai();
         }
+
+        if self.is_player() {
+            if !self.is_exposed_phage() {
+                // Host rots slowly.
+                if rng::one_chance_in(64) {
+                    self.apply_damage(1);
+                }
+            } else {
+                // Exposed phage regenerates
+                if rng::one_chance_in(6) {
+                    self.heal(1);
+                }
+            }
+        }
     }
 
     fn brain_state(self) -> Option<BrainState> {
@@ -550,7 +628,7 @@ impl Entity {
                 // TODO: Line-of-sight, stealth concerns, other enemies than
                 // player etc.
                 if let Some(d) = p.distance_from(self) {
-                    if d < 6 {
+                    if d < 8 && rng::one_chance_in((d / 2) as u32 + 1) {
                         self.wake_up();
                     }
                 }
@@ -559,27 +637,53 @@ impl Entity {
             return;
         }
 
-        if let Some(p) = action::player() {
-            let loc = self.location().expect("no location");
+        // Start hunting nearby enemy.
+        if self.brain_state() == Some(BrainState::Roaming) {
+            if let Some(p) = action::player() {
+                if !p.is_corpse() {
+                    if let Some(d) = p.distance_from(self) {
+                        // TODO: Line-of-sight
+                        if d < 6 {
+                            self.set_brain_state(BrainState::Hunting);
+                        }
+                    }
+                }
+            }
+        }
 
-            let vec_to_enemy = loc.v2_at(p.location().expect("no location"));
-            if let Some(v) = vec_to_enemy {
-                if v.hex_dist() == 1 {
-                    // Melee range, hit.
-                    self.melee(Dir6::from_v2(v));
-                } else {
-                    // Walk towards.
-                    let pathing_depth = 16;
-                    let pathing = Dijkstra::new(
-                        vec![p.location().expect("no location")], |&loc| !loc.blocks_walk(),
-                        pathing_depth);
+        if self.brain_state() == Some(BrainState::Roaming) {
+            self.step(rng::gen());
+            if rng::one_chance_in(32) { self.set_brain_state(BrainState::Asleep); }
+            return;
+        }
 
-                    let steps = pathing.sorted_neighbors(&loc);
-                    if steps.len() > 0 {
-                        self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
+        if self.brain_state() == Some(BrainState::Hunting) {
+            // TODO: Fight other mobs than player.
+            if let Some(p) = action::player() {
+                if p.is_corpse() {
+                    self.set_brain_state(BrainState::Roaming);
+                }
+
+                let loc = self.location().expect("no location");
+
+                let vec_to_enemy = loc.v2_at(p.location().expect("no location"));
+                if let Some(v) = vec_to_enemy {
+                    if v.hex_dist() == 1 {
+                        // Melee range, hit.
+                        self.melee(Dir6::from_v2(v));
                     } else {
-                        self.step(rng::with(|ref mut rng| rng.gen::<Dir6>()));
-                        // TODO: Fall asleep if things get boring.
+                        // Walk towards.
+                        let pathing_depth = 16;
+                        let pathing = Dijkstra::new(
+                            vec![p.location().expect("no location")], |&loc| !loc.blocks_walk(),
+                            pathing_depth);
+
+                        let steps = pathing.sorted_neighbors(&loc);
+                        if steps.len() > 0 {
+                            self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
+                        } else {
+                            self.step(rng::gen());
+                        }
                     }
                 }
             }
@@ -589,10 +693,7 @@ impl Entity {
     /// Return whether this thing wants to fight the other thing.
     pub fn is_hostile_to(self, other: Entity) -> bool {
         match (self.alignment(), other.alignment()) {
-            (Some(Alignment::Chaotic), Some(_)) => true,
-            (Some(_), Some(Alignment::Chaotic)) => true,
-            (Some(Alignment::Evil), Some(Alignment::Good)) => true,
-            (Some(Alignment::Good), Some(Alignment::Evil)) => true,
+            (Some(x), Some(y)) if x != y => true,
             _ => false,
         }
     }
@@ -629,9 +730,6 @@ impl Entity {
         }
 
         if self.is_player() {
-            if loc.terrain().is_exit() {
-                action::next_level();
-            }
             flags::set_camera(self.location().expect("No player location"));
         }
     }
@@ -642,6 +740,11 @@ impl Entity {
         if self.is_instant_item() {
             let ability = world::with(|w| w.items().get(self).expect("no item").ability.clone());
             ability.apply(Some(self), Place::In(collider, None));
+        }
+
+        if collider.is_player() && self.is_corpse() && !self.has_intrinsic(Intrinsic::Robotic) {
+            msgln!("Inhabiting {}.", self.name());
+            collider.possess(self);
         }
     }
 
@@ -684,4 +787,86 @@ impl Entity {
             });
         }
     }
+
+// Phage stuff /////////////////////////////////////////////////////////
+
+    pub fn is_terran(self) -> bool { world::with(|w| w.colonists().get(self).is_some()) }
+
+    /// Self is the exposed phage form, not possessing a host.
+    pub fn is_exposed_phage(self) -> bool {
+        // Hacky, just check the icon index.
+        world::with(|w| w.descs().get(self).map_or(false, |d| d.icon == 40))
+    }
+
+    /// Make the phage possess the target host.
+    pub fn possess(self, target: Entity) {
+        // Hairy ECS trickery to do polymorph.
+        self.reparent(target.parent().unwrap());
+
+        world::with_mut(|w| {
+            // Remove the local description for the previous form.
+            w.descs_mut().clear(self);
+            // Get the prototype description from new parent, with
+            // copy-on-write. Modify it for phage look.
+            {
+                let desc = w.descs_mut().get(self).expect("No prototype desc");
+                desc.name = "phage".to_string();
+                desc.color = color::CYAN;
+            }
+
+            // Central nervous system bypass.
+            w.brains_mut().insert(
+                self,
+                Brain {
+                    state: BrainState::PlayerControl,
+                    alignment: Alignment::Phage,
+                });
+
+            // Tissue regeneration.
+            w.healths_mut().get(self).expect("no health").wounds = 0;
+
+            // Adrenal overload.
+            w.stats_mut().clear(self);
+            w.stats_mut().get(self).expect("no stats").attack += 3;
+        });
+
+        self.dirty_stats_cache();
+
+        if !self.is_exposed_phage() {
+            // Discard previous host.
+            msg::push(::Msg::Gib(self.location().unwrap()));
+        }
+
+        let loc = target.location().unwrap();
+        target.delete();
+        self.place(loc);
+    }
+
+    /// Exist a host body and revert to phage form.
+    pub fn exit_host(self) {
+        assert!(self.is_player() && !self.is_exposed_phage());
+
+        self.reparent(action::find_prototype("phage").expect("No player prototype"));
+
+        world::with_mut(|w| {
+            // Remove custom desc.
+            w.descs_mut().clear(self);
+            // Remove custom stats.
+            w.stats_mut().clear(self);
+            // Go full health.
+            w.healths_mut().get(self).expect("no health").wounds = 0;
+        });
+        self.dirty_stats_cache();
+
+        // Gib fx from the host body.
+        msg::push(::Msg::Gib(self.location().unwrap()));
+        msgln!("Morph lost.");
+    }
+}
+
+// TODO: Put in library
+fn capitalize(string: &str) -> String {
+    string.chars().enumerate()
+        .map(|(i, c)| if i == 0 { c.to_uppercase().next().unwrap() } else { c })
+        .collect::<String>()
 }

@@ -72,4 +72,8 @@ pub enum Intrinsic {
     Quick       = 0b100,
     /// Can manipulate objects and doors.
     Hands       = 0b1000,
+    /// Is dead
+    Dead        = 0b10000,
+    /// Inorganic, phage can't use corpse
+    Robotic     = 0b100000,
 }

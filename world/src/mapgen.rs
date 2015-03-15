@@ -1,42 +1,38 @@
 use num::{Integer};
 use rand::Rng;
-use util::{V2};
+use util::{V2, Rect};
 use geomorph;
 use geomorph::{Chunk};
 use terrain::TerrainType;
+use ::{Biome};
 
-pub fn gen_herringbone<R: Rng, F>(
-    rng: &mut R, spec: &::AreaSpec, mut set_terrain: F)
-    where F: FnMut(V2<i32>, TerrainType) {
+pub fn gen_herringbone<R: Rng, F, G>(
+    rng: &mut R, spec: &::AreaSpec, mut set_terrain: F, mut set_biome: G)
+    where F: FnMut(V2<i32>, TerrainType),
+          G: FnMut(V2<i32>, Biome) {
     geomorph::with_cache(|cs| {
-        let chunks = cs.iter().filter(
-                |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
+        let outside = cs.iter().filter(|c| c.spec.biome == Biome::Overland)
+                .collect::<Vec<&Chunk>>();
+        let base = cs.iter().filter(|c| c.spec.biome == Biome::Base)
                 .collect::<Vec<&Chunk>>();
 
-        let edge = chunks.iter().filter(|c| !c.exit && c.connected)
-            .map(|&c| c).collect::<Vec<&Chunk>>();
-        let inner = chunks.iter().filter(|c| !c.exit)
-            .map(|&c| c).collect::<Vec<&Chunk>>();
-        let exit = chunks.iter().filter(|c| c.exit)
-            .map(|&c| c).collect::<Vec<&Chunk>>();
-
-        assert!(!exit.is_empty(), "No exit chunks found");
-        assert!(inner.len() + exit.len() == chunks.len());
-
-        let exit_x = rng.gen_range(-2, 2);
-        let exit_y = rng.gen_range(-2, 2);
-
-        for cy in -2i32..2 {
-            for cx in -2i32..2 {
-                let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
+        for cy in -3i32..4 {
+            for cx in -3i32..4 {
+                let pos = V2(cx, cy);
+                let in_base =
+                    Rect(V2(-3, -3), V2(2, 2)).contains(&pos) ||
+                    Rect(V2(-3,  2), V2(2, 2)).contains(&pos) ||
+                    Rect(V2( 2, -3), V2(2, 2)).contains(&pos) ||
+                    Rect(V2( 2,  2), V2(2, 2)).contains(&pos);
 
                 let chunk = rng.choose(
-                    if (cx, cy) == (exit_x, exit_y) { &exit[..] }
-                    else if on_edge { &edge[..] }
-                    else { &inner[..] }).unwrap();
+                    if in_base { &base[..] }
+                    else { &outside[..] }).unwrap();
 
                 for (&(x, y), &terrain) in chunk.cells.iter() {
-                    set_terrain(herringbone_map((cx, cy), (x, y)), terrain);
+                    let pos = herringbone_map((cx, cy), (x, y));
+                    set_terrain(pos, terrain);
+                    set_biome(pos, if in_base { Biome::Base } else { Biome::Overland });
                 }
             }
         }

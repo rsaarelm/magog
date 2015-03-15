@@ -10,7 +10,7 @@ use world;
 use action;
 use flags;
 use ecs::{ComponentAccess};
-use {Light};
+use {Light, Biome};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
@@ -134,8 +134,8 @@ impl Location {
     pub fn name(&self) -> String {
         match action::current_depth() {
             0 => "Limbo".to_string(),
-            1 => "Overworld".to_string(),
-            n => format!("Dungeon {}", n - 1)
+            1 => "Outside".to_string(),
+            n => format!("Basement {}", n - 1)
         }
     }
 
@@ -154,6 +154,22 @@ impl Location {
             return Light::new(if lum >= 0.0 { lum } else { 0.0 });
         }
         return Light::new(1.0);
+    }
+
+    pub fn biome(&self) -> Biome {
+        match world::with(|w| { w.area.biomes.get(self).map(|&x| x) }) {
+            Some(b) => b,
+            _ => Biome::Overland
+        }
+    }
+
+    /// Try to find a nearby valid location if self doesn't satisfy predicate.
+    pub fn spill<P: Fn<(Location,), Output=bool>>(&self, valid_pos: P) -> Option<Location> {
+        if valid_pos(*self) { return Some(*self); }
+        if let Some(loc) = Dir6::iter().map(|d| *self + d.to_v2()).find(|&x| valid_pos(x)) {
+            return Some(loc);
+        }
+        None
     }
 }
 

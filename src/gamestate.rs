@@ -8,7 +8,7 @@ use world::action::ControlState::*;
 use world::{Msg, FovStatus};
 use world::Dir6;
 use world::Dir6::*;
-use world::{Entity};
+use world::{Entity, TerrainType};
 use world::item::{Slot};
 use worldview;
 use sprite::{WorldSprites, GibSprite, BeamSprite};
@@ -47,11 +47,20 @@ enum UiState {
 impl GameState {
     pub fn new(seed: Option<u32>) -> GameState {
         world::init_world(seed);
+        let mut msg = MsgQueue::new();
+        action::load_game();
+
+        msg.msg("Move with Q,W,E, A,S,D, wait with SPACE\n".to_string());
+        msg.msg("ESC to save and return to title screen\n".to_string());
+        msg.msg("Exposed phage is weak, find stronger hosts.\n".to_string());
+        msg.caption("Phage deployed".to_string());
+        msg.caption("Clear zone of terran life".to_string());
+
         GameState {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
-            msg: MsgQueue::new(),
+            msg: msg,
             ui_state: UiState::Gameplay,
             screenshot_requested: false,
             console: Console::new(),
@@ -68,7 +77,7 @@ impl GameState {
             let idx = if hp >= (i + 1) * 2 { icon::HEART }
                 else if hp == i * 2 + 1 { icon::HALF_HEART }
                 else { icon::NO_HEART };
-            ctx.draw_image(tilecache::get(idx), pos, 0.0, &color::FIREBRICK, &color::BLACK);
+            ctx.draw_image(tilecache::get(idx), pos, 0.0, &color::FIREBRICK, &color::BLUE);
         }
     }
 
@@ -81,10 +90,12 @@ impl GameState {
 
         let location_name = camera.name();
 
+        let count = action::terrans_left();
+
         Fonter::new(ctx)
             .color(&color::LIGHTGRAY).border(&color::BLACK)
             .anchor(Anchor::TopRight).align(Align::Right)
-            .text(location_name)
+            .text(format!("{} terran{} in zone", count, if count != 1 { "s" } else { "" }))
             .draw(V2(638.0, 0.0));
 
         self.msg.draw(ctx);
@@ -302,16 +313,6 @@ impl GameState {
         false
     }
 
-    /// Context-specific interaction with the current cell.
-    fn interact(&mut self) {
-        let player = action::player().unwrap();
-        let loc = player.location().unwrap();
-        if let Some(item) = loc.top_item() {
-            player.pick_up(item);
-            return;
-        }
-    }
-
     /// Process a player control keypress.
     pub fn gameplay_process_key(&mut self, key: Key) -> bool {
         if action::control_state() != AwaitingInput {
@@ -330,12 +331,8 @@ impl GameState {
             Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
 
-            Key::Enter => { self.interact(); }
-            Key::Space => { action::input(Pass); }
+            Key::Space | Key::Pad5 => { action::input(Pass); }
             Key::X => { self.exploring = true; }
-
-            // Open inventory
-            Key::Tab => { self.ui_state = UiState::Inventory; }
 
             Key::F5 if !cfg!(ndebug) => { action::save_game(); }
             Key::F9 if !cfg!(ndebug) => { action::load_game(); }
@@ -352,6 +349,7 @@ impl GameState {
             }
             // TODO: Better quit confirmation than just pressing esc.
             Event::KeyPressed(Key::Escape) => {
+                action::save_game();
                 return false;
             }
             Event::KeyPressed(k) => {
@@ -361,14 +359,11 @@ impl GameState {
             Event::Char(ch) => {
                 // TODO: Chars and keypresses in same lookup (use variants?)
                 match ch {
-                    // Debug
-                    '>' => { action::next_level(); }
-
                     // Open console
                     // (Make this be a typed-key instead of a pressed-key
                     // event so that the event will have been consumed and
                     // console won't start with an inputted '`'.)
-                    '`' => { self.ui_state = UiState::Console; }
+                    '`' if !cfg!(ndebug) => { self.ui_state = UiState::Console; }
 
                     _ => ()
                 }

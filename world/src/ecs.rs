@@ -191,4 +191,5 @@ components! {
     [components::Brain, brains, brains_mut],
     [components::Item, items, items_mut],
     [components::StatsCache, stats_caches, stats_caches_mut],
+    [components::Colonist, colonists, colonists_mut],
 }

@@ -1,15 +1,15 @@
 use rand::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
-use std::iter;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::HashMap;
 use terrain::TerrainType;
 use location::Location;
 use mapgen;
-use {AreaSpec};
+use {AreaSpec, Biome};
 use components::{Category};
 use spawn::Spawn;
+use dir6::Dir6;
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
 // generated to have exactly the same contents every time given the same seed
@@ -33,14 +33,11 @@ pub struct Area {
     pub seed: AreaSeed,
     /// Stored terrain.
     pub terrain: HashMap<Location, TerrainType>,
-    /// Valid slots to spawn things in, basically open floor and connected to
-    /// areas the player can reach. (Does not handle stuff like monsters that
-    /// spawn in water for now.)
-    _open_slots: Vec<Location>,
     /// Where the player should enter the area.
     player_entrance: Location,
     /// Non-player entities to create when first initializing the map.
     spawns: Vec<(Spawn, Location)>,
+    pub biomes: HashMap<Location, Biome>,
 }
 
 impl Decodable for Area {
@@ -58,15 +55,14 @@ impl Encodable for Area {
 
 impl Area {
     pub fn new(rng_seed: u32, spec: AreaSpec) -> Area {
-        let num_mobs = 32;
-        let num_items = 12;
-
         let mut terrain = HashMap::new();
+        let mut biomes = HashMap::new();
         let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][..]);
         mapgen::gen_herringbone(
             &mut rng,
             &spec,
-            |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
+            |p, t| {terrain.insert(Location::new(0, 0) + p, t);},
+            |p, b| {biomes.insert(Location::new(0, 0) + p, b);});
 
         // Generate open slots that can be used to spawn stuff.
 
@@ -74,35 +70,47 @@ impl Area {
         // total connectivity. Later on, use Dijkstra map that spreads from
         // entrance/exit as a reachability floodfill to do something cleverer
         // here.
-        let mut opens: Vec<Location> = terrain.iter()
-            .filter(|&(_, &t)| t.valid_spawn_spot())
+        let mut outdoors: Vec<Location> = terrain.iter()
+            .filter(|&(loc, &t)| t.valid_spawn_spot() && biomes.get(loc) == Some(&Biome::Overland))
             .map(|(&loc, _)| loc)
             .collect();
-        rng.shuffle(opens.as_mut_slice());
+        rng.shuffle(outdoors.as_mut_slice());
 
-        let entrance = opens.pop().unwrap();
+        let mut bases: Vec<Location> = terrain.iter()
+            .filter(|&(loc, &t)| t.valid_spawn_spot() && biomes.get(loc) == Some(&Biome::Base))
+            .map(|(&loc, _)| loc)
+            .collect();
+        rng.shuffle(bases.as_mut_slice());
+
+        let entrance = outdoors.pop().unwrap();
+
+        // Phage entrance crater
+        terrain.insert(entrance, TerrainType::Pod);
+        terrain.insert(entrance + Dir6::from_int(0).to_v2(), TerrainType::CraterN);
+        terrain.insert(entrance + Dir6::from_int(1).to_v2(), TerrainType::CraterNE);
+        terrain.insert(entrance + Dir6::from_int(2).to_v2(), TerrainType::CraterSE);
+        terrain.insert(entrance + Dir6::from_int(3).to_v2(), TerrainType::CraterS);
+        terrain.insert(entrance + Dir6::from_int(4).to_v2(), TerrainType::CraterSW);
+        terrain.insert(entrance + Dir6::from_int(5).to_v2(), TerrainType::CraterNW);
 
         let mut spawns = vec![];
 
-        // XXX: copy-pasting the space-finding code.
-        spawns.extend(
-            iter::repeat(Spawn::new(spec.depth, vec![Category::Mob], vec![spec.biome]))
-            .take(num_mobs)
-            .filter_map(|spawn|
-            if let Some(loc) = opens.pop() { Some((spawn, loc)) } else { None }));
+        for _ in 0..(rng.gen_range(40, 60)) {
+            let loc = outdoors.pop().unwrap();
+            spawns.push((Spawn::new(spec.depth, vec![Category::Mob], vec![Biome::Overland]), loc));
+        }
 
-        spawns.extend(
-            iter::repeat(Spawn::new(spec.depth, vec![Category::Item], vec![spec.biome]))
-            .take(num_items)
-            .filter_map(|spawn|
-            if let Some(loc) = opens.pop() { Some((spawn, loc)) } else { None }));
+        for _ in 0..(rng.gen_range(30, 50)) {
+            let loc = bases.pop().unwrap();
+            spawns.push((Spawn::new(spec.depth, vec![Category::Mob], vec![Biome::Base]), loc));
+        }
 
         Area {
             seed: AreaSeed { rng_seed: rng_seed, spec: spec },
             terrain: terrain,
-            _open_slots: opens,
             player_entrance: entrance,
             spawns: spawns,
+            biomes: biomes,
         }
     }
 
