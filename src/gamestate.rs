@@ -220,7 +220,7 @@ impl GameState {
                             }
                         }
                     }
-                    if ch == slot_data.key.to_uppercase() {
+                    if ch == slot_data.key.to_uppercase().next().unwrap() {
                         // Drop item in slot.
                         if let Some(item) = player.equipped(slot_data.slot) {
                             item.place(player.location().unwrap());
