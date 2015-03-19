@@ -4,7 +4,7 @@ Miscellaneous utilities grab-bag.
  */
 
 #![crate_name="calx_util"]
-#![feature(core, collections, old_io, std_misc)]
+#![feature(core, collections, std_misc, thread_sleep)]
 #![feature(plugin)]
 #![plugin(regex_macros)]
 

@@ -1,4 +1,4 @@
-use std::num::{UnsignedInt, Float};
+use std::num::{Float};
 use std::iter;
 use std::cmp::{max};
 use std::num::{NumCast};
