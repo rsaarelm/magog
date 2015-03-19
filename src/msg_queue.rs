@@ -49,7 +49,7 @@ impl MsgQueue {
         self.caption_done_time = Some(timeout);
     }
 
-    pub fn clear_captions(&mut self) {
+    pub fn _clear_captions(&mut self) {
         self.captions.clear();
     }
 

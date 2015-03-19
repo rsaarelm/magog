@@ -1,6 +1,6 @@
-use std::old_io::File;
-use std::fs;
-use std::old_io::fs::PathExtensions;
+use std::io::prelude::*;
+use std::path::{Path};
+use std::fs::{self, File};
 use rand::StdRng;
 use rand::SeedableRng;
 use std::iter::Filter;
@@ -38,6 +38,12 @@ pub enum Input {
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
     world::with(|w| w.flags.player)
+}
+
+/// Return true if the game has ended and the player can make no further
+/// actions.
+pub fn is_game_over() -> bool {
+    player().is_none()
 }
 
 /// Find the first entity that has a local (not inherited) Desc component with
@@ -259,26 +265,26 @@ pub fn find_target(shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
 
 pub fn save_game() {
     // Only save if there's still a living player around.
-    if let Some(p) = player() {
-    } else {
+    if is_game_over() {
         return;
     }
 
     let save_data = world::save();
-    let mut file = File::create(&Path::new("magog_save.json"));
-    file.write_str(&save_data[..]).unwrap();
+    File::create("magog_save.json").unwrap()
+        .write_all(&save_data.into_bytes()).unwrap();
 }
 
 pub fn load_game() {
     let path = Path::new("magog_save.json");
     if !path.exists() { return; }
-    let save_data = File::open(&path).read_to_string().unwrap();
+    let mut save_data = String::new();
+    File::open(&path).unwrap().read_to_string(&mut save_data).unwrap();
     // TODO: Handle failed load nicely.
     world::load(&save_data[..]).unwrap();
 }
 
 pub fn delete_save() {
-    fs::remove_file("magog_save.json");
+    fs::remove_file("magog_save.json").unwrap();
 }
 
 pub fn save_exists() -> bool  { Path::new("magog_save.json").exists() }

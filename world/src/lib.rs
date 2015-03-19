@@ -1,6 +1,6 @@
 #![crate_name="world"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections)]
+#![feature(core, collections, path_ext)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
