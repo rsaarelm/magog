@@ -1,5 +1,5 @@
 #![crate_name="magog"]
-#![feature(old_io, old_path, unicode)]
+#![feature(path_ext, old_path)]
 
 extern crate image;
 extern crate "calx_util" as util;
@@ -57,14 +57,31 @@ pub fn compiler_version() -> String {
 
 pub fn screenshot(ctx: &mut Canvas) {
     use time;
-    use std::old_io::File;
+    use std::path;
+    use std::fs::PathExt;
     use image;
 
+    let timestamp = time::precise_time_s() as u64;
+
+    // Create screenshot filenames by concatenating the current timestamp in
+    // seconds with a running number from 00 to 99. 100 shots per second
+    // should be good enough.
+
+    // Default if we fail to generate any of the 100 candidates for this
+    // second, just overwrite with the "xx" prefix then.
+    let mut filename = format!("magog-{}{}.png", timestamp, "xx");
+
+    // Run through candidates for this second.
+    for i in 0..100 {
+        let test_filename = format!("magog-{}{:02}.png", timestamp, i);
+        if !path::Path::new(&test_filename).exists() {
+            filename = test_filename;
+            break;
+        }
+    }
+
     let shot = ctx.screenshot();
-    let mut file = File::create(&Path::new(
-            format!("/tmp/shot-{}.png", time::precise_time_s() as u64)))
-            .unwrap();
-    let _ = image::ImageRgb8(shot).save(&mut file, image::PNG);
+    let _ = image::save_buffer(&Path::new(filename), shot.as_slice(), shot.width(), shot.height(), image::ColorType::RGB(8));
 }
 
 pub fn main() {
