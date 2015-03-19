@@ -1,14 +1,13 @@
-#![feature(old_io, old_path)]
-
 // Generate the git version string.
 
-use std::old_io::process::{Command, ProcessOutput};
-use std::old_io::{File};
+use std::io::prelude::*;
+use std::process::{Command, Output};
+use std::fs::{File};
 
 fn git_version() -> String {
     match Command::new("git")
         .arg("log").arg("--pretty=format:%h").arg("-1").output() {
-        Ok(ProcessOutput { status: exit, output: out, error: err }) => {
+        Ok(Output { status: exit, stdout: out, stderr: err }) => {
             if exit.success() {
                 return String::from_utf8(out).unwrap();
             } else {
@@ -25,7 +24,7 @@ fn git_version() -> String {
 fn rustc_version() -> String {
     match Command::new("rustc")
         .arg("--version").output() {
-        Ok(ProcessOutput { status: exit, output: out, error: err }) => {
+        Ok(Output { status: exit, stdout: out, stderr: err }) => {
             if exit.success() {
                 return String::from_utf8(out).unwrap();
             } else {
@@ -40,7 +39,7 @@ fn rustc_version() -> String {
 }
 
 fn open(path: &str) -> File {
-    match File::create(&Path::new(path)) {
+    match File::create(path) {
         Ok(f) => f, Err(e) => panic!("file error: {}", e),
     }
 }
