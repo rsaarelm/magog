@@ -118,6 +118,7 @@ impl Renderer {
         let uniforms = glium::uniforms::UniformsStorage::new("texture",
             glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
+                minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
                 .. Default::default() }));
 
         target.clear_color(0.0, 0.0, 0.0, 0.0);
