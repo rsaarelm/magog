@@ -99,7 +99,7 @@ pub fn screenshot(ctx: &mut Canvas) {
             }
         }
 
-        let _ = image::save_buffer(&Path::new(filename), shot.as_slice(), shot.width(), shot.height(), image::ColorType::RGB(8));
+        let _ = image::save_buffer(&Path::new(filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
     });
 }
 
