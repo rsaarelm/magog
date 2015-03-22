@@ -21,7 +21,7 @@ use spawn::Spawn;
 // address values.
 
 #[derive(Copy, Clone, RustcDecodable, RustcEncodable)]
-struct AreaSeed {
+pub struct AreaSeed {
     pub rng_seed: u32,
     pub spec: AreaSpec,
 }
