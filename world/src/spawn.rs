@@ -48,7 +48,7 @@ impl Spawn {
                     if spawn.min_depth <= self.depth
                         && self.biome_mask & (spawn.biome as u32) != 0
                         && self.category_mask & (spawn.category as u32) != 0 {
-                        return Some(Weighted { weight: spawn.commonness as usize, item: e });
+                        return Some(Weighted { weight: spawn.commonness as u32, item: e });
                     }
                 }
                 return None;

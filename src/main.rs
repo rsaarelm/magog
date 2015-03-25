@@ -60,6 +60,7 @@ pub fn screenshot(ctx: &mut Canvas) {
     use std::path;
     use std::fs::{self, File, PathExt};
     use std::thread;
+    use std::old_path::Path;
     use image;
 
     let shot = ctx.screenshot();
