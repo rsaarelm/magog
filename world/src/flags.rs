@@ -1,6 +1,6 @@
 use rand::{XorShiftRng, SeedableRng};
 use location::Location;
-use util::EncodeRng;
+use calx::EncodeRng;
 use entity::Entity;
 use world;
 

@@ -19,5 +19,5 @@ git = "https://github.com/gankro/collect-rs"
 
 [dependencies.rand_macros]
 
-[dependencies.calx_util]
+[dependencies.calx]
 git = "https://github.com/rsaarelm/calx"

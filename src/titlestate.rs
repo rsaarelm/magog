@@ -1,6 +1,6 @@
-use util::{V2, color, Anchor};
-use backend::{Key, Event};
-use backend::{CanvasUtil, Fonter, Align};
+use calx::{V2, color, Anchor};
+use calx::backend::{Key, Event};
+use calx::backend::{CanvasUtil, Fonter, Align};
 use tilecache;
 use ::{Transition, State};
 

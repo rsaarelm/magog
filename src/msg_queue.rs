@@ -1,6 +1,6 @@
 use time;
-use backend::{Fonter, Align, Canvas};
-use util::{color, V2, Anchor};
+use calx::backend::{Fonter, Align, Canvas};
+use calx::{color, V2, Anchor};
 
 struct Msg {
     pub text: String,

@@ -9,7 +9,7 @@ extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate num;
 extern crate collect;
-extern crate "calx_util" as util;
+extern crate calx;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};
@@ -136,15 +136,15 @@ impl Light {
         Light { lum: lum }
     }
 
-    pub fn apply(&self, color: &util::Rgb) -> util::Rgb {
+    pub fn apply(&self, color: &calx::Rgb) -> calx::Rgb {
         if self.lum <= 1.0 {
             // Make the darkness blue instead of totally black.
-            util::Rgb::new(
-                (color.r as f32 * util::clamp(0.0, 1.0, self.lum + 0.125)) as u8,
-                (color.g as f32 * util::clamp(0.0, 1.0, self.lum + 0.25)) as u8,
-                (color.b as f32 * util::clamp(0.0, 1.0, self.lum + 0.5)) as u8)
+            calx::Rgb::new(
+                (color.r as f32 * calx::clamp(0.0, 1.0, self.lum + 0.125)) as u8,
+                (color.g as f32 * calx::clamp(0.0, 1.0, self.lum + 0.25)) as u8,
+                (color.b as f32 * calx::clamp(0.0, 1.0, self.lum + 0.5)) as u8)
         } else {
-            util::Rgb::new(
+            calx::Rgb::new(
                 255 - ((255 - color.r) as f32 * (2.0 - self.lum)) as u8,
                 255 - ((255 - color.g) as f32 * (2.0 - self.lum)) as u8,
                 255 - ((255 - color.b) as f32 * (2.0 - self.lum)) as u8)

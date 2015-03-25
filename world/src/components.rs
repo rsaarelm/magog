@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use util::Rgb;
+use calx::Rgb;
 use location::Location;
 use {Biome};
 use item::{ItemType};

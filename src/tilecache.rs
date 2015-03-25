@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 use image;
 use image::{SubImage, GenericImage};
-use backend::{CanvasBuilder, Image};
-use util::{color_key, V2, Rgb};
+use calx::backend::{CanvasBuilder, Image};
+use calx::{color_key, V2, Rgb};
 
 thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 

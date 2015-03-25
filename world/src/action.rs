@@ -4,7 +4,7 @@ use std::fs::{self, File};
 use rand::StdRng;
 use rand::SeedableRng;
 use std::iter::Filter;
-use util::Dijkstra;
+use calx::Dijkstra;
 use entity::Entity;
 use ecs::EntityIter;
 use world;

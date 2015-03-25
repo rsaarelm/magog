@@ -1,6 +1,6 @@
 use std::fmt::Write;
-use util::{timing, color, Anchor, V2};
-use backend::{Canvas, Event, Key, Fonter};
+use calx::{timing, color, Anchor, V2};
+use calx::backend::{Canvas, Event, Key, Fonter};
 
 pub struct Console {
     text: String,

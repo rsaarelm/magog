@@ -1,5 +1,5 @@
-use util::{V2};
-use backend::{Canvas};
+use calx::{V2};
+use calx::backend::{Canvas};
 
 pub trait Drawable {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>);

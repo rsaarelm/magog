@@ -1,6 +1,6 @@
 use std::slice::Iter;
-use util::{color, V2};
-use backend::{Canvas, CanvasUtil};
+use calx::{color, V2};
+use calx::backend::{Canvas, CanvasUtil};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
 use tilecache;

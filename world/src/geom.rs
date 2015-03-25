@@ -1,6 +1,6 @@
 use std::cmp::max;
 use std::num::{SignedInt};
-use util::V2;
+use calx::V2;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {

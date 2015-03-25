@@ -1,6 +1,6 @@
 use std::num::{Float};
 use std::iter::Map;
-use util::{V2, Rect};
+use calx::{V2, Rect};
 use ::{SCREEN_W, SCREEN_H};
 
 /// Useful general constant for cell dimension ops.
@@ -124,7 +124,7 @@ impl Iterator for ColumnRectIter {
 
 #[cfg(test)]
 mod test {
-    use util::V2;
+    use calx::V2;
     use super::column_to_chart;
 
     #[test]

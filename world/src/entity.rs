@@ -1,7 +1,7 @@
 use std::default::Default;
 use rand::Rng;
-use util::Dijkstra;
-use util::Rgb;
+use calx::Dijkstra;
+use calx::Rgb;
 use world;
 use location::{Location};
 use dir6::Dir6;

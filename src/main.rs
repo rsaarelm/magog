@@ -2,15 +2,13 @@
 #![feature(path_ext, old_path)]
 
 extern crate image;
-extern crate "calx_util" as util;
-
 #[macro_use]
-extern crate "calx_backend" as backend;
+extern crate calx;
 
 extern crate world;
 extern crate time;
 
-use backend::{Canvas};
+use calx::backend::{Canvas, CanvasBuilder, Event};
 
 use gamestate::GameState;
 use titlestate::TitleState;
@@ -29,7 +27,7 @@ mod msg_queue;
 mod console;
 
 pub trait State {
-    fn process(&mut self, event: backend::Event) -> Option<Transition>;
+    fn process(&mut self, event: Event) -> Option<Transition>;
 }
 
 pub enum Transition {
@@ -105,7 +103,7 @@ pub fn screenshot(ctx: &mut Canvas) {
 }
 
 pub fn main() {
-    let mut canvas = backend::CanvasBuilder::new()
+    let mut canvas = CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);

@@ -1,9 +1,9 @@
 use std::num::{Float};
 use std::collections::HashMap;
 use time;
-use util::{V2, Rgb, timing};
-use util::color::*;
-use backend::{Canvas, CanvasUtil};
+use calx::{V2, Rgb, timing};
+use calx::color::*;
+use calx::backend::{Canvas, CanvasUtil};
 use world::TerrainType;
 use world::{Location, Chart};
 use world::{FovStatus};

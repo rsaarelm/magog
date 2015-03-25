@@ -1,5 +1,5 @@
 use rand::{Rng, XorShiftRng};
-use util::EncodeRng;
+use calx::EncodeRng;
 use world;
 
 /// Execute a closure with the world RNG.

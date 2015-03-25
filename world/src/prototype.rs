@@ -1,5 +1,5 @@
 use std::default::Default;
-use util::color::*;
+use calx::color::*;
 use ecs::{Component, ComponentAccess};
 use entity::{Entity};
 use components::{Spawn, Category, IsPrototype};
