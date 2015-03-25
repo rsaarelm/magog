@@ -1,12 +1,11 @@
 #![feature(std_misc)]
 extern crate time;
-extern crate "calx_util" as util;
-extern crate "calx_backend" as backend;
+extern crate calx;
 
 use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
-use util::{color, V2, Rgba, Rgb, Rect};
-use backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
+use calx::{color, V2, Rgba, Rgb, Rect};
+use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
     let mut t = 0i32;

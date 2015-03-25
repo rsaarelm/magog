@@ -8,11 +8,11 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use util::{self, AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
-use event::{Event, MouseButton};
-use renderer::{Renderer, Vertex};
-use scancode;
-use ::{WidgetId};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
+use super::event::{Event, MouseButton};
+use super::renderer::{Renderer, Vertex};
+use super::scancode;
+use super::{WidgetId};
 
 /// Width of the full font cell. Actual variable-width letters occupy some
 /// portion of the left side of the cell.
@@ -83,7 +83,7 @@ impl CanvasBuilder {
 
     /// Load the default font into the texture atlas.
     fn init_font(&mut self) {
-        let mut font_sheet = util::color_key(
+        let mut font_sheet = ::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
             &Rgb::new(0x80u8, 0x80u8, 0x80u8));
         for i in 0u32..96 {

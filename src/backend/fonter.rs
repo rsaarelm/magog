@@ -1,7 +1,7 @@
-use util::{Rgba, V2, Rect, Color, color, Anchor};
-use util::text;
-use canvas::{Canvas, FONT_H};
-use canvas_util::{CanvasUtil};
+use ::{Rgba, V2, Rect, Color, color, Anchor};
+use ::text;
+use super::canvas::{Canvas, FONT_H};
+use super::canvas_util::{CanvasUtil};
 
 pub enum Align {
     Left,

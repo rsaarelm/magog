@@ -6,7 +6,7 @@ use glium::texture;
 use glium::framebuffer;
 use glium::render_buffer;
 use glium::LinearBlendingFactor::*;
-use util::{V2, Rect};
+use ::{V2, Rect};
 
 pub struct Renderer {
     /// Canvas size.

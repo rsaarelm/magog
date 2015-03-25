@@ -6,12 +6,26 @@ description = "Rust game development helper library collection"
 keywords = ["gamedev"]
 license = "MIT"
 
-# Doesn't actually do anything, all the stuff is in the sub-projects.
-[lib]
-name = "calx"
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
 
-[dev-dependencies.calx_util]
-path = "util"
+[dependencies.rand]
 
-[dev-dependencies.calx_backend]
-path = "backend"
+[dependencies.regex_macros]
+
+[dependencies.regex]
+
+[dependencies.rustc-serialize]
+
+[dependencies.time]
+
+[dependencies.image]
+
+[dependencies.glutin]
+
+[dependencies.glium]
+git = "https://github.com/tomaka/glium"
+
+[dependencies.glium_macros]
+git = "https://github.com/tomaka/glium"

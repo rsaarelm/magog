@@ -1,7 +1,8 @@
+use super::Key;
 use super::Key::*;
 
 /// Keyboard scancode map for OS X.
-pub static MAP: [Option<::Key>; 132] = [
+pub static MAP: [Option<Key>; 132] = [
     Some(A),
     Some(S),
     Some(D),

@@ -1,12 +1,13 @@
-use canvas::Canvas;
+use super::canvas::Canvas;
+use super::Key;
 
 pub enum Event<'a> {
     /// Time to render the screen. Call your own render code on the Canvas
     /// value when you get this.
     Render(&'a mut Canvas),
     Char(char),
-    KeyPressed(::Key),
-    KeyReleased(::Key),
+    KeyPressed(Key),
+    KeyReleased(Key),
     MouseMoved((i32, i32)),
     MouseWheel(i32),
     MousePressed(MouseButton),

@@ -2,26 +2,13 @@
 Window-wrangling, polygon-pushing and input-grabbing.
 
 */
-#![crate_name="calx_backend"]
-#![feature(collections, std_misc, thread_sleep)]
-#![feature(custom_attribute)]
-#![feature(plugin)]
-#![plugin(glium_macros)]
 
-extern crate glutin;
-
-#[macro_use]
-extern crate glium;
-extern crate "calx_util" as util;
-extern crate time;
-extern crate image;
-
-pub use canvas::{CanvasBuilder, Canvas};
-pub use canvas::{Image};
-pub use canvas_util::{CanvasUtil};
-pub use key::Key;
-pub use fonter::{Fonter, Align};
-pub use event::{Event, MouseButton};
+pub use backend::canvas::{CanvasBuilder, Canvas};
+pub use backend::canvas::{Image};
+pub use backend::canvas_util::{CanvasUtil};
+pub use backend::key::Key;
+pub use backend::fonter::{Fonter, Align};
+pub use backend::event::{Event, MouseButton};
 
 mod canvas;
 mod canvas_util;
@@ -39,11 +26,11 @@ mod scancode_windows;
 
 mod scancode {
 #[cfg(target_os = "macos")]
-    pub use scancode_macos::MAP;
+    pub use backend::scancode_macos::MAP;
 #[cfg(target_os = "linux")]
-    pub use scancode_linux::MAP;
+    pub use backend::scancode_linux::MAP;
 #[cfg(target_os = "windows")]
-    pub use scancode_windows::MAP;
+    pub use backend::scancode_windows::MAP;
 }
 
 /// UI Widget static identifier, unique for a specific site in source code.

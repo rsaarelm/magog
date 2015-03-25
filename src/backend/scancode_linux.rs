@@ -1,7 +1,16 @@
+use super::Key;
 use super::Key::*;
 
-/// Keyboard scancode map for Microsoft Windows
-pub static MAP: [Option<::Key>; 89] = [
+/// Keyboard scancode map for Linux.
+pub static MAP: [Option<Key>; 97] = [
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
     None,
     Some(Escape),
     Some(Num1),

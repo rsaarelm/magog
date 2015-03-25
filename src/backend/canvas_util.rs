@@ -1,8 +1,8 @@
 use std::num::Float;
-use canvas::{Canvas, Image, FONT_W};
-use util::{V2, Rect, Color, Rgba, color};
-use ::{WidgetId};
-use util::Anchor::*;
+use super::canvas::{Canvas, Image, FONT_W};
+use super::{WidgetId};
+use ::{V2, Rect, Color, Rgba, color};
+use ::Anchor::*;
 
 /// Helper methods for canvas context that do not depend on the underlying
 /// implementation details.
