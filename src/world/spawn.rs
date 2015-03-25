@@ -1,12 +1,12 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
-use components::{Category};
-use entity::Entity;
-use action;
-use Biome;
-use location::{Location};
-use world;
-use ecs::{ComponentAccess};
+use super::components::{Category};
+use super::entity::Entity;
+use super::action;
+use super::Biome;
+use super::location::{Location};
+use super::world;
+use super::ecs::{ComponentAccess};
 
 /// Representation for an abstract spawnable object. Does not refer to
 /// concrete entity prototypes and can be used before the prototype set has

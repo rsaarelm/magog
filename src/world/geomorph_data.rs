@@ -1,5 +1,5 @@
-use geomorph::add_cache_chunk;
-use Biome::{Overland, Dungeon};
+use super::geomorph::add_cache_chunk;
+use super::Biome::{Overland, Dungeon};
 
 // Geomorph data.
 

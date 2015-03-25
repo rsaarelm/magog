@@ -5,15 +5,16 @@ use rand::StdRng;
 use rand::SeedableRng;
 use std::iter::Filter;
 use calx::Dijkstra;
-use entity::Entity;
-use ecs::EntityIter;
-use world;
-use flags;
-use dir6::Dir6;
-use area::Area;
-use location::Location;
-use ecs::{ComponentAccess};
-use msg;
+use super::entity::Entity;
+use super::ecs::EntityIter;
+use super::world;
+use super::flags;
+use super::dir6::Dir6;
+use super::area::Area;
+use super::location::Location;
+use super::ecs::{ComponentAccess};
+use super::msg;
+use super::{Biome, AreaSpec, Msg};
 
 /// Game update control.
 #[derive(Copy, PartialEq)]
@@ -145,8 +146,8 @@ pub fn current_depth() -> i32 { world::with(|w| w.area.seed.spec.depth) }
 
 pub fn start_level(depth: i32) {
     let biome = match depth {
-        1 => ::Biome::Overland,
-        _ => ::Biome::Dungeon,
+        1 => Biome::Overland,
+        _ => Biome::Dungeon,
     };
 
     clear_nonplayers();
@@ -155,7 +156,7 @@ pub fn start_level(depth: i32) {
 
     let new_area = Area::new(
         seed,
-        ::AreaSpec::new(biome, depth));
+        AreaSpec::new(biome, depth));
     // XXX: How to move area into the closure without cloning?
     world::with_mut(|w| {
         w.area = new_area.clone();
@@ -215,7 +216,7 @@ pub fn shoot(origin: Location, dir: Dir6, range: u32, power: i32) {
     for i in 1..(range + 1) {
         loc = origin + dir.to_v2() * (i as i32);
         if loc.terrain().blocks_shot() {
-            msg::push(::Msg::Sparks(loc));
+            msg::push(Msg::Sparks(loc));
             break;
         }
         if let Some(e) = loc.mob_at() {
@@ -223,7 +224,7 @@ pub fn shoot(origin: Location, dir: Dir6, range: u32, power: i32) {
             break;
         }
     }
-    msg::push(::Msg::Beam(origin, loc));
+    msg::push(Msg::Beam(origin, loc));
 }
 
 ////////////////////////////////////////////////////////////////////////

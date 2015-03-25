@@ -1,12 +1,13 @@
 use num::{Integer};
 use rand::Rng;
 use calx::{V2};
-use geomorph;
-use geomorph::{Chunk};
-use terrain::TerrainType;
+use super::geomorph;
+use super::geomorph::{Chunk};
+use super::terrain::TerrainType;
+use super::{AreaSpec};
 
 pub fn gen_herringbone<R: Rng, F>(
-    rng: &mut R, spec: &::AreaSpec, mut set_terrain: F)
+    rng: &mut R, spec: &AreaSpec, mut set_terrain: F)
     where F: FnMut(V2<i32>, TerrainType) {
     geomorph::with_cache(|cs| {
         let chunks = cs.iter().filter(

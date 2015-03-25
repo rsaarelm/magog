@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use ecs::Ecs;
-use entity::Entity;
+use super::ecs::Ecs;
+use super::entity::Entity;
 
 /// Immutable component access.
 pub struct ComponentRef<'a, C: 'static> {

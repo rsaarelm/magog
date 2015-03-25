@@ -2,15 +2,15 @@ use std::ops::{Add};
 use calx::DijkstraNode;
 use calx::V2;
 use calx;
-use dir6::Dir6;
-use entity::Entity;
-use terrain::TerrainType;
-use geom::HexGeom;
-use world;
-use action;
-use flags;
-use ecs::{ComponentAccess};
-use {Light};
+use super::dir6::Dir6;
+use super::entity::Entity;
+use super::terrain::TerrainType;
+use super::geom::HexGeom;
+use super::world;
+use super::action;
+use super::flags;
+use super::ecs::{ComponentAccess};
+use super::{Light, FovStatus};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
@@ -107,14 +107,14 @@ impl Location {
 
     /// Return the status of the location in the player's field of view.
     /// Returns None if the location is unexplored.
-    pub fn fov_status(&self) -> Option<::FovStatus> {
+    pub fn fov_status(&self) -> Option<FovStatus> {
         if let Some(p) = action::player() {
             match world::with(|w| {
                 if let Some(ref mm) = w.map_memories().get(p) {
                     Ok (if mm.seen.contains(self) {
-                        Some(::FovStatus::Seen)
+                        Some(FovStatus::Seen)
                     } else if mm.remembered.contains(self) {
-                        Some(::FovStatus::Remembered)
+                        Some(FovStatus::Remembered)
                     } else {
                         None
                     })
@@ -127,7 +127,7 @@ impl Location {
             };
         }
         // Just show everything by default.
-        Some(::FovStatus::Seen)
+        Some(FovStatus::Seen)
     }
 
     /// Area name for the location.

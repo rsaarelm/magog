@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 use calx::Rgb;
-use location::Location;
-use {Biome};
-use item::{ItemType};
-use ability::Ability;
-use stats::Stats;
+use super::location::Location;
+use super::{Biome};
+use super::item::{ItemType};
+use super::ability::Ability;
+use super::stats::Stats;
 
 /// Dummy component to mark prototype objects
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]

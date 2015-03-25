@@ -1,39 +1,28 @@
-#![crate_name="world"]
-#![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext)]
-#![feature(custom_derive)]
-#![plugin(rand_macros)]
+use calx;
 
-#[no_link] extern crate rand_macros;
-extern crate rand;
-extern crate "rustc-serialize" as rustc_serialize;
-extern crate num;
-extern crate collect;
-extern crate calx;
-
-pub use entity::{Entity};
-pub use flags::{camera, set_camera, get_tick};
-pub use fov::{Fov};
-pub use geom::{HexGeom};
-pub use location::{Location, Chart, Unchart};
-pub use msg::{pop_msg};
-pub use terrain::{TerrainType};
-pub use world::{init_world, load, save};
-pub use dir6::Dir6;
+pub use ::world::entity::{Entity};
+pub use ::world::flags::{camera, set_camera, get_tick};
+pub use ::world::fov::{Fov};
+pub use ::world::geom::{HexGeom};
+pub use ::world::location::{Location, Chart, Unchart};
+pub use ::world::msg::{pop_msg};
+pub use ::world::terrain::{TerrainType};
+pub use ::world::world::{init_world, load, save};
+pub use ::world::dir6::Dir6;
 
 macro_rules! msg(
-    ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))
+    ($($arg:tt)*) => ( ::world::msg::push(::world::Msg::Text(format!($($arg)*))))
 );
 
 macro_rules! msgln(
     ($($arg:tt)*) => ({
-        ::msg::push(::Msg::Text(format!($($arg)*)));
-        ::msg::push(::Msg::Text("\n".to_string()));
+        ::world::msg::push(::world::Msg::Text(format!($($arg)*)));
+        ::world::msg::push(::world::Msg::Text("\n".to_string()));
     })
 );
 
 macro_rules! caption(
-    ($($arg:tt)*) => ( ::msg::push(::Msg::Caption(format!($($arg)*))))
+    ($($arg:tt)*) => ( ::world::msg::push(::world::Msg::Caption(format!($($arg)*))))
 );
 
 pub mod action;
@@ -51,7 +40,7 @@ mod fov;
 mod geom;
 mod geomorph;
 mod geomorph_data;
-mod location;
+pub mod location;
 mod mapgen;
 mod msg;
 mod prototype;

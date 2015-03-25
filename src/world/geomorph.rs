@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use calx::text::Map2DUtil;
-use terrain::TerrainType::*;
-use terrain::TerrainType;
-use {AreaSpec, Biome};
-use geomorph_data;
-use dir6::Dir6;
+use super::terrain::TerrainType::*;
+use super::terrain::TerrainType;
+use super::{AreaSpec, Biome};
+use super::geomorph_data;
+use super::dir6::Dir6;
 
 thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 

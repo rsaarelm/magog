@@ -1,6 +1,6 @@
 use rand::{Rng, XorShiftRng};
 use calx::EncodeRng;
-use world;
+use super::world;
 
 /// Execute a closure with the world RNG.
 pub fn with<A, F>(f: F) -> A

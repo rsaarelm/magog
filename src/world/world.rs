@@ -2,12 +2,13 @@ use std::cell::RefCell;
 use rand;
 use rand::Rng;
 use rustc_serialize::json;
-use ecs::{Ecs, Comps};
-use area::Area;
-use spatial::Spatial;
-use flags::Flags;
-use action;
-use prototype;
+use super::ecs::{Ecs, Comps};
+use super::area::Area;
+use super::spatial::Spatial;
+use super::flags::Flags;
+use super::action;
+use super::prototype;
+use super::{Biome, AreaSpec};
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)));
 
@@ -69,7 +70,7 @@ impl<'a> WorldState {
         };
         WorldState {
             ecs: Ecs::new(),
-            area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
+            area: Area::new(seed, AreaSpec::new(Biome::Overland, 1)),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
             comps: Comps::new(),

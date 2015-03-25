@@ -13,6 +13,16 @@ name = "magog"
 [profile.release]
 lto = true
 
+[dependencies.collect]
+git = "https://github.com/gankro/collect-rs"
+# TODO: Go back to crates.io version
+
+[dependencies.num]
+
+[dependencies.rand]
+
+[dependencies.rand_macros]
+
 [dependencies.image]
 
 [dependencies.time]
@@ -21,6 +31,3 @@ lto = true
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
-
-[dependencies.world]
-path = "world"

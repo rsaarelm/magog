@@ -3,7 +3,7 @@ use std::num::{Float};
 use std::iter::{Iterator, Chain};
 use std::option::{IntoIter};
 use calx::{V2};
-use dir6::Dir6;
+use super::dir6::Dir6;
 
 pub struct Fov<F> {
     /// Predicate for whether a given point will block the field of view.

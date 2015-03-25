@@ -1,12 +1,18 @@
 #![crate_name="magog"]
-#![feature(path_ext, old_path)]
+#![feature(unboxed_closures, plugin)]
+#![feature(core, collections, path_ext, old_path)]
+#![feature(custom_derive)]
+#![plugin(rand_macros)]
 
+#[no_link] extern crate rand_macros;
+extern crate rand;
+extern crate "rustc-serialize" as rustc_serialize;
+extern crate num;
+extern crate collect;
 extern crate image;
+extern crate time;
 #[macro_use]
 extern crate calx;
-
-extern crate world;
-extern crate time;
 
 use calx::backend::{Canvas, CanvasBuilder, Event};
 
@@ -25,6 +31,7 @@ mod titlestate;
 mod sprite;
 mod msg_queue;
 mod console;
+mod world;
 
 pub trait State {
     fn process(&mut self, event: Event) -> Option<Transition>;
