@@ -6,6 +6,7 @@ use glium::texture;
 use glium::framebuffer;
 use glium::render_buffer;
 use glium::LinearBlendingFactor::*;
+use super::{CanvasMagnify};
 use ::{V2, Rect};
 
 pub struct Renderer {
@@ -23,10 +24,13 @@ pub struct Renderer {
     /// Render target texture.
     buffer: texture::Texture2d,
     params: glium::DrawParameters,
+    magnify: CanvasMagnify,
 }
 
 impl Renderer {
-    pub fn new<'a, T>(size: V2<u32>, display: &glium::Display, texture_image: T) -> Renderer
+    pub fn new<'a, T>(
+        size: V2<u32>, display: &glium::Display,
+        texture_image: T, magnify: CanvasMagnify) -> Renderer
         where T: texture::Texture2dDataSource<'a> {
 
         let sprite_shader = glium::Program::from_source(display,
@@ -59,6 +63,7 @@ impl Renderer {
             atlas: atlas,
             buffer: buffer,
             params: params,
+            magnify: magnify,
         }
     }
 
@@ -88,7 +93,10 @@ impl Renderer {
         where S: glium::Surface {
         // TODO: Pixel-perfect scaling to target dimensions.
         //
-        let Rect(V2(sx, sy), V2(sw, sh)) = pixel_perfect(self.size, self.resolution);
+        let Rect(V2(sx, sy), V2(sw, sh)) = match self.magnify {
+            CanvasMagnify::PixelPerfect => pixel_perfect(self.size, self.resolution),
+            _ => preserve_aspect(self.size, self.resolution),
+        };
 
         let vertices = {
             #[vertex_format]
@@ -115,9 +123,14 @@ impl Renderer {
             width: self.resolution.0,
             height: self.resolution.1 });
 
+        let mag_filter = match self.magnify {
+            CanvasMagnify::Smooth => glium::uniforms::MagnifySamplerFilter::Linear,
+            _ => glium::uniforms::MagnifySamplerFilter::Nearest
+        };
+
         let uniforms = glium::uniforms::UniformsStorage::new("texture",
             glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
-                magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
+                magnify_filter: mag_filter,
                 minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
                 .. Default::default() }));
 
@@ -189,6 +202,18 @@ fn pixel_perfect(canvas: V2<u32>, window: V2<u32>) -> Rect<f32> {
         // Snap to pixel scale if more than 1 window pixel per canvas pixel.
         scale = scale.floor();
     }
+
+    let dim = V2((scale * canvas.0 as f32) * 2.0 / window.0 as f32,
+                 (scale * canvas.1 as f32) * 2.0 / window.1 as f32);
+    let offset = -dim / 2.0;
+    Rect(offset, dim)
+}
+
+#[inline(always)]
+fn preserve_aspect(canvas: V2<u32>, window: V2<u32>) -> Rect<f32> {
+    // Scale based on whichever of X or Y axis is the tighter fit.
+    let scale = (window.0 as f32 / canvas.0 as f32)
+        .min(window.1 as f32 / canvas.1 as f32);
 
     let dim = V2((scale * canvas.0 as f32) * 2.0 / window.0 as f32,
                  (scale * canvas.1 as f32) * 2.0 / window.1 as f32);

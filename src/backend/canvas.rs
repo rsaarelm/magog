@@ -12,7 +12,7 @@ use ::{AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
 use super::event::{Event, MouseButton};
 use super::renderer::{Renderer, Vertex};
 use super::scancode;
-use super::{WidgetId};
+use super::{WidgetId, CanvasMagnify};
 
 /// Width of the full font cell. Actual variable-width letters occupy some
 /// portion of the left side of the cell.
@@ -31,7 +31,8 @@ pub struct CanvasBuilder {
     size: V2<u32>,
     frame_interval: Option<f64>,
     fullscreen: bool,
-    builder: AtlasBuilder,
+    magnify: CanvasMagnify,
+    atlas_builder: AtlasBuilder,
 }
 
 /// Toplevel graphics drawing and input reading context.
@@ -42,7 +43,8 @@ impl CanvasBuilder {
             size: V2(640, 360),
             frame_interval: None,
             fullscreen: false,
-            builder: AtlasBuilder::new(),
+            magnify: CanvasMagnify::PixelPerfect,
+            atlas_builder: AtlasBuilder::new(),
         };
         ret.init_font();
         ret.init_solid();
@@ -76,20 +78,20 @@ impl CanvasBuilder {
         self
     }
 
+    pub fn set_magnify(mut self, magnify: CanvasMagnify) -> CanvasBuilder {
+        self.magnify = magnify;
+        self
+    }
+
     /// Add an image into the canvas image atlas.
     pub fn add_image<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
         &mut self, offset: V2<i32>, image: &I) -> Image {
-        Image(self.builder.push(offset, image))
+        Image(self.atlas_builder.push(offset, image))
     }
 
     /// Start running the engine, return an event iteration.
-    pub fn run(&mut self) -> Canvas {
-        Canvas::new(
-            self.size,
-            &self.title[..],
-            self.frame_interval,
-            self.fullscreen,
-            Atlas::new(&self.builder))
+    pub fn run(self) -> Canvas {
+        Canvas::new(self)
     }
 
     /// Load the default font into the texture atlas.
@@ -152,18 +154,17 @@ enum State {
 }
 
 impl Canvas {
-    fn new(
-        size: V2<u32>,
-        title: &str,
-        frame_interval: Option<f64>,
-        fullscreen: bool,
-        atlas: Atlas) -> Canvas {
+    fn new(builder: CanvasBuilder) -> Canvas {
+        let size = builder.size;
+        let title = &builder.title[..];
+        let frame_interval = builder.frame_interval;
+        let atlas = Atlas::new(&builder.atlas_builder);
 
-        let mut builder = glutin::WindowBuilder::new()
+        let mut glutin = glutin::WindowBuilder::new()
             .with_title(title.to_string());
 
-        if fullscreen {
-            builder = builder.with_fullscreen(glutin::get_primary_monitor());
+        if builder.fullscreen {
+            glutin = glutin.with_fullscreen(glutin::get_primary_monitor());
         } else {
             // Zoom up the window to the biggest even pixel multiple that fits
             // the user's monitor.
@@ -177,15 +178,15 @@ impl Canvas {
                 y *= 2;
             }
 
-            builder = builder.with_dimensions(x, y);
+            glutin = glutin.with_dimensions(x, y);
         }
 
-        let display = builder.build_glium().unwrap();
+        let display = glutin.build_glium().unwrap();
 
         let (w, h) = display.get_framebuffer_dimensions();
 
         let tex_image = image::imageops::flip_vertical(&atlas.image);
-        let renderer = Renderer::new(size, &display, tex_image);
+        let renderer = Renderer::new(size, &display, tex_image, builder.magnify);
 
         Canvas {
             display: display,
