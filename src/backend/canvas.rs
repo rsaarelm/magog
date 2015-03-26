@@ -30,6 +30,7 @@ pub struct CanvasBuilder {
     title: String,
     size: V2<u32>,
     frame_interval: Option<f64>,
+    fullscreen: bool,
     builder: AtlasBuilder,
 }
 
@@ -40,6 +41,7 @@ impl CanvasBuilder {
             title: "".to_string(),
             size: V2(640, 360),
             frame_interval: None,
+            fullscreen: false,
             builder: AtlasBuilder::new(),
         };
         ret.init_font();
@@ -66,6 +68,14 @@ impl CanvasBuilder {
         self
     }
 
+    /// Set the canvas to start in fullscreen mode.
+    /// XXX: Doesn't work right as of 2015-03-26, make sure this is fixed
+    /// before using.
+    pub fn _set_fullscreen(mut self) -> CanvasBuilder {
+        self.fullscreen = true;
+        self
+    }
+
     /// Add an image into the canvas image atlas.
     pub fn add_image<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
         &mut self, offset: V2<i32>, image: &I) -> Image {
@@ -78,6 +88,7 @@ impl CanvasBuilder {
             self.size,
             &self.title[..],
             self.frame_interval,
+            self.fullscreen,
             Atlas::new(&self.builder))
     }
 
@@ -145,12 +156,31 @@ impl Canvas {
         size: V2<u32>,
         title: &str,
         frame_interval: Option<f64>,
+        fullscreen: bool,
         atlas: Atlas) -> Canvas {
 
-        let display = glutin::WindowBuilder::new()
-            .with_title(title.to_string())
-            .with_dimensions(size.0, size.1)
-            .build_glium().unwrap();
+        let mut builder = glutin::WindowBuilder::new()
+            .with_title(title.to_string());
+
+        if fullscreen {
+            builder = builder.with_fullscreen(glutin::get_primary_monitor());
+        } else {
+            // Zoom up the window to the biggest even pixel multiple that fits
+            // the user's monitor.
+            let window_border_guesstimate = 32;
+            let (w, h) = glutin::get_primary_monitor().get_dimensions();
+            let window_size = V2(w, h) - V2(window_border_guesstimate, window_border_guesstimate);
+
+            let (mut x, mut y) = (size.0, size.1);
+            while x * 2 <= window_size.0 && y * 2 <= window_size.1 {
+                x *= 2;
+                y *= 2;
+            }
+
+            builder = builder.with_dimensions(x, y);
+        }
+
+        let display = builder.build_glium().unwrap();
 
         let (w, h) = display.get_framebuffer_dimensions();
 
