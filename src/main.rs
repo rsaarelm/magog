@@ -8,14 +8,16 @@
 extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate num;
+extern crate getopts;
 extern crate collect;
 extern crate image;
 extern crate time;
 #[macro_use]
 extern crate calx;
 
+use std::env;
+use std::default::Default;
 use calx::backend::{Canvas, CanvasBuilder, Event};
-
 use gamestate::GameState;
 use titlestate::TitleState;
 
@@ -26,6 +28,7 @@ pub mod drawable;
 pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
+mod config;
 mod gamestate;
 mod titlestate;
 mod sprite;
@@ -110,8 +113,20 @@ pub fn screenshot(ctx: &mut Canvas) {
 }
 
 pub fn main() {
+    // TODO: Use persistent config object.
+    let mut config: config::Config = Default::default();
+    match config.parse_args(env::args()) {
+        Err(e) => {
+            println!("{}", e);
+            env::set_exit_status(1);
+            return;
+        }
+        _ => {}
+    };
+
     let mut canvas = CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
+        .set_magnify(config.magnify_mode)
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state: Box<State> = Box::new(TitleState::new());

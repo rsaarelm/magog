@@ -23,6 +23,8 @@ git = "https://github.com/gankro/collect-rs"
 
 [dependencies.rand_macros]
 
+[dependencies.getopts]
+
 [dependencies.image]
 
 [dependencies.time]
