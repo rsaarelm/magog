@@ -33,6 +33,7 @@ mod scancode {
     pub use backend::scancode_windows::MAP;
 }
 
+#[derive(Copy, Debug, PartialEq)]
 /// How to scale up the graphics to a higher resolution
 pub enum CanvasMagnify {
     /// Nearest-neighbor, fill the window, not pixel-perfect
