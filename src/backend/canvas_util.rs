@@ -36,13 +36,11 @@ impl CanvasUtil for Canvas {
         let scalar = width as f32 / 2.0 * 1.0 / v2.dot(v2).sqrt();
         let v2 = v2 * scalar;
 
-        let orig = p1.map(|x| x as f32);
-
         let ind0 = self.num_vertices();
-        self.push_vertex(orig + v2, layer, tex, color, &color::BLACK);
-        self.push_vertex(orig - v2, layer, tex, color, &color::BLACK);
-        self.push_vertex(orig - v2 + v1, layer, tex, color, &color::BLACK);
-        self.push_vertex(orig + v2 + v1, layer, tex, color, &color::BLACK);
+        self.push_vertex(p1 + v2, layer, tex, color, &color::BLACK);
+        self.push_vertex(p1 - v2, layer, tex, color, &color::BLACK);
+        self.push_vertex(p1 - v2 + v1, layer, tex, color, &color::BLACK);
+        self.push_vertex(p1 + v2 + v1, layer, tex, color, &color::BLACK);
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
     }

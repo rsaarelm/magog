@@ -223,8 +223,8 @@ impl Canvas {
 
     #[inline(always)]
     fn canvas_to_device(&self, pos: V2<f32>, z: f32) -> [f32; 3] {
-        [-1.0 + (2.0 * (pos.0 as f32) / self.size.0 as f32),
-          1.0 - (2.0 * (pos.1 as f32) / self.size.1 as f32),
+        [-1.0 + (2.0 * (pos.0) / self.size.0 as f32),
+          1.0 - (2.0 * (pos.1) / self.size.1 as f32),
          z]
     }
 
@@ -258,7 +258,7 @@ impl Canvas {
         let idx = c as usize;
         // Hardcoded limiting of the font to printable ASCII.
         if idx >= 32 && idx < 128 {
-            Some(Image((idx - 32) as usize + FONT_IDX))
+            Some(Image(idx - 32 + FONT_IDX))
         } else {
             None
         }

@@ -9,7 +9,7 @@ Miscellaneous utilities grab-bag.
 #![plugin(regex_macros, glium_macros)]
 
 extern crate collections;
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 extern crate time;
 extern crate rand;
 extern crate regex;
