@@ -18,6 +18,8 @@ extern crate glutin;
 #[macro_use]
 extern crate glium;
 
+use std::env;
+use std::path::{Path, PathBuf};
 use std::num::wrapping::Wrapping;
 
 pub use rgb::{Rgb, Rgba};
@@ -83,6 +85,29 @@ pub enum Anchor {
     Right,
     Bottom,
     Center
+}
+
+/// Return the application data directory path for the current platform.
+#[cfg(target_os = "macos")]
+pub fn app_data_path(app_name: &str) -> PathBuf {
+    Path::new(
+        format!("{}/Library/Application Support/{}",
+                env::var("HOME").unwrap(), app_name))
+    .to_path_buf()
+}
+
+#[cfg(target_os = "windows")]
+pub fn app_data_path(app_name: &str) -> PathBuf {
+    Path::new(
+    format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
+    .to_path_buf()
+}
+
+#[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+pub fn app_data_path(app_name: &str) -> PathBuf {
+    Path::new(
+        &format!("{}/.config/{}", env::var("HOME").unwrap(), app_name))
+    .to_path_buf()
 }
 
 #[cfg(test)]
