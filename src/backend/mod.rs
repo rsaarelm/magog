@@ -48,12 +48,12 @@ pub enum CanvasMagnify {
 #[derive(Copy, Debug, PartialEq)]
 pub struct WidgetId {
     filename: &'static str,
-    line: usize,
-    column: usize,
+    line: u32,
+    column: u32,
 }
 
 impl WidgetId {
-    pub fn new(filename: &'static str, line: usize, column: usize) -> WidgetId {
+    pub fn new(filename: &'static str, line: u32, column: u32) -> WidgetId {
         WidgetId {
             filename: filename,
             line: line,
@@ -75,10 +75,6 @@ impl WidgetId {
 /// with imgui API.
 macro_rules! widget_id {
     () => {
-        // XXX: Assuming the crate user renames 'calx_backend' to 'backend'
-        // when declaring the extern crate, since the app that does use this
-        // does that. This is extremely wrong and bad to assume. Don't know
-        // how to do this right.
-        backend::WidgetId::new(concat!(module_path!(), "/", file!()), line!(), column!())
+        ::calx::backend::WidgetId::new(concat!(module_path!(), "/", file!()), line!(), column!())
     }
 }
