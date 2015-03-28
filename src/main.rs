@@ -41,7 +41,7 @@ pub trait State {
 }
 
 pub enum Transition {
-    Game(Option<u32>),
+    Game,
     Title,
     Exit,
 }
@@ -134,8 +134,8 @@ pub fn main() {
     for evt in canvas.run() {
         match state.process(evt) {
             Some(Transition::Title) => { state = Box::new(TitleState::new()); }
-            Some(Transition::Game(seed)) => {
-                state = Box::new(GameState::new(seed)); }
+            Some(Transition::Game) => {
+                state = Box::new(GameState::new(config)); }
             Some(Transition::Exit) => { break; }
             _ => ()
         }

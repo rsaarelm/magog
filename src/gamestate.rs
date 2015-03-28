@@ -17,6 +17,7 @@ use tilecache::icon;
 use msg_queue::MsgQueue;
 use ::{State, Transition};
 use console::Console;
+use config::Config;
 
 pub struct GameState {
     /// Transient effect sprites drawn in game world view.
@@ -36,6 +37,10 @@ pub struct GameState {
     screenshot_requested: bool,
 
     console: Console,
+
+    // XXX: Getting a concrete copy of config, can't mutate it and have the
+    // mutations propagate to higher level...
+    config: Config,
 }
 
 enum UiState {
@@ -45,8 +50,8 @@ enum UiState {
 }
 
 impl GameState {
-    pub fn new(seed: Option<u32>) -> GameState {
-        world::init_world(seed);
+    pub fn new(config: Config) -> GameState {
+        world::init_world(config.rng_seed);
         GameState {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
@@ -55,6 +60,7 @@ impl GameState {
             ui_state: UiState::Gameplay,
             screenshot_requested: false,
             console: Console::new(),
+            config: config,
         }
     }
 
@@ -271,7 +277,13 @@ impl GameState {
             }
         }
 
-        for &d in vec![dir, dir + 1, dir - 1].iter() {
+        let dirset = if self.config.wall_sliding {
+            vec![dir, dir + 1, dir - 1]
+        } else {
+            vec![dir]
+        };
+
+        for &d in dirset.iter() {
             let target_loc = loc + d.to_v2();
             if target_loc.has_mobs() {
                 action::input(Melee(d));

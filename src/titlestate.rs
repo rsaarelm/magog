@@ -38,7 +38,7 @@ impl State for TitleState {
             }
             Event::KeyPressed(Key::F12) => { self.screenshot_requested = true; }
             Event::KeyPressed(_) => {
-                return Some(Transition::Game(None));
+                return Some(Transition::Game);
             }
             _ => ()
         }
