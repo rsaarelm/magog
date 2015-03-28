@@ -2,7 +2,7 @@ use getopts::{Options};
 use std::default::Default;
 use calx::backend::{CanvasMagnify};
 
-thread_local!(pub static CONFIG: Config = Default::default());
+thread_local!(pub static _CONFIG: Config = Default::default());
 
 #[derive(Debug)]
 pub struct Config {

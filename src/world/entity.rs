@@ -76,13 +76,13 @@ impl Entity {
         world::with(|w| w.prototypes().get_local(self).is_some())
     }
 
-    pub fn parent(self) -> Option<Entity> {
+    pub fn _parent(self) -> Option<Entity> {
         world::with(|w| w.ecs.parent(self))
     }
 
-    pub fn reparent(self, new_parent: Entity) {
+    pub fn _reparent(self, new_parent: Entity) {
         assert!(new_parent.is_prototype());
-        world::with_mut(|w| w.ecs.reparent(self, new_parent));
+        world::with_mut(|w| w.ecs._reparent(self, new_parent));
     }
 
 // Spatial methods /////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ impl Entity {
             })
     }
 
-    pub fn set_intrinsic(self, intrinsic: Intrinsic) {
+    pub fn _set_intrinsic(self, intrinsic: Intrinsic) {
         world::with_mut(|w|
             if let Some(x) = w.stats_mut().get(self) {
                 x.intrinsics |= intrinsic as u32;

@@ -80,7 +80,7 @@ impl Ecs {
     }
 
     /// Change the parent of a live entity
-    pub fn reparent(&mut self, Entity(idx): Entity, Entity(new_parent_idx): Entity) {
+    pub fn _reparent(&mut self, Entity(idx): Entity, Entity(new_parent_idx): Entity) {
         self.parent.insert(idx, new_parent_idx);
     }
 }

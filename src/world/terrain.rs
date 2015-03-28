@@ -11,13 +11,13 @@ macro_rules! terrain_data {
             $($symbol,)*
         }
 
-        fn terrain_name(t: TerrainType) -> &'static str {
+        fn _terrain_name(t: TerrainType) -> &'static str {
             match t {
                 $($symbol => $name,)*
             }
         }
 
-        pub static TERRAINS: [TerrainType; $count] = [
+        pub static _TERRAINS: [TerrainType; $count] = [
             $($symbol,)*
             ];
 
@@ -61,9 +61,9 @@ terrain_data! {
 
 
 impl TerrainType {
-    pub fn from_name(name: &str) -> Option<TerrainType> {
-        for &t in TERRAINS.iter() {
-            if t.name() == name { return Some(t); }
+    pub fn _from_name(name: &str) -> Option<TerrainType> {
+        for &t in _TERRAINS.iter() {
+            if t._name() == name { return Some(t); }
         }
         None
     }
@@ -112,5 +112,5 @@ impl TerrainType {
 
     pub fn is_hole(self) -> bool { self == Chasm }
 
-    pub fn name(self) -> &'static str { terrain_name(self) }
+    pub fn _name(self) -> &'static str { _terrain_name(self) }
 }

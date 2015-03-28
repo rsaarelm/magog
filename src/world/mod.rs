@@ -88,13 +88,6 @@ impl AreaSpec {
     pub fn new(biome: Biome, depth: i32) -> AreaSpec {
         AreaSpec { biome: biome, depth: depth }
     }
-
-    /// Return whether a thing with this spec can be spawned in an environment
-    /// with the given spec.
-    pub fn can_hatch_in(&self, environment: &AreaSpec) -> bool {
-        self.depth >= 0 && self.depth <= environment.depth &&
-        (self.biome as i32 & environment.biome as i32) != 0
-    }
 }
 
 /// Various one-off signals the game sends to the UI layer.

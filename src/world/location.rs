@@ -70,7 +70,7 @@ impl Location {
         self.entities().iter().find(|e| e.can_be_picked_up()).map(|&x| x)
     }
 
-    pub fn has_entities(&self) -> bool { !self.entities().is_empty() }
+    pub fn _has_entities(&self) -> bool { !self.entities().is_empty() }
 
     pub fn has_mobs(&self) -> bool {
         self.entities().iter().any(|e| e.is_mob())

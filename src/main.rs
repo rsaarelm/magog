@@ -1,6 +1,6 @@
 #![crate_name="magog"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext, old_path)]
+#![feature(core, collections, path_ext, old_path, exit_status)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 

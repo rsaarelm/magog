@@ -126,9 +126,9 @@ pub fn entities() -> EntityIter {
 }
 
 /// Return an iterator of all the world mobs.
-pub fn mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
-    fn is_mob(e: &Entity) -> bool { e.is_mob() }
-    entities().filter(is_mob as fn(&Entity) -> bool)
+pub fn _mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
+    fn _is_mob(e: &Entity) -> bool { e.is_mob() }
+    entities().filter(_is_mob as fn(&Entity) -> bool)
 }
 
 /// Run AI for all autonomous mobs.
@@ -284,8 +284,8 @@ pub fn load_game() {
     world::load(&save_data[..]).unwrap();
 }
 
-pub fn delete_save() {
+pub fn _delete_save() {
     fs::remove_file("magog_save.json").unwrap();
 }
 
-pub fn save_exists() -> bool  { Path::new("magog_save.json").exists() }
+pub fn _save_exists() -> bool  { Path::new("magog_save.json").exists() }
