@@ -78,6 +78,8 @@ impl Area {
             .filter(|&(_, &t)| t.valid_spawn_spot())
             .map(|(&loc, _)| loc)
             .collect();
+        // Gotta sort it first to keep things deterministic.
+        opens.sort();
         rng.shuffle(opens.as_mut_slice());
 
         let entrance = opens.pop().unwrap();
