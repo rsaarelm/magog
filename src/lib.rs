@@ -97,10 +97,23 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
 }
 
 #[cfg(target_os = "windows")]
-pub fn app_data_path(app_name: &str) -> PathBuf {
-    Path::new(
-    format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
-    .to_path_buf()
+pub fn app_data_path(_app_name: &str) -> PathBuf {
+    use std::os;
+
+    // Unless the Windows app was installed with an actual installer instead
+    // of just being a portable .exe file, it shouldn't go around creating
+    // strange directories but just use the local directory instead.
+
+    // Path::new(
+    // format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
+    // .to_path_buf();
+
+    match os::self_exe_path() {
+        Some(p) => p.to_path_buf(),
+        // If couldn't get self exe path, just use the local relative path and
+        // hope for the best.
+        _ => Path::new(".").to_path_buf()
+    }
 }
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
