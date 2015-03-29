@@ -48,7 +48,7 @@ impl Config {
         }
 
         if let Some(x) = parse.opt_str("magnify-mode") {
-            match x.as_slice() {
+            match &x[..] {
                 "pixel" => { self.magnify_mode = CanvasMagnify::PixelPerfect; }
                 "nearest" => { self.magnify_mode = CanvasMagnify::Nearest; }
                 "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }

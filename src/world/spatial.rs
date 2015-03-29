@@ -1,5 +1,5 @@
 use std::collections::{VecMap};
-use collect::{TreeMap};
+use bst::{TreeMap};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use super::entity::{Entity};
 use super::location::{Location};

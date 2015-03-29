@@ -147,7 +147,7 @@ impl PolarPoint {
         if self.radius == 0 { return V2(0, 0); }
         let index = self.winding_index();
         let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
-        let offset = index.mod_floor(&(self.radius as i32)) as i32;
+        let offset = index.mod_floor(&(self.radius as i32));
         let rod = Dir6::from_int(sector).to_v2() * (self.radius as i32);
         let tangent = Dir6::from_int((sector + 2) % 6).to_v2() * offset;
         rod + tangent

@@ -53,7 +53,7 @@ pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<ColumnRectIter, fn(V2<i32
         x0: x0,
         x1: x1,
         y1: y1,
-    }.map(column_to_chart as fn(V2<i32>) -> V2<i32>)
+    }.map(column_to_chart)
 }
 
 pub fn cells_on_screen() -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {

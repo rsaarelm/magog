@@ -13,9 +13,10 @@ name = "magog"
 [profile.release]
 lto = true
 
-[dependencies.collect]
-git = "https://github.com/gankro/collect-rs"
-# TODO: Go back to crates.io version
+[dependencies.bst]
+git = "https://github.com/rsaarelm/bst"
+#git = "https://github.com/contain-rs/bst"
+# TODO: Go back to crates.io version once it's up to current Rust
 
 [dependencies.num]
 

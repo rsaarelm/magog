@@ -1,15 +1,15 @@
 #![crate_name="magog"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext, old_path, exit_status)]
+#![feature(core, collections, path_ext, exit_status)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
 #[no_link] extern crate rand_macros;
 extern crate rand;
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 extern crate num;
 extern crate getopts;
-extern crate collect;
+extern crate bst;
 extern crate image;
 extern crate time;
 #[macro_use]
@@ -65,10 +65,9 @@ pub fn compiler_version() -> String {
 
 pub fn screenshot(ctx: &mut Canvas) {
     use time;
-    use std::path;
+    use std::path::{Path};
     use std::fs::{self, File, PathExt};
     use std::thread;
-    use std::old_path::Path;
     use image;
 
     let shot = ctx.screenshot();
@@ -91,7 +90,7 @@ pub fn screenshot(ctx: &mut Canvas) {
         // Run through candidates for this second.
         for i in 0..100 {
             let test_filename = format!("magog-{}{:02}.png", timestamp, i);
-            if !path::Path::new(&test_filename).exists() {
+            if !Path::new(&test_filename).exists() {
                 // Thread-safe claiming: create_dir will fail if the dir
                 // already exists (it'll exist if another thread is gunning
                 // for the same filename and managed to get past us here).
@@ -108,7 +107,7 @@ pub fn screenshot(ctx: &mut Canvas) {
             }
         }
 
-        let _ = image::save_buffer(&Path::new(filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
+        let _ = image::save_buffer(&Path::new(&filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
     });
 }
 

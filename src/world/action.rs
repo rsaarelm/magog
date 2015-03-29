@@ -128,7 +128,7 @@ pub fn entities() -> EntityIter {
 /// Return an iterator of all the world mobs.
 pub fn _mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
     fn _is_mob(e: &Entity) -> bool { e.is_mob() }
-    entities().filter(_is_mob as fn(&Entity) -> bool)
+    entities().filter(_is_mob)
 }
 
 /// Run AI for all autonomous mobs.
