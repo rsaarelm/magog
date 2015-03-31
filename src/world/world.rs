@@ -64,6 +64,8 @@ pub struct WorldState {
 impl<'a> WorldState {
     pub fn new(seed: Option<u32>) -> WorldState {
         let seed = match seed {
+            // Some RNGs don't like 0 as seed, work around this.
+            Some(0) => 1,
             Some(s) => s,
             // Use system rng for seed if the user didn't provide one.
             None => rand::thread_rng().gen()
