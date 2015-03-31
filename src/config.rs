@@ -1,7 +1,12 @@
 use getopts::{Options};
 use std::default::Default;
+use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::io::prelude::*;
+use toml::{self, Value};
 use calx::backend::{CanvasMagnify};
 use calx::vorud::{Vorud, FromVorud};
+use super::app_data_path;
 
 thread_local!(pub static _CONFIG: Config = Default::default());
 
@@ -78,5 +83,66 @@ impl Config {
             format!("{}\n\n{}",
                     msg, opts.usage("Usage:\n    magog [options]"))
         }
+    }
+
+    pub fn file_path(&self) -> PathBuf {
+        let mut ret = app_data_path();
+        ret.push("config.toml");
+        ret
+    }
+
+    /// Output the default config file.
+    pub fn default_file(&self) -> String {
+        // TODO: Make this data-driven, have option metadata that specifies
+        // the help string and what to print out.
+        format!(
+r#"# Move diagonally along obstacles when walking into them
+wall-sliding = true
+
+# How to filter magnified graphics. pixel | nearest | smooth
+magnify-mode = "pixel"
+"#)
+    }
+
+    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<(), String> {
+        // TODO: Error handling.
+
+        // TODO: This should be data-driven somehow from a common config
+        // metadata object instead of relying on the error-prone retyped
+        // schema in the match segment.
+        let mut file = File::open(path).unwrap();
+        let mut toml = String::new();
+        file.read_to_string(&mut toml).unwrap();
+
+        let mut parser = toml::Parser::new(&toml);
+
+        let settings = parser.parse();
+
+        if settings.is_none() {
+            let mut err = String::new();
+            for e in parser.errors.iter() {
+                err.push_str(&format!("{}", e));
+            }
+            return Err(err);
+        }
+
+        let settings = settings.unwrap();
+
+        // TODO: Error message instead of silent no-op if the type of the
+        // value isn't what we expect.
+        if let Some(&Value::Boolean(b)) = settings.get("wall-sliding") {
+            self.wall_sliding = b;
+        }
+
+        if let Some(&Value::String(ref mag)) = settings.get("magnify-mode") {
+            match &mag[..] {
+                "pixel" => { self.magnify_mode = CanvasMagnify::PixelPerfect; }
+                "nearest" => { self.magnify_mode = CanvasMagnify::Nearest; }
+                "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }
+                _ => { return Err(format!("Bad magnify mode '{}'", mag)); }
+            };
+        }
+
+        Ok(())
     }
 }

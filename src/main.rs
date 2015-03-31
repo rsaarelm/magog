@@ -1,6 +1,6 @@
 #![crate_name="magog"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext, exit_status)]
+#![feature(core, collections, path_ext, exit_status, convert)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
@@ -12,10 +12,14 @@ extern crate getopts;
 extern crate bst;
 extern crate image;
 extern crate time;
+extern crate toml;
 #[macro_use]
 extern crate calx;
 
 use std::env;
+use std::path::{PathBuf};
+use std::fs::{self, File};
+use std::io::prelude::*;
 use std::default::Default;
 use calx::backend::{Canvas, CanvasBuilder, Event};
 use gamestate::GameState;
@@ -57,6 +61,17 @@ pub fn version() -> String {
     } else {
         format!("{}-alpha+g{}", next_release, git_hash)
     }
+}
+
+/// Get the application data file path and ensure the path exists.
+pub fn app_data_path() -> PathBuf {
+    let ret = calx::app_data_path("magog");
+    if !ret.exists() {
+        // Create the config dir
+        // TODO: Handle error
+        fs::create_dir_all(&ret).unwrap();
+    }
+    ret
 }
 
 pub fn compiler_version() -> String {
@@ -114,6 +129,19 @@ pub fn screenshot(ctx: &mut Canvas) {
 pub fn main() {
     // TODO: Use persistent config object.
     let mut config: config::Config = Default::default();
+
+    // Init the config file
+    let cfg_path = config.file_path();
+    if cfg_path.exists() {
+        config.load(cfg_path).unwrap();
+    } else {
+        // Write the default config.
+        let mut file = File::create(cfg_path).unwrap();
+        file.write_all(config.default_file().as_bytes()).unwrap()
+    }
+
+    // Read command line arguments, *after* reading the config file. Command
+    // line overrules file.
     match config.parse_args(env::args()) {
         Err(e) => {
             println!("{}", e);

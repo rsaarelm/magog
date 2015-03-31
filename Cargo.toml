@@ -26,6 +26,8 @@ git = "https://github.com/rsaarelm/bst"
 
 [dependencies.getopts]
 
+[dependencies.toml]
+
 [dependencies.image]
 
 [dependencies.time]
