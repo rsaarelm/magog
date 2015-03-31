@@ -9,7 +9,6 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
 extern crate getopts;
-extern crate bst;
 extern crate image;
 extern crate time;
 extern crate toml;

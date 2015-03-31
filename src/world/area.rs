@@ -3,7 +3,7 @@ use rand::Rng;
 use rand::SeedableRng;
 use std::iter;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use super::terrain::TerrainType;
 use super::location::Location;
 use super::mapgen;
@@ -32,7 +32,7 @@ pub struct Area {
     /// Random number generator seed. Must uniquely define the Area contents.
     pub seed: AreaSeed,
     /// Stored terrain.
-    pub terrain: HashMap<Location, TerrainType>,
+    pub terrain: BTreeMap<Location, TerrainType>,
     /// Valid slots to spawn things in, basically open floor and connected to
     /// areas the player can reach. (Does not handle stuff like monsters that
     /// spawn in water for now.)
@@ -61,7 +61,7 @@ impl Area {
         let num_mobs = 32;
         let num_items = 12;
 
-        let mut terrain = HashMap::new();
+        let mut terrain = BTreeMap::new();
         let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][..]);
         mapgen::gen_herringbone(
             &mut rng,
@@ -78,8 +78,6 @@ impl Area {
             .filter(|&(_, &t)| t.valid_spawn_spot())
             .map(|(&loc, _)| loc)
             .collect();
-        // Gotta sort it first to keep things deterministic.
-        opens.sort();
         rng.shuffle(opens.as_mut_slice());
 
         let entrance = opens.pop().unwrap();

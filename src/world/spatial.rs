@@ -1,5 +1,5 @@
-use std::collections::{VecMap};
-use bst::{TreeMap};
+use std::collections::{VecMap, BTreeMap};
+use std::collections::Bound::{Included, Unbounded};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use super::entity::{Entity};
 use super::location::{Location};
@@ -16,14 +16,14 @@ pub enum Place {
 
 /// Spatial index for game entities
 pub struct Spatial {
-    place_to_entities: TreeMap<Place, Vec<Entity>>,
+    place_to_entities: BTreeMap<Place, Vec<Entity>>,
     entity_to_place: VecMap<Place>,
 }
 
 impl Spatial {
     pub fn new() -> Spatial {
         Spatial {
-            place_to_entities: TreeMap::new(),
+            place_to_entities: BTreeMap::new(),
             entity_to_place: VecMap::new(),
         }
     }
@@ -135,7 +135,7 @@ impl Spatial {
         // running collect) since the chain depends on a closure that captures
         // the 'parent' parameter from the outside scope, and closures can't
         // be typed in the return signature.
-        self.place_to_entities.lower_bound(&In(parent, None))
+        self.place_to_entities.range(Included(&In(parent, None)), Unbounded)
             // Consume the contingent elements for the parent container.
             .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
             // Flatten the Vec results into a single stream.
