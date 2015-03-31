@@ -74,7 +74,7 @@ pub fn app_data_path() -> PathBuf {
 }
 
 pub fn compiler_version() -> String {
-    include_str!("../rustc_version.txt").to_string()
+    include_str!("../rustc_version.txt").trim().to_string()
 }
 
 pub fn screenshot(ctx: &mut Canvas) {
@@ -145,6 +145,10 @@ pub fn main() {
         Err(e) => {
             println!("{}", e);
             env::set_exit_status(1);
+            return;
+        }
+        Ok(Some(msg)) => {
+            println!("{}", msg);
             return;
         }
         _ => {}

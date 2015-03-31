@@ -1,8 +1,8 @@
-use getopts::{Options};
 use std::default::Default;
 use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::prelude::*;
+use getopts::{Options};
 use toml::{self, Value};
 use calx::backend::{CanvasMagnify};
 use calx::vorud::{Vorud, FromVorud};
@@ -33,9 +33,14 @@ impl Default for Config {
 impl Config {
     /// Parse command line options and apply them to the config object. Return
     /// an error containing a usage string if the parsing fails.
-    pub fn parse_args<T: Iterator<Item=String>>(&mut self, args: T) -> Result<(), String> {
+    ///
+    /// Returning a string with Ok indicates that the string should be printed
+    /// and the program should then exit.
+    pub fn parse_args<T: Iterator<Item=String>>(&mut self, args: T) -> Result<Option<String>, String> {
         let mut opts = Options::new();
         opts.optflag("", "no-wall-sliding", "Don't move diagonally along obstacles when walking into them");
+        opts.optflag("h", "help", "Display this message");
+        opts.optflag("V", "version", "Print version info and exit");
         opts.optopt("", "magnify-mode", "How to filter magnified graphics. MODE = pixel | nearest | smooth", "MODE");
         opts.optopt("", "seed", "World generation seed", "VORUD");
 
@@ -44,9 +49,18 @@ impl Config {
         let parse = match opts.parse(&args[1..]) {
             Ok(m) => m,
             Err(f) => {
-                return Err(usage(f.to_string(), &opts));
+                return Err(usage_error(f.to_string(), &opts));
             }
         };
+
+        if parse.opt_present("help") {
+            return Ok(Some(format!("{}", opts.usage("Usage: magog [options]"))));
+        }
+
+        if parse.opt_present("version") {
+            return Ok(Some(format!("Magog v{} built with {}",
+                                ::version(), ::compiler_version())));
+        }
 
         if parse.opt_present("no-wall-sliding") {
             self.wall_sliding = false;
@@ -58,14 +72,14 @@ impl Config {
                 "nearest" => { self.magnify_mode = CanvasMagnify::Nearest; }
                 "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }
                 err => {
-                    return Err(usage(format!("Unknown magnify mode '{}'", err), &opts));
+                    return Err(usage_error(format!("Unknown magnify mode '{}'", err), &opts));
                 }
             }
         }
 
         if let Some(seed) = parse.opt_str("seed") {
             // XXX: Could this be written to use the try! macro?
-            let err = Err(usage(format!("Invalid seed value '{}'", seed), &opts));
+            let err = Err(usage_error(format!("Invalid seed value '{}'", seed), &opts));
             if let Ok(vorud) = Vorud::new(seed.clone()) {
                 if let Ok(val) = FromVorud::from_vorud(&vorud) {
                     self.rng_seed = Some(val);
@@ -77,10 +91,10 @@ impl Config {
             }
         }
 
-        return Ok(());
+        return Ok(None);
 
-        fn usage(msg: String, opts: &Options) -> String {
-            format!("{}\n\n{}",
+        fn usage_error(msg: String, opts: &Options) -> String {
+            format!("{}\n{}",
                     msg, opts.usage("Usage:\n    magog [options]"))
         }
     }
