@@ -55,7 +55,7 @@ impl Spawn {
             }))
             .collect();
         assert!(!items.is_empty(), format!("Couldn't find spawns for {:?}", self));
-        let dist = WeightedChoice::new(items.as_mut_slice());
+        let dist = WeightedChoice::new(&mut items);
         let e = dist.ind_sample(rng);
         e.clone_at(loc);
         e

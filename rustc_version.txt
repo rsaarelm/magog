@@ -1,1 +1,1 @@
-rustc 1.0.0-nightly (199bdcfef 2015-03-26) (built 2015-03-27)
+rustc 1.0.0-nightly (d754722a0 2015-03-31) (built 2015-04-01)

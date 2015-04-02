@@ -78,7 +78,7 @@ impl Area {
             .filter(|&(_, &t)| t.valid_spawn_spot())
             .map(|(&loc, _)| loc)
             .collect();
-        rng.shuffle(opens.as_mut_slice());
+        rng.shuffle(&mut opens);
 
         let entrance = opens.pop().unwrap();
 
