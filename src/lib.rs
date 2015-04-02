@@ -20,7 +20,7 @@ extern crate glium;
 
 use std::env;
 use std::path::{Path, PathBuf};
-use std::num::wrapping::Wrapping;
+use std::num::Wrapping;
 
 pub use rgb::{Rgb, Rgba};
 pub use geom::{V2, V3, Rect, RectIter};

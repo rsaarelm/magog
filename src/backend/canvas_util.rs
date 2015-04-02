@@ -1,4 +1,3 @@
-use std::num::Float;
 use super::canvas::{Canvas, Image, FONT_W};
 use super::{WidgetId};
 use ::{V2, Rect, Color, Rgba, color};

@@ -71,35 +71,35 @@ fn parse_color(name: &str) -> Option<Rgba> {
 
     let rgb = regex!(r"^#([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])$");
     if let Some(cap) = rgb.captures(name) {
-        let r = from_str_radix::<u8>(cap.at(1).unwrap(), 16).unwrap();
-        let g = from_str_radix::<u8>(cap.at(2).unwrap(), 16).unwrap();
-        let b = from_str_radix::<u8>(cap.at(3).unwrap(), 16).unwrap();
+        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
+        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
+        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
         return Some(Rgba { r: (r << 4) + r, g: (g << 4) + g, b: (b << 4) + b, a: 0xFF });
     }
 
     let rgba = regex!(r"^#([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])$");
     if let Some(cap) = rgba.captures(name) {
-        let r = from_str_radix::<u8>(cap.at(1).unwrap(), 16).unwrap();
-        let g = from_str_radix::<u8>(cap.at(2).unwrap(), 16).unwrap();
-        let b = from_str_radix::<u8>(cap.at(3).unwrap(), 16).unwrap();
-        let a = from_str_radix::<u8>(cap.at(4).unwrap(), 16).unwrap();
+        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
+        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
+        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
+        let a = u8::from_str_radix(cap.at(4).unwrap(), 16).unwrap();
         return Some(Rgba { r: (r << 4) + r, g: (g << 4) + g, b: (b << 4) + b, a: (a << 4) + a });
     }
 
     let rrggbb = regex!(r"^#((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})$");
     if let Some(cap) = rrggbb.captures(name) {
-        let r = from_str_radix::<u8>(cap.at(1).unwrap(), 16).unwrap();
-        let g = from_str_radix::<u8>(cap.at(2).unwrap(), 16).unwrap();
-        let b = from_str_radix::<u8>(cap.at(3).unwrap(), 16).unwrap();
+        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
+        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
+        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
         return Some(Rgba { r: r, g: g, b: b, a: 0xFF });
     }
 
     let rrggbbaa = regex!(r"^#((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})$");
     if let Some(cap) = rrggbbaa.captures(name) {
-        let r = from_str_radix::<u8>(cap.at(1).unwrap(), 16).unwrap();
-        let g = from_str_radix::<u8>(cap.at(2).unwrap(), 16).unwrap();
-        let b = from_str_radix::<u8>(cap.at(3).unwrap(), 16).unwrap();
-        let a = from_str_radix::<u8>(cap.at(4).unwrap(), 16).unwrap();
+        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
+        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
+        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
+        let a = u8::from_str_radix(cap.at(4).unwrap(), 16).unwrap();
         return Some(Rgba { r: r, g: g, b: b, a: a });
     }
 

@@ -76,7 +76,7 @@ impl Renderer {
         // temporary Glium buffers.
         let vertices = glium::VertexBuffer::new(display, vertices);
         let indices = glium::IndexBuffer::new(
-            display, glium::index_buffer::TrianglesList(indices));
+            display, glium::index::TrianglesList(indices));
 
         let uniforms = glium::uniforms::UniformsStorage::new("texture",
             glium::uniforms::Sampler(&self.atlas, glium::uniforms::SamplerBehavior {
@@ -113,7 +113,7 @@ impl Renderer {
         };
 
         let indices = glium::IndexBuffer::new(display,
-            glium::index_buffer::TrianglesList(vec![0u16, 1, 2, 0, 2, 3]));
+            glium::index::TrianglesList(vec![0u16, 1, 2, 0, 2, 3]));
 
         let mut params: glium::DrawParameters = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
