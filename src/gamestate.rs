@@ -349,8 +349,8 @@ impl GameState {
             // Open inventory
             Key::Tab => { self.ui_state = UiState::Inventory; }
 
-            Key::F5 if !cfg!(ndebug) => { action::save_game(); }
-            Key::F9 if !cfg!(ndebug) => { action::load_game(); }
+            Key::F5 if cfg!(debug_assertions) => { action::save_game(); }
+            Key::F9 if cfg!(debug_assertions) => { action::load_game(); }
             Key::F12 => { self.screenshot_requested = true; }
             _ => { return false; }
         }
