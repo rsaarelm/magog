@@ -1,10 +1,9 @@
-use std::collections::HashSet;
 use calx::Rgb;
-use super::location::Location;
 use super::{Biome};
 use super::item::{ItemType};
 use super::ability::Ability;
 use super::stats::Stats;
+use super::location_set::LocationSet;
 
 /// Dummy component to mark prototype objects
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -36,15 +35,15 @@ impl Desc {
 /// Map field-of-view and remembered terrain.
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct MapMemory {
-    pub seen: HashSet<Location>,
-    pub remembered: HashSet<Location>,
+    pub seen: LocationSet,
+    pub remembered: LocationSet,
 }
 
 impl MapMemory {
     pub fn new() -> MapMemory {
         MapMemory {
-            seen: HashSet::new(),
-            remembered: HashSet::new(),
+            seen: LocationSet::new(),
+            remembered: LocationSet::new(),
         }
     }
 }
