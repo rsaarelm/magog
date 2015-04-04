@@ -157,6 +157,7 @@ pub fn main() {
     let mut canvas = CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
         .set_magnify(config.magnify_mode)
+        .set_title("Magog")
         .set_frame_interval(0.030f64);
     tilecache::init(&mut canvas);
     let mut state: Box<State> = Box::new(TitleState::new());
