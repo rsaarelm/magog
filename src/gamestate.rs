@@ -19,11 +19,20 @@ use ::{State, Transition};
 use console::Console;
 use config::Config;
 
+/// Type of effect signaled by making a visible entity blink for a moment.
+#[derive(Copy, Clone)]
+pub enum Blink {
+    /// The entity was damaged.
+    Damaged,
+    /// The entity is a threat that halted an automated activity.
+    Threat,
+}
+
 pub struct GameState {
     /// Transient effect sprites drawn in game world view.
     world_spr: WorldSprites,
     /// Counters for entities with flashing damage animation.
-    damage_timers: HashMap<Entity, u32>,
+    damage_timers: HashMap<Entity, (Blink, u32)>,
 
     /// Flag for autoexploration.
     // TODO: Probably going to need a general "ongoing activity" system at
@@ -115,7 +124,7 @@ impl GameState {
                     self.world_spr.add(Box::new(GibSprite::new(loc)));
                 }
                 Some(Msg::Damage(entity)) => {
-                    self.damage_timers.insert(entity, 2);
+                    self.damage_timers.insert(entity, (Blink::Damaged, 2));
                 }
                 Some(Msg::Text(txt)) => {
                     self.msg.msg(txt)
@@ -148,9 +157,11 @@ impl GameState {
             }
         }
 
+        // Decrement damage timers.
+        // XXX: Can we do mutable contents iter without the cloning?
         self.damage_timers = self.damage_timers.clone().into_iter()
-            .filter(|&(_, t)| t > 0)
-            .map(|(e, t)| (e, t - 1))
+            .filter(|&(_, (_, t))| t > 0)
+            .map(|(e, (b, t))| (e, (b, t - 1)))
             .collect();
 
         self.msg.update();
@@ -297,7 +308,13 @@ impl GameState {
 
     fn autoexplore(&mut self) -> bool {
         let player = action::player().unwrap();
-        if player.is_threatened() {
+        let threats = player.is_threatened(6);
+        if !threats.is_empty() {
+            for &e in threats.iter() {
+                // Blink the threatening enemies so that the player sees
+                // what's blocking the explore.
+                self.damage_timers.insert(e, (Blink::Threat, 2));
+            }
             return false;
         }
         if let Some(pathing) = action::autoexplore_map(32) {

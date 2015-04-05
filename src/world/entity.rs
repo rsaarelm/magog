@@ -598,23 +598,23 @@ impl Entity {
         }
     }
 
-    /// Return whether the mob has hostiles in its immediate vicinity.
-    pub fn is_threatened(self) -> bool {
+    /// Return any hostiles a mob has in its field of view up to sight_range.
+    pub fn is_threatened(self, sight_range: u32) -> Vec<Entity> {
+        let mut ret = Vec::new();
         // XXX: Expensive.
-        let range = 6;
         let loc = self.location().expect("no location");
         let seen: Vec<Location> = Fov::new(
-            |pt| (loc + pt).blocks_sight(), range)
+            |pt| (loc + pt).blocks_sight(), sight_range)
             .map(|pt| loc + pt)
             .collect();
         for loc in seen.iter() {
             if let Some(m) = loc.mob_at() {
                 if m.is_hostile_to(self) {
-                    return true;
+                    ret.push(m);
                 }
             }
         }
-        false
+        return ret;
     }
 
 // Callbacks ///////////////////////////////////////////////////////////

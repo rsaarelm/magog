@@ -14,8 +14,9 @@ use viewutil::{FLOOR_Z, BLOCK_Z, DEPTH_Z_MODIFIER, PIXEL_UNIT};
 use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
+use gamestate::{Blink};
 
-pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, u32>) {
+pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
@@ -31,7 +32,7 @@ pub struct CellDrawable<'a> {
     pub depth: i32,
     pub fov: Option<FovStatus>,
     pub light: Light,
-    damage_timers: &'a HashMap<Entity, u32>,
+    damage_timers: &'a HashMap<Entity, (Blink, u32)>,
 }
 
 impl<'a> Drawable for CellDrawable<'a> {
@@ -74,7 +75,7 @@ impl<'a> CellDrawable<'a> {
         depth: i32,
         fov: Option<FovStatus>,
         light: Light,
-        damage_timers: &'a HashMap<Entity, u32>) -> CellDrawable<'a> {
+        damage_timers: &'a HashMap<Entity, (Blink, u32)>) -> CellDrawable<'a> {
         CellDrawable {
             loc: loc,
             depth: depth,
@@ -360,13 +361,22 @@ impl<'a> CellDrawable<'a> {
             let mut back_color = BLACK;
 
             // Damage blink animation.
-            if let Some(&t) = self.damage_timers.get(entity) {
-                if t % 2 == 0 {
-                    color = WHITE;
-                    back_color = WHITE;
-                } else {
-                    color = BLACK;
-                    back_color = BLACK;
+            if let Some(&(ref b, ref t)) = self.damage_timers.get(entity) {
+                match b {
+                    &Blink::Damaged => {
+                        if t % 2 == 0 {
+                            color = WHITE;
+                            back_color = WHITE;
+                        } else {
+                            color = BLACK;
+                            back_color = BLACK;
+                        }
+                    }
+
+                    &Blink::Threat => {
+                        color = RED;
+                        back_color = WHITE;
+                    }
                 }
             }
 
