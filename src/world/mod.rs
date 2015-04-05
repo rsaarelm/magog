@@ -52,7 +52,7 @@ mod stats;
 mod terrain;
 mod world;
 
-#[derive(Copy, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
     Seen,
     Remembered,
@@ -108,7 +108,7 @@ pub enum Msg {
 }
 
 /// Light level value.
-#[derive(Copy, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Light {
     lum: f32,
 }

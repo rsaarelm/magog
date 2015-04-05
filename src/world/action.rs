@@ -17,7 +17,7 @@ use super::msg;
 use super::{Biome, AreaSpec, Msg};
 
 /// Game update control.
-#[derive(Copy, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ControlState {
     AwaitingInput,
     ReadyToUpdate,

@@ -13,7 +13,7 @@ use super::ability::Ability;
 use super::Biome::*;
 use super::world;
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Prototype {
     pub target: Entity
 }

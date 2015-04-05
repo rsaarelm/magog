@@ -10,7 +10,7 @@ use super::app_data_path;
 
 thread_local!(pub static _CONFIG: Config = Default::default());
 
-#[derive(Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Config {
     /// The player will move to the side when bumping against a wall.
     pub wall_sliding: bool,
