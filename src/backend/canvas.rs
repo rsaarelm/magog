@@ -9,6 +9,7 @@ use glutin;
 use glium::{self, DisplayBuild};
 use ::{AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
 use super::event::{Event, MouseButton};
+use super::key::{Key};
 use super::renderer::{Renderer, Vertex};
 use super::scancode;
 use super::{WidgetId, CanvasMagnify};
@@ -30,6 +31,7 @@ pub struct CanvasBuilder {
     size: V2<u32>,
     frame_interval: Option<f64>,
     fullscreen: bool,
+    layout_independent_keys: bool,
     magnify: CanvasMagnify,
     atlas_builder: AtlasBuilder,
 }
@@ -42,6 +44,7 @@ impl CanvasBuilder {
             size: V2(640, 360),
             frame_interval: None,
             fullscreen: false,
+            layout_independent_keys: true,
             magnify: CanvasMagnify::PixelPerfect,
             atlas_builder: AtlasBuilder::new(),
         };
@@ -66,6 +69,14 @@ impl CanvasBuilder {
     /// Set the size of the logical canvas.
     pub fn set_size(mut self, width: u32, height: u32) -> CanvasBuilder {
         self.size = V2(width, height);
+        self
+    }
+
+    /// Get the key values from the user's keyboard layout instead of the
+    /// hardware keyboard map. Hardware keymap lookup may not work correctly
+    /// on all platforms.
+    pub fn use_layout_dependent_keys(mut self) -> CanvasBuilder {
+        self.layout_independent_keys = false;
         self
     }
 
@@ -132,6 +143,8 @@ pub struct Canvas {
 
     vertices: Vec<Vertex>,
     indices: Vec<u16>,
+
+    layout_independent_keys: bool,
 
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
@@ -202,6 +215,8 @@ impl Canvas {
 
             vertices: Vec::new(),
             indices: Vec::new(),
+
+            layout_independent_keys: builder.layout_independent_keys,
 
             render_duration: 0.1f64,
 
@@ -326,16 +341,21 @@ impl<'a> Iterator for Canvas {
                     glutin::Event::ReceivedCharacter(ch) => {
                         return Some(Event::Char(ch));
                     }
-                    glutin::Event::KeyboardInput(action, scan, _vko) => {
-                        if (scan as usize) < scancode::MAP.len() {
-                            if let Some(key) = scancode::MAP[scan as usize] {
-                                return Some(if action == glutin::ElementState::Pressed {
-                                    Event::KeyPressed(key)
-                                }
-                                else {
-                                    Event::KeyReleased(key)
-                                });
+                    glutin::Event::KeyboardInput(action, scan, vko) => {
+                        let scancode_mapped =
+                            if self.layout_independent_keys && (scan as usize) < scancode::MAP.len() {
+                                scancode::MAP[scan as usize]
+                            } else {
+                                None
+                            };
+
+                        if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
+                            return Some(if action == glutin::ElementState::Pressed {
+                                Event::KeyPressed(key)
                             }
+                            else {
+                                Event::KeyReleased(key)
+                            });
                         }
                     }
                     glutin::Event::MouseMoved((x, y)) => {
@@ -413,3 +433,105 @@ impl<'a> Iterator for Canvas {
 /// Drawable images stored in the Canvas.
 #[derive(Copy, Clone, PartialEq)]
 pub struct Image(usize);
+
+fn vko_to_key(vko: glutin::VirtualKeyCode) -> Option<Key> {
+    use glutin::VirtualKeyCode::*;
+
+    match vko {
+    A => Some(Key::A),
+    B => Some(Key::B),
+    C => Some(Key::C),
+    D => Some(Key::D),
+    E => Some(Key::E),
+    F => Some(Key::F),
+    G => Some(Key::G),
+    H => Some(Key::H),
+    I => Some(Key::I),
+    J => Some(Key::J),
+    K => Some(Key::K),
+    L => Some(Key::L),
+    M => Some(Key::M),
+    N => Some(Key::N),
+    O => Some(Key::O),
+    P => Some(Key::P),
+    Q => Some(Key::Q),
+    R => Some(Key::R),
+    S => Some(Key::S),
+    T => Some(Key::T),
+    U => Some(Key::U),
+    V => Some(Key::V),
+    W => Some(Key::W),
+    X => Some(Key::X),
+    Y => Some(Key::Y),
+    Z => Some(Key::Z),
+    Escape => Some(Key::Escape),
+    F1 => Some(Key::F1),
+    F2 => Some(Key::F2),
+    F3 => Some(Key::F3),
+    F4 => Some(Key::F4),
+    F5 => Some(Key::F5),
+    F6 => Some(Key::F6),
+    F7 => Some(Key::F7),
+    F8 => Some(Key::F8),
+    F9 => Some(Key::F9),
+    F10 => Some(Key::F10),
+    F11 => Some(Key::F11),
+    F12 => Some(Key::F12),
+    Scroll => Some(Key::ScrollLock),
+    Pause => Some(Key::Pause),
+    Insert => Some(Key::Insert),
+    Home => Some(Key::Home),
+    Delete => Some(Key::Delete),
+    End => Some(Key::End),
+    PageDown => Some(Key::PageDown),
+    PageUp => Some(Key::PageUp),
+    Left => Some(Key::Left),
+    Up => Some(Key::Up),
+    Right => Some(Key::Right),
+    Down => Some(Key::Down),
+    Return => Some(Key::Enter),
+    Space => Some(Key::Space),
+    Numlock => Some(Key::NumLock),
+    Numpad0 => Some(Key::Pad0),
+    Numpad1 => Some(Key::Pad1),
+    Numpad2 => Some(Key::Pad2),
+    Numpad3 => Some(Key::Pad3),
+    Numpad4 => Some(Key::Pad4),
+    Numpad5 => Some(Key::Pad5),
+    Numpad6 => Some(Key::Pad6),
+    Numpad7 => Some(Key::Pad7),
+    Numpad8 => Some(Key::Pad8),
+    Numpad9 => Some(Key::Pad9),
+    Add => Some(Key::PadPlus),
+    Apostrophe => Some(Key::Apostrophe),
+    Backslash => Some(Key::Backslash),
+    Comma => Some(Key::Comma),
+    Decimal => Some(Key::PadDecimal),
+    Divide => Some(Key::PadDivide),
+    Equals => Some(Key::PadEquals),
+    Grave => Some(Key::Grave),
+    LAlt => Some(Key::LeftAlt),
+    LBracket => Some(Key::LeftBracket),
+    LControl => Some(Key::LeftControl),
+    LMenu => Some(Key::LeftSuper),
+    LShift => Some(Key::LeftShift),
+    LWin => Some(Key::LeftSuper),
+    Minus => Some(Key::Minus),
+    Multiply => Some(Key::PadMultiply),
+    NumpadComma => Some(Key::PadDecimal),
+    NumpadEnter => Some(Key::PadEnter),
+    NumpadEquals => Some(Key::PadEquals),
+    Period => Some(Key::Period),
+    RAlt => Some(Key::RightAlt),
+    RBracket => Some(Key::RightBracket),
+    RControl => Some(Key::RightControl),
+    RMenu => Some(Key::RightSuper),
+    RShift => Some(Key::RightShift),
+    RWin => Some(Key::RightSuper),
+    Semicolon => Some(Key::Semicolon),
+    Slash => Some(Key::Slash),
+    Subtract => Some(Key::PadMinus),
+    Tab => Some(Key::Tab),
+    _ => None,
+    }
+}
