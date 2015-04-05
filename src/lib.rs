@@ -4,7 +4,7 @@ Miscellaneous utilities grab-bag.
  */
 
 #![crate_name="calx"]
-#![feature(core, collections, std_misc, thread_sleep)]
+#![feature(core, collections, std_misc)]
 #![feature(plugin, custom_attribute)]
 #![plugin(regex_macros, glium_macros)]
 
@@ -74,7 +74,7 @@ pub fn noise(n: i32) -> f32 {
 }
 
 /// Rectangle anchoring points.
-#[derive(Copy, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Anchor {
     TopLeft,
     TopRight,

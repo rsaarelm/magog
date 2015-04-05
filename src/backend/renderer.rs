@@ -100,7 +100,7 @@ impl Renderer {
 
         let vertices = {
             #[vertex_format]
-            #[derive(Copy)]
+            #[derive(Copy, Clone)]
             struct BlitVertex { pos: [f32; 2], tex_coord: [f32; 2] }
 
             glium::VertexBuffer::new(display,
@@ -177,7 +177,7 @@ impl Renderer {
 }
 
 #[vertex_format]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 /// Geometry vertex in on-screen graphics.
 pub struct Vertex {
     /// Coordinates on screen

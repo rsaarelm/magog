@@ -33,7 +33,7 @@ mod scancode {
     pub use backend::scancode_windows::MAP;
 }
 
-#[derive(Copy, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 /// How to scale up the graphics to a higher resolution
 pub enum CanvasMagnify {
     /// Nearest-neighbor, fill the window, not pixel-perfect
@@ -46,7 +46,7 @@ pub enum CanvasMagnify {
 }
 
 /// UI Widget static identifier, unique for a specific site in source code.
-#[derive(Copy, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct WidgetId {
     filename: &'static str,
     line: u32,

@@ -1,5 +1,4 @@
 use time;
-use std::time::duration::Duration;
 use std::thread;
 
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
@@ -25,7 +24,7 @@ pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T
     &frames[idx as usize]
 }
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Ticker {
     period_s: f64,
     last_t: f64,
@@ -61,7 +60,7 @@ impl Ticker {
     pub fn wait_for_tick(&mut self) {
         match self.time_remaining() {
             Some(t) => {
-                thread::sleep(Duration::milliseconds((t * 1000.0) as i64));
+                thread::sleep_ms((t * 1e3) as u32);
                 self.last_t += self.period_s;
             }
             _ => {}
@@ -69,7 +68,7 @@ impl Ticker {
     }
 }
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct TimePerFrame {
     update_weight: f64,
     start_t: f64,

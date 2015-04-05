@@ -16,7 +16,7 @@ pub enum Event<'a> {
     FocusChanged(bool),
 }
 
-#[derive(Copy, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum MouseButton {
     Left,
     Right,

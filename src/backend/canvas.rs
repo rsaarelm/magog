@@ -1,6 +1,5 @@
 use time;
 use std::mem;
-use std::time::duration::Duration;
 use std::thread;
 use std::default::Default;
 use image::{GenericImage, SubImage, Pixel};
@@ -403,8 +402,7 @@ impl<'a> Iterator for Canvas {
                 if let Some(mut remaining_s) = self.frame_interval {
                     remaining_s -= t - self.last_render_time;
                     if remaining_s > 0.0 {
-                        thread::sleep(
-                            Duration::nanoseconds((remaining_s * 1e9) as i64));
+                        thread::sleep_ms((remaining_s * 1e3) as u32);
                     }
                 }
             }
