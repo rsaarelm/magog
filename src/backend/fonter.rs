@@ -1,4 +1,4 @@
-use ::{Rgba, V2, Rect, Color, color, Anchor};
+use ::{Rgba, V2, Rect, ToColor, FromColor, color, Anchor};
 use ::text;
 use super::canvas::{Canvas, FONT_H};
 use super::canvas_util::{CanvasUtil};
@@ -29,7 +29,7 @@ impl<'a> Fonter<'a> {
             canvas: canvas,
             anchor: Anchor::TopLeft,
             align: Align::Left,
-            color: Color::from_color(&color::WHITE),
+            color: FromColor::from_color(&color::WHITE),
             z: 0.1,
             max_lines: None,
             border: None,
@@ -50,14 +50,14 @@ impl<'a> Fonter<'a> {
     }
 
     /// Set text color. The default color is white.
-    pub fn color<C: Color>(mut self, color: &C) -> Fonter<'a> {
-        self.color = Color::from_color(color); self
+    pub fn color<C: ToColor>(mut self, color: &C) -> Fonter<'a> {
+        self.color = FromColor::from_color(color); self
     }
 
     /// Set border color. Before this is set, the drawn text will not be drawn
     /// with a border.
-    pub fn border<C: Color>(mut self, color: &C) -> Fonter<'a> {
-        self.border = Some(Color::from_color(color)); self
+    pub fn border<C: ToColor>(mut self, color: &C) -> Fonter<'a> {
+        self.border = Some(FromColor::from_color(color)); self
     }
 
     /// Set the z-layer to draw in.

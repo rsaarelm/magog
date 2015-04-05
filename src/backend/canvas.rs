@@ -7,7 +7,7 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use ::{AtlasBuilder, Atlas, AtlasItem, V2, Rgb, Color};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, Rgb, ToColor};
 use super::event::{Event, MouseButton};
 use super::key::{Key};
 use super::renderer::{Renderer, Vertex};
@@ -243,7 +243,7 @@ impl Canvas {
     }
 
     /// Add a vertex to the geometry data of the current frame.
-    pub fn push_vertex<C: Color, C2: Color>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
+    pub fn push_vertex<C: ToColor, C2: ToColor>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
                                  color: &C, back_color: &C2) {
         let pos = self.canvas_to_device(pos, layer);
 

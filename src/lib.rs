@@ -43,18 +43,21 @@ pub mod text;
 pub mod timing;
 pub mod vorud;
 
-pub trait Color: Sized {
+/// Things that describe a color.
+pub trait ToColor {
     fn to_rgba(&self) -> [f32; 4];
-    fn from_color<C: Color>(color: &C) -> Self;
+}
 
-    fn from_rgba(rgba: [f32; 4]) -> Self {
-        Color::from_color(&rgb::Rgba::new(
-                (rgba[0] * 255.0) as u8,
-                (rgba[1] * 255.0) as u8,
-                (rgba[2] * 255.0) as u8,
-                (rgba[3] * 255.0) as u8))
+/// Things that can be made from a color.
+pub trait FromColor: Sized {
+    fn from_rgba(rgba: [f32; 4]) -> Self;
+
+    fn from_color<C: ToColor>(color: &C) -> Self {
+        FromColor::from_rgba(color.to_rgba())
     }
 }
+
+pub trait Color: ToColor + FromColor {}
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {

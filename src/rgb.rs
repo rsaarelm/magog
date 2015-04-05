@@ -1,7 +1,9 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::num::{from_str_radix};
 use std::ascii::{OwnedAsciiExt};
 use color;
-use ::Color;
+use ::{ToColor, FromColor};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
@@ -10,24 +12,19 @@ impl Rgb {
     pub fn new(r: u8, g: u8, b: u8) -> Rgb {
         Rgb { r: r, g: g, b: b }
     }
-
-    /// Panics if name doesn't parse, use for inline constants.
-    pub fn parse(name: &str) -> Rgb {
-        let rgba = Rgba::parse(name);
-        Rgb::new(rgba.r, rgba.g, rgba.b)
-    }
 }
 
-impl Color for Rgb {
+impl ToColor for Rgb {
     fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
          1.0]
     }
+}
 
-    fn from_color<C: Color>(color: &C) -> Rgb {
-        let rgba = color.to_rgba();
+impl FromColor for Rgb {
+    fn from_rgba(rgba: [f32; 4]) -> Rgb {
         Rgb { r: (rgba[0] * 255.0) as u8, g: (rgba[1] * 255.0) as u8, b: (rgba[2] * 255.0) as u8 }
     }
 }
@@ -39,28 +36,47 @@ impl Rgba {
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> Rgba {
         Rgba { r: r, g: g, b: b, a: a }
     }
-
-    /// Panics if name doesn't parse, use for inline constants. Accept
-    /// case-insensitive SVG color names ("red", "powderblue") and hex #RGB or
-    /// #RGBA color names with 4 or 8 bits per channel. "#F00", "#F00F",
-    /// "#FF0000" and "#FF0000FF" all correspond to the same opaque pure
-    /// red color.
-    pub fn parse(name: &str) -> Rgba {
-        parse_color(name).expect(&format!("Invalid color name {}", name)[..])
-    }
 }
 
-impl Color for Rgba {
+impl ToColor for Rgba {
     fn to_rgba(&self) -> [f32; 4] {
         [self.r as f32 / 255.0,
          self.g as f32 / 255.0,
          self.b as f32 / 255.0,
          self.a as f32 / 255.0]
     }
+}
 
-    fn from_color<C: Color>(color: &C) -> Rgba {
-        let rgba = color.to_rgba();
+impl FromColor for Rgba {
+    fn from_rgba(rgba: [f32; 4]) -> Rgba {
         Rgba { r: (rgba[0] * 255.0) as u8, g: (rgba[1] * 255.0) as u8, b: (rgba[2] * 255.0) as u8, a: (rgba[3] * 255.0) as u8 }
+    }
+}
+
+
+/// Neat trick for using plain string literals as color values. Will panic if
+/// given non-parsing color.
+///
+/// Accepts case-insensitive SVG color names ("red", "powderblue") and hex
+/// #RGB or #RGBA color names with 4 or 8 bits per channel. "#F00", "#F00F",
+/// "#FF0000" and "#FF0000FF" all correspond to the same opaque pure red
+/// color.
+impl ToColor for &'static str {
+    fn to_rgba(&self) -> [f32; 4] {
+        thread_local!(static MEMOIZER: RefCell<HashMap<String, [f32; 4]>> =
+                      RefCell::new(HashMap::new()));
+
+        let ret = MEMOIZER.with(|c| c.borrow().get(*self).map(|&x| x));
+        match ret {
+            Some(color) => color,
+            None => {
+                let parsed = parse_color(self)
+                    .expect(&format!("Bad color string '{}'", self))
+                    .to_rgba();
+                MEMOIZER.with(|c| c.borrow_mut().insert(self.to_string(), parsed));
+                parsed
+            }
+        }
     }
 }
 

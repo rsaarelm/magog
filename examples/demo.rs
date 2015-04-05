@@ -4,7 +4,7 @@ extern crate calx;
 
 use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
-use calx::{color, V2, Rgba, Rgb, Rect};
+use calx::{color, V2, Rgba, Rgb, Rect, FromColor};
 use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
@@ -30,7 +30,7 @@ fn main() {
         "sic fugiens, dux, zelotypos, quam karus haberis",
         ".o'i mu xagji sofybakni cu zvati le purdi",
     ];
-    let pattern_col = Rgb::parse("#420");
+    let pattern_col: Rgb = FromColor::from_color(&"#420");
 
     for evt in CanvasBuilder::new().run() {
         // Change pangram every 10 seconds.

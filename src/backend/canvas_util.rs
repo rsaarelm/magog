@@ -1,33 +1,33 @@
 use super::canvas::{Canvas, Image, FONT_W};
 use super::{WidgetId};
-use ::{V2, Rect, Color, Rgba, color};
+use ::{V2, Rect, ToColor, Rgba, color};
 use ::Anchor::*;
 
 /// Helper methods for canvas context that do not depend on the underlying
 /// implementation details.
 pub trait CanvasUtil {
     /// Draw a thick solid line on the canvas.
-    fn draw_line<C: Color+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C);
+    fn draw_line<C: ToColor+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C);
     /// Get the size of an atlas image.
     fn image_dim(&self, img: Image) -> V2<u32>;
 
     /// Draw a stored image on the canvas.
-    fn draw_image<C: Color+Copy, D: Color+Copy>(&mut self, img: Image,
+    fn draw_image<C: ToColor+Copy, D: ToColor+Copy>(&mut self, img: Image,
         offset: V2<f32>, z: f32, color: &C, back_color: &D);
 
     /// Draw a filled rectangle
-    fn fill_rect<C: Color+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
+    fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
 
     // TODO: More specs
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
 
-    fn draw_char<C: Color+Copy, D: Color+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>);
+    fn draw_char<C: ToColor+Copy, D: ToColor+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>);
 
     fn char_width(&self, c: char) -> f32;
 }
 
 impl CanvasUtil for Canvas {
-    fn draw_line<C: Color+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
+    fn draw_line<C: ToColor+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
         let tex = self.solid_tex_coord();
         let v1 = p2 - p1;
         let v2 = V2(-v1.1, v1.0);
@@ -48,7 +48,7 @@ impl CanvasUtil for Canvas {
         self.image_data(img).pos.1.map(|x| x as u32)
     }
 
-    fn draw_image<C: Color+Copy, D: Color+Copy>(&mut self, img: Image,
+    fn draw_image<C: ToColor+Copy, D: ToColor+Copy>(&mut self, img: Image,
         offset: V2<f32>, z: f32, color: &C, back_color: &D) {
         // Use round numbers, fractions seem to cause artifacts to pixels.
         let offset = offset.map(|x| x.floor());
@@ -71,7 +71,7 @@ impl CanvasUtil for Canvas {
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
     }
 
-    fn fill_rect<C: Color+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
+    fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
         let tex = self.solid_tex_coord();
         let ind0 = self.num_vertices();
 
@@ -103,7 +103,7 @@ impl CanvasUtil for Canvas {
             && self.hot_widget == Some(id);
     }
 
-    fn draw_char<C: Color+Copy, D: Color+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>) {
+    fn draw_char<C: ToColor+Copy, D: ToColor+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>) {
         static BORDER: [V2<f32>; 8] =
             [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
              V2(-1.0,  0.0),                 V2( 1.0,  0.0),
