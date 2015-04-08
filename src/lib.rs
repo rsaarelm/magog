@@ -6,7 +6,7 @@ Miscellaneous utilities grab-bag.
 #![crate_name="calx"]
 #![feature(core, collections, std_misc)]
 #![feature(plugin, custom_attribute)]
-#![plugin(regex_macros, glium_macros)]
+#![plugin(regex_macros)]
 
 extern crate collections;
 extern crate rustc_serialize;
