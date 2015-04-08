@@ -99,9 +99,9 @@ impl Renderer {
         };
 
         let vertices = {
-            #[vertex_format]
             #[derive(Copy, Clone)]
             struct BlitVertex { pos: [f32; 2], tex_coord: [f32; 2] }
+            implement_vertex!(BlitVertex, pos, tex_coord);
 
             glium::VertexBuffer::new(display,
             vec![
@@ -176,7 +176,6 @@ impl Renderer {
     }
 }
 
-#[vertex_format]
 #[derive(Copy, Clone)]
 /// Geometry vertex in on-screen graphics.
 pub struct Vertex {
@@ -189,6 +188,7 @@ pub struct Vertex {
     /// Color for the dark parts of the texture
     pub back_color: [f32; 4],
 }
+implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area, mapped to OpenGL device coordinates.
