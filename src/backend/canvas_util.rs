@@ -1,6 +1,6 @@
 use super::canvas::{Canvas, Image, FONT_W};
 use super::{WidgetId};
-use ::{V2, Rect, ToColor, Rgba, color};
+use ::{V2, Rect, ToColor, color};
 use ::Anchor::*;
 
 /// Helper methods for canvas context that do not depend on the underlying
@@ -87,13 +87,13 @@ impl CanvasUtil for Canvas {
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool {
         // TODO: Button visual style! Closures?
         let area = Rect(pos, V2(64.0, 16.0));
-        let mut color = Rgba::parse("green");
+        let mut color = color::GREEN;
         if area.contains(&self.mouse_pos) {
             self.hot_widget = Some(id);
             if self.active_widget.is_none() && self.mouse_pressed {
                 self.active_widget = Some(id);
             }
-            color = Rgba::parse("red");
+            color = color::RED;
         }
 
         self.fill_rect(&area, z, &color);
