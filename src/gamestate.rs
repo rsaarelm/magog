@@ -11,7 +11,7 @@ use world::Dir6::*;
 use world::{Entity};
 use world::item::{Slot};
 use worldview;
-use sprite::{WorldSprites, GibSprite, BeamSprite};
+use sprite::{WorldSprites, GibSprite, BeamSprite, ExplosionSprite};
 use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
@@ -138,8 +138,8 @@ impl GameState {
                 Some(Msg::Sparks(_loc)) => {
                     // TODO
                 }
-                Some(_) => {
-                    //println!("Unhandled Msg type {:?}", x);
+                Some(Msg::Explosion(loc)) => {
+                    self.world_spr.add(Box::new(ExplosionSprite::new(loc)));
                 }
                 None => break
             }

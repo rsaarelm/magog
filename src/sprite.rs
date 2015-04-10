@@ -1,7 +1,7 @@
 use std::slice::Iter;
-use calx::{color, V2};
+use calx::{color, ToColor, V2, clamp};
 use calx::backend::{Canvas, CanvasUtil};
-use world::{Location, Unchart};
+use world::{Location, Unchart, Dir6};
 use viewutil::{FX_Z, chart_to_screen};
 use tilecache;
 use tilecache::tile;
@@ -118,5 +118,71 @@ impl WorldSprite for GibSprite {
             let idx = tile::SPLATTER + ((11 - self.life) / 3) as usize;
             ctx.draw_image(tilecache::get(idx), chart_to_screen(p), FX_Z, &color::RED, &color::BLACK);
         }
+    }
+}
+
+pub struct ExplosionSprite {
+    loc: Location,
+    life: i32,
+    footprint: Vec<Location>,
+}
+
+impl ExplosionSprite {
+    pub fn new(loc: Location) -> ExplosionSprite {
+        ExplosionSprite {
+            loc: loc,
+            life: 12,
+            footprint: Dir6::iter().map(|d| loc + d.to_v2()).chain(Some(loc).into_iter()).collect(),
+        }
+    }
+}
+
+impl WorldSprite for ExplosionSprite {
+    fn update(&mut self) { self.life -= 1; }
+    fn is_alive(&self) -> bool { self.life >= 0 }
+    fn footprint<'a>(&'a self) -> Iter<'a, Location> { self.footprint.iter() }
+    fn draw(&self, chart: &Location, ctx: &mut Canvas) {
+        if let Some(p) = chart.chart_pos(self.loc) {
+            let center = chart_to_screen(p);
+
+            // Growing in [0.0, 1.0].
+            let t = clamp(0.0, 1.0, (12 - self.life) as f32 / 4.0);
+            let t2 = clamp(0.0, 1.0, (8 - self.life) as f32 / 4.0);
+
+            hexagon(ctx, center, FX_Z, &color::ORANGE, &color::RED, t2 * 1.8, t * 2.0);
+        }
+    }
+}
+
+fn hexagon<C: ToColor+Copy>(ctx: &mut Canvas, center: V2<f32>, z: f32,
+                            color_inner: &C, color_outer: &C,
+                            inner_radius: f32, outer_radius: f32) {
+    let tex = ctx.solid_tex_coord();
+    static VERTICES: [V2<f32>; 6] = [
+        V2(-8.0,  -4.0),
+        V2( 0.0,  -8.0),
+        V2( 8.0,  -4.0),
+        V2( 8.0,   4.0),
+        V2( 0.0,   8.0),
+        V2(-8.0,   4.0),
+    ];
+
+    // Inner vertices
+    let inner = ctx.num_vertices();
+    for p in VERTICES.iter() {
+        ctx.push_vertex(center + (*p * inner_radius), z, tex, color_inner, &color::BLACK)
+    }
+
+    // Outer vertices
+    let outer = ctx.num_vertices();
+    for p in VERTICES.iter() {
+        ctx.push_vertex(center + (*p * outer_radius), z, tex, color_outer, &color::BLACK)
+    }
+
+    // Polygon pushing
+    for i in 0..6 {
+        let i2 = (i + 1) % 6;
+        ctx.push_triangle(inner + i, outer + i2, inner + i2);
+        ctx.push_triangle(inner + i, outer + i, outer + i2);
     }
 }
