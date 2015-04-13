@@ -50,6 +50,9 @@ impl Ecs {
         Entity(idx)
     }
 
+    /// Return whether given entity exists in the system.
+    pub fn exists(&self, Entity(idx): Entity) -> bool { self.active[idx] }
+
     /// Delete an entity from the entity component system.
     ///
     /// XXX: The user is currently responsible for never using an entity

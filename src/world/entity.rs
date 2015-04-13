@@ -42,6 +42,10 @@ impl Entity {
         world::with_mut(|w| w.ecs.delete(self));
     }
 
+    pub fn exists(self) -> bool {
+        world::with(|w| w.ecs.exists(self))
+    }
+
     pub fn blocks_walk(self) -> bool { self.is_mob() }
 
     pub fn name(self) -> String {
@@ -132,6 +136,23 @@ impl Entity {
             loc1.distance_from(loc2)
         } else {
             None
+        }
+    }
+
+    /// Push the entity in direction due to some outside force like an
+    /// explosion.
+    pub fn push(self, dir: Dir6, steps: u32) {
+        for i in 0..steps {
+            if self.can_step(dir) {
+                self.step(dir);
+            } else {
+                // When pushed against wall, damage by remaining impulse.
+                let remaining_steps = steps - i;
+                self.damage(remaining_steps as i32);
+                // TODO: If pushed against another damageable mob, damage it
+                // as well.
+                break;
+            }
         }
     }
 

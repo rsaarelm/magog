@@ -227,6 +227,32 @@ pub fn shoot(origin: Location, dir: Dir6, range: u32, power: i32) {
     msg::push(Msg::Beam(origin, loc));
 }
 
+/// Generate an explosion at location.
+pub fn explode(center: Location, power: i32) {
+    // Add more complex parametrization if needed.
+    msg::push(Msg::Explosion(center));
+
+    // Damage the center.
+    if let Some(e) = center.mob_at() {
+        e.damage(power);
+    }
+
+    for d in Dir6::iter() {
+        if let Some(e) = (center + d.to_v2()).mob_at() {
+            // Explosions with enough power push back mobs.
+            // TODO: Pushback might consider mob size, big guys get pushed
+            // around less.
+            let push_threshold = 4;
+            if power >= push_threshold {
+                e.push(*d, ((power - push_threshold) / 2 + 1) as u32);
+            }
+            if e.exists() {
+                e.damage(power);
+            }
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 /// Build a Dijkstra map towards the unexplored corners of the player's FOV.
