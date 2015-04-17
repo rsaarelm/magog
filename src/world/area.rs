@@ -18,7 +18,8 @@ use super::spawn::Spawn;
 // surprise randomness. A map generator in a previous project used memory
 // addresses of temporary structures as indexing keys, and ended up with a
 // nondeterminism bug that depended on the numerical order of the arbitrary
-// address values.
+// address values. Relying on the iteration order of collections::HashMap has
+// introduced at least one nondeterminism bug to map generation.
 
 #[derive(Copy, Clone, RustcDecodable, RustcEncodable)]
 pub struct AreaSeed {
