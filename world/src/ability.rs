@@ -1,5 +1,5 @@
-use super::entity::Entity;
-use super::spatial::Place;
+use entity::Entity;
+use spatial::Place;
 use self::Ability::*;
 
 /// Ability describes some way of affecting the game world. It is generally

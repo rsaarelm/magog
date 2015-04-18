@@ -1,17 +1,17 @@
 use std::default::Default;
 use calx::color::*;
-use super::ecs::{Component, ComponentAccess};
-use super::entity::{Entity};
-use super::components::{Spawn, Category, IsPrototype};
-use super::components::{Desc, MapMemory, Health};
-use super::components::{Brain, BrainState, Alignment};
-use super::components::{Item};
-use super::item::{ItemType};
-use super::stats::{Stats};
-use super::stats::Intrinsic::*;
-use super::ability::Ability;
-use super::Biome::*;
-use super::world;
+use ecs::{Component, ComponentAccess};
+use entity::{Entity};
+use components::{Spawn, Category, IsPrototype};
+use components::{Desc, MapMemory, Health};
+use components::{Brain, BrainState, Alignment};
+use components::{Item};
+use item::{ItemType};
+use stats::{Stats};
+use stats::Intrinsic::*;
+use ability::Ability;
+use Biome::*;
+use world;
 
 #[derive(Copy, Clone)]
 pub struct Prototype {

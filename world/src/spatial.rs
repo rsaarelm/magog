@@ -1,9 +1,9 @@
 use std::collections::{VecMap, BTreeMap};
 use std::collections::Bound::{Included, Unbounded};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
-use super::entity::{Entity};
-use super::location::{Location};
-use super::item::Slot;
+use entity::{Entity};
+use location::{Location};
+use item::Slot;
 use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.

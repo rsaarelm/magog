@@ -1,6 +1,6 @@
 #![crate_name="magog"]
 #![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext, exit_status)]
+#![feature(path_ext, exit_status)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
@@ -14,6 +14,7 @@ extern crate time;
 extern crate toml;
 #[macro_use]
 extern crate calx;
+extern crate world;
 
 use std::env;
 use std::path::{PathBuf};
@@ -37,7 +38,6 @@ mod titlestate;
 mod sprite;
 mod msg_queue;
 mod console;
-mod world;
 
 pub trait State {
     fn process(&mut self, event: Event) -> Option<Transition>;

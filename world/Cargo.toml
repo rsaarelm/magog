@@ -1,0 +1,23 @@
+[package]
+
+name = "world"
+version = "0.0.1"
+authors = [ "risto.saarelma@iki.fi" ]
+
+[lib]
+name = "world"
+
+[dependencies.collect]
+git = "https://github.com/gankro/collect-rs"
+# TODO: Go back to crates.io version
+
+[dependencies.rustc-serialize]
+
+[dependencies.num]
+
+[dependencies.rand]
+
+[dependencies.rand_macros]
+
+[dependencies.calx]
+git = "https://github.com/rsaarelm/calx"

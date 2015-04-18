@@ -1,9 +1,9 @@
 use calx::Rgb;
-use super::{Biome};
-use super::item::{ItemType};
-use super::ability::Ability;
-use super::stats::Stats;
-use super::location_set::LocationSet;
+use {Biome};
+use item::{ItemType};
+use ability::Ability;
+use stats::Stats;
+use location_set::LocationSet;
 
 /// Dummy component to mark prototype objects
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]

@@ -2,21 +2,20 @@ use std::default::Default;
 use rand::Rng;
 use calx::Dijkstra;
 use calx::Rgb;
-use super::world;
-use super::location::{Location};
-use super::dir6::Dir6;
-use super::flags;
-use super::components::{BrainState, Alignment};
-use super::geom::HexGeom;
-use super::spatial::Place;
-use super::action;
-use super::fov::Fov;
-use super::rng;
-use super::msg;
-use super::item::{ItemType, Slot};
-use super::stats::{Stats, Intrinsic};
-use super::ecs::{ComponentAccess};
-use super::{Msg};
+use world;
+use location::{Location};
+use dir6::Dir6;
+use flags;
+use components::{BrainState, Alignment};
+use geom::HexGeom;
+use spatial::Place;
+use action;
+use fov::Fov;
+use rng;
+use msg;
+use item::{ItemType, Slot};
+use stats::{Stats, Intrinsic};
+use ecs::{ComponentAccess};
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
@@ -190,7 +189,7 @@ impl Entity {
             (amount, health.wounds >= max_hp)
         });
 
-        msg::push(Msg::Damage(self));
+        msg::push(::Msg::Damage(self));
         if kill {
             self.kill();
         }
@@ -212,7 +211,7 @@ impl Entity {
     pub fn kill(self) {
         let loc = self.location().expect("no location");
         msgln!("{} dies.", self.name());
-        msg::push(Msg::Gib(loc));
+        msg::push(::Msg::Gib(loc));
         if rng::one_chance_in(6) {
             // Drop a heart.
             action::spawn_named("heart", loc);

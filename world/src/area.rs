@@ -4,12 +4,12 @@ use rand::SeedableRng;
 use std::iter;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::BTreeMap;
-use super::terrain::TerrainType;
-use super::location::Location;
-use super::mapgen;
-use super::{AreaSpec};
-use super::components::{Category};
-use super::spawn::Spawn;
+use terrain::TerrainType;
+use location::Location;
+use mapgen;
+use {AreaSpec};
+use components::{Category};
+use spawn::Spawn;
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
 // generated to have exactly the same contents every time given the same seed

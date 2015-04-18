@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use super::entity::{Entity};
-use super::components;
-use super::component_ref::{ComponentRef, ComponentRefMut};
-use super::stats;
-use super::world::{self, WorldState};
+use world;
+use entity::{Entity};
+use components;
+use component_ref::{ComponentRef, ComponentRefMut};
+use stats;
+use world::{WorldState};
 
 /// Entity component system.
 #[derive(RustcDecodable, RustcEncodable)]
