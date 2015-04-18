@@ -12,10 +12,6 @@ path = "examples/demo.rs"
 
 [dependencies.rand]
 
-[dependencies.regex_macros]
-
-[dependencies.regex]
-
 [dependencies.rustc-serialize]
 
 [dependencies.time]

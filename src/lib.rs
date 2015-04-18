@@ -6,13 +6,11 @@ Miscellaneous utilities grab-bag.
 #![crate_name="calx"]
 #![feature(core, collections, std_misc)]
 #![feature(plugin, custom_attribute)]
-#![plugin(regex_macros)]
 
 extern crate collections;
 extern crate rustc_serialize;
 extern crate time;
 extern crate rand;
-extern crate regex;
 extern crate image;
 extern crate glutin;
 #[macro_use]

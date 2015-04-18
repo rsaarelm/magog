@@ -85,38 +85,58 @@ fn parse_color(name: &str) -> Option<Rgba> {
         return Some(Rgba { r: r, g: g, b: b, a: 0xFF });
     }
 
-    let rgb = regex!(r"^#([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])$");
-    if let Some(cap) = rgb.captures(name) {
-        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
-        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
-        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
-        return Some(Rgba { r: (r << 4) + r, g: (g << 4) + g, b: (b << 4) + b, a: 0xFF });
-    }
+    if name.starts_with("#") {
+        let name = &name[1..];
 
-    let rgba = regex!(r"^#([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])$");
-    if let Some(cap) = rgba.captures(name) {
-        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
-        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
-        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
-        let a = u8::from_str_radix(cap.at(4).unwrap(), 16).unwrap();
-        return Some(Rgba { r: (r << 4) + r, g: (g << 4) + g, b: (b << 4) + b, a: (a << 4) + a });
-    }
+        // Hex digits per color channel, either 1 or 2. Single digit values
+        // get doubled for the color, #420 becomes #442200.
+        let digits: usize;
 
-    let rrggbb = regex!(r"^#((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})$");
-    if let Some(cap) = rrggbb.captures(name) {
-        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
-        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
-        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
-        return Some(Rgba { r: r, g: g, b: b, a: 0xFF });
-    }
+        // Does the color include the alpha channel. If not, assume alpha is
+        // fully opaque.
+        let alpha: bool;
 
-    let rrggbbaa = regex!(r"^#((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})((?:[0-9]|[a-f]|[A-F]){2})$");
-    if let Some(cap) = rrggbbaa.captures(name) {
-        let r = u8::from_str_radix(cap.at(1).unwrap(), 16).unwrap();
-        let g = u8::from_str_radix(cap.at(2).unwrap(), 16).unwrap();
-        let b = u8::from_str_radix(cap.at(3).unwrap(), 16).unwrap();
-        let a = u8::from_str_radix(cap.at(4).unwrap(), 16).unwrap();
-        return Some(Rgba { r: r, g: g, b: b, a: a });
+        match name.len() {
+            3 => {
+                digits = 1;
+                alpha = false;
+            }
+            4 => {
+                digits = 1;
+                alpha = true;
+            }
+            6 => {
+                digits = 2;
+                alpha = false;
+            }
+            8 => {
+                digits = 2;
+                alpha = true;
+            }
+            _ => { return None; }
+        }
+
+        assert!(digits == 1 || digits == 2);
+
+        let r = u8::from_str_radix(&name[0..(digits)], 16);
+        let g = u8::from_str_radix(&name[(digits)..(2 * digits)], 16);
+        let b = u8::from_str_radix(&name[(2 * digits)..(3 * digits)], 16);
+        let a = if alpha {
+            u8::from_str_radix(&name[(3 * digits)..(4 * digits)], 16)
+        } else {
+            if digits == 1 { Ok(0xFu8) } else { Ok(0xFFu8) }
+        };
+
+        return match (r, g, b, a) {
+            (Ok(r), Ok(g), Ok(b), Ok(a)) => {
+                if digits == 1 {
+                    Some(Rgba { r: (r << 4) + r, g: (g << 4) + g, b: (b << 4) + b, a: (a << 4) + a })
+                } else {
+                    Some(Rgba { r: r, g: g, b: b, a: a })
+                }
+            }
+            _ => None
+        };
     }
 
     return None;
