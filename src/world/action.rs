@@ -311,7 +311,7 @@ pub fn load_game() {
 }
 
 pub fn _delete_save() {
-    fs::remove_file("magog_save.json").unwrap();
+    let _ = fs::remove_file("magog_save.json");
 }
 
 pub fn _save_exists() -> bool  { Path::new("magog_save.json").exists() }
