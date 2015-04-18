@@ -16,6 +16,10 @@ path = "examples/demo.rs"
 
 [dependencies.time]
 
+[dependencies.rand_macros]
+
+[dependencies.num]
+
 [dependencies.image]
 
 [dependencies.glutin]

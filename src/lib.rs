@@ -6,11 +6,15 @@ Miscellaneous utilities grab-bag.
 #![crate_name="calx"]
 #![feature(core, collections, std_misc)]
 #![feature(plugin, custom_attribute)]
+#![feature(custom_derive)]
+#![plugin(rand_macros)]
 
+#[no_link] extern crate rand_macros;
 extern crate collections;
 extern crate rustc_serialize;
 extern crate time;
 extern crate rand;
+extern crate num;
 extern crate image;
 extern crate glutin;
 #[macro_use]
@@ -26,11 +30,13 @@ pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 pub use encode_rng::{EncodeRng};
+pub use hex::{HexGeom, Dir6};
 
 mod atlas;
 mod dijkstra;
 mod geom;
 mod encode_rng;
+mod hex;
 mod img;
 mod primitive;
 mod rgb;
