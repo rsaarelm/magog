@@ -1,13 +1,10 @@
 use std::default::Default;
 use rand::Rng;
-use calx::Dijkstra;
-use calx::Rgb;
+use calx::{Dijkstra, Rgb, Dir6, HexGeom};
 use world;
 use location::{Location};
-use dir6::Dir6;
 use flags;
 use components::{BrainState, Alignment};
-use geom::HexGeom;
 use spatial::Place;
 use action;
 use fov::Fov;

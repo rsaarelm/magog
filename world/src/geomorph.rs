@@ -5,7 +5,7 @@ use terrain::TerrainType::*;
 use terrain::TerrainType;
 use {AreaSpec, Biome};
 use geomorph_data;
-use dir6::Dir6;
+use calx::Dir6;
 
 thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 

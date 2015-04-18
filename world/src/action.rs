@@ -9,7 +9,7 @@ use entity::Entity;
 use ecs::EntityIter;
 use world;
 use flags;
-use dir6::Dir6;
+use calx::Dir6;
 use area::Area;
 use location::Location;
 use ecs::{ComponentAccess};

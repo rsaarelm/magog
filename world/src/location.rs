@@ -1,11 +1,7 @@
 use std::ops::{Add};
-use calx::DijkstraNode;
-use calx::V2;
-use calx;
-use dir6::Dir6;
+use calx::{V2, Dir6, HexGeom, DijkstraNode, noise};
 use entity::Entity;
 use terrain::TerrainType;
-use geom::HexGeom;
 use world;
 use action;
 use flags;
@@ -33,7 +29,7 @@ impl Location {
         // Grass is only occasionally fancy.
         // TODO: Make variant tiles into a generic method.
         if ret == TerrainType::Grass {
-            let n = calx::noise(self.x as i32 + self.y as i32 * 57);
+            let n = noise(self.x as i32 + self.y as i32 * 57);
             if n > 0.85 {
                 ret = TerrainType::Grass2;
             }

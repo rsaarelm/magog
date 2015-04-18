@@ -13,12 +13,10 @@ extern crate calx;
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};
 pub use fov::{Fov};
-pub use geom::{HexGeom};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
 pub use terrain::{TerrainType};
 pub use world::{init_world, load, save};
-pub use dir6::Dir6;
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))
@@ -42,12 +40,10 @@ pub mod item;
 mod ability;
 mod area;
 mod component_ref;
-mod dir6;
 mod ecs;
 mod entity;
 mod flags;
 mod fov;
-mod geom;
 mod geomorph;
 mod geomorph_data;
 pub mod location;
