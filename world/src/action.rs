@@ -13,6 +13,7 @@ use calx::Dir6;
 use area::Area;
 use location::Location;
 use ecs::{ComponentAccess};
+use mapgen::{Biome, AreaSpec};
 use ::{Msg};
 use msg;
 
@@ -146,8 +147,8 @@ pub fn current_depth() -> i32 { world::with(|w| w.area.seed.spec.depth) }
 
 pub fn start_level(depth: i32) {
     let biome = match depth {
-        1 => ::Biome::Overland,
-        _ => ::Biome::Dungeon,
+        1 => Biome::Overland,
+        _ => Biome::Dungeon,
     };
 
     clear_nonplayers();
@@ -156,7 +157,7 @@ pub fn start_level(depth: i32) {
 
     let new_area = Area::new(
         seed,
-        ::AreaSpec::new(biome, depth));
+        AreaSpec::new(biome, depth));
     // XXX: How to move area into the closure without cloning?
     world::with_mut(|w| {
         w.area = new_area.clone();

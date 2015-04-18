@@ -1,22 +1,15 @@
 [package]
 
-name = "world"
+name = "mapgen"
 version = "0.0.1"
 authors = [ "risto.saarelma@iki.fi" ]
 
 [lib]
-name = "world"
-
-[dependencies.rustc-serialize]
-
-[dependencies.num]
+name = "mapgen"
 
 [dependencies.rand]
-
-[dependencies.rand_macros]
+[dependencies.num]
+[dependencies.rustc-serialize]
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
-
-[dependencies.mapgen]
-path = "../mapgen"

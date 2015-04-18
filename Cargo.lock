@@ -5,6 +5,7 @@ dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "getopts 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mapgen 0.0.1",
  "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -215,6 +216,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mapgen"
+version = "0.0.1"
+dependencies = [
+ "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "nalgebra"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -298,6 +309,7 @@ name = "world"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "mapgen 0.0.1",
  "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",

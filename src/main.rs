@@ -14,6 +14,7 @@ extern crate time;
 extern crate toml;
 #[macro_use]
 extern crate calx;
+extern crate mapgen;
 extern crate world;
 
 use std::env;

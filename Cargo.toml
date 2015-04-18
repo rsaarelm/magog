@@ -34,3 +34,6 @@ git = "https://github.com/rsaarelm/calx"
 
 [dependencies.world]
 path = "world"
+
+[dependencies.mapgen]
+path = "mapgen"

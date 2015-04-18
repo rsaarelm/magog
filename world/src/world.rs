@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use rand;
 use rand::Rng;
 use rustc_serialize::json;
+use mapgen::{AreaSpec, Biome};
 use ecs::{Ecs, Comps};
 use area::Area;
 use spatial::Spatial;
@@ -71,7 +72,7 @@ impl<'a> WorldState {
         };
         WorldState {
             ecs: Ecs::new(),
-            area: Area::new(seed, ::AreaSpec::new(::Biome::Overland, 1)),
+            area: Area::new(seed, AreaSpec::new(Biome::Overland, 1)),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
             comps: Comps::new(),

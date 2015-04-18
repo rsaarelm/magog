@@ -10,7 +10,7 @@ use item::{ItemType};
 use stats::{Stats};
 use stats::Intrinsic::*;
 use ability::Ability;
-use Biome::*;
+use mapgen::Biome::*;
 use world;
 
 #[derive(Copy, Clone)]

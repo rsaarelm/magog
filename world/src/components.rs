@@ -1,5 +1,5 @@
 use calx::Rgb;
-use {Biome};
+use mapgen::{Biome};
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;

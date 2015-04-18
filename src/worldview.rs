@@ -4,7 +4,7 @@ use time;
 use calx::{V2, Rgb, timing};
 use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil};
-use world::TerrainType;
+use mapgen::TerrainType;
 use world::{Location, Chart};
 use world::{FovStatus};
 use world::{Entity};

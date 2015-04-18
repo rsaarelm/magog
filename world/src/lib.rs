@@ -9,13 +9,13 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
 extern crate calx;
+extern crate mapgen;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};
 pub use fov::{Fov};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
-pub use terrain::{TerrainType};
 pub use world::{init_world, load, save};
 
 macro_rules! msg(
@@ -44,57 +44,20 @@ mod ecs;
 mod entity;
 mod flags;
 mod fov;
-mod geomorph;
-mod geomorph_data;
 pub mod location;
 mod location_set;
-mod mapgen;
 mod msg;
 mod prototype;
 mod rng;
 mod spatial;
 mod spawn;
 mod stats;
-mod terrain;
 mod world;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
     Seen,
     Remembered,
-}
-
-/// Landscape type. Also serves as bit field in order to produce habitat masks
-/// for entity spawning etc.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
-pub enum Biome {
-    Overland = 0b1,
-    Dungeon  = 0b10,
-
-    // For things showing up at a biome.
-    Anywhere = -1,
-}
-
-impl Biome {
-    pub fn default_terrain(self) -> terrain::TerrainType {
-        match self {
-            Biome::Overland => TerrainType::Tree,
-            Biome::Dungeon => TerrainType::Rock,
-            _ => TerrainType::Void,
-        }
-    }
-}
-
-#[derive(Copy, Eq, PartialEq, Debug, Clone, RustcEncodable, RustcDecodable)]
-pub struct AreaSpec {
-    pub biome: Biome,
-    pub depth: i32,
-}
-
-impl AreaSpec {
-    pub fn new(biome: Biome, depth: i32) -> AreaSpec {
-        AreaSpec { biome: biome, depth: depth }
-    }
 }
 
 /// Various one-off signals the game sends to the UI layer.

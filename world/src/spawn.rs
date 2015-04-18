@@ -3,7 +3,7 @@ use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use components::{Category};
 use entity::Entity;
 use action;
-use Biome;
+use mapgen::{Biome};
 use location::{Location};
 use world;
 use ecs::{ComponentAccess};

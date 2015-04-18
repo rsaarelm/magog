@@ -4,10 +4,8 @@ use rand::SeedableRng;
 use std::iter;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::BTreeMap;
-use terrain::TerrainType;
 use location::Location;
-use mapgen;
-use {AreaSpec};
+use mapgen::{gen_herringbone, AreaSpec, TerrainType};
 use components::{Category};
 use spawn::Spawn;
 
@@ -64,7 +62,7 @@ impl Area {
 
         let mut terrain = BTreeMap::new();
         let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][..]);
-        mapgen::gen_herringbone(
+        gen_herringbone(
             &mut rng,
             &spec,
             |p, t| {terrain.insert(Location::new(0, 0) + p, t);});
