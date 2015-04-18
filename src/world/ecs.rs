@@ -142,7 +142,7 @@ macro_rules! components {
         }
 
 
-        // Implement the Componet trait for the type, this provides an uniform
+        // Implement the Component trait for the type, this provides an uniform
         // syntax for adding component values to entities used by the entity
         // factory.
         $(
