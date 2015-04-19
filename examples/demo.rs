@@ -6,6 +6,7 @@ use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
 use calx::{color, V2, Rgba, Rect};
 use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
+use calx::{lerp};
 
 fn main() {
     let mut t = 0i32;
@@ -64,7 +65,7 @@ fn main() {
                 let fps = 1.0 / ctx.render_duration;
                 {
                     let mut fonter = Fonter::new(ctx)
-                        .color(&color::LIGHTGREEN)
+                        .color(&lerp((t as f32 / 100.0) % 1.0, color::RED, color::GREEN))
                         .border(&color::BLACK)
                         .layer(0.1)
                         .text(format!("FPS {:.0}\n", fps))

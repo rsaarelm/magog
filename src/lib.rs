@@ -24,6 +24,7 @@ use std::num::{Float};
 use std::env;
 use std::path::{Path, PathBuf};
 use std::num::Wrapping;
+use std::ops::{Add, Sub, Mul};
 
 pub use rgb::{ToColor, FromColor, Rgba, color};
 pub use geom::{V2, V3, Rect, RectIter};
@@ -76,6 +77,12 @@ pub fn to_log_odds(p: f32) -> f32 {
 /// Convert a log odds deciban value to the corresponding probability.
 pub fn from_log_odds(db: f32) -> f32 {
     (1.0 - 1.0 / (1.0 + 10.0.powf(db / 10.0)))
+}
+
+/// Interpolate linearly between two values.
+pub fn lerp<T, U>(t: T, a: U, b: U) -> U where
+        U: Add<U, Output=U> + Sub<U, Output=U> + Mul<T, Output=U> + Copy {
+    a + (b - a) * t
 }
 
 /// Rectangle anchoring points.

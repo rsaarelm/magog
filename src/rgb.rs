@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::num::{from_str_radix};
 use std::ascii::{OwnedAsciiExt};
+use std::ops::{Add, Sub, Mul};
 
 /// Things that describe a color.
 pub trait ToColor {
@@ -61,6 +62,50 @@ impl ToColor for Rgba {
 impl FromColor for Rgba {
     fn from_rgba(rgba: [f32; 4]) -> Rgba {
         Rgba { r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3] }
+    }
+}
+
+impl Add<Rgba> for Rgba {
+    type Output = Rgba;
+    fn add(self, rhs: Rgba) -> Rgba {
+        Rgba::new(
+            self.r + rhs.r,
+            self.g + rhs.g,
+            self.b + rhs.b,
+            self.a + rhs.a)
+    }
+}
+
+impl Sub<Rgba> for Rgba {
+    type Output = Rgba;
+    fn sub(self, rhs: Rgba) -> Rgba {
+        Rgba::new(
+            self.r - rhs.r,
+            self.g - rhs.g,
+            self.b - rhs.b,
+            self.a - rhs.a)
+    }
+}
+
+impl Mul<f32> for Rgba {
+    type Output = Rgba;
+    fn mul(self, rhs: f32) -> Rgba {
+        Rgba::new(
+            self.r * rhs,
+            self.g * rhs,
+            self.b * rhs,
+            self.a * rhs)
+    }
+}
+
+impl Mul<Rgba> for Rgba {
+    type Output = Rgba;
+    fn mul(self, rhs: Rgba) -> Rgba {
+        Rgba::new(
+            self.r * rhs.r,
+            self.g * rhs.g,
+            self.b * rhs.b,
+            self.a * rhs.a)
     }
 }
 
