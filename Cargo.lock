@@ -33,7 +33,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#b7aaf0fb0648934d2fc2f180ab2fcb80ecd7c99d"
+source = "git+https://github.com/rsaarelm/calx#95695d1d38217bd62d44568900f89bc8f5b8c090"
 dependencies = [
  "glium 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.0.25 (registry+https://github.com/rust-lang/crates.io-index)",
