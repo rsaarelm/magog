@@ -1,3 +1,6 @@
+/*!
+  Encode binary data into human-readable random words.
+ */
 use self::Decode::{V, C};
 
 static VS: [char; 5] = ['a', 'e', 'i', 'o', 'u'];
@@ -86,6 +89,7 @@ fn durov_chunk(s: &str) -> Result<u16, ()> {
     Ok(ret)
 }
 
+/// A vorud string.
 #[derive(PartialEq, Eq, Debug)]
 pub struct Vorud(String);
 
@@ -108,10 +112,12 @@ impl Vorud {
     }
 }
 
+/// Convert vorud into data.
 pub trait FromVorud<E> {
     fn from_vorud(v: &Vorud) -> Result<Self, E>;
 }
 
+/// Convert data into vorud.
 pub trait ToVorud {
     fn to_vorud(&self) -> Vorud;
 }

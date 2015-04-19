@@ -3,12 +3,14 @@ use ::text;
 use super::canvas::{Canvas, FONT_H};
 use super::canvas_util::{CanvasUtil};
 
+/// Text line alignment.
 pub enum Align {
     Left,
     Right,
     Center
 }
 
+/// Structure for rendering text to a canvas.
 pub struct Fonter<'a> {
     canvas: &'a mut Canvas,
     anchor: Anchor,
@@ -112,6 +114,7 @@ impl<'a> Fonter<'a> {
             .fold(0.0, |a, w| if w > a { w } else { a });
     }
 
+    /// Render the fonter text to canvas.
     pub fn draw(&mut self, offset: V2<f32>) {
         let anchor_points = Rect(
             V2(0.0, 0.0),

@@ -8,11 +8,12 @@ pub trait DijkstraNode: Eq+Clone+Hash {
     fn neighbors(&self) -> Vec<Self>;
 }
 
-/// A pathfinding map structure. A Dijkstra map lets you run pathfinding from
-/// any graph node it covers towards or away from the target nodes of the map.
-/// Currently the structure only supports underlying graphs with a fixed grid graph
-/// where the neighbors of each node must be the adjacent grid cells of that
-/// node.
+/// A pathfinding map structure.
+///
+/// A Dijkstra map lets you run pathfinding from any graph node it covers
+/// towards or away from the target nodes of the map. Currently the structure
+/// only supports underlying graphs with a fixed grid graph where the
+/// neighbors of each node must be the adjacent grid cells of that node.
 pub struct Dijkstra<N> {
     weights: HashMap<N, u32>,
 }

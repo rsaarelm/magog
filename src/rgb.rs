@@ -5,6 +5,7 @@ use std::ascii::{OwnedAsciiExt};
 use color;
 use ::{ToColor, FromColor};
 
+/// 24-bit color.
 #[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgb { pub r: u8, pub g: u8, pub b: u8 }
 
@@ -29,6 +30,7 @@ impl FromColor for Rgb {
     }
 }
 
+/// 32-bit color with alpha channel.
 #[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgba { pub r: u8, pub g: u8, pub b: u8, pub a: u8 }
 

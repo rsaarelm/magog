@@ -183,6 +183,7 @@ impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
     fn add(self, rhs: V2<U>) -> Rect<T> { Rect(self.0 + rhs, self.1.clone()) }
 }
 
+/// Iterator for the integer points within a rectangle.
 pub struct RectIter<T> {
     x: T,
     y: T,

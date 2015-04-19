@@ -30,14 +30,12 @@ pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
-pub use encode_rng::{EncodeRng};
 pub use hex::{HexGeom, Dir6, HexFov};
-pub use rng::{RngExt};
+pub use rng::{EncodeRng, RngExt};
 
 mod atlas;
 mod dijkstra;
 mod geom;
-mod encode_rng;
 mod hex;
 mod img;
 mod primitive;
@@ -63,8 +61,6 @@ pub trait FromColor: Sized {
         FromColor::from_rgba(color.to_rgba())
     }
 }
-
-pub trait Color: ToColor + FromColor {}
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
@@ -111,8 +107,8 @@ pub enum Anchor {
     Center
 }
 
-/// Return the application data directory path for the current platform.
 #[cfg(target_os = "macos")]
+/// Return the application data directory path for the current platform.
 pub fn app_data_path(app_name: &str) -> PathBuf {
     Path::new(
         format!("{}/Library/Application Support/{}",
@@ -121,6 +117,7 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
 }
 
 #[cfg(target_os = "windows")]
+/// Return the application data directory path for the current platform.
 pub fn app_data_path(_app_name: &str) -> PathBuf {
     use std::env;
 
@@ -141,6 +138,7 @@ pub fn app_data_path(_app_name: &str) -> PathBuf {
 }
 
 #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+/// Return the application data directory path for the current platform.
 pub fn app_data_path(app_name: &str) -> PathBuf {
     Path::new(
         &format!("{}/.config/{}", env::var("HOME").unwrap(), app_name))

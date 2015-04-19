@@ -7,6 +7,7 @@ use img;
 use geom::{V2, Rect};
 use primitive::Primitive;
 
+/// Constructor object for atlases.
 pub struct AtlasBuilder {
     images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     draw_offsets: Vec<V2<i32>>,
@@ -20,6 +21,7 @@ impl AtlasBuilder {
         }
     }
 
+    /// Add an image to the image atlas with the given draw offset.
     pub fn push<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
         &mut self, offset: V2<i32>, image: &I) -> usize {
         let Rect(pos, dim) = img::crop_alpha(image);
@@ -33,8 +35,12 @@ impl AtlasBuilder {
     }
 }
 
+/// A collection of images packed into a single large image for more efficient
+/// caching in graphics hardware.
 pub struct Atlas {
+    /// The atlas image containing all the subimages.
     pub image: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    /// Metadata for the subimages.
     pub items: Vec<AtlasItem>,
 }
 

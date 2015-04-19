@@ -26,6 +26,7 @@ static FONT_IDX: usize = 0;
 /// Image index of the solid color texture block.
 static SOLID_IDX: usize = 96;
 
+/// Toplevel graphics drawing and input reading context.
 pub struct CanvasBuilder {
     title: String,
     size: V2<u32>,
@@ -36,7 +37,6 @@ pub struct CanvasBuilder {
     atlas_builder: AtlasBuilder,
 }
 
-/// Toplevel graphics drawing and input reading context.
 impl CanvasBuilder {
     pub fn new() -> CanvasBuilder {
         let mut ret = CanvasBuilder {

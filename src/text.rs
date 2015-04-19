@@ -1,7 +1,9 @@
 /// Divide a string into the longest slice that fits within maximum line
-/// length and the rest of the string. Place the split before a whitespace or
-/// after a hyphen if possible. Any whitespace between the two segments is
-/// trimmed. Newlines will cause a segment split when encountered.
+/// length and the rest of the string.
+///
+/// Place the split before a whitespace or after a hyphen if possible. Any
+/// whitespace between the two segments is trimmed. Newlines will cause a
+/// segment split when encountered.
 pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a str, &'a str)
     where F: Fn(char) -> f32 {
     assert!(max_len >= 0.0);
@@ -76,7 +78,7 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
     (&text, &""[..])
 }
 
-
+/// Wrap a text into multiple lines separated by newlines.
 pub fn wrap_lines<F>(mut text: &str, char_width: &F, max_len: f32) -> String
     where F: Fn(char) -> f32 {
     let mut result = String::new();
@@ -119,6 +121,11 @@ impl<T: Iterator<Item=char>> Iterator for Map2DIterator<T> {
 }
 
 pub trait Map2DUtil {
+    /// Convert an input value into a sequence of 2D coordinates associated
+    /// with a subvalue.
+    ///
+    /// Used for converting a string of ASCII art into characters and their
+    /// coordinates.
     fn map2d(self) -> Map2DIterator<Self>;
 }
 
