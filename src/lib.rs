@@ -5,7 +5,7 @@ Miscellaneous utilities grab-bag.
 
 #![crate_name="calx"]
 #![feature(core, collections, std_misc)]
-#![feature(plugin, custom_attribute)]
+#![feature(plugin, custom_attribute, unboxed_closures)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
@@ -30,7 +30,7 @@ pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 pub use encode_rng::{EncodeRng};
-pub use hex::{HexGeom, Dir6};
+pub use hex::{HexGeom, Dir6, HexFov};
 
 mod atlas;
 mod dijkstra;
