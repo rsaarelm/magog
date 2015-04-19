@@ -13,7 +13,6 @@ extern crate mapgen;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};
-pub use fov::{Fov};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
 pub use world::{init_world, load, save};
@@ -43,7 +42,6 @@ mod component_ref;
 mod ecs;
 mod entity;
 mod flags;
-mod fov;
 pub mod location;
 mod location_set;
 mod msg;

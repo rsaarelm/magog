@@ -1,13 +1,12 @@
 use std::default::Default;
 use rand::Rng;
-use calx::{Dijkstra, Rgb, Dir6, HexGeom};
+use calx::{Dijkstra, Rgb, Dir6, HexGeom, HexFov};
 use world;
 use location::{Location};
 use flags;
 use components::{BrainState, Alignment};
 use spatial::Place;
 use action;
-use fov::Fov;
 use rng;
 use msg;
 use item::{ItemType, Slot};
@@ -620,7 +619,7 @@ impl Entity {
         let mut ret = Vec::new();
         // XXX: Expensive.
         let loc = self.location().expect("no location");
-        let seen: Vec<Location> = Fov::new(
+        let seen: Vec<Location> = HexFov::new(
             |pt| (loc + pt).blocks_sight(), sight_range)
             .map(|pt| loc + pt)
             .collect();
@@ -673,8 +672,9 @@ impl Entity {
         let range = 12;
         if let Some(loc) = self.location() {
             if self.has_map_memory() {
-                let seen: Vec<Location> = Fov::new(
+                let seen: Vec<Location> = HexFov::new(
                     |pt| (loc + pt).blocks_sight(), range)
+                    .fake_isometric()
                     .map(|pt| loc + pt)
                     .collect();
                 world::with_mut(|w| {
