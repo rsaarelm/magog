@@ -46,7 +46,6 @@ pub mod location;
 mod location_set;
 mod msg;
 mod prototype;
-mod rng;
 mod spatial;
 mod spawn;
 mod stats;

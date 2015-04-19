@@ -1,17 +1,17 @@
 use std::default::Default;
 use rand::Rng;
-use calx::{Dijkstra, Rgb, Dir6, HexGeom, HexFov};
+use calx::{Dijkstra, Rgb, Dir6, HexGeom, HexFov, RngExt};
 use world;
 use location::{Location};
 use flags;
 use components::{BrainState, Alignment};
 use spatial::Place;
 use action;
-use rng;
 use msg;
 use item::{ItemType, Slot};
 use stats::{Stats, Intrinsic};
 use ecs::{ComponentAccess};
+use flags::{rng};
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
@@ -167,9 +167,9 @@ impl Entity {
         // Every five points of power is one certain hit.
         let full = power / 5;
         // The fractional points are one probabilistic hit.
-        let partial = (power % 5) as f64 / 5.0;
+        let partial = (power % 5) as f32 / 5.0;
 
-        let damage = full + if rng::p(partial) { 1 } else { 0 };
+        let damage = full + if rng().with_chance(partial) { 1 } else { 0 };
         self.apply_damage(damage)
     }
 
@@ -208,7 +208,7 @@ impl Entity {
         let loc = self.location().expect("no location");
         msgln!("{} dies.", self.name());
         msg::push(::Msg::Gib(loc));
-        if rng::one_chance_in(6) {
+        if rng().one_chance_in(6) {
             // Drop a heart.
             action::spawn_named("heart", loc);
         }
@@ -595,7 +595,7 @@ impl Entity {
                     if steps.len() > 0 {
                         self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
                     } else {
-                        self.step(rng::with(|ref mut rng| rng.gen::<Dir6>()));
+                        self.step(rng().gen());
                         // TODO: Fall asleep if things get boring.
                     }
                 }
