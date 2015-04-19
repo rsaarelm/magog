@@ -85,18 +85,8 @@ impl Light {
         Light { lum: lum }
     }
 
-    pub fn apply(&self, color: &calx::Rgb) -> calx::Rgb {
-        if self.lum <= 1.0 {
-            // Make the darkness blue instead of totally black.
-            calx::Rgb::new(
-                (color.r as f32 * calx::clamp(0.0, 1.0, self.lum + 0.125)) as u8,
-                (color.g as f32 * calx::clamp(0.0, 1.0, self.lum + 0.25)) as u8,
-                (color.b as f32 * calx::clamp(0.0, 1.0, self.lum + 0.5)) as u8)
-        } else {
-            calx::Rgb::new(
-                255 - ((255 - color.r) as f32 * (2.0 - self.lum)) as u8,
-                255 - ((255 - color.g) as f32 * (2.0 - self.lum)) as u8,
-                255 - ((255 - color.b) as f32 * (2.0 - self.lum)) as u8)
-        }
+    pub fn apply(&self, color: &calx::Rgba) -> calx::Rgba {
+        let darkness_color = calx::Rgba::new(0.05, 0.10, 0.25, color.a);
+        calx::lerp(self.lum, *color * darkness_color, *color)
     }
 }

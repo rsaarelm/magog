@@ -1,7 +1,7 @@
 use std::num::{Float};
 use std::collections::HashMap;
 use time;
-use calx::{V2, Rgb, timing};
+use calx::{V2, Rgba, FromColor, timing};
 use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil};
 use mapgen::TerrainType;
@@ -85,12 +85,12 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_tile(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgb) {
+    fn draw_tile(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgba) {
         self.draw_tile2(ctx, idx, offset, z, color, &BLACK);
     }
 
     /// Draw edge lines to floor tile if there are chasm tiles to the back.
-    fn floor_edges(&'a self, ctx: &mut Canvas, offset: V2<f32>, color: &Rgb) {
+    fn floor_edges(&'a self, ctx: &mut Canvas, offset: V2<f32>, color: &Rgba) {
         // Shift edge offset from block top level to floor level.
         let offset = offset + V2(0, PIXEL_UNIT / 2).map(|x| x as f32);
 
@@ -105,33 +105,23 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgb) {
+    fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: &Rgba) {
         self.draw_tile(ctx, idx, offset, z, color);
         self.floor_edges(ctx, offset, color);
     }
 
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
-                  color: &Rgb, back_color: &Rgb) {
+                  color: &Rgba, back_color: &Rgba) {
         let (mut color, mut back_color) = match self.fov {
             // XXX: Special case for the solid-black objects that are used to
             // block out stuff to not get recolored. Don't use total black as
             // an actual object color, have something like #010101 instead.
-            Some(FovStatus::Remembered) if *color != BLACK => (BLACK, Rgb::new(0x33, 0x22, 0x00)),
+            Some(FovStatus::Remembered) if *color != BLACK => (BLACK, FromColor::from_color(&"#320")),
             _ => (*color, *back_color),
         };
         if self.fov == Some(FovStatus::Seen) {
             color = self.light.apply(&color);
             back_color = self.light.apply(&back_color);
-            if self.depth != 0 && color != BLACK {
-                back_color = Rgb::new(
-                    0x20 * -self.depth as u8,
-                    0x20 * -self.depth as u8,
-                    0x20 * -self.depth as u8);
-                color = Rgb::new(
-                    (color.r as f32 * 0.5) as u8,
-                    (color.g as f32 * 0.5) as u8,
-                    (color.b as f32 * 0.5) as u8);
-            }
         }
         let z = z + self.depth as f32 * DEPTH_Z_MODIFIER;
         if self.depth != 0 && self.fov != Some(FovStatus::Seen) { return; }
@@ -194,8 +184,8 @@ impl<'a> CellDrawable<'a> {
                 self.draw_tile(ctx, DOWNSTAIRS, offset, BLOCK_Z, &SLATEGRAY);
             },
             TerrainType::Portal => {
-                let glow = (127.0 *(1.0 + (time::precise_time_s()).sin())) as u8;
-                let portal_col = Rgb::new(glow, glow, 255);
+                let glow = ((0.5 + 0.5 * (time::precise_time_s()).sin())) as f32;
+                let portal_col = Rgba::new(glow, glow, 1.0, 1.0);
                 self.draw_tile(ctx, PORTAL, offset, BLOCK_Z, &portal_col);
             },
             TerrainType::Rock => {
@@ -278,7 +268,7 @@ impl<'a> CellDrawable<'a> {
             },
         }
 
-        fn blockform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, mut offset: V2<f32>, idx: usize, color: &Rgb) {
+        fn blockform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, mut offset: V2<f32>, idx: usize, color: &Rgba) {
             if c.depth != 0 {
                 c.draw_tile(ctx, idx, offset, BLOCK_Z, color);
                 // Double blockforms in sub-levels.
@@ -298,7 +288,7 @@ impl<'a> CellDrawable<'a> {
             }
         }
 
-        fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgb, opaque: bool) {
+        fn wallform(c: &CellDrawable, ctx: &mut Canvas, k: &Kernel<TerrainType>, offset: V2<f32>, idx: usize, color: &Rgba, opaque: bool) {
             let (left_wall, right_wall, block) = wall_flags_lrb(k);
             if block {
                 if opaque {

@@ -1,6 +1,6 @@
 use std::default::Default;
 use rand::Rng;
-use calx::{Dijkstra, Rgb, Dir6, HexGeom, HexFov, RngExt};
+use calx::{Dijkstra, Rgba, Dir6, HexGeom, HexFov, RngExt};
 use world;
 use location::{Location};
 use flags;
@@ -52,7 +52,7 @@ impl Entity {
         )
     }
 
-    pub fn get_icon(self) -> Option<(usize, Rgb)> {
+    pub fn get_icon(self) -> Option<(usize, Rgba)> {
         world::with(|w|
             if let Some(desc) = w.descs().get(self) {
                 Some((desc.icon, desc.color))
