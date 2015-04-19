@@ -8,6 +8,7 @@ use glium::render_buffer;
 use glium::LinearBlendingFactor::*;
 use super::{CanvasMagnify};
 use ::{V2, Rect};
+use ::rgb::{to_srgb};
 
 pub struct Renderer {
     /// Canvas size.
@@ -172,7 +173,17 @@ impl Renderer {
     }
 
     pub fn canvas_pixels(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        self.buffer.read()
+        let mut ret: ImageBuffer<Rgb<u8>, Vec<u8>> = self.buffer.read();
+
+        // Convert to sRGB
+        // XXX: Probably horribly slow, can we make OpenGL do this?
+        for p in ret.pixels_mut() {
+            p.data[0] = (to_srgb(p.data[0] as f32 / 255.0) * 255.0).round() as u8;
+            p.data[1] = (to_srgb(p.data[1] as f32 / 255.0) * 255.0).round() as u8;
+            p.data[2] = (to_srgb(p.data[2] as f32 / 255.0) * 255.0).round() as u8;
+        }
+
+        ret
     }
 }
 

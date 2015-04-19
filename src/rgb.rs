@@ -109,7 +109,7 @@ impl Mul<Rgba> for Rgba {
     }
 }
 
-fn to_linear(srgb: f32) -> f32 {
+pub fn to_linear(srgb: f32) -> f32 {
    if srgb <= 0.04045 {
        srgb / 12.92
    } else {
@@ -117,7 +117,7 @@ fn to_linear(srgb: f32) -> f32 {
    }
 }
 
-fn to_srgb(linear: f32) -> f32 {
+pub fn to_srgb(linear: f32) -> f32 {
     if linear < 0.0031308 {
         12.92 * linear
     } else {
