@@ -1,4 +1,4 @@
-use ::{Rgba, V2, Rect, ToColor, FromColor, color, Anchor};
+use ::{color, Rgba, V2, Rect, ToColor, FromColor, Anchor};
 use ::text;
 use super::canvas::{Canvas, FONT_H};
 use super::canvas_util::{CanvasUtil};

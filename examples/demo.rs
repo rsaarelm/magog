@@ -4,7 +4,7 @@ extern crate calx;
 
 use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
-use calx::{color, V2, Rgba, Rgb, Rect, FromColor};
+use calx::{color, V2, Rgba, Rect};
 use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 
 fn main() {
@@ -30,8 +30,6 @@ fn main() {
         "sic fugiens, dux, zelotypos, quam karus haberis",
         ".o'i mu xagji sofybakni cu zvati le purdi",
     ];
-    let pattern_col: Rgb = FromColor::from_color(&"#420");
-
     for evt in CanvasBuilder::new().run() {
         // Change pangram every 10 seconds.
         let pangram_idx = (time::precise_time_s() / 10.0) as usize % pangrams.len();
@@ -43,7 +41,7 @@ fn main() {
                 for y in 0i32..(360/8) {
                     for x in 0i32..(640/8) {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
-                            color::WHITE } else { pattern_col };
+                            "white" } else { "#420" };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
                             0.4, &col, &color::BLACK);
                     }
@@ -61,7 +59,7 @@ fn main() {
                     ((t as f32 / 160.0).cos() * 128.0),
                     ((t as f32 / 160.0).sin() * 128.0));
 
-                ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0, 255, 255, 128));
+                ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0.0, 1.0, 1.0, 0.1));
 
                 let fps = 1.0 / ctx.render_duration;
                 {

@@ -5,7 +5,7 @@ Miscellaneous utilities grab-bag.
 
 #![crate_name="calx"]
 #![feature(core, collections, std_misc)]
-#![feature(plugin, custom_attribute, unboxed_closures)]
+#![feature(plugin, custom_attribute, unboxed_closures, slice_patterns)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]
 
@@ -25,7 +25,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::num::Wrapping;
 
-pub use rgb::{Rgb, Rgba};
+pub use rgb::{ToColor, FromColor, Rgba, color};
 pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
@@ -43,24 +43,9 @@ mod rgb;
 mod rng;
 
 pub mod backend;
-pub mod color;
 pub mod text;
 pub mod timing;
 pub mod vorud;
-
-/// Things that describe a color.
-pub trait ToColor {
-    fn to_rgba(&self) -> [f32; 4];
-}
-
-/// Things that can be made from a color.
-pub trait FromColor: Sized {
-    fn from_rgba(rgba: [f32; 4]) -> Self;
-
-    fn from_color<C: ToColor>(color: &C) -> Self {
-        FromColor::from_rgba(color.to_rgba())
-    }
-}
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
