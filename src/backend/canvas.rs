@@ -81,9 +81,8 @@ impl CanvasBuilder {
     }
 
     /// Set the canvas to start in fullscreen mode.
-    /// XXX: Doesn't work right as of 2015-03-26, make sure this is fixed
-    /// before using.
-    pub fn _set_fullscreen(mut self) -> CanvasBuilder {
+    /// FIXME: Broken on Linux, https://github.com/tomaka/glutin/issues/148
+    pub fn set_fullscreen(mut self) -> CanvasBuilder {
         self.fullscreen = true;
         self
     }
@@ -176,7 +175,11 @@ impl Canvas {
             .with_title(title.to_string());
 
         if builder.fullscreen {
-            glutin = glutin.with_fullscreen(glutin::get_primary_monitor());
+            // FIXME: Glutin's X11 fullscreen is broken, this is only enabled
+            // for Windows.
+            if cfg!(windows) {
+                glutin = glutin.with_fullscreen(glutin::get_primary_monitor());
+            }
         } else {
             // Zoom up the window to the biggest even pixel multiple that fits
             // the user's monitor.
