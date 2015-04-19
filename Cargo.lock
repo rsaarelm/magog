@@ -8,7 +8,7 @@ dependencies = [
  "mapgen 0.0.1",
  "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand_macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand_macros 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -33,14 +33,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#95695d1d38217bd62d44568900f89bc8f5b8c090"
+source = "git+https://github.com/rsaarelm/calx#c63aa8e0ad510e8f3704cfcc05f0d877954f12b0"
 dependencies = [
- "glium 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.0.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand_macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand_macros 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -104,7 +104,7 @@ dependencies = [
 
 [[package]]
 name = "glium"
-version = "0.2.3"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cgmath 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -263,7 +263,7 @@ dependencies = [
 
 [[package]]
 name = "rand_macros"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -312,7 +312,7 @@ dependencies = [
  "mapgen 0.0.1",
  "num 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand_macros 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand_macros 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
