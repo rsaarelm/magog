@@ -20,6 +20,7 @@ extern crate glutin;
 #[macro_use]
 extern crate glium;
 
+use std::num::{Float};
 use std::env;
 use std::path::{Path, PathBuf};
 use std::num::Wrapping;
@@ -31,6 +32,7 @@ pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 pub use encode_rng::{EncodeRng};
 pub use hex::{HexGeom, Dir6, HexFov};
+pub use rng::{RngExt};
 
 mod atlas;
 mod dijkstra;
@@ -40,6 +42,7 @@ mod hex;
 mod img;
 mod primitive;
 mod rgb;
+mod rng;
 
 pub mod backend;
 pub mod color;
@@ -78,6 +81,20 @@ pub fn noise(n: i32) -> f32 {
         & Wrapping(0x7fffffff);
     let Wrapping(m) = m;
     1.0 - m as f32 / 1073741824.0
+}
+
+/// Convert probability to a log odds deciban value.
+///
+/// Log odds correspond to the Bayesian probability for a hypothesis that
+/// has decibans * 1/10 log_2(10) bits of evidence in favor of it. They're
+/// a bit like rolling a d20 but better.
+pub fn to_log_odds(p: f32) -> f32 {
+    10.0 * (p / (1.0 - p)).log(10.0)
+}
+
+/// Convert a log odds deciban value to the corresponding probability.
+pub fn from_log_odds(db: f32) -> f32 {
+    (1.0 - 1.0 / (1.0 + 10.0.powf(db / 10.0)))
 }
 
 /// Rectangle anchoring points.
@@ -139,5 +156,15 @@ mod test {
         for i in 0i32..100 {
             assert!(noise(i) >= -1.0 && noise(i) <= 1.0);
         }
+    }
+
+    #[test]
+    fn test_log_odds() {
+        use super::{to_log_odds, from_log_odds};
+        assert_eq!(from_log_odds(0.0), 0.5);
+        assert_eq!(to_log_odds(0.5), 0.0);
+
+        assert_eq!((from_log_odds(-5.0) * 100.0) as i32, 24);
+        assert_eq!(to_log_odds(0.909091) as i32, 10);
     }
 }
