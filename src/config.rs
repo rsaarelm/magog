@@ -18,6 +18,8 @@ pub struct Config {
     pub magnify_mode: CanvasMagnify,
     /// Fixed world random number generator seed.
     pub rng_seed: Option<u32>,
+    /// Start in fullscreen mode
+    pub fullscreen: bool,
 }
 
 impl Default for Config {
@@ -26,6 +28,7 @@ impl Default for Config {
             wall_sliding: true,
             magnify_mode: CanvasMagnify::PixelPerfect,
             rng_seed: None,
+            fullscreen: false,
         }
     }
 }
@@ -43,6 +46,7 @@ impl Config {
         opts.optflag("V", "version", "Print version info and exit");
         opts.optopt("", "magnify-mode", "How to filter magnified graphics. MODE = pixel | nearest | smooth", "MODE");
         opts.optopt("", "seed", "World generation seed", "VORUD");
+        opts.optflag("", "fullscreen", "Run in fullscreen mode");
 
         let args: Vec<String> = args.collect();
 
@@ -64,6 +68,10 @@ impl Config {
 
         if parse.opt_present("no-wall-sliding") {
             self.wall_sliding = false;
+        }
+
+        if parse.opt_present("fullscreen") {
+            self.fullscreen = true;
         }
 
         if let Some(x) = parse.opt_str("magnify-mode") {
@@ -115,6 +123,9 @@ wall-sliding = true
 
 # How to filter magnified graphics. pixel | nearest | smooth
 magnify-mode = "pixel"
+
+# Start the game in fullscreen instead of windowed mode
+fullscreen = false
 "#)
     }
 
@@ -155,6 +166,10 @@ magnify-mode = "pixel"
                 "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }
                 _ => { return Err(format!("Bad magnify mode '{}'", mag)); }
             };
+        }
+
+        if let Some(&Value::Boolean(b)) = settings.get("fullscreen") {
+            self.fullscreen = b;
         }
 
         Ok(())
