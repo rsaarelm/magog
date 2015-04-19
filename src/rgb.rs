@@ -14,10 +14,10 @@ pub trait ToColor {
     /// screen.
     fn to_srgba(&self) -> [u8; 4] {
         let rgba = self.to_rgba();
-        [(to_srgb(rgba[0]) * 255.0) as u8,
-         (to_srgb(rgba[1]) * 255.0) as u8,
-         (to_srgb(rgba[2]) * 255.0) as u8,
-         (to_srgb(rgba[3]) * 255.0) as u8]
+        [(to_srgb(rgba[0]) * 255.0).round() as u8,
+         (to_srgb(rgba[1]) * 255.0).round() as u8,
+         (to_srgb(rgba[2]) * 255.0).round() as u8,
+         (to_srgb(rgba[3]) * 255.0).round() as u8]
     }
 }
 
@@ -382,8 +382,7 @@ color_constants!{
 mod test {
     #[test]
     fn test_parse_color() {
-        use super::Rgba;
-        use super::parse_color;
+        use super::{Rgba, parse_color, FromColor, ToColor};
 
         assert_eq!(None, parse_color(""));
         assert_eq!(None, parse_color("#"));
@@ -402,5 +401,12 @@ mod test {
         assert_eq!(Some(Rgba::new(1.0, 0.0, 0.0, 1.0)), parse_color("red"));
         assert_eq!(Some(Rgba::new(1.0, 0.0, 0.0, 1.0)), parse_color("Red"));
         assert_eq!(Some(Rgba::new(1.0, 0.0, 0.0, 1.0)), parse_color("RED"));
+
+        let c: Rgba = FromColor::from_color(&"#000");
+        assert_eq!(0x00, c.to_srgba()[0]);
+        let c: Rgba = FromColor::from_color(&"#200");
+        assert_eq!(0x22, c.to_srgba()[0]);
+        let c: Rgba = FromColor::from_color(&"#F00");
+        assert_eq!(0xFF, c.to_srgba()[0]);
     }
 }
