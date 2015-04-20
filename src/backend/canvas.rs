@@ -82,8 +82,8 @@ impl CanvasBuilder {
 
     /// Set the canvas to start in fullscreen mode.
     /// FIXME: Broken on Linux, https://github.com/tomaka/glutin/issues/148
-    pub fn set_fullscreen(mut self) -> CanvasBuilder {
-        self.fullscreen = true;
+    pub fn set_fullscreen(mut self, state: bool) -> CanvasBuilder {
+        self.fullscreen = state;
         self
     }
 
