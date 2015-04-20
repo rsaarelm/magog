@@ -21,9 +21,7 @@ extern crate glutin;
 extern crate glium;
 
 use std::num::{Float};
-use std::env;
 use std::path::{Path, PathBuf};
-use std::num::Wrapping;
 use std::ops::{Add, Sub, Mul};
 
 pub use rgb::{ToColor, FromColor, Rgba, color};
@@ -57,6 +55,8 @@ pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
 
 /// Deterministic noise.
 pub fn noise(n: i32) -> f32 {
+    use std::num::Wrapping;
+
     let n = Wrapping(n);
     let n = (n << 13) ^ n;
     let m = (n * (n * n * Wrapping(15731) + Wrapping(789221)) + Wrapping(1376312589))
@@ -99,43 +99,42 @@ pub enum Anchor {
     Center
 }
 
-#[cfg(target_os = "macos")]
 /// Return the application data directory path for the current platform.
 pub fn app_data_path(app_name: &str) -> PathBuf {
-    Path::new(
-        format!("{}/Library/Application Support/{}",
-                env::var("HOME").unwrap(), app_name))
-    .to_path_buf()
-}
-
-#[cfg(target_os = "windows")]
-/// Return the application data directory path for the current platform.
-pub fn app_data_path(_app_name: &str) -> PathBuf {
     use std::env;
+    // On Windows, a portable application is just an .exe the user downloads
+    // and drops somewhere. The convention here is for a portable application
+    // to add its files to wherever its exe file is. An installed application
+    // uses an actual installer program and deploys its files to user data
+    // directories.
+    let is_portable_application = true;
 
-    // Unless the Windows app was installed with an actual installer instead
-    // of just being a portable .exe file, it shouldn't go around creating
-    // strange directories but just use the local directory instead.
-
-    // Path::new(
-    // format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
-    // .to_path_buf();
-
-    match env::current_exe() {
-        Ok(mut p) => { p.pop(); p }
-        // If couldn't get self exe path, just use the local relative path and
-        // hope for the best.
-        _ => Path::new(".").to_path_buf()
+    // TODO: Handle not having the expected env variables.
+    if cfg!(windows) {
+        if is_portable_application {
+            match env::current_exe() {
+                Ok(mut p) => { p.pop(); p }
+                // If couldn't get self exe path, just use the local relative path and
+                // hope for the best.
+                _ => Path::new(".").to_path_buf()
+            }
+        } else {
+            Path::new(
+                &format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
+            .to_path_buf()
+        }
+    } else if cfg!(macos) {
+        Path::new(
+            &format!("{}/Library/Application Support/{}",
+                    env::var("HOME").unwrap(), app_name))
+        .to_path_buf()
+    } else {
+        Path::new(
+            &format!("{}/.config/{}", env::var("HOME").unwrap(), app_name))
+        .to_path_buf()
     }
 }
 
-#[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
-/// Return the application data directory path for the current platform.
-pub fn app_data_path(app_name: &str) -> PathBuf {
-    Path::new(
-        &format!("{}/.config/{}", env::var("HOME").unwrap(), app_name))
-    .to_path_buf()
-}
 
 #[cfg(test)]
 mod test {
