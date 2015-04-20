@@ -4,7 +4,7 @@ use primitive::Primitive;
 use ::{Anchor};
 
 /// 2D geometric vector.
-#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, RustcDecodable, RustcEncodable)]
 pub struct V2<T>(pub T, pub T);
 
 impl<T: Eq> Eq for V2<T> { }
@@ -56,7 +56,7 @@ impl<T: Primitive> V2<T> {
 }
 
 /// 3D geometric vector
-#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, RustcDecodable, RustcEncodable)]
 pub struct V3<T>(pub T, pub T, pub T);
 
 impl<T: Eq> Eq for V3<T> { }
@@ -108,7 +108,7 @@ impl<T: Primitive> V3<T> {
 }
 
 /// A rectangle type consisting of position and size vectors.
-#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, RustcDecodable, RustcEncodable)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
 impl<T: Eq> Eq for Rect<T> { }
