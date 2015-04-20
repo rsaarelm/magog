@@ -1,5 +1,5 @@
 use calx::{FromColor, ToColor, Rgba};
-use mapgen::{Biome};
+use mapgen::{Biome, SpawnType};
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
@@ -60,11 +60,11 @@ pub struct Spawn {
     /// only start showing up in large depths.
     pub min_depth: i32,
 
-    pub category: Category,
+    pub category: SpawnType,
 }
 
 impl Spawn {
-    pub fn new(category: Category) -> Spawn {
+    pub fn new(category: SpawnType) -> Spawn {
         Spawn {
             biome: Biome::Anywhere,
             commonness: 1000,
@@ -93,17 +93,6 @@ impl Spawn {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
-pub enum Category {
-    Mob = 0b1,
-
-    Consumable = 0b10,
-    Equipment = 0b100,
-
-    Item = 0b110,
-
-    Anything = -1,
-}
 
 
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]

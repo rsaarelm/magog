@@ -1,5 +1,7 @@
 #![crate_name="mapgen"]
 
+#![feature(unboxed_closures)]
+
 extern crate num;
 extern crate rustc_serialize;
 extern crate rand;
@@ -9,6 +11,9 @@ mod geomorph;
 mod geomorph_data;
 mod mapgen;
 mod terrain;
+
+use std::collections::{HashMap};
+use calx::{V2};
 
 pub use mapgen::{gen_herringbone};
 pub use terrain::{TerrainType};
@@ -44,5 +49,56 @@ pub struct AreaSpec {
 impl AreaSpec {
     pub fn new(biome: Biome, depth: i32) -> AreaSpec {
         AreaSpec { biome: biome, depth: depth }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
+pub enum SpawnType {
+    Anything,
+
+    Creature,
+
+    Item,
+
+    Consumable,
+    Equipment,
+}
+
+impl SpawnType {
+    /// Return whether a SpawnType is a subtype of another type.
+    pub fn is_a(self, other: SpawnType) -> bool {
+        use SpawnType::*;
+
+        match (self, other) {
+            (x, y) if x == y => true,
+            (_, Anything) => true,
+            (Consumable, Item) => true,
+            (Equipment, Item) => true,
+            _ => false,
+        }
+    }
+}
+
+pub struct StaticArea<T> {
+    pub terrain: HashMap<V2<i32>, TerrainType>,
+    pub spawns: Vec<(V2<i32>, T)>,
+    pub player_entrance: V2<i32>,
+}
+
+impl<T> StaticArea<T> {
+    pub fn new() -> StaticArea<T> {
+        StaticArea {
+            terrain: HashMap::new(),
+            spawns: Vec::new(),
+            player_entrance: V2(0, 0),
+        }
+    }
+
+    pub fn map_spawns<U, F: Fn<(T,), Output=U>>(self, f: F) -> StaticArea<U> {
+        StaticArea {
+            terrain: self.terrain,
+            spawns: self.spawns.into_iter().map(|(p, x)| (p, f(x))).collect(),
+            player_entrance: self.player_entrance,
+        }
     }
 }

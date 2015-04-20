@@ -1,14 +1,18 @@
+use std::iter;
 use num::{Integer};
 use rand::Rng;
 use calx::{V2};
 use geomorph;
 use geomorph::{Chunk};
-use terrain::TerrainType;
+use ::{StaticArea, SpawnType};
 
-pub fn gen_herringbone<R: Rng, F>(
-    rng: &mut R, spec: &::AreaSpec, mut set_terrain: F)
-    where F: FnMut(V2<i32>, TerrainType) {
-    geomorph::with_cache(|cs| {
+pub fn gen_herringbone<R: Rng>(
+    rng: &mut R, spec: &::AreaSpec) -> StaticArea<SpawnType> {
+
+    // Generate the terrain.
+    let mut ret = geomorph::with_cache(|cs| {
+        let mut ret = StaticArea::new();
+
         let chunks = cs.iter().filter(
                 |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
                 .collect::<Vec<&Chunk>>();
@@ -36,11 +40,50 @@ pub fn gen_herringbone<R: Rng, F>(
                     else { &inner[..] }).unwrap();
 
                 for (&(x, y), &terrain) in chunk.cells.iter() {
-                    set_terrain(herringbone_map((cx, cy), (x, y)), terrain);
+                    ret.terrain.insert(herringbone_map((cx, cy), (x, y)), terrain);
                 }
             }
         }
+
+        ret
     });
+
+    // Place the spawns.
+
+    // No connectivity analysis yet, trusting that herringbone map has
+    // total connectivity. Later on, use Dijkstra map that spreads from
+    // entrance/exit as a reachability floodfill to do something cleverer
+    // here.
+    let mut opens: Vec<V2<i32>> = ret.terrain.iter()
+        .filter(|&(_, &t)| t.valid_spawn_spot())
+        .map(|(&loc, _)| loc)
+        .collect();
+
+    // Can't trust iteration order in HashMap, sorting to make sure spawns
+    // will be deterministic for the same rng.
+    opens.sort_by(|a, b|
+        (a.0, a.1).cmp(&(b.0, b.1)));
+
+    rng.shuffle(&mut opens);
+
+    ret.player_entrance = opens.pop().unwrap();
+
+    let num_mobs = 32;
+    let num_items = 12;
+
+    ret.spawns.extend(
+        iter::repeat(SpawnType::Creature).take(num_mobs).chain(
+        iter::repeat(SpawnType::Item).take(num_items))
+        .filter_map(|spawn| {
+            if let Some(loc) = opens.pop() {
+                Some((loc, spawn))
+            } else {
+                None
+            }
+        })
+    );
+
+    ret
 }
 
 

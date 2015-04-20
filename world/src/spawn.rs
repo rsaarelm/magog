@@ -1,6 +1,6 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
-use components::{Category};
+use mapgen::{SpawnType};
 use entity::Entity;
 use action;
 use mapgen::{Biome};
@@ -17,7 +17,7 @@ pub struct Spawn {
     // Though this one can become more complex if we want greater detail, the
     // component thing is just for sampling, this could be used to eg. create
     // specific entities by name.
-    category_mask: u32,
+    spawn_type: SpawnType,
     biome_mask: u32,
     depth: i32,
 }
@@ -25,15 +25,12 @@ pub struct Spawn {
 impl Spawn {
     /// Empty categories or biomes are treated as matching any category or
     /// biome.
-    pub fn new(depth: i32, categories: Vec<Category>, biomes: Vec<Biome>) -> Spawn {
-        let category_mask = if categories.is_empty() { -1 }
-        else { categories.into_iter().fold(0, |a, x| a | x as u32) };
-
+    pub fn new(depth: i32, spawn_type: SpawnType, biomes: Vec<Biome>) -> Spawn {
         let biome_mask = if biomes.is_empty() { -1 }
         else { biomes.into_iter().fold(0, |a, x| a | x as u32) };
 
         Spawn {
-            category_mask: category_mask,
+            spawn_type: spawn_type,
             biome_mask: biome_mask,
             depth: depth,
         }
@@ -47,7 +44,7 @@ impl Spawn {
                 if let Some(spawn) = w.spawns().get_local(e) {
                     if spawn.min_depth <= self.depth
                         && self.biome_mask & (spawn.biome as u32) != 0
-                        && self.category_mask & (spawn.category as u32) != 0 {
+                        && spawn.category.is_a(self.spawn_type) {
                         return Some(Weighted { weight: spawn.commonness, item: e });
                     }
                 }
