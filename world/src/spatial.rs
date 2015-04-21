@@ -197,8 +197,8 @@ impl Encodable for Spatial {
 #[cfg(test)]
 mod test {
     use super::{Place};
-    use world::item::Slot;
-    use world::entity::Entity;
+    use item::Slot;
+    use entity::Entity;
 
     #[test]
     fn test_place_adjacency() {
