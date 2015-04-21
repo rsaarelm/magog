@@ -391,13 +391,13 @@ impl GameState {
                 // TODO: Chars and keypresses in same lookup (use variants?)
                 match ch {
                     // Debug
-                    '>' => { action::next_level(); }
+                    '>' if cfg!(debug_assertions) => { action::next_level(); }
 
                     // Open console
                     // (Make this be a typed-key instead of a pressed-key
                     // event so that the event will have been consumed and
                     // console won't start with an inputted '`'.)
-                    '`' => { self.ui_state = UiState::Console; }
+                    '`' if cfg!(debug_assertions) => { self.ui_state = UiState::Console; }
 
                     _ => ()
                 }
