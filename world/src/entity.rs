@@ -30,6 +30,8 @@ impl Entity {
     /// CALLER IS RESPONSIBLE FOR ENSUING THAT AN ENTITY WILL NOT BE
     /// USED FROM ANYWHERE AFTER THE DELETE OPERATION.
     pub fn delete(self) {
+        if !self.exists() { return; }
+
         world::with_mut(|w|
             if w.flags.player == Some(self) { w.flags.player = None; });
         world::with_mut(|w| w.comps.remove(self));
@@ -153,6 +155,8 @@ impl Entity {
 
 // Damage and lifetime /////////////////////////////////////////////////
 
+    pub fn is_dead(self) -> bool { self.has_intrinsic(Intrinsic::Dead) }
+
     /// Apply damage to entity, subject to damage reduction.
     pub fn damage(self, mut power: i32) {
         let stats = self.stats();
@@ -205,12 +209,20 @@ impl Entity {
     /// Do any game logic stuff related to this entity dying violently before
     /// deleting it.
     pub fn kill(self) {
+        if self.is_dead() { return; }
+        self.set_intrinsic(Intrinsic::Dead);
+
         let loc = self.location().expect("no location");
-        msgln!("{} dies.", self.name());
-        msg::push(::Msg::Gib(loc));
         if rng().one_chance_in(6) {
             // Drop a heart.
             action::spawn_named("heart", loc);
+        }
+        if self.has_intrinsic(Intrinsic::Deathsplosion) {
+            action::explode(loc, self.stats().power);
+            msgln!("{} detonates.", self.name());
+        } else {
+            msg::push(::Msg::Gib(loc));
+            msgln!("{} dies.", self.name());
         }
         self.delete();
     }
@@ -403,7 +415,7 @@ impl Entity {
             })
     }
 
-    pub fn _set_intrinsic(self, intrinsic: Intrinsic) {
+    pub fn set_intrinsic(self, intrinsic: Intrinsic) {
         world::with_mut(|w|
             if let Some(x) = w.stats_mut().get(self) {
                 x.intrinsics |= intrinsic as u32;

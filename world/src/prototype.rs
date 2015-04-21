@@ -84,7 +84,7 @@ pub fn init() {
 
     Prototype::new(Some(base_mob))
         (Desc::new("ooze", 77, LIGHTSEAGREEN))
-        (Stats::new(3, &[]))
+        (Stats::new(3, &[Slow, Deathsplosion]))
         (Spawn::new(SpawnType::Creature).biome(Dungeon).depth(3))
         ;
 

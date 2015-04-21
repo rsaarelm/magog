@@ -65,11 +65,15 @@ impl Add<Stats> for Stats {
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
-    Slow        = 0b1,
+    Slow          = 0b1,
     /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast        = 0b10,
+    Fast          = 0b10,
     /// Moves 1/3 faster than usual, stacks with Fast status.
-    Quick       = 0b100,
+    Quick         = 0b100,
     /// Can manipulate objects and doors.
-    Hands       = 0b1000,
+    Hands         = 0b1000,
+    /// Explodes on death
+    Deathsplosion = 0b10000,
+    /// Is dead (not undead-dead, no-longer-subject-to-living-things-logic-dead)
+    Dead          = 0b100000,
 }
