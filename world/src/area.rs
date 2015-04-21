@@ -3,7 +3,7 @@ use rand::SeedableRng;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::BTreeMap;
 use location::Location;
-use mapgen::{herringbone, AreaSpec, TerrainType};
+use mapgen::{herringbone, rooms_and_corridors, AreaSpec, TerrainType};
 use spawn::Spawn;
 
 // Note to maintainer: Due to the way serialization works, Area *must* be
@@ -53,10 +53,11 @@ impl Area {
         let mut terrain = BTreeMap::new();
         let origin = Location::new(0, 0);
         let mut rng: StdRng = SeedableRng::from_seed(&[rng_seed as usize + spec.depth as usize][..]);
-        let static_area = herringbone(
-            &mut rng,
-            &spec)
-            .map_spawns(|s| Spawn::new(spec.depth, s, vec![spec.biome]));
+        let static_area = if spec.depth == 1 {
+            herringbone(&mut rng, &spec)
+        } else {
+            rooms_and_corridors(&mut rng, spec.depth)
+        }.map_spawns(|s| Spawn::new(spec.depth, s, vec![spec.biome]));
 
         for (&p, &t) in static_area.terrain.iter() {
             terrain.insert(origin + p, t);

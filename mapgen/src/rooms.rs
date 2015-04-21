@@ -1,4 +1,5 @@
 use std::collections::{BTreeSet};
+use num::{Integer};
 use rand::{Rng};
 use calx::{V2, Rect, RngExt, clamp};
 use ::{StaticArea, SpawnType};
@@ -8,7 +9,7 @@ use terrain::{TerrainType};
 /// Includes one line of buffer beyond the extents of the room plus outer
 /// walls to allow the winding corridor to the neighboring room to always fit
 /// in.
-pub static CELL_SIZE: i32 = 11;
+pub static CELL_SIZE: i32 = 16;
 
 /// Generate a classic rooms and corridors rogue map.
 pub fn rooms_and_corridors<R: Rng>(
@@ -16,6 +17,7 @@ pub fn rooms_and_corridors<R: Rng>(
     // TODO: Vary room number.
     let num_rooms = 6;
 
+    let mut _exit_generated = false;
     let mut area = StaticArea::new();
 
     let mut rooms: BTreeSet<Node> = BTreeSet::new();
@@ -34,6 +36,7 @@ pub fn rooms_and_corridors<R: Rng>(
         for &(entrance_dir, room) in wall_rooms.iter() {
             if !rooms.contains(&room) {
                 let room_type = if rooms.len() == num_rooms - 1 {
+                    _exit_generated = true;
                     // The last room is the exit.
                     Exit
                 } else {
@@ -51,20 +54,63 @@ pub fn rooms_and_corridors<R: Rng>(
         walls.remove(&wall);
     }
 
+    assert!(_exit_generated, "No exit generated on map");
+
     area
 }
 
 fn door_positions(area: &StaticArea<SpawnType>, node: Node, dir: Direction) -> Vec<V2<i32>> {
-    // TODO: Examine the StaticArea for valid door positions towards direction.
-    unimplemented!();
+    let (start, fwd_dir) = match dir {
+        North => (V2(0, 0), V2(0, 1)),
+        East => (V2(CELL_SIZE - 2, 0), V2(-1, 0)),
+        South => (V2(CELL_SIZE - 2, CELL_SIZE - 2), V2(0, -1)),
+        West => (V2(0, CELL_SIZE - 2), V2(1, 0))
+    };
+
+    let start = node.origin() + start;
+
+    let side_dir = V2(fwd_dir.1, -fwd_dir.0);
+
+    let mut ret = Vec::new();
+
+    for side in (1..(CELL_SIZE - 2)) {
+        let origin = start + side_dir * side;
+        for fwd in (0..(CELL_SIZE - 2)) {
+            let pos = origin + fwd_dir * fwd;
+
+            if area.is_open(pos + side_dir) || area.is_open(pos - side_dir) {
+                // Valid exit path can't cut into open space from the side.
+                break;
+            }
+
+            if let Some(t) = area.terrain.get(&pos) {
+                if t.is_wall() && area.is_open(pos + fwd_dir) {
+                    ret.push(pos);
+                    break;
+                }
+            }
+        }
+    }
+
+    ret
 }
 
 fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, room_type: RoomType) {
-    // XXX: HACK STUPID VERSION
-    // TODO: Dig varied room sizes.
-    // TODO: Place spawns
+    static MIN_SIZE: i32 = 5;
+
+    let p1 = V2(
+        rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE),
+        rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE));
+
+    let dim = V2(
+        rng.gen_range(MIN_SIZE, CELL_SIZE - p1.0),
+        rng.gen_range(MIN_SIZE, CELL_SIZE - p1.1));
+
+    assert!(dim.0 >= MIN_SIZE && dim.1 >= MIN_SIZE);
+
     let origin = node.origin();
-    let room = Rect(origin, V2(10, 10));
+    let room = Rect(origin + p1, dim);
+
     for p in room.iter() {
         if room.edge_contains(&p) {
             area.terrain.insert(p, TerrainType::Wall);
@@ -73,25 +119,65 @@ fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, r
         }
     }
 
+    let inside = Rect(room.0 + V2(1, 1), room.1 - V2(2, 2));
+    for p in inside.iter() {
+        if room_type == Warren || rng.one_chance_in(24) {
+            area.spawns.push((p, SpawnType::Creature));
+        }
+
+        if rng.one_chance_in(96) {
+            area.spawns.push((p, SpawnType::Item));
+        }
+    }
+
     if room_type == Exit {
-        area.terrain.insert(origin + V2(5, 5), TerrainType::Downstairs);
+        area.terrain.insert(room.0 + dim / 2, TerrainType::Downstairs);
     }
 
     if room_type == Entrance {
-        area.player_entrance = origin + V2(5, 5);
+        area.player_entrance = room.0 + dim / 2;
     }
 }
 
 fn connect_rooms<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, wall: Wall) {
-    // XXX: HACK STUPID VERSION
-    // TODO: Pick random door positions.
-    // TODO: Carve winding tunnel between doors.
-    // TODO: Add doors.
-    let p = wall.pos();
-    let dir = wall.dir();
-    for i in (0..CELL_SIZE) {
-        area.terrain.insert(p + dir * i, TerrainType::Floor);
+    let [(dir1, room1), (dir2, room2)] = wall.rooms();
+    let door1 = *rng.choose(&door_positions(area, room1, dir1)).expect("No valid door positions");
+    let door2 = *rng.choose(&door_positions(area, room2, dir2)).expect("No valid door positions");
+
+    dig_tunnel(area, door1, door2);
+    area.terrain.insert(door1, TerrainType::Door);
+    area.terrain.insert(door2, TerrainType::Door);
+}
+
+fn dig_tunnel(area: &mut StaticArea<SpawnType>, p1: V2<i32>, p2: V2<i32>) {
+    let (n1, n2) = (Node::from_pos(p1), Node::from_pos(p2));
+
+    let fwd = (n2.0 - n1.0) / 2;
+    assert!(fwd.0.abs() + fwd.1.abs() == 1, "Unhandled tunnel configuration");
+
+    // Project the vector between the end points on the sideways line to get
+    // the direction to move sideways towards the target point.
+    let side = V2(fwd.1, -fwd.0);
+    let side = side * side.dot(p2 - p1).signum();
+
+    let mut pos = p1;
+
+    while pos.0.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 && pos.1.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 {
+        area.terrain.insert(pos, TerrainType::Floor);
+        pos = pos + fwd;
     }
+
+    while (p2 - pos).dot(side) != 0 {
+        area.terrain.insert(pos, TerrainType::Floor);
+        pos = pos + side;
+    }
+
+    while pos != p2 {
+        area.terrain.insert(pos, TerrainType::Floor);
+        pos = pos + fwd;
+    }
+
+    area.terrain.insert(pos, TerrainType::Floor);
 }
 
 // Nodes designate room locations. They have even coordinates.
@@ -99,6 +185,12 @@ fn connect_rooms<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, wall: Wa
 struct Node(V2<i32>);
 
 impl Node {
+    fn from_pos(pos: V2<i32>) -> Node {
+        Node(V2(
+            (pos.0 as f32 / CELL_SIZE as f32).floor() as i32 * 2,
+            (pos.1 as f32 / CELL_SIZE as f32).floor() as i32 * 2))
+    }
+
     fn build_walls(&self, exclude: Option<Direction>) -> Vec<Wall> {
         let mut ret = Vec::new();
         if exclude != Some(North) { ret.push(Wall(self.0 + V2( 0, -1))); }
@@ -170,27 +262,6 @@ impl Wall {
     fn _is_valid(&self) -> bool {
         ((self.0).0 % 2 == 0) ^ ((self.0).1 % 2 == 0)
     }
-
-    /// Position in the center of the room behind the wall.
-    pub fn pos(&self) -> V2<i32> {
-        assert!(self._is_valid(), "Off-grid wall coordinates");
-        match self.classify() {
-            Vertical => V2(
-                ((self.0).0 - 1) / 2 * CELL_SIZE + CELL_SIZE / 2,
-                (self.0).1 / 2 * CELL_SIZE + CELL_SIZE / 2),
-            Horizontal => V2(
-                (self.0).0 / 2 * CELL_SIZE + CELL_SIZE / 2,
-                ((self.0).1 - 1) / 2 * CELL_SIZE + CELL_SIZE / 2),
-        }
-    }
-
-    /// Direction towards the front of the wall.
-    pub fn dir(&self) -> V2<i32> {
-        match self.classify() {
-            Vertical => V2(1, 0),
-            Horizontal => V2(0, 1),
-        }
-    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -231,8 +302,11 @@ mod test {
 
         assert_eq!([(South, Node(V2(0, -2))), (North, Node(V2(0, 0)))], horizontal.rooms());
         assert_eq!([(East, Node(V2(-2, 0))), (West, Node(V2(0, 0)))], vertical.rooms());
+    }
 
-        assert_eq!(V2(CELL_SIZE / 2, -1 * CELL_SIZE + CELL_SIZE / 2), horizontal.pos());
-        assert_eq!(V2(-1 * CELL_SIZE + CELL_SIZE / 2, CELL_SIZE / 2), vertical.pos());
+    #[test]
+    fn test_from_pos() {
+        assert_eq!(Node(V2(-2, -2)), Node::from_pos(V2(-CELL_SIZE / 2, -CELL_SIZE / 2)));
+        assert_eq!(Node(V2(0, 0)), Node::from_pos(V2(CELL_SIZE / 2, CELL_SIZE / 2)));
     }
 }

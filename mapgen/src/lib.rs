@@ -1,6 +1,6 @@
 #![crate_name="mapgen"]
 
-#![feature(unboxed_closures)]
+#![feature(unboxed_closures, slice_patterns)]
 
 extern crate num;
 extern crate rustc_serialize;
@@ -101,6 +101,14 @@ impl<T> StaticArea<T> {
             terrain: self.terrain,
             spawns: self.spawns.into_iter().map(|(p, x)| (p, f(x))).collect(),
             player_entrance: self.player_entrance,
+        }
+    }
+
+    pub fn is_open(&self, p: V2<i32>) -> bool {
+        if let Some(t) = self.terrain.get(&p) {
+            !t.blocks_walk()
+        } else {
+            false
         }
     }
 }
