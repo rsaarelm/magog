@@ -179,6 +179,12 @@ impl<T: Primitive> Rect<T> {
         p.0 >= mn.0 && p.1 >= mn.1 && p.0 < mx.0 && p.1 < mx.1
     }
 
+    pub fn edge_contains(&self, p: &V2<T>) -> bool {
+        let (mn, mx) = (self.mn(), self.mx());
+        let one = NumCast::from(1).unwrap();
+        p.0 == mn.0 || p.1 == mn.1 || p.0 == mx.0 - one || p.1 == mx.1 - one
+    }
+
     /// Return an iterator for all the points in the rectangle.
     pub fn iter(&self) -> RectIter<T> {
         RectIter {
