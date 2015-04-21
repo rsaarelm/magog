@@ -64,7 +64,7 @@ pub fn cells_on_screen() -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
 
 /// Transform to the column space point that contains the pixel space point
 /// when looking for minimum column space point. (The column space rows
-/// overlap, so minimum and maximum points differ.)
+/// overlap, so minimum and maximum points may differ.)
 fn pixel_to_min_column(pixel_pos: V2<i32>) -> V2<i32> {
     V2((pixel_pos.0 - PIXEL_UNIT) / PIXEL_UNIT,
        (pixel_pos.1 - PIXEL_UNIT * 2) / PIXEL_UNIT)
@@ -72,10 +72,10 @@ fn pixel_to_min_column(pixel_pos: V2<i32>) -> V2<i32> {
 
 /// Transform to the column space point that contains the pixel space point
 /// when looking for maximum column space point. (The column space rows
-/// overlap, so minimum and maximum points differ.)
+/// overlap, so minimum and maximum points may differ.)
 fn pixel_to_max_column(pixel_pos: V2<i32>) -> V2<i32> {
     V2((pixel_pos.0 + PIXEL_UNIT) / PIXEL_UNIT,
-       (pixel_pos.1 + PIXEL_UNIT) / PIXEL_UNIT)
+       (pixel_pos.1 + PIXEL_UNIT * 2) / PIXEL_UNIT)
 }
 
 /// Transform a column space point to a chart space point.
