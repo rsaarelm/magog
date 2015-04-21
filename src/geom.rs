@@ -1,5 +1,6 @@
 use std::num::{NumCast};
 use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::cmp::{Ordering};
 use primitive::Primitive;
 use ::{Anchor};
 
@@ -55,6 +56,12 @@ impl<T: Primitive> V2<T> {
     pub fn dot(self, rhs: V2<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 }
 }
 
+impl<T: Ord+Copy> Ord for V2<T> {
+    fn cmp(&self, other: &V2<T>) -> Ordering {
+        (self.0, self.1).cmp(&(other.0, other.1))
+    }
+}
+
 /// 3D geometric vector
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, RustcDecodable, RustcEncodable)]
 pub struct V3<T>(pub T, pub T, pub T);
@@ -105,6 +112,12 @@ impl<T: Primitive> V3<T> {
 
     /// Dot product.
     pub fn dot(self, rhs: V3<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2 }
+}
+
+impl<T: Ord+Copy> Ord for V3<T> {
+    fn cmp(&self, other: &V3<T>) -> Ordering {
+        (self.0, self.1, self.2).cmp(&(other.0, other.1, other.2))
+    }
 }
 
 /// A rectangle type consisting of position and size vectors.
