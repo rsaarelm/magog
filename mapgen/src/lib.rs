@@ -9,13 +9,15 @@ extern crate calx;
 
 mod geomorph;
 mod geomorph_data;
-mod mapgen;
+mod herringbone;
+mod rooms;
 mod terrain;
 
-use std::collections::{HashMap};
+use std::collections::{BTreeMap};
 use calx::{V2};
 
-pub use mapgen::{gen_herringbone};
+pub use herringbone::{herringbone};
+pub use rooms::{rooms_and_corridors};
 pub use terrain::{TerrainType};
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
@@ -80,7 +82,7 @@ impl SpawnType {
 }
 
 pub struct StaticArea<T> {
-    pub terrain: HashMap<V2<i32>, TerrainType>,
+    pub terrain: BTreeMap<V2<i32>, TerrainType>,
     pub spawns: Vec<(V2<i32>, T)>,
     pub player_entrance: V2<i32>,
 }
@@ -88,7 +90,7 @@ pub struct StaticArea<T> {
 impl<T> StaticArea<T> {
     pub fn new() -> StaticArea<T> {
         StaticArea {
-            terrain: HashMap::new(),
+            terrain: BTreeMap::new(),
             spawns: Vec::new(),
             player_entrance: V2(0, 0),
         }
