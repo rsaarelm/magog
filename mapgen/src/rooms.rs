@@ -278,7 +278,7 @@ use self::RoomType::*;
 
 impl RoomType {
     pub fn new<R: Rng>(rng: &mut R, depth: i32) -> RoomType {
-        if rng.one_chance_in(24 - clamp(0, 12, depth as u32 / 2)) {
+        if rng.one_chance_in(16 - clamp(0, 8, depth as u32 / 2)) {
             return Warren;
         }
         Regular
