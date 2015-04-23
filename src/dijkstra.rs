@@ -46,6 +46,8 @@ impl<N: DijkstraNode> Dijkstra<N> {
             }
 
             edge = new_edge;
+
+            if edge.is_empty() { break; }
         }
 
         Dijkstra {
