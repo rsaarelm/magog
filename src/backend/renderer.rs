@@ -1,5 +1,5 @@
-use std::num::{Float};
 use std::default::Default;
+use num::{Float};
 use image::{ImageBuffer, Rgb};
 use glium;
 use glium::texture;

@@ -20,7 +20,7 @@ extern crate glutin;
 #[macro_use]
 extern crate glium;
 
-use std::num::{Float};
+use num::{Float};
 use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
 

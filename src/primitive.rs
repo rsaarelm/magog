@@ -1,5 +1,5 @@
 use std::ops::{Add, Sub, Mul, Div, Rem};
-use std::num::{NumCast};
+use num::{NumCast};
 
 // Needed for general "can do math with this" trait that encompasses both
 // integers and floats.

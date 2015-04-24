@@ -1,9 +1,8 @@
-use std::num::{Float};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::num::{from_str_radix};
 use std::ascii::{OwnedAsciiExt};
 use std::ops::{Add, Sub, Mul};
+use num::{Float, Num};
 
 /// Things that describe a color.
 pub trait ToColor {
@@ -190,11 +189,11 @@ fn parse_color(name: &str) -> Option<Rgba> {
 
         assert!(digits == 1 || digits == 2);
 
-        let r = u8::from_str_radix(&name[0..(digits)], 16);
-        let g = u8::from_str_radix(&name[(digits)..(2 * digits)], 16);
-        let b = u8::from_str_radix(&name[(2 * digits)..(3 * digits)], 16);
+        let r = Num::from_str_radix(&name[0..(digits)], 16);
+        let g = Num::from_str_radix(&name[(digits)..(2 * digits)], 16);
+        let b = Num::from_str_radix(&name[(2 * digits)..(3 * digits)], 16);
         let a = if alpha {
-            u8::from_str_radix(&name[(3 * digits)..(4 * digits)], 16)
+            Num::from_str_radix(&name[(3 * digits)..(4 * digits)], 16)
         } else {
             if digits == 1 { Ok(0xFu8) } else { Ok(0xFFu8) }
         };

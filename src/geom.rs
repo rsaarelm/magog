@@ -1,6 +1,6 @@
-use std::num::{NumCast};
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::{Ordering};
+use num::{NumCast};
 use primitive::Primitive;
 use ::{Anchor};
 

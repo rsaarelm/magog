@@ -1,10 +1,8 @@
 use std::slice;
-use num::{Integer};
-use std::num::{FromPrimitive, Float};
 use std::ops::{Add, Sub};
 use std::f32::consts::PI;
 use std::cmp::max;
-use std::num::{SignedInt};
+use num::{Integer, Float};
 use geom::V2;
 
 /// Hex grid geometry for vectors.
@@ -27,7 +25,7 @@ impl HexGeom for V2<i32> {
 
 /// Hex grid directions.
 #[derive_Rand]
-#[derive(Copy, Eq, PartialEq, Clone, Debug, FromPrimitive, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Dir6 {
     North = 0,
     NorthEast,
@@ -80,9 +78,7 @@ impl Dir6 {
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
-    pub fn from_int(i: i32) -> Dir6 {
-        FromPrimitive::from_i32(i.mod_floor(&6)).unwrap()
-    }
+    pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(&self) -> V2<i32> {
@@ -95,17 +91,7 @@ impl Dir6 {
     }
 
     /// Iterate through the six hex dirs in the standard order.
-    pub fn iter() -> slice::Iter<'static, Dir6> {
-        static DIRS: [Dir6; 6] = [
-            Dir6::North,
-            Dir6::NorthEast,
-            Dir6::SouthEast,
-            Dir6::South,
-            Dir6::SouthWest,
-            Dir6::NorthWest];
-
-        DIRS.iter()
-    }
+    pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
 }
 
 impl Add<i32> for Dir6 {
@@ -117,6 +103,14 @@ impl Sub<i32> for Dir6 {
     type Output = Dir6;
     fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
 }
+
+static DIRS: [Dir6; 6] = [
+    Dir6::North,
+    Dir6::NorthEast,
+    Dir6::SouthEast,
+    Dir6::South,
+    Dir6::SouthWest,
+    Dir6::NorthWest];
 
 /// Field of view iterator for a hexagonal map.
 ///

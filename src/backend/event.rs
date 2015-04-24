@@ -1,11 +1,9 @@
-use super::canvas::Canvas;
 use super::Key;
 
 /// Canvas event.
-pub enum Event<'a> {
-    /// Time to render the screen. Call your own render code on the Canvas
-    /// value when you get this.
-    Render(&'a mut Canvas),
+pub enum Event {
+    RenderFrame,
+    Quit,
     Char(char),
     KeyPressed(Key),
     KeyReleased(Key),

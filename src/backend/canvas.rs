@@ -98,8 +98,8 @@ impl CanvasBuilder {
         Image(self.atlas_builder.push(offset, image))
     }
 
-    /// Start running the engine, return an event iteration.
-    pub fn run(self) -> Canvas {
+    /// Build the canvas object.
+    pub fn build(self) -> Canvas {
         Canvas::new(self)
     }
 
@@ -310,12 +310,8 @@ impl Canvas {
             }
         }
     }
-}
 
-impl<'a> Iterator for Canvas {
-    type Item=Event<'a>;
-
-    fn next(&mut self) -> Option<Event<'a>> {
+    pub fn next_event(&mut self) -> Event {
         // After a render event, control will return here on a new
         // iter call. Do post-render work here.
         if self.state == State::EndFrame {
@@ -342,7 +338,7 @@ impl<'a> Iterator for Canvas {
                 match self.events.remove(0) {
                     glutin::Event::Focused(false) => { app_focused = false; }
                     glutin::Event::ReceivedCharacter(ch) => {
-                        return Some(Event::Char(ch));
+                        return Event::Char(ch);
                     }
                     glutin::Event::KeyboardInput(action, scan, vko) => {
                         let scancode_mapped =
@@ -353,21 +349,21 @@ impl<'a> Iterator for Canvas {
                             };
 
                         if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
-                            return Some(if action == glutin::ElementState::Pressed {
+                            return if action == glutin::ElementState::Pressed {
                                 Event::KeyPressed(key)
                             }
                             else {
                                 Event::KeyReleased(key)
-                            });
+                            };
                         }
                     }
                     glutin::Event::MouseMoved((x, y)) => {
                         let pixel_pos = self.renderer.screen_to_canvas(V2(x, y));
                         self.mouse_pos = pixel_pos.map(|x| x as f32);
-                        return Some(Event::MouseMoved((pixel_pos.0, pixel_pos.1)));
+                        return Event::MouseMoved((pixel_pos.0, pixel_pos.1));
                     }
                     glutin::Event::MouseWheel(x) => {
-                        return Some(Event::MouseWheel(x));
+                        return Event::MouseWheel(x);
                     }
                     glutin::Event::MouseInput(state, button) => {
                         let button = match button {
@@ -381,18 +377,18 @@ impl<'a> Iterator for Canvas {
                             state == glutin::ElementState::Pressed;
                         match state {
                             glutin::ElementState::Pressed => {
-                                return Some(Event::MousePressed(button));
+                                return Event::MousePressed(button);
                             }
                             glutin::ElementState::Released => {
-                                return Some(Event::MouseReleased(button));
+                                return Event::MouseReleased(button);
                             }
                         }
                     }
                     glutin::Event::Focused(b) => {
-                        return Some(Event::FocusChanged(b));
+                        return Event::FocusChanged(b);
                     }
                     glutin::Event::Closed => {
-                        return None;
+                        return Event::Quit;
                     }
                     _ => ()
                 }
@@ -407,8 +403,6 @@ impl<'a> Iterator for Canvas {
 
                 self.last_render_time = t;
 
-                // Time to render, must return a handle to self.
-                // XXX: Need unsafe hackery to get around lifetimes check.
                 self.state = State::EndFrame;
 
                 let (w, h) = self.display.get_framebuffer_dimensions();
@@ -417,9 +411,7 @@ impl<'a> Iterator for Canvas {
                 self.imgui_prepare();
 
                 // Return the render callback.
-                unsafe {
-                    return Some(Event::Render(mem::transmute(self)))
-                }
+                return Event::RenderFrame;
             } else {
                 // Go to sleep if there's time left.
                 if let Some(mut remaining_s) = self.frame_interval {

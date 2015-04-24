@@ -1,7 +1,6 @@
-use std::num::{Float};
 use std::iter;
 use std::cmp::{max};
-use std::num::{NumCast};
+use num::{Float, NumCast};
 use image::{GenericImage, ImageBuffer, Rgba, Pixel};
 use img;
 use geom::{V2, Rect};

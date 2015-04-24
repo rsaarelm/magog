@@ -2,7 +2,6 @@
 extern crate time;
 extern crate calx;
 
-use std::num::{Float};
 use std::ascii::OwnedAsciiExt;
 use calx::{color, V2, Rgba, Rect};
 use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
@@ -31,11 +30,13 @@ fn main() {
         "sic fugiens, dux, zelotypos, quam karus haberis",
         ".o'i mu xagji sofybakni cu zvati le purdi",
     ];
-    for evt in CanvasBuilder::new().run() {
+    let mut ctx = CanvasBuilder::new().build();
+    loop {
         // Change pangram every 10 seconds.
         let pangram_idx = (time::precise_time_s() / 10.0) as usize % pangrams.len();
-        match evt {
-            Event::Render(ctx) => {
+        match ctx.next_event() {
+            Event::Quit => { break; }
+            Event::RenderFrame => {
                 let img = ctx.font_image('@').unwrap();
 
                 ctx.clear();
@@ -64,7 +65,7 @@ fn main() {
 
                 let fps = 1.0 / ctx.render_duration;
                 {
-                    let mut fonter = Fonter::new(ctx)
+                    let mut fonter = Fonter::new(&mut ctx)
                         .color(&lerp((t as f32 / 100.0) % 1.0, color::RED, color::GREEN))
                         .border(&color::BLACK)
                         .layer(0.1)
