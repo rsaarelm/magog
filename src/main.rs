@@ -41,7 +41,7 @@ mod msg_queue;
 mod console;
 
 pub trait State {
-    fn process(&mut self, event: Event) -> Option<Transition>;
+    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition>;
 }
 
 pub enum Transition {
@@ -147,18 +147,20 @@ pub fn main() {
         _ => {}
     };
 
-    let mut canvas = CanvasBuilder::new()
+    let mut builder = CanvasBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
         .set_magnify(config.magnify_mode)
         .set_title("Magog")
         .set_fullscreen(config.fullscreen)
         .set_frame_interval(0.030f64);
 
-    tilecache::init(&mut canvas);
+    tilecache::init(&mut builder);
     let mut state: Box<State> = Box::new(TitleState::new());
 
-    for evt in canvas.run() {
-        match state.process(evt) {
+    let mut canvas = builder.build();
+    loop {
+        let event = canvas.next_event();
+        match state.process(&mut canvas, event) {
             Some(Transition::Title) => { state = Box::new(TitleState::new()); }
             Some(Transition::Game) => {
                 state = Box::new(GameState::new(config)); }

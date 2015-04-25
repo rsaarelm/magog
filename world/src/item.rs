@@ -1,5 +1,5 @@
 /// Inventory slots.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, FromPrimitive, PartialOrd, Ord, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, PartialOrd, Ord, RustcEncodable, RustcDecodable)]
 pub enum Slot {
     Spell1,
     Spell2,

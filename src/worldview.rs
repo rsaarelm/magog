@@ -1,4 +1,3 @@
-use std::num::{Float};
 use std::collections::HashMap;
 use time;
 use calx::{V2, Rgba, FromColor, timing};

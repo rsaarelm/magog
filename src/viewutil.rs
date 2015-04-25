@@ -1,4 +1,3 @@
-use std::num::{Float};
 use std::iter::Map;
 use calx::{V2, Rect};
 use ::{SCREEN_W, SCREEN_H};

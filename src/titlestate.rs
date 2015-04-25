@@ -1,30 +1,19 @@
 use calx::{V2, color, Anchor};
 use calx::backend::{Key, Event};
-use calx::backend::{CanvasUtil, Fonter, Align};
+use calx::backend::{Canvas, CanvasUtil, Fonter, Align};
 use tilecache;
-use ::{Transition, State};
+use ::{Transition, State, screenshot};
 
-pub struct TitleState {
-    screenshot_requested: bool,
-}
+pub struct TitleState;
 
 impl TitleState {
-    pub fn new() -> TitleState {
-        TitleState {
-            screenshot_requested: false,
-        }
-    }
+    pub fn new() -> TitleState { TitleState }
 }
 
 impl State for TitleState {
-    fn process(&mut self, event: Event) -> Option<Transition> {
+    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition> {
         match event {
-            Event::Render(ctx) => {
-                if self.screenshot_requested {
-                    ::screenshot(ctx);
-                    self.screenshot_requested = false;
-                }
-
+            Event::RenderFrame => {
                 ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, &color::FIREBRICK, &color::BLACK);
                 Fonter::new(ctx)
                     .color(&color::DARKRED)
@@ -36,7 +25,10 @@ impl State for TitleState {
             Event::KeyPressed(Key::Escape) => {
                 return Some(Transition::Exit);
             }
-            Event::KeyPressed(Key::F12) => { self.screenshot_requested = true; }
+            Event::Quit => {
+                return Some(Transition::Exit);
+            }
+            Event::KeyPressed(Key::F12) => { screenshot(ctx); }
             Event::KeyPressed(_) => {
                 return Some(Transition::Game);
             }

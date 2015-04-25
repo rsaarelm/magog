@@ -197,10 +197,10 @@ impl GameState {
             .draw(V2(0.0, 360.0));
     }
 
-    pub fn inventory_process(&mut self, event: Event) -> bool {
+    pub fn inventory_process(&mut self, ctx: &mut Canvas, event: Event) -> bool {
         let player = action::player().unwrap();
         match event {
-            Event::Render(ctx) => { self.update(ctx); }
+            Event::RenderFrame => { self.update(ctx); }
             Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
                 self.ui_state = UiState::Gameplay
             }
@@ -373,9 +373,9 @@ impl GameState {
         return true;
     }
 
-    pub fn gameplay_process(&mut self, event: Event) -> bool {
+    pub fn gameplay_process(&mut self, ctx: &mut Canvas, event: Event) -> bool {
         match event {
-            Event::Render(ctx) => {
+            Event::RenderFrame => {
                 self.update(ctx);
             }
             // TODO: Better quit confirmation than just pressing esc.
@@ -412,12 +412,13 @@ impl GameState {
 }
 
 impl State for GameState {
-    fn process(&mut self, event: Event) -> Option<Transition> {
+    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition> {
+        if event == Event::Quit { return Some(Transition::Exit); }
         let running = match self.ui_state {
-            UiState::Gameplay => self.gameplay_process(event),
-            UiState::Inventory => self.inventory_process(event),
+            UiState::Gameplay => self.gameplay_process(ctx, event),
+            UiState::Inventory => self.inventory_process(ctx, event),
             UiState::Console => {
-                if !self.console.process(event) { self.ui_state = UiState::Gameplay; }
+                if !self.console.process(ctx, event) { self.ui_state = UiState::Gameplay; }
                 true
             }
         };

@@ -28,7 +28,7 @@ impl Console {
             .draw(V2(0.0, 180.0));
     }
 
-    pub fn process(&mut self, event: Event) -> bool {
+    pub fn process(&mut self, ctx: &mut Canvas, event: Event) -> bool {
         match event {
             // Close the console by typing grave again. Can't actually type it
             // in console commands then unless we add escape keys.
@@ -52,7 +52,7 @@ impl Console {
                 self.command.push(ch);
             }
 
-            Event::Render(ctx) => { self.update(ctx); }
+            Event::RenderFrame => { self.update(ctx); }
             _ => {}
         }
 
