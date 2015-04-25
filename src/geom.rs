@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::{Ordering};
-use num::{NumCast};
-use primitive::Primitive;
+use num::{One};
+use num::traits::{Num};
 use ::{Anchor};
 
 /// 2D geometric vector.
@@ -45,7 +45,7 @@ impl<T> V2<T> {
     }
 }
 
-impl<T: Primitive> V2<T> {
+impl<T: Num> V2<T> {
     /// Componentwise multiplication.
     pub fn mul(self, rhs: V2<T>) -> V2<T> { V2(self.0 * rhs.0, self.1 * rhs.1) }
 
@@ -103,7 +103,7 @@ impl<T> V3<T> {
     }
 }
 
-impl<T: Primitive> V3<T> {
+impl<T: Num> V3<T> {
     /// Componentwise multiplication.
     pub fn mul(self, rhs: V3<T>) -> V3<T> { V3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2) }
 
@@ -126,7 +126,7 @@ pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
 impl<T: Eq> Eq for Rect<T> { }
 
-impl<T: Primitive> Rect<T> {
+impl<T: Num+Copy+PartialOrd> Rect<T> {
     pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
 
     pub fn mn(&self) -> V2<T> { self.0 }
@@ -134,16 +134,19 @@ impl<T: Primitive> Rect<T> {
     pub fn dim(&self) -> V2<T> { self.1 }
 
     pub fn point(&self, anchor: Anchor) -> V2<T> {
+        let one: T = One::one();
+        let two = one + one;
+        //let two: T = One::one() + One::one();
         match anchor {
             Anchor::TopLeft => self.mn(),
             Anchor::TopRight => V2((self.0).0 + (self.1).0, (self.0).1),
             Anchor::BottomLeft => V2((self.0).0, (self.0).1 + (self.1).1),
             Anchor::BottomRight => self.mx(),
-            Anchor::Top => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1),
-            Anchor::Left => V2((self.0).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()),
-            Anchor::Right => V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / NumCast::from(2).unwrap()),
-            Anchor::Bottom => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1),
-            Anchor::Center => V2((self.0).0 + (self.1).0 / NumCast::from(2).unwrap(), (self.0).1 + (self.1).1 / NumCast::from(2).unwrap())
+            Anchor::Top => V2((self.0).0 + (self.1).0 / two, (self.0).1),
+            Anchor::Left => V2((self.0).0, (self.0).1 + (self.1).1 / two),
+            Anchor::Right => V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / two),
+            Anchor::Bottom => V2((self.0).0 + (self.1).0 / two, (self.0).1 + (self.1).1),
+            Anchor::Center => V2((self.0).0 + (self.1).0 / two, (self.0).1 + (self.1).1 / two)
         }
     }
 
@@ -181,7 +184,7 @@ impl<T: Primitive> Rect<T> {
 
     pub fn edge_contains(&self, p: &V2<T>) -> bool {
         let (mn, mx) = (self.mn(), self.mx());
-        let one = NumCast::from(1).unwrap();
+        let one = One::one();
         p.0 == mn.0 || p.1 == mn.1 || p.0 == mx.0 - one || p.1 == mx.1 - one
     }
 
@@ -211,15 +214,15 @@ pub struct RectIter<T> {
     y1: T,
 }
 
-impl<T: Primitive> Iterator for RectIter<T> {
+impl<T: Num+PartialOrd+Copy> Iterator for RectIter<T> {
     type Item = V2<T>;
     fn next(&mut self) -> Option<V2<T>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
-        self.x = self.x + NumCast::from(1).unwrap();
+        self.x = self.x + One::one();
         if self.x >= self.x1 {
             self.x = self.x0;
-            self.y = self.y + NumCast::from(1).unwrap();
+            self.y = self.y + One::one();
         }
         ret
     }

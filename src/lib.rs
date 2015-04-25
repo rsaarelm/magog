@@ -37,7 +37,6 @@ mod dijkstra;
 mod geom;
 mod hex;
 mod img;
-mod primitive;
 mod rgb;
 mod rng;
 

@@ -1,10 +1,10 @@
 use std::iter;
 use std::cmp::{max};
-use num::{Float, NumCast};
+use num::{Float, Zero};
+use num::traits::{Num};
 use image::{GenericImage, ImageBuffer, Rgba, Pixel};
 use img;
 use geom::{V2, Rect};
-use primitive::Primitive;
 
 /// Constructor object for atlases.
 pub struct AtlasBuilder {
@@ -113,11 +113,11 @@ impl Atlas {
 
 /// Try to pack several small rectangles into one large rectangle. Return
 /// offsets for the subrectangles within the container if a packing was found.
-fn pack_rectangles<T: Primitive+Ord+Clone>(
+fn pack_rectangles<T: Num+PartialOrd+Ord+Copy>(
     container_dim: V2<T>,
     dims: &Vec<V2<T>>)
     -> Option<Vec<V2<T>>> {
-    let init: T = NumCast::from(0i32).unwrap();
+    let init: T = Zero::zero();
     let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(init, |a, b| a + b);
 
     // Too much rectangle area to fit in container no matter how you pack it.
@@ -128,9 +128,9 @@ fn pack_rectangles<T: Primitive+Ord+Clone>(
     let mut largest_first : Vec<(usize, &V2<T>)> = dims.iter().enumerate().collect();
     largest_first.sort_by(|&(_i, a), &(_j, b)| (b.0 * b.1).cmp(&(a.0 * a.1)));
 
-    let mut slots = vec![Rect(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap()), container_dim)];
+    let mut slots = vec![Rect(V2(Zero::zero(), Zero::zero()), container_dim)];
 
-    let mut ret: Vec<V2<T>> = iter::repeat(V2(NumCast::from(0i32).unwrap(), NumCast::from(0i32).unwrap())).take(dims.len()).collect();
+    let mut ret: Vec<V2<T>> = iter::repeat(V2(Zero::zero(), Zero::zero())).take(dims.len()).collect();
 
     for i in 0..(largest_first.len()) {
         let (idx, &dim) = largest_first[i];
@@ -146,7 +146,7 @@ fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     /// Find the smallest slot in the slot vector that will fit the given
     /// item.
-    fn place<T: Primitive+Ord>(
+    fn place<T: Num+PartialOrd+Ord+Copy>(
         dim: V2<T>, slots: &mut Vec<Rect<T>>) -> Option<V2<T>> {
         for i in 0..(slots.len()) {
             let Rect(slot_pos, slot_dim) = slots[i];
@@ -167,7 +167,7 @@ fn pack_rectangles<T: Primitive+Ord+Clone>(
 
     /// Return the two remaining parts of container rect when the dim-sized
     /// item is placed in the top left corner.
-    fn remaining_rects<T: Primitive+Ord>(
+    fn remaining_rects<T: Num+PartialOrd+Ord+Copy>(
         dim: V2<T>, Rect(rect_pos, rect_dim): Rect<T>) ->
         (Rect<T>, Rect<T>) {
         assert!(fits(dim, rect_dim));
