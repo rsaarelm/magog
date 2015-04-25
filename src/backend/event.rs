@@ -1,6 +1,7 @@
 use super::Key;
 
 /// Canvas event.
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Event {
     RenderFrame,
     Quit,
