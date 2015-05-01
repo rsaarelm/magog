@@ -2,7 +2,7 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::{Ordering};
 use num::{One};
 use num::traits::{Num};
-use ::{Anchor};
+use {Anchor};
 
 /// 2D geometric vector.
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, RustcDecodable, RustcEncodable)]
@@ -12,31 +12,43 @@ impl<T: Eq> Eq for V2<T> { }
 
 impl<T: Add<U, Output=V>, U, V> Add<V2<U>> for V2<T> {
     type Output = V2<V>;
-    fn add(self, rhs: V2<U>) -> V2<V> { V2(self.0 + rhs.0, self.1 + rhs.1) }
+    fn add(self, rhs: V2<U>) -> V2<V> {
+        V2(self.0 + rhs.0, self.1 + rhs.1)
+    }
 }
 
 impl<T: Sub<U, Output=V>, U, V> Sub<V2<U>> for V2<T> {
     type Output = V2<V>;
-    fn sub(self, rhs: V2<U>) -> V2<V> { V2(self.0 - rhs.0, self.1 - rhs.1) }
+    fn sub(self, rhs: V2<U>) -> V2<V> {
+        V2(self.0 - rhs.0, self.1 - rhs.1)
+    }
 }
 
 impl<T: Neg<Output=U>, U> Neg<> for V2<T> {
     type Output = V2<U>;
-    fn neg(self) -> V2<U> { V2(-self.0, -self.1) }
+    fn neg(self) -> V2<U> {
+        V2(-self.0, -self.1)
+    }
 }
 
 impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V2<T> {
     type Output = V2<V>;
-    fn mul(self, rhs: U) -> V2<V> { V2(self.0 * rhs, self.1 * rhs) }
+    fn mul(self, rhs: U) -> V2<V> {
+        V2(self.0 * rhs, self.1 * rhs)
+    }
 }
 
 impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V2<T> {
     type Output = V2<V>;
-    fn div(self, rhs: U) -> V2<V> { V2(self.0 / rhs, self.1 / rhs) }
+    fn div(self, rhs: U) -> V2<V> {
+        V2(self.0 / rhs, self.1 / rhs)
+    }
 }
 
 impl<T> V2<T> {
-    pub fn to_array(self) -> [T; 2] { [self.0, self.1] }
+    pub fn to_array(self) -> [T; 2] {
+        [self.0, self.1]
+    }
 }
 
 impl<T> V2<T> {
@@ -47,13 +59,19 @@ impl<T> V2<T> {
 
 impl<T: Num> V2<T> {
     /// Componentwise multiplication.
-    pub fn mul(self, rhs: V2<T>) -> V2<T> { V2(self.0 * rhs.0, self.1 * rhs.1) }
+    pub fn mul(self, rhs: V2<T>) -> V2<T> {
+        V2(self.0 * rhs.0, self.1 * rhs.1)
+    }
 
     /// Componentwise division.
-    pub fn div(self, rhs: V2<T>) -> V2<T> { V2(self.0 / rhs.0, self.1 / rhs.1) }
+    pub fn div(self, rhs: V2<T>) -> V2<T> {
+        V2(self.0 / rhs.0, self.1 / rhs.1)
+    }
 
     /// Dot product.
-    pub fn dot(self, rhs: V2<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 }
+    pub fn dot(self, rhs: V2<T>) -> T {
+        self.0 * rhs.0 + self.1 * rhs.1
+    }
 }
 
 impl<T: Ord+Copy> Ord for V2<T> {
@@ -70,31 +88,43 @@ impl<T: Eq> Eq for V3<T> { }
 
 impl<T: Add<U, Output=V>, U, V> Add<V3<U>> for V3<T> {
     type Output = V3<V>;
-    fn add(self, rhs: V3<U>) -> V3<V> { V3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2) }
+    fn add(self, rhs: V3<U>) -> V3<V> {
+        V3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
+    }
 }
 
 impl<T: Sub<U, Output=V>, U, V> Sub<V3<U>> for V3<T> {
     type Output = V3<V>;
-    fn sub(self, rhs: V3<U>) -> V3<V> { V3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2) }
+    fn sub(self, rhs: V3<U>) -> V3<V> {
+        V3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2)
+    }
 }
 
 impl<T: Neg<Output=U>, U> Neg<> for V3<T> {
     type Output = V3<U>;
-    fn neg(self) -> V3<U> { V3(-self.0, -self.1, -self.2) }
+    fn neg(self) -> V3<U> {
+        V3(-self.0, -self.1, -self.2)
+    }
 }
 
 impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V3<T> {
     type Output = V3<V>;
-    fn mul(self, rhs: U) -> V3<V> { V3(self.0 * rhs, self.1 * rhs, self.2 * rhs) }
+    fn mul(self, rhs: U) -> V3<V> {
+        V3(self.0 * rhs, self.1 * rhs, self.2 * rhs)
+    }
 }
 
 impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V3<T> {
     type Output = V3<V>;
-    fn div(self, rhs: U) -> V3<V> { V3(self.0 / rhs, self.1 / rhs, self.2 / rhs) }
+    fn div(self, rhs: U) -> V3<V> {
+        V3(self.0 / rhs, self.1 / rhs, self.2 / rhs)
+    }
 }
 
 impl<T> V3<T> {
-    pub fn to_array(self) -> [T; 3] { [self.0, self.1, self.2] }
+    pub fn to_array(self) -> [T; 3] {
+        [self.0, self.1, self.2]
+    }
 }
 
 impl<T> V3<T> {
@@ -105,13 +135,19 @@ impl<T> V3<T> {
 
 impl<T: Num> V3<T> {
     /// Componentwise multiplication.
-    pub fn mul(self, rhs: V3<T>) -> V3<T> { V3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2) }
+    pub fn mul(self, rhs: V3<T>) -> V3<T> {
+        V3(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
+    }
 
     /// Componentwise division.
-    pub fn div(self, rhs: V3<T>) -> V3<T> { V3(self.0 / rhs.0, self.1 / rhs.1, self.2 / rhs.2) }
+    pub fn div(self, rhs: V3<T>) -> V3<T> {
+        V3(self.0 / rhs.0, self.1 / rhs.1, self.2 / rhs.2)
+    }
 
     /// Dot product.
-    pub fn dot(self, rhs: V3<T>) -> T { self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2 }
+    pub fn dot(self, rhs: V3<T>) -> T {
+        self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2
+    }
 }
 
 impl<T: Ord+Copy> Ord for V3<T> {
@@ -127,11 +163,19 @@ pub struct Rect<T>(pub V2<T>, pub V2<T>);
 impl<T: Eq> Eq for Rect<T> { }
 
 impl<T: Num+Copy+PartialOrd> Rect<T> {
-    pub fn area(&self) -> T { (self.1).0 * (self.1).1 }
+    pub fn area(&self) -> T {
+        (self.1).0 * (self.1).1
+    }
 
-    pub fn mn(&self) -> V2<T> { self.0 }
-    pub fn mx(&self) -> V2<T> { self.0 + self.1 }
-    pub fn dim(&self) -> V2<T> { self.1 }
+    pub fn mn(&self) -> V2<T> {
+        self.0
+    }
+    pub fn mx(&self) -> V2<T> {
+        self.0 + self.1
+    }
+    pub fn dim(&self) -> V2<T> {
+        self.1
+    }
 
     pub fn point(&self, anchor: Anchor) -> V2<T> {
         let one: T = One::one();
@@ -202,7 +246,9 @@ impl<T: Num+Copy+PartialOrd> Rect<T> {
 
 impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
     type Output = Rect<T>;
-    fn add(self, rhs: V2<U>) -> Rect<T> { Rect(self.0 + rhs, self.1.clone()) }
+    fn add(self, rhs: V2<U>) -> Rect<T> {
+        Rect(self.0 + rhs, self.1.clone())
+    }
 }
 
 /// Iterator for the integer points within a rectangle.
