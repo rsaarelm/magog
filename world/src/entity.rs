@@ -1,4 +1,5 @@
 use std::default::Default;
+use std::cmp::{max};
 use rand::Rng;
 use calx::{Dijkstra, Rgba, Dir6, HexGeom, HexFov, RngExt};
 use world;
@@ -213,8 +214,8 @@ impl Entity {
         self.set_intrinsic(Intrinsic::Dead);
 
         let loc = self.location().expect("no location");
-        if rng().one_chance_in(6) {
-            // Drop a heart.
+        if rng().one_chance_in(12 - max(self.stats().power, 6) as u32) {
+            // Drop a heart. More likely if more powerful.
             action::spawn_named("heart", loc);
         }
         if self.has_intrinsic(Intrinsic::Deathsplosion) {
