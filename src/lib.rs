@@ -15,6 +15,7 @@ extern crate rustc_serialize;
 extern crate time;
 extern crate rand;
 extern crate num;
+extern crate nalgebra;
 extern crate image;
 extern crate glutin;
 #[macro_use]
@@ -30,6 +31,7 @@ pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 pub use hex::{HexGeom, Dir6, HexFov};
+pub use projection::{Projection};
 pub use rng::{EncodeRng, RngExt};
 
 mod atlas;
@@ -37,6 +39,7 @@ mod dijkstra;
 mod geom;
 mod hex;
 mod img;
+mod projection;
 mod rgb;
 mod rng;
 

@@ -22,6 +22,8 @@ path = "examples/demo.rs"
 
 [dependencies.image]
 
+[dependencies.nalgebra]
+
 [dependencies.glutin]
 
 [dependencies.glium]
