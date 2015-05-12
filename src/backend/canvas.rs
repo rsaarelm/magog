@@ -99,7 +99,7 @@ impl CanvasBuilder {
     }
 
     /// Build the canvas object.
-    pub fn build(self) -> Canvas {
+    pub fn build<'a>(self) -> Canvas<'a> {
         Canvas::new(self)
     }
 
@@ -127,10 +127,10 @@ impl CanvasBuilder {
 }
 
 /// Interface to render to a live display.
-pub struct Canvas {
+pub struct Canvas<'a> {
     display: glium::Display,
     events: Vec<glutin::Event>,
-    renderer: Renderer,
+    renderer: Renderer<'a>,
 
     atlas: Atlas,
 
@@ -164,8 +164,8 @@ enum State {
     EndFrame,
 }
 
-impl Canvas {
-    fn new(builder: CanvasBuilder) -> Canvas {
+impl<'a> Canvas<'a> {
+    fn new(builder: CanvasBuilder) -> Canvas<'a> {
         let size = builder.size;
         let title = &builder.title[..];
         let frame_interval = builder.frame_interval;
@@ -285,7 +285,7 @@ impl Canvas {
     /// graphics.
     pub fn solid_tex_coord(&self) -> V2<f32> { self.atlas.items[SOLID_IDX].tex.0 }
 
-    pub fn image_data<'a>(&'a self, Image(idx): Image) -> &'a AtlasItem {
+    pub fn image_data<'b>(&'b self, Image(idx): Image) -> &'b AtlasItem {
         &self.atlas.items[idx]
     }
 
@@ -362,8 +362,8 @@ impl Canvas {
                         self.mouse_pos = pixel_pos.map(|x| x as f32);
                         return Event::MouseMoved((pixel_pos.0, pixel_pos.1));
                     }
-                    glutin::Event::MouseWheel(x) => {
-                        return Event::MouseWheel(x);
+                    glutin::Event::MouseWheel(x, _) => {
+                        return Event::MouseWheel(x as i32);
                     }
                     glutin::Event::MouseInput(state, button) => {
                         let button = match button {

@@ -10,7 +10,7 @@ use super::{CanvasMagnify};
 use ::{V2, Rect};
 use ::rgb::{to_srgb};
 
-pub struct Renderer {
+pub struct Renderer<'a> {
     /// Canvas size.
     size: V2<u32>,
     /// Rendering device resolution.
@@ -24,15 +24,15 @@ pub struct Renderer {
     atlas: texture::Texture2d,
     /// Render target texture.
     buffer: texture::Texture2d,
-    params: glium::DrawParameters,
+    params: glium::DrawParameters<'a>,
     magnify: CanvasMagnify,
 }
 
-impl Renderer {
-    pub fn new<'a, T>(
+impl<'a> Renderer<'a> {
+    pub fn new<'b, T>(
         size: V2<u32>, display: &glium::Display,
-        texture_image: T, magnify: CanvasMagnify) -> Renderer
-        where T: texture::Texture2dDataSource<'a> {
+        texture_image: T, magnify: CanvasMagnify) -> Renderer<'a>
+        where T: texture::Texture2dDataSource<'b> {
 
         let sprite_shader = glium::Program::from_source(display,
             include_str!("sprite.vert"),

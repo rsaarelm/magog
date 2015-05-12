@@ -26,7 +26,7 @@ pub trait CanvasUtil {
     fn char_width(&self, c: char) -> f32;
 }
 
-impl CanvasUtil for Canvas {
+impl<'a> CanvasUtil for Canvas<'a> {
     fn draw_line<C: ToColor+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
         let tex = self.solid_tex_coord();
         let v1 = p2 - p1;

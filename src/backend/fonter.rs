@@ -11,8 +11,8 @@ pub enum Align {
 }
 
 /// Structure for rendering text to a canvas.
-pub struct Fonter<'a> {
-    canvas: &'a mut Canvas,
+pub struct Fonter<'a, 'b: 'a> {
+    canvas: &'a mut Canvas<'b>,
     anchor: Anchor,
     align: Align,
     color: Rgba,
@@ -25,8 +25,8 @@ pub struct Fonter<'a> {
     longest_line_width: f32,
 }
 
-impl<'a> Fonter<'a> {
-    pub fn new(canvas: &'a mut Canvas) -> Fonter<'a> {
+impl<'a, 'b> Fonter<'a, 'b> {
+    pub fn new(canvas: &'a mut Canvas<'b>) -> Fonter<'a, 'b> {
         Fonter {
             canvas: canvas,
             anchor: Anchor::TopLeft,
@@ -42,46 +42,46 @@ impl<'a> Fonter<'a> {
     }
 
     /// Set the point of the text box which draw offset will anchor to.
-    pub fn anchor(mut self, anchor: Anchor) -> Fonter<'a> {
+    pub fn anchor(mut self, anchor: Anchor) -> Fonter<'a, 'b> {
         self.anchor = anchor; self
     }
 
     /// Set the text alignment
-    pub fn align(mut self, align: Align) -> Fonter<'a> {
+    pub fn align(mut self, align: Align) -> Fonter<'a, 'b> {
         self.align = align; self
     }
 
     /// Set text color. The default color is white.
-    pub fn color<C: ToColor>(mut self, color: &C) -> Fonter<'a> {
+    pub fn color<C: ToColor>(mut self, color: &C) -> Fonter<'a, 'b> {
         self.color = FromColor::from_color(color); self
     }
 
     /// Set border color. Before this is set, the drawn text will not be drawn
     /// with a border.
-    pub fn border<C: ToColor>(mut self, color: &C) -> Fonter<'a> {
+    pub fn border<C: ToColor>(mut self, color: &C) -> Fonter<'a, 'b> {
         self.border = Some(FromColor::from_color(color)); self
     }
 
     /// Set the z-layer to draw in.
-    pub fn layer(mut self, z: f32) -> Fonter<'a> {
+    pub fn layer(mut self, z: f32) -> Fonter<'a, 'b> {
         self.z = z; self
     }
 
     /// Set the maximum width of the text area in pixels
-    pub fn width(mut self, w: f32) -> Fonter<'a> {
+    pub fn width(mut self, w: f32) -> Fonter<'a, 'b> {
         self.max_width = Some(w); self
     }
 
     /// Set the maximum number of lines to draw (lines of text before this are
     /// dropped).
-    pub fn max_lines(mut self, max_lines: usize) -> Fonter<'a> {
+    pub fn max_lines(mut self, max_lines: usize) -> Fonter<'a, 'b> {
         self.max_lines = Some(max_lines);
         self.cull_lines();
         self
     }
 
     /// Append to the fonter text.
-    pub fn text(mut self, txt: String) -> Fonter<'a> {
+    pub fn text(mut self, txt: String) -> Fonter<'a, 'b> {
         assert!(self.lines.len() > 0);
         // The last line can be added to, snip it off.
         let mut new_txt = format!("{}{}", self.lines[self.lines.len() - 1].0, txt);
