@@ -57,7 +57,7 @@ fn main() {
                                            screen_offset).unwrap();
 
                 let mouse_rect = Rect(mouse_pos.map(|x| x as f32) - V2(160.0, 90.0), V2(320.0, 180.0));
-                let mouse_cell = proj.inv_project(mouse_pos.map(|x| x as f32)).map(|x| x as i32);
+                let mouse_cell = proj.inv_project(mouse_pos.map(|x| x as f32)).map(|x| x.floor() as i32);
 
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
                     let cell = pt.map(|x| x as i32);
