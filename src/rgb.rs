@@ -52,6 +52,12 @@ impl Rgba {
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Rgba {
         Rgba { r: r, g: g, b: b, a: a }
     }
+
+    /// Turn color to monochrome preserving brightness.
+    pub fn to_monochrome(&self) -> Rgba {
+        let luma = self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722;
+        Rgba::new(luma, luma, luma, self.a)
+    }
 }
 
 impl ToColor for Rgba {
