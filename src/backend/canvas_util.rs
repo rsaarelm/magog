@@ -18,6 +18,9 @@ pub trait CanvasUtil {
     /// Draw a filled rectangle
     fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
 
+    /// Draw a wireframe rectangle
+    fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
+
     // TODO: More specs
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
 
@@ -90,6 +93,13 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
+    }
+
+    fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
+        self.draw_line(1.0, rect.point(TopLeft), rect.point(TopRight) - V2(1.0, 0.0), z, color);
+        self.draw_line(1.0, rect.point(TopRight) - V2(1.0, 0.0), rect.point(BottomRight) - V2(1.0, 0.0), z, color);
+        self.draw_line(1.0, rect.point(BottomLeft) - V2(0.0, 1.0), rect.point(BottomRight) - V2(1.0, 1.0), z, color);
+        self.draw_line(1.0, rect.point(TopLeft), rect.point(BottomLeft), z, color);
     }
 
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool {
