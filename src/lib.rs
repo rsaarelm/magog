@@ -4,7 +4,7 @@ Miscellaneous utilities grab-bag.
  */
 
 #![crate_name="calx"]
-#![feature(core, collections, std_misc)]
+#![feature(core, collections, path_ext, std_misc)]
 #![feature(plugin, custom_attribute, unboxed_closures, slice_patterns)]
 #![feature(custom_derive)]
 #![plugin(rand_macros)]

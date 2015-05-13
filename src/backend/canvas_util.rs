@@ -15,18 +15,21 @@ pub trait CanvasUtil {
     fn draw_image<C: ToColor+Copy, D: ToColor+Copy>(&mut self, img: Image,
         offset: V2<f32>, z: f32, color: &C, back_color: &D);
 
-    /// Draw a filled rectangle
+    /// Draw a filled rectangle.
     fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
 
-    /// Draw a wireframe rectangle
+    /// Draw a wireframe rectangle.
     fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
 
-    // TODO: More specs
+    /// Draw an immediate GUI button and return whether it was pressed.
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
 
     fn draw_char<C: ToColor+Copy, D: ToColor+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>);
 
     fn char_width(&self, c: char) -> f32;
+
+    /// Write a timestamped screenshot PNG to disk.
+    fn save_screenshot(&mut self, basename: &str);
 }
 
 impl<'a> CanvasUtil for Canvas<'a> {
@@ -153,5 +156,45 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         // Not a valid letter.
         (FONT_W / 2) as f32
+    }
+
+    fn save_screenshot(&mut self, basename: &str) {
+        use time;
+        use std::path::{Path};
+        use std::fs::{self, File, PathExt};
+        use image;
+
+        let shot = self.screenshot();
+
+        let timestamp = time::precise_time_s() as u64;
+        // Create screenshot filenames by concatenating the current timestamp in
+        // seconds with a running number from 00 to 99. 100 shots per second
+        // should be good enough.
+
+        // Default if we fail to generate any of the 100 candidates for this
+        // second, just overwrite with the "xx" prefix then.
+        let mut filename = format!("{}-{}{}.png", basename, timestamp, "xx");
+
+        // Run through candidates for this second.
+        for i in 0..100 {
+            let test_filename = format!("{}-{}{:02}.png", basename, timestamp, i);
+            if !Path::new(&test_filename).exists() {
+                // Thread-safe claiming: create_dir will fail if the dir
+                // already exists (it'll exist if another thread is gunning
+                // for the same filename and managed to get past us here).
+                // At least assuming that create_dir is atomic...
+                let squat_dir = format!(".tmp-{}{:02}", timestamp, i);
+                if fs::create_dir(&squat_dir).is_ok() {
+                    File::create(&test_filename).unwrap();
+                    filename = test_filename;
+                    fs::remove_dir(&squat_dir).unwrap();
+                    break;
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        let _ = image::save_buffer(&Path::new(&filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
     }
 }
