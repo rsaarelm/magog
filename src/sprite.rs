@@ -84,7 +84,7 @@ impl WorldSprite for BeamSprite {
     fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
             let pixel_adjust = V2(0.0, -2.0);
-            ctx.draw_line(2,
+            ctx.draw_line(2.0,
                 chart_to_screen(p1) + pixel_adjust,
                 chart_to_screen(p2) + pixel_adjust,
                 FX_Z, &color::ORANGE);
