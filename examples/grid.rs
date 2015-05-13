@@ -79,6 +79,10 @@ fn main() {
                 projection %= PROJECTIONS.len();
             }
 
+            Event::KeyPressed(Key::F12) => {
+                ctx.save_screenshot(&"grid");
+            }
+
             Event::KeyPressed(k) => {
                 match k {
                     Key::A => { scroll_delta.0 = -1.0 * scroll_speed; }
