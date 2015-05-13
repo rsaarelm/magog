@@ -10,6 +10,10 @@ license = "MIT"
 name = "demo"
 path = "examples/demo.rs"
 
+[[example]]
+name = "grid"
+path = "examples/grid.rs"
+
 [dependencies.rand]
 
 [dependencies.rustc-serialize]
