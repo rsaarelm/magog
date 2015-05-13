@@ -61,7 +61,7 @@ fn main() {
                     ((t as f32 / 160.0).cos() * 128.0),
                     ((t as f32 / 160.0).sin() * 128.0));
 
-                ctx.draw_line(3, center, center + offset, 0.3, &Rgba::new(0.0, 1.0, 1.0, 0.1));
+                ctx.draw_line(3.0, center, center + offset, 0.3, &Rgba::new(0.0, 1.0, 1.0, 0.1));
 
                 let fps = 1.0 / ctx.render_duration;
                 {

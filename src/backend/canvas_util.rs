@@ -7,7 +7,7 @@ use ::Anchor::*;
 /// implementation details.
 pub trait CanvasUtil {
     /// Draw a thick solid line on the canvas.
-    fn draw_line<C: ToColor+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C);
+    fn draw_line<C: ToColor+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C);
     /// Get the size of an atlas image.
     fn image_dim(&self, img: Image) -> V2<u32>;
 
@@ -27,12 +27,20 @@ pub trait CanvasUtil {
 }
 
 impl<'a> CanvasUtil for Canvas<'a> {
-    fn draw_line<C: ToColor+Copy>(&mut self, width: u32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
-        let tex = self.solid_tex_coord();
-        let v1 = p2 - p1;
-        let v2 = V2(-v1.1, v1.0);
+    fn draw_line<C: ToColor+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
+        if p1 == p2 { return; }
 
-        let scalar = width as f32 / 2.0 * 1.0 / v2.dot(v2).sqrt();
+        let tex = self.solid_tex_coord();
+
+        // The front vector. Extend by width.
+        let v1 = p2 - p1;
+        let scalar = v1.dot(v1);
+        let scalar = (scalar + width * width) / scalar;
+        let v1 = v1 * scalar;
+
+        // The sideways vector, turn into unit vector, then multiply by half the width.
+        let v2 = V2(-v1.1, v1.0);
+        let scalar = width / 2.0 * 1.0 / v2.dot(v2).sqrt();
         let v2 = v2 * scalar;
 
         let ind0 = self.num_vertices();
