@@ -107,13 +107,13 @@ impl GameState {
             self.draw_player_ui(ctx, player);
         }
 
-        /*
-        let fps = 1.0 / ctx.render_duration;
-        Fonter::new(ctx)
-            .color(&color::LIGHTGRAY).border(&color::BLACK)
-            .text(format!("FPS {:.0}", fps))
-            .draw(V2(0.0, 8.0));
-        */
+        if self.config.show_fps {
+            let fps = 1.0 / ctx.render_duration;
+            Fonter::new(ctx)
+                .color(&color::LIGHTGRAY).border(&color::BLACK)
+                .text(format!("FPS {:.0}", fps))
+                .draw(V2(0.0, 8.0));
+        }
     }
 
     fn base_update(&mut self, ctx: &mut Canvas) {

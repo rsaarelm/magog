@@ -20,6 +20,8 @@ pub struct Config {
     pub rng_seed: Option<u32>,
     /// Start in fullscreen mode
     pub fullscreen: bool,
+    /// Show FPS counter
+    pub show_fps: bool,
 }
 
 impl Default for Config {
@@ -29,6 +31,7 @@ impl Default for Config {
             magnify_mode: CanvasMagnify::PixelPerfect,
             rng_seed: None,
             fullscreen: false,
+            show_fps: false,
         }
     }
 }
@@ -47,6 +50,7 @@ impl Config {
         opts.optopt("", "magnify-mode", "How to filter magnified graphics. MODE = pixel | nearest | smooth", "MODE");
         opts.optopt("", "seed", "World generation seed", "VORUD");
         opts.optflag("", "fullscreen", "Run in fullscreen mode");
+        opts.optflag("", "fps", "Show FPS counter");
 
         let args: Vec<String> = args.collect();
 
@@ -72,6 +76,10 @@ impl Config {
 
         if parse.opt_present("fullscreen") {
             self.fullscreen = true;
+        }
+
+        if parse.opt_present("fps") {
+            self.show_fps = true;
         }
 
         if let Some(x) = parse.opt_str("magnify-mode") {
@@ -126,6 +134,9 @@ magnify-mode = "pixel"
 
 # Start the game in fullscreen instead of windowed mode
 fullscreen = false
+
+# Display FPS counter
+fps = false
 "#)
     }
 
@@ -170,6 +181,10 @@ fullscreen = false
 
         if let Some(&Value::Boolean(b)) = settings.get("fullscreen") {
             self.fullscreen = b;
+        }
+
+        if let Some(&Value::Boolean(b)) = settings.get("fps") {
+            self.show_fps = b;
         }
 
         Ok(())
