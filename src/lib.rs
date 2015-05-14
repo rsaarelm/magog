@@ -25,7 +25,7 @@ use num::{Float};
 use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
 
-pub use rgb::{ToColor, FromColor, Rgba, color};
+pub use rgb::{ToColor, FromColor, Rgba, color, parse_color};
 pub use geom::{V2, V3, Rect, RectIter};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};

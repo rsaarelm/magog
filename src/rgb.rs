@@ -5,6 +5,12 @@ use std::ops::{Add, Sub, Mul};
 use num::{Float, Num};
 
 /// Things that describe a color.
+///
+/// ToColor has an implementation for strings. This will call
+/// `parse_color` on the string, memoize results that parse successfully
+/// and panic on results that do not. It is meant to be used for
+/// convenient color shorthand in code. Panicing on failure makes it
+/// dangerous to use with anything other than inline string literals.
 pub trait ToColor {
     /// Convert a color to linear RGBA values you can feed to OpenGL.
     fn to_rgba(&self) -> [f32; 4];
@@ -42,9 +48,13 @@ pub trait FromColor: Sized {
 /// Color in linear color space.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgba {
+    /// Linear red component
     pub r: f32,
+    /// Linear green component
     pub g: f32,
+    /// Linear blue component
     pub b: f32,
+    /// Alpha channel
     pub a: f32,
 }
 
@@ -130,14 +140,6 @@ pub fn to_srgb(linear: f32) -> f32 {
     }
 }
 
-
-/// Neat trick for using plain string literals as color values. Will panic if
-/// given non-parsing color.
-///
-/// Accepts case-insensitive SVG color names ("red", "powderblue") and hex
-/// #RGB or #RGBA color names with 4 or 8 bits per channel. "#F00", "#F00F",
-/// "#FF0000" and "#FF0000FF" all correspond to the same opaque pure red
-/// color.
 impl ToColor for &'static str {
     fn to_rgba(&self) -> [f32; 4] {
         thread_local!(static MEMOIZER: RefCell<HashMap<String, [f32; 4]>> =
@@ -157,7 +159,13 @@ impl ToColor for &'static str {
     }
 }
 
-fn parse_color(name: &str) -> Option<Rgba> {
+/// Try to parse a string representation into a color value.
+///
+/// Accepts case-insensitive SVG color names ("Green", "powderblue") and
+/// hex `#RGB` or `#RGBA` color names with 4 or 8 bits per channel.
+/// "RED", "red", "#F00", "#F00F", "#FF0000" and "#FF0000FF" all
+/// correspond to the same opaque pure red color.
+pub fn parse_color(name: &str) -> Option<Rgba> {
     if let Some(color) = parse_color_name(&name.to_string().into_ascii_uppercase()[..]) {
         return Some(color);
     }
