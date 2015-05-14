@@ -21,9 +21,11 @@ extern crate glutin;
 #[macro_use]
 extern crate glium;
 
-use num::{Float};
+use num::{Float, Zero, One};
 use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
+use std::cmp::{Ordering};
+use num::traits::{Num};
 
 pub use rgb::{ToColor, FromColor, Rgba, color, parse_color};
 pub use geom::{V2, V3, Rect, RectIter};
@@ -137,9 +139,59 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
     }
 }
 
+/// A non-transitive pseudo-ordering relation between isometric axis-aligned boxes.
+///
+/// XXX: The relation is NOT TRANSITIVE, the more disparate box sizes
+/// you feed it the worse it's likely to perform.
+///
+/// The box format is (bottom_pos, top_pos) pairs. The camera looks towards (-1, -1, -1).
+pub fn isometric_pseudo_ord<T: PartialOrd+Num+Copy>(
+    &(ref first_bot, ref first_top): &(V3<T>, V3<T>),
+    &(ref second_bot, ref second_top): &(V3<T>, V3<T>)) -> Ordering {
+    // Return Less if first box is drawn before second box
+    // Return Greater if first box is drawn after second box
+    // If the boxes overlap, compare their top Z positions.
+
+    // Look for the unambiguous order with the largest distance between
+    // box faces.
+    let mut less_weight = None;
+    let mut greater_weight = None;
+
+    less_weight = comp(second_bot.0, first_top.0, less_weight);
+    less_weight = comp(second_bot.1, first_top.1, less_weight);
+    less_weight = comp(second_bot.2, first_top.2, less_weight);
+
+    greater_weight = comp(first_bot.0, second_top.0, greater_weight);
+    greater_weight = comp(first_bot.1, second_top.1, greater_weight);
+    greater_weight = comp(first_bot.2, second_top.2, greater_weight);
+
+    return match (less_weight, greater_weight) {
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (Some(ls), Some(gt)) => if ls > gt { Ordering::Less } else { Ordering::Greater },
+        _ => {
+            let camera: V3<T> = V3(One::one(), One::one(), One::one());
+            (first_top).dot(camera).partial_cmp(&second_top.dot(camera))
+            .unwrap_or(Ordering::Equal)
+        }
+    };
+
+    // Update a result weight counter with a comparison along an axis.
+    fn comp<T: PartialOrd+Num+Copy>(bottom_point: T, top_point: T, weight_counter: Option<T>) -> Option<T> {
+        let diff = bottom_point - top_point ;
+        if diff >= Zero::zero() {
+            Some(weight_counter.map_or(diff, |old| if diff > old { diff } else { old }))
+        } else {
+            weight_counter
+        }
+    }
+
+}
 
 #[cfg(test)]
 mod test {
+    use super::geom::{V3};
+
     #[test]
     fn test_noise() {
         use super::noise;
@@ -157,5 +209,23 @@ mod test {
 
         assert_eq!((from_log_odds(-5.0) * 100.0) as i32, 24);
         assert_eq!(to_log_odds(0.909091) as i32, 10);
+    }
+
+    fn gen_boxes(positions: Vec<V3<i32>>) -> Vec<(V3<i32>, V3<i32>)> {
+        positions.into_iter().map(|p| (p, p + V3(2, 2, 2))).collect()
+    }
+
+    #[test]
+    fn test_iso_sort() {
+        use super::{isometric_pseudo_ord};
+
+        // XXX: Just a sanity check, actually debugging the problems
+        // with the slightly iffy sorter would take a lot more heavy
+        // testing.
+        let mut boxes = gen_boxes(vec![V3(0, 0, 2), V3(-2, 0, 0), V3(0, 0, 0)]);
+        boxes.sort_by(isometric_pseudo_ord);
+
+        assert_eq!(V3(-2, 0, 0), boxes[0].0);
+        assert_eq!(V3(0, 0, 2), boxes[2].0);
     }
 }
