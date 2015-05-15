@@ -127,7 +127,9 @@ pub struct HexFov<F> {
     side_channel: Vec<V2<i32>>,
 }
 
-impl<F: Fn<(V2<i32>,), Output=bool>> HexFov<F> {
+impl<F> HexFov<F>
+    where F: Fn(V2<i32>) -> bool
+{
     pub fn new(is_opaque: F, range: u32) -> HexFov<F> {
         // The origin position V2(0, 0) is a special case for the traversal
         // algorithm, but it's also always present, so instead of adding ugly
@@ -158,7 +160,9 @@ impl<F: Fn<(V2<i32>,), Output=bool>> HexFov<F> {
     }
 }
 
-impl<F: Fn<(V2<i32>,), Output=bool>> Iterator for HexFov<F> {
+impl<F> Iterator for HexFov<F>
+    where F: Fn(V2<i32>) -> bool
+{
     type Item = V2<i32>;
     fn next(&mut self) -> Option<V2<i32>> {
         if let Some(ret) = self.side_channel.pop() {
