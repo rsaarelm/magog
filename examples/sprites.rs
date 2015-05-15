@@ -81,6 +81,7 @@ fn main() {
             Event::RenderFrame => {
                 ctx.clear();
                 let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), V2(0.0, 0.0)).unwrap();
+                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), proj.project(V2(-player_x, -player_y)) + V2(320.0, 180.0)).unwrap();
 
                 let mut sprites = Vec::new();
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
