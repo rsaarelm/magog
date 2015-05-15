@@ -56,6 +56,8 @@ impl<'a> CanvasUtil for Canvas<'a> {
         self.push_vertex(p1 + v2 + v1, layer, tex, color, &color::BLACK);
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
+
+        self.flush();
     }
 
     fn image_dim(&self, img: Image) -> V2<u32> {
@@ -83,6 +85,8 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
+
+        self.flush();
     }
 
     fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
@@ -96,6 +100,8 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
+
+        self.flush();
     }
 
     fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {

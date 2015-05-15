@@ -140,8 +140,7 @@ pub struct Canvas<'a> {
     size: V2<u32>,
     window_resolution: V2<i32>,
 
-    vertices: Vec<Vertex>,
-    indices: Vec<u16>,
+    meshes: Vec<Mesh>,
 
     layout_independent_keys: bool,
 
@@ -216,8 +215,7 @@ impl<'a> Canvas<'a> {
             size: size,
             window_resolution: V2(w as i32, h as i32),
 
-            vertices: Vec::new(),
-            indices: Vec::new(),
+            meshes: vec![Mesh::new()],
 
             layout_independent_keys: builder.layout_independent_keys,
 
@@ -234,8 +232,7 @@ impl<'a> Canvas<'a> {
     /// Clear the screen.
     pub fn clear(&mut self) {
         // TODO: use the color.
-        self.vertices.clear();
-        self.indices.clear();
+        self.meshes = vec![Mesh::new()];
     }
 
     #[inline(always)]
@@ -248,9 +245,13 @@ impl<'a> Canvas<'a> {
     /// Add a vertex to the geometry data of the current frame.
     pub fn push_vertex<C: ToColor, C2: ToColor>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
                                  color: &C, back_color: &C2) {
+        assert!(self.meshes.len() > 0, "Empty mesh stack");
+        let top = self.meshes.len() - 1;
+        assert!(self.meshes[top].vertices.len() < 1<<16,
+                "Too many accumulated vertices for index buffer, call flush() between meshes");
         let pos = self.canvas_to_device(pos, layer);
 
-        self.vertices.push(Vertex {
+        self.meshes[top].vertices.push(Vertex {
             pos: pos,
             tex_coord: [tex_coord.0, tex_coord.1],
             color: color.to_rgba(),
@@ -260,14 +261,35 @@ impl<'a> Canvas<'a> {
 
     /// Return the current vertex count, important for determining the indices
     /// for newly inserted vertices.
-    pub fn num_vertices(&self) -> u16 { self.vertices.len() as u16 }
+    pub fn num_vertices(&self) -> u16 {
+        assert!(self.meshes.len() > 0, "Empty mesh stack");
+        let top = self.meshes.len() - 1;
+        self.meshes[top].vertices.len() as u16
+    }
+
 
     /// Add a triangle defined by index values into the list of vertices
     /// inserted with push_vertex.
     pub fn push_triangle(&mut self, p0: u16, p1: u16, p2: u16) {
-        self.indices.push(p0);
-        self.indices.push(p1);
-        self.indices.push(p2);
+        assert!(self.meshes.len() > 0, "Empty mesh stack");
+        let top = self.meshes.len() - 1;
+        self.meshes[top].indices.push(p0);
+        self.meshes[top].indices.push(p1);
+        self.meshes[top].indices.push(p2);
+    }
+
+    /// Flush the input queue, can invalidate any cached vertex positions.
+    ///
+    /// Call this after you finish drawing meshes with `push_vertex` and
+    /// `push_triangle`. If you push more that 2^16 vertices, the
+    /// renderer index buffer will stop working correctly.
+    pub fn flush(&mut self) {
+        assert!(self.meshes.len() > 0, "Empty mesh stack");
+        let top = self.meshes.len() - 1;
+        // Some random threshold a bit below 2^16.
+        if self.meshes[top].vertices.len() > 8192 {
+            self.meshes.push(Mesh::new());
+        }
     }
 
     /// Return the image corresponding to a char in the built-in font.
@@ -319,11 +341,13 @@ impl<'a> Canvas<'a> {
 
             let mut target = self.display.draw();
 
-            // Move out the accumulated geometry data.
-            let vertices = mem::replace(&mut self.vertices, Vec::new());
-            let indices = mem::replace(&mut self.indices, Vec::new());
-            self.renderer.draw(&self.display, &mut target, vertices, indices);
-
+            self.renderer.init(&self.display);
+            let meshes = mem::replace(&mut self.meshes, vec![Mesh::new()]);
+            for mesh in meshes.into_iter() {
+                // Move out the accumulated geometry data.
+                self.renderer.draw(&self.display, mesh.vertices, mesh.indices);
+            }
+            self.renderer.show(&self.display, &mut target);
             target.finish();
 
             self.imgui_finish();
@@ -428,6 +452,20 @@ impl<'a> Canvas<'a> {
 /// Drawable images stored in the Canvas.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Image(usize);
+
+struct Mesh {
+    vertices: Vec<Vertex>,
+    indices: Vec<u16>,
+}
+
+impl Mesh {
+    fn new() -> Mesh {
+        Mesh {
+            vertices: Vec::new(),
+            indices: Vec::new(),
+        }
+    }
+}
 
 fn vko_to_key(vko: glutin::VirtualKeyCode) -> Option<Key> {
     use glutin::VirtualKeyCode::*;

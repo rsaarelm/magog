@@ -1,10 +1,7 @@
 use std::default::Default;
 use num::{Float};
 use image::{ImageBuffer, Rgb};
-use glium;
-use glium::texture;
-use glium::framebuffer;
-use glium::render_buffer;
+use glium::{self, texture, framebuffer, render_buffer, Surface};
 use glium::LinearBlendingFactor::*;
 use super::{CanvasMagnify};
 use ::{V2, Rect};
@@ -24,6 +21,7 @@ pub struct Renderer<'a> {
     atlas: texture::Texture2d,
     /// Render target texture.
     buffer: texture::Texture2d,
+    depth: framebuffer::DepthRenderBuffer,
     params: glium::DrawParameters<'a>,
     magnify: CanvasMagnify,
 }
@@ -48,6 +46,8 @@ impl<'a> Renderer<'a> {
             display,
             texture::UncompressedFloatFormat::U8U8U8U8,
             size.0, size.1);
+        let depth = render_buffer::DepthRenderBuffer::new(
+            display, texture::DepthFormat::F32, size.0, size.1);
 
         let mut params: glium::DrawParameters = Default::default();
         params.backface_culling = glium::BackfaceCullingMode::CullCounterClockWise;
@@ -63,6 +63,7 @@ impl<'a> Renderer<'a> {
             blit_shader: blit_shader,
             atlas: atlas,
             buffer: buffer,
+            depth: depth,
             params: params,
             magnify: magnify,
         }
@@ -84,8 +85,6 @@ impl<'a> Renderer<'a> {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
                 .. Default::default() }));
 
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
-        target.clear_depth(1.0);
         target.draw(&vertices, &indices, &self.sprite_shader, &uniforms, &self.params).unwrap();
     }
 
@@ -135,24 +134,31 @@ impl<'a> Renderer<'a> {
                 minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
                 .. Default::default() }));
 
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
-        target.clear_depth(1.0);
         target.draw(&vertices, &indices, &self.blit_shader, &uniforms, &params).unwrap();
     }
 
-    /// Draw a geometry buffer.
-    pub fn draw<S>(&mut self, display: &glium::Display, target: &mut S,
-                   vertices: Vec<Vertex>, indices: Vec<u16>)
-        where S: glium::Surface {
+    /// Call at the start of drawing
+    pub fn init(&mut self, display: &glium::Display) {
+        let mut target = framebuffer::SimpleFrameBuffer::with_depth_buffer(
+            display, &self.buffer, &self.depth);
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        target.clear_depth(1.0);
+    }
 
+    /// Draw a geometry buffer.
+    pub fn draw(&mut self, display: &glium::Display,
+                vertices: Vec<Vertex>, indices: Vec<u16>) {
         // Render the graphics to a texture to keep the pixels pure and
         // untainted.
-        let depth = render_buffer::DepthRenderBuffer::new(
-            display, texture::DepthFormat::F32, self.size.0, self.size.1);
         let mut sprite_target = framebuffer::SimpleFrameBuffer::with_depth_buffer(
-            display, &self.buffer, &depth);
+            display, &self.buffer, &self.depth);
         self.draw_sprites(display, &mut sprite_target, vertices, indices);
+    }
 
+    /// Show the drawn geometry on screen.
+    pub fn show<S>(&mut self, display: &glium::Display, target: &mut S)
+        where S: glium::Surface
+    {
         let (w, h) = display.get_framebuffer_dimensions();
         // Clip viewport dimensions to even to prevent rounding errors in
         // pixel perfect scaling.
