@@ -26,7 +26,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
         &image::load_from_memory(include_bytes!("assets/iso.png")).unwrap(),
         &CYAN);
     let mut ret = SpriteCache::new();
-    ret.batch_add(builder, V2(16, 24), V2(32, 40), &mut sprite_sheet,
+    ret.batch_add(builder, V2(-16, -24), V2(32, 40), &mut sprite_sheet,
                   vec![Grass, Dirt, Brick, Guy1, Guy2]);
     ret
 }
