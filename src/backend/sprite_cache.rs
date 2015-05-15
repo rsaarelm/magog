@@ -1,6 +1,6 @@
 use num::traits::{ToPrimitive, NumCast};
 use std::marker::{PhantomData};
-use std::collections::{VecMap};
+use std::collections::{HashMap};
 use std::fmt::{Debug};
 use image::{GenericImage, SubImage, Pixel};
 use ::geom::{V2};
@@ -11,7 +11,8 @@ use super::canvas::{CanvasBuilder, Image};
 ///
 /// Use an enum that contains names for all the sprites as the key type.
 pub struct SpriteCache<T> {
-    cache: VecMap<Image>,
+    // TODO: This should be VecMap! Change when VecMap is stable.
+    cache: HashMap<usize, Image>,
     // Lock the cache into the specific enum type even though it doesn't
     // show up in the actual implementation, just to keep usage clearer.
     phantom: PhantomData<T>,
@@ -20,7 +21,7 @@ pub struct SpriteCache<T> {
 impl<T: Debug+Copy+SpriteKey> SpriteCache<T> {
     pub fn new() -> SpriteCache<T> {
         SpriteCache {
-            cache: VecMap::new(),
+            cache: HashMap::new(),
             phantom: PhantomData,
         }
     }
