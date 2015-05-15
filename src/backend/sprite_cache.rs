@@ -30,6 +30,15 @@ impl<T: Debug+Copy+SpriteKey> SpriteCache<T> {
         self.cache.get(&SpriteCache::index(key)).map(|&x| x)
     }
 
+    /// Try to retrieve an image some steps ahead of the given key.
+    ///
+    /// Useful for animations and variants where there are deterministic
+    /// consecutive sequences of frames and you don't want to hardcode
+    /// every frame as a separate constant.
+    pub fn get_nth(&self, key: T, offset: usize) -> Option<Image> {
+        self.cache.get(&(SpriteCache::index(key) + offset)).map(|&x| x)
+    }
+
     /// Add an image to the CanvasBuilder atlas for the given identifier key.
     ///
     /// Trying to add multiple sprites with the same key is considered a
