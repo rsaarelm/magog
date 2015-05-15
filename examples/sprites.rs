@@ -70,7 +70,7 @@ fn gen_sprites(cell: V2<f32>) -> Vec<Sprite> {
 fn main() {
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
 
-    let mut builder = CanvasBuilder::new();
+    let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
     let mut player_x = 20.0;
     let mut player_y = 0.0;
     let cache = build_sprites(&mut builder);
@@ -81,7 +81,7 @@ fn main() {
             Event::RenderFrame => {
                 ctx.clear();
                 let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), V2(0.0, 0.0)).unwrap();
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), proj.project(V2(-player_x, -player_y)) + V2(320.0, 180.0)).unwrap();
+                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), proj.project(V2(-player_x, -player_y)) + screen_rect.1 / 2.0).unwrap();
 
                 let mut sprites = Vec::new();
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
