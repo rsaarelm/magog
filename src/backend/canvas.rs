@@ -355,7 +355,7 @@ impl<'a> Canvas<'a> {
 
         let mut app_focused = true;
         loop {
-            self.events.push_all(&self.display.poll_events().collect::<Vec<glutin::Event>>()[..]);
+            self.events.extend(self.display.poll_events());
 
             if !self.events.is_empty() {
                 app_focused = true;

@@ -91,8 +91,8 @@ impl<'a, 'b> Fonter<'a, 'b> {
             new_txt = text::wrap_lines(&new_txt[..], &|c| self.canvas.char_width(c), w);
         }
 
-        let mut new_lines: Vec<(String, f32)> = new_txt.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();
-        self.lines.append(&mut new_lines);
+        let new_lines: Vec<(String, f32)> = new_txt.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();
+        self.lines.extend(new_lines.into_iter());
         assert!(self.lines.len() > 0);
 
         self.cull_lines();

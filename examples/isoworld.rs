@@ -1,6 +1,5 @@
 /*! Sprite display demo */
 
-#![feature(collections)]
 extern crate image;
 extern crate calx;
 
@@ -85,7 +84,7 @@ fn main() {
 
                 let mut sprites = Vec::new();
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
-                    sprites.append(&mut gen_sprites(pt));
+                    sprites.extend(gen_sprites(pt).into_iter());
                 }
                 sprites.push(Sprite::new(V3(player_x, player_y, heightmap(V2(player_x, player_y)) as f32 / 2.0), 3, Spr::Guy1));
 
