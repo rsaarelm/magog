@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::ascii::{OwnedAsciiExt};
+use std::ascii::{AsciiExt};
 use std::ops::{Add, Sub, Mul};
 use num::{Float, Num};
 
@@ -166,7 +166,7 @@ impl ToColor for &'static str {
 /// "RED", "red", "#F00", "#F00F", "#FF0000" and "#FF0000FF" all
 /// correspond to the same opaque pure red color.
 pub fn parse_color(name: &str) -> Option<Rgba> {
-    if let Some(color) = parse_color_name(&name.to_string().into_ascii_uppercase()[..]) {
+    if let Some(color) = parse_color_name(&name.to_string().to_ascii_uppercase()[..]) {
         return Some(color);
     }
 

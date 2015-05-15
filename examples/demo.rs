@@ -1,8 +1,7 @@
-#![feature(std_misc)]
 extern crate time;
 extern crate calx;
 
-use std::ascii::OwnedAsciiExt;
+use std::ascii::AsciiExt;
 use calx::{color, V2, Rgba, Rect};
 use calx::backend::{CanvasBuilder, Key, Event, Fonter, CanvasUtil};
 use calx::{lerp};
@@ -71,7 +70,7 @@ fn main() {
                         .layer(0.1)
                         .text(format!("FPS {:.0}\n", fps))
                         .text(format!("{}\n", pangrams[pangram_idx].to_string()
-                                              .into_ascii_uppercase()))
+                                              .to_ascii_uppercase()))
                         .text(format!("{}\n", pangrams[pangram_idx]))
                         .text(format!("!\"#$%&'()*+,-./\n"))
                         .text(format!("1234567890:;<=>?\n"))
