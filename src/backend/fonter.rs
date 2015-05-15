@@ -101,9 +101,13 @@ impl<'a, 'b> Fonter<'a, 'b> {
 
     fn cull_lines(&mut self) {
         if let Some(n) = self.max_lines {
-            if self.lines.len() > n {
-                let new_len = self.lines.len() - n;
-                self.lines = self.lines.split_off(new_len);
+            // XXX: Removing items one-by-one from a Vec is iffy
+            // performance, but the usual use case here should have only
+            // one or two lines beyond the limit. The unstable
+            // Vec::split_off method would be a more generally effective
+            // approach here.
+            while self.lines.len() > n {
+                self.lines.remove(0);
             }
         }
         self.set_longest_width();
