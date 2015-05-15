@@ -15,8 +15,8 @@ name = "grid"
 path = "examples/grid.rs"
 
 [[example]]
-name = "sprites"
-path = "examples/sprites.rs"
+name = "isoworld"
+path = "examples/isoworld.rs"
 
 [dependencies.rand]
 

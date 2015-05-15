@@ -104,7 +104,7 @@ fn main() {
             Event::KeyPressed(Key::Escape) => { return; }
 
             Event::KeyPressed(Key::F12) => {
-                ctx.save_screenshot(&"sprites");
+                ctx.save_screenshot(&"isoworld");
             }
 
             Event::KeyPressed(k) => {
