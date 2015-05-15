@@ -9,7 +9,7 @@ pub use backend::canvas_util::{CanvasUtil};
 pub use backend::key::Key;
 pub use backend::fonter::{Fonter, Align};
 pub use backend::event::{Event, MouseButton};
-pub use backend::sprite_cache::{SpriteCache};
+pub use backend::sprite_cache::{SpriteCache, SpriteKey};
 
 mod canvas;
 mod canvas_util;
