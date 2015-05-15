@@ -14,6 +14,10 @@ path = "examples/demo.rs"
 name = "grid"
 path = "examples/grid.rs"
 
+[[example]]
+name = "sprites"
+path = "examples/sprites.rs"
+
 [dependencies.rand]
 
 [dependencies.rustc-serialize]
