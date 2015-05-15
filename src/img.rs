@@ -10,8 +10,8 @@ pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>, C: ToColor>(
     let (w, h) = image.dimensions();
     ImageBuffer::from_fn(w, h, |x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
-        let [r, g, b, _] = color.to_srgba();
-        if pr == r && pg == g && pb == b {
+        let srgba = color.to_srgba();
+        if pr == srgba[0] && pg == srgba[1] && pb == srgba[2] {
             pa = Default::default();
         }
         Pixel::from_channels(pr, pg, pb, pa)
