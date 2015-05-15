@@ -426,7 +426,7 @@ impl<'a> Canvas<'a> {
 }
 
 /// Drawable images stored in the Canvas.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Image(usize);
 
 fn vko_to_key(vko: glutin::VirtualKeyCode) -> Option<Key> {
