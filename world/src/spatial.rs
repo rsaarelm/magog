@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap};
-use std::collections::Bound::{Included, Unbounded};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use vec_map::{VecMap};
 use entity::{Entity};
@@ -140,9 +139,20 @@ impl Spatial {
         // running collect) since the chain depends on a closure that captures
         // the 'parent' parameter from the outside scope, and closures can't
         // be typed in the return signature.
+
+        // TODO: Get range iteration for BTreeMaps working in stable Rust.
+        /*
         self.place_to_entities.range(Included(&In(parent, None)), Unbounded)
             // Consume the contingent elements for the parent container.
             .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
+         */
+
+        // XXX: This replacement thing is quite nasty, it iterates over the
+        // whole collection for every query.
+        self.place_to_entities.iter()
+            .filter(|&(ref k, _)|
+                        if let &&In(ref p, _) = k {*p == parent} else { false })
+
             // Flatten the Vec results into a single stream.
             .flat_map(|(_, ref v)| v.iter())
             .map(|&x| x)
