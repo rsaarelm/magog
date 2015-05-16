@@ -5,7 +5,6 @@ authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
 description = "Roguelike game"
 keywords = ["gamedev"]
 license = "GPL3"
-build = "build.rs"
 
 [[bin]]
 name = "magog"

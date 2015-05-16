@@ -66,8 +66,8 @@ impl Config {
         }
 
         if parse.opt_present("version") {
-            return Ok(Some(format!("Magog v{} built with {}",
-                                ::version(), ::compiler_version())));
+            return Ok(Some(format!("Magog v{}",
+                                ::version())));
         }
 
         if parse.opt_present("no-wall-sliding") {
