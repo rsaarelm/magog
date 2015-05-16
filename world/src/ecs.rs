@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::iter;
 use world;
 use entity::{Entity};
 use components;
@@ -43,7 +44,9 @@ impl Ecs {
         }
 
         if self.active.len() <= idx {
-            self.active.resize(idx + 1, false);
+            let padding = idx + 1 - self.active.len();
+            self.active.extend(iter::repeat(false).take(padding));
+            assert!(self.active.len() == idx + 1);
         }
         assert!(!self.active[idx]);
         self.active[idx] = true;

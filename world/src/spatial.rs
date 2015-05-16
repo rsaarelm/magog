@@ -92,9 +92,13 @@ impl Spatial {
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
-                let v_idx = (&v[..]).position_elem(&Entity(idx)).unwrap();
-                v.swap_remove(v_idx);
-                return;
+                for i in (0..v.len()) {
+                    if v[i] == Entity(idx) {
+                        v.swap_remove(i);
+                        return;
+                    }
+                }
+                panic!("Entity being removed from place it's not in");
             } else {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
