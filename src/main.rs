@@ -18,6 +18,7 @@ extern crate mapgen;
 extern crate world;
 
 use std::env;
+use std::process;
 use std::path::{PathBuf};
 use std::fs::{self, File};
 use std::io::prelude::*;
@@ -137,8 +138,7 @@ pub fn main() {
     match config.parse_args(env::args()) {
         Err(e) => {
             println!("{}", e);
-            env::set_exit_status(1);
-            return;
+            process::exit(1);
         }
         Ok(Some(msg)) => {
             println!("{}", msg);
