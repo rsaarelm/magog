@@ -291,6 +291,8 @@ pub fn find_target(shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
 
 ////////////////////////////////////////////////////////////////////////
 
+static SAVE_FILENAME: &'static str = "magog_save.json";
+
 pub fn save_game() {
     // Only save if there's still a living player around.
     if is_game_over() {
@@ -298,13 +300,13 @@ pub fn save_game() {
     }
 
     let save_data = world::save();
-    File::create("magog_save.json").unwrap()
+    File::create(SAVE_FILENAME).unwrap()
         .write_all(&save_data.into_bytes()).unwrap();
 }
 
 pub fn load_game() {
-    let path = Path::new("magog_save.json");
-    if !path.exists() { return; }
+    if !save_exists() { return; }
+    let path = Path::new(SAVE_FILENAME);
     let mut save_data = String::new();
     File::open(&path).unwrap().read_to_string(&mut save_data).unwrap();
     // TODO: Handle failed load nicely.
@@ -312,7 +314,7 @@ pub fn load_game() {
 }
 
 pub fn _delete_save() {
-    let _ = fs::remove_file("magog_save.json");
+    let _ = fs::remove_file(SAVE_FILENAME);
 }
 
-pub fn _save_exists() -> bool  { Path::new("magog_save.json").exists() }
+pub fn save_exists() -> bool { fs::metadata(SAVE_FILENAME).is_ok() }
