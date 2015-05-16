@@ -1,6 +1,7 @@
-use std::collections::{VecMap, BTreeMap};
+use std::collections::{BTreeMap};
 use std::collections::Bound::{Included, Unbounded};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
+use vec_map::{VecMap};
 use entity::{Entity};
 use location::{Location};
 use item::Slot;

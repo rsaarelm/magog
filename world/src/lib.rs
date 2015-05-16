@@ -8,6 +8,7 @@
 extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
+extern crate vec_map;
 extern crate calx;
 extern crate mapgen;
 
