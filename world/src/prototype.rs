@@ -29,127 +29,112 @@ impl Prototype {
             }),
         }
     }
-}
 
-impl<C: Component> Fn<(C,)> for Prototype {
-    extern "rust-call" fn call(&self, (comp,): (C,)) -> Prototype {
-        comp.add_to(self.target);
-        *self
-    }
-}
-
-impl<C: Component> FnMut<(C,)> for Prototype {
-    extern "rust-call" fn call_mut(&mut self, (comp,): (C,)) -> Prototype {
-        Fn::call(*&self, (comp,))
-    }
-}
-
-impl<C: Component> FnOnce<(C,)> for Prototype {
-    type Output = Prototype;
-
-    extern "rust-call" fn call_once(self, (comp,): (C,)) -> Prototype {
-        Fn::call(&self, (comp,))
+    /// Add a component to the prototype.
+    pub fn c<C: Component>(self, component: C) -> Prototype {
+        component.add_to(self.target);
+        self
     }
 }
 
 /// Only call at world init!
 pub fn init() {
     let base_mob = Prototype::new(None)
-        (Brain { state: BrainState::Asleep, alignment: Alignment::Evil })
-        ({let h: Health = Default::default(); h})
+        .c(Brain { state: BrainState::Asleep, alignment: Alignment::Evil })
+        .c({let h: Health = Default::default(); h})
         .target;
 
     // Init the prototypes
 
     // Player
     Prototype::new(Some(base_mob))
-        (Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
-        (Desc::new("player", 51, AZURE))
-        (Stats::new(10, &[Hands]).mana(5))
-        (MapMemory::new())
+        .c(Brain { state: BrainState::PlayerControl, alignment: Alignment::Good })
+        .c(Desc::new("player", 51, AZURE))
+        .c(Stats::new(10, &[Hands]).mana(5))
+        .c(MapMemory::new())
         ;
 
     // Enemies
     Prototype::new(Some(base_mob))
-        (Desc::new("dreg", 72, OLIVE))
-        (Stats::new(1, &[Hands]))
-        (Spawn::new(SpawnType::Creature))
+        .c(Desc::new("dreg", 72, OLIVE))
+        .c(Stats::new(1, &[Hands]))
+        .c(Spawn::new(SpawnType::Creature))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("snake", 71, GREEN))
-        (Stats::new(1, &[]))
-        (Spawn::new(SpawnType::Creature).biome(Overland))
+        .c(Desc::new("snake", 71, GREEN))
+        .c(Stats::new(1, &[]))
+        .c(Spawn::new(SpawnType::Creature).biome(Overland))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("ooze", 77, LIGHTSEAGREEN))
-        (Stats::new(3, &[Slow, Deathsplosion]))
-        (Spawn::new(SpawnType::Creature).biome(Dungeon).depth(3))
+        .c(Desc::new("ooze", 77, LIGHTSEAGREEN))
+        .c(Stats::new(3, &[Slow, Deathsplosion]))
+        .c(Spawn::new(SpawnType::Creature).biome(Dungeon).depth(3))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("ogre", 73, DARKSLATEGRAY))
-        (Stats::new(6, &[Hands]))
-        (Spawn::new(SpawnType::Creature).depth(5))
+        .c(Desc::new("ogre", 73, DARKSLATEGRAY))
+        .c(Stats::new(6, &[Hands]))
+        .c(Spawn::new(SpawnType::Creature).depth(5))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("wraith", 74, HOTPINK))
-        (Stats::new(8, &[Hands]))
-        (Spawn::new(SpawnType::Creature).biome(Dungeon).depth(6))
+        .c(Desc::new("wraith", 74, HOTPINK))
+        .c(Stats::new(8, &[Hands]))
+        .c(Spawn::new(SpawnType::Creature).biome(Dungeon).depth(6))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("octopus", 63, DARKTURQUOISE))
-        (Stats::new(10, &[]))
-        (Spawn::new(SpawnType::Creature).depth(7))
+        .c(Desc::new("octopus", 63, DARKTURQUOISE))
+        .c(Stats::new(10, &[]))
+        .c(Spawn::new(SpawnType::Creature).depth(7))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("efreet", 78, ORANGE))
-        (Stats::new(12, &[]))
-        (Spawn::new(SpawnType::Creature).depth(8))
+        .c(Desc::new("efreet", 78, ORANGE))
+        .c(Stats::new(12, &[]))
+        .c(Spawn::new(SpawnType::Creature).depth(8))
         ;
 
     Prototype::new(Some(base_mob))
-        (Desc::new("serpent", 94, CORAL))
-        (Stats::new(15, &[]))
-        (Spawn::new(SpawnType::Creature).biome(Dungeon).depth(9))
+        .c(Desc::new("serpent", 94, CORAL))
+        .c(Stats::new(15, &[]))
+        .c(Spawn::new(SpawnType::Creature).biome(Dungeon).depth(9))
         ;
 
     // Items
     Prototype::new(None)
-        (Desc::new("heart", 89, RED))
-        (Spawn::new(SpawnType::Consumable).commonness(50))
-        (Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
+        .c(Desc::new("heart", 89, RED))
+        .c(Spawn::new(SpawnType::Consumable).commonness(50))
+        .c(Item { item_type: ItemType::Instant, ability: Ability::HealInstant(2) })
         ;
 
     Prototype::new(None)
-        (Desc::new("sword", 84, GAINSBORO))
-        (Spawn::new(SpawnType::Equipment).commonness(100))
-        (Stats::new(0, &[]).attack(5).mana(-3))
-        (Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
+        .c(Desc::new("sword", 84, GAINSBORO))
+        .c(Spawn::new(SpawnType::Equipment).commonness(100))
+        .c(Stats::new(0, &[]).attack(5).mana(-3))
+        .c(Item { item_type: ItemType::MeleeWeapon, ability: Ability::Multi(vec![]) })
         ;
 
     Prototype::new(None)
-        (Desc::new("throwing knives", 90, GAINSBORO))
-        (Spawn::new(SpawnType::Equipment).commonness(500))
-        (Stats::new(0, &[]).ranged_range(5).ranged_power(5))
-        (Item { item_type: ItemType::RangedWeapon, ability: Ability::Multi(vec![]) })
+        .c(Desc::new("throwing knives", 90, GAINSBORO))
+        .c(Spawn::new(SpawnType::Equipment).commonness(500))
+        .c(Stats::new(0, &[]).ranged_range(5).ranged_power(5))
+        .c(Item { item_type: ItemType::RangedWeapon, ability: Ability::Multi(vec![]) })
         ;
 
     Prototype::new(None)
-        (Desc::new("helmet", 85, GAINSBORO))
-        (Spawn::new(SpawnType::Equipment).commonness(100))
-        (Stats::new(0, &[]).protection(2).mana(-1))
-        (Item { item_type: ItemType::Helmet, ability: Ability::Multi(vec![]) })
+        .c(Desc::new("helmet", 85, GAINSBORO))
+        .c(Spawn::new(SpawnType::Equipment).commonness(100))
+        .c(Stats::new(0, &[]).protection(2).mana(-1))
+        .c(Item { item_type: ItemType::Helmet, ability: Ability::Multi(vec![]) })
         ;
 
     Prototype::new(None)
-        (Desc::new("armor", 91, GAINSBORO))
-        (Spawn::new(SpawnType::Equipment).commonness(100))
-        (Stats::new(0, &[]).protection(5).mana(-3))
-        (Item { item_type: ItemType::Armor, ability: Ability::Multi(vec![]) })
+        .c(Desc::new("armor", 91, GAINSBORO))
+        .c(Spawn::new(SpawnType::Equipment).commonness(100))
+        .c(Stats::new(0, &[]).protection(5).mana(-3))
+        .c(Item { item_type: ItemType::Armor, ability: Ability::Multi(vec![]) })
         ;
 }
