@@ -167,7 +167,7 @@ impl<'a> CanvasUtil for Canvas<'a> {
     fn save_screenshot(&mut self, basename: &str) {
         use time;
         use std::path::{Path};
-        use std::fs::{self, File, PathExt};
+        use std::fs::{self, File};
         use image;
 
         let shot = self.screenshot();
@@ -184,7 +184,8 @@ impl<'a> CanvasUtil for Canvas<'a> {
         // Run through candidates for this second.
         for i in 0..100 {
             let test_filename = format!("{}-{}{:02}.png", basename, timestamp, i);
-            if !Path::new(&test_filename).exists() {
+            // If file does not exist.
+            if fs::metadata(&test_filename).is_err() {
                 // Thread-safe claiming: create_dir will fail if the dir
                 // already exists (it'll exist if another thread is gunning
                 // for the same filename and managed to get past us here).
