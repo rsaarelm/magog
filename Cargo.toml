@@ -17,8 +17,6 @@ lto = true
 
 [dependencies.rand]
 
-[dependencies.rand_macros]
-
 [dependencies.getopts]
 
 [dependencies.toml]

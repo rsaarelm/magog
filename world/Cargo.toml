@@ -13,8 +13,6 @@ name = "world"
 
 [dependencies.rand]
 
-[dependencies.rand_macros]
-
 [dependencies.vec_map]
 
 [dependencies.calx]

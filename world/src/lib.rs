@@ -1,10 +1,5 @@
 #![crate_name="world"]
-#![feature(unboxed_closures, plugin)]
-#![feature(core, collections, path_ext)]
-#![feature(custom_derive)]
-#![plugin(rand_macros)]
 
-#[no_link] extern crate rand_macros;
 extern crate rand;
 extern crate rustc_serialize;
 extern crate num;

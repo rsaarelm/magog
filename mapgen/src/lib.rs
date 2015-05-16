@@ -1,7 +1,5 @@
 #![crate_name="mapgen"]
 
-#![feature(unboxed_closures, slice_patterns)]
-
 extern crate num;
 extern crate rustc_serialize;
 extern crate rand;

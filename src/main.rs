@@ -1,10 +1,5 @@
 #![crate_name="magog"]
-#![feature(unboxed_closures, plugin)]
-#![feature(path_ext, exit_status)]
-#![feature(custom_derive)]
-#![plugin(rand_macros)]
 
-#[no_link] extern crate rand_macros;
 extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
@@ -12,7 +7,6 @@ extern crate getopts;
 extern crate image;
 extern crate time;
 extern crate toml;
-#[macro_use]
 extern crate calx;
 extern crate mapgen;
 extern crate world;
