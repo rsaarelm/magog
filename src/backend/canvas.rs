@@ -7,7 +7,7 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use ::{AtlasBuilder, Atlas, AtlasItem, V2, ToColor};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, ToColor, IterTiles};
 use super::event::{Event, MouseButton};
 use super::key::{Key};
 use super::renderer::{Renderer, Vertex};
@@ -108,13 +108,10 @@ impl CanvasBuilder {
         let mut font_sheet = ::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
             &"#808080");
-        for i in 0u32..96 {
-            let x = 8u32 * (i % 16u32);
-            let y = 8u32 * (i / 16u32);
-            let Image(idx) = self.add_image(
-                V2(0, -8),
-                &SubImage::new(&mut font_sheet, x, y, 8, 8));
-            assert!(idx - i as usize == FONT_IDX);
+        for tile in font_sheet.tiles(V2(8, 8)).take(96) {
+            self.add_image(V2(0, -8),
+                &SubImage::new(&mut font_sheet,
+                               tile.mn().0, tile.mn().1, tile.dim().0, tile.dim().1));
         }
     }
 

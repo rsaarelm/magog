@@ -1,7 +1,8 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::{Ordering};
-use num::{One};
+use num::{Zero, One};
 use num::traits::{Num};
+use image::{Primitive, GenericImage, Pixel};
 use {Anchor};
 
 /// 2D geometric vector.
@@ -251,6 +252,28 @@ impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
     }
 }
 
+pub trait IterTiles<T> {
+    /// Return an iterator of subtiles within self
+    fn tiles(&self, tile_dim: V2<T>) -> TileIter<T>;
+}
+
+impl<T: Num+PartialOrd+Copy> IterTiles<T> for Rect<T> {
+    fn tiles(&self, tile_dim: V2<T>) -> TileIter<T> {
+        TileIter::new(*self, tile_dim)
+    }
+}
+
+impl<I, P, T> IterTiles<u32> for I
+    where I: GenericImage<Pixel=P>,
+          P: Pixel<Subpixel=T>,
+          T: Primitive
+{
+    fn tiles(&self, tile_dim: V2<u32>) -> TileIter<u32> {
+        let (w, h) = self.dimensions();
+        TileIter::new(Rect(V2(0, 0), V2(w, h)), tile_dim)
+    }
+}
+
 /// Iterator for the integer points within a rectangle.
 pub struct RectIter<T> {
     x: T,
@@ -262,6 +285,7 @@ pub struct RectIter<T> {
 
 impl<T: Num+PartialOrd+Copy> Iterator for RectIter<T> {
     type Item = V2<T>;
+
     fn next(&mut self) -> Option<V2<T>> {
         if self.y >= self.y1 { return None; }
         let ret = Some(V2(self.x, self.y));
@@ -271,5 +295,49 @@ impl<T: Num+PartialOrd+Copy> Iterator for RectIter<T> {
             self.y = self.y + One::one();
         }
         ret
+    }
+}
+
+/// Iterator for packed left-to-right top-to-bottom subrectangles
+pub struct TileIter<T> {
+    base: Rect<T>,
+    tile_w: T,
+    tile_h: T,
+    x: T,
+    y: T,
+}
+
+impl<T: Num+PartialOrd+Copy> TileIter<T> {
+    pub fn new(base: Rect<T>, dim: V2<T>) -> TileIter<T> {
+        assert!(dim.0 > Zero::zero() && dim.1 > Zero::zero());
+        TileIter {
+            base: base,
+            tile_w: dim.0,
+            tile_h: dim.1,
+            x: Zero::zero(),
+            y: Zero::zero()
+        }
+    }
+}
+
+impl<T: Num+PartialOrd+Copy> Iterator for TileIter<T> {
+    type Item = Rect<T>;
+
+    fn next(&mut self) -> Option<Rect<T>> {
+        if self.tile_w > self.base.dim().0 { return None; }
+
+        if (self.x + One::one()) * self.tile_w > self.base.dim().0 {
+            self.y = self.y + One::one();
+            self.x = Zero::zero();
+        }
+
+        if (self.y + One::one()) * self.tile_h > self.base.dim().1 {
+            return None;
+        }
+
+        let ret = Rect(V2(self.x * self.tile_w, self.y * self.tile_h),
+                       V2(self.tile_w, self.tile_h));
+        self.x = self.x + One::one();
+        Some(ret)
     }
 }

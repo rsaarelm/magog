@@ -3,7 +3,7 @@ use std::marker::{PhantomData};
 use vec_map::{VecMap};
 use std::fmt::{Debug};
 use image::{GenericImage, SubImage, Pixel};
-use ::geom::{V2};
+use ::geom::{V2, IterTiles};
 use super::canvas::{CanvasBuilder, Image};
 
 /// A cache that loads sprites and stores them efficiently indexed by
@@ -66,12 +66,8 @@ impl<T: Debug+Copy+SpriteKey> SpriteCache<T> {
         where P: Pixel<Subpixel=u8> + 'static,
               I: GenericImage<Pixel=P> + 'static
     {
-        let (sw, sh) = sprite_sheet.dimensions();
-        let V2(w, h) = sprite_size;
-        let (cols, rows) = (sw / sprite_size.0, sh / sprite_size.1);
-        assert!(keys.len() as u32 <= rows * cols, "More keys specified than there are sprites on the sheet");
-        for i in 0..keys.len() {
-            let sub = SubImage::new(sprite_sheet, (i as u32 % cols) * w, (i as u32 / cols) * h, w, h); 
+        for (i, rect) in sprite_sheet.tiles(sprite_size).take(keys.len()).enumerate() {
+            let sub = SubImage::new(sprite_sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
             self.add(builder, keys[i], offset, &sub);
         }
     }
