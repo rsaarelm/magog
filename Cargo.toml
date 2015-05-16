@@ -26,6 +26,8 @@ path = "examples/isoworld.rs"
 
 [dependencies.num]
 
+[dependencies.vec_map]
+
 [dependencies.image]
 
 [dependencies.nalgebra]

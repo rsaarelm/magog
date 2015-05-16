@@ -9,6 +9,7 @@ extern crate rustc_serialize;
 extern crate time;
 extern crate rand;
 extern crate num;
+extern crate vec_map;
 extern crate nalgebra;
 extern crate image;
 extern crate glutin;
