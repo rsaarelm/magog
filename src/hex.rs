@@ -2,6 +2,7 @@ use std::slice;
 use std::ops::{Add, Sub};
 use std::f32::consts::PI;
 use std::cmp::max;
+use rand::{Rand, Rng};
 use num::{Integer, Float};
 use geom::V2;
 
@@ -101,6 +102,10 @@ impl Add<i32> for Dir6 {
 impl Sub<i32> for Dir6 {
     type Output = Dir6;
     fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
+}
+
+impl Rand for Dir6 {
+    fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
 static DIRS: [Dir6; 6] = [
