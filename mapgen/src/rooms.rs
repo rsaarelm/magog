@@ -140,7 +140,9 @@ fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, r
 }
 
 fn connect_rooms<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, wall: Wall) {
-    let [(dir1, room1), (dir2, room2)] = wall.rooms();
+    let rooms = wall.rooms();
+    let (dir1, room1) = rooms[0];
+    let (dir2, room2) = rooms[1];
     let door1 = *rng.choose(&door_positions(area, room1, dir1)).expect("No valid door positions");
     let door2 = *rng.choose(&door_positions(area, room2, dir2)).expect("No valid door positions");
 

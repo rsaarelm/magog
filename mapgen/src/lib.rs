@@ -96,7 +96,9 @@ impl<T> StaticArea<T> {
         }
     }
 
-    pub fn map_spawns<U, F: Fn<(T,), Output=U>>(self, f: F) -> StaticArea<U> {
+    pub fn map_spawns<U, F>(self, f: F) -> StaticArea<U>
+        where F: Fn(T) -> U
+    {
         StaticArea {
             terrain: self.terrain,
             spawns: self.spawns.into_iter().map(|(p, x)| (p, f(x))).collect(),

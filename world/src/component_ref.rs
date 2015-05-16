@@ -87,7 +87,9 @@ impl<'a, C: Clone> ComponentRefMut<'a, C> {
     }
 }
 
-fn find_parent<P: Fn<(Entity,), Output=bool>>(p: P, ecs: &Ecs, e: Entity) -> Option<Entity> {
+fn find_parent<P>(p: P, ecs: &Ecs, e: Entity) -> Option<Entity>
+    where P: Fn(Entity) -> bool
+{
     let mut current = e;
     loop {
         if p(current) { return Some(current); }
