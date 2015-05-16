@@ -21,8 +21,10 @@ use std::env;
 use std::process;
 use std::path::{PathBuf};
 use std::fs::{self, File};
-use std::io::prelude::*;
+use std::io::{Write};
 use std::default::Default;
+// TODO: Get a stable standard library PathExt to replace this.
+use calx::{PathExt};
 use calx::backend::{Canvas, CanvasBuilder, Event};
 use gamestate::GameState;
 use titlestate::TitleState;
@@ -82,7 +84,7 @@ pub fn compiler_version() -> String {
 pub fn screenshot(ctx: &mut Canvas) {
     use time;
     use std::path::{Path};
-    use std::fs::{self, File, PathExt};
+    use std::fs::{self, File};
     use image;
 
     let shot = ctx.screenshot();
