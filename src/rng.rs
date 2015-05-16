@@ -1,5 +1,4 @@
 use std::mem;
-use std::raw;
 use rand::{Rng, SeedableRng};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use ::{to_log_odds};
@@ -85,12 +84,13 @@ impl<T: Rng+'static> Decodable for EncodeRng<T> {
 
 impl<T: 'static> Encodable for EncodeRng<T> {
     fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        let blob: &[u8] = unsafe {
-            mem::transmute::<raw::Slice<u8>, &[u8]>(raw::Slice {
-                data: mem::transmute(&self.inner),
-                len: mem::size_of::<T>(),
-            })
-        };
-        blob.encode(s)
+        let mut vec = Vec::new();
+        unsafe {
+            let view = self as *const _ as *const u8;
+            for i in 0..(mem::size_of::<T>()) {
+                vec.push(*view.offset(i as isize));
+            }
+        }
+        vec.encode(s)
     }
 }
