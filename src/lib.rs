@@ -4,13 +4,7 @@ Miscellaneous utilities grab-bag.
  */
 
 #![crate_name="calx"]
-#![feature(core, collections, path_ext, std_misc)]
-#![feature(plugin, custom_attribute, unboxed_closures, slice_patterns)]
-#![feature(custom_derive)]
-#![plugin(rand_macros)]
 
-#[no_link] extern crate rand_macros;
-extern crate collections;
 extern crate rustc_serialize;
 extern crate time;
 extern crate rand;

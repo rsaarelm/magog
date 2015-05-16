@@ -24,8 +24,6 @@ path = "examples/isoworld.rs"
 
 [dependencies.time]
 
-[dependencies.rand_macros]
-
 [dependencies.num]
 
 [dependencies.image]
