@@ -26,8 +26,6 @@ enum Spr {
     Floor,
     GrassFloor,
     WaterFloor,
-    PentagramFloor,
-    GridFloor,
 
     BrickWallShort,
     BrickWallShort1,
@@ -83,8 +81,6 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                     Floor,
                     GrassFloor,
                     WaterFloor,
-                    PentagramFloor,
-                    GridFloor,
                   ]);
 
     let walls = vec![
@@ -317,7 +313,7 @@ impl RenderTerrain for Kernel<Terrain> {
         match self.center {
             Floor => ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK),
             Grass => ctx.draw_image(spr(Spr::GrassFloor), offset, 0.5, &DARKGREEN, &BLACK),
-            Water => ctx.draw_image(spr(Spr::WaterFloor), offset, 0.5, &ROYALBLUE, &BLACK),
+            Water => ctx.draw_image(spr(Spr::WaterFloor), offset, 0.5, &CYAN, &ROYALBLUE),
             Magma => ctx.draw_image(spr(Spr::WaterFloor), offset, 0.5, &YELLOW, &DARKRED),
             Tree => {
                 ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
