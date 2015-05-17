@@ -15,12 +15,12 @@ use calx::{V2, Rect, IterTiles, color_key, Projection, Rgba};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum Spr {
-    BlockRear,
-    BlockRear1,
-    BlockRear2,
-    BlockFront,
-    BlockFront1,
-    BlockFront2,
+    BlockNW,
+    BlockN,
+    BlockNE,
+    BlockRock,
+    BlockRock1,
+    BlockRock2,
 
     FloorBlank,
     Floor,
@@ -69,12 +69,12 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
 
     ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("assets/blocks.png")),
                   vec![
-                    BlockRear,
-                    BlockRear1,
-                    BlockRear2,
-                    BlockFront,
-                    BlockFront1,
-                    BlockFront2,
+                    BlockNW,
+                    BlockN,
+                    BlockNE,
+                    BlockRock,
+                    BlockRock1,
+                    BlockRock2,
                   ]);
 
     ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("assets/floors.png")),
@@ -267,12 +267,12 @@ impl<C: HexTerrain> Kernel<C> {
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn block_faces(&self) -> [bool; 6] {
-        [!self.n.is_hull(),
-         !self.ne.is_hull(),
-         !self.se.is_hull(),
-         !self.s.is_hull(),
-         !self.sw.is_hull(),
-         !self.nw.is_hull()]
+        [!self.n.is_block(),
+         !self.ne.is_block(),
+         !self.se.is_block(),
+         !self.s.is_block(),
+         !self.sw.is_block(),
+         !self.nw.is_block()]
     }
 }
 
@@ -289,15 +289,29 @@ impl RenderTerrain for Kernel<Terrain> {
                     long: Spr, long_color: &Rgba, long_back: &Rgba) {
             let extends = k.wall_extends();
             if extends[0] {
-                ctx.draw_image(spr_nth(long, 0), offset, 0.45, long_color, long_back);
+                ctx.draw_image(spr_nth(long, 0), offset, 0.45, &(*long_color * 0.5), long_back);
             } else {
-                ctx.draw_image(spr_nth(short, 0), offset, 0.45, short_color, short_back);
+                ctx.draw_image(spr_nth(short, 0), offset, 0.45, &(*short_color * 0.5), short_back);
             }
             if extends[1] {
                 ctx.draw_image(spr_nth(long, 1), offset, 0.45, long_color, long_back);
             } else {
                 ctx.draw_image(spr_nth(short, 1), offset, 0.45, short_color, short_back);
             }
+        }
+
+        fn blockform<C: HexTerrain>(k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
+                                    face: Spr, color: &Rgba, back: &Rgba) {
+            ctx.draw_image(spr(Spr::FloorBlank), offset, 0.5, &BLACK, &BLACK);
+
+            let faces = k.block_faces();
+
+            if faces[5] { ctx.draw_image(spr(Spr::BlockNW), offset, 0.45, &(*color * 0.5), &BLACK); }
+            if faces[0] { ctx.draw_image(spr(Spr::BlockN), offset, 0.45, &(*color * 0.5), &BLACK); }
+            if faces[1] { ctx.draw_image(spr(Spr::BlockNE), offset, 0.45, &(*color * 0.5), &BLACK); }
+            if faces[4] { ctx.draw_image(spr_nth(face, 0), offset, 0.45, &(*color * 0.25), &(*back * 0.25)); }
+            if faces[3] { ctx.draw_image(spr_nth(face, 1), offset, 0.45, &(*color), &(*back)); }
+            if faces[2] { ctx.draw_image(spr_nth(face, 2), offset, 0.45, &(*color * 0.5), &(*back * 0.5)); }
         }
 
         match self.center {
@@ -318,7 +332,26 @@ impl RenderTerrain for Kernel<Terrain> {
                          Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK);
             }
 
-            _ => {} // TODO
+            Door => {
+                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
+                wallform(self, ctx, offset,
+                         Spr::BrickWallShort, &LIGHTSLATEGRAY, &BLACK,
+                         Spr::BrickOpenWall, &LIGHTSLATEGRAY, &BLACK);
+                wallform(self, ctx, offset,
+                         Spr::DoorWallShort, &SADDLEBROWN, &BLACK,
+                         Spr::DoorWall, &SADDLEBROWN, &BLACK);
+            }
+
+            Window => {
+                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
+                wallform(self, ctx, offset,
+                         Spr::BrickWallShort, &LIGHTSLATEGRAY, &BLACK,
+                         Spr::BrickWindowWall, &LIGHTSLATEGRAY, &BLACK);
+            }
+
+            Rock => {
+                blockform(self, ctx, offset, Spr::BlockRock, &DARKGOLDENROD, &BLACK);
+            }
         }
     }
 }
