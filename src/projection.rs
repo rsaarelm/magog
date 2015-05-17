@@ -11,23 +11,35 @@ pub struct Projection {
 }
 
 impl Projection {
-    /// Construct a projection for given on-screen tile grid axes and
-    /// the given offset from screen coordinate origin.
+    /// Construct a projection for given on-screen tile grid axes.
     ///
     /// Will return None if the axes specify a degenerate projection
     /// that can't be inverted.
-    pub fn new(x_axis: V2<f32>, y_axis: V2<f32>, offset: V2<f32>) -> Option<Projection> {
+    pub fn new(x_axis: V2<f32>, y_axis: V2<f32>) -> Option<Projection> {
         let fwd = Mat2::new(x_axis.0, y_axis.0, x_axis.1, y_axis.1);
+
         if let Some(inv) = inv(&fwd) {
             Some(Projection {
                 fwd: fwd,
                 inv: inv,
-                offset: offset,
+                offset: V2(0.0, 0.0),
             })
         } else {
             // Degenerate matrix, no inverse found.
             None
         }
+    }
+
+    /// Add a view space offset to the projection.
+    pub fn view_offset(mut self, offset: V2<f32>) -> Projection {
+        self.offset = self.offset + offset;
+        self
+    }
+
+    /// Add a world space offset to the projection.
+    pub fn world_offset(self, offset: V2<f32>) -> Projection {
+        let view_offset = self.fwd * Vec2::new(offset.0, offset.1);
+        self.view_offset(V2(view_offset.x, view_offset.y))
     }
 
     /// Project world space into screen space.
@@ -70,10 +82,11 @@ mod test {
     #[test]
     fn test_projection(){
         // Degenerate axes
-        assert!(Projection::new(V2(-10.0, 0.0), V2(10.0, 0.0), V2(0.0, 0.0)).is_none());
+        assert!(Projection::new(V2(-10.0, 0.0), V2(10.0, 0.0)).is_none());
 
         // Isometric projection
-        let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), V2(32.0, 16.0)).unwrap();
+        let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0))
+            .unwrap().view_offset(V2(32.0, 16.0));
         verify(&proj, V2(0.0, 0.0), V2(32.0, 16.0));
         verify(&proj, V2(1.0, 0.0), V2(48.0, 24.0));
         verify(&proj, V2(0.0, 1.0), V2(16.0, 24.0));

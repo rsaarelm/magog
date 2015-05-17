@@ -53,8 +53,9 @@ fn main() {
                 ctx.clear();
 
                 screen_offset = screen_offset - scroll_delta;
-                let proj = Projection::new(PROJECTIONS[projection].0, PROJECTIONS[projection].1,
-                                           screen_offset).unwrap();
+                let proj = Projection::new(PROJECTIONS[projection].0, PROJECTIONS[projection].1)
+                    .unwrap()
+                    .view_offset(screen_offset);
 
                 let mouse_rect = Rect(mouse_pos.map(|x| x as f32) - V2(160.0, 90.0), V2(320.0, 180.0));
                 let mouse_cell = proj.inv_project(mouse_pos.map(|x| x as f32)).map(|x| x.floor() as i32);

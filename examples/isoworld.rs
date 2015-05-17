@@ -68,6 +68,7 @@ fn gen_sprites(cell: V2<f32>) -> Vec<Sprite> {
 
 fn main() {
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
+    let screen_rect = screen_rect - screen_rect.dim() / 2.0;
 
     let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
     let mut player_x = 20.0;
@@ -78,9 +79,9 @@ fn main() {
     loop {
         match ctx.next_event() {
             Event::RenderFrame => {
-                ctx.clear();
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), V2(0.0, 0.0)).unwrap();
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0), proj.project(V2(-player_x, -player_y)) + screen_rect.1 / 2.0).unwrap();
+                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0))
+                    .unwrap()
+                    .world_offset(V2(-player_x, -player_y));
 
                 let mut sprites = Vec::new();
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
@@ -93,7 +94,7 @@ fn main() {
                 for spr in sprites.iter() {
                     let draw_pos =
                         proj.project(V2((spr.bounds.0).0, (spr.bounds.0).1)) +
-                        V2(0.0, -16.0 * (spr.bounds.0).2);
+                        V2(0.0, -16.0 * (spr.bounds.0).2) + screen_rect.dim() / 2.0;
                     ctx.draw_image(cache.get(spr.spr).unwrap(), draw_pos, 0.5, &WHITE, &BLACK);
                 }
             }
