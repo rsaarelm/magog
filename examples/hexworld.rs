@@ -5,11 +5,13 @@ extern crate tiled;
 extern crate image;
 extern crate calx;
 
+use std::ops::{Add};
+use std::cell::{RefCell};
 use std::collections::{HashMap};
 use num::{Integer};
 use calx::color::*;
-use calx::backend::{CanvasBuilder, CanvasUtil, Event, Key, SpriteCache, SpriteKey};
-use calx::{V2, Rect, IterTiles, color_key, Projection};
+use calx::backend::{CanvasBuilder, Canvas, CanvasUtil, Event, Key, SpriteCache, SpriteKey, Image};
+use calx::{V2, Rect, IterTiles, color_key, Projection, Rgba};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum Spr {
@@ -159,6 +161,20 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
     ret
 }
 
+thread_local!(static SPRITE_CACHE: RefCell<SpriteCache<Spr>> = RefCell::new(SpriteCache::new()));
+
+fn init_sprite_cache(builder: &mut CanvasBuilder) {
+    SPRITE_CACHE.with(|c| { *c.borrow_mut() = build_sprites(builder); });
+}
+
+fn spr(spr: Spr) -> Image {
+    SPRITE_CACHE.with(|c| c.borrow().get(spr).expect("Sprite not found"))
+}
+
+fn spr_nth(spr: Spr, n: usize) -> Image {
+    SPRITE_CACHE.with(|c| c.borrow().get_nth(spr, n).expect("Sprite not found"))
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(u8)]
 pub enum Terrain {
@@ -228,7 +244,7 @@ fn load_tmx_map() -> (u32, u32, HashMap<V2<i32>, Terrain>) {
     (w, h, ret)
 }
 
-pub fn terrain_at(pos: V2<f32>) -> Terrain {
+pub fn terrain_at(pos: V2<i32>) -> Terrain {
     struct Map {
         w: i32,
         h: i32,
@@ -241,8 +257,6 @@ pub fn terrain_at(pos: V2<f32>) -> Terrain {
         Map { w: w as i32, h: h as i32, terrain: terrain }
     });
 
-    let pos = pos.map(|x| x as i32);
-
     let key = MAP.with(|m| V2(pos.0.mod_floor(&m.w), pos.1.mod_floor(&m.h)));
 
     match MAP.with(|m| m.terrain.get(&key).map(|&x| x)) {
@@ -251,25 +265,125 @@ pub fn terrain_at(pos: V2<f32>) -> Terrain {
     }
 }
 
+/// 3x3 grid of terrain cells. Use this as the input for terrain tile
+/// computation, which will need to consider the immediate vicinity of cells.
+pub struct Kernel<C> {
+    pub n: C,
+    pub ne: C,
+    pub e: C,
+    pub nw: C,
+    pub center: C,
+    pub se: C,
+    pub w: C,
+    pub sw: C,
+    pub s: C,
+}
+
+impl<C: HexTerrain> Kernel<C> {
+    pub fn new<F, L: Add<V2<i32>, Output=L>+Copy>(get: F, loc: L) -> Kernel<C>
+        where F: Fn(L) -> C {
+        Kernel {
+            n: get(loc + V2(-1, -1)),
+            ne: get(loc + V2(0, -1)),
+            e: get(loc + V2(1, -1)),
+            nw: get(loc + V2(-1, 0)),
+            center: get(loc),
+            se: get(loc + V2(1, 0)),
+            w: get(loc + V2(-1, 1)),
+            sw: get(loc + V2(0, 1)),
+            s: get(loc + V2(1, 1)),
+        }
+    }
+
+    /// Bool is true if left/right half of wall should be extended.
+    pub fn wall_extends(&self) -> [bool; 2] {
+        [self.nw.is_hull(), self.ne.is_hull()]
+    }
+
+    /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
+    pub fn block_faces(&self) -> [bool; 6] {
+        [!self.n.is_hull(),
+         !self.ne.is_hull(),
+         !self.se.is_hull(),
+         !self.s.is_hull(),
+         !self.sw.is_hull(),
+         !self.nw.is_hull()]
+    }
+}
+
+trait RenderTerrain {
+    fn render(&self, ctx: &mut Canvas, offset: V2<f32>);
+}
+
+impl RenderTerrain for Kernel<Terrain> {
+    fn render(&self, ctx: &mut Canvas, offset: V2<f32>) {
+        use Terrain::*;
+
+        fn wallform<C: HexTerrain>(k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
+                    short: Spr, short_color: &Rgba, short_back: &Rgba,
+                    long: Spr, long_color: &Rgba, long_back: &Rgba) {
+            let extends = k.wall_extends();
+            if extends[0] {
+                ctx.draw_image(spr_nth(long, 0), offset, 0.45, long_color, long_back);
+            } else {
+                ctx.draw_image(spr_nth(short, 0), offset, 0.45, short_color, short_back);
+            }
+            if extends[1] {
+                ctx.draw_image(spr_nth(long, 1), offset, 0.45, long_color, long_back);
+            } else {
+                ctx.draw_image(spr_nth(short, 1), offset, 0.45, short_color, short_back);
+            }
+        }
+
+        match self.center {
+            Floor => ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK),
+            Grass => ctx.draw_image(spr(Spr::GrassFloor), offset, 0.5, &DARKGREEN, &BLACK),
+            Water => ctx.draw_image(spr(Spr::WaterFloor), offset, 0.5, &ROYALBLUE, &BLACK),
+            Magma => ctx.draw_image(spr(Spr::WaterFloor), offset, 0.5, &YELLOW, &DARKRED),
+            Tree => {
+                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
+                ctx.draw_image(spr(Spr::TreeTrunk), offset, 0.45, &SADDLEBROWN, &BLACK);
+                ctx.draw_image(spr(Spr::Foliage), offset, 0.45, &GREEN, &BLACK);
+            }
+
+            Wall => {
+                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
+                wallform(self, ctx, offset,
+                         Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK,
+                         Spr::BrickWall2, &LIGHTSLATEGRAY, &BLACK);
+            }
+
+            HouseWall => {
+                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
+                wallform(self, ctx, offset,
+                         Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK,
+                         Spr::HouseWall2, &BISQUE, &BLACK);
+            }
+
+            _ => {} // TODO
+        }
+    }
+}
+
 fn main() {
+    let scroll_speed = 4f32;
+    let mut screen_offset = V2(0.0f32, 0.0f32);
+    let mut scroll_delta = V2(0.0f32, 0.0f32);
+
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
     let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
-    let cache = build_sprites(&mut builder);
+    init_sprite_cache(&mut builder);
     let mut ctx = builder.build();
 
     loop {
         match ctx.next_event() {
             Event::RenderFrame => {
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap();
+                screen_offset = screen_offset - scroll_delta;
+
+                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap()
+                    .view_offset(screen_offset);
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
-                    let terrain = terrain_at(pt);
-                    let draw_pos = proj.project(pt);
-                    match terrain {
-                        Terrain::Grass => {
-                            ctx.draw_image(cache.get(Spr::GrassFloor).unwrap(), draw_pos, 0.5, &GREEN, &BLACK);
-                        }
-                        _ => {} // TODO
-                    }
+                    Kernel::new(terrain_at, pt.map(|x| x as i32)).render(&mut ctx, proj.project(pt));
                 }
             }
 
@@ -279,6 +393,26 @@ fn main() {
 
             Event::KeyPressed(Key::F12) => {
                 ctx.save_screenshot(&"hexworld");
+            }
+
+            Event::KeyPressed(k) => {
+                match k {
+                    Key::A => { scroll_delta.0 = -1.0 * scroll_speed; }
+                    Key::D => { scroll_delta.0 =  1.0 * scroll_speed; }
+                    Key::W => { scroll_delta.1 = -1.0 * scroll_speed; }
+                    Key::S => { scroll_delta.1 =  1.0 * scroll_speed; }
+                    _ => {}
+                }
+            }
+
+            Event::KeyReleased(k) => {
+                match k {
+                    Key::A => { scroll_delta.0 = 0.0; }
+                    Key::D => { scroll_delta.0 = 0.0; }
+                    Key::W => { scroll_delta.1 = 0.0; }
+                    Key::S => { scroll_delta.1 = 0.0; }
+                    _ => {}
+                }
             }
 
             _ => {}
