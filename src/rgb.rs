@@ -109,7 +109,7 @@ impl Mul<f32> for Rgba {
             self.r * rhs,
             self.g * rhs,
             self.b * rhs,
-            self.a * rhs)
+            self.a)
     }
 }
 
