@@ -263,12 +263,15 @@ impl<C: HexTerrain> Kernel<C> {
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn block_faces(&self) -> [bool; 6] {
-        [!self.n.is_block(),
-         !self.ne.is_block(),
+        // Because they work a bit differently visually, back-side faces
+        // are not drawn if there is any hull touching, front is only
+        // not drawn if there's another block.
+        [!self.n.is_hull(),
+         !self.ne.is_hull(),
          !self.se.is_block(),
          !self.s.is_block(),
          !self.sw.is_block(),
-         !self.nw.is_block()]
+         !self.nw.is_hull()]
     }
 }
 
