@@ -5,13 +5,13 @@ extern crate tiled;
 extern crate image;
 extern crate calx;
 
-use std::ops::{Add};
 use std::cell::{RefCell};
 use std::collections::{HashMap};
 use num::{Integer};
 use calx::color::*;
 use calx::backend::{CanvasBuilder, Canvas, CanvasUtil, Event, Key, SpriteCache, SpriteKey, Image};
-use calx::{V2, Rect, IterTiles, color_key, Projection, Rgba};
+use calx::{V2, Rect, IterTiles, color_key, Rgba};
+use calx::{Projection, Kernel, KernelTerrain};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum Spr {
@@ -164,7 +164,7 @@ impl Terrain {
     }
 }
 
-impl HexTerrain for Terrain {
+impl KernelTerrain for Terrain {
     fn is_wall(&self) -> bool {
         use Terrain::*;
         match *self {
@@ -176,17 +176,6 @@ impl HexTerrain for Terrain {
     fn is_block(&self) -> bool { *self == Terrain::Rock }
 }
 
-/// Shaping properties for hex terrain cells.
-pub trait HexTerrain {
-    /// Terrain is a wall with thin, shaped pieces along the (1, 0) and (0, 1) hex axes.
-    fn is_wall(&self) -> bool;
-
-    /// Terrain is a solid block that fills the entire hex.
-    fn is_block(&self) -> bool;
-
-    /// Terrain is either a wall or a block.
-    fn is_hull(&self) -> bool { self.is_wall() || self.is_block() }
-}
 
 fn load_tmx_map() -> (u32, u32, HashMap<V2<i32>, Terrain>) {
     let tmx = include_str!("assets/hexworld.tmx");
@@ -226,54 +215,6 @@ pub fn terrain_at(pos: V2<i32>) -> Terrain {
     }
 }
 
-/// 3x3 grid of terrain cells. Use this as the input for terrain tile
-/// computation, which will need to consider the immediate vicinity of cells.
-pub struct Kernel<C> {
-    pub n: C,
-    pub ne: C,
-    pub e: C,
-    pub nw: C,
-    pub center: C,
-    pub se: C,
-    pub w: C,
-    pub sw: C,
-    pub s: C,
-}
-
-impl<C: HexTerrain> Kernel<C> {
-    pub fn new<F, L: Add<V2<i32>, Output=L>+Copy>(get: F, loc: L) -> Kernel<C>
-        where F: Fn(L) -> C {
-        Kernel {
-            n: get(loc + V2(-1, -1)),
-            ne: get(loc + V2(0, -1)),
-            e: get(loc + V2(1, -1)),
-            nw: get(loc + V2(-1, 0)),
-            center: get(loc),
-            se: get(loc + V2(1, 0)),
-            w: get(loc + V2(-1, 1)),
-            sw: get(loc + V2(0, 1)),
-            s: get(loc + V2(1, 1)),
-        }
-    }
-
-    /// Bool is true if left/right half of wall should be extended.
-    pub fn wall_extends(&self) -> [bool; 2] {
-        [self.nw.is_hull(), self.ne.is_hull()]
-    }
-
-    /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
-    pub fn block_faces(&self) -> [bool; 6] {
-        // Because they work a bit differently visually, back-side faces
-        // are not drawn if there is any hull touching, front is only
-        // not drawn if there's another block.
-        [!self.n.is_hull(),
-         !self.ne.is_hull(),
-         !self.se.is_block(),
-         !self.s.is_block(),
-         !self.sw.is_block(),
-         !self.nw.is_hull()]
-    }
-}
 
 trait RenderTerrain {
     fn render(&self, ctx: &mut Canvas, offset: V2<f32>);
@@ -283,9 +224,10 @@ impl RenderTerrain for Kernel<Terrain> {
     fn render(&self, ctx: &mut Canvas, offset: V2<f32>) {
         use Terrain::*;
 
-        fn wallform<C: HexTerrain>(k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
-                    short: Spr, short_color: &Rgba, short_back: &Rgba,
-                    long: Spr, long_color: &Rgba, long_back: &Rgba) {
+        fn wallform<C: KernelTerrain>(
+            k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
+            short: Spr, short_color: &Rgba, short_back: &Rgba,
+            long: Spr, long_color: &Rgba, long_back: &Rgba) {
             let extends = k.wall_extends();
             if extends[0] {
                 ctx.draw_image(spr_nth(long, 0), offset, 0.45, &(*long_color * 0.5), long_back);
@@ -299,8 +241,9 @@ impl RenderTerrain for Kernel<Terrain> {
             }
         }
 
-        fn blockform<C: HexTerrain>(k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
-                                    face: Spr, color: &Rgba, back: &Rgba) {
+        fn blockform<C: KernelTerrain>(
+            k: &Kernel<C>, ctx: &mut Canvas, offset: V2<f32>,
+            face: Spr, color: &Rgba, back: &Rgba) {
             ctx.draw_image(spr(Spr::FloorBlank), offset, 0.5, &BLACK, &BLACK);
 
             let faces = k.block_faces();

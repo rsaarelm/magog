@@ -27,6 +27,7 @@ pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use dijkstra::{DijkstraNode, Dijkstra};
 pub use hex::{HexGeom, Dir6, HexFov};
+pub use kernel::{Kernel, KernelTerrain};
 pub use projection::{Projection};
 pub use rng::{EncodeRng, RngExt};
 
@@ -36,6 +37,7 @@ mod fs;
 mod geom;
 mod hex;
 mod img;
+mod kernel;
 mod projection;
 mod rgb;
 mod rng;
