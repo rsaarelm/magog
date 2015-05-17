@@ -29,34 +29,18 @@ enum Spr {
     PentagramFloor,
     GridFloor,
 
+    BrickWallShort,
+    BrickWallShort1,
     BrickWall,
     BrickWall1,
-    BrickWall2,
-    BrickWall3,
     BrickWindowWall,
     BrickWindowWall1,
-    BrickWindowWall2,
-    BrickWindowWall3,
     BrickOpenWall,
     BrickOpenWall1,
-    BrickOpenWall2,
-    BrickOpenWall3,
-    HouseWall,
-    HouseWall1,
-    HouseWall2,
-    HouseWall3,
-    HouseWindowWall,
-    HouseWindowWall1,
-    HouseWindowWall2,
-    HouseWindowWall3,
-    HouseOpenWall,
-    HouseOpenWall1,
-    HouseOpenWall2,
-    HouseOpenWall3,
-    Door,
-    Door1,
-    Door2,
-    Door3,
+    DoorWallShort,
+    DoorWallShort1,
+    DoorWall,
+    DoorWall1,
 
     TreeTrunk,
     Foliage,
@@ -104,34 +88,18 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                   ]);
 
     let walls = vec![
+        BrickWallShort,
+        BrickWallShort1,
         BrickWall,
         BrickWall1,
-        BrickWall2,
-        BrickWall3,
         BrickWindowWall,
         BrickWindowWall1,
-        BrickWindowWall2,
-        BrickWindowWall3,
         BrickOpenWall,
         BrickOpenWall1,
-        BrickOpenWall2,
-        BrickOpenWall3,
-        HouseWall,
-        HouseWall1,
-        HouseWall2,
-        HouseWall3,
-        HouseWindowWall,
-        HouseWindowWall1,
-        HouseWindowWall2,
-        HouseWindowWall3,
-        HouseOpenWall,
-        HouseOpenWall1,
-        HouseOpenWall2,
-        HouseOpenWall3,
-        Door,
-        Door1,
-        Door2,
-        Door3,
+        DoorWallShort,
+        DoorWallShort1,
+        DoorWall,
+        DoorWall1,
     ];
 
     let mut wall_sheet = load(include_bytes!("assets/walls.png"));
@@ -186,9 +154,6 @@ pub enum Terrain {
     Door,
     Window,
     Magma,
-    HouseWall,
-    HouseDoor,
-    HouseWindow,
     Rock,
 }
 
@@ -207,7 +172,7 @@ impl HexTerrain for Terrain {
     fn is_wall(&self) -> bool {
         use Terrain::*;
         match *self {
-            Wall | Door | Window | HouseWall | HouseDoor | HouseWindow => true,
+            Wall | Door | Window => true,
             _ => false
         }
     }
@@ -349,15 +314,8 @@ impl RenderTerrain for Kernel<Terrain> {
             Wall => {
                 ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
                 wallform(self, ctx, offset,
-                         Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK,
-                         Spr::BrickWall2, &LIGHTSLATEGRAY, &BLACK);
-            }
-
-            HouseWall => {
-                ctx.draw_image(spr(Spr::Floor), offset, 0.5, &SLATEGRAY, &BLACK);
-                wallform(self, ctx, offset,
-                         Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK,
-                         Spr::HouseWall2, &BISQUE, &BLACK);
+                         Spr::BrickWallShort, &LIGHTSLATEGRAY, &BLACK,
+                         Spr::BrickWall, &LIGHTSLATEGRAY, &BLACK);
             }
 
             _ => {} // TODO
