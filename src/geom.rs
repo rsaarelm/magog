@@ -252,6 +252,13 @@ impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
     }
 }
 
+impl<T: Sub<U, Output=T> + Clone, U> Sub<V2<U>> for Rect<T> {
+    type Output = Rect<T>;
+    fn sub(self, rhs: V2<U>) -> Rect<T> {
+        Rect(self.0 - rhs, self.1.clone())
+    }
+}
+
 pub trait IterTiles<T> {
     /// Return an iterator of subtiles within self
     fn tiles(&self, tile_dim: V2<T>) -> TileIter<T>;
