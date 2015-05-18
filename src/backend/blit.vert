@@ -1,4 +1,4 @@
-#version 120
+#version 140
 
 attribute vec2 pos;
 attribute vec2 tex_coord;
