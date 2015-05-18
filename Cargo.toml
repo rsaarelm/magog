@@ -22,6 +22,8 @@ path = "examples/isoworld.rs"
 name = "hexworld"
 path = "examples/hexworld.rs"
 
+[dev-dependencies.tiled]
+
 [dependencies.rand]
 
 [dependencies.rustc-serialize]
@@ -35,8 +37,6 @@ path = "examples/hexworld.rs"
 [dependencies.image]
 
 [dependencies.nalgebra]
-
-[dependencies.tiled]
 
 [dependencies.glutin]
 
