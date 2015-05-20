@@ -6,23 +6,8 @@ description = "Rust game development helper library collection"
 keywords = ["gamedev"]
 license = "MIT"
 
-[[example]]
-name = "demo"
-path = "examples/demo.rs"
-
-[[example]]
-name = "grid"
-path = "examples/grid.rs"
-
-[[example]]
-name = "isoworld"
-path = "examples/isoworld.rs"
-
-[[example]]
-name = "hexworld"
-path = "examples/hexworld.rs"
-
-[dev-dependencies.tiled]
+[dependencies.calx_macros]
+path = "calx_macros"
 
 [dependencies.rand]
 
@@ -41,3 +26,21 @@ path = "examples/hexworld.rs"
 [dependencies.glutin]
 
 [dependencies.glium]
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
+
+[[example]]
+name = "grid"
+path = "examples/grid.rs"
+
+[[example]]
+name = "isoworld"
+path = "examples/isoworld.rs"
+
+[[example]]
+name = "hexworld"
+path = "examples/hexworld.rs"
+
+[dev-dependencies.tiled]
