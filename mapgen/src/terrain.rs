@@ -3,7 +3,6 @@ use self::TerrainType::*;
 // TODO: Figure out how to not require explicit element count.
 macro_rules! terrain_data {
     {
-        count: $count:expr;
         $($symbol:ident, $name:expr;)*
     } => {
 #[derive(Copy, Eq, PartialEq, Clone, Debug)]
@@ -17,7 +16,7 @@ macro_rules! terrain_data {
             }
         }
 
-        pub static _TERRAINS: [TerrainType; $count] = [
+        pub static _TERRAINS: [TerrainType; count_exprs!($($name),*)] = [
             $($symbol,)*
             ];
 
@@ -25,8 +24,6 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
-    count: 29;
-
     Void, "void";
     Floor, "floor";
     Chasm, "chasm";
