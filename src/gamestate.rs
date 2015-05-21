@@ -42,9 +42,6 @@ pub struct GameState {
     msg: MsgQueue,
     ui_state: UiState,
 
-    // Hacky thing to wait for next time Canvas reference is available.
-    screenshot_requested: bool,
-
     console: Console,
 
     // XXX: Getting a concrete copy of config, can't mutate it and have the
@@ -67,7 +64,6 @@ impl GameState {
             exploring: false,
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
-            screenshot_requested: false,
             console: Console::new(),
             config: config,
         }
@@ -204,7 +200,7 @@ impl GameState {
             Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
                 self.ui_state = UiState::Gameplay
             }
-            Event::KeyPressed(Key::F12) => { self.screenshot_requested = true; }
+            Event::KeyPressed(Key::F12) => { ctx.save_screenshot(&"magog"); }
             Event::KeyPressed(_) => {}
 
             Event::Char(ch) => {
@@ -255,11 +251,6 @@ impl GameState {
 
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Canvas) {
-        if self.screenshot_requested {
-            ::screenshot(ctx);
-            self.screenshot_requested = false;
-        }
-
         ctx.clear();
 
         match self.ui_state {
@@ -383,7 +374,7 @@ impl GameState {
                 return false;
             }
             Event::KeyPressed(Key::F12) => {
-                self.screenshot_requested = true;
+                ctx.save_screenshot(&"magog");
             }
             Event::KeyPressed(k) => {
                 self.gameplay_process_key(k);

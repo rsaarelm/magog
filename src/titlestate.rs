@@ -2,7 +2,7 @@ use calx::{V2, color, Anchor};
 use calx::backend::{Key, Event};
 use calx::backend::{Canvas, CanvasUtil, Fonter, Align};
 use tilecache;
-use ::{Transition, State, screenshot};
+use ::{Transition, State};
 
 pub struct TitleState;
 
@@ -28,7 +28,7 @@ impl State for TitleState {
             Event::Quit => {
                 return Some(Transition::Exit);
             }
-            Event::KeyPressed(Key::F12) => { screenshot(ctx); }
+            Event::KeyPressed(Key::F12) => { ctx.save_screenshot(&"magog"); }
             Event::KeyPressed(_) => {
                 return Some(Transition::Game);
             }
