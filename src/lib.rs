@@ -25,14 +25,13 @@ pub use fs::{PathExt};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
-pub use dijkstra::{DijkstraNode, Dijkstra};
+pub use search::{LatticeNode, Dijkstra, astar_path_with};
 pub use hex::{HexGeom, Dir6, HexFov};
 pub use kernel::{Kernel, KernelTerrain};
 pub use projection::{Projection};
 pub use rng::{EncodeRng, RngExt};
 
 mod atlas;
-mod dijkstra;
 mod fs;
 mod geom;
 mod hex;
@@ -41,6 +40,7 @@ mod kernel;
 mod projection;
 mod rgb;
 mod rng;
+mod search;
 
 pub mod backend;
 pub mod text;
