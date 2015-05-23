@@ -4,6 +4,10 @@ use std::ascii::{AsciiExt};
 use std::ops::{Add, Sub, Mul};
 use num::{Float, Num};
 
+pub fn convert_color<A: ToColor, B: FromColor>(src: &A) -> B {
+    FromColor::from_rgba(src.to_rgba())
+}
+
 /// Things that describe a color.
 ///
 /// ToColor has an implementation for strings. This will call
