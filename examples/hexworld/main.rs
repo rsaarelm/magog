@@ -10,10 +10,10 @@ mod render;
 mod world;
 
 use std::collections::{HashMap};
-use calx::backend::{CanvasBuilder, CanvasUtil, Event, Key};
+use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
 use calx::{V2, Rect, Rgba, color, ToColor, convert_color};
 use calx::{Projection, Kernel, KernelTerrain};
-use calx::{Dir6, LatticeNode, HexGeom, astar_path_with};
+use calx::{Dir6, LatticeNode};
 
 use spr::Spr;
 use render::RenderTerrain;
@@ -105,7 +105,7 @@ pub fn terrain_at(pos: V2<i32>) -> Terrain {
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Copy, PartialOrd, Ord)]
-struct PathPos(pub V2<i32>);
+pub struct PathPos(pub V2<i32>);
 
 impl LatticeNode for PathPos {
     fn neighbors(&self) -> Vec<PathPos> {
@@ -149,17 +149,19 @@ impl Sprite {
 
 fn main() {
     let scroll_speed = 4f32;
-    let mut screen_offset = V2(0.0f32, 0.0f32);
+    let mut screen_offset = V2(320.0f32, 0.0f32);
     let mut scroll_delta = V2(0.0f32, 0.0f32);
     let mut mouse_pos = V2(-1.0f32, -1.0f32);
 
-    let world = World::new();
+    let mut world = World::new();
 
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
     let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
     Spr::init(&mut builder);
     let mut ctx = builder.build();
 
+    let mut proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap()
+        .view_offset(screen_offset);
     loop {
         match ctx.next_event() {
             Event::RenderFrame => {
@@ -167,8 +169,9 @@ fn main() {
 
                 let mut sprites = Vec::new();
 
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap()
+                proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap()
                     .view_offset(screen_offset);
+
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
                     let pos = proj.project(pt);
                     Kernel::new(terrain_at, pt.map(|x| x as i32)).render(
@@ -177,23 +180,14 @@ fn main() {
                         });
                 }
 
-                let mouse_cell = PathPos(proj.inv_project(mouse_pos).map(|x| x.floor() as i32));
-                let player_cell = PathPos(world.player_pos.map(|x| x.floor() as i32));
-                let path = astar_path_with(|x, y| (x.0-y.0).hex_dist(), player_cell, mouse_cell, 1000);
-
-                if let Some(path) = path {
-                    for p in path.iter() {
-                        sprites.push(Sprite::new(
-                            Spr::Avatar, proj.project(p.0.map(|x| x as f32)), -1, &"#ff000088", &color::BLACK));
-                    }
-                }
-
-                sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_pos), 0, &color::WHITE, &color::BLACK));
+                sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_draw_pos()), 0, &color::WHITE, &color::BLACK));
 
                 sprites.sort_by(|a, b| a.cmp(&b));
                 for spr in sprites.iter() {
                     ctx.draw_image(spr.spr.get(), spr.pos, 0.5, &spr.fore, &spr.back);
                 }
+
+                world.update();
             }
 
             Event::Quit => { return; }
@@ -225,6 +219,10 @@ fn main() {
             }
             Event::MouseMoved((x, y)) => {
                 mouse_pos = V2(x, y).map(|x| x as f32);
+            }
+
+            Event::MousePressed(MouseButton::Left) => {
+                world.set_dest(proj.inv_project(mouse_pos).map(|x| x.floor() as i32));
             }
 
             _ => {}
