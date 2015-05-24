@@ -43,6 +43,7 @@ mod rng;
 mod search;
 
 pub mod backend;
+pub mod ease;
 pub mod text;
 pub mod timing;
 pub mod vorud;
