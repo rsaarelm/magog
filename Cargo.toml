@@ -41,6 +41,6 @@ path = "examples/isoworld.rs"
 
 [[example]]
 name = "hexworld"
-path = "examples/hexworld.rs"
+path = "examples/hexworld/main.rs"
 
 [dev-dependencies.tiled]
