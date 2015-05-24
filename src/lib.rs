@@ -82,7 +82,7 @@ pub fn from_log_odds(db: f32) -> f32 {
 }
 
 /// Interpolate linearly between two values.
-pub fn lerp<T, U>(t: T, a: U, b: U) -> U where
+pub fn lerp<T, U>(a: U, b: U, t: T) -> U where
         U: Add<U, Output=U> + Sub<U, Output=U> + Mul<T, Output=U> + Copy {
     a + (b - a) * t
 }

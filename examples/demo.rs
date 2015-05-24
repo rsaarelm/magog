@@ -65,7 +65,7 @@ fn main() {
                 let fps = 1.0 / ctx.render_duration;
                 {
                     let mut fonter = Fonter::new(&mut ctx)
-                        .color(&lerp((t as f32 / 100.0) % 1.0, color::RED, color::GREEN))
+                        .color(&lerp(color::RED, color::GREEN, (t as f32 / 100.0) % 1.0))
                         .border(&color::BLACK)
                         .layer(0.1)
                         .text(format!("FPS {:.0}\n", fps))
