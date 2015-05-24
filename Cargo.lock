@@ -32,7 +32,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#cb3d1314d1587aa65908fd8056c7c46d7d48f0c3"
+source = "git+https://github.com/rsaarelm/calx#7888867d0b6d71ba9d2322281dfad5d530631a0b"
 dependencies = [
  "calx_macros 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "glium 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -49,7 +49,7 @@ dependencies = [
 [[package]]
 name = "calx_macros"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#cb3d1314d1587aa65908fd8056c7c46d7d48f0c3"
+source = "git+https://github.com/rsaarelm/calx#7888867d0b6d71ba9d2322281dfad5d530631a0b"
 
 [[package]]
 name = "cgmath"
