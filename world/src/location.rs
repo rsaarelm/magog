@@ -1,5 +1,5 @@
 use std::ops::{Add};
-use calx::{V2, Dir6, HexGeom, DijkstraNode, noise};
+use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 use entity::Entity;
 use mapgen::TerrainType;
 use world;
@@ -183,7 +183,7 @@ impl Unchart for Location {
     }
 }
 
-impl DijkstraNode for Location {
+impl LatticeNode for Location {
     fn neighbors(&self) -> Vec<Location> {
         Dir6::iter().map(|d| *self + d.to_v2()).collect()
     }
