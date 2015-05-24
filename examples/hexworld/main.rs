@@ -125,8 +125,8 @@ struct Sprite {
     pub fore: Rgba,
     pub back: Rgba,
     pub pos: V2<f32>,
-    /// Draw layer, y coordinate.
-    pub sort_key: (i8, i32),
+
+    sort_key: (i8, i32),
 }
 
 impl Sprite {
@@ -138,6 +138,12 @@ impl Sprite {
             pos: pos,
             sort_key: (layer, -pos.1 as i32)
         }
+    }
+
+    #[inline]
+    pub fn cmp(&self, other: &Sprite) -> std::cmp::Ordering {
+        // Cmp backwards, draw order is from large (far away) to small (close by) values.
+        other.sort_key.cmp(&self.sort_key)
     }
 }
 
@@ -184,7 +190,7 @@ fn main() {
 
                 sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_pos), 0, &color::WHITE, &color::BLACK));
 
-                sprites.sort_by(|a, b| b.sort_key.partial_cmp(&a.sort_key).unwrap());
+                sprites.sort_by(|a, b| a.cmp(&b));
                 for spr in sprites.iter() {
                     ctx.draw_image(spr.spr.get(), spr.pos, 0.5, &spr.fore, &spr.back);
                 }
