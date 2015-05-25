@@ -9,6 +9,9 @@ license = "MIT"
 [dependencies.calx_macros]
 path = "calx_macros"
 
+[dependencies.calx_ecs]
+path = "calx_ecs"
+
 [dependencies.rand]
 
 [dependencies.rustc-serialize]

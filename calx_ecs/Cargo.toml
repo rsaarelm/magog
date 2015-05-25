@@ -1,0 +1,9 @@
+[package]
+name = "calx_ecs"
+version = "0.0.1"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Rust entity component library"
+keywords = ["gamedev", "ecs"]
+license = "MIT"
+
+[dependencies.rustc-serialize]

@@ -13,8 +13,10 @@ extern crate vec_map;
 extern crate nalgebra;
 extern crate image;
 extern crate glutin;
-#[macro_use]
-extern crate glium;
+
+#[macro_use] extern crate glium;
+
+#[macro_use] extern crate calx_ecs;
 
 use num::{Float};
 use std::path::{Path, PathBuf};
@@ -47,6 +49,9 @@ pub mod ease;
 pub mod text;
 pub mod timing;
 pub mod vorud;
+
+#[cfg(test)]
+mod test_ecs;
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
