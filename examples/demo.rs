@@ -42,7 +42,7 @@ fn main() {
                 for y in 0i32..(360/8) {
                     for x in 0i32..(640/8) {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
-                            "white" } else { "#420" };
+                            0xFFFFFFFF } else { 0x442200FF };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
                             0.4, col, color::BLACK);
                     }

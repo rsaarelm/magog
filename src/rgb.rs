@@ -98,6 +98,16 @@ impl From<SRgba> for Rgba {
     }
 }
 
+impl From<u32> for Rgba {
+    fn from(u: u32) -> Rgba {
+        SRgba::new(
+            (u >> 24) as u8,
+            (u >> 16) as u8,
+            (u >> 8)  as u8,
+            u         as u8).into()
+    }
+}
+
 impl<'a> From<&'a str> for Rgba {
     fn from(s: &'a str) -> Rgba {
         thread_local!(static MEMOIZER: RefCell<HashMap<String, Rgba>> =
