@@ -21,145 +21,16 @@ impl Entity {
     }
 }
 
-/// Live entity id tracking.
-#[derive(RustcDecodable, RustcEncodable)]
-pub struct Core {
-    /// Next positional index
-    next_idx: Idx,
-
-    /// Queue for reusable indices
-    reusable_idxs: Vec<Idx>,
-
-    /// Next unique identifier
-    next_entity_uid: Uid,
-
-    /// Next unique identifier for prototypes
-    ///
-    /// Prototypes use negative UID values.
-    next_prototype_uid: Uid,
-
-    /// Live entities
-    // TODO: Use BitVec when it's stable and serializable.
-    active: HashMap<Idx, Uid>,
-
-    /// Parent entity table
-    // TODO: Use BitVec when it's stable and serializable.
-    parent: HashMap<Idx, Entity>,
-}
-
-impl Core {
-    pub fn new() -> Core {
-        Core {
-            next_idx: 0,
-            reusable_idxs: Vec::new(),
-            next_entity_uid: 0,
-            next_prototype_uid: -1,
-            active: HashMap::new(),
-            parent: HashMap::new(),
-        }
-    }
-
-    /// Make a new entity.
-    pub fn make(&mut self, parent: Option<Entity>) -> Entity {
-        let uid = self.next_entity_uid;
-        self.next_entity_uid += 1;
-        self._make(uid, parent)
-    }
-
-    /// Make a new entity prototype.
-    pub fn make_prototype(&mut self, parent: Option<Entity>) -> Entity {
-        let uid = self.next_prototype_uid;
-        self.next_prototype_uid -= 1;
-        self._make(uid, parent)
-    }
-
-    fn _make(&mut self, uid: Uid, parent: Option<Entity>) -> Entity {
-        let idx = if let Some(idx) = self.reusable_idxs.pop() { idx } else {
-            self.next_idx += 1;
-            self.next_idx - 1
-        };
-
-        self.active.insert(idx, uid);
-        let ret = Entity { idx: idx, uid: uid };
-
-        if let Some(parent) = parent { self.set_parent(ret, Some(parent)); }
-
-        ret
-    }
-
-    /// Return whether a given entity exists in the ECS.
-    pub fn contains(&self, e: Entity) -> bool {
-        match self.active.get(&e.idx) {
-            // The entity slot might have been reused, verify that the
-            // UID is still same.
-            Some(&stored_uid) => e.uid == stored_uid,
-            _ => false
-        }
-    }
-
-    /// Delete an entity from the inner ECS. Do not call directly, will not remove components.
-    pub fn delete_internal(&mut self, e: Entity) {
-        assert!(self.contains(e), "Deleting an entity not contained in ECS");
-        assert!(!e.is_prototype(), "Prototype entities cannot be deleted.");
-        self.parent.remove(&e.idx);
-        self.reusable_idxs.push(e.idx);
-        self.active.remove(&e.idx);
-    }
-
-    /// Set or unset a prototype parent for an entity.
-    pub fn set_parent(&mut self, e: Entity, parent: Option<Entity>) {
-        if let Some(parent) = parent {
-            assert!(parent.is_prototype(), "Trying to assign non-prototype parent entity");
-            assert!(self.contains(parent), "Parent of entity not present in ECS");
-            self.parent.insert(e.idx, parent);
-        } else {
-            self.parent.remove(&e.idx);
-        }
-    }
-
-    /// Get the prototype parent of an entity if there is one.
-    pub fn get_parent(&self, e: Entity) -> Option<Entity> {
-        self.parent.get(&e.idx).map(|&p| p)
-    }
-
-    /// Return the non-prototype entity with the lowest idx
-    ///
-    /// A building block for making an entity iterator.
-    pub fn first_entity(&self) -> Option<Entity> {
-        self._next_entity(0)
-    }
-
-    /// Return the next non-prototype entity in idx order.
-    ///
-    /// A building block for making an entity iterator.
-    pub fn next_entity(&self, prev: Entity) -> Option<Entity> {
-        self._next_entity(prev.idx + 1)
-    }
-
-    fn _next_entity(&self, min_idx: Idx) -> Option<Entity> {
-        if self.active.is_empty() { return None; }
-
-        for i in min_idx..self.next_idx {
-            if let Some(&uid) = self.active.get(&i) {
-                return Some(Entity { idx: i, uid: uid });
-            }
-        }
-
-        return None;
-    }
-}
-
-
 /// Immutable component accessor.
 pub struct CompRef<'a, C: 'static> {
-    core: &'a Core,
+    parents: &'a HashMap<Idx, Entity>,
     data: &'a HashMap<Idx, Option<C>>,
 }
 
 impl<'a, C> CompRef<'a, C> {
-    pub fn new(core: &'a Core, data: &'a HashMap<Idx, Option<C>>) -> CompRef<'a, C> {
+    pub fn new(parents: &'a HashMap<Idx, Entity>, data: &'a HashMap<Idx, Option<C>>) -> CompRef<'a, C> {
         CompRef {
-            core: core,
+            parents: parents,
             data: data,
         }
     }
@@ -172,7 +43,7 @@ impl<'a, C> CompRef<'a, C> {
                 Some(&None) => { return None; }
                 Some(x) => { return x.as_ref(); }
                 None => {
-                    if let Some(p) = self.core.get_parent(current) {
+                    if let Some(&p) = self.parents.get(&current.idx) {
                         current = p;
                     } else {
                         return None;
@@ -191,14 +62,14 @@ impl<'a, C> CompRef<'a, C> {
 
 /// Mutable component accessor.
 pub struct CompRefMut<'a, C: 'static> {
-    core: &'a mut Core,
+    parents: &'a HashMap<Idx, Entity>,
     data: &'a mut HashMap<Idx, Option<C>>,
 }
 
 impl<'a, C: Clone> CompRefMut<'a, C> {
-    pub fn new(core: &'a mut Core, data: &'a mut HashMap<Idx, Option<C>>) -> CompRefMut<'a, C> {
+    pub fn new(parents: &'a HashMap<Idx, Entity>, data: &'a mut HashMap<Idx, Option<C>>) -> CompRefMut<'a, C> {
         CompRefMut {
-            core: core,
+            parents: parents,
             data: data,
         }
     }
@@ -223,7 +94,7 @@ impl<'a, C: Clone> CompRefMut<'a, C> {
                     if current != e { return Some(current); } else { return None; }
                 }
                 None => {
-                    if let Some(p) = self.core.get_parent(current) {
+                    if let Some(&p) = self.parents.get(&current.idx) {
                         current = p;
                     } else {
                         return None;
@@ -287,7 +158,7 @@ macro_rules! Ecs {
     } => {
         mod _ecs_inner {
             use ::std::collections::{HashMap};
-            use ::calx_ecs::{Idx, Entity, Core, CompRef, CompRefMut, CompId, Component};
+            use ::calx_ecs::{Idx, Uid, Entity, CompRef, CompRefMut, CompId, Component};
 
             // Use the enum to convert components to numbers for component bit masks etc.
             #[allow(non_camel_case_types)]
@@ -304,10 +175,31 @@ macro_rules! Ecs {
                 }
             })+
 
+            // Don't create noise if the user doesn't use every method.
             /// Entity component system main container.
             #[derive(RustcEncodable, RustcDecodable)]
             pub struct Ecs {
-                pub core: Core,
+                /// Next positional index
+                next_idx: Idx,
+
+                /// Queue for reusable indices
+                reusable_idxs: Vec<Idx>,
+
+                /// Next unique identifier
+                next_entity_uid: Uid,
+
+                /// Next unique identifier for prototypes
+                ///
+                /// Prototypes use negative UID values.
+                next_prototype_uid: Uid,
+
+                /// Live entities
+                // TODO: Use BitVec when it's stable and serializable.
+                active: HashMap<Idx, Uid>,
+
+                /// Parent entity table
+                // TODO: Use BitVec when it's stable and serializable.
+                parent: HashMap<Idx, Entity>,
 
                 // Component value storage.
                 //
@@ -320,11 +212,121 @@ macro_rules! Ecs {
             impl Ecs {
                 pub fn new() -> Ecs {
                     Ecs {
-                        core: Core::new(),
+                        next_idx: 0,
+                        reusable_idxs: Vec::new(),
+                        // Don't use uid 0.
+                        next_entity_uid: 1,
+                        next_prototype_uid: -1,
+                        active: HashMap::new(),
+                        parent: HashMap::new(),
 
                         $($compname: HashMap::new(),)+
                     }
                 }
+
+                /// Make a new entity.
+                pub fn make(&mut self, parent: Option<Entity>) -> Entity {
+                    let uid = self.next_entity_uid;
+                    self.next_entity_uid += 1;
+                    self._make(uid, parent)
+                }
+
+                /// Make a new entity prototype.
+                pub fn make_prototype(&mut self, parent: Option<Entity>) -> Entity {
+                    let uid = self.next_prototype_uid;
+                    self.next_prototype_uid -= 1;
+                    self._make(uid, parent)
+                }
+
+                fn _make(&mut self, uid: Uid, parent: Option<Entity>) -> Entity {
+                    let idx = if let Some(idx) = self.reusable_idxs.pop() { idx } else {
+                        self.next_idx += 1;
+                        self.next_idx - 1
+                    };
+
+                    self.active.insert(idx, uid);
+                    let ret = Entity { idx: idx, uid: uid };
+
+                    if let Some(parent) = parent { self.set_parent(ret, Some(parent)); }
+
+                    ret
+                }
+
+                /// Return whether a given entity exists in the ECS.
+                pub fn contains(&self, e: Entity) -> bool {
+                    match self.active.get(&e.idx) {
+                        // The entity slot might have been reused, verify that the
+                        // UID is still same.
+                        Some(&stored_uid) => e.uid == stored_uid,
+                        _ => false
+                    }
+                }
+
+                fn remove_internal(&mut self, e: Entity) {
+                    assert!(self.contains(e), "Deleting an entity not contained in ECS");
+                    assert!(!e.is_prototype(), "Prototype entities cannot be deleted.");
+                    self.parent.remove(&e.idx);
+                    self.reusable_idxs.push(e.idx);
+                    self.active.remove(&e.idx);
+                }
+
+
+                /// Set or unset a prototype parent for an entity.
+                pub fn set_parent(&mut self, e: Entity, parent: Option<Entity>) {
+                    if let Some(parent) = parent {
+                        assert!(parent.is_prototype(), "Trying to assign non-prototype parent entity");
+                        assert!(self.contains(parent), "Parent of entity not present in ECS");
+                        self.parent.insert(e.idx, parent);
+                    } else {
+                        self.parent.remove(&e.idx);
+                    }
+                }
+
+                /// Get the prototype parent of an entity if there is one.
+                pub fn get_parent(&self, e: Entity) -> Option<Entity> {
+                    self.parent.get(&e.idx).map(|&p| p)
+                }
+
+                /// Return the non-prototype entity with the lowest idx
+                ///
+                /// A building block for making an entity iterator.
+                pub fn first_entity(&self) -> Option<Entity> {
+                    self._next_entity(0)
+                }
+
+                /// Return the next non-prototype entity in idx order.
+                ///
+                /// A building block for making an entity iterator.
+                pub fn next_entity(&self, prev: Entity) -> Option<Entity> {
+                    self._next_entity(prev.idx + 1)
+                }
+
+                fn _next_entity(&self, min_idx: Idx) -> Option<Entity> {
+                    if self.active.is_empty() { return None; }
+
+                    for i in min_idx..self.next_idx {
+                        if let Some(&uid) = self.active.get(&i) {
+                            if uid >= 0 {
+                                return Some(Entity { idx: i, uid: uid });
+                            }
+                        }
+                    }
+
+                    return None;
+                }
+
+                /// Return the largest unique identifier in use.
+                ///
+                /// Will return 0 (which is never used as an UID) if no
+                /// non-prototype entities have yet been created.
+                ///
+                /// Use this to set up an entity traversal that won't return
+                /// entities with UIDs larger than what the largest UID was when
+                /// the traversal started. (Eg. iterate all currently existing
+                /// entities in a game update loop, but don't iterate any new
+                /// entities that were generated during the update procedure of
+                /// some existing current entity)
+                pub fn largest_uid(&self) -> Uid { self.next_entity_uid - 1 }
 
                 /// Return whether an entity has a component given the component's Id value.
                 pub fn has_indexed_component(&self, id: CompId, e: Entity) -> bool {
@@ -341,19 +343,19 @@ macro_rules! Ecs {
                     }
                 }
 
-                /// Delete an entity and all its components.
-                pub fn delete(&mut self, e: Entity) {
+                /// Remove an entity and all its components.
+                pub fn remove(&mut self, e: Entity) {
                     $(
                     self.mu().$compname().clear(e);
                     )+
 
-                    self.core.delete_internal(e);
+                    self.remove_internal(e);
                 }
 
                 $(
                 /// Get immutable accessor to $compname.
                 pub fn $compname<'a>(&'a self) -> CompRef<'a, $comptype> {
-                    CompRef::new(&self.core, &self.$compname)
+                    CompRef::new(&self.parent, &self.$compname)
                 })+
 
                 /// Get mutable component accessor structure.
@@ -372,7 +374,7 @@ macro_rules! Ecs {
                 $(
                 /// Get mutable accessor to $compname.
                 pub fn $compname<'b>(&'b mut self) -> CompRefMut<'b, $comptype> {
-                    CompRefMut::new(&mut self.ecs.core, &mut self.ecs.$compname)
+                    CompRefMut::new(&self.ecs.parent, &mut self.ecs.$compname)
                 })+
             }
 
@@ -385,7 +387,7 @@ macro_rules! Ecs {
             impl<'a> Build<'a> {
                 /// Start building a prototype entity.
                 pub fn prototype(ecs: &'a mut Ecs, parent: Option<Entity>) -> Build<'a> {
-                    let e = ecs.core.make_prototype(parent);
+                    let e = ecs.make_prototype(parent);
                     Build {
                         ecs: ecs,
                         e: e,
@@ -394,7 +396,7 @@ macro_rules! Ecs {
 
                 /// Start building a regular entity.
                 pub fn entity(ecs: &'a mut Ecs, parent: Option<Entity>) -> Build<'a> {
-                    let e = ecs.core.make(parent);
+                    let e = ecs.make(parent);
                     Build {
                         ecs: ecs,
                         e: e,
@@ -412,6 +414,6 @@ macro_rules! Ecs {
             }
         }
 
-        pub use self::_ecs_inner::{Ecs, EcsMutHandle, Build};
+        pub use self::_ecs_inner::{Ecs, Build};
     }
 }

@@ -24,13 +24,18 @@ fn test_insert() {
 
     let mut ecs = Ecs::new();
 
-    let e1 = ecs.core.make(None);
+    let e1 = ecs.make(None);
 
+    assert!(ecs.contains(e1));
     assert_eq!(ecs.pos().get(e1), None);
     assert!(!ecs.has_indexed_component(Pos::id(), e1));
     ecs.mu().pos().insert(e1, Pos { x: 3, y: 4 });
     assert_eq!(ecs.pos().get(e1), Some(&Pos { x: 3, y: 4 }));
     assert!(ecs.has_indexed_component(Pos::id(), e1));
+
+    ecs.remove(e1);
+    assert!(!ecs.contains(e1));
+    assert_eq!(ecs.pos().get(e1), None);
 }
 
 #[test]
@@ -38,8 +43,8 @@ fn test_insert() {
 fn nonproto_inherit1() {
     let mut ecs = Ecs::new();
 
-    let nonproto = ecs.core.make(None);
-    ecs.core.make(Some(nonproto));
+    let nonproto = ecs.make(None);
+    ecs.make(Some(nonproto));
 }
 
 #[test]
@@ -47,8 +52,8 @@ fn nonproto_inherit1() {
 fn nonproto_inherit2() {
     let mut ecs = Ecs::new();
 
-    let nonproto = ecs.core.make(None);
-    ecs.core.make_prototype(Some(nonproto));
+    let nonproto = ecs.make(None);
+    ecs.make_prototype(Some(nonproto));
 }
 
 #[test]
@@ -56,37 +61,39 @@ fn nonproto_inherit2() {
 fn nonproto_reparent() {
     let mut ecs = Ecs::new();
 
-    let nonproto = ecs.core.make(None);
-    let blammo = ecs.core.make(None);
+    let nonproto = ecs.make(None);
+    let blammo = ecs.make(None);
 
-    ecs.core.set_parent(blammo, Some(nonproto));
+    ecs.set_parent(blammo, Some(nonproto));
 }
 
 #[test]
 #[should_panic]
-fn deleted_parent() {
+fn removed_parent() {
     let mut ecs = Ecs::new();
 
-    let proto = ecs.core.make_prototype(None);
-    ecs.delete(proto);
+    let proto = ecs.make_prototype(None);
+    ecs.remove(proto);
 
-    ecs.core.make(Some(proto));
+    ecs.make(Some(proto));
 }
 
 #[test]
 fn test_prototype() {
     let mut ecs = Ecs::new();
 
-    let p1 = ecs.core.make_prototype(None);
+    let p1 = ecs.make_prototype(None);
     ecs.mu().desc().insert(p1, Desc { name: "Orc".to_string(), icon: 5 });
 
-    let e1 = ecs.core.make(Some(p1));
-    let e2 = ecs.core.make(None);
+    assert_eq!(ecs.largest_uid(), 0);
+    let e1 = ecs.make(Some(p1));
+    let e2 = ecs.make(None);
+    assert_eq!(ecs.largest_uid(), 2);
 
     assert_eq!(ecs.desc().get(e1), Some(&Desc { name: "Orc".to_string(), icon: 5 }));
     assert_eq!(ecs.desc().get(e2), None);
 
-    ecs.core.set_parent(e2, Some(p1));
+    ecs.set_parent(e2, Some(p1));
 
     assert_eq!(ecs.desc().get(e1), Some(&Desc { name: "Orc".to_string(), icon: 5 }));
     assert_eq!(ecs.desc().get(e2), Some(&Desc { name: "Orc".to_string(), icon: 5 }));
@@ -102,6 +109,16 @@ fn test_prototype() {
 
     assert_eq!(ecs.desc().get(e1), Some(&Desc { name: "Orc".to_string(), icon: 8 }));
     assert_eq!(ecs.desc().get(e2), Some(&Desc { name: "Blork".to_string(), icon: 8 }));
+
+    assert_eq!(ecs.desc().get_local(e1), None);
+    assert_eq!(ecs.desc().get_local(e2), Some(&Desc { name: "Blork".to_string(), icon: 8 }));
+
+    assert_eq!(ecs.get_parent(e1), Some(p1));
+    assert_eq!(ecs.get_parent(p1), None);
+
+    assert_eq!(ecs.first_entity(), Some(e1));
+    assert_eq!(ecs.next_entity(e1), Some(e2));
+    assert_eq!(ecs.next_entity(e2), None);
 }
 
 #[test]
