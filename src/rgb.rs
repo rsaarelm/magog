@@ -36,6 +36,7 @@ impl fmt::Display for SRgba {
 }
 
 impl From<Rgba> for SRgba {
+    #[inline]
     fn from(c: Rgba) -> SRgba {
         SRgba::new(
             (to_srgb(c.r) * 255.0).round() as u8,
@@ -89,6 +90,7 @@ impl Rgba {
 }
 
 impl From<SRgba> for Rgba {
+    #[inline]
     fn from(s: SRgba) -> Rgba {
         Rgba::new(
             to_linear(s.r as f32 / 255.0),
@@ -170,6 +172,7 @@ impl Mul<Rgba> for Rgba {
     }
 }
 
+#[inline]
 pub fn to_linear(srgb: f32) -> f32 {
    if srgb <= 0.04045 {
        srgb / 12.92
@@ -178,6 +181,7 @@ pub fn to_linear(srgb: f32) -> f32 {
    }
 }
 
+#[inline]
 pub fn to_srgb(linear: f32) -> f32 {
     if linear < 0.0031308 {
         12.92 * linear
