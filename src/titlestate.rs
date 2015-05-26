@@ -14,9 +14,9 @@ impl State for TitleState {
     fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition> {
         match event {
             Event::RenderFrame => {
-                ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, &color::FIREBRICK, &color::BLACK);
+                ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, color::FIREBRICK, color::BLACK);
                 Fonter::new(ctx)
-                    .color(&color::DARKRED)
+                    .color(color::DARKRED)
                     .anchor(Anchor::Bottom)
                     .align(Align::Center)
                     .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}", ::version(), if cfg!(debug_assertions) { " debug" } else { "" }))

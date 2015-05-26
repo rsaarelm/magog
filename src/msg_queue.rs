@@ -54,7 +54,7 @@ impl MsgQueue {
     }
 
     fn draw_msgs(&self, ctx: &mut Canvas) {
-        Fonter::new(ctx).color(&color::LIGHTGRAY).border(&color::BLACK)
+        Fonter::new(ctx).color(color::LIGHTGRAY).border(color::BLACK)
             .width(320.0).max_lines(16)
             .anchor(Anchor::BottomLeft)
             .text(self.msgs.iter().fold(String::new(), |a, m| a + &m.text))
@@ -63,7 +63,7 @@ impl MsgQueue {
 
     fn draw_caption(&self, ctx: &mut Canvas) {
         if !self.captions.is_empty() {
-            Fonter::new(ctx).color(&color::LIGHTGRAY).border(&color::BLACK).width(160.0)
+            Fonter::new(ctx).color(color::LIGHTGRAY).border(color::BLACK).width(160.0)
                 .align(Align::Center).anchor(Anchor::Bottom)
                 .text(self.captions[0].text.clone())
                 .draw(V2(320.0, 172.0));

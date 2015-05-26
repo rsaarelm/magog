@@ -22,7 +22,7 @@ impl Console {
         full_text = full_text + if timing::spike(0.5, 0.5) { "_" } else { " " };
 
         Fonter::new(ctx)
-            .color(&color::LIGHTGREEN).border(&color::BLACK)
+            .color(color::LIGHTGREEN).border(color::BLACK)
             .anchor(Anchor::BottomLeft)
             .text(full_text)
             .draw(V2(0.0, 180.0));

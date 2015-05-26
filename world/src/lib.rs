@@ -81,8 +81,8 @@ impl Light {
         Light { lum: lum }
     }
 
-    pub fn apply(&self, color: &calx::Rgba) -> calx::Rgba {
+    pub fn apply(&self, color: calx::Rgba) -> calx::Rgba {
         let darkness_color = calx::Rgba::new(0.05, 0.10, 0.25, color.a);
-        calx::lerp(*color * darkness_color, *color, self.lum)
+        calx::lerp(color * darkness_color, color, self.lum)
     }
 }
