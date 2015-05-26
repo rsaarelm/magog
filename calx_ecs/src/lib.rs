@@ -6,16 +6,26 @@ extern crate rustc_serialize;
 
 use std::collections::{HashMap};
 
+/// Entity index type.
 pub type Idx = u32;
+/// Entity unique identifier type.
 pub type Uid = i32;
 
+/// Handle for an entity in the entity component system.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entity {
+    /// Internal index in the ECS.
     pub idx: Idx,
+    /// Unique identifier for the entity.
+    ///
+    /// No two entities should get the same UID during the lifetime of the ECS.
+    /// UIDs for regular entities are increasing positive integers. UIDs for
+    /// prototype entities are negative integers.
     pub uid: Uid,
 }
 
 impl Entity {
+    /// Return whether this is a prototype entity.
     pub fn is_prototype(self) -> bool {
         self.uid < 0
     }
@@ -140,6 +150,7 @@ pub trait Component<E> {
 // XXX: Copy-pasted macro from calx_macros since using imported macros
 // from other crates inside code defined in a local macro doesn't really
 // work out.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! __count_exprs {
     () => { 0 };
@@ -147,6 +158,10 @@ macro_rules! __count_exprs {
     ($e:expr, $($es:expr),+) => { 1 + __count_exprs!($($es),*) };
 }
 
+/// Entity component system builder macro.
+///
+/// Builds a type `Ecs` with the component types you specify. See the unit tests
+/// for usage examples.
 #[macro_export]
 macro_rules! Ecs {
     {
