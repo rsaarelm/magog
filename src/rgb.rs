@@ -1,55 +1,64 @@
+use std::convert::{From};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ascii::{AsciiExt};
 use std::ops::{Add, Sub, Mul};
+use std::fmt;
 use num::{Float, Num};
 
-pub fn convert_color<A: ToColor, B: FromColor>(src: &A) -> B {
-    FromColor::from_rgba(src.to_rgba())
-}
-
-/// Things that describe a color.
+/// Color in sRGB color space.
 ///
-/// ToColor has an implementation for strings. This will call
-/// `parse_color` on the string, memoize results that parse successfully
-/// and panic on results that do not. It is meant to be used for
-/// convenient color shorthand in code. Panicing on failure makes it
-/// dangerous to use with anything other than inline string literals.
-pub trait ToColor {
-    /// Convert a color to linear RGBA values you can feed to OpenGL.
-    fn to_rgba(&self) -> [f32; 4];
+/// This is the physical color definition on computer monitors, also the
+/// color format most often used when writing out RGB values of computer
+/// graphics colors.
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
+pub struct SRgba {
+    /// sRGB red component
+    pub r: u8,
+    /// sRGB green component
+    pub g: u8,
+    /// sRGB blue component
+    pub b: u8,
+    /// sRGB alpha channel
+    pub a: u8,
+}
 
-    /// Convert a color to sRGBA, the byte values you actually get on your
-    /// screen.
-    fn to_srgba(&self) -> [u8; 4] {
-        let rgba = self.to_rgba();
-        [(to_srgb(rgba[0]) * 255.0).round() as u8,
-         (to_srgb(rgba[1]) * 255.0).round() as u8,
-         (to_srgb(rgba[2]) * 255.0).round() as u8,
-         (to_srgb(rgba[3]) * 255.0).round() as u8]
+impl SRgba {
+    pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba {
+        SRgba { r: r, g: g, b: b, a: a }
     }
 }
 
-/// Things that can be made from a color.
-pub trait FromColor: Sized {
-    /// Build the value from linear color components.
-    fn from_rgba(rgba: [f32; 4]) -> Self;
-
-    /// Build the value from sRGBA color components.
-    fn from_srgba(srgba: [u8; 4]) -> Self {
-        FromColor::from_rgba([
-            to_linear(srgba[0] as f32 / 255.0),
-            to_linear(srgba[1] as f32 / 255.0),
-            to_linear(srgba[2] as f32 / 255.0),
-            to_linear(srgba[3] as f32 / 255.0)])
+impl fmt::Display for SRgba {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "#{:02X}{:02X}{:02X}{:02X}", self.r, self.g, self.b, self.a)
     }
+}
 
-    fn from_color<C: ToColor>(color: &C) -> Self {
-        FromColor::from_rgba(color.to_rgba())
+impl From<Rgba> for SRgba {
+    fn from(c: Rgba) -> SRgba {
+        SRgba::new(
+            (to_srgb(c.r) * 255.0).round() as u8,
+            (to_srgb(c.g) * 255.0).round() as u8,
+            (to_srgb(c.b) * 255.0).round() as u8,
+            (to_srgb(c.a) * 255.0).round() as u8)
+    }
+}
+
+impl<'a> From<&'a str> for SRgba {
+    fn from(c: &'a str) -> SRgba {
+        let rgba: Rgba = c.into();
+        rgba.into()
     }
 }
 
 /// Color in linear color space.
+///
+/// This is the canonical color representation that the rendering engine
+/// expects to get.
+///
+/// The `::from(&str)` constructor will try to parse the color string
+/// and will panic if the parsing fails.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgba {
     /// Linear red component
@@ -72,15 +81,38 @@ impl Rgba {
         let luma = self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722;
         Rgba::new(luma, luma, luma, self.a)
     }
+
+    pub fn into_array(self) -> [f32; 4] {
+        use std::mem;
+        unsafe { mem::transmute(self) }
+    }
 }
 
-impl ToColor for Rgba {
-    fn to_rgba(&self) -> [f32; 4] { [self.r, self.g, self.b, self.a] }
+impl From<SRgba> for Rgba {
+    fn from(s: SRgba) -> Rgba {
+        Rgba::new(
+            to_linear(s.r as f32 / 255.0),
+            to_linear(s.g as f32 / 255.0),
+            to_linear(s.b as f32 / 255.0),
+            to_linear(s.a as f32 / 255.0))
+    }
 }
 
-impl FromColor for Rgba {
-    fn from_rgba(rgba: [f32; 4]) -> Rgba {
-        Rgba { r: rgba[0], g: rgba[1], b: rgba[2], a: rgba[3] }
+impl<'a> From<&'a str> for Rgba {
+    fn from(s: &'a str) -> Rgba {
+        thread_local!(static MEMOIZER: RefCell<HashMap<String, Rgba>> =
+                      RefCell::new(HashMap::new()));
+
+        let ret = MEMOIZER.with(|c| c.borrow().get(s).map(|&x| x));
+        match ret {
+            Some(color) => color,
+            None => {
+                // XXX: Panic if parsing fails.
+                let parsed = parse_color(s).expect(&format!("Bad color string '{}'", s));
+                MEMOIZER.with(|c| c.borrow_mut().insert(s.to_string(), parsed));
+                parsed
+            }
+        }
     }
 }
 
@@ -141,25 +173,6 @@ pub fn to_srgb(linear: f32) -> f32 {
         12.92 * linear
     } else {
         (1.0 + 0.055) * linear.powf(1.0 / 2.4) - 0.055
-    }
-}
-
-impl ToColor for &'static str {
-    fn to_rgba(&self) -> [f32; 4] {
-        thread_local!(static MEMOIZER: RefCell<HashMap<String, [f32; 4]>> =
-                      RefCell::new(HashMap::new()));
-
-        let ret = MEMOIZER.with(|c| c.borrow().get(*self).map(|&x| x));
-        match ret {
-            Some(color) => color,
-            None => {
-                let parsed = parse_color(self)
-                    .expect(&format!("Bad color string '{}'", self))
-                    .to_rgba();
-                MEMOIZER.with(|c| c.borrow_mut().insert(self.to_string(), parsed));
-                parsed
-            }
-        }
     }
 }
 
@@ -225,7 +238,7 @@ pub fn parse_color(name: &str) -> Option<Rgba> {
                     a = (a << 4) + a;
                 }
 
-                Some(FromColor::from_srgba([r, g, b, a]))
+                Some(Rgba::from(SRgba::new(r, g, b, a)))
             }
             _ => None
         };
@@ -399,7 +412,8 @@ color_constants!{
 mod test {
     #[test]
     fn test_parse_color() {
-        use super::{Rgba, parse_color, FromColor, ToColor};
+        use std::convert::{From};
+        use super::{Rgba, SRgba, parse_color};
 
         assert_eq!(None, parse_color(""));
         assert_eq!(None, parse_color("#"));
@@ -419,11 +433,8 @@ mod test {
         assert_eq!(Some(Rgba::new(1.0, 0.0, 0.0, 1.0)), parse_color("Red"));
         assert_eq!(Some(Rgba::new(1.0, 0.0, 0.0, 1.0)), parse_color("RED"));
 
-        let c: Rgba = FromColor::from_color(&"#000");
-        assert_eq!(0x00, c.to_srgba()[0]);
-        let c: Rgba = FromColor::from_color(&"#200");
-        assert_eq!(0x22, c.to_srgba()[0]);
-        let c: Rgba = FromColor::from_color(&"#F00");
-        assert_eq!(0xFF, c.to_srgba()[0]);
+        assert_eq!(0x00, SRgba::from("#000").r);
+        assert_eq!(0x22, SRgba::from("#200").r);
+        assert_eq!(0xFF, SRgba::from("#F00").r);
     }
 }

@@ -2,12 +2,13 @@ use time;
 use std::mem;
 use std::thread;
 use std::default::Default;
+use std::convert::{Into};
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use ::{AtlasBuilder, Atlas, AtlasItem, V2, ToColor, IterTiles};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles};
 use super::event::{Event, MouseButton};
 use super::key::{Key};
 use super::renderer::{Renderer, Vertex};
@@ -107,7 +108,7 @@ impl CanvasBuilder {
     fn init_font(&mut self) {
         let mut font_sheet = ::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
-            &"#808080");
+            "#808080");
         for tile in font_sheet.tiles(V2(8, 8)).take(96) {
             self.add_image(V2(0, -8),
                 &SubImage::new(&mut font_sheet,
@@ -240,8 +241,11 @@ impl<'a> Canvas<'a> {
     }
 
     /// Add a vertex to the geometry data of the current frame.
-    pub fn push_vertex<C: ToColor, C2: ToColor>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
-                                 color: &C, back_color: &C2) {
+    pub fn push_vertex<C, C2>(&mut self, pos: V2<f32>, layer: f32, tex_coord: V2<f32>,
+                              color: C, back_color: C2)
+        where C: Into<::Rgba>,
+              C2: Into<::Rgba>
+    {
         assert!(self.meshes.len() > 0, "Empty mesh stack");
         let top = self.meshes.len() - 1;
         assert!(self.meshes[top].vertices.len() < 1<<16,
@@ -251,8 +255,8 @@ impl<'a> Canvas<'a> {
         self.meshes[top].vertices.push(Vertex {
             pos: pos,
             tex_coord: [tex_coord.0, tex_coord.1],
-            color: color.to_rgba(),
-            back_color: back_color.to_rgba(),
+            color: color.into().into_array(),
+            back_color: back_color.into().into_array(),
         });
     }
 

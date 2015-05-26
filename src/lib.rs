@@ -22,7 +22,7 @@ use num::{Float};
 use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
 
-pub use rgb::{ToColor, FromColor, Rgba, color, parse_color, convert_color};
+pub use rgb::{Rgba, SRgba, color, parse_color};
 pub use fs::{PathExt};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key};

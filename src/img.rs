@@ -1,17 +1,18 @@
 use std::default::{Default};
 use std::cmp::{min, max};
+use std::convert::{Into};
 use image::{Primitive, GenericImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect};
-use rgb::{ToColor};
+use rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
-pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>, C: ToColor>(
-    image: &I, color: &C) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>, C: Into<rgb::SRgba>>(
+    image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let (w, h) = image.dimensions();
+    let srgba = color.into();
     ImageBuffer::from_fn(w, h, |x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
-        let srgba = color.to_srgba();
-        if pr == srgba[0] && pg == srgba[1] && pb == srgba[2] {
+        if pr == srgba.r && pg == srgba.g && pb == srgba.b {
             pa = Default::default();
         }
         Pixel::from_channels(pr, pg, pb, pa)

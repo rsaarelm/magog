@@ -29,7 +29,7 @@ fn draw_cell(ctx: &mut Canvas, proj: &Projection, cell: V2<i32>, dim: bool) {
     // Project world-space cell base into screen space.
     let base = Rect(cell.map(|x| x as f32), V2(1.0, 1.0));
     for &p in [Anchor::TopLeft, Anchor::TopRight, Anchor::BottomRight, Anchor::BottomLeft].iter() {
-        ctx.push_vertex(proj.project(base.point(p)), 0.5, tex, &color, &color::BLACK);
+        ctx.push_vertex(proj.project(base.point(p)), 0.5, tex, color, color::BLACK);
     }
 
     ctx.push_triangle(ind0, ind0 + 1, ind0 + 2);
@@ -70,7 +70,7 @@ fn main() {
                     if cell != mouse_cell { draw_cell(&mut ctx, &proj, cell, false); }
                 }
 
-                ctx.draw_rect(&mouse_rect, 0.5, &"cyan");
+                ctx.draw_rect(&mouse_rect, 0.5, "cyan");
             }
 
             Event::KeyPressed(Key::Escape) => { return; }

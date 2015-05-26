@@ -1,30 +1,31 @@
+use std::convert::{Into};
 use super::canvas::{Canvas, Image, FONT_W};
 use super::{WidgetId};
-use ::{V2, Rect, ToColor, color};
+use ::{V2, Rect, color, Rgba};
 use ::Anchor::*;
 
 /// Helper methods for canvas context that do not depend on the underlying
 /// implementation details.
 pub trait CanvasUtil {
     /// Draw a thick solid line on the canvas.
-    fn draw_line<C: ToColor+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C);
+    fn draw_line<C: Into<Rgba>+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: C);
     /// Get the size of an atlas image.
     fn image_dim(&self, img: Image) -> V2<u32>;
 
     /// Draw a stored image on the canvas.
-    fn draw_image<C: ToColor+Copy, D: ToColor+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: &C, back_color: &D);
+    fn draw_image<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, img: Image,
+        offset: V2<f32>, z: f32, color: C, back_color: D);
 
     /// Draw a filled rectangle.
-    fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
+    fn fill_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C);
 
     /// Draw a wireframe rectangle.
-    fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C);
+    fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C);
 
     /// Draw an immediate GUI button and return whether it was pressed.
     fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
 
-    fn draw_char<C: ToColor+Copy, D: ToColor+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>);
+    fn draw_char<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: C, border: Option<D>);
 
     fn char_width(&self, c: char) -> f32;
 
@@ -33,7 +34,7 @@ pub trait CanvasUtil {
 }
 
 impl<'a> CanvasUtil for Canvas<'a> {
-    fn draw_line<C: ToColor+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: &C) {
+    fn draw_line<C: Into<Rgba>+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: C) {
         if p1 == p2 { return; }
 
         let tex = self.solid_tex_coord();
@@ -50,10 +51,10 @@ impl<'a> CanvasUtil for Canvas<'a> {
         let v2 = v2 * scalar;
 
         let ind0 = self.num_vertices();
-        self.push_vertex(p1 + v2, layer, tex, color, &color::BLACK);
-        self.push_vertex(p1 - v2, layer, tex, color, &color::BLACK);
-        self.push_vertex(p1 - v2 + v1, layer, tex, color, &color::BLACK);
-        self.push_vertex(p1 + v2 + v1, layer, tex, color, &color::BLACK);
+        self.push_vertex(p1 + v2, layer, tex, color, color::BLACK);
+        self.push_vertex(p1 - v2, layer, tex, color, color::BLACK);
+        self.push_vertex(p1 - v2 + v1, layer, tex, color, color::BLACK);
+        self.push_vertex(p1 + v2 + v1, layer, tex, color, color::BLACK);
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
 
@@ -64,8 +65,8 @@ impl<'a> CanvasUtil for Canvas<'a> {
         self.image_data(img).pos.1.map(|x| x as u32)
     }
 
-    fn draw_image<C: ToColor+Copy, D: ToColor+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: &C, back_color: &D) {
+    fn draw_image<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, img: Image,
+        offset: V2<f32>, z: f32, color: C, back_color: D) {
         // Use round numbers, fractions seem to cause artifacts to pixels.
         let offset = offset.map(|x| x.floor());
         let mut pos;
@@ -89,14 +90,14 @@ impl<'a> CanvasUtil for Canvas<'a> {
         self.flush();
     }
 
-    fn fill_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
+    fn fill_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {
         let tex = self.solid_tex_coord();
         let ind0 = self.num_vertices();
 
-        self.push_vertex(rect.point(TopLeft), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.point(TopRight), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.point(BottomRight), z, tex, color, &color::BLACK);
-        self.push_vertex(rect.point(BottomLeft), z, tex, color, &color::BLACK);
+        self.push_vertex(rect.point(TopLeft), z, tex, color, color::BLACK);
+        self.push_vertex(rect.point(TopRight), z, tex, color, color::BLACK);
+        self.push_vertex(rect.point(BottomRight), z, tex, color, color::BLACK);
+        self.push_vertex(rect.point(BottomLeft), z, tex, color, color::BLACK);
 
         self.push_triangle(ind0, ind0 + 1, ind0 + 2);
         self.push_triangle(ind0, ind0 + 2, ind0 + 3);
@@ -104,7 +105,7 @@ impl<'a> CanvasUtil for Canvas<'a> {
         self.flush();
     }
 
-    fn draw_rect<C: ToColor+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: &C) {
+    fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {
         self.draw_line(1.0, rect.point(TopLeft), rect.point(TopRight) - V2(1.0, 0.0), z, color);
         self.draw_line(1.0, rect.point(TopRight) - V2(1.0, 0.0), rect.point(BottomRight) - V2(1.0, 0.0), z, color);
         self.draw_line(1.0, rect.point(BottomLeft) - V2(0.0, 1.0), rect.point(BottomRight) - V2(1.0, 1.0), z, color);
@@ -123,14 +124,14 @@ impl<'a> CanvasUtil for Canvas<'a> {
             color = color::RED;
         }
 
-        self.fill_rect(&area, z, &color);
+        self.fill_rect(&area, z, color);
 
         return !self.mouse_pressed // Mouse is released
             && self.active_widget == Some(id) // But this button is hot and active
             && self.hot_widget == Some(id);
     }
 
-    fn draw_char<C: ToColor+Copy, D: ToColor+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: &C, border: Option<&D>) {
+    fn draw_char<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: C, border: Option<D>) {
         static BORDER: [V2<f32>; 8] =
             [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
              V2(-1.0,  0.0),                 V2( 1.0,  0.0),
@@ -141,10 +142,10 @@ impl<'a> CanvasUtil for Canvas<'a> {
                 // won't clobber the text on the same layer.
                 let border_z = z + 0.00001;
                 for &d in BORDER.iter() {
-                    self.draw_image(img, offset + d, border_z, b, &color::BLACK);
+                    self.draw_image(img, offset + d, border_z, b, color::BLACK);
                 }
             }
-            self.draw_image(img, offset, z, color, &color::BLACK);
+            self.draw_image(img, offset, z, color, color::BLACK);
         }
     }
 

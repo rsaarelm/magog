@@ -10,8 +10,9 @@ mod render;
 mod world;
 
 use std::collections::{HashMap};
+use std::convert::{Into};
 use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
-use calx::{V2, Rect, Rgba, color, ToColor, convert_color};
+use calx::{V2, Rect, Rgba, color};
 use calx::{Projection, Kernel, KernelTerrain};
 use calx::{Dir6, LatticeNode};
 
@@ -130,11 +131,11 @@ struct Sprite {
 }
 
 impl Sprite {
-    pub fn new<A: ToColor, B: ToColor>(spr: Spr, pos: V2<f32>, layer: i8, fore: &A, back: &B) -> Sprite {
+    pub fn new<A: Into<Rgba>, B: Into<Rgba>>(spr: Spr, pos: V2<f32>, layer: i8, fore: A, back: B) -> Sprite {
         Sprite {
             spr: spr,
-            fore: convert_color(fore),
-            back: convert_color(back),
+            fore: fore.into(),
+            back: back.into(),
             pos: pos,
             sort_key: (layer, -pos.1 as i32)
         }
@@ -180,11 +181,11 @@ fn main() {
                         });
                 }
 
-                sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_draw_pos()), 0, &color::WHITE, &color::BLACK));
+                sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_draw_pos()), 0, color::WHITE, color::BLACK));
 
                 sprites.sort_by(|a, b| a.cmp(&b));
                 for spr in sprites.iter() {
-                    ctx.draw_image(spr.spr.get(), spr.pos, 0.5, &spr.fore, &spr.back);
+                    ctx.draw_image(spr.spr.get(), spr.pos, 0.5, spr.fore, spr.back);
                 }
 
                 world.update();

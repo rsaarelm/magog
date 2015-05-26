@@ -82,7 +82,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
     use self::Spr::*;
 
     fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        color_key(&image::load_from_memory(data).unwrap(), &color::CYAN)
+        color_key(&image::load_from_memory(data).unwrap(), color::CYAN)
     }
 
     let mut ret = SpriteCache::new();

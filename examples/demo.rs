@@ -44,29 +44,29 @@ fn main() {
                         let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
                             "white" } else { "#420" };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
-                            0.4, &col, &color::BLACK);
+                            0.4, col, color::BLACK);
                     }
                 }
 
                 // These should be clipped off the screen.
                 let img = ctx.font_image('#').unwrap();
-                ctx.draw_image(img, V2(316.0, 0.0), 0.4, &color::GREEN, &color::BLACK);
-                ctx.draw_image(img, V2(316.0, 368.0), 0.4, &color::GREEN, &color::BLACK);
-                ctx.draw_image(img, V2(-8.0, 184.0), 0.4, &color::GREEN, &color::BLACK);
-                ctx.draw_image(img, V2(640.0, 184.0), 0.4, &color::GREEN, &color::BLACK);
+                ctx.draw_image(img, V2(316.0, 0.0), 0.4, color::GREEN, color::BLACK);
+                ctx.draw_image(img, V2(316.0, 368.0), 0.4, color::GREEN, color::BLACK);
+                ctx.draw_image(img, V2(-8.0, 184.0), 0.4, color::GREEN, color::BLACK);
+                ctx.draw_image(img, V2(640.0, 184.0), 0.4, color::GREEN, color::BLACK);
 
                 let center = V2(320.0, 180.0);
                 let offset = V2(
                     ((t as f32 / 160.0).cos() * 128.0),
                     ((t as f32 / 160.0).sin() * 128.0));
 
-                ctx.draw_line(3.0, center, center + offset, 0.3, &Rgba::new(0.0, 1.0, 1.0, 0.1));
+                ctx.draw_line(3.0, center, center + offset, 0.3, Rgba::new(0.0, 1.0, 1.0, 0.1));
 
                 let fps = 1.0 / ctx.render_duration;
                 {
                     let mut fonter = Fonter::new(&mut ctx)
-                        .color(&lerp(color::RED, color::GREEN, (t as f32 / 100.0) % 1.0))
-                        .border(&color::BLACK)
+                        .color(lerp(color::RED, color::GREEN, (t as f32 / 100.0) % 1.0))
+                        .border(color::BLACK)
                         .layer(0.1)
                         .text(format!("FPS {:.0}\n", fps))
                         .text(format!("{}\n", pangrams[pangram_idx].to_string()

@@ -23,7 +23,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
 
     let mut sprite_sheet = color_key(
         &image::load_from_memory(include_bytes!("assets/iso.png")).unwrap(),
-        &CYAN);
+        CYAN);
     let mut ret = SpriteCache::new();
     ret.batch_add(builder, V2(-16, -24), V2(32, 40), &mut sprite_sheet,
                   vec![Grass, Dirt, Brick, Guy1, Guy2]);
@@ -95,7 +95,7 @@ fn main() {
                     let draw_pos =
                         proj.project(V2((spr.bounds.0).0, (spr.bounds.0).1)) +
                         V2(0.0, -16.0 * (spr.bounds.0).2) + screen_rect.dim() / 2.0;
-                    ctx.draw_image(cache.get(spr.spr).unwrap(), draw_pos, 0.5, &WHITE, &BLACK);
+                    ctx.draw_image(cache.get(spr.spr).unwrap(), draw_pos, 0.5, WHITE, BLACK);
                 }
             }
 
