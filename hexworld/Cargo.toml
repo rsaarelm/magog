@@ -1,0 +1,19 @@
+[package]
+name = "hexworld"
+version = "0.0.1"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Calx demo"
+keywords = ["gamedev"]
+license = "MIT"
+
+[[bin]]
+name = "hexworld"
+
+[dependencies.calx]
+path = ".."
+
+[dependencies.image]
+
+[dependencies.tiled]
+
+[dependencies.num]

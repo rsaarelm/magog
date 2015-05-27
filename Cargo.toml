@@ -41,9 +41,3 @@ path = "examples/grid.rs"
 [[example]]
 name = "isoworld"
 path = "examples/isoworld.rs"
-
-[[example]]
-name = "hexworld"
-path = "examples/hexworld/main.rs"
-
-[dev-dependencies.tiled]
