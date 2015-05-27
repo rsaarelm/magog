@@ -1,6 +1,6 @@
 use std::default::Default;
 use num::{Float};
-use image::{ImageBuffer, Rgb};
+use image;
 use glium::{self, texture, framebuffer, render_buffer, Surface};
 use glium::LinearBlendingFactor::*;
 use super::{CanvasMagnify};
@@ -78,7 +78,7 @@ impl<'a> Renderer<'a> {
         // temporary Glium buffers.
         let vertices = glium::VertexBuffer::new(display, vertices);
         let indices = glium::IndexBuffer::new(
-            display, glium::index::TrianglesList(indices));
+            display, glium::index::PrimitiveType::TrianglesList, indices);
 
         let uniforms = glium::uniforms::UniformsStorage::new("texture",
             glium::uniforms::Sampler(&self.atlas, glium::uniforms::SamplerBehavior {
@@ -113,7 +113,7 @@ impl<'a> Renderer<'a> {
         };
 
         let indices = glium::IndexBuffer::new(display,
-            glium::index::TrianglesList(vec![0u16, 1, 2, 0, 2, 3]));
+            glium::index::PrimitiveType::TrianglesList, vec![0u16, 1, 2, 0, 2, 3]);
 
         let mut params: glium::DrawParameters = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
@@ -178,8 +178,8 @@ impl<'a> Renderer<'a> {
            ((sy - ry) * self.size.1 as f32 / rh) as i32)
     }
 
-    pub fn canvas_pixels(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        let mut ret: ImageBuffer<Rgb<u8>, Vec<u8>> = self.buffer.read();
+    pub fn canvas_pixels(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+        let mut ret = self.buffer.read::<image::DynamicImage>().to_rgb();
 
         // Convert to sRGB
         // XXX: Probably horribly slow, can we make OpenGL do this?
