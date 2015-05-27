@@ -150,4 +150,4 @@ def f(srgb):
         return ((srgb + 0.055) / 1.055) ** 2.4
 
 for (c, r, g, b) in col:
-    print('[{}, {:.4}, {:.4}, {:.4}]'.format(c, f(r), f(g), f(b)))
+    print('    {: <20} = ([0x{:02X}, 0x{:02X}, 0x{:02X}], [{:.4}, {:.4}, {:.4}]),'.format(c, r, g, b, f(r), f(g), f(b)))
