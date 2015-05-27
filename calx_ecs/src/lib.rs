@@ -34,19 +34,22 @@ impl Entity {
 /// Immutable component accessor.
 pub struct CompRef<'a, C: 'static> {
     parents: &'a HashMap<Idx, Entity>,
+    active: &'a HashMap<Idx, Uid>,
     data: &'a HashMap<Idx, Option<C>>,
 }
 
 impl<'a, C> CompRef<'a, C> {
-    pub fn new(parents: &'a HashMap<Idx, Entity>, data: &'a HashMap<Idx, Option<C>>) -> CompRef<'a, C> {
+    pub fn new(parents: &'a HashMap<Idx, Entity>, active: &'a HashMap<Idx, Uid>, data: &'a HashMap<Idx, Option<C>>) -> CompRef<'a, C> {
         CompRef {
             parents: parents,
+            active: active,
             data: data,
         }
     }
 
     /// Fetch a component from given entity or its parent.
     pub fn get(&'a self, e: Entity) -> Option<&'a C> {
+        self.check_uid(e);
         let mut current = e;
         loop {
             match self.data.get(&current.idx) {
@@ -65,7 +68,13 @@ impl<'a, C> CompRef<'a, C> {
 
     /// Fetch a component from given entity. Do not search parent entities.
     pub fn get_local(&'a self, e: Entity) -> Option<&'a C> {
+        self.check_uid(e);
         self.data.get(&e.idx).map_or(None, |x| x.as_ref())
+    }
+
+    #[inline]
+    fn check_uid(&'a self, e: Entity) {
+        assert!(self.active.get(&e.idx) == Some(&e.uid), "Stale entity handle");
     }
 }
 
@@ -73,13 +82,15 @@ impl<'a, C> CompRef<'a, C> {
 /// Mutable component accessor.
 pub struct CompRefMut<'a, C: 'static> {
     parents: &'a HashMap<Idx, Entity>,
+    active: &'a HashMap<Idx, Uid>,
     data: &'a mut HashMap<Idx, Option<C>>,
 }
 
 impl<'a, C: Clone> CompRefMut<'a, C> {
-    pub fn new(parents: &'a HashMap<Idx, Entity>, data: &'a mut HashMap<Idx, Option<C>>) -> CompRefMut<'a, C> {
+    pub fn new(parents: &'a HashMap<Idx, Entity>, active: &'a HashMap<Idx, Uid>, data: &'a mut HashMap<Idx, Option<C>>) -> CompRefMut<'a, C> {
         CompRefMut {
             parents: parents,
+            active: active,
             data: data,
         }
     }
@@ -87,6 +98,7 @@ impl<'a, C: Clone> CompRefMut<'a, C> {
     /// Fetch a component from given entity. Copy-on-write from parent
     /// if found on parent but not locally.
     pub fn get(&'a mut self, e: Entity) -> Option<&'a mut C> {
+        self.check_uid(e);
         if let Some(c) = self.cow_source(e) {
             let comp = self.data.get(&c.idx).unwrap().as_ref().unwrap().clone();
             self.data.insert(e.idx, Some(comp));
@@ -116,19 +128,27 @@ impl<'a, C: Clone> CompRefMut<'a, C> {
 
     /// Insert a component
     pub fn insert(&'a mut self, e: Entity, comp: C) {
+        self.check_uid(e);
         self.data.insert(e.idx, Some(comp));
     }
 
     /// Clear a component from  the entity. Will make parent prototype's
     /// version visible if there is one.
     pub fn clear(&'a mut self, e: Entity) {
+        self.check_uid(e);
         self.data.remove(&e.idx);
     }
 
     /// Make the component locally invisible even if the parent
     /// prototype has it.
     pub fn hide(&'a mut self, e: Entity) {
+        self.check_uid(e);
         self.data.insert(e.idx, None);
+    }
+
+    #[inline]
+    fn check_uid(&'a self, e: Entity) {
+        assert!(self.active.get(&e.idx) == Some(&e.uid), "Stale entity handle");
     }
 }
 
@@ -214,7 +234,7 @@ macro_rules! Ecs {
 
                 /// Parent entity table
                 // TODO: Use BitVec when it's stable and serializable.
-                parent: HashMap<Idx, Entity>,
+                parents: HashMap<Idx, Entity>,
 
                 // Component value storage.
                 //
@@ -233,7 +253,7 @@ macro_rules! Ecs {
                         next_entity_uid: 1,
                         next_prototype_uid: -1,
                         active: HashMap::new(),
-                        parent: HashMap::new(),
+                        parents: HashMap::new(),
 
                         $($compname: HashMap::new(),)+
                     }
@@ -280,7 +300,7 @@ macro_rules! Ecs {
                 fn remove_internal(&mut self, e: Entity) {
                     assert!(self.contains(e), "Deleting an entity not contained in ECS");
                     assert!(!e.is_prototype(), "Prototype entities cannot be deleted.");
-                    self.parent.remove(&e.idx);
+                    self.parents.remove(&e.idx);
                     self.reusable_idxs.push(e.idx);
                     self.active.remove(&e.idx);
                 }
@@ -291,15 +311,15 @@ macro_rules! Ecs {
                     if let Some(parent) = parent {
                         assert!(parent.is_prototype(), "Trying to assign non-prototype parent entity");
                         assert!(self.contains(parent), "Parent of entity not present in ECS");
-                        self.parent.insert(e.idx, parent);
+                        self.parents.insert(e.idx, parent);
                     } else {
-                        self.parent.remove(&e.idx);
+                        self.parents.remove(&e.idx);
                     }
                 }
 
                 /// Get the prototype parent of an entity if there is one.
                 pub fn get_parent(&self, e: Entity) -> Option<Entity> {
-                    self.parent.get(&e.idx).map(|&p| p)
+                    self.parents.get(&e.idx).map(|&p| p)
                 }
 
                 /// Return the non-prototype entity with the lowest idx
@@ -370,7 +390,7 @@ macro_rules! Ecs {
                 $(
                 /// Get immutable accessor to $compname.
                 pub fn $compname<'a>(&'a self) -> CompRef<'a, $comptype> {
-                    CompRef::new(&self.parent, &self.$compname)
+                    CompRef::new(&self.parents, &self.active, &self.$compname)
                 })+
 
                 /// Get mutable component accessor structure.
@@ -389,7 +409,7 @@ macro_rules! Ecs {
                 $(
                 /// Get mutable accessor to $compname.
                 pub fn $compname<'b>(&'b mut self) -> CompRefMut<'b, $comptype> {
-                    CompRefMut::new(&self.ecs.parent, &mut self.ecs.$compname)
+                    CompRefMut::new(&self.ecs.parents, &self.ecs.active, &mut self.ecs.$compname)
                 })+
             }
 

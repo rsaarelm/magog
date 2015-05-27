@@ -35,7 +35,6 @@ fn test_insert() {
 
     ecs.remove(e1);
     assert!(!ecs.contains(e1));
-    assert_eq!(ecs.pos().get(e1), None);
 }
 
 #[test]
@@ -140,4 +139,23 @@ fn test_builder() {
 
     assert_eq!(ecs.desc().get(e), Some(&Desc { name: "Ogre".to_string(), icon: 12 }));
     assert_eq!(ecs.pos().get(e), Some(&Pos { x: 10, y: 11 }));
+}
+
+#[test]
+#[should_panic]
+fn test_uid_invalidation() {
+    let mut ecs = Ecs::new();
+    let e1 = ecs.make(None);
+    ecs.mu().pos().insert(e1, Pos { x: 3, y: 4 });
+
+    ecs.remove(e1);
+    let e2 = ecs.make(None);
+    assert!(e2.idx == e1.idx, "Idx not reused after remove");
+
+    assert!(ecs.pos().get(e2).is_none());
+    ecs.mu().pos().insert(e2, Pos { x: 8, y: 10 });
+
+    assert!(!ecs.contains(e1));
+    assert!(ecs.pos().get(e1).is_none());
+    assert!(ecs.mu().pos().get(e1).is_none());
 }
