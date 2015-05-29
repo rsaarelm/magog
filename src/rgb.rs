@@ -287,7 +287,7 @@ macro_rules! color_constants {
         // hardcoding the size since the dataset is pretty stable.
 
         /// Named color constant table.
-        pub static NAMED_COLORS: [(&'static str, Rgba, SRgba); 138] = [
+        pub static NAMED_COLORS: [(&'static str, Rgba, SRgba); 139] = [
             $((stringify!($name), Rgba { r: $r, g: $g, b: $b, a: 1.0 }, SRgba { r: $sr, g: $sg, b: $sb, a: 0xFF }),)+
         ];
 
@@ -359,6 +359,7 @@ color_constants! {
     DARKSEAGREEN         = ([0x8F, 0xBC, 0x8F], [0.2747, 0.5029, 0.2747]),
     DARKSLATEBLUE        = ([0x48, 0x3D, 0x8B], [0.0648, 0.04667, 0.2582]),
     DARKSLATEGRAY        = ([0x2F, 0x4F, 0x4F], [0.02843, 0.07819, 0.07819]),
+    DARKTURQUOISE        = ([0x00, 0xCE, 0xD1], [0.0, 0.6172, 0.6376]),
     DARKVIOLET           = ([0x94, 0x00, 0xD3], [0.2961, 0.0, 0.6514]),
     DEEPPINK             = ([0xFF, 0x14, 0x93], [1.0, 0.006995, 0.2918]),
     DEEPSKYBLUE          = ([0x00, 0xBF, 0xFF], [0.0, 0.521, 1.0]),
