@@ -32,11 +32,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#47d33719e3185adc4bf523168d67547cbe55be18"
+source = "git+https://github.com/rsaarelm/calx#440729e80941bc35df8b2240c0135622a649735d"
 dependencies = [
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "calx_macros 0.0.1 (git+https://github.com/rsaarelm/calx)",
- "glium 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -50,7 +50,7 @@ dependencies = [
 [[package]]
 name = "calx_ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#47d33719e3185adc4bf523168d67547cbe55be18"
+source = "git+https://github.com/rsaarelm/calx#440729e80941bc35df8b2240c0135622a649735d"
 dependencies = [
  "rustc-serialize 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -58,7 +58,7 @@ dependencies = [
 [[package]]
 name = "calx_macros"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#47d33719e3185adc4bf523168d67547cbe55be18"
+source = "git+https://github.com/rsaarelm/calx#440729e80941bc35df8b2240c0135622a649735d"
 
 [[package]]
 name = "cgmath"
@@ -96,7 +96,7 @@ name = "gdi32-sys"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "winapi 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -137,7 +137,7 @@ dependencies = [
 
 [[package]]
 name = "glium"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cgmath 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -173,7 +173,7 @@ dependencies = [
  "user32-sys 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayland-client 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayland-kbd 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "winapi 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "x11-dl 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -219,7 +219,7 @@ name = "kernel32-sys"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "winapi 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -362,7 +362,7 @@ name = "user32-sys"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "winapi 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi-build 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -395,7 +395,7 @@ dependencies = [
 
 [[package]]
 name = "winapi"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
