@@ -9,3 +9,4 @@ license = "MIT"
 [lib]
 name = "calx_macros"
 plugin = true
+crate-type = ["rlib"]
