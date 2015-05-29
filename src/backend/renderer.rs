@@ -80,7 +80,7 @@ impl<'a> Renderer<'a> {
         let indices = glium::IndexBuffer::new(
             display, glium::index::PrimitiveType::TrianglesList, indices);
 
-        let uniforms = glium::uniforms::UniformsStorage::new("texture",
+        let uniforms = glium::uniforms::UniformsStorage::new("tex",
             glium::uniforms::Sampler(&self.atlas, glium::uniforms::SamplerBehavior {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
                 .. Default::default() }));
@@ -128,7 +128,7 @@ impl<'a> Renderer<'a> {
             _ => glium::uniforms::MagnifySamplerFilter::Nearest
         };
 
-        let uniforms = glium::uniforms::UniformsStorage::new("texture",
+        let uniforms = glium::uniforms::UniformsStorage::new("tex",
             glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
                 magnify_filter: mag_filter,
                 minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
