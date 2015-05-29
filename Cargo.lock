@@ -32,7 +32,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#12a973079cfb52266028ecaf00ba4f379aeb87e6"
+source = "git+https://github.com/rsaarelm/calx#8d6a380e2c34423fe449d8c5cf8a838c5ea840fd"
 dependencies = [
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "calx_macros 0.0.1 (git+https://github.com/rsaarelm/calx)",
@@ -50,7 +50,7 @@ dependencies = [
 [[package]]
 name = "calx_ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#12a973079cfb52266028ecaf00ba4f379aeb87e6"
+source = "git+https://github.com/rsaarelm/calx#8d6a380e2c34423fe449d8c5cf8a838c5ea840fd"
 dependencies = [
  "rustc-serialize 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -58,7 +58,7 @@ dependencies = [
 [[package]]
 name = "calx_macros"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#12a973079cfb52266028ecaf00ba4f379aeb87e6"
+source = "git+https://github.com/rsaarelm/calx#8d6a380e2c34423fe449d8c5cf8a838c5ea840fd"
 
 [[package]]
 name = "cgmath"
