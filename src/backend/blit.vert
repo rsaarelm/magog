@@ -1,7 +1,7 @@
 #version 150 core
 
-attribute vec2 pos;
-attribute vec2 tex_coord;
+in vec2 pos;
+in vec2 tex_coord;
 
 out vec2 v_tex_coord;
 
