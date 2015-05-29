@@ -1,9 +1,9 @@
-#version 140
+#version 150 core
 
 attribute vec2 pos;
 attribute vec2 tex_coord;
 
-varying vec2 v_tex_coord;
+out vec2 v_tex_coord;
 
 void main() {
     v_tex_coord = tex_coord;

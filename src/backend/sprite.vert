@@ -1,13 +1,13 @@
-#version 140
+#version 150 core
 
 attribute vec3 pos;
 attribute vec4 color;
 attribute vec4 back_color;
 attribute vec2 tex_coord;
 
-varying vec2 v_tex_coord;
-varying vec4 v_color;
-varying vec4 v_back_color;
+out vec2 v_tex_coord;
+out vec4 v_color;
+out vec4 v_back_color;
 
 void main() {
     v_tex_coord = tex_coord;

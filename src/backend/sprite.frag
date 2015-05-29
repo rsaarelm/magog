@@ -1,10 +1,10 @@
-#version 140
+#version 150 core
 
 uniform sampler2D texture;
 
-varying vec2 v_tex_coord;
-varying vec4 v_color;
-varying vec4 v_back_color;
+in vec2 v_tex_coord;
+in vec4 v_color;
+in vec4 v_back_color;
 
 void main() {
     vec4 tex_color = texture2D(texture, v_tex_coord);

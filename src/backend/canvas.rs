@@ -163,12 +163,14 @@ enum State {
 
 impl<'a> Canvas<'a> {
     fn new(builder: CanvasBuilder) -> Canvas<'a> {
+        use glutin::{GlRequest, Api};
         let size = builder.size;
         let title = &builder.title[..];
         let frame_interval = builder.frame_interval;
         let atlas = Atlas::new(&builder.atlas_builder);
 
         let mut glutin = glutin::WindowBuilder::new()
+            .with_gl(GlRequest::Specific(Api::OpenGl, (3, 2)))
             .with_title(title.to_string());
 
         if builder.fullscreen {
