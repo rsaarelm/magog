@@ -170,15 +170,22 @@ macro_rules! ComponentStore {
             }
         }
 
-        /// Trait implemented by components
+        /// Common operations for ECS component value types.
         pub trait Component {
-            /// Return a type identifier for the component.
+            /// Return a type identifier for the component type.
             fn type_num() -> u16;
+
+            /// Add the component value to an entity in an ECS.
+            fn add_to(self, ecs: &mut ::calx_ecs::Ecs<ComponentStore>, e: ::calx_ecs::Entity);
         }
 
         $(impl Component for $comptype {
             fn type_num() -> u16 {
                 _ecs_inner::ComponentNum::$compname as u16
+            }
+
+            fn add_to(self, ecs: &mut ::calx_ecs::Ecs<ComponentStore>, e: ::calx_ecs::Entity) {
+                ecs.$compname.insert(e, self);
             }
         })+
     }

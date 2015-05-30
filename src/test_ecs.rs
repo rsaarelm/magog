@@ -31,6 +31,9 @@ fn test_ecs() {
     ecs.pos.insert(e1, Pos { x: 3, y: 4 });
     assert_eq!(ecs.pos[e1], Pos { x: 3, y: 4 });
 
+    Desc { name: "Orc".to_string(), icon: 8 }.add_to(&mut ecs, e1);
+    assert_eq!(ecs.desc[e1].name, "Orc");
+
     ecs.remove(e1);
     assert!(!ecs.pos.contains(e1));
     assert!(!ecs.contains(e1));
