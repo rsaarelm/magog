@@ -72,7 +72,7 @@ fn load_tmx_map() -> (u32, u32, HashMap<V2<i32>, Terrain>) {
     let mut ret = HashMap::new();
 
     let (w, h) = (map.width, map.height);
-    for layer in map.layers.iter() {
+    for layer in map.layers.first().iter() {
         for (y, row) in layer.tiles.iter().enumerate() {
             for (x, &id) in row.iter().enumerate() {
                 ret.insert(V2(x as i32, y as i32), Terrain::new(id as u8));
