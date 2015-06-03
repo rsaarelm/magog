@@ -32,7 +32,7 @@ thread_local!(static SPRITE_CACHE: RefCell<SpriteCache<Spr>> = RefCell::new(Spri
 
 //////////// Custom definitions start here ////////////
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub enum Spr {
     BlockNW,
     BlockN,
@@ -71,6 +71,7 @@ pub enum Spr {
     Grave,
     Crystal,
     Menhir,
+    Grunt,
 
     MaxSpr,
 }

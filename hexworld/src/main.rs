@@ -1,12 +1,16 @@
 /*! Hex map display demo */
 
 extern crate num;
-extern crate tiled;
+extern crate rustc_serialize;
 extern crate image;
+extern crate tiled;
+
+#[macro_use] extern crate calx_ecs;
 extern crate calx;
 
-mod spr;
+mod cmd;
 mod render;
+mod spr;
 mod world;
 
 use std::collections::{HashMap};
@@ -121,7 +125,7 @@ impl LatticeNode for PathPos {
     }
 }
 
-struct Sprite {
+pub struct Sprite {
     pub spr: Spr,
     pub fore: Rgba,
     pub back: Rgba,
@@ -181,14 +185,16 @@ fn main() {
                         });
                 }
 
-                sprites.push(Sprite::new(Spr::Avatar, proj.project(world.player_draw_pos()), 0, color::WHITE, color::BLACK));
+                for spr in world.ecs.iter().filter_map(|&e| cmd::sprite(&world, e, &proj)) {
+                    sprites.push(spr);
+                }
 
                 sprites.sort_by(|a, b| a.cmp(&b));
                 for spr in sprites.iter() {
                     ctx.draw_image(spr.spr.get(), spr.pos, 0.5, spr.fore, spr.back);
                 }
 
-                world.update();
+                world.update_active();
             }
 
             Event::Quit => { return; }
@@ -223,7 +229,9 @@ fn main() {
             }
 
             Event::MousePressed(MouseButton::Left) => {
-                world.set_dest(proj.inv_project(mouse_pos).map(|x| x.floor() as i32));
+                if let Some(p) = cmd::player(&world) {
+                    cmd::move_to(&mut world, p, proj.inv_project(mouse_pos).map(|x| x.floor() as i32));
+                }
             }
 
             _ => {}

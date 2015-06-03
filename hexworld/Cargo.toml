@@ -12,6 +12,11 @@ name = "hexworld"
 [dependencies.calx]
 path = ".."
 
+[dependencies.calx_ecs]
+path = ".."
+
+[dependencies.rustc-serialize]
+
 [dependencies.image]
 
 [dependencies.tiled]
