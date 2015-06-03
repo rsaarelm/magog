@@ -7,6 +7,7 @@ extern crate rustc_serialize;
 use std::default::{Default};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::collections::{HashMap, HashSet};
+use std::collections::hash_set;
 
 /// Entity unique identifier type.
 type Uid = i32;
@@ -84,7 +85,7 @@ pub trait Store {
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Ecs<S> {
     next_uid: Uid,
-    active: HashSet<Uid>,
+    active: HashSet<Entity>,
     store: S,
 }
 
@@ -101,19 +102,24 @@ impl<S: Default+Store> Ecs<S> {
     pub fn make(&mut self) -> Entity {
         let next = self.next_uid;
         self.next_uid += 1;
-        self.active.insert(next);
-        Entity { uid: next }
+        let ret = Entity { uid: next };
+        self.active.insert(ret);
+        ret
     }
 
     /// Remove an entity from the system and clear its components.
     pub fn remove(&mut self, e: Entity) {
-        self.active.remove(&e.uid);
+        self.active.remove(&e);
         self.store.for_each_component(|c| c.remove(e));
     }
 
     /// Return whether the system contains an entity.
     pub fn contains(&self, e: Entity) -> bool {
-        self.active.contains(&e.uid)
+        self.active.contains(&e)
+    }
+
+    pub fn iter(&self) -> hash_set::Iter<Entity> {
+        self.active.iter()
     }
 }
 
@@ -129,11 +135,11 @@ impl<S> DerefMut for Ecs<S> {
 
 /// Entity component system builder macro.
 ///
-/// Builds a type `ComponentStore`, which can be used to parametrize an
-/// `Ecs` type, with the component types you specify. Will also define a
-/// trait `Component` which will be implemented for the component types.
+/// Defines a local `Ecs` type that's parametrized with a custom component
+/// store type with the component types you specify. Will also define a trait
+/// `Component` which will be implemented for the component types.
 #[macro_export]
-macro_rules! ComponentStore {
+macro_rules! Ecs {
     {
         // Declare the type of the (plain old data) component and the
         // identifier to use for it in the ECS.
@@ -150,19 +156,21 @@ macro_rules! ComponentStore {
 
         }
 
-        pub struct ComponentStore {
-            $($compname: ::calx_ecs::ComponentData<$comptype>),+
+        pub use self::_ecs_inner::ComponentNum;
+
+        pub struct _ComponentStore {
+            $(pub $compname: ::calx_ecs::ComponentData<$comptype>),+
         }
 
-        impl ::std::default::Default for ComponentStore {
-            fn default() -> ComponentStore {
-                ComponentStore {
+        impl ::std::default::Default for _ComponentStore {
+            fn default() -> _ComponentStore {
+                _ComponentStore {
                     $($compname: ::calx_ecs::ComponentData::new()),+
                 }
             }
         }
 
-        impl ::calx_ecs::Store for ComponentStore {
+        impl ::calx_ecs::Store for _ComponentStore {
             fn for_each_component<F>(&mut self, mut f: F)
                 where F: FnMut(&mut ::calx_ecs::AnyComponent)
             {
@@ -170,23 +178,51 @@ macro_rules! ComponentStore {
             }
         }
 
+        pub fn matches_mask(ecs: &::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity, mask: u64) -> bool {
+            $(if mask & (1 << ComponentNum::$compname as u8) != 0 && !ecs.$compname.contains(e) {
+                return false;
+            })+
+            return true;
+        }
+
         /// Common operations for ECS component value types.
         pub trait Component {
-            /// Return a type identifier for the component type.
-            fn type_num() -> u16;
-
-            /// Add the component value to an entity in an ECS.
-            fn add_to(self, ecs: &mut ::calx_ecs::Ecs<ComponentStore>, e: ::calx_ecs::Entity);
+            /// Add a clone of the component value to an entity in an ECS.
+            ///
+            /// Can't move the component itself since we might be using this
+            /// through a trait object.
+            fn add_to(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity);
         }
 
         $(impl Component for $comptype {
-            fn type_num() -> u16 {
-                _ecs_inner::ComponentNum::$compname as u16
-            }
-
-            fn add_to(self, ecs: &mut ::calx_ecs::Ecs<ComponentStore>, e: ::calx_ecs::Entity) {
-                ecs.$compname.insert(e, self);
+            fn add_to(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity) {
+                ecs.$compname.insert(e, self.clone());
             }
         })+
+
+        pub type Ecs = ::calx_ecs::Ecs<_ComponentStore>;
+    }
+}
+
+/// Build a vector of Component trait objects from component values.
+///
+/// Use to set up prototype templates for entities.
+#[macro_export]
+macro_rules! loadout {
+    [ $($comp:expr),+ ] => {
+        vec![
+            $(Box::new($comp) as Box<Component>),+
+        ]
+    }
+}
+
+/// Build a component type mask to match component iteration with.
+///
+/// You must have ComponentNum enum from the Ecs! macro expansion in scope
+/// when using this.
+#[macro_export]
+macro_rules! build_mask {
+    ( $($compname:ident),+ ) => {
+        0u64 $(| (1u64 << ComponentNum::$compname as u8))+
     }
 }

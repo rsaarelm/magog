@@ -13,12 +13,10 @@ struct Pos {
     y: i32,
 }
 
-ComponentStore! {
+Ecs! {
     desc: ::test_ecs::Desc,
     pos: ::test_ecs::Pos,
 }
-
-type Ecs = ::calx_ecs::Ecs<ComponentStore>;
 
 #[test]
 fn test_ecs() {
