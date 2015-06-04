@@ -179,13 +179,8 @@ fn main() {
             Event::MousePressed(MouseButton::Left) => {
                 if let Some(p) = cmd::player(&world) {
                     let dest = proj.inv_project(mouse_pos).map(|x| x.floor() as i32);
-                    let path_found = cmd::move_to(&mut world, p, dest);
-                    if path_found {
-                        println!("beep");
-                    } else {
-                        println!("boop");
-                    }
-                }
+                    cmd::move_to(&mut world, p, dest);
+               }
             }
 
             _ => {}

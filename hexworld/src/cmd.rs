@@ -44,7 +44,8 @@ impl<'a> LatticeNode for PathPos<'a> {
 pub fn find_path(ctx: &World, orig: V2<i32>, dest: V2<i32>) -> Option<Vec<V2<i32>>> {
     if let Some(path) = astar_path_with(
         |x, y| (x.pos-y.pos).hex_dist(), PathPos::new(ctx, orig), PathPos::new(ctx, dest), 1000) {
-        Some(path.into_iter().map(|x| x.pos).collect())
+        // Skip the first step since that's where we are already.
+        Some(path.iter().skip(1).map(|x| x.pos).collect())
     } else {
         None
     }

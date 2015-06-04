@@ -97,6 +97,14 @@ pub struct Tween {
 }
 
 impl Tween {
+    pub fn new(start_timestamp: u32, other_pos: V2<i32>, steps: u8) -> Tween {
+        Tween {
+            start_timestamp: start_timestamp,
+            other_pos: other_pos,
+            steps: steps,
+        }
+    }
+
     pub fn phase(&self, current_t: u32) -> f32 {
         clamp(0.0, 1.0, (current_t - self.start_timestamp) as f32 / self.steps as f32)
     }
@@ -148,7 +156,35 @@ impl World {
         self.anim_t += 1;
         self.world_t += 1;
 
-        // TODO: Update entities.
+        let actives: Vec<Entity> = self.ecs.iter()
+            .filter(|&&e| matches_mask(&self.ecs, e, build_mask!(pos, mob)))
+            .cloned().collect();
+
+        // TODO: Move update-mob to cmd.
+        for e in actives.into_iter() {
+            // XXX: Lots of ECS dereferencing noise. Referencing mob component
+            // would lock down everything else like the pos comp though.
+            if self.ecs.mob[e].action_delay > 0 {
+                self.ecs.mob[e].action_delay -= 1;
+                continue;
+            }
+
+            if !self.ecs.mob[e].tasks.is_empty() {
+                match self.ecs.mob[e].tasks[0] {
+                    Action::MoveTo(pos) => {
+                        let move_delay = 12;
+                        self.ecs.mob[e].action_delay = move_delay;
+                        self.ecs.mob[e].anim = Anim::Move(
+                            Tween::new(self.anim_t, self.ecs.pos[e], move_delay));
+                        self.ecs.pos[e] = pos;
+                        self.ecs.mob[e].tasks.remove(0);
+                    }
+                    _ => {
+                        unimplemented!();
+                    }
+                }
+            }
+        }
     }
 
     /// Update world when paused.
