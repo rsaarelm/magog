@@ -1,18 +1,61 @@
-use calx::{V2, HexGeom, astar_path_with};
+use std::cmp::{Ordering};
+use std::hash::{Hash, Hasher};
+use calx::{V2, HexGeom, astar_path_with, LatticeNode, Dir6};
 use calx::{Projection, color};
 use calx_ecs::{Entity};
 use world::{World, Action, matches_mask, ComponentNum, Anim};
 use spr::{Spr};
-use ::{PathPos, Sprite};
+use ::{Sprite};
+
+pub struct PathPos<'a> {
+    pub world: &'a World,
+    pub pos: V2<i32>,
+}
+
+impl<'a> PartialEq for PathPos<'a> { fn eq(&self, other: &PathPos<'a>) -> bool { self.pos == other.pos } }
+impl<'a> Eq for PathPos<'a> {}
+impl<'a> PartialOrd for PathPos<'a> { fn partial_cmp(&self, other: &PathPos<'a>) -> Option<Ordering> { self.pos.partial_cmp(&other.pos) } }
+impl<'a> Ord for PathPos<'a> { fn cmp(&self, other: &PathPos<'a>) -> Ordering { self.pos.cmp(&other.pos) } }
+impl<'a> Clone for PathPos<'a> { fn clone(&self) -> PathPos<'a> { PathPos { world: self.world, pos: self.pos } } }
+impl<'a> Hash for PathPos<'a> { fn hash<H>(&self, state: &mut H) where H: Hasher { self.pos.hash(state) } }
+
+impl<'a> PathPos<'a> {
+    pub fn new(world: &'a World, pos: V2<i32>) -> PathPos<'a> {
+        PathPos {
+            world: world,
+            pos: pos,
+        }
+    }
+}
+
+impl<'a> LatticeNode for PathPos<'a> {
+    fn neighbors(&self) -> Vec<PathPos<'a>> {
+        let mut ret = Vec::new();
+        for i in Dir6::iter() {
+            let pos = self.pos + i.to_v2();
+            if self.world.terrain_at(pos).can_walk() {
+                ret.push(PathPos::new(self.world, pos));
+            }
+        }
+        ret
+    }
+}
+
+pub fn find_path(ctx: &World, orig: V2<i32>, dest: V2<i32>) -> Option<Vec<V2<i32>>> {
+    if let Some(path) = astar_path_with(
+        |x, y| (x.pos-y.pos).hex_dist(), PathPos::new(ctx, orig), PathPos::new(ctx, dest), 1000) {
+        Some(path.into_iter().map(|x| x.pos).collect())
+    } else {
+        None
+    }
+}
 
 /// Return whether a path was found.
 pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) -> bool {
-    let pos = ctx.ecs.pos[e];
-    if let Some(path) = astar_path_with(
-        |x, y| (x.0-y.0).hex_dist(), PathPos(pos), PathPos(dest), 1000) {
+    if let Some(path) = find_path(ctx, ctx.ecs.pos[e], dest) {
         let mob = &mut ctx.ecs.mob[e];
         // TODO: Use append when it's stable.
-        for p in path.into_iter().map(|x| Action::MoveTo(x.0)) { mob.tasks.push(p); }
+        for p in path.into_iter().map(|x| Action::MoveTo(x)) { mob.tasks.push(p); }
         true
     } else {
         false

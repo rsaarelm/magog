@@ -13,12 +13,10 @@ mod render;
 mod spr;
 mod world;
 
-use std::collections::{HashMap};
 use std::convert::{Into};
 use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
-use calx::{V2, Rect, Rgba, color};
+use calx::{V2, Rect, Rgba};
 use calx::{Projection, Kernel, KernelTerrain};
-use calx::{Dir6, LatticeNode};
 
 use spr::Spr;
 use render::RenderTerrain;
@@ -70,61 +68,6 @@ impl KernelTerrain for Terrain {
     fn is_block(&self) -> bool { *self == Terrain::Rock }
 }
 
-fn load_tmx_map() -> (u32, u32, HashMap<V2<i32>, Terrain>) {
-    let tmx = include_str!("../assets/hexworld.tmx");
-    let map = tiled::parse(tmx.as_bytes()).unwrap();
-    let mut ret = HashMap::new();
-
-    let (w, h) = (map.width, map.height);
-    for layer in map.layers.first().iter() {
-        for (y, row) in layer.tiles.iter().enumerate() {
-            for (x, &id) in row.iter().enumerate() {
-                ret.insert(V2(x as i32, y as i32), Terrain::new(id as u8));
-            }
-        }
-    }
-
-    (w, h, ret)
-}
-
-pub fn terrain_at(pos: V2<i32>) -> Terrain {
-    struct Map {
-        _w: i32,
-        _h: i32,
-        terrain: HashMap<V2<i32>, Terrain>,
-    }
-
-    // Tiled map data as the backend.
-    thread_local!(static MAP: Map = {
-        let (w, h, terrain) = load_tmx_map();
-        Map { _w: w as i32, _h: h as i32, terrain: terrain }
-    });
-
-    //let key = MAP.with(|m| V2(pos.0.mod_floor(&m.w), pos.1.mod_floor(&m.h)));
-    let key = pos;
-
-    match MAP.with(|m| m.terrain.get(&key).map(|&x| x)) {
-        Some(t) => t,
-        None => Terrain::Void,
-    }
-}
-
-#[derive(Eq, PartialEq, Hash, Clone, Copy, PartialOrd, Ord)]
-pub struct PathPos(pub V2<i32>);
-
-impl LatticeNode for PathPos {
-    fn neighbors(&self) -> Vec<PathPos> {
-        let mut ret = Vec::new();
-        for i in Dir6::iter() {
-            let pos = self.0 + i.to_v2();
-            if terrain_at(pos).can_walk() {
-                ret.push(PathPos(pos));
-            }
-        }
-        ret
-    }
-}
-
 pub struct Sprite {
     pub spr: Spr,
     pub fore: Rgba,
@@ -159,9 +102,14 @@ fn main() {
     let mut mouse_pos = V2(-1.0f32, -1.0f32);
 
     let mut world = World::new();
+    let tmx = include_str!("../assets/hexworld.tmx");
+    world.load(&tiled::parse(tmx.as_bytes()).unwrap());
 
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
-    let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
+    let mut builder = CanvasBuilder::new()
+        .set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32)
+        .set_frame_interval(0.033f64)
+        ;
     Spr::init(&mut builder);
     let mut ctx = builder.build();
 
@@ -179,7 +127,7 @@ fn main() {
 
                 for pt in proj.inv_project_rectangle(&screen_rect).iter() {
                     let pos = proj.project(pt);
-                    Kernel::new(terrain_at, pt.map(|x| x as i32)).render(
+                    Kernel::new(|p| world.terrain_at(p), pt.map(|x| x as i32)).render(
                         |layer, spr, fore, back| {
                             sprites.push(Sprite::new(spr, pos, layer, fore, back));
                         });
@@ -230,7 +178,13 @@ fn main() {
 
             Event::MousePressed(MouseButton::Left) => {
                 if let Some(p) = cmd::player(&world) {
-                    cmd::move_to(&mut world, p, proj.inv_project(mouse_pos).map(|x| x.floor() as i32));
+                    let dest = proj.inv_project(mouse_pos).map(|x| x.floor() as i32);
+                    let path_found = cmd::move_to(&mut world, p, dest);
+                    if path_found {
+                        println!("beep");
+                    } else {
+                        println!("boop");
+                    }
                 }
             }
 

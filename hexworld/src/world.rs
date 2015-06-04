@@ -1,8 +1,11 @@
 use std::convert::{Into};
+use std::collections::{HashMap};
 use std::f32::consts::{PI};
+use tiled;
 use calx::{V2, Rgba, Projection, lerp, clamp};
 use calx_ecs::{Entity};
 use spr::{Spr};
+use ::{Terrain};
 
 Ecs! {
     desc: Desc,
@@ -103,16 +106,40 @@ pub struct World {
     pub world_t: u32,
     pub anim_t: u32,
     pub ecs: Ecs,
+    pub terrain: HashMap<V2<i32>, Terrain>,
 }
 
 impl World {
     pub fn new() -> World {
-        let mut ecs = Ecs::new();
-
         World {
             world_t: 0,
             anim_t: 0,
-            ecs: ecs,
+            ecs: Ecs::new(),
+            terrain: HashMap::new(),
+        }
+    }
+
+    pub fn load(&mut self, tmx: &tiled::Map) {
+        for layer in tmx.layers.first().iter() {
+            for (y, row) in layer.tiles.iter().enumerate() {
+                for (x, &id) in row.iter().enumerate() {
+                    self.terrain.insert(V2(x as i32, y as i32), Terrain::new(id as u8));
+                }
+            }
+        }
+
+        for layer in tmx.layers.get(1).iter() {
+            for (y, row) in layer.tiles.iter().enumerate() {
+                for (x, &id) in row.iter().enumerate() {
+                    let pos = V2(x as i32, y as i32);
+                    match id as u8 {
+                        0 => {}
+                        10 => {self.spawn(Loadout::Enemy, pos);}
+                        11 => {self.spawn(Loadout::Player, pos);}
+                        _ => panic!("Invalid spawn layer item"),
+                    }
+                }
+            }
         }
     }
 
@@ -140,6 +167,13 @@ impl World {
         pos.add_to(&mut self.ecs, e);
 
         e
+    }
+
+    pub fn terrain_at(&self, pos: V2<i32>) -> Terrain {
+        match self.terrain.get(&pos) {
+            Some(&t) => t,
+            None => Terrain::Void,
+        }
     }
 }
 

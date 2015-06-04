@@ -143,6 +143,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                     Grave,
                     Crystal,
                     Menhir,
+                    Grunt,
                   ]);
 
     ret
