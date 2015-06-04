@@ -105,9 +105,9 @@ fn main() {
     let tmx = include_str!("../assets/hexworld.tmx");
     world.load(&tiled::parse(tmx.as_bytes()).unwrap());
 
-    let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
+    let screen_rect = Rect(V2(-32.0f32, -32.0f32), V2(640.0f32 + 64.0, 360.0f32 + 64.0));
     let mut builder = CanvasBuilder::new()
-        .set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32)
+        .set_size(640, 360)
         .set_frame_interval(0.033f64)
         ;
     Spr::init(&mut builder);
