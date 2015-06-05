@@ -101,7 +101,7 @@ fn unit_focus_sprites(screen_pos: V2<f32>) -> Vec<Sprite> {
     let mut ret = Vec::new();
     let color = color::LIME;
     for idx in 0..6 {
-        ret.push(Sprite::new(Spr::EdgeN + idx, screen_pos, 1, color, color::BLACK));
+        ret.push(Sprite::new(Spr::EdgeNW + idx, screen_pos, 0, color, color::BLACK));
     }
     ret
 }
