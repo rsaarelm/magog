@@ -14,6 +14,7 @@ mod spr;
 mod world;
 
 use std::convert::{Into};
+use std::collections::{HashSet};
 use calx_ecs::{Entity};
 use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
 use calx::{V2, Rect, Rgba, color};
@@ -110,9 +111,12 @@ fn main() {
     let mut screen_offset = V2(320.0f32, 0.0f32);
     let mut scroll_delta = V2(0.0f32, 0.0f32);
     let mut mouse_cell = V2(-1, -1);
+    let mut mouse_pos = V2(-1.0f32, -1.0f32);
+    let mut rect1 = V2(-1.0f32, -1.0f32);
 
     let mut world = World::new();
-    let mut active: Option<Entity> = None;
+    let mut active: HashSet<Entity> = HashSet::new();
+    let mut rect_drag = None;
 
     let tmx = include_str!("../assets/hexworld.tmx");
     world.load(&tiled::parse(tmx.as_bytes()).unwrap());
@@ -148,7 +152,7 @@ fn main() {
                 for &e in world.ecs.iter() {
                     if let Some(spr) = cmd::sprite(&world, e, &proj) {
                         // Highlight reticle on focused unit.
-                        if active == Some(e) {
+                        if active.contains(&e) {
                             for s in unit_focus_sprites(spr.pos).into_iter() {
                                 sprites.push(s);
                             }
@@ -160,6 +164,11 @@ fn main() {
                 sprites.sort_by(|a, b| a.cmp(&b));
                 for spr in sprites.iter() {
                     ctx.draw_image(spr.spr.get(), spr.pos, 0.5, spr.fore, spr.back);
+                }
+
+                if rect_drag == Some(Drag::Moving) {
+                    let rect = Rect::from_points(mouse_pos, rect1);
+                    ctx.draw_rect(&rect, 0.2, color::CYAN);
                 }
 
                 world.update_active();
@@ -193,22 +202,68 @@ fn main() {
                 }
             }
             Event::MouseMoved((x, y)) => {
-                mouse_cell = proj.inv_project(V2(x, y).map(|x| x as f32)).map(|x| x.floor() as i32);
+                mouse_pos = V2(x, y).map(|x| x as f32);
+                mouse_cell = proj.inv_project(mouse_pos).map(|x| x.floor() as i32);
+                if rect_drag == Some(Drag::Click) {
+                    let dist = rect1 - mouse_pos;
+                    // Need to move past a threshold distance before we switch
+                    // from click-selecting to rect-selecting.
+                    if dist.dot(dist) > 16.0 {
+                        rect_drag = Some(Drag::Moving);
+                    }
+                }
             }
 
             Event::MousePressed(MouseButton::Left) => {
-                active = cmd::mob_at(&world, mouse_cell);
+                rect_drag = Some(Drag::Click);
+                rect1 = mouse_pos;
+            }
+
+            Event::MouseReleased(MouseButton::Left) => {
+                // Insert player units in select rectangle into selection.
+                active.clear();
+                match rect_drag {
+                    Some(Drag::Moving) => {
+                        let cell_rect = Rect(V2(-8f32, -8f32), V2(16f32, 8f32));
+                        let select_rect = Rect::from_points(mouse_pos, rect1);
+
+                        for pt in proj.inv_project_rectangle(&select_rect).iter() {
+                            if !select_rect.intersects(&(cell_rect + proj.project(pt))) { continue; }
+
+                            let pos = pt.map(|x| x.floor() as i32);
+
+                            match cmd::mob_at(&world, pos) {
+                                Some(e) if cmd::is_player(&world, e) => {
+                                    active.insert(e);
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                    _ => {
+                        if let Some(p) = cmd::mob_at(&world, mouse_cell) {
+                            active.insert(p);
+                        }
+                    }
+                }
+                rect_drag = None;
             }
 
             Event::MousePressed(MouseButton::Right) => {
-                if let Some(p) = active {
+                for &p in active.iter() {
                     if cmd::is_player(&world, p) {
                         cmd::move_to(&mut world, p, mouse_cell);
                     }
-               }
+                }
             }
 
             _ => {}
         }
     }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum Drag {
+    Click,
+    Moving,
 }
