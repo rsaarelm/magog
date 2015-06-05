@@ -37,12 +37,12 @@ impl Desc {
 pub struct Mob {
     /// Goes up after action, when zero can act again.
     pub action_delay: u8,
-    pub tasks: Vec<Action>,
+    pub goals: Vec<Goal>,
     pub anim: Anim,
 }
 
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
-pub enum Action {
+pub enum Goal {
     MoveTo(V2<i32>),
     Attack(Entity),
     Guard(Entity),
@@ -52,7 +52,7 @@ impl Mob {
     pub fn new() -> Mob {
         Mob {
             action_delay: 0,
-            tasks: Vec::new(),
+            goals: Vec::new(),
             anim: Anim::Standstill,
         }
     }

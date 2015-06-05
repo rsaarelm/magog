@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 use calx::{V2, HexGeom, astar_path_with, LatticeNode, Dir6};
 use calx::{Projection, color};
 use calx_ecs::{Entity};
-use world::{World, Action, matches_mask, ComponentNum, Anim, Tween};
+use world::{World, Goal, matches_mask, ComponentNum, Anim, Tween};
 use spr::{Spr};
 use ::{Sprite};
 
@@ -51,16 +51,10 @@ pub fn find_path(ctx: &World, orig: V2<i32>, dest: V2<i32>) -> Option<Vec<V2<i32
     }
 }
 
-/// Return whether a path was found.
-pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) -> bool {
-    if let Some(path) = find_path(ctx, ctx.ecs.pos[e], dest) {
-        let mob = &mut ctx.ecs.mob[e];
-        // TODO: Use append when it's stable.
-        for p in path.into_iter().map(|x| Action::MoveTo(x)) { mob.tasks.push(p); }
-        true
-    } else {
-        false
-    }
+pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) {
+    ctx.ecs.mob[e].goals.clear();
+
+    ctx.ecs.mob[e].goals.push(Goal::MoveTo(dest));
 }
 
 pub fn is_player(ctx: &World, mob: Entity) -> bool {
@@ -90,23 +84,69 @@ pub fn mob_at(ctx: &World, pos: V2<i32>) -> Option<Entity> {
     mobs(ctx).into_iter().filter(|&mob| ctx.ecs.pos[mob] == pos).next()
 }
 
-pub fn update_mob(ctx: &mut World, e: Entity) {
-    // XXX: Lots of ECS dereferencing noise. Referencing mob component
-    // would lock down everything else like the pos comp though.
-    if ctx.ecs.mob[e].action_delay > 0 {
-        ctx.ecs.mob[e].action_delay -= 1;
-        return;
+pub fn can_enter(ctx: &World, e: Entity, pos: V2<i32>) -> Option<BlockCause> {
+    if !ctx.terrain_at(pos).can_walk() { return Some(BlockCause::Terrain); }
+    match mob_at(ctx, pos) {
+        Some(m) if m != e => { return Some(BlockCause::Mob(m)); }
+        _ => { return None; }
+    }
+}
+
+pub enum BlockCause {
+    Terrain,
+    Mob(Entity),
+}
+
+pub fn step(ctx: &mut World, e: Entity, dir: Dir6) -> Option<BlockCause> {
+    let old_pos = ctx.ecs.pos[e];
+
+    let new_pos = old_pos + dir.to_v2();
+
+    let cause = can_enter(ctx, e, new_pos);
+
+    if cause.is_some() {
+        return cause;
+    } else {
+        let mob = &mut ctx.ecs.mob[e];
+        let move_delay = 12;
+        mob.action_delay = move_delay;
+        mob.anim = Anim::Move(
+            Tween::new(ctx.anim_t, old_pos, move_delay));
     }
 
-    if !ctx.ecs.mob[e].tasks.is_empty() {
-        match ctx.ecs.mob[e].tasks[0] {
-            Action::MoveTo(pos) => {
-                let move_delay = 12;
-                ctx.ecs.mob[e].action_delay = move_delay;
-                ctx.ecs.mob[e].anim = Anim::Move(
-                    Tween::new(ctx.anim_t, ctx.ecs.pos[e], move_delay));
-                ctx.ecs.pos[e] = pos;
-                ctx.ecs.mob[e].tasks.remove(0);
+    ctx.ecs.pos[e] = new_pos;
+
+    None
+}
+
+/// Best movement direction to get towards destination.
+pub fn way_towards(ctx: &World, e: Entity, dest: V2<i32>) -> Option<Dir6> {
+    // XXX: A*-pathing anew for every step, VERY wasteful.
+    if let Some(node) =  find_path(ctx, ctx.ecs.pos[e], dest).map_or(None, |x| x.first().map(|&y| y)) {
+        Some(Dir6::from_v2(node - ctx.ecs.pos[e]))
+    } else {
+        None
+    }
+}
+
+pub fn update_mob(ctx: &mut World, e: Entity) {
+    let old_pos = ctx.ecs.pos[e];
+
+    if ctx.ecs.mob[e].action_delay > 0 {
+        ctx.ecs.mob[e].action_delay -= 1;
+    } else {
+        match ctx.ecs.mob[e].goals.first() {
+            None => {}
+            Some(&Goal::MoveTo(pos)) => {
+                if old_pos == pos {
+                    // Already there, remove goal.
+                    ctx.ecs.mob[e].goals.remove(0);
+                } else {
+                    match way_towards(ctx, e, pos) {
+                        Some(dir) => { step(ctx, e, dir); }
+                        None => { ctx.ecs.mob[e].goals.remove(0); }
+                    }
+                }
             }
             _ => {
                 unimplemented!();
