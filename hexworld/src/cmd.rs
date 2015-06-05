@@ -154,3 +154,7 @@ pub fn update_mob(ctx: &mut World, e: Entity) {
         }
     }
 }
+
+pub fn ready_to_act(ctx: &World, e: Entity) -> bool {
+    ctx.ecs.mob[e].action_delay == 0
+}

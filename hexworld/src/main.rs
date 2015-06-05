@@ -17,7 +17,7 @@ use std::convert::{Into};
 use std::collections::{HashSet};
 use calx_ecs::{Entity};
 use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
-use calx::{V2, Rect, Rgba, color};
+use calx::{V2, Rect, Rgba, color, Dir6};
 use calx::{Projection, Kernel, KernelTerrain};
 
 use spr::Spr;
@@ -118,6 +118,8 @@ fn main() {
     let mut active: HashSet<Entity> = HashSet::new();
     let mut rect_drag = None;
 
+    let mut paused = false;
+
     let tmx = include_str!("../assets/hexworld.tmx");
     world.load(&tiled::parse(tmx.as_bytes()).unwrap());
 
@@ -171,7 +173,11 @@ fn main() {
                     ctx.draw_rect(&rect, 0.2, color::CYAN);
                 }
 
-                world.update_active();
+                if paused {
+                    world.update_standby();
+                } else {
+                    world.update_active();
+                }
             }
 
             Event::Quit => { return; }
@@ -184,20 +190,72 @@ fn main() {
 
             Event::KeyPressed(k) => {
                 match k {
-                    Key::A => { scroll_delta.0 = -1.0 * scroll_speed; }
-                    Key::D => { scroll_delta.0 =  1.0 * scroll_speed; }
-                    Key::W => { scroll_delta.1 = -1.0 * scroll_speed; }
-                    Key::S => { scroll_delta.1 =  1.0 * scroll_speed; }
+                    Key::J => { scroll_delta.0 = -1.0 * scroll_speed; }
+                    Key::L => { scroll_delta.0 =  1.0 * scroll_speed; }
+                    Key::I => { scroll_delta.1 = -1.0 * scroll_speed; }
+                    Key::K => { scroll_delta.1 =  1.0 * scroll_speed; }
+
+                    // XXX: Okay, we need a state object here.
+                    Key::W => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::North);
+                        }
+                    }
+
+                    Key::E => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::NorthEast);
+                        }
+                    }
+                    Key::D => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::SouthEast);
+                        }
+                    }
+                    Key::S => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::South);
+                        }
+                    }
+                    Key::A => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::SouthWest);
+                        }
+                    }
+                    Key::Q => {
+                        if !active.is_empty() {
+                            paused = true;
+                            let rogue = activate_rogue(&mut active);
+                            while !cmd::ready_to_act(&world, rogue) { world.update_active(); }
+                            cmd::step(&mut world, rogue, Dir6::NorthWest);
+                        }
+                    }
+                    Key::Space => { paused = !paused; }
                     _ => {}
                 }
             }
 
             Event::KeyReleased(k) => {
                 match k {
-                    Key::A => { scroll_delta.0 = 0.0; }
-                    Key::D => { scroll_delta.0 = 0.0; }
-                    Key::W => { scroll_delta.1 = 0.0; }
-                    Key::S => { scroll_delta.1 = 0.0; }
+                    Key::J => { scroll_delta.0 = 0.0; }
+                    Key::L => { scroll_delta.0 = 0.0; }
+                    Key::I => { scroll_delta.1 = 0.0; }
+                    Key::K => { scroll_delta.1 = 0.0; }
                     _ => {}
                 }
             }
@@ -266,4 +324,11 @@ fn main() {
 enum Drag {
     Click,
     Moving,
+}
+
+fn activate_rogue(active: &mut HashSet<Entity>) -> Entity {
+    let &player = active.iter().next().unwrap();
+    active.clear();
+    active.insert(player);
+    player
 }
