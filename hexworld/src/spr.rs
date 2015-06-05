@@ -73,6 +73,13 @@ pub enum Spr {
     Menhir,
     Grunt,
 
+    EdgeN,
+    EdgeNE,
+    EdgeSE,
+    EdgeS,
+    EdgeSW,
+    EdgeNW,
+
     MaxSpr,
 }
 
@@ -144,6 +151,16 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                     Crystal,
                     Menhir,
                     Grunt,
+                  ]);
+
+    ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("../assets/segments.png")),
+                  vec![
+                    EdgeN,
+                    EdgeNE,
+                    EdgeSE,
+                    EdgeS,
+                    EdgeSW,
+                    EdgeNW,
                   ]);
 
     ret

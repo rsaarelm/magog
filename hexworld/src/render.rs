@@ -13,7 +13,7 @@ impl RenderTerrain for Kernel<Terrain> {
         // Z-layer, sprite, fore-color, back-color
         where F: FnMut(i8, Spr, Rgba, Rgba)
     {
-        static FLOOR: i8 = 1;
+        static FLOOR: i8 = 8;
         static BLOCK: i8 = 0;
         use Terrain::*;
 

@@ -89,3 +89,7 @@ pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
 
     Some(Sprite::new(spr, draw_pos, 0, color, color::BLACK))
 }
+
+pub fn mob_at(ctx: &World, pos: V2<i32>) -> Option<Entity> {
+    mobs(ctx).into_iter().filter(|&mob| ctx.ecs.pos[mob] == pos).next()
+}

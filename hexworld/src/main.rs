@@ -14,8 +14,9 @@ mod spr;
 mod world;
 
 use std::convert::{Into};
+use calx_ecs::{Entity};
 use calx::backend::{CanvasBuilder, CanvasUtil, Event, MouseButton, Key};
-use calx::{V2, Rect, Rgba};
+use calx::{V2, Rect, Rgba, color};
 use calx::{Projection, Kernel, KernelTerrain};
 
 use spr::Spr;
@@ -95,13 +96,24 @@ impl Sprite {
     }
 }
 
+fn unit_focus_sprites(screen_pos: V2<f32>) -> Vec<Sprite> {
+    let mut ret = Vec::new();
+    let color = color::LIME;
+    for idx in 0..6 {
+        ret.push(Sprite::new(Spr::EdgeN + idx, screen_pos, 1, color, color::BLACK));
+    }
+    ret
+}
+
 fn main() {
-    let scroll_speed = 4f32;
+    let scroll_speed = 8f32;
     let mut screen_offset = V2(320.0f32, 0.0f32);
     let mut scroll_delta = V2(0.0f32, 0.0f32);
-    let mut mouse_pos = V2(-1.0f32, -1.0f32);
+    let mut mouse_cell = V2(-1, -1);
 
     let mut world = World::new();
+    let mut active: Option<Entity> = None;
+
     let tmx = include_str!("../assets/hexworld.tmx");
     world.load(&tiled::parse(tmx.as_bytes()).unwrap());
 
@@ -133,8 +145,16 @@ fn main() {
                         });
                 }
 
-                for spr in world.ecs.iter().filter_map(|&e| cmd::sprite(&world, e, &proj)) {
-                    sprites.push(spr);
+                for &e in world.ecs.iter() {
+                    if let Some(spr) = cmd::sprite(&world, e, &proj) {
+                        // Highlight reticle on focused unit.
+                        if active == Some(e) {
+                            for s in unit_focus_sprites(spr.pos).into_iter() {
+                                sprites.push(s);
+                            }
+                        }
+                        sprites.push(spr);
+                    }
                 }
 
                 sprites.sort_by(|a, b| a.cmp(&b));
@@ -173,13 +193,18 @@ fn main() {
                 }
             }
             Event::MouseMoved((x, y)) => {
-                mouse_pos = V2(x, y).map(|x| x as f32);
+                mouse_cell = proj.inv_project(V2(x, y).map(|x| x as f32)).map(|x| x.floor() as i32);
             }
 
             Event::MousePressed(MouseButton::Left) => {
-                if let Some(p) = cmd::player(&world) {
-                    let dest = proj.inv_project(mouse_pos).map(|x| x.floor() as i32);
-                    cmd::move_to(&mut world, p, dest);
+                active = cmd::mob_at(&world, mouse_cell);
+            }
+
+            Event::MousePressed(MouseButton::Right) => {
+                if let Some(p) = active {
+                    if cmd::is_player(&world, p) {
+                        cmd::move_to(&mut world, p, mouse_cell);
+                    }
                }
             }
 
