@@ -92,6 +92,9 @@ pub fn lerp<T, U>(a: U, b: U, t: T) -> U where
     a + (b - a) * t
 }
 
+/// Return the two arguments sorted to order.
+fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) { if a < b { (a, b) } else { (b, a) } }
+
 /// Rectangle anchoring points.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Anchor {

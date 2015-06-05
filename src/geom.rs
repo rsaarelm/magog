@@ -164,6 +164,13 @@ pub struct Rect<T>(pub V2<T>, pub V2<T>);
 impl<T: Eq> Eq for Rect<T> { }
 
 impl<T: Num+Copy+PartialOrd> Rect<T> {
+    pub fn from_points(p1: V2<T>, p2: V2<T>) -> Rect<T> {
+        let (x1, x2) = ::sorted_pair(p1.0, p2.0);
+        let (y1, y2) = ::sorted_pair(p1.1, p2.1);
+
+        Rect(V2(x1, y1), V2(x2 - x1, y2 - y1))
+    }
+
     pub fn area(&self) -> T {
         (self.1).0 * (self.1).1
     }
