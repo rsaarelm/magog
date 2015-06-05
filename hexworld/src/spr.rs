@@ -95,7 +95,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
 
     let mut ret = SpriteCache::new();
 
-    ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("../assets/blocks.png")),
+    ret.batch_add(builder, V2(-16, -16), V2(32, 32), &mut load(include_bytes!("../assets/blocks.png")),
                   vec![
                     BlockNW,
                     BlockN,
@@ -105,7 +105,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                     BlockRock2,
                   ]);
 
-    ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("../assets/floors.png")),
+    ret.batch_add(builder, V2(-16, -16), V2(32, 32), &mut load(include_bytes!("../assets/floors.png")),
                   vec![
                     FloorBlank,
                     Floor,
@@ -131,12 +131,12 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
     let mut wall_sheet = load(include_bytes!("../assets/walls.png"));
     // Can't use batch_add for walls because the offsets alternate.
     for (i, rect) in wall_sheet.tiles(V2(16, 32)).take(walls.len()).enumerate() {
-        let offset = V2(if i % 2 == 0 { -16 } else { 0 }, -22);
+        let offset = V2(if i % 2 == 0 { -16 } else { 0 }, -16);
         let image = image::SubImage::new(&mut wall_sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
         ret.add(builder, walls[i], offset, &image);
     }
 
-    ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("../assets/props.png")),
+    ret.batch_add(builder, V2(-16, -16), V2(32, 32), &mut load(include_bytes!("../assets/props.png")),
                   vec![
                     TreeTrunk,
                     Foliage,
@@ -153,7 +153,7 @@ fn build_sprites(builder: &mut CanvasBuilder) -> SpriteCache<Spr> {
                     Grunt,
                   ]);
 
-    ret.batch_add(builder, V2(-16, -22), V2(32, 32), &mut load(include_bytes!("../assets/segments.png")),
+    ret.batch_add(builder, V2(-16, -16), V2(32, 32), &mut load(include_bytes!("../assets/segments.png")),
                   vec![
                     EdgeN,
                     EdgeNE,
