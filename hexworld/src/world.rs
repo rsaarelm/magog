@@ -6,6 +6,7 @@ use calx::{V2, Rgba, Projection, lerp, clamp};
 use calx_ecs::{Entity};
 use spr::{Spr};
 use ::{Terrain};
+use cmd;
 
 Ecs! {
     desc: Desc,
@@ -160,30 +161,8 @@ impl World {
             .filter(|&&e| matches_mask(&self.ecs, e, build_mask!(pos, mob)))
             .cloned().collect();
 
-        // TODO: Move update-mob to cmd.
         for e in actives.into_iter() {
-            // XXX: Lots of ECS dereferencing noise. Referencing mob component
-            // would lock down everything else like the pos comp though.
-            if self.ecs.mob[e].action_delay > 0 {
-                self.ecs.mob[e].action_delay -= 1;
-                continue;
-            }
-
-            if !self.ecs.mob[e].tasks.is_empty() {
-                match self.ecs.mob[e].tasks[0] {
-                    Action::MoveTo(pos) => {
-                        let move_delay = 12;
-                        self.ecs.mob[e].action_delay = move_delay;
-                        self.ecs.mob[e].anim = Anim::Move(
-                            Tween::new(self.anim_t, self.ecs.pos[e], move_delay));
-                        self.ecs.pos[e] = pos;
-                        self.ecs.mob[e].tasks.remove(0);
-                    }
-                    _ => {
-                        unimplemented!();
-                    }
-                }
-            }
+            cmd::update_mob(self, e);
         }
     }
 

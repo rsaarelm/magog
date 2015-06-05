@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 use calx::{V2, HexGeom, astar_path_with, LatticeNode, Dir6};
 use calx::{Projection, color};
 use calx_ecs::{Entity};
-use world::{World, Action, matches_mask, ComponentNum, Anim};
+use world::{World, Action, matches_mask, ComponentNum, Anim, Tween};
 use spr::{Spr};
 use ::{Sprite};
 
@@ -63,10 +63,6 @@ pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) -> bool {
     }
 }
 
-pub fn player(ctx: &World) -> Option<Entity> {
-    mobs(ctx).into_iter().filter(|&mob| is_player(ctx, mob)).next()
-}
-
 pub fn is_player(ctx: &World, mob: Entity) -> bool {
     ctx.ecs.desc[mob].icon == Spr::Avatar
 }
@@ -92,4 +88,29 @@ pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
 
 pub fn mob_at(ctx: &World, pos: V2<i32>) -> Option<Entity> {
     mobs(ctx).into_iter().filter(|&mob| ctx.ecs.pos[mob] == pos).next()
+}
+
+pub fn update_mob(ctx: &mut World, e: Entity) {
+    // XXX: Lots of ECS dereferencing noise. Referencing mob component
+    // would lock down everything else like the pos comp though.
+    if ctx.ecs.mob[e].action_delay > 0 {
+        ctx.ecs.mob[e].action_delay -= 1;
+        return;
+    }
+
+    if !ctx.ecs.mob[e].tasks.is_empty() {
+        match ctx.ecs.mob[e].tasks[0] {
+            Action::MoveTo(pos) => {
+                let move_delay = 12;
+                ctx.ecs.mob[e].action_delay = move_delay;
+                ctx.ecs.mob[e].anim = Anim::Move(
+                    Tween::new(ctx.anim_t, ctx.ecs.pos[e], move_delay));
+                ctx.ecs.pos[e] = pos;
+                ctx.ecs.mob[e].tasks.remove(0);
+            }
+            _ => {
+                unimplemented!();
+            }
+        }
+    }
 }
