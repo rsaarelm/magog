@@ -108,7 +108,7 @@ pub fn step(ctx: &mut World, e: Entity, dir: Dir6) -> Option<BlockCause> {
         return cause;
     } else {
         let mob = &mut ctx.ecs.mob[e];
-        let move_delay = 12;
+        let move_delay = 6;
         mob.action_delay = move_delay;
         mob.anim = Anim::Move(
             Tween::new(ctx.anim_t, old_pos, move_delay));
