@@ -8,7 +8,7 @@ use calx::{lerp};
 
 fn main() {
     let mut t = 0i32;
-    let mut mouse_pos = V2(-1i32, -1i32);
+    let mut mouse_pos = V2(-1f32, -1f32);
     let pangrams = vec![
         "the quick brown fox jumps over the lazy dog",
         "the five boxing wizards jump quickly",
@@ -41,7 +41,7 @@ fn main() {
                 ctx.clear();
                 for y in 0i32..(360/8) {
                     for x in 0i32..(640/8) {
-                        let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos) {
+                        let col = if Rect(V2(x * 8, y * 8), V2(8, 8)).contains(&mouse_pos.map(|x| x as i32)) {
                             0xFFFFFFFF } else { 0x442200FF };
                         ctx.draw_image(img, V2(x as f32 * 8.0, y as f32 * 8.0 + 8.0),
                             0.4, col, color::BLACK);
@@ -80,17 +80,17 @@ fn main() {
 
                 t += 1;
             }
-            Event::KeyPressed(Key::Escape) => {
+            Event::KeyPress(Key::Escape) => {
                 return;
             }
-            Event::KeyPressed(k) => {
+            Event::KeyPress(k) => {
                 println!("Pressed {:?}", k);
             }
             Event::Char(c) => {
                 println!("Typed {:?}", c);
             }
-            Event::MouseMoved((x, y)) => {
-                mouse_pos = V2(x, y);
+            Event::MouseMove(pos) => {
+                mouse_pos = pos;
             }
             _ => ()
         }

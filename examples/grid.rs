@@ -73,18 +73,18 @@ fn main() {
                 ctx.draw_rect(&mouse_rect, 0.5, "cyan");
             }
 
-            Event::KeyPressed(Key::Escape) => { return; }
+            Event::KeyPress(Key::Escape) => { return; }
 
-            Event::KeyPressed(Key::Tab) => {
+            Event::KeyPress(Key::Tab) => {
                 projection += 1;
                 projection %= PROJECTIONS.len();
             }
 
-            Event::KeyPressed(Key::F12) => {
+            Event::KeyPress(Key::F12) => {
                 ctx.save_screenshot(&"grid");
             }
 
-            Event::KeyPressed(k) => {
+            Event::KeyPress(k) => {
                 match k {
                     Key::A => { scroll_delta.0 = -1.0 * scroll_speed; }
                     Key::D => { scroll_delta.0 =  1.0 * scroll_speed; }
@@ -94,7 +94,7 @@ fn main() {
                 }
             }
 
-            Event::KeyReleased(k) => {
+            Event::KeyRelease(k) => {
                 match k {
                     Key::A => { scroll_delta.0 = 0.0; }
                     Key::D => { scroll_delta.0 = 0.0; }
@@ -103,8 +103,8 @@ fn main() {
                     _ => {}
                 }
             }
-            Event::MouseMoved((x, y)) => {
-                mouse_pos = V2(x, y);
+            Event::MouseMove(pos) => {
+                mouse_pos = pos.map(|x| x as i32);
             }
             _ => {}
         }

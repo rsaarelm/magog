@@ -1,5 +1,6 @@
 use std::convert::{Into};
 use super::canvas::{Canvas, Image, FONT_W};
+use super::event::{MouseButton};
 use super::{WidgetId};
 use ::{V2, Rect, color, Rgba};
 use ::Anchor::*;
@@ -118,7 +119,7 @@ impl<'a> CanvasUtil for Canvas<'a> {
         let mut color = color::GREEN;
         if area.contains(&self.mouse_pos) {
             self.hot_widget = Some(id);
-            if self.active_widget.is_none() && self.mouse_pressed {
+            if self.active_widget.is_none() && self.mouse_pressed[MouseButton::Left as usize].is_some() {
                 self.active_widget = Some(id);
             }
             color = color::RED;
@@ -126,7 +127,7 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         self.fill_rect(&area, z, color);
 
-        return !self.mouse_pressed // Mouse is released
+        return self.mouse_pressed[MouseButton::Left as usize].is_none() // Mouse is released
             && self.active_widget == Some(id) // But this button is hot and active
             && self.hot_widget == Some(id);
     }

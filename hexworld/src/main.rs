@@ -113,12 +113,10 @@ fn main() {
     let mut screen_offset = V2(320.0f32, 0.0f32);
     let mut scroll_delta = V2(0.0f32, 0.0f32);
     let mut mouse_cell = V2(-1, -1);
-    let mut mouse_pos = V2(-1.0f32, -1.0f32);
-    let mut rect1 = V2(-1.0f32, -1.0f32);
 
     let mut world = World::new();
     let mut active: HashSet<Entity> = HashSet::new();
-    let mut rect_drag = None;
+    let mut drag_rect = None;
 
     let mut paused = false;
 
@@ -170,8 +168,7 @@ fn main() {
                     ctx.draw_image(spr.spr.get(), spr.pos, 0.5, spr.fore, spr.back);
                 }
 
-                if rect_drag == Some(Drag::Moving) {
-                    let rect = Rect::from_points(mouse_pos, rect1);
+                if let Some(rect) = drag_rect {
                     ctx.draw_rect(&rect, 0.2, color::CYAN);
                 }
 
@@ -184,13 +181,13 @@ fn main() {
 
             Event::Quit => { return; }
 
-            Event::KeyPressed(Key::Escape) => { return; }
+            Event::KeyPress(Key::Escape) => { return; }
 
-            Event::KeyPressed(Key::F12) => {
+            Event::KeyPress(Key::F12) => {
                 ctx.save_screenshot(&"azag");
             }
 
-            Event::KeyPressed(k) => {
+            Event::KeyPress(k) => {
                 match k {
                     Key::J => { scroll_delta.0 = -1.0 * scroll_speed; }
                     Key::L => { scroll_delta.0 =  1.0 * scroll_speed; }
@@ -252,7 +249,7 @@ fn main() {
                 }
             }
 
-            Event::KeyReleased(k) => {
+            Event::KeyRelease(k) => {
                 match k {
                     Key::J => { scroll_delta.0 = 0.0; }
                     Key::L => { scroll_delta.0 = 0.0; }
@@ -261,55 +258,23 @@ fn main() {
                     _ => {}
                 }
             }
-            Event::MouseMoved((x, y)) => {
-                mouse_pos = V2(x, y).map(|x| x as f32);
-                mouse_cell = proj.inv_project(mouse_pos).map(|x| x.floor() as i32);
-                if rect_drag == Some(Drag::Click) {
-                    let dist = rect1 - mouse_pos;
-                    // Need to move past a threshold distance before we switch
-                    // from click-selecting to rect-selecting.
-                    if dist.dot(dist) > 16.0 {
-                        rect_drag = Some(Drag::Moving);
-                    }
-                }
+
+            Event::MouseDrag(MouseButton::Left, p1, p2) => {
+                drag_rect = Some(Rect::from_points(p1, p2))
             }
 
-            Event::MousePressed(MouseButton::Left) => {
-                rect_drag = Some(Drag::Click);
-                rect1 = mouse_pos;
+            Event::MouseMove(pos) => {
+                mouse_cell = proj.inv_project(pos).map(|x| x.floor() as i32);
             }
 
-            Event::MouseReleased(MouseButton::Left) => {
-                // Insert player units in select rectangle into selection.
+            Event::MouseClick(MouseButton::Left) => {
                 active.clear();
-                match rect_drag {
-                    Some(Drag::Moving) => {
-                        let cell_rect = Rect(V2(-8f32, -8f32), V2(16f32, 8f32));
-                        let select_rect = Rect::from_points(mouse_pos, rect1);
-
-                        for pt in proj.inv_project_rectangle(&select_rect).iter() {
-                            if !select_rect.intersects(&(cell_rect + proj.project(pt))) { continue; }
-
-                            let pos = pt.map(|x| x.floor() as i32);
-
-                            match cmd::mob_at(&world, pos) {
-                                Some(e) if cmd::is_player(&world, e) => {
-                                    active.insert(e);
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    _ => {
-                        if let Some(p) = cmd::mob_at(&world, mouse_cell) {
-                            active.insert(p);
-                        }
-                    }
+                if let Some(p) = cmd::mob_at(&world, mouse_cell) {
+                    active.insert(p);
                 }
-                rect_drag = None;
             }
 
-            Event::MousePressed(MouseButton::Right) => {
+            Event::MouseClick(MouseButton::Right) => {
                 for &p in active.iter() {
                     if cmd::is_player(&world, p) {
                         cmd::move_to(&mut world, p, mouse_cell);
@@ -317,15 +282,30 @@ fn main() {
                 }
             }
 
+            Event::MouseDragEnd(MouseButton::Left, p1, p2) => {
+                active.clear();
+                drag_rect = None;
+
+                let cell_rect = Rect(V2(-8f32, -8f32), V2(16f32, 8f32));
+                let select_rect = Rect::from_points(p1, p2);
+
+                for pt in proj.inv_project_rectangle(&select_rect).iter() {
+                    if !select_rect.intersects(&(cell_rect + proj.project(pt))) { continue; }
+
+                    let pos = pt.map(|x| x.floor() as i32);
+
+                    match cmd::mob_at(&world, pos) {
+                        Some(e) if cmd::is_player(&world, e) => {
+                            active.insert(e);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+
             _ => {}
         }
     }
-}
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-enum Drag {
-    Click,
-    Moving,
 }
 
 fn activate_rogue(active: &mut HashSet<Entity>) -> Entity {

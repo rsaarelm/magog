@@ -145,8 +145,11 @@ pub struct Canvas<'a> {
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
 
+    queued: Vec<Event>,
+    drag_start: V2<f32>,
     pub mouse_pos: V2<f32>,
-    pub mouse_pressed: bool,
+    /// If mouse is down, timestamp for when it was pressed.
+    pub mouse_pressed: [Option<f64>; 3],
     /// Imgui widget currently under mouse cursor.
     pub hot_widget: Option<WidgetId>,
     /// Imgui widget currently being interacted with.
@@ -221,8 +224,10 @@ impl<'a> Canvas<'a> {
 
             render_duration: 0.1f64,
 
+            queued: Vec::new(),
+            drag_start: V2(0.0, 0.0),
             mouse_pos: Default::default(),
-            mouse_pressed: false,
+            mouse_pressed: [None, None, None],
             hot_widget: None,
             active_widget: None,
             last_widget: None,
@@ -325,7 +330,7 @@ impl<'a> Canvas<'a> {
     }
 
     fn imgui_finish(&mut self) {
-        if !self.mouse_pressed {
+        if self.mouse_pressed[MouseButton::Left as usize].is_none() {
             self.active_widget = None;
         } else {
             // Setup a dummy widget so that dragging a mouse onto a widget
@@ -337,6 +342,7 @@ impl<'a> Canvas<'a> {
     }
 
     pub fn next_event(&mut self) -> Event {
+        static MOUSE_DRAG_THRESHOLD_T: f64 = 0.1;
         // After a render event, control will return here on a new
         // iter call. Do post-render work here.
         if self.state == State::EndFrame {
@@ -354,6 +360,10 @@ impl<'a> Canvas<'a> {
             target.finish();
 
             self.imgui_finish();
+        }
+
+        if let Some(p) = self.queued.pop() {
+            return p;
         }
 
         let mut app_focused = true;
@@ -377,42 +387,69 @@ impl<'a> Canvas<'a> {
 
                         if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
                             return if action == glutin::ElementState::Pressed {
-                                Event::KeyPressed(key)
+                                Event::KeyPress(key)
                             }
                             else {
-                                Event::KeyReleased(key)
+                                Event::KeyRelease(key)
                             };
                         }
                     }
                     glutin::Event::MouseMoved((x, y)) => {
                         let pixel_pos = self.renderer.screen_to_canvas(V2(x, y));
                         self.mouse_pos = pixel_pos.map(|x| x as f32);
-                        return Event::MouseMoved((pixel_pos.0, pixel_pos.1));
+
+                        // See if there are mouse drags going on with the
+                        // buttons, create extra "ongoing drag" events if so.
+                        let current_t = time::precise_time_s();
+                        for &b in [MouseButton::Left, MouseButton::Right, MouseButton::Middle].iter() {
+                            if let Some(press_t) = self.mouse_pressed[b as usize] {
+                                if current_t - press_t > MOUSE_DRAG_THRESHOLD_T {
+                                    self.queued.push(Event::MouseDrag(b, self.drag_start, self.mouse_pos));
+                                }
+                            }
+                        }
+                        return Event::MouseMove(self.mouse_pos);
                     }
                     glutin::Event::MouseWheel(x, _) => {
                         return Event::MouseWheel(x as i32);
                     }
                     glutin::Event::MouseInput(state, button) => {
-                        let button = match button {
-                            glutin::MouseButton::Left => MouseButton::Left,
-                            glutin::MouseButton::Right => MouseButton::Right,
-                            glutin::MouseButton::Middle => MouseButton::Middle,
-                            glutin::MouseButton::Other(x) => MouseButton::Other(x),
-                        };
-                        self.mouse_pressed =
-                            button == MouseButton::Left &&
-                            state == glutin::ElementState::Pressed;
-                        match state {
-                            glutin::ElementState::Pressed => {
-                                return Event::MousePressed(button);
-                            }
-                            glutin::ElementState::Released => {
-                                return Event::MouseReleased(button);
+                        if let Some(button) = match button {
+                            glutin::MouseButton::Left => Some(MouseButton::Left),
+                            glutin::MouseButton::Right => Some(MouseButton::Right),
+                            glutin::MouseButton::Middle => Some(MouseButton::Middle),
+                            glutin::MouseButton::Other(_) => None,
+                        } {
+                            match state {
+                                glutin::ElementState::Pressed => {
+                                    // Possibly the start of a mouse drag,
+                                    // make note of when the button was
+                                    // pressed and where the cursor was at the
+                                    // time.
+                                    self.drag_start = self.mouse_pos;
+                                    self.mouse_pressed[button as usize] = Some(time::precise_time_s());
+                                    return Event::MousePress(button);
+                                }
+                                glutin::ElementState::Released => {
+                                    let release_t = time::precise_time_s();
+
+                                    // Interpret short mouse presses as clicks
+                                    // and long ones as drags.
+                                    if let Some(press_t) = self.mouse_pressed[button as usize] {
+                                        if release_t - press_t > MOUSE_DRAG_THRESHOLD_T {
+                                            self.queued.push(Event::MouseDragEnd(
+                                                    button, self.drag_start, self.mouse_pos));
+                                        }
+                                        self.queued.push(Event::MouseClick(button));
+                                    }
+                                    self.mouse_pressed[button as usize] = None;
+                                    return Event::MouseRelease(button);
+                                }
                             }
                         }
                     }
                     glutin::Event::Focused(b) => {
-                        return Event::FocusChanged(b);
+                        return Event::FocusChange(b);
                     }
                     glutin::Event::Closed => {
                         return Event::Quit;

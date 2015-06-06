@@ -101,13 +101,13 @@ fn main() {
 
             Event::Quit => { return; }
 
-            Event::KeyPressed(Key::Escape) => { return; }
+            Event::KeyPress(Key::Escape) => { return; }
 
-            Event::KeyPressed(Key::F12) => {
+            Event::KeyPress(Key::F12) => {
                 ctx.save_screenshot(&"isoworld");
             }
 
-            Event::KeyPressed(k) => {
+            Event::KeyPress(k) => {
                 match k {
                     Key::A => { player_x -= 1.0; }
                     Key::D => { player_x += 1.0; }
