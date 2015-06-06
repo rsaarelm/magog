@@ -81,6 +81,8 @@ pub struct Sprite {
 
 impl Sprite {
     pub fn new<A: Into<Rgba>, B: Into<Rgba>>(spr: Spr, pos: V2<f32>, layer: i8, fore: A, back: B) -> Sprite {
+        // Fix some numerical inaccuracy noise.
+        let pos = pos.map(|x| x.round());
         Sprite {
             spr: spr,
             fore: fore.into(),
