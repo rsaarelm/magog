@@ -2,13 +2,13 @@
 // find Ecs stuff with an absolute crate path.
 
 #[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
-struct Desc {
+pub struct Desc {
     name: String,
     icon: usize,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
-struct Pos {
+pub struct Pos {
     x: i32,
     y: i32,
 }
@@ -38,7 +38,4 @@ fn test_ecs() {
 
     let e2 = ecs.make();
     assert!(e2 != e1);
-
-    assert_eq!(Desc::type_num(), 0);
-    assert_eq!(Pos::type_num(), 1);
 }
