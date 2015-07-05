@@ -70,26 +70,53 @@ impl KernelTerrain for Terrain {
     fn is_block(&self) -> bool { *self == Terrain::Rock }
 }
 
-pub struct Sprite {
+pub trait Drawable {
+    fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32);
+}
+
+pub struct SprDrawable {
     pub spr: Spr,
     pub fore: Rgba,
     pub back: Rgba,
+}
+
+impl SprDrawable {
+    pub fn new<A: Into<Rgba>, B: Into<Rgba>>(spr: Spr, fore: A, back: B) -> SprDrawable {
+        SprDrawable {
+            spr: spr,
+            fore: fore.into(),
+            back: back.into(),
+        }
+    }
+}
+
+impl Drawable for SprDrawable {
+    fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32) {
+        ctx.draw_image(self.spr.get(), offset, z, self.fore, self.back);
+    }
+}
+
+pub struct Sprite {
+    pub drawable: Box<Drawable>,
     pub pos: V2<f32>,
 
     sort_key: (i8, i32),
 }
 
 impl Sprite {
-    pub fn new<A: Into<Rgba>, B: Into<Rgba>>(spr: Spr, pos: V2<f32>, layer: i8, fore: A, back: B) -> Sprite {
+    pub fn new(drawable: Box<Drawable>, pos: V2<f32>, layer: i8) -> Sprite {
         // Fix some numerical inaccuracy noise.
         let pos = pos.map(|x| x.round());
         Sprite {
-            spr: spr,
-            fore: fore.into(),
-            back: back.into(),
+            drawable: drawable,
             pos: pos,
             sort_key: (layer, -pos.1 as i32)
         }
+    }
+
+    pub fn new_spr<A: Into<Rgba>, B: Into<Rgba>>(
+        spr: Spr, fore: A, back: B, pos: V2<f32>, layer: i8) -> Sprite {
+        Sprite::new(Box::new(SprDrawable::new(spr, fore, back)), pos, layer)
     }
 
     #[inline]
@@ -103,9 +130,32 @@ fn unit_focus_sprites(screen_pos: V2<f32>) -> Vec<Sprite> {
     let mut ret = Vec::new();
     let color = color::LIME;
     for idx in 0..6 {
-        ret.push(Sprite::new(Spr::EdgeNW + idx, screen_pos, 0, color, color::BLACK));
+        ret.push(Sprite::new_spr(Spr::EdgeNW + idx, color, color::BLACK, screen_pos, 0));
     }
     ret
+}
+
+pub struct Effect {
+    pub kind: Fx,
+    pub life: u32,
+    pub pos: V2<i32>,
+}
+
+impl Effect {
+    pub fn new(kind: Fx, map_pos: V2<i32>) -> Effect {
+        // TODO: Lifetime parametrization.
+        Effect {
+            kind: kind,
+            life: 10,
+            pos: map_pos,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq)]
+pub enum Fx {
+    PathOk,
+    PathBlocked,
 }
 
 #[derive(Eq, PartialEq)]
@@ -126,6 +176,8 @@ pub struct GameState {
     pub proj: Projection,
     mouse_cell: V2<i32>,
     drag_rect: Option<Rect<f32>>,
+
+    effects: Vec<Box<Effect>>,
 }
 
 impl GameState {
@@ -141,6 +193,7 @@ impl GameState {
                 .view_offset(screen_offset),
             mouse_cell: V2(-1, -1),
             drag_rect: None,
+            effects: Vec::new(),
         }
     }
 
@@ -153,7 +206,7 @@ impl GameState {
             let pos = self.proj.project(pt);
             Kernel::new(|p| self.world.terrain_at(p), pt.map(|x| x as i32)).render(
                 |layer, spr, fore, back| {
-                    sprites.push(Sprite::new(spr, pos, layer, fore, back));
+                    sprites.push(Sprite::new_spr(spr, fore, back, pos, layer));
                 });
         }
 
@@ -171,7 +224,7 @@ impl GameState {
 
         sprites.sort_by(|a, b| a.cmp(&b));
         for spr in sprites.iter() {
-            ctx.draw_image(spr.spr.get(), spr.pos, 0.5, spr.fore, spr.back);
+            spr.drawable.draw(ctx, spr.pos, 0.5);
         }
 
         if let Some(rect) = self.drag_rect {
@@ -225,6 +278,10 @@ impl GameState {
         }
     }
 
+    fn add_effect(&mut self, effect: Box<Effect>) {
+        self.effects.push(effect);
+    }
+
     pub fn process_event(&mut self, evt: Event) {
         let scroll_speed = 8f32;
         match evt {
@@ -272,10 +329,22 @@ impl GameState {
             }
 
             Event::MouseClick(MouseButton::Right) => {
+                let mut path_found = None;
                 for &p in self.selected.iter() {
                     if cmd::is_player(&self.world, p) {
-                        cmd::move_to(&mut self.world, p, self.mouse_cell);
+                        let cmd_pathed = cmd::move_to(&mut self.world, p, self.mouse_cell);
+                        path_found = path_found.map_or(
+                            Some(cmd_pathed), |x| Some(x || cmd_pathed));
                     }
+                }
+
+                let pos = self.mouse_cell;
+                match path_found {
+                    Some(true) =>
+                        self.add_effect(Box::new(Effect::new(Fx::PathOk, pos))),
+                    Some(false) =>
+                        self.add_effect(Box::new(Effect::new(Fx::PathBlocked, pos))),
+                    _ => {}
                 }
             }
 

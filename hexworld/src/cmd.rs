@@ -80,7 +80,7 @@ pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
 
     let draw_pos = anim.get_pos(cell_pos, ctx.anim_t, p);
 
-    Some(Sprite::new(spr, draw_pos, 0, color, color::BLACK))
+    Some(Sprite::new_spr(spr, color, color::BLACK, draw_pos, 0))
 }
 
 pub fn mob_at(ctx: &World, pos: V2<i32>) -> Option<Entity> {
