@@ -135,6 +135,7 @@ fn unit_focus_sprites(screen_pos: V2<f32>) -> Vec<Sprite> {
     ret
 }
 
+#[derive(Copy, Clone)]
 pub struct Effect {
     pub kind: Fx,
     pub life: u32,
@@ -150,9 +151,31 @@ impl Effect {
             pos: map_pos,
         }
     }
+
+    pub fn update(&mut self) { if self.life > 0 { self.life -= 1; } }
+    pub fn is_alive(&self) -> bool { self.life > 0 }
+
+    pub fn sprite(&self, proj: &Projection) -> Sprite {
+        // XXX: Cloning self, inefficient.
+        Sprite::new(Box::new(*self), proj.project(self.pos.map(|x| (x as f32))), 0)
+    }
 }
 
-#[derive(Eq, PartialEq)]
+impl Drawable for Effect {
+    fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32) {
+        match self.kind {
+            Fx::PathOk => {
+                ctx.draw_rect(&Rect(offset, V2(16.0, 16.0)), z, color::LIME);
+            }
+            Fx::PathBlocked => {
+                ctx.draw_line(2.0, offset, offset + V2(16.0, 16.0), z, color::RED);
+                ctx.draw_line(2.0, offset + V2(0.0, 16.0), offset + V2(16.0, 0.0), z, color::RED);
+            }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Fx {
     PathOk,
     PathBlocked,
@@ -222,6 +245,10 @@ impl GameState {
             }
         }
 
+        for f in self.effects.iter() {
+            sprites.push(f.sprite(&self.proj));
+        }
+
         sprites.sort_by(|a, b| a.cmp(&b));
         for spr in sprites.iter() {
             spr.drawable.draw(ctx, spr.pos, 0.5);
@@ -250,6 +277,12 @@ impl GameState {
 
         self.proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap()
             .view_offset(self.screen_offset);
+
+        for e in self.effects.iter_mut() {
+            e.update();
+        }
+
+        self.effects.retain(|e| e.is_alive());
     }
 
     fn go_rogue(&mut self) -> Option<Entity> {
