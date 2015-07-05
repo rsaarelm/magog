@@ -51,10 +51,13 @@ pub fn find_path(ctx: &World, orig: V2<i32>, dest: V2<i32>) -> Option<Vec<V2<i32
     }
 }
 
-pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) {
+pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) -> bool {
     ctx.ecs.mob[e].goals.clear();
 
     ctx.ecs.mob[e].goals.push(Goal::MoveTo(dest));
+
+    // Return whether a path can be found.
+    way_towards(ctx, e, dest).is_some()
 }
 
 pub fn is_player(ctx: &World, mob: Entity) -> bool {
