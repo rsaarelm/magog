@@ -1,7 +1,7 @@
 use std::default::Default;
 use num::{Float};
 use image;
-use glium::{self, texture, framebuffer, render_buffer, Surface};
+use glium::{self, texture, framebuffer, Surface};
 use glium::LinearBlendingFactor::*;
 use super::{CanvasMagnify};
 use ::{V2, Rect};
@@ -46,7 +46,7 @@ impl<'a> Renderer<'a> {
             display,
             texture::UncompressedFloatFormat::U8U8U8U8,
             size.0, size.1);
-        let depth = render_buffer::DepthRenderBuffer::new(
+        let depth = framebuffer::DepthRenderBuffer::new(
             display, texture::DepthFormat::F32, size.0, size.1);
 
         let mut params: glium::DrawParameters = Default::default();

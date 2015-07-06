@@ -357,7 +357,8 @@ impl<'a> Canvas<'a> {
                 self.renderer.draw(&self.display, mesh.vertices, mesh.indices);
             }
             self.renderer.show(&self.display, &mut target);
-            target.finish();
+            // TODO: Do something smarter than panic! on SwapBuffersError.
+            target.finish().unwrap();
 
             self.imgui_finish();
         }
@@ -410,7 +411,8 @@ impl<'a> Canvas<'a> {
                         }
                         return Event::MouseMove(self.mouse_pos);
                     }
-                    glutin::Event::MouseWheel(x, _) => {
+                    // TODO: Handle LineDelta and PixelDelta events...
+                    glutin::Event::MouseWheel(glutin::MouseScrollDelta::LineDelta(x, _)) => {
                         return Event::MouseWheel(x as i32);
                     }
                     glutin::Event::MouseInput(state, button) => {
