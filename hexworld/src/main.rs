@@ -382,22 +382,27 @@ impl GameState {
             }
 
             Event::MouseDragEnd(MouseButton::Left, p1, p2) => {
-                self.selected.clear();
-                self.drag_rect = None;
+                let scale = (p2.0 - p1.0).abs().max((p2.1 - p1.1).abs());
+                // Must have dragged some distance before we go from looking
+                // at the single click to looking at the dragged rectangle.
+                if scale > 12.0 {
+                    self.selected.clear();
+                    self.drag_rect = None;
 
-                let cell_rect = Rect(V2(-8f32, -8f32), V2(16f32, 8f32));
-                let select_rect = Rect::from_points(p1, p2);
+                    let cell_rect = Rect(V2(-8f32, -8f32), V2(16f32, 8f32));
+                    let select_rect = Rect::from_points(p1, p2);
 
-                for pt in self.proj.inv_project_rectangle(&select_rect).iter() {
-                    if !select_rect.intersects(&(cell_rect + self.proj.project(pt))) { continue; }
+                    for pt in self.proj.inv_project_rectangle(&select_rect).iter() {
+                        if !select_rect.intersects(&(cell_rect + self.proj.project(pt))) { continue; }
 
-                    let pos = pt.map(|x| x.floor() as i32);
+                        let pos = pt.map(|x| x.floor() as i32);
 
-                    match cmd::mob_at(&self.world, pos) {
-                        Some(e) if cmd::is_player(&self.world, e) => {
-                            self.selected.insert(e);
+                        match cmd::mob_at(&self.world, pos) {
+                            Some(e) if cmd::is_player(&self.world, e) => {
+                                self.selected.insert(e);
+                            }
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
             }
