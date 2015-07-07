@@ -157,7 +157,7 @@ impl Effect {
 
     pub fn sprite(&self, proj: &Projection) -> Sprite {
         // XXX: Cloning self, inefficient.
-        Sprite::new(Box::new(*self), proj.project(self.pos.map(|x| (x as f32))), 0)
+        Sprite::new(Box::new(*self), proj.project(self.pos.map(|x| (x as f32))), -4)
     }
 }
 
@@ -165,11 +165,11 @@ impl Drawable for Effect {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32) {
         match self.kind {
             Fx::PathOk => {
-                ctx.draw_rect(&Rect(offset, V2(16.0, 16.0)), z, color::LIME);
+                ctx.draw_rect(&Rect(offset + V2(-8.0, 0.0), V2(17.0, 16.0)), z, color::LIME);
             }
             Fx::PathBlocked => {
-                ctx.draw_line(2.0, offset, offset + V2(16.0, 16.0), z, color::RED);
-                ctx.draw_line(2.0, offset + V2(0.0, 16.0), offset + V2(16.0, 0.0), z, color::RED);
+                ctx.draw_line(2.0, offset + V2(-8.0, 0.0), offset + V2(8.0, 16.0), z, color::RED);
+                ctx.draw_line(2.0, offset + V2(-8.0, 16.0), offset + V2(8.0, 0.0), z, color::RED);
             }
         }
     }
