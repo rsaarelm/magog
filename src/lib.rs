@@ -13,6 +13,7 @@ extern crate vec_map;
 extern crate nalgebra;
 extern crate image;
 extern crate glutin;
+extern crate cpal;
 
 #[macro_use] extern crate glium;
 

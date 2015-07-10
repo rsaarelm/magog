@@ -30,9 +30,15 @@ path = "calx_ecs"
 
 [dependencies.glium]
 
+[dependencies.cpal]
+
 [[example]]
 name = "demo"
 path = "examples/demo.rs"
+
+[[example]]
+name = "noise"
+path = "examples/noise.rs"
 
 [[example]]
 name = "grid"
