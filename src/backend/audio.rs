@@ -1,9 +1,61 @@
 use std::u16;
+use std::sync::mpsc;
+use std::thread;
 use num::traits::{Float};
 use time;
 use cpal;
 
+/// A handle object for playing sounds.
 pub struct Mixer {
+    tx: mpsc::Sender<Rpc>,
+}
+
+impl Mixer {
+    /// Create a new mixer and spawn a sound-playing thread that will persist
+    /// for the lifetime of the mixer.
+    pub fn new() -> Mixer {
+        let (tx, rx) = mpsc::channel();
+
+        thread::spawn(move || {
+            let mut engine = Engine::new();
+            let mut voice = cpal::Voice::new();
+
+            loop {
+                match rx.try_recv() {
+                    Ok(rpc) => {
+                        engine.recv(rpc);
+                    }
+                    // When Mixer is destroyed, the sender object will drop
+                    // and trying to receive will get a disconnected error.
+                    // This will kill the thread.
+                    Err(mpsc::TryRecvError::Disconnected) => { break; }
+                    Err(mpsc::TryRecvError::Empty) => {}
+                }
+
+                engine.fill_buffer(&mut voice);
+                voice.play();
+            }
+        });
+
+        Mixer {
+            tx: tx,
+        }
+    }
+
+    /// Play a sound described by the given wave function and with the given
+    /// duration.
+    pub fn add_wave(&mut self, f: Box<Fn(f64) -> f64 + Send>, duration: f64) {
+        assert!(duration >= 0.0);
+        self.tx.send(Rpc::Wave((f, duration))).unwrap();
+    }
+}
+
+enum Rpc {
+    Wave((Box<Fn(f64) -> f64 + Send>, f64)),
+}
+
+/// State in the thread
+struct Engine {
     waves: Vec<Wave>,
     t: f64,
     rate: u32,
@@ -15,42 +67,34 @@ struct Wave {
     end_t: f64,
 }
 
-impl Mixer {
-    pub fn new() -> Mixer {
-        Mixer {
+impl Engine {
+    fn new() -> Engine {
+        Engine {
             waves: Vec::new(),
             t: time::precise_time_s(),
             rate: 44100,
         }
     }
 
-    pub fn add_wave(&mut self, f: Box<Fn(f64) -> f64 + Send>, duration: f64) {
-        assert!(duration >= 0.0);
-        let t = time::precise_time_s();
-        self.waves.push(Wave {
-            f: f,
-            begin_t: t,
-            end_t: t + duration
-        });
+    fn recv(&mut self, rpc: Rpc) {
+        match rpc {
+            Rpc::Wave((f, duration)) => {
+                let t = time::precise_time_s();
+                self.waves.push(Wave {
+                    f: f,
+                    begin_t: t,
+                    end_t: t + duration
+                });
+            }
+        }
     }
 
-    /// Runs the Audio mixer, takes over the thread.
-    pub fn run(&mut self) {
-        // TODO: Return a channel you can use to send new waves.
-        self.t = time::precise_time_s();
+    fn fill_buffer(&mut self, voice: &mut cpal::Voice) {
+        let mut buffer =
+            voice.append_data(1, cpal::SamplesRate(self.rate), 32768);
 
-        let mut voice = cpal::Voice::new();
-        loop {
-            {
-                let mut buffer =
-                    voice.append_data(1, cpal::SamplesRate(self.rate), 32768);
-
-                for sample in buffer.iter_mut() {
-                    *sample = self.tick();
-                }
-            }
-
-            voice.play();
+        for sample in buffer.iter_mut() {
+            *sample = self.tick();
         }
     }
 
