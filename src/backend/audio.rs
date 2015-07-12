@@ -1,13 +1,15 @@
 use std::u16;
 use std::sync::mpsc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use num::traits::{Float};
 use time;
 use cpal;
 
 /// A handle object for playing sounds.
+#[derive(Clone)]
 pub struct Mixer {
-    tx: mpsc::Sender<Rpc>,
+    tx: Arc<Mutex<mpsc::Sender<Rpc>>>,
 }
 
 impl Mixer {
@@ -38,7 +40,7 @@ impl Mixer {
         });
 
         Mixer {
-            tx: tx,
+            tx: Arc::new(Mutex::new(tx)),
         }
     }
 
@@ -46,7 +48,8 @@ impl Mixer {
     /// duration.
     pub fn add_wave(&mut self, f: Box<Fn(f64) -> f64 + Send>, duration: f64) {
         assert!(duration >= 0.0);
-        self.tx.send(Rpc::Wave((f, duration))).unwrap();
+        let tx = self.tx.lock().unwrap();
+        tx.send(Rpc::Wave((f, duration))).unwrap();
     }
 }
 
