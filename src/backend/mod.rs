@@ -10,9 +10,7 @@ pub use backend::key::Key;
 pub use backend::fonter::{Fonter, Align};
 pub use backend::event::{Event, MouseButton};
 pub use backend::sprite_cache::{SpriteCache, SpriteKey};
-pub use backend::audio::{Mixer};
 
-mod audio;
 mod canvas;
 mod canvas_util;
 mod event;

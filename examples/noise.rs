@@ -1,12 +1,19 @@
 extern crate calx;
+use calx::audio::{self, Wave, Waveform};
 use std::thread;
-use calx::backend::{Mixer};
 
 fn main() {
-    println!("Starting noise");
-    let mut mixer = Mixer::new();
-    mixer.add_wave(Box::new(|t| (t * 3000.0).sin() * 0.2), 2.0);
+    let mut mixer = audio::Mixer::new();
+    mixer.add(
+            Waveform::Noise
+            .volume(0.02)
+            .into_iter().duration(2.0));
     thread::sleep_ms(1000);
-    mixer.add_wave(Box::new(|t| (t * 1000.0).sin() * 0.2), 2.0);
-    thread::sleep_ms(3000);
+    mixer.add(
+            Waveform::Sine
+            .pitch(500.0)
+            .adsr(2.0, 0.2, 0.01, 0.3, 0.2)
+            .volume(0.5)
+            .into_iter().duration(2.0));
+    thread::sleep_ms(2000);
 }

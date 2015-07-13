@@ -45,6 +45,7 @@ mod rgb;
 mod rng;
 mod search;
 
+pub mod audio;
 pub mod backend;
 pub mod ease;
 pub mod text;
