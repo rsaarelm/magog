@@ -194,16 +194,23 @@ impl Mixer {
     pub fn add<T: Iterator<Item=f64>+Send+'static>(&mut self, wave: T) {
         self.inner.lock().unwrap().add(Box::new(wave));
     }
+
+    /// Stop playing the mixer audio.
+    pub fn stop(&mut self) {
+        self.inner.lock().unwrap().running = false;
+    }
 }
 
 struct InnerMixer {
     waves: Vec<Box<Iterator<Item=f64> + Send>>,
+    running: bool,
 }
 
 impl InnerMixer {
     fn new() -> InnerMixer {
         InnerMixer {
             waves: Vec::new(),
+            running: true,
         }
     }
 
@@ -216,6 +223,8 @@ impl Iterator for InnerMixer {
     type Item = f64;
 
     fn next(&mut self) -> Option<f64> {
+        if !self.running { return None; }
+
         let mut ret = 0.0;
         // Indexes of ended waves.
         let mut deletes = Vec::new();
