@@ -47,6 +47,9 @@ indoor/outdoor exploration. Wizard battles.
 
 **Might & Magic**: Monty haul cheese done right.
 
+**Nahlakh**: Tactically crunchy fantasy sandbox, does a lot with
+little.
+
 **NetHack**: Goes overboard with disjoint gimmicks, but a few
 disjoint gimmicks can be great.
 
