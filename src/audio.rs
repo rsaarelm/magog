@@ -104,7 +104,8 @@ pub trait Envelope: Sized {
 /// Different waves at 1 Hz.
 pub enum Waveform {
     Sine,
-    Square,
+    /// The parameter is the duty cycle of the square wave, in [0.0, 1.0]
+    Square(f64),
     Saw,
     Triangle,
     Noise,
@@ -118,7 +119,7 @@ impl Wave for Waveform {
 
         match self {
             &Sine => (frac * PI).sin(),
-            &Square => if frac < 0.5 { -1.0 } else { 1.0 },
+            &Square(duty) => if frac < duty { 1.0 } else { -1.0 },
             &Saw => -1.0 + frac * 2.0,
             &Triangle => if frac < 0.5 { -1.0 + frac * 4.0 } else { 3.0 - frac * 4.0 },
             &Noise => noise((t * 1024.0) as i32) as f64,
