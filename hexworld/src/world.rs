@@ -64,7 +64,8 @@ pub enum Anim {
     Standstill,
     /// Idle anim.
     Alert,
-    /// Move away from Tween::other_pos.
+    /// Move away from Tween::other_pos. (Unit's logical position moves
+    /// before the animation starts, so other_pos needs to be backwards.)
     Move(Tween),
     /// Attack towards Tween::other_pos.
     Attack(Tween),

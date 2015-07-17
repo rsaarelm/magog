@@ -69,6 +69,9 @@ pub fn mobs(ctx: &World) -> Vec<Entity> {
 }
 
 pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
+    // XXX: Can't recolorize the sprite after it's returned from here since
+    // the Drawable Box in Sprite is opaque.
+
     if !ctx.ecs.pos.contains(e) || !ctx.ecs.desc.contains(e) { return None; }
 
     let cell_pos = ctx.ecs.pos[e];
