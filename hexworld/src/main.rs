@@ -307,7 +307,21 @@ impl GameState {
     fn rogue_step(&mut self, dir: Dir6) {
         if let Some(rogue) = self.go_rogue() {
             while !cmd::ready_to_act(&self.world, rogue) { self.world.update_active(); }
-            cmd::step(&mut self.world, rogue, dir);
+            self.smart_move(rogue, dir);
+        }
+    }
+
+    fn smart_move(&mut self, e: Entity, dir: Dir6) {
+        let pos = self.world.ecs.pos[e];
+        let target_pos = pos + dir.to_v2();
+
+        if let Some(_enemy) = cmd::mob_at(&self.world, target_pos).map_or(
+            None,
+            |x| if !cmd::is_player(&self.world, x) { Some(x) } else { None }) {
+            cmd::melee(&mut self.world, e, dir);
+        } else {
+            // TODO: Wall-hugging.
+            cmd::step(&mut self.world, e, dir);
         }
     }
 

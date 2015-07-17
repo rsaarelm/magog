@@ -156,6 +156,10 @@ pub fn melee(ctx: &mut World, e: Entity, dir: Dir6) {
 pub fn damage(ctx: &mut World, target: Entity) {
     // TODO: Damage the target instead of just destroying it. Will also
     // involve adding stuff to the API like the amount of damage.
+
+    // TODO: Also, don't delete entities from the ECS mid-update, have a dead
+    // flag instead. There *will* be more complex logic that will want to keep
+    // doing stuff to the entity.
     ctx.ecs.remove(target);
 }
 
