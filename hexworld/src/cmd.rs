@@ -60,6 +60,16 @@ pub fn move_to(ctx: &mut World, e: Entity, dest: V2<i32>) -> bool {
     way_towards(ctx, e, dest).is_some()
 }
 
+pub fn attack(ctx: &mut World, e: Entity, enemy: Entity) -> bool {
+    ctx.ecs.mob[e].goals.clear();
+
+    ctx.ecs.mob[e].goals.push(Goal::Attack(enemy));
+
+    // Return whether a path can be found.
+    let dest = ctx.ecs.pos[e];
+    way_towards(ctx, e, dest).is_some()
+}
+
 pub fn is_player(ctx: &World, mob: Entity) -> bool {
     ctx.ecs.desc[mob].icon == Spr::Avatar
 }
@@ -125,6 +135,30 @@ pub fn step(ctx: &mut World, e: Entity, dir: Dir6) -> Option<BlockCause> {
     None
 }
 
+/// Make an entity perform a melee action that produces an attack.
+pub fn melee(ctx: &mut World, e: Entity, dir: Dir6) {
+    let old_pos = ctx.ecs.pos[e];
+    let new_pos = old_pos + dir.to_v2();
+
+    if let Some(target) = mob_at(ctx, new_pos) {
+        {
+            let mob = &mut ctx.ecs.mob[e];
+            let move_delay = 6;
+            mob.action_delay = move_delay;
+            mob.anim = Anim::Attack(Tween::new(ctx.anim_t, new_pos, move_delay));
+        }
+
+        damage(ctx, target);
+    }
+}
+
+/// Deal damage to a target.
+pub fn damage(ctx: &mut World, target: Entity) {
+    // TODO: Damage the target instead of just destroying it. Will also
+    // involve adding stuff to the API like the amount of damage.
+    ctx.ecs.remove(target);
+}
+
 /// Best movement direction to get towards destination.
 pub fn way_towards(ctx: &World, e: Entity, dest: V2<i32>) -> Option<Dir6> {
     // XXX: A*-pathing anew for every step, VERY wasteful.
@@ -151,6 +185,25 @@ pub fn update_mob(ctx: &mut World, e: Entity) {
                     match way_towards(ctx, e, pos) {
                         Some(dir) => { step(ctx, e, dir); }
                         None => { ctx.ecs.mob[e].goals.remove(0); }
+                    }
+                }
+            }
+            Some(&Goal::Attack(mob)) => {
+                if !ctx.ecs.contains(mob) {
+                    // Target is gone.
+                    ctx.ecs.mob[e].goals.remove(0);
+                } else {
+                    let pos = ctx.ecs.pos[mob];
+                    let vec_to_enemy = pos - old_pos;
+                    if vec_to_enemy.hex_dist() <= 1 {
+                        // Within punching distance.
+                        melee(ctx, e, Dir6::from_v2(vec_to_enemy));
+                    } else {
+                        // Too far, move closer.
+                        match way_towards(ctx, e, pos) {
+                            Some(dir) => { step(ctx, e, dir); }
+                            None => { ctx.ecs.mob[e].goals.remove(0); }
+                        }
                     }
                 }
             }

@@ -163,7 +163,11 @@ impl World {
             .cloned().collect();
 
         for e in actives.into_iter() {
-            cmd::update_mob(self, e);
+            // Do a second existence check, earlier updates might have
+            // destroyed mobs later in the iteration.
+            if self.ecs.contains(e) {
+                cmd::update_mob(self, e);
+            }
         }
     }
 

@@ -362,10 +362,19 @@ impl GameState {
             }
 
             Event::MouseClick(MouseButton::Right) => {
+                let target = cmd::mob_at(&self.world, self.mouse_cell).map_or(
+                   None,
+                   |x| if !cmd::is_player(&self.world, x) { Some(x) } else { None });
+
                 let mut path_found = None;
-                for &p in self.selected.iter() {
-                    if cmd::is_player(&self.world, p) {
-                        let cmd_pathed = cmd::move_to(&mut self.world, p, self.mouse_cell);
+                for &unit in self.selected.iter() {
+                    if cmd::is_player(&self.world, unit) {
+                        let cmd_pathed = if let Some(enemy) = target {
+                            cmd::attack(&mut self.world, unit, enemy)
+                        } else {
+                            cmd::move_to(&mut self.world, unit, self.mouse_cell)
+                        };
+
                         path_found = path_found.map_or(
                             Some(cmd_pathed), |x| Some(x || cmd_pathed));
                     }
