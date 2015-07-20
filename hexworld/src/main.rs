@@ -9,7 +9,9 @@ extern crate tiled;
 extern crate calx;
 
 mod cmd;
+mod path;
 mod render;
+mod rule;
 mod spr;
 mod world;
 
@@ -234,7 +236,7 @@ impl GameState {
         }
 
         for &e in self.world.ecs.iter() {
-            if let Some(spr) = cmd::sprite(&self.world, e, &self.proj) {
+            if let Some(spr) = rule::sprite(&self.world, e, &self.proj) {
                 // Highlight reticle on focused unit.
                 if self.selected.contains(&e) {
                     for s in unit_focus_sprites(spr.pos).into_iter() {
@@ -269,7 +271,7 @@ impl GameState {
         match self.mode {
             GameMode::Rogue(rogue) => {
                 let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0)).unwrap();
-                let spr = cmd::sprite(&self.world, rogue, &proj).unwrap();
+                let spr = rule::sprite(&self.world, rogue, &proj).unwrap();
                 self.screen_offset = -spr.pos + V2(320.0, 180.0);
             }
             _ => { self.screen_offset = self.screen_offset - self.scroll_delta; }
@@ -306,7 +308,7 @@ impl GameState {
 
     fn rogue_step(&mut self, dir: Dir6) {
         if let Some(rogue) = self.go_rogue() {
-            while !cmd::ready_to_act(&self.world, rogue) { self.world.update_active(); }
+            while !rule::ready_to_act(&self.world, rogue) { self.world.update_active(); }
             self.smart_move(rogue, dir);
         }
     }
@@ -315,13 +317,13 @@ impl GameState {
         let pos = self.world.ecs.pos[e];
         let target_pos = pos + dir.to_v2();
 
-        if let Some(_enemy) = cmd::mob_at(&self.world, target_pos).map_or(
+        if let Some(_enemy) = rule::mob_at(&self.world, target_pos).map_or(
             None,
-            |x| if !cmd::is_player(&self.world, x) { Some(x) } else { None }) {
-            cmd::melee(&mut self.world, e, dir);
+            |x| if !rule::is_player(&self.world, x) { Some(x) } else { None }) {
+            rule::melee(&mut self.world, e, dir);
         } else {
             // TODO: Wall-hugging.
-            cmd::step(&mut self.world, e, dir);
+            rule::step(&mut self.world, e, dir);
         }
     }
 
@@ -370,19 +372,19 @@ impl GameState {
 
             Event::MouseClick(MouseButton::Left) => {
                 self.selected.clear();
-                if let Some(p) = cmd::mob_at(&self.world, self.mouse_cell) {
+                if let Some(p) = rule::mob_at(&self.world, self.mouse_cell) {
                     self.selected.insert(p);
                 }
             }
 
             Event::MouseClick(MouseButton::Right) => {
-                let target = cmd::mob_at(&self.world, self.mouse_cell).map_or(
+                let target = rule::mob_at(&self.world, self.mouse_cell).map_or(
                    None,
-                   |x| if !cmd::is_player(&self.world, x) { Some(x) } else { None });
+                   |x| if !rule::is_player(&self.world, x) { Some(x) } else { None });
 
                 let mut path_found = None;
                 for &unit in self.selected.iter() {
-                    if cmd::is_player(&self.world, unit) {
+                    if rule::is_player(&self.world, unit) {
                         let cmd_pathed = if let Some(enemy) = target {
                             cmd::attack(&mut self.world, unit, enemy)
                         } else {
@@ -420,8 +422,8 @@ impl GameState {
 
                         let pos = pt.map(|x| x.floor() as i32);
 
-                        match cmd::mob_at(&self.world, pos) {
-                            Some(e) if cmd::is_player(&self.world, e) => {
+                        match rule::mob_at(&self.world, pos) {
+                            Some(e) if rule::is_player(&self.world, e) => {
                                 self.selected.insert(e);
                             }
                             _ => {}
