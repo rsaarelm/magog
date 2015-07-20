@@ -7,6 +7,7 @@ use calx_ecs::{Entity};
 use spr::{Spr};
 use ::{Terrain};
 use cmd;
+use globals::{Globals};
 
 Ecs! {
     desc: Desc,
@@ -117,6 +118,7 @@ pub struct World {
     pub anim_t: u32,
     pub ecs: Ecs,
     pub terrain: HashMap<V2<i32>, Terrain>,
+    pub globals: Globals,
 }
 
 impl World {
@@ -126,6 +128,7 @@ impl World {
             anim_t: 0,
             ecs: Ecs::new(),
             terrain: HashMap::new(),
+            globals: Globals::new(666),
         }
     }
 

@@ -1,4 +1,7 @@
-use calx::{V2, HexGeom, Dir6};
+/*! High-level entity control, tasks that take multiple turns to accomplish. */
+
+use rand::{Rng};
+use calx::{V2, HexGeom, Dir6, RngExt};
 use calx_ecs::{Entity};
 use world::{World, Goal};
 use rule;
@@ -23,12 +26,29 @@ pub fn attack(ctx: &mut World, e: Entity, enemy: Entity) -> bool {
     path::towards(ctx, e, dest).is_some()
 }
 
+pub fn run_ai(ctx: &mut World, e: Entity) {
+    if ctx.ecs.mob[e].goals.is_empty() {
+        // Look for an enemy, but not all the time to keep from spamming the
+        // expensive finder func.
+        if ctx.globals.rng.with_chance(0.1) {
+            let enemies = rule::visible_enemies(ctx, e);
+            if let Some(&g) = ctx.globals.rng.choose(&enemies) {
+                ctx.ecs.mob[e].goals.push(Goal::Attack(g));
+            }
+        }
+    }
+}
+
 pub fn update_mob(ctx: &mut World, e: Entity) {
     let old_pos = ctx.ecs.pos[e];
 
     if ctx.ecs.mob[e].action_delay > 0 {
         ctx.ecs.mob[e].action_delay -= 1;
     } else {
+        if !rule::is_player(ctx, e) {
+            run_ai(ctx, e);
+        }
+
         match ctx.ecs.mob[e].goals.first() {
             None => {}
             Some(&Goal::MoveTo(pos)) => {

@@ -2,6 +2,7 @@
 
 extern crate num;
 extern crate rustc_serialize;
+extern crate rand;
 extern crate image;
 extern crate tiled;
 
@@ -9,6 +10,7 @@ extern crate tiled;
 extern crate calx;
 
 mod cmd;
+mod globals;
 mod path;
 mod render;
 mod rule;
@@ -267,6 +269,8 @@ impl GameState {
         } else {
             self.world.update_standby();
         }
+        // Clear out destroyed mobs from the live selection.
+        self.selected = self.selected.iter().filter(|&&e| self.world.ecs.contains(e)).map(|&x| x).collect();
 
         match self.mode {
             GameMode::Rogue(rogue) => {

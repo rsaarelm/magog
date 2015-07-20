@@ -17,6 +17,8 @@ path = ".."
 
 [dependencies.rustc-serialize]
 
+[dependencies.rand]
+
 [dependencies.image]
 
 [dependencies.tiled]
