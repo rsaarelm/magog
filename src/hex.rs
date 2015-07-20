@@ -135,9 +135,6 @@ impl<F> HexFov<F>
     where F: Fn(V2<i32>) -> bool
 {
     pub fn new(is_opaque: F, range: u32) -> HexFov<F> {
-        // The origin position V2(0, 0) is a special case for the traversal
-        // algorithm, but it's also always present, so instead of adding ugly
-        // branches to the actual iterator, we just chain it in right here.
         let init_group = is_opaque(Dir6::from_int(0).to_v2());
         HexFov {
             is_opaque: is_opaque,
