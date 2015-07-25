@@ -157,6 +157,8 @@ impl<'a> Renderer<'a> {
     pub fn show<S>(&mut self, display: &glium::Display, target: &mut S)
         where S: glium::Surface
     {
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        target.clear_depth(1.0);
         let (w, h) = display.get_framebuffer_dimensions();
         // Clip viewport dimensions to even to prevent rounding errors in
         // pixel perfect scaling.
