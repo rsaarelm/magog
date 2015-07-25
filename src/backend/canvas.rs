@@ -372,6 +372,8 @@ impl<'a> Canvas<'a> {
             self.events.extend(self.display.poll_events());
 
             if !self.events.is_empty() {
+                // If the app was out of focus, assume that any event coming
+                // in also implies regaining the focus.
                 app_focused = true;
                 match self.events.remove(0) {
                     glutin::Event::Focused(false) => { app_focused = false; }
