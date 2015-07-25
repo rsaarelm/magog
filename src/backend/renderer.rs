@@ -40,12 +40,10 @@ impl<'a> Renderer<'a> {
             include_str!("blit.vert"),
             include_str!("blit.frag"),
             None).unwrap();
-        let atlas = texture::Texture2d::new(display, texture_image);
+        let atlas = texture::Texture2d::new(display, texture_image).unwrap();
 
-        let buffer = texture::Texture2d::new_empty(
-            display,
-            texture::UncompressedFloatFormat::U8U8U8U8,
-            size.0, size.1);
+        let buffer = texture::Texture2d::empty(
+            display, size.0, size.1).unwrap();
         let depth = framebuffer::DepthRenderBuffer::new(
             display, texture::DepthFormat::F32, size.0, size.1);
 
@@ -76,9 +74,9 @@ impl<'a> Renderer<'a> {
 
         // Extract the geometry accumulation buffers and convert into
         // temporary Glium buffers.
-        let vertices = glium::VertexBuffer::new(display, vertices);
+        let vertices = glium::VertexBuffer::new(display, &vertices).unwrap();
         let indices = glium::IndexBuffer::new(
-            display, glium::index::PrimitiveType::TrianglesList, indices);
+            display, glium::index::PrimitiveType::TrianglesList, &indices).unwrap();
 
         let uniforms = glium::uniforms::UniformsStorage::new("tex",
             glium::uniforms::Sampler(&self.atlas, glium::uniforms::SamplerBehavior {
@@ -104,16 +102,16 @@ impl<'a> Renderer<'a> {
             implement_vertex!(BlitVertex, pos, tex_coord);
 
             glium::VertexBuffer::new(display,
-            vec![
+            &[
                 BlitVertex { pos: [sx,    sy   ], tex_coord: [0.0, 0.0] },
                 BlitVertex { pos: [sx+sw, sy   ], tex_coord: [1.0, 0.0] },
                 BlitVertex { pos: [sx+sw, sy+sh], tex_coord: [1.0, 1.0] },
                 BlitVertex { pos: [sx,    sy+sh], tex_coord: [0.0, 1.0] },
-            ])
+            ]).unwrap()
         };
 
         let indices = glium::IndexBuffer::new(display,
-            glium::index::PrimitiveType::TrianglesList, vec![0u16, 1, 2, 0, 2, 3]);
+            glium::index::PrimitiveType::TrianglesList, &[0u16, 1, 2, 0, 2, 3]).unwrap();
 
         let mut params: glium::DrawParameters = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
