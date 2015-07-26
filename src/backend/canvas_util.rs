@@ -117,9 +117,9 @@ impl<'a> CanvasUtil for Canvas<'a> {
         // TODO: Button visual style! Closures?
         let area = Rect(pos, V2(64.0, 16.0));
         let mut color = color::GREEN;
-        if area.contains(&self.mouse_pos) {
+        if area.contains(&self.mouse_pos()) {
             self.hot_widget = Some(id);
-            if self.active_widget.is_none() && self.mouse_pressed[MouseButton::Left as usize].is_some() {
+            if self.active_widget.is_none() && self.mouse_pressed(MouseButton::Left) {
                 self.active_widget = Some(id);
             }
             color = color::RED;
@@ -127,7 +127,7 @@ impl<'a> CanvasUtil for Canvas<'a> {
 
         self.fill_rect(&area, z, color);
 
-        return self.mouse_pressed[MouseButton::Left as usize].is_none() // Mouse is released
+        return !self.mouse_pressed(MouseButton::Left) // Mouse is released
             && self.active_widget == Some(id) // But this button is hot and active
             && self.hot_widget == Some(id);
     }

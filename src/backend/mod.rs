@@ -14,6 +14,7 @@ pub use backend::sprite_cache::{SpriteCache, SpriteKey};
 mod canvas;
 mod canvas_util;
 mod event;
+mod event_translator;
 mod fonter;
 mod key;
 mod renderer;

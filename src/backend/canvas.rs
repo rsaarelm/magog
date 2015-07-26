@@ -1,7 +1,6 @@
 use time;
 use std::mem;
 use std::thread;
-use std::default::Default;
 use std::convert::{Into};
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
@@ -10,10 +9,9 @@ use glutin;
 use glium::{self, DisplayBuild};
 use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles};
 use super::event::{Event, MouseButton};
-use super::key::{Key};
 use super::renderer::{Renderer, Vertex};
-use super::scancode;
 use super::{WidgetId, CanvasMagnify};
+use super::event_translator::{EventTranslator};
 
 /// Width of the full font cell. Actual variable-width letters occupy some
 /// portion of the left side of the cell.
@@ -127,7 +125,6 @@ impl CanvasBuilder {
 /// Interface to render to a live display.
 pub struct Canvas<'a> {
     display: glium::Display,
-    events: Vec<glutin::Event>,
     renderer: Renderer<'a>,
 
     atlas: Atlas,
@@ -140,16 +137,10 @@ pub struct Canvas<'a> {
 
     meshes: Vec<Mesh>,
 
-    layout_independent_keys: bool,
-
     /// Time in seconds it took to render the last frame.
     pub render_duration: f64,
 
-    queued: Vec<Event>,
-    drag_start: V2<f32>,
-    pub mouse_pos: V2<f32>,
-    /// If mouse is down, timestamp for when it was pressed.
-    pub mouse_pressed: [Option<f64>; 3],
+    translator: EventTranslator,
     /// Imgui widget currently under mouse cursor.
     pub hot_widget: Option<WidgetId>,
     /// Imgui widget currently being interacted with.
@@ -207,7 +198,6 @@ impl<'a> Canvas<'a> {
 
         Canvas {
             display: display,
-            events: Vec::new(),
             renderer: renderer,
 
             atlas: atlas,
@@ -220,14 +210,9 @@ impl<'a> Canvas<'a> {
 
             meshes: vec![Mesh::new()],
 
-            layout_independent_keys: builder.layout_independent_keys,
-
             render_duration: 0.1f64,
 
-            queued: Vec::new(),
-            drag_start: V2(0.0, 0.0),
-            mouse_pos: Default::default(),
-            mouse_pressed: [None, None, None],
+            translator: EventTranslator::new(builder.layout_independent_keys),
             hot_widget: None,
             active_widget: None,
             last_widget: None,
@@ -330,7 +315,7 @@ impl<'a> Canvas<'a> {
     }
 
     fn imgui_finish(&mut self) {
-        if self.mouse_pressed[MouseButton::Left as usize].is_none() {
+        if self.translator.mouse_pressed[MouseButton::Left as usize].is_none() {
             self.active_widget = None;
         } else {
             // Setup a dummy widget so that dragging a mouse onto a widget
@@ -341,8 +326,13 @@ impl<'a> Canvas<'a> {
         }
     }
 
+    pub fn mouse_pos(&self) -> V2<f32> { self.translator.mouse_pos }
+
+    pub fn mouse_pressed(&self, button: MouseButton) -> bool {
+        self.translator.mouse_pressed[button as usize].is_some()
+    }
+
     pub fn next_event(&mut self) -> Event {
-        static MOUSE_DRAG_THRESHOLD_T: f64 = 0.1;
         // After a render event, control will return here on a new
         // iter call. Do post-render work here.
         if self.state == State::EndFrame {
@@ -363,102 +353,13 @@ impl<'a> Canvas<'a> {
             self.imgui_finish();
         }
 
-        if let Some(p) = self.queued.pop() {
-            return p;
-        }
-
         let mut app_focused = true;
         loop {
-            self.events.extend(self.display.poll_events());
-
-            if !self.events.is_empty() {
-                // If the app was out of focus, assume that any event coming
-                // in also implies regaining the focus.
-                app_focused = true;
-                match self.events.remove(0) {
-                    glutin::Event::Focused(false) => { app_focused = false; }
-                    glutin::Event::ReceivedCharacter(ch) => {
-                        return Event::Char(ch);
-                    }
-                    glutin::Event::KeyboardInput(action, scan, vko) => {
-                        let scancode_mapped =
-                            if self.layout_independent_keys && (scan as usize) < scancode::MAP.len() {
-                                scancode::MAP[scan as usize]
-                            } else {
-                                None
-                            };
-
-                        if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
-                            return if action == glutin::ElementState::Pressed {
-                                Event::KeyPress(key)
-                            }
-                            else {
-                                Event::KeyRelease(key)
-                            };
-                        }
-                    }
-                    glutin::Event::MouseMoved((x, y)) => {
-                        let pixel_pos = self.renderer.screen_to_canvas(V2(x, y));
-                        self.mouse_pos = pixel_pos.map(|x| x as f32);
-
-                        // See if there are mouse drags going on with the
-                        // buttons, create extra "ongoing drag" events if so.
-                        let current_t = time::precise_time_s();
-                        for &b in [MouseButton::Left, MouseButton::Right, MouseButton::Middle].iter() {
-                            if let Some(press_t) = self.mouse_pressed[b as usize] {
-                                if current_t - press_t > MOUSE_DRAG_THRESHOLD_T {
-                                    self.queued.push(Event::MouseDrag(b, self.drag_start, self.mouse_pos));
-                                }
-                            }
-                        }
-                        return Event::MouseMove(self.mouse_pos);
-                    }
-                    // TODO: Handle LineDelta and PixelDelta events...
-                    glutin::Event::MouseWheel(glutin::MouseScrollDelta::LineDelta(x, _)) => {
-                        return Event::MouseWheel(x as i32);
-                    }
-                    glutin::Event::MouseInput(state, button) => {
-                        if let Some(button) = match button {
-                            glutin::MouseButton::Left => Some(MouseButton::Left),
-                            glutin::MouseButton::Right => Some(MouseButton::Right),
-                            glutin::MouseButton::Middle => Some(MouseButton::Middle),
-                            glutin::MouseButton::Other(_) => None,
-                        } {
-                            match state {
-                                glutin::ElementState::Pressed => {
-                                    // Possibly the start of a mouse drag,
-                                    // make note of when the button was
-                                    // pressed and where the cursor was at the
-                                    // time.
-                                    self.drag_start = self.mouse_pos;
-                                    self.mouse_pressed[button as usize] = Some(time::precise_time_s());
-                                    return Event::MousePress(button);
-                                }
-                                glutin::ElementState::Released => {
-                                    let release_t = time::precise_time_s();
-
-                                    // Interpret short mouse presses as clicks
-                                    // and long ones as drags.
-                                    if let Some(press_t) = self.mouse_pressed[button as usize] {
-                                        if release_t - press_t > MOUSE_DRAG_THRESHOLD_T {
-                                            self.queued.push(Event::MouseDragEnd(
-                                                    button, self.drag_start, self.mouse_pos));
-                                        }
-                                        self.queued.push(Event::MouseClick(button));
-                                    }
-                                    self.mouse_pressed[button as usize] = None;
-                                    return Event::MouseRelease(button);
-                                }
-                            }
-                        }
-                    }
-                    glutin::Event::Focused(b) => {
-                        return Event::FocusChange(b);
-                    }
-                    glutin::Event::Closed => {
-                        return Event::Quit;
-                    }
-                    _ => ()
+            if let Some(e) = self.translator.next(&mut self.display, &self.renderer) {
+                if let Event::FocusChange(b) = e {
+                    app_focused = b;
+                } else {
+                    return e;
                 }
             }
 
@@ -508,107 +409,5 @@ impl Mesh {
             vertices: Vec::new(),
             indices: Vec::new(),
         }
-    }
-}
-
-fn vko_to_key(vko: glutin::VirtualKeyCode) -> Option<Key> {
-    use glutin::VirtualKeyCode::*;
-
-    match vko {
-    A => Some(Key::A),
-    B => Some(Key::B),
-    C => Some(Key::C),
-    D => Some(Key::D),
-    E => Some(Key::E),
-    F => Some(Key::F),
-    G => Some(Key::G),
-    H => Some(Key::H),
-    I => Some(Key::I),
-    J => Some(Key::J),
-    K => Some(Key::K),
-    L => Some(Key::L),
-    M => Some(Key::M),
-    N => Some(Key::N),
-    O => Some(Key::O),
-    P => Some(Key::P),
-    Q => Some(Key::Q),
-    R => Some(Key::R),
-    S => Some(Key::S),
-    T => Some(Key::T),
-    U => Some(Key::U),
-    V => Some(Key::V),
-    W => Some(Key::W),
-    X => Some(Key::X),
-    Y => Some(Key::Y),
-    Z => Some(Key::Z),
-    Escape => Some(Key::Escape),
-    F1 => Some(Key::F1),
-    F2 => Some(Key::F2),
-    F3 => Some(Key::F3),
-    F4 => Some(Key::F4),
-    F5 => Some(Key::F5),
-    F6 => Some(Key::F6),
-    F7 => Some(Key::F7),
-    F8 => Some(Key::F8),
-    F9 => Some(Key::F9),
-    F10 => Some(Key::F10),
-    F11 => Some(Key::F11),
-    F12 => Some(Key::F12),
-    Scroll => Some(Key::ScrollLock),
-    Pause => Some(Key::Pause),
-    Insert => Some(Key::Insert),
-    Home => Some(Key::Home),
-    Delete => Some(Key::Delete),
-    End => Some(Key::End),
-    PageDown => Some(Key::PageDown),
-    PageUp => Some(Key::PageUp),
-    Left => Some(Key::Left),
-    Up => Some(Key::Up),
-    Right => Some(Key::Right),
-    Down => Some(Key::Down),
-    Return => Some(Key::Enter),
-    Space => Some(Key::Space),
-    Numlock => Some(Key::NumLock),
-    Numpad0 => Some(Key::Pad0),
-    Numpad1 => Some(Key::Pad1),
-    Numpad2 => Some(Key::Pad2),
-    Numpad3 => Some(Key::Pad3),
-    Numpad4 => Some(Key::Pad4),
-    Numpad5 => Some(Key::Pad5),
-    Numpad6 => Some(Key::Pad6),
-    Numpad7 => Some(Key::Pad7),
-    Numpad8 => Some(Key::Pad8),
-    Numpad9 => Some(Key::Pad9),
-    Add => Some(Key::PadPlus),
-    Apostrophe => Some(Key::Apostrophe),
-    Backslash => Some(Key::Backslash),
-    Comma => Some(Key::Comma),
-    Decimal => Some(Key::PadDecimal),
-    Divide => Some(Key::PadDivide),
-    Equals => Some(Key::PadEquals),
-    Grave => Some(Key::Grave),
-    LAlt => Some(Key::LeftAlt),
-    LBracket => Some(Key::LeftBracket),
-    LControl => Some(Key::LeftControl),
-    LMenu => Some(Key::LeftSuper),
-    LShift => Some(Key::LeftShift),
-    LWin => Some(Key::LeftSuper),
-    Minus => Some(Key::Minus),
-    Multiply => Some(Key::PadMultiply),
-    NumpadComma => Some(Key::PadDecimal),
-    NumpadEnter => Some(Key::PadEnter),
-    NumpadEquals => Some(Key::PadEquals),
-    Period => Some(Key::Period),
-    RAlt => Some(Key::RightAlt),
-    RBracket => Some(Key::RightBracket),
-    RControl => Some(Key::RightControl),
-    RMenu => Some(Key::RightSuper),
-    RShift => Some(Key::RightShift),
-    RWin => Some(Key::RightSuper),
-    Semicolon => Some(Key::Semicolon),
-    Slash => Some(Key::Slash),
-    Subtract => Some(Key::PadMinus),
-    Tab => Some(Key::Tab),
-    _ => None,
     }
 }
