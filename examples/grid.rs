@@ -70,7 +70,7 @@ fn main() {
                     if cell != mouse_cell { draw_cell(&mut ctx, &proj, cell, false); }
                 }
 
-                ctx.draw_rect(&mouse_rect, 0.5, "cyan");
+                ctx.draw_rect(&mouse_rect, 0.5, color::CYAN);
             }
 
             Event::KeyPress(Key::Escape) => { return; }

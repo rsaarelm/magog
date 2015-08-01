@@ -100,7 +100,7 @@ impl CanvasBuilder {
     fn init_font(&mut self) {
         let mut font_sheet = ::color_key(
             &image::load_from_memory(include_bytes!("../assets/font.png")).unwrap(),
-            "#808080");
+            0x808080FF);
         for tile in font_sheet.tiles(V2(8, 8)).take(96) {
             self.add_image(V2(0, -8),
                 &SubImage::new(&mut font_sheet,

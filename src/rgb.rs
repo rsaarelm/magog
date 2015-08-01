@@ -1,7 +1,5 @@
 use std::convert::{From};
 use std::str::{FromStr};
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::ascii::{AsciiExt};
 use std::ops::{Add, Sub, Mul};
 use std::fmt;
@@ -19,10 +17,6 @@ use num::{Float, Num};
 /// alpha channel and with 4 or 8 bits per channel). "RED", "red",
 /// "#F00", "#F00F", "#FF0000" and "#FF0000FF" all correspond to the
 /// same opaque pure red color.
-///
-/// The `From<&str>` implementation is a convenience hack that calls
-/// `from_str` on the input string, memoizes the values and panics if
-/// the string does not parse into a color.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
 pub struct SRgba {
     /// sRGB red component
@@ -58,21 +52,13 @@ impl From<Rgba> for SRgba {
     }
 }
 
-impl<'a> From<&'a str> for SRgba {
-    fn from(s: &'a str) -> SRgba {
-        thread_local!(static MEMOIZER: RefCell<HashMap<String, SRgba>> =
-                      RefCell::new(HashMap::new()));
-
-        let ret = MEMOIZER.with(|c| c.borrow().get(s).map(|&x| x));
-        match ret {
-            Some(color) => color,
-            None => {
-                // XXX: Panic if parsing fails.
-                let parsed = SRgba::from_str(s).ok().expect(&format!("Bad color string '{}'", s));
-                MEMOIZER.with(|c| c.borrow_mut().insert(s.to_string(), parsed));
-                parsed
-            }
-        }
+impl From<u32> for SRgba {
+    fn from(u: u32) -> SRgba {
+        SRgba::new(
+            (u >> 24) as u8,
+            (u >> 16) as u8,
+            (u >> 8)  as u8,
+            u         as u8)
     }
 }
 
@@ -202,17 +188,7 @@ impl From<SRgba> for Rgba {
 
 impl From<u32> for Rgba {
     fn from(u: u32) -> Rgba {
-        SRgba::new(
-            (u >> 24) as u8,
-            (u >> 16) as u8,
-            (u >> 8)  as u8,
-            u         as u8).into()
-    }
-}
-
-impl<'a> From<&'a str> for Rgba {
-    fn from(s: &'a str) -> Rgba {
-        SRgba::from(s).into()
+        SRgba::from(u).into()
     }
 }
 
@@ -491,8 +467,10 @@ mod test {
         assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("RED"));
         assert_eq!(Ok(Rgba::new(1.0, 0.0, 0.0, 1.0)), Rgba::from_str("RED"));
 
-        assert_eq!(0x00, SRgba::from("#000").r);
-        assert_eq!(0x22, SRgba::from("#200").r);
-        assert_eq!(0xFF, SRgba::from("#F00").r);
+        assert_eq!(SRgba::new(0x33, 0x77, 0xbb, 0xff), SRgba::from(0x3377bbff));
+
+        assert_eq!(0x00, SRgba::from_str("#000").unwrap().r);
+        assert_eq!(0x22, SRgba::from_str("#200").unwrap().r);
+        assert_eq!(0xFF, SRgba::from_str("#F00").unwrap().r);
     }
 }

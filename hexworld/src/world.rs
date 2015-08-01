@@ -2,7 +2,7 @@ use std::convert::{Into};
 use std::collections::{HashMap};
 use std::f32::consts::{PI};
 use tiled;
-use calx::{V2, Rgba, Projection, lerp, clamp};
+use calx::{V2, Rgba, Projection, lerp, clamp, color};
 use calx_ecs::{Entity};
 use spr::{Spr};
 use ::{Terrain};
@@ -203,11 +203,11 @@ impl World {
 fn loadout(a: Loadout) -> Vec<Box<Component>> {
     match a {
         Loadout::Player => loadout! [
-            Desc::new("player", Spr::Avatar, "white"),
+            Desc::new("player", Spr::Avatar, color::WHITE),
             Mob::new()
         ],
         Loadout::Enemy => loadout! [
-            Desc::new("enemy", Spr::Grunt, "red"),
+            Desc::new("enemy", Spr::Grunt, color::RED),
             Mob::new()
         ],
     }
