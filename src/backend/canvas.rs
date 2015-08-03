@@ -7,7 +7,7 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glutin;
 use glium::{self, DisplayBuild};
-use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore};
 use super::event::{Event, MouseButton};
 use super::renderer::{Renderer, Vertex};
 use super::{WidgetId, CanvasMagnify};
@@ -91,12 +91,6 @@ impl CanvasBuilder {
         self
     }
 
-    /// Add an image into the canvas image atlas.
-    pub fn add_image<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
-        &mut self, offset: V2<i32>, image: &I) -> Image {
-        Image(self.atlas_builder.push(offset, image))
-    }
-
     /// Build the canvas object.
     pub fn build<'a>(self) -> Canvas<'a> {
         Canvas::new(self)
@@ -120,6 +114,15 @@ impl CanvasBuilder {
         let Image(idx) = self.add_image(V2(0, 0), &image);
         assert!(idx == SOLID_IDX);
     }
+}
+
+impl ImageStore<Image> for CanvasBuilder {
+    /// Add an image into the canvas image atlas.
+    fn add_image<P: Pixel<Subpixel=u8> + 'static, I: GenericImage<Pixel=P>>(
+        &mut self, offset: V2<i32>, image: &I) -> Image {
+        Image(self.atlas_builder.push(offset, image))
+    }
+
 }
 
 /// Interface to render to a live display.

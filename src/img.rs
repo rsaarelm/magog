@@ -1,8 +1,9 @@
+use std::marker::{PhantomData};
 use std::default::{Default};
 use std::cmp::{min, max};
 use std::convert::{Into};
-use image::{Primitive, GenericImage, Pixel, ImageBuffer, Rgba};
-use geom::{V2, Rect};
+use image::{Primitive, GenericImage, SubImage, Pixel, ImageBuffer, Rgba};
+use geom::{V2, Rect, TileIter, IterTiles};
 use rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
@@ -53,6 +54,58 @@ pub fn blit<T, P, I, J>(image: &I, target: &mut J, offset: V2<i32>)
     for y in 0..(h) {
         for x in 0..(w) {
             target.put_pixel(x + offset.0 as u32, y + offset.1 as u32, image.get_pixel(x, y));
+        }
+    }
+}
+
+/// Interface for objects that store multiple images, like an image atlas.
+pub trait ImageStore<H>: Sized {
+    fn add_image<P, I>(&mut self, offset: V2<i32>, image: &I) -> H
+        where P: Pixel<Subpixel=u8> + 'static,
+        I: GenericImage<Pixel=P>;
+
+    /// Return an iterator for adding multiple subimages from an image sheet.
+    /// The subimages are assumed to be in the largest grid of tightly packed
+    /// equal sized rectangles that snaps to the top left corner that fits in
+    /// the image area. Subimages are only added when the iterator is made to
+    /// yield values, so halting the iteration early will cause the remaining
+    /// subimages to be discarded.
+    fn batch_add<'a, 'b, P, I>(&'a mut self, offset: V2<i32>, tile_size: V2<u32>,
+                       sheet: &'b mut I) -> ImageBatchIterator<'a, 'b, Self, I, H>
+        where P: Pixel<Subpixel=u8> + 'static,
+        I: GenericImage<Pixel=P> {
+        let tiles = sheet.tiles(tile_size);
+        ImageBatchIterator {
+            store: self,
+            sheet: sheet,
+            offset: offset,
+            tiles: tiles,
+            phantom: PhantomData,
+        }
+    }
+}
+
+pub struct ImageBatchIterator<'a, 'b, S: 'static, I: 'static, H> {
+    store: &'a mut S,
+    sheet: &'b mut I,
+    offset: V2<i32>,
+    tiles: TileIter<u32>,
+    phantom: PhantomData<H>,
+}
+
+impl<'a, 'b, H, S, I, P> Iterator for ImageBatchIterator<'a, 'b, S, I, H>
+    where S: ImageStore<H>,
+    I: GenericImage<Pixel=P>,
+    P: Pixel<Subpixel=u8>+'static {
+    type Item = H;
+
+    fn next(&mut self) -> Option<H> {
+        match self.tiles.next() {
+            Some(rect) => {
+                let sub = SubImage::new(self.sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
+                Some(self.store.add_image(self.offset, &sub))
+            }
+            None => { None }
         }
     }
 }

@@ -2,8 +2,9 @@ use num::traits::{ToPrimitive, NumCast};
 use std::marker::{PhantomData};
 use vec_map::{VecMap};
 use std::fmt::{Debug};
-use image::{GenericImage, SubImage, Pixel};
-use ::geom::{V2, IterTiles};
+use image::{GenericImage, Pixel};
+use ::{ImageStore};
+use ::geom::{V2};
 use super::canvas::{CanvasBuilder, Image};
 
 /// A cache that loads sprites and stores them efficiently indexed by
@@ -66,9 +67,8 @@ impl<T: Debug+Copy+SpriteKey> SpriteCache<T> {
         where P: Pixel<Subpixel=u8> + 'static,
               I: GenericImage<Pixel=P> + 'static
     {
-        for (i, rect) in sprite_sheet.tiles(sprite_size).take(keys.len()).enumerate() {
-            let sub = SubImage::new(sprite_sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
-            self.add(builder, keys[i], offset, &sub);
+        for (k, img) in keys.into_iter().zip(builder.batch_add(offset, sprite_size, sprite_sheet)) {
+            self.cache.insert(SpriteCache::index(k), img);
         }
     }
 
