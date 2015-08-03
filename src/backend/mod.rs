@@ -17,6 +17,7 @@ mod event;
 mod event_translator;
 mod fonter;
 mod key;
+mod mesh;
 mod renderer;
 mod sprite_cache;
 
