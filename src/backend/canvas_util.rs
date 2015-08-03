@@ -34,7 +34,7 @@ pub trait CanvasUtil {
     fn save_screenshot(&mut self, basename: &str);
 }
 
-impl<'a> CanvasUtil for Canvas<'a> {
+impl CanvasUtil for Canvas {
     fn draw_line<C: Into<Rgba>+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: C) {
         if p1 == p2 { return; }
 

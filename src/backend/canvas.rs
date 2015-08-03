@@ -9,7 +9,8 @@ use glutin;
 use glium::{self, DisplayBuild};
 use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore};
 use super::event::{Event, MouseButton};
-use super::renderer::{Renderer, Vertex};
+use super::renderer::{Renderer};
+use super::mesh;
 use super::{WidgetId, CanvasMagnify};
 use super::event_translator::{EventTranslator};
 
@@ -92,7 +93,7 @@ impl CanvasBuilder {
     }
 
     /// Build the canvas object.
-    pub fn build<'a>(self) -> Canvas<'a> {
+    pub fn build(self) -> Canvas {
         Canvas::new(self)
     }
 
@@ -126,9 +127,9 @@ impl ImageStore<Image> for CanvasBuilder {
 }
 
 /// Interface to render to a live display.
-pub struct Canvas<'a> {
+pub struct Canvas {
     display: glium::Display,
-    renderer: Renderer<'a>,
+    renderer: Renderer,
 
     atlas: Atlas,
 
@@ -158,8 +159,8 @@ enum State {
     EndFrame,
 }
 
-impl<'a> Canvas<'a> {
-    fn new(builder: CanvasBuilder) -> Canvas<'a> {
+impl Canvas {
+    fn new(builder: CanvasBuilder) -> Canvas {
         use glutin::{GlRequest, Api};
         let size = builder.size;
         let title = &builder.title[..];
@@ -247,7 +248,7 @@ impl<'a> Canvas<'a> {
                 "Too many accumulated vertices for index buffer, call flush() between meshes");
         let pos = self.canvas_to_device(pos, layer);
 
-        self.meshes[top].vertices.push(Vertex {
+        self.meshes[top].vertices.push(mesh::Vertex {
             pos: pos,
             tex_coord: [tex_coord.0, tex_coord.1],
             color: color.into().into_array(),
@@ -402,7 +403,7 @@ impl<'a> Canvas<'a> {
 pub struct Image(usize);
 
 struct Mesh {
-    vertices: Vec<Vertex>,
+    vertices: Vec<mesh::Vertex>,
     indices: Vec<u16>,
 }
 

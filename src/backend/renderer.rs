@@ -1,58 +1,51 @@
 use std::default::Default;
+use std::rc::{Rc};
 use num::{Float};
 use image;
 use glium::{self, texture, framebuffer, Surface};
-use glium::LinearBlendingFactor::*;
 use super::{CanvasMagnify};
+use super::mesh;
 use ::{V2, Rect};
 use ::rgb::{to_srgb};
 
-pub struct Renderer<'a> {
+pub struct Renderer {
     /// Canvas size.
     size: V2<u32>,
     /// Rendering device resolution.
     resolution: V2<u32>,
     /// Shader for drawing atlas images.
-    sprite_shader: glium::Program,
+    sprite_shader: Rc<glium::Program>,
     /// Shader for blitting the canvas texture to screen.
     blit_shader: glium::Program,
     /// Atlas texture, contains all the sprites. Calx is a low-rent operation
     /// so we only have one.
-    atlas: texture::Texture2d,
+    atlas: Rc<texture::Texture2d>,
     /// Render target texture.
     buffer: texture::Texture2d,
     depth: framebuffer::DepthRenderBuffer,
-    params: glium::DrawParameters<'a>,
     magnify: CanvasMagnify,
 }
 
-impl<'a> Renderer<'a> {
-    pub fn new<'b, T>(
+impl Renderer {
+    pub fn new<'a, T>(
         size: V2<u32>, display: &glium::Display,
-        texture_image: T, magnify: CanvasMagnify) -> Renderer<'a>
-        where T: texture::Texture2dDataSource<'b> {
+        texture_image: T, magnify: CanvasMagnify) -> Renderer
+        where T: texture::Texture2dDataSource<'a> {
 
-        let sprite_shader = glium::Program::from_source(display,
+        let sprite_shader = Rc::new(glium::Program::from_source(display,
             include_str!("sprite.vert"),
             include_str!("sprite.frag"),
-            None).unwrap();
+            None).unwrap());
         let blit_shader = glium::Program::from_source(display,
             include_str!("blit.vert"),
             include_str!("blit.frag"),
             None).unwrap();
-        let atlas = texture::Texture2d::new(display, texture_image).unwrap();
+        let atlas = Rc::new(texture::Texture2d::new(display, texture_image).unwrap());
 
         let buffer = texture::Texture2d::empty(
             display, size.0, size.1).unwrap();
         let depth = framebuffer::DepthRenderBuffer::new(
             display, texture::DepthFormat::F32, size.0, size.1);
-
-        let mut params: glium::DrawParameters = Default::default();
-        params.backface_culling = glium::BackfaceCullingMode::CullCounterClockWise;
-        params.depth_test = glium::DepthTest::IfLessOrEqual;
-        params.depth_write = true;
-        params.blending_function = Some(glium::BlendingFunction::Addition {
-            source: SourceAlpha, destination: OneMinusSourceAlpha });
 
         Renderer {
             size: size,
@@ -62,28 +55,8 @@ impl<'a> Renderer<'a> {
             atlas: atlas,
             buffer: buffer,
             depth: depth,
-            params: params,
             magnify: magnify,
         }
-    }
-
-    /// Draw sprites on target.
-    fn draw_sprites<S>(&self, display: &glium::Display, target: &mut S,
-                       vertices: Vec<Vertex>, indices: Vec<u16>)
-        where S: glium::Surface {
-
-        // Extract the geometry accumulation buffers and convert into
-        // temporary Glium buffers.
-        let vertices = glium::VertexBuffer::new(display, &vertices).unwrap();
-        let indices = glium::IndexBuffer::new(
-            display, glium::index::PrimitiveType::TrianglesList, &indices).unwrap();
-
-        let uniforms = glium::uniforms::UniformsStorage::new("tex",
-            glium::uniforms::Sampler(&self.atlas, glium::uniforms::SamplerBehavior {
-                magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
-                .. Default::default() }));
-
-        target.draw(&vertices, &indices, &self.sprite_shader, &uniforms, &self.params).unwrap();
     }
 
     /// Blit the buffer texture to target.
@@ -145,12 +118,18 @@ impl<'a> Renderer<'a> {
 
     /// Draw a geometry buffer.
     pub fn draw(&mut self, display: &glium::Display,
-                vertices: Vec<Vertex>, indices: Vec<u16>) {
+                vertices: Vec<mesh::Vertex>, indices: Vec<u16>) {
         // Render the graphics to a texture to keep the pixels pure and
         // untainted.
         let mut sprite_target = framebuffer::SimpleFrameBuffer::with_depth_buffer(
             display, &self.buffer, &self.depth);
-        self.draw_sprites(display, &mut sprite_target, vertices, indices);
+        let mut mesh_buffer = mesh::Buffer::new(self.sprite_shader.clone(), self.atlas.clone());
+        let mut triangles = Vec::new();
+        for i in 0..(indices.len() / 3) {
+            triangles.push([indices[i * 3], indices[i * 3 + 1], indices[i * 3 + 2]]);
+        }
+        mesh_buffer.push(vertices, triangles);
+        mesh_buffer.flush(display, &mut sprite_target);
     }
 
     /// Show the drawn geometry on screen.
@@ -192,20 +171,6 @@ impl<'a> Renderer<'a> {
         ret
     }
 }
-
-#[derive(Copy, Clone)]
-/// Geometry vertex in on-screen graphics.
-pub struct Vertex {
-    /// Coordinates on screen
-    pub pos: [f32; 3],
-    /// Texture coordinates
-    pub tex_coord: [f32; 2],
-    /// Color for the light parts of the texture
-    pub color: [f32; 4],
-    /// Color for the dark parts of the texture
-    pub back_color: [f32; 4],
-}
-implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 /// A pixel perfect centered and scaled rectangle of resolution dim in a
 /// window of size area, mapped to OpenGL device coordinates.
