@@ -49,6 +49,7 @@ mod search;
 
 pub mod audio;
 pub mod backend;
+pub mod debug;
 pub mod ease;
 pub mod text;
 pub mod timing;
