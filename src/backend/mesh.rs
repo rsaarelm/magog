@@ -1,6 +1,7 @@
 use std::rc::{Rc};
 use std::default::{Default};
 use std::u16;
+use image;
 use glium;
 
 pub struct Buffer {
@@ -11,13 +12,28 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(shader: Rc<glium::Program>, texture: Rc<glium::texture::Texture2d>) -> Buffer {
+    /// Create a mesh render buffer with shared shader and texture.
+    pub fn new_shared(shader: Rc<glium::Program>, texture: Rc<glium::texture::Texture2d>) -> Buffer {
         Buffer {
             shader: shader,
             texture: texture,
             vertices: Vec::new(),
             indices: Vec::new(),
         }
+    }
+
+    /// Create a mesh render buffer with locally owned shader and texture.
+    /// This uses the default sprite shader.
+    pub fn new<'a, T>(display: &glium::Display, atlas_image: T) -> Buffer
+        where T: glium::texture::Texture2dDataSource<'a> {
+        Buffer::new_shared(
+            Rc::new(glium::Program::from_source(
+                display,
+                include_str!("sprite.vert"),
+                include_str!("sprite.frag"),
+                None).unwrap()),
+            Rc::new(glium::texture::Texture2d::new(
+                display, atlas_image).unwrap()))
     }
 
     pub fn should_flush(&self) -> bool {
