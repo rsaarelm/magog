@@ -123,7 +123,7 @@ impl Renderer {
         // untainted.
         let mut sprite_target = framebuffer::SimpleFrameBuffer::with_depth_buffer(
             display, &self.buffer, &self.depth);
-        let mut mesh_buffer = mesh::Buffer::new(self.sprite_shader.clone(), self.atlas.clone());
+        let mut mesh_buffer = mesh::Buffer::new_shared(self.sprite_shader.clone(), self.atlas.clone());
         let mut triangles = Vec::new();
         for i in 0..(indices.len() / 3) {
             triangles.push([indices[i * 3], indices[i * 3 + 1], indices[i * 3 + 2]]);
