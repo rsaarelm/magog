@@ -17,7 +17,7 @@ mod event;
 mod event_translator;
 mod fonter;
 mod key;
-mod mesh;
+pub mod mesh;
 mod renderer;
 mod sprite_cache;
 
@@ -55,6 +55,10 @@ pub struct WidgetId {
     filename: &'static str,
     line: u32,
     column: u32,
+}
+
+pub trait RenderTarget {
+    fn add_mesh(&mut self, vertices: Vec<mesh::Vertex>, faces: Vec<[u16; 3]>);
 }
 
 impl WidgetId {

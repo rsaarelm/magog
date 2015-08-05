@@ -1,14 +1,13 @@
 use std::rc::{Rc};
 use std::default::{Default};
 use std::u16;
-use image;
 use glium;
+use super::{RenderTarget};
 
 pub struct Buffer {
     shader: Rc<glium::Program>,
     texture: Rc<glium::texture::Texture2d>,
-    vertices: Vec<Vertex>,
-    indices: Vec<u16>,
+    meshes: Vec<Mesh>,
 }
 
 impl Buffer {
@@ -17,8 +16,7 @@ impl Buffer {
         Buffer {
             shader: shader,
             texture: texture,
-            vertices: Vec::new(),
-            indices: Vec::new(),
+            meshes: vec![Mesh::new()],
         }
     }
 
@@ -36,7 +34,59 @@ impl Buffer {
                 display, atlas_image).unwrap()))
     }
 
-    pub fn should_flush(&self) -> bool {
+    pub fn flush<S>(&mut self, display: &glium::Display, target: &mut S)
+        where S: glium::Surface {
+        let uniforms = glium::uniforms::UniformsStorage::new("tex",
+            glium::uniforms::Sampler(&*self.texture, glium::uniforms::SamplerBehavior {
+                magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
+                .. Default::default() }));
+
+        let params = glium::DrawParameters {
+            backface_culling: glium::BackfaceCullingMode::CullCounterClockWise,
+            depth_test: glium::DepthTest::IfLessOrEqual,
+            depth_write: true,
+            blending_function: Some(glium::BlendingFunction::Addition {
+                source: glium::LinearBlendingFactor::SourceAlpha,
+                destination: glium::LinearBlendingFactor::OneMinusSourceAlpha }),
+            .. Default::default() };
+
+        // Extract the geometry accumulation buffers and convert into
+        // temporary Glium buffers.
+        for mesh in self.meshes.iter() {
+            let vertices = glium::VertexBuffer::new(display, &mesh.vertices).unwrap();
+            let indices = glium::IndexBuffer::new(
+                display, glium::index::PrimitiveType::TrianglesList, &mesh.indices).unwrap();
+            target.draw(&vertices, &indices, &*self.shader, &uniforms, &params).unwrap();
+        }
+        self.meshes.clear();
+    }
+}
+
+impl RenderTarget for Buffer {
+    fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
+        if self.meshes[self.meshes.len() - 1].is_full() {
+            self.meshes.push(Mesh::new());
+        }
+        let idx = self.meshes.len() - 1;
+        self.meshes[idx].push(vertices, faces);
+    }
+
+}
+
+struct Mesh {
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
+}
+
+impl Mesh {
+    pub fn new() -> Mesh {
+        Mesh {
+            vertices: Vec::new(),
+            indices: Vec::new(),
+        }
+    }
+
+    pub fn is_full(&self) -> bool {
         // When you're getting within an order of magnitude of the u16 max
         // limit it's time to flush.
         self.vertices.len() > 1<<15
@@ -52,34 +102,6 @@ impl Buffer {
                 self.indices.push(i + offset);
             }
         }
-    }
-
-    pub fn flush<S>(&mut self, display: &glium::Display, target: &mut S)
-        where S: glium::Surface {
-        // Extract the geometry accumulation buffers and convert into
-        // temporary Glium buffers.
-        let vertices = glium::VertexBuffer::new(display, &self.vertices).unwrap();
-        let indices = glium::IndexBuffer::new(
-            display, glium::index::PrimitiveType::TrianglesList, &self.indices).unwrap();
-
-        let uniforms = glium::uniforms::UniformsStorage::new("tex",
-            glium::uniforms::Sampler(&*self.texture, glium::uniforms::SamplerBehavior {
-                magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
-                .. Default::default() }));
-
-        let params = glium::DrawParameters {
-            backface_culling: glium::BackfaceCullingMode::CullCounterClockWise,
-            depth_test: glium::DepthTest::IfLessOrEqual,
-            depth_write: true,
-            blending_function: Some(glium::BlendingFunction::Addition {
-                source: glium::LinearBlendingFactor::SourceAlpha,
-                destination: glium::LinearBlendingFactor::OneMinusSourceAlpha }),
-            .. Default::default() };
-
-        target.draw(&vertices, &indices, &*self.shader, &uniforms, &params).unwrap();
-
-        self.vertices.clear();
-        self.indices.clear();
     }
 }
 

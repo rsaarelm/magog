@@ -4,7 +4,7 @@ use num::{Float};
 use image;
 use glium::{self, texture, framebuffer, Surface};
 use super::{CanvasMagnify};
-use super::mesh;
+use super::{RenderTarget, mesh};
 use ::{V2, Rect};
 use ::rgb::{to_srgb};
 
@@ -128,7 +128,7 @@ impl Renderer {
         for i in 0..(indices.len() / 3) {
             triangles.push([indices[i * 3], indices[i * 3 + 1], indices[i * 3 + 2]]);
         }
-        mesh_buffer.push(vertices, triangles);
+        mesh_buffer.add_mesh(vertices, triangles);
         mesh_buffer.flush(display, &mut sprite_target);
     }
 
