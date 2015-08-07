@@ -58,12 +58,14 @@ impl Buffer {
                 display, glium::index::PrimitiveType::TrianglesList, &mesh.indices).unwrap();
             target.draw(&vertices, &indices, &*self.shader, &uniforms, &params).unwrap();
         }
-        self.meshes.clear();
+        self.meshes = vec![Mesh::new()];
     }
 }
 
 impl RenderTarget for Buffer {
     fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
+        assert!(self.meshes.len() > 0);
+
         if self.meshes[self.meshes.len() - 1].is_full() {
             self.meshes.push(Mesh::new());
         }
