@@ -72,6 +72,7 @@ impl<N: LatticeNode> Dijkstra<N> {
     }
 }
 
+/// Find a path between two points using the A* algorithm.
 pub fn astar_path_with<N: LatticeNode, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
     where F: Fn(&N, &N) -> T,
           T: Num+Ord+Copy

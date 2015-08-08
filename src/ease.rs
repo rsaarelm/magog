@@ -1,4 +1,4 @@
-/**!
+/*!
  * Easing functions for animated interpolation between values
  */
 

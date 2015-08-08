@@ -283,7 +283,6 @@ macro_rules! color_constants {
             }
         }
 
-
         pub mod scolor {
             /*! Srgba color constants */
             use super::SRgba;

@@ -13,8 +13,10 @@ pub trait KernelTerrain {
     fn is_hull(&self) -> bool { self.is_wall() || self.is_block() }
 }
 
-/// 3x3 grid of terrain cells. Use this as the input for terrain tile
-/// computation, which will need to consider the immediate vicinity of cells.
+/// 3x3 grid of terrain cells.
+///
+/// Use this as the input for terrain tile computation, which will need to
+/// consider the immediate vicinity of cells.
 pub struct Kernel<C> {
     pub n: C,
     pub ne: C,

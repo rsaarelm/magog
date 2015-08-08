@@ -1,3 +1,5 @@
+/*! String processing utilities */
+
 /// Divide a string into the longest slice that fits within maximum line
 /// length and the rest of the string.
 ///

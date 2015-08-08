@@ -1,3 +1,5 @@
+/*! Audio generation and playing utilities */
+
 use std::i16;
 use std::f64::consts::{PI};
 use std::sync::{Arc, Mutex};

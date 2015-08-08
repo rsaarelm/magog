@@ -266,6 +266,7 @@ impl<T: Sub<U, Output=T> + Clone, U> Sub<V2<U>> for Rect<T> {
     }
 }
 
+/// Iterator for a grid of rectangular tiles.
 pub trait IterTiles<T> {
     /// Return an iterator of subtiles within self
     fn tiles(&self, tile_dim: V2<T>) -> TileIter<T>;

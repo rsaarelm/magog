@@ -1,3 +1,5 @@
+/*! Debugging and logging utilities */
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 use time;

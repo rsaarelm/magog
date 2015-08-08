@@ -1,5 +1,5 @@
 /*!
-Window-wrangling, polygon-pushing and input-grabbing.
+Window-wrangling, polygon-pushing and input-grabbing
 
 */
 

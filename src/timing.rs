@@ -1,3 +1,5 @@
+/*! Time-related utilities */
+
 use time;
 use std::thread;
 

@@ -2,10 +2,11 @@ use std::marker::{PhantomData};
 use std::fmt::{Debug};
 use vec_map::VecMap;
 
-/// A resource cache indexed with an enum type. IndexCaches are usually
-/// completely pre-filled, but the values must be constructed with some
-/// run-time resource, so they can't just be compile-time constants or lazily
-/// initialized thread-local variables.
+/// A resource cache indexed with an enum type.
+///
+/// IndexCaches are usually completely pre-filled, but the values must be
+/// constructed with some run-time resource, so they can't just be
+/// compile-time constants or lazily initialized thread-local variables.
 ///
 /// ```rust
 /// #[macro_use] extern crate calx;
@@ -55,7 +56,9 @@ impl<K: Debug+Copy+CacheKey, V> IndexCache<K, V> {
 }
 
 /// The boilerplate trait that must be implemented for IndexCache indexing
-/// types (usually enums). Use the cache_key! macro.
+/// types (usually enums).
+///
+/// Use the cache_key! macro.
 pub trait CacheKey {
     // XXX: Is there a way to just #derive something for the enum instead so
     // we wouldn't need this and the cache_key! macro?
