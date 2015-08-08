@@ -1,9 +1,10 @@
-use std::convert::{From};
+use std::convert::{From, Into};
 use std::str::{FromStr};
 use std::ascii::{AsciiExt};
 use std::ops::{Add, Sub, Mul};
 use std::fmt;
 use num::{Float, Num};
+use image;
 
 /// Color in sRGB color space.
 ///
@@ -59,6 +60,12 @@ impl From<u32> for SRgba {
             (u >> 16) as u8,
             (u >> 8)  as u8,
             u         as u8)
+    }
+}
+
+impl Into<image::Rgba<u8>> for SRgba {
+    fn into(self) -> image::Rgba<u8> {
+        image::Rgba { data: [self.r, self.g, self.b, self.a] }
     }
 }
 
