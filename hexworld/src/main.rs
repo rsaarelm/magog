@@ -20,7 +20,7 @@ mod world;
 use std::convert::{Into};
 use std::collections::{HashSet};
 use calx_ecs::{Entity};
-use calx::backend::{CanvasBuilder, Canvas, CanvasUtil, Event, MouseButton, Key};
+use calx::backend::{CanvasBuilder, WindowBuilder, Canvas, CanvasUtil, Event, MouseButton, Key};
 use calx::{V2, Rect, Rgba, color, Dir6};
 use calx::{Projection, Kernel, KernelTerrain};
 
@@ -447,31 +447,32 @@ fn main() {
     world.load(&tiled::parse(tmx.as_bytes()).unwrap());
     let mut game = GameState::new(world);
 
-    let mut builder = CanvasBuilder::new()
+    let window = WindowBuilder::new()
         .set_size(640, 360)
         .set_frame_interval(0.033f64)
-        ;
+        .build();
+    let mut builder = CanvasBuilder::new();
     Spr::init(&mut builder);
-    let mut ctx = builder.build();
+    let mut ctx = builder.build(window);
 
     loop {
-        match ctx.next_event() {
-            Event::RenderFrame => {
-                game.update();
-                game.render(&mut ctx);
+        game.update();
+        game.render(&mut ctx);
+        for event in ctx.events().into_iter() {
+            match event {
+                Event::Quit => { return; }
+
+                Event::KeyPress(Key::F12) => {
+                    ctx.save_screenshot(&"azag");
+                }
+
+                Event::KeyPress(Key::Escape) => {
+                    return;
+                }
+
+                e => game.process_event(e),
             }
-
-            Event::Quit => { return; }
-
-            Event::KeyPress(Key::F12) => {
-                ctx.save_screenshot(&"azag");
-            }
-
-            Event::KeyPress(Key::Escape) => {
-                return;
-            }
-
-            e => game.process_event(e),
         }
+        ctx.end_frame();
     }
 }

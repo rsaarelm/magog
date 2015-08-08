@@ -4,7 +4,7 @@ use glium;
 use ::{V2};
 use super::key::{Key};
 use super::event::{Event, MouseButton};
-use super::renderer::{Renderer};
+use super::window::{LogicalResolution};
 use super::scancode;
 
 /// Translate Glutin events to Calx events.
@@ -28,116 +28,143 @@ impl EventTranslator {
         }
     }
 
-    pub fn next(&mut self, display: &mut glium::Display, renderer: &Renderer) -> Option<Event> {
+    /// Return true if the event is for suspending the window.
+    fn process_event(&mut self, resolution: &LogicalResolution,
+                    glutin_event: glutin::Event) -> bool {
         static MOUSE_DRAG_THRESHOLD_T: f64 = 0.1;
 
-        for glutin_event in display.poll_events() {
+        match glutin_event {
+            glutin::Event::Resized(_w, _h) => {}
+            glutin::Event::Moved(_x, _y) => {}
+            glutin::Event::DroppedFile(_path) => {}
+            glutin::Event::Touch(_touch) => {}
+            // TODO: Refresh indicates that the window needs repainting.
+            // Probably should handle it somehow?
+            glutin::Event::Refresh => {}
 
-            match glutin_event {
-                glutin::Event::Resized(_w, _h) => {}
-                glutin::Event::Moved(_x, _y) => {}
-                glutin::Event::DroppedFile(_path) => {}
-                glutin::Event::Touch(_touch) => {}
-                // TODO: Refresh indicates that the window needs repainting.
-                // Probably should handle it somehow?
-                glutin::Event::Refresh => {}
+            glutin::Event::Awakened => {
+                return false;
+            }
 
-                glutin::Event::Awakened => {
-                    self.queue.push(Event::FocusChange(true));
+            glutin::Event::Focused(b) => {
+                return !b;
+            }
+
+            glutin::Event::Suspended(b) => {
+                return b;
+            }
+
+            glutin::Event::Closed => {
+                self.queue.push(Event::Quit);
+            }
+
+            glutin::Event::ReceivedCharacter(ch) => {
+                self.queue.push(Event::Char(ch));
+            }
+
+            glutin::Event::KeyboardInput(action, scan, vko) => {
+                let scancode_mapped =
+                    if self.layout_independent_keys && (scan as usize) < scancode::MAP.len() {
+                        scancode::MAP[scan as usize]
+                    } else {
+                        None
+                    };
+
+                if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
+                    self.queue.push(if action == glutin::ElementState::Pressed {
+                        Event::KeyPress(key)
+                    } else {
+                        Event::KeyRelease(key)
+                    });
                 }
+            }
 
-                glutin::Event::Focused(b) => {
-                    self.queue.push(Event::FocusChange(b));
-                }
+            glutin::Event::MouseMoved((x, y)) => {
+                let pixel_pos = resolution.screen_to_canvas(V2(x, y));
+                self.mouse_pos = pixel_pos.map(|x| x as f32);
 
-                glutin::Event::Suspended(b) => {
-                    self.queue.push(Event::FocusChange(!b));
-                }
-
-                glutin::Event::Closed => {
-                    self.queue.push(Event::Quit);
-                }
-
-                glutin::Event::ReceivedCharacter(ch) => {
-                    self.queue.push(Event::Char(ch));
-                }
-
-                glutin::Event::KeyboardInput(action, scan, vko) => {
-                    let scancode_mapped =
-                        if self.layout_independent_keys && (scan as usize) < scancode::MAP.len() {
-                            scancode::MAP[scan as usize]
-                        } else {
-                            None
-                        };
-
-                    if let Some(key) = scancode_mapped.or(vko.map(vko_to_key).unwrap_or(None)) {
-                        self.queue.push(if action == glutin::ElementState::Pressed {
-                            Event::KeyPress(key)
-                        } else {
-                            Event::KeyRelease(key)
-                        });
-                    }
-                }
-
-                glutin::Event::MouseMoved((x, y)) => {
-                    let pixel_pos = renderer.screen_to_canvas(V2(x, y));
-                    self.mouse_pos = pixel_pos.map(|x| x as f32);
-
-                    // See if there are mouse drags going on with the
-                    // buttons, create extra "ongoing drag" events if so.
-                    let current_t = time::precise_time_s();
-                    for &b in [MouseButton::Left, MouseButton::Right, MouseButton::Middle].iter() {
-                        if let Some(press_t) = self.mouse_pressed[b as usize] {
-                            if current_t - press_t > MOUSE_DRAG_THRESHOLD_T {
-                                self.queue.push(Event::MouseDrag(b, self.drag_start, self.mouse_pos));
-                            }
+                // See if there are mouse drags going on with the
+                // buttons, create extra "ongoing drag" events if so.
+                let current_t = time::precise_time_s();
+                for &b in [MouseButton::Left, MouseButton::Right, MouseButton::Middle].iter() {
+                    if let Some(press_t) = self.mouse_pressed[b as usize] {
+                        if current_t - press_t > MOUSE_DRAG_THRESHOLD_T {
+                            self.queue.push(Event::MouseDrag(b, self.drag_start, self.mouse_pos));
                         }
                     }
-                    self.queue.push(Event::MouseMove(self.mouse_pos));
                 }
-                glutin::Event::MouseWheel(glutin::MouseScrollDelta::LineDelta(x, _)) => {
-                    self.queue.push(Event::MouseWheel(x as i32));
-                }
-                // TODO: Handle LineDelta and PixelDelta events...
-                glutin::Event::MouseWheel(_) => {}
+                self.queue.push(Event::MouseMove(self.mouse_pos));
+            }
+            glutin::Event::MouseWheel(glutin::MouseScrollDelta::LineDelta(x, _)) => {
+                self.queue.push(Event::MouseWheel(x as i32));
+            }
+            // TODO: Handle LineDelta and PixelDelta events...
+            glutin::Event::MouseWheel(_) => {}
 
-                glutin::Event::MouseInput(state, button) => {
-                    if let Some(button) = match button {
-                        glutin::MouseButton::Left => Some(MouseButton::Left),
-                        glutin::MouseButton::Right => Some(MouseButton::Right),
-                        glutin::MouseButton::Middle => Some(MouseButton::Middle),
-                        glutin::MouseButton::Other(_) => None,
-                    } {
-                        match state {
-                            glutin::ElementState::Pressed => {
-                                // Possibly the start of a mouse drag, make
-                                // note of when the button was pressed and
-                                // where the cursor was at the time.
-                                self.drag_start = self.mouse_pos;
-                                self.mouse_pressed[button as usize] = Some(time::precise_time_s());
-                                self.queue.push(Event::MousePress(button));
-                            }
-                            glutin::ElementState::Released => {
-                                let release_t = time::precise_time_s();
+            glutin::Event::MouseInput(state, button) => {
+                if let Some(button) = match button {
+                    glutin::MouseButton::Left => Some(MouseButton::Left),
+                    glutin::MouseButton::Right => Some(MouseButton::Right),
+                    glutin::MouseButton::Middle => Some(MouseButton::Middle),
+                    glutin::MouseButton::Other(_) => None,
+                } {
+                    match state {
+                        glutin::ElementState::Pressed => {
+                            // Possibly the start of a mouse drag, make
+                            // note of when the button was pressed and
+                            // where the cursor was at the time.
+                            self.drag_start = self.mouse_pos;
+                            self.mouse_pressed[button as usize] = Some(time::precise_time_s());
+                            self.queue.push(Event::MousePress(button));
+                        }
+                        glutin::ElementState::Released => {
+                            let release_t = time::precise_time_s();
 
-                                // Interpret short mouse presses as clicks
-                                // and long ones as drags.
-                                if let Some(press_t) = self.mouse_pressed[button as usize] {
-                                    if release_t - press_t > MOUSE_DRAG_THRESHOLD_T {
-                                        self.queue.push(Event::MouseDragEnd(
-                                                button, self.drag_start, self.mouse_pos));
-                                    }
-                                    self.queue.push(Event::MouseClick(button));
+                            // Interpret short mouse presses as clicks
+                            // and long ones as drags.
+                            if let Some(press_t) = self.mouse_pressed[button as usize] {
+                                if release_t - press_t > MOUSE_DRAG_THRESHOLD_T {
+                                    self.queue.push(Event::MouseDragEnd(
+                                            button, self.drag_start, self.mouse_pos));
                                 }
-                                self.mouse_pressed[button as usize] = None;
-                                self.queue.push(Event::MouseRelease(button));
+                                self.queue.push(Event::MouseClick(button));
                             }
+                            self.mouse_pressed[button as usize] = None;
+                            self.queue.push(Event::MouseRelease(button));
                         }
                     }
                 }
             }
         }
 
+        false
+    }
+
+    /// Read new events from Glium into the event queue. Will suspend the
+    /// thread if an application suspending event appears in the event queue.
+    pub fn pump(&mut self, display: &mut glium::Display, resolution: &LogicalResolution) {
+        let mut window_suspended = false;
+
+        loop {
+            let glutin_event = if window_suspended {
+                // If the window is suspended, use the blocking event query so
+                // that the calling thread will sleep until an event wakes the
+                // window up.
+                display.wait_events().next()
+            } else {
+                display.poll_events().next()
+            };
+
+            match glutin_event {
+                Some(glutin_event) => {
+                    window_suspended = self.process_event(resolution, glutin_event);
+                }
+                None => { break; }
+            }
+        }
+    }
+
+    pub fn next(&mut self) -> Option<Event> {
         if self.queue.is_empty() { None }
         else { Some(self.queue.remove(0)) }
     }

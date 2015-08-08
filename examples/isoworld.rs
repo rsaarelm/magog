@@ -5,7 +5,7 @@ extern crate calx;
 
 use calx::{V2, V3, color_key, Projection, Rect, noise};
 use calx::color::*;
-use calx::backend::{CanvasBuilder, CanvasUtil, SpriteCache, SpriteKey, Event, Key};
+use calx::backend::{CanvasBuilder, WindowBuilder, CanvasUtil, SpriteCache, SpriteKey, Event, Key};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum Spr {
@@ -70,53 +70,58 @@ fn main() {
     let screen_rect = Rect(V2(0.0f32, 0.0f32), V2(640.0f32, 360.0f32));
     let screen_rect = screen_rect - screen_rect.dim() / 2.0;
 
-    let mut builder = CanvasBuilder::new().set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32);
+    let mut window = WindowBuilder::new()
+        .set_size((screen_rect.1).0 as u32, (screen_rect.1).1 as u32)
+        .build();
+    let mut builder = CanvasBuilder::new();
     let mut player_x = 20.0;
     let mut player_y = 0.0;
     let cache = build_sprites(&mut builder);
-    let mut ctx = builder.build();
+    let mut ctx = builder.build(window);
 
     loop {
-        match ctx.next_event() {
-            Event::RenderFrame => {
-                let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0))
-                    .unwrap()
-                    .world_offset(V2(-player_x, -player_y));
+        let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0))
+            .unwrap()
+            .world_offset(V2(-player_x, -player_y));
 
-                let mut sprites = Vec::new();
-                for pt in proj.inv_project_rectangle(&screen_rect).iter() {
-                    sprites.extend(gen_sprites(pt).into_iter());
-                }
-                sprites.push(Sprite::new(V3(player_x, player_y, heightmap(V2(player_x, player_y)) as f32 / 2.0), 3, Spr::Guy1));
-
-                sprites.sort_by(|x, y| x.key.partial_cmp(&y.key).unwrap());
-
-                for spr in sprites.iter() {
-                    let draw_pos =
-                        proj.project(V2((spr.bounds.0).0, (spr.bounds.0).1)) +
-                        V2(0.0, -16.0 * (spr.bounds.0).2) + screen_rect.dim() / 2.0;
-                    ctx.draw_image(cache.get(spr.spr).unwrap(), draw_pos, 0.5, WHITE, BLACK);
-                }
-            }
-
-            Event::Quit => { return; }
-
-            Event::KeyPress(Key::Escape) => { return; }
-
-            Event::KeyPress(Key::F12) => {
-                ctx.save_screenshot(&"isoworld");
-            }
-
-            Event::KeyPress(k) => {
-                match k {
-                    Key::A => { player_x -= 1.0; }
-                    Key::D => { player_x += 1.0; }
-                    Key::W => { player_y -= 1.0; }
-                    Key::S => { player_y += 1.0; }
-                    _ => {}
-                }
-            }
-            _ => {}
+        let mut sprites = Vec::new();
+        for pt in proj.inv_project_rectangle(&screen_rect).iter() {
+            sprites.extend(gen_sprites(pt).into_iter());
         }
+        sprites.push(Sprite::new(V3(player_x, player_y, heightmap(V2(player_x, player_y)) as f32 / 2.0), 3, Spr::Guy1));
+
+        sprites.sort_by(|x, y| x.key.partial_cmp(&y.key).unwrap());
+
+        for spr in sprites.iter() {
+            let draw_pos =
+                proj.project(V2((spr.bounds.0).0, (spr.bounds.0).1)) +
+                V2(0.0, -16.0 * (spr.bounds.0).2) + screen_rect.dim() / 2.0;
+            ctx.draw_image(cache.get(spr.spr).unwrap(), draw_pos, 0.5, WHITE, BLACK);
+        }
+
+        for event in ctx.events().into_iter() {
+            match event {
+                Event::Quit => { return; }
+
+                Event::KeyPress(Key::Escape) => { return; }
+
+                Event::KeyPress(Key::F12) => {
+                    ctx.save_screenshot(&"isoworld");
+                }
+
+                Event::KeyPress(k) => {
+                    match k {
+                        Key::A => { player_x -= 1.0; }
+                        Key::D => { player_x += 1.0; }
+                        Key::W => { player_y -= 1.0; }
+                        Key::S => { player_y += 1.0; }
+                        _ => {}
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        ctx.end_frame();
     }
 }

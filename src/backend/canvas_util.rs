@@ -2,6 +2,8 @@ use std::convert::{Into};
 use super::canvas::{Canvas, Image, FONT_W};
 use super::event::{MouseButton};
 use super::{WidgetId};
+use super::{RenderTarget};
+use super::mesh::{Vertex};
 use ::{V2, Rect, color, Rgba};
 use ::Anchor::*;
 
@@ -51,15 +53,15 @@ impl CanvasUtil for Canvas {
         let scalar = width / 2.0 * 1.0 / v2.dot(v2).sqrt();
         let v2 = v2 * scalar;
 
-        let ind0 = self.num_vertices();
-        self.push_vertex(p1 + v2, layer, tex, color, color::BLACK);
-        self.push_vertex(p1 - v2, layer, tex, color, color::BLACK);
-        self.push_vertex(p1 - v2 + v1, layer, tex, color, color::BLACK);
-        self.push_vertex(p1 + v2 + v1, layer, tex, color, color::BLACK);
-        self.push_triangle(ind0, ind0 + 1, ind0 + 2);
-        self.push_triangle(ind0, ind0 + 2, ind0 + 3);
-
-        self.flush();
+        let color: Rgba = color.into();
+        self.add_mesh(
+            vec![
+            Vertex::new(p1 + v2, layer, tex, color, color::BLACK),
+            Vertex::new(p1 - v2, layer, tex, color, color::BLACK),
+            Vertex::new(p1 - v2 + v1, layer, tex, color, color::BLACK),
+            Vertex::new(p1 + v2 + v1, layer, tex, color, color::BLACK),
+            ],
+            vec![[0, 1, 2], [0, 2, 3]]);
     }
 
     fn image_dim(&self, img: Image) -> V2<u32> {
@@ -78,32 +80,30 @@ impl CanvasUtil for Canvas {
             tex = data.tex;
         }
 
-        let ind0 = self.num_vertices();
-
-        self.push_vertex(pos.point(TopLeft), z, tex.point(TopLeft), color, back_color);
-        self.push_vertex(pos.point(TopRight), z, tex.point(TopRight), color, back_color);
-        self.push_vertex(pos.point(BottomRight), z, tex.point(BottomRight), color, back_color);
-        self.push_vertex(pos.point(BottomLeft), z, tex.point(BottomLeft), color, back_color);
-
-        self.push_triangle(ind0, ind0 + 1, ind0 + 2);
-        self.push_triangle(ind0, ind0 + 2, ind0 + 3);
-
-        self.flush();
+        let color: Rgba = color.into();
+        let back_color: Rgba = back_color.into();
+        self.add_mesh(
+            vec![
+            Vertex::new(pos.point(TopLeft), z, tex.point(TopLeft), color, back_color),
+            Vertex::new(pos.point(TopRight), z, tex.point(TopRight), color, back_color),
+            Vertex::new(pos.point(BottomRight), z, tex.point(BottomRight), color, back_color),
+            Vertex::new(pos.point(BottomLeft), z, tex.point(BottomLeft), color, back_color),
+            ],
+            vec![[0, 1, 2], [0, 2, 3]]);
     }
 
     fn fill_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {
         let tex = self.solid_tex_coord();
-        let ind0 = self.num_vertices();
 
-        self.push_vertex(rect.point(TopLeft), z, tex, color, color::BLACK);
-        self.push_vertex(rect.point(TopRight), z, tex, color, color::BLACK);
-        self.push_vertex(rect.point(BottomRight), z, tex, color, color::BLACK);
-        self.push_vertex(rect.point(BottomLeft), z, tex, color, color::BLACK);
-
-        self.push_triangle(ind0, ind0 + 1, ind0 + 2);
-        self.push_triangle(ind0, ind0 + 2, ind0 + 3);
-
-        self.flush();
+        let color: Rgba = color.into();
+        self.add_mesh(
+            vec![
+            Vertex::new(rect.point(TopLeft), z, tex, color, color::BLACK),
+            Vertex::new(rect.point(TopRight), z, tex, color, color::BLACK),
+            Vertex::new(rect.point(BottomRight), z, tex, color, color::BLACK),
+            Vertex::new(rect.point(BottomLeft), z, tex, color, color::BLACK),
+            ],
+            vec![[0, 1, 2], [0, 2, 3]]);
     }
 
     fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {

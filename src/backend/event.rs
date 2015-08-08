@@ -21,8 +21,6 @@ pub enum Event {
     MouseDrag(MouseButton, V2<f32>, V2<f32>),
     /// A drag that ended with the button being released.
     MouseDragEnd(MouseButton, V2<f32>, V2<f32>),
-    /// The window has changed focus. True if gained, false if lost.
-    FocusChange(bool),
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
