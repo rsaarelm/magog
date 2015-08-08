@@ -67,7 +67,7 @@ impl Atlas {
         // Guesstimate the size for the atlas container.
         let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(0, |a, b| a + b);
         let mut d = ((total_area as f64).sqrt() as u32).next_power_of_two();
-        let mut offsets;
+        let offsets;
 
         loop {
             assert!(d < 1000000000); // Sanity check

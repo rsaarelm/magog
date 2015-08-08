@@ -70,8 +70,8 @@ impl CanvasUtil for Canvas {
         offset: V2<f32>, z: f32, color: C, back_color: D) {
         // Use round numbers, fractions seem to cause artifacts to pixels.
         let offset = offset.map(|x| x.floor());
-        let mut pos;
-        let mut tex;
+        let pos;
+        let tex;
         {
             let data = self.image_data(img);
             pos = data.pos + offset;
