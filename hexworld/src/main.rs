@@ -7,14 +7,14 @@ extern crate image;
 extern crate tiled;
 
 #[macro_use] extern crate calx_ecs;
-extern crate calx;
+#[macro_use] extern crate calx;
 
+mod brush;
 mod cmd;
 mod globals;
 mod path;
 mod render;
 mod rule;
-mod spr;
 mod world;
 
 use std::convert::{Into};
@@ -24,7 +24,7 @@ use calx::backend::{CanvasBuilder, WindowBuilder, Canvas, CanvasUtil, Event, Mou
 use calx::{V2, Rect, Rgba, color, Dir6};
 use calx::{Projection, Kernel, KernelTerrain};
 
-use spr::Spr;
+use brush::Brush;
 use render::RenderTerrain;
 use world::World;
 
@@ -78,25 +78,27 @@ pub trait Drawable {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32);
 }
 
-pub struct SprDrawable {
-    pub spr: Spr,
+pub struct BrushDrawable {
+    pub brush: Brush,
+    pub idx: usize,
     pub fore: Rgba,
     pub back: Rgba,
 }
 
-impl SprDrawable {
-    pub fn new<A: Into<Rgba>, B: Into<Rgba>>(spr: Spr, fore: A, back: B) -> SprDrawable {
-        SprDrawable {
-            spr: spr,
+impl BrushDrawable {
+    pub fn new<A: Into<Rgba>, B: Into<Rgba>>(brush: Brush, idx: usize, fore: A, back: B) -> BrushDrawable {
+        BrushDrawable {
+            brush: brush,
+            idx: idx,
             fore: fore.into(),
             back: back.into(),
         }
     }
 }
 
-impl Drawable for SprDrawable {
+impl Drawable for BrushDrawable {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>, z: f32) {
-        ctx.draw_image(self.spr.get(), offset, z, self.fore, self.back);
+        ctx.draw_image(self.brush.get(self.idx), offset, z, self.fore, self.back);
     }
 }
 
@@ -119,8 +121,8 @@ impl Sprite {
     }
 
     pub fn new_spr<A: Into<Rgba>, B: Into<Rgba>>(
-        spr: Spr, fore: A, back: B, pos: V2<f32>, layer: i8) -> Sprite {
-        Sprite::new(Box::new(SprDrawable::new(spr, fore, back)), pos, layer)
+        brush: Brush, idx: usize, fore: A, back: B, pos: V2<f32>, layer: i8) -> Sprite {
+        Sprite::new(Box::new(BrushDrawable::new(brush, idx, fore, back)), pos, layer)
     }
 
     #[inline]
@@ -134,7 +136,7 @@ fn unit_focus_sprites(screen_pos: V2<f32>) -> Vec<Sprite> {
     let mut ret = Vec::new();
     let color = color::LIME;
     for idx in 0..6 {
-        ret.push(Sprite::new_spr(Spr::EdgeNW + idx, color, color::BLACK, screen_pos, 0));
+        ret.push(Sprite::new_spr(Brush::Edge, idx, color, color::BLACK, screen_pos, 0));
     }
     ret
 }
@@ -232,8 +234,8 @@ impl GameState {
         for pt in self.proj.inv_project_rectangle(&screen_rect).iter() {
             let pos = self.proj.project(pt);
             Kernel::new(|p| self.world.terrain_at(p), pt.map(|x| x as i32)).render(
-                |layer, spr, fore, back| {
-                    sprites.push(Sprite::new_spr(spr, fore, back, pos, layer));
+                |layer, brush, idx, fore, back| {
+                    sprites.push(Sprite::new_spr(brush, idx, fore, back, pos, layer));
                 });
         }
 
@@ -452,7 +454,7 @@ fn main() {
         .set_frame_interval(0.033f64)
         .build();
     let mut builder = CanvasBuilder::new();
-    Spr::init(&mut builder);
+    Brush::init(&mut builder);
     let mut ctx = builder.build(window);
 
     loop {

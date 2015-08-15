@@ -3,11 +3,11 @@
 use calx::{V2, Dir6, HexGeom, color, Projection};
 use calx_ecs::{Entity};
 use world::{World, matches_mask, ComponentNum, Anim, Tween};
-use spr::{Spr};
+use brush::{Brush};
 use ::{Sprite};
 
 pub fn is_player(ctx: &World, mob: Entity) -> bool {
-    ctx.ecs.desc[mob].icon == Spr::Avatar
+    ctx.ecs.desc[mob].icon == Brush::Avatar
 }
 
 pub fn mobs(ctx: &World) -> Vec<Entity> {
@@ -21,7 +21,7 @@ pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
     if !ctx.ecs.pos.contains(e) || !ctx.ecs.desc.contains(e) { return None; }
 
     let cell_pos = ctx.ecs.pos[e];
-    let spr = ctx.ecs.desc[e].icon;
+    let brush = ctx.ecs.desc[e].icon;
     let color = ctx.ecs.desc[e].color;
 
     let default_anim = Anim::Standstill;
@@ -29,7 +29,7 @@ pub fn sprite(ctx: &World, e: Entity, p: &Projection) -> Option<Sprite> {
 
     let draw_pos = anim.get_pos(cell_pos, ctx.anim_t, p);
 
-    Some(Sprite::new_spr(spr, color, color::BLACK, draw_pos, 0))
+    Some(Sprite::new_spr(brush, 0, color, color::BLACK, draw_pos, 0))
 }
 
 pub fn mob_at(ctx: &World, pos: V2<i32>) -> Option<Entity> {

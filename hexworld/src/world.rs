@@ -4,7 +4,7 @@ use std::f32::consts::{PI};
 use tiled;
 use calx::{V2, Rgba, Projection, lerp, clamp, color};
 use calx_ecs::{Entity};
-use spr::{Spr};
+use brush::{Brush};
 use ::{Terrain};
 use cmd;
 use globals::{Globals};
@@ -20,12 +20,12 @@ Ecs! {
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
-    pub icon: Spr,
+    pub icon: Brush,
     pub color: Rgba,
 }
 
 impl Desc {
-    pub fn new<C: Into<Rgba>>(name: &str, icon: Spr, color: C) -> Desc {
+    pub fn new<C: Into<Rgba>>(name: &str, icon: Brush, color: C) -> Desc {
         Desc {
             name: name.to_string(),
             icon: icon,
@@ -203,11 +203,11 @@ impl World {
 fn loadout(a: Loadout) -> Vec<Box<Component>> {
     match a {
         Loadout::Player => loadout! [
-            Desc::new("player", Spr::Avatar, color::WHITE),
+            Desc::new("player", Brush::Avatar, color::WHITE),
             Mob::new()
         ],
         Loadout::Enemy => loadout! [
-            Desc::new("enemy", Spr::Grunt, color::RED),
+            Desc::new("enemy", Brush::Grunt, color::RED),
             Mob::new()
         ],
     }
