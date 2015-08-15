@@ -265,14 +265,32 @@ impl GameState {
         }
     }
 
+    fn handle_dead(&mut self) {
+        // XXX: This part of the logic is pretty fiddly. Getting lots of
+        // invalid entity panics when these things aren't fixed.
+        self.selected = self.selected.iter().filter(|&&e| self.world.ecs.contains(e)).map(|&x| x).collect();
+
+        match self.mode {
+            GameMode::Rogue(rogue) => {
+                if !self.world.ecs.contains(rogue) {
+                    self.mode = GameMode::Paused;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn update_world(&mut self) {
+        self.world.update_active();
+        self.handle_dead();
+    }
+
     pub fn update(&mut self) {
         if self.mode == GameMode::RealTime {
-            self.world.update_active();
+            self.update_world();
         } else {
             self.world.update_standby();
         }
-        // Clear out destroyed mobs from the live selection.
-        self.selected = self.selected.iter().filter(|&&e| self.world.ecs.contains(e)).map(|&x| x).collect();
 
         match self.mode {
             GameMode::Rogue(rogue) => {
@@ -314,8 +332,14 @@ impl GameState {
 
     fn rogue_step(&mut self, dir: Dir6) {
         if let Some(rogue) = self.go_rogue() {
-            while !rule::ready_to_act(&self.world, rogue) { self.world.update_active(); }
-            self.smart_move(rogue, dir);
+            if !rule::ready_to_act(&self.world, rogue) {
+                self.update_world();
+                // Recurse here so that rogue's existence will be re-checked
+                // after the update.
+                self.rogue_step(dir);
+            } else {
+                self.smart_move(rogue, dir);
+            }
         }
     }
 
