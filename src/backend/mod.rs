@@ -9,7 +9,6 @@ pub use backend::canvas_util::{CanvasUtil};
 pub use backend::key::Key;
 pub use backend::fonter::{Fonter, Align};
 pub use backend::event::{Event, MouseButton};
-pub use backend::sprite_cache::{SpriteCache, SpriteKey};
 pub use backend::window::{WindowBuilder, Window, EventIterator};
 
 mod canvas;
@@ -19,7 +18,6 @@ mod event_translator;
 mod fonter;
 mod key;
 pub mod mesh;
-mod sprite_cache;
 mod window;
 
 #[cfg(target_os = "macos")]
