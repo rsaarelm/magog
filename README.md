@@ -1,4 +1,4 @@
-A fantasy roguelike game in Rust
+A fantasy deathcrawl in Rust
 
 Work in progress.
 
