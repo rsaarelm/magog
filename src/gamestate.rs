@@ -15,7 +15,8 @@ use sprite::{WorldSprites, GibSprite, BeamSprite, ExplosionSprite};
 use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
-use ::{State, Transition};
+use ::{Screen, ScreenAction};
+use titlestate::TitleState;
 use console::Console;
 use config::Config;
 
@@ -56,7 +57,8 @@ enum UiState {
 }
 
 impl GameState {
-    pub fn new(config: Config) -> GameState {
+    pub fn new() -> GameState {
+        let config = ::config();
         world::init_world(config.rng_seed);
         GameState {
             world_spr: WorldSprites::new(),
@@ -400,8 +402,11 @@ impl GameState {
     }
 }
 
-impl State for GameState {
-    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition> {
+impl Screen for GameState {
+    fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
+        // TODO
+
+        /*
         if event == Event::Quit { return Some(Transition::Exit); }
         let running = match self.ui_state {
             UiState::Gameplay => self.gameplay_process(ctx, event),
@@ -411,12 +416,14 @@ impl State for GameState {
                 true
             }
         };
-
         if !running {
-            Some(Transition::Title)
+            Some(ScreenAction::Change(Box::new(TitleState::new())))
         } else {
             None
         }
+        */
+
+        None
     }
 }
 

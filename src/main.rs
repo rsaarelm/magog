@@ -22,6 +22,7 @@ use calx::{PathExt};
 use calx::backend::{WindowBuilder, Canvas, CanvasBuilder, Event};
 use gamestate::GameState;
 use titlestate::TitleState;
+use config::Config;
 
 pub static SCREEN_W: u32 = 640;
 pub static SCREEN_H: u32 = 360;
@@ -37,14 +38,13 @@ mod sprite;
 mod msg_queue;
 mod console;
 
-pub trait State {
-    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition>;
+pub enum ScreenAction {
+    Quit,
+    Change(Box<Screen>),
 }
 
-pub enum Transition {
-    Game,
-    Title,
-    Exit,
+pub trait Screen {
+    fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction>;
 }
 
 pub fn version() -> String {
@@ -68,6 +68,12 @@ pub fn app_data_path() -> PathBuf {
         fs::create_dir_all(&ret).unwrap();
     }
     ret
+}
+
+pub fn config() -> Config {
+    // TODO: Make this access the actual config through a global value.
+    // TODO: Rc<RefCell<Config>> type.
+    Default::default()
 }
 
 pub fn main() {
@@ -108,17 +114,18 @@ pub fn main() {
 
     let mut builder = CanvasBuilder::new();
     tilecache::init(&mut builder);
-    let mut state: Box<State> = Box::new(TitleState::new());
-    let mut canvas = builder.build(window);
+    let mut state: Box<Screen> = Box::new(TitleState::new());
+    let mut ctx = builder.build(window);
 
     loop {
-        let event = canvas.next_event();
-        match state.process(&mut canvas, event) {
-            Some(Transition::Title) => { state = Box::new(TitleState::new()); }
-            Some(Transition::Game) => {
-                state = Box::new(GameState::new(config)); }
-            Some(Transition::Exit) => { break; }
-            _ => ()
+        let result = state.update(&mut ctx);
+        ctx.end_frame();
+        match result {
+            Some(ScreenAction::Quit) => { return; }
+            Some(ScreenAction::Change(new_state)) => {
+                state = new_state;
+            }
+            None => {}
         }
     }
 }

@@ -2,7 +2,8 @@ use calx::{V2, color, Anchor};
 use calx::backend::{Key, Event};
 use calx::backend::{Canvas, CanvasUtil, Fonter, Align};
 use tilecache;
-use ::{Transition, State};
+use ::{Screen, ScreenAction};
+use gamestate::GameState;
 
 pub struct TitleState;
 
@@ -10,30 +11,32 @@ impl TitleState {
     pub fn new() -> TitleState { TitleState }
 }
 
-impl State for TitleState {
-    fn process(&mut self, ctx: &mut Canvas, event: Event) -> Option<Transition> {
-        match event {
-            Event::RenderFrame => {
-                ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, color::FIREBRICK, color::BLACK);
-                Fonter::new(ctx)
-                    .color(color::DARKRED)
-                    .anchor(Anchor::Bottom)
-                    .align(Align::Center)
-                    .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}", ::version(), if cfg!(debug_assertions) { " debug" } else { "" }))
-                    .draw(V2(320.0, 352.0));
+impl Screen for TitleState {
+    fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
+        ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, color::FIREBRICK, color::BLACK);
+        Fonter::new(ctx)
+            .color(color::DARKRED)
+            .anchor(Anchor::Bottom)
+            .align(Align::Center)
+            .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}", ::version(), if cfg!(debug_assertions) { " debug" } else { "" }))
+            .draw(V2(320.0, 352.0));
+
+        for event in ctx.events().into_iter() {
+            match event {
+                Event::KeyPress(Key::Escape) => {
+                    return Some(ScreenAction::Quit);
+                }
+                Event::Quit => {
+                    return Some(ScreenAction::Quit);
+                }
+                Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"magog"); }
+                Event::KeyPress(_) => {
+                    return Some(ScreenAction::Change(Box::new(GameState::new())));
+                }
+                _ => ()
             }
-            Event::KeyPress(Key::Escape) => {
-                return Some(Transition::Exit);
-            }
-            Event::Quit => {
-                return Some(Transition::Exit);
-            }
-            Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"magog"); }
-            Event::KeyPress(_) => {
-                return Some(Transition::Game);
-            }
-            _ => ()
         }
+
         None
     }
 }
