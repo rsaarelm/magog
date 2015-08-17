@@ -13,7 +13,7 @@ use viewutil::{FLOOR_Z, BLOCK_Z, DEPTH_Z_MODIFIER, PIXEL_UNIT};
 use drawable::{Drawable};
 use tilecache;
 use tilecache::tile::*;
-use gamestate::{Blink};
+use gamescreen::{Blink};
 
 pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
     for pt in cells_on_screen() {

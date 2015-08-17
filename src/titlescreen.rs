@@ -3,15 +3,15 @@ use calx::backend::{Key, Event};
 use calx::backend::{Canvas, CanvasUtil, Fonter, Align};
 use tilecache;
 use ::{Screen, ScreenAction};
-use gamestate::GameState;
+use gamescreen::GameScreen;
 
-pub struct TitleState;
+pub struct TitleScreen;
 
-impl TitleState {
-    pub fn new() -> TitleState { TitleState }
+impl TitleScreen {
+    pub fn new() -> TitleScreen { TitleScreen }
 }
 
-impl Screen for TitleState {
+impl Screen for TitleScreen {
     fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
         ctx.draw_image(tilecache::get(tilecache::LOGO), V2(274.0, 180.0), 0.0, color::FIREBRICK, color::BLACK);
         Fonter::new(ctx)
@@ -31,7 +31,7 @@ impl Screen for TitleState {
                 }
                 Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"magog"); }
                 Event::KeyPress(_) => {
-                    return Some(ScreenAction::Change(Box::new(GameState::new())));
+                    return Some(ScreenAction::Change(Box::new(GameScreen::new())));
                 }
                 _ => ()
             }

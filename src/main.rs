@@ -20,8 +20,8 @@ use std::default::Default;
 // TODO: Get a stable standard library PathExt to replace this.
 use calx::{PathExt};
 use calx::backend::{WindowBuilder, Canvas, CanvasBuilder, Event};
-use gamestate::GameState;
-use titlestate::TitleState;
+use gamescreen::GameScreen;
+use titlescreen::TitleScreen;
 use config::Config;
 
 pub static SCREEN_W: u32 = 640;
@@ -32,8 +32,8 @@ pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
 mod config;
-mod gamestate;
-mod titlestate;
+mod gamescreen;
+mod titlescreen;
 mod sprite;
 mod msg_queue;
 mod console;
@@ -114,7 +114,7 @@ pub fn main() {
 
     let mut builder = CanvasBuilder::new();
     tilecache::init(&mut builder);
-    let mut state: Box<Screen> = Box::new(TitleState::new());
+    let mut state: Box<Screen> = Box::new(TitleScreen::new());
     let mut ctx = builder.build(window);
 
     loop {

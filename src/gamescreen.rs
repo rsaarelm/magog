@@ -16,7 +16,7 @@ use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
 use ::{Screen, ScreenAction};
-use titlestate::TitleState;
+use titlescreen::TitleScreen;
 use console::Console;
 use config::Config;
 
@@ -29,7 +29,7 @@ pub enum Blink {
     Threat,
 }
 
-pub struct GameState {
+pub struct GameScreen {
     /// Transient effect sprites drawn in game world view.
     world_spr: WorldSprites,
     /// Counters for entities with flashing damage animation.
@@ -56,11 +56,11 @@ enum UiState {
     Console,
 }
 
-impl GameState {
-    pub fn new() -> GameState {
+impl GameScreen {
+    pub fn new() -> GameScreen {
         let config = ::config();
         world::init_world(config.rng_seed);
-        GameState {
+        GameScreen {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
@@ -402,7 +402,7 @@ impl GameState {
     }
 }
 
-impl Screen for GameState {
+impl Screen for GameScreen {
     fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
         // TODO
 
@@ -417,7 +417,7 @@ impl Screen for GameState {
             }
         };
         if !running {
-            Some(ScreenAction::Change(Box::new(TitleState::new())))
+            Some(ScreenAction::Change(Box::new(TitleScreen::new())))
         } else {
             None
         }
