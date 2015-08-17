@@ -17,7 +17,6 @@ use tilecache::icon;
 use msg_queue::MsgQueue;
 use ::{Screen, ScreenAction};
 use titlescreen::TitleScreen;
-use console::Console;
 use config::Config;
 
 /// Type of effect signaled by making a visible entity blink for a moment.
@@ -43,8 +42,6 @@ pub struct GameScreen {
     msg: MsgQueue,
     ui_state: UiState,
 
-    console: Console,
-
     // XXX: Getting a concrete copy of config, can't mutate it and have the
     // mutations propagate to higher level...
     config: Config,
@@ -53,7 +50,6 @@ pub struct GameScreen {
 enum UiState {
     Gameplay,
     Inventory,
-    Console,
 }
 
 impl GameScreen {
@@ -66,7 +62,6 @@ impl GameScreen {
             exploring: false,
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
-            console: Console::new(),
             config: config,
         }
     }
@@ -256,10 +251,6 @@ impl GameScreen {
         match self.ui_state {
             UiState::Gameplay => self.base_update(ctx),
             UiState::Inventory => self.inventory_update(ctx),
-            UiState::Console => {
-                self.base_update(ctx);
-                self.console.update(ctx);
-            }
         }
     }
 
@@ -385,13 +376,6 @@ impl GameScreen {
                 match ch {
                     // Debug
                     '>' if cfg!(debug_assertions) => { action::next_level(); }
-
-                    // Open console
-                    // (Make this be a typed-key instead of a pressed-key
-                    // event so that the event will have been consumed and
-                    // console won't start with an inputted '`'.)
-                    '`' if cfg!(debug_assertions) => { self.ui_state = UiState::Console; }
-
                     _ => ()
                 }
             }
@@ -411,10 +395,6 @@ impl Screen for GameScreen {
         let running = match self.ui_state {
             UiState::Gameplay => self.gameplay_process(ctx, event),
             UiState::Inventory => self.inventory_process(ctx, event),
-            UiState::Console => {
-                if !self.console.process(ctx, event) { self.ui_state = UiState::Gameplay; }
-                true
-            }
         };
         if !running {
             Some(ScreenAction::Change(Box::new(TitleScreen::new())))

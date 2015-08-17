@@ -36,7 +36,6 @@ mod gamescreen;
 mod titlescreen;
 mod sprite;
 mod msg_queue;
-mod console;
 
 pub enum ScreenAction {
     Quit,
