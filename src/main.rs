@@ -19,8 +19,7 @@ use std::io::{Write};
 use std::default::Default;
 // TODO: Get a stable standard library PathExt to replace this.
 use calx::{PathExt};
-use calx::backend::{WindowBuilder, Canvas, CanvasBuilder, Event};
-use gamescreen::GameScreen;
+use calx::backend::{WindowBuilder, Canvas, CanvasBuilder};
 use titlescreen::TitleScreen;
 use config::Config;
 

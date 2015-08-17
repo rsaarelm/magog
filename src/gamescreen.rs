@@ -245,15 +245,6 @@ impl GameScreen {
         true
     }
 
-
-    /// Repaint view, update game world if needed.
-    pub fn update(&mut self, ctx: &mut Canvas) {
-        match self.ui_state {
-            UiState::Gameplay => self.base_update(ctx),
-            UiState::Inventory => self.inventory_update(ctx),
-        }
-    }
-
     fn smart_move(&mut self, dir: Dir6) {
         let player = action::player().unwrap();
         let loc = player.location().unwrap();
@@ -388,22 +379,27 @@ impl GameScreen {
 
 impl Screen for GameScreen {
     fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
-        // TODO
+        match self.ui_state {
+            UiState::Gameplay => self.base_update(ctx),
+            UiState::Inventory => self.inventory_update(ctx),
+        }
 
-        /*
-        if event == Event::Quit { return Some(Transition::Exit); }
-        let running = match self.ui_state {
-            UiState::Gameplay => self.gameplay_process(ctx, event),
-            UiState::Inventory => self.inventory_process(ctx, event),
-        };
+        // TODO
+        let mut running = true;
+
+        for event in ctx.events().into_iter() {
+            if event == Event::Quit { return Some(ScreenAction::Quit); }
+            running = running && match self.ui_state {
+                UiState::Gameplay => self.gameplay_process(ctx, event),
+                UiState::Inventory => self.inventory_process(ctx, event),
+            };
+        }
+
         if !running {
             Some(ScreenAction::Change(Box::new(TitleScreen::new())))
         } else {
             None
         }
-        */
-
-        None
     }
 }
 
