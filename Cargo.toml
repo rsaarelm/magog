@@ -6,9 +6,6 @@ description = "Rust game development helper library collection"
 keywords = ["gamedev"]
 license = "MIT"
 
-[dependencies.calx_macros]
-path = "calx_macros"
-
 [dependencies.calx_ecs]
 path = "calx_ecs"
 
