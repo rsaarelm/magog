@@ -11,6 +11,7 @@ extern crate calx;
 extern crate mapgen;
 extern crate world;
 
+use std::cell::RefCell;
 use std::env;
 use std::process;
 use std::path::{PathBuf};
@@ -68,10 +69,11 @@ pub fn app_data_path() -> PathBuf {
     ret
 }
 
-pub fn config() -> Config {
-    // TODO: Make this access the actual config through a global value.
-    // TODO: Rc<RefCell<Config>> type.
-    Default::default()
+thread_local!(static CONFIG: RefCell<Config> = RefCell::new(Default::default()));
+
+pub fn with_config<U, F>(f: F) -> U
+  where F: FnOnce(&Config) -> U + 'static + Sized {
+    CONFIG.with(|c| f(&*c.borrow()))
 }
 
 pub fn main() {
@@ -109,6 +111,8 @@ pub fn main() {
         .set_fullscreen(config.fullscreen)
         .set_frame_interval(0.030f64)
         .build();
+
+    CONFIG.with(|c| *c.borrow_mut() = config);
 
     let mut builder = CanvasBuilder::new();
     tilecache::init(&mut builder);

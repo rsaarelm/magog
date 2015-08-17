@@ -17,7 +17,6 @@ use tilecache::icon;
 use msg_queue::MsgQueue;
 use ::{Screen, ScreenAction};
 use titlescreen::TitleScreen;
-use config::Config;
 
 /// Type of effect signaled by making a visible entity blink for a moment.
 #[derive(Copy, Clone)]
@@ -41,10 +40,6 @@ pub struct GameScreen {
 
     msg: MsgQueue,
     ui_state: UiState,
-
-    // XXX: Getting a concrete copy of config, can't mutate it and have the
-    // mutations propagate to higher level...
-    config: Config,
 }
 
 enum UiState {
@@ -54,15 +49,13 @@ enum UiState {
 
 impl GameScreen {
     pub fn new() -> GameScreen {
-        let config = ::config();
-        world::init_world(config.rng_seed);
+        world::init_world(::with_config(|c| c.rng_seed));
         GameScreen {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
-            config: config,
         }
     }
 
@@ -100,7 +93,7 @@ impl GameScreen {
             self.draw_player_ui(ctx, player);
         }
 
-        if self.config.show_fps {
+        if ::with_config(|c| c.show_fps) {
             let fps = 1.0 / ctx.window.frame_duration();
             Fonter::new(ctx)
                 .color(color::LIGHTGRAY).border(color::BLACK)
@@ -261,7 +254,7 @@ impl GameScreen {
             }
         }
 
-        let dirset = if self.config.wall_sliding {
+        let dirset = if ::with_config(|c| c.wall_sliding) {
             vec![dir, dir + 1, dir - 1]
         } else {
             vec![dir]
