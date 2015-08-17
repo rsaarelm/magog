@@ -126,8 +126,8 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
         return Some(format!("Bad number of connected regions {}", regions.len()));
     }
 
-    let mut r1;
-    let mut r2;
+    let r1;
+    let r2;
 
     if regions.len() == 1 {
         r1 = &regions[0];
