@@ -104,7 +104,7 @@ impl GameState {
         }
 
         if self.config.show_fps {
-            let fps = 1.0 / ctx.render_duration;
+            let fps = 1.0 / ctx.window.frame_duration();
             Fonter::new(ctx)
                 .color(color::LIGHTGRAY).border(color::BLACK)
                 .text(format!("FPS {:.0}", fps))
@@ -197,11 +197,11 @@ impl GameState {
         let player = action::player().unwrap();
         match event {
             Event::RenderFrame => { self.update(ctx); }
-            Event::KeyPressed(Key::Escape) | Event::KeyPressed(Key::Tab) => {
+            Event::KeyPress(Key::Escape) | Event::KeyPress(Key::Tab) => {
                 self.ui_state = UiState::Gameplay
             }
-            Event::KeyPressed(Key::F12) => { ctx.save_screenshot(&"magog"); }
-            Event::KeyPressed(_) => {}
+            Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"magog"); }
+            Event::KeyPress(_) => {}
 
             Event::Char(ch) => {
                 for slot_data in SLOT_DATA.iter() {
@@ -251,8 +251,6 @@ impl GameState {
 
     /// Repaint view, update game world if needed.
     pub fn update(&mut self, ctx: &mut Canvas) {
-        ctx.clear();
-
         match self.ui_state {
             UiState::Gameplay => self.base_update(ctx),
             UiState::Inventory => self.inventory_update(ctx),
@@ -370,13 +368,13 @@ impl GameState {
                 self.update(ctx);
             }
             // TODO: Better quit confirmation than just pressing esc.
-            Event::KeyPressed(Key::Escape) => {
+            Event::KeyPress(Key::Escape) => {
                 return false;
             }
-            Event::KeyPressed(Key::F12) => {
+            Event::KeyPress(Key::F12) => {
                 ctx.save_screenshot(&"magog");
             }
-            Event::KeyPressed(k) => {
+            Event::KeyPress(k) => {
                 self.gameplay_process_key(k);
             }
 

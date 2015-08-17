@@ -13,6 +13,3 @@ name = "mapgen"
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx_macros]
-git = "https://github.com/rsaarelm/calx"

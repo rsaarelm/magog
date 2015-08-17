@@ -3,8 +3,7 @@
 extern crate num;
 extern crate rustc_serialize;
 extern crate rand;
-#[macro_use] extern crate calx_macros;
-extern crate calx;
+#[macro_use] extern crate calx;
 
 mod geomorph;
 mod geomorph_data;

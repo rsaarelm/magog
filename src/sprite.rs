@@ -1,7 +1,7 @@
 use std::slice::Iter;
 use std::convert::{Into};
 use calx::{color, V2, Dir6, Rgba, clamp};
-use calx::backend::{Canvas, CanvasUtil};
+use calx::backend::{Canvas, CanvasUtil, RenderTarget, mesh};
 use world::{Location, Unchart};
 use viewutil::{FX_Z, chart_to_screen};
 use tilecache;
@@ -159,7 +159,7 @@ fn hexagon<C: Into<Rgba>+Copy>(ctx: &mut Canvas, center: V2<f32>, z: f32,
                             color_inner: C, color_outer: C,
                             inner_radius: f32, outer_radius: f32) {
     let tex = ctx.solid_tex_coord();
-    static VERTICES: [V2<f32>; 6] = [
+    static HEXAGON: [V2<f32>; 6] = [
         V2(-8.0,  -4.0),
         V2( 0.0,  -8.0),
         V2( 8.0,  -4.0),
@@ -168,22 +168,27 @@ fn hexagon<C: Into<Rgba>+Copy>(ctx: &mut Canvas, center: V2<f32>, z: f32,
         V2(-8.0,   4.0),
     ];
 
+    let mut vertices = Vec::new();
+
+    let color_inner: Rgba = color_inner.into();
+    let color_outer: Rgba = color_outer.into();
+
     // Inner vertices
-    let inner = ctx.num_vertices();
-    for p in VERTICES.iter() {
-        ctx.push_vertex(center + (*p * inner_radius), z, tex, color_inner, color::BLACK)
+    for p in HEXAGON.iter() {
+        vertices.push(mesh::Vertex::new(center + (*p * inner_radius), z, tex, color_inner, color::BLACK));
     }
 
     // Outer vertices
-    let outer = ctx.num_vertices();
-    for p in VERTICES.iter() {
-        ctx.push_vertex(center + (*p * outer_radius), z, tex, color_outer, color::BLACK)
+    for p in HEXAGON.iter() {
+        vertices.push(mesh::Vertex::new(center + (*p * outer_radius), z, tex, color_outer, color::BLACK));
     }
 
-    // Polygon pushing
+    let mut faces = Vec::new();
     for i in 0..6 {
         let i2 = (i + 1) % 6;
-        ctx.push_triangle(inner + i, outer + i2, inner + i2);
-        ctx.push_triangle(inner + i, outer + i, outer + i2);
+        faces.push([i, 6 + i2, i2]);
+        faces.push([i, 6 + i,  6 + i2]);
     }
+
+    ctx.add_mesh(vertices, faces);
 }

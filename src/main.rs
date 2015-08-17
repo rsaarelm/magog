@@ -19,7 +19,7 @@ use std::io::{Write};
 use std::default::Default;
 // TODO: Get a stable standard library PathExt to replace this.
 use calx::{PathExt};
-use calx::backend::{Canvas, CanvasBuilder, Event};
+use calx::backend::{WindowBuilder, Canvas, CanvasBuilder, Event};
 use gamestate::GameState;
 use titlestate::TitleState;
 
@@ -98,17 +98,19 @@ pub fn main() {
         _ => {}
     };
 
-    let mut builder = CanvasBuilder::new()
+    let window = WindowBuilder::new()
         .set_size(SCREEN_W, SCREEN_H)
         .set_magnify(config.magnify_mode)
         .set_title("Magog")
         .set_fullscreen(config.fullscreen)
-        .set_frame_interval(0.030f64);
+        .set_frame_interval(0.030f64)
+        .build();
 
+    let mut builder = CanvasBuilder::new();
     tilecache::init(&mut builder);
     let mut state: Box<State> = Box::new(TitleState::new());
+    let mut canvas = builder.build(window);
 
-    let mut canvas = builder.build();
     loop {
         let event = canvas.next_event();
         match state.process(&mut canvas, event) {

@@ -33,9 +33,9 @@ impl Console {
             // Close the console by typing grave again. Can't actually type it
             // in console commands then unless we add escape keys.
             Event::Char('`') => { return false; }
-            Event::KeyPressed(Key::Escape) => { return false; }
+            Event::KeyPress(Key::Escape) => { return false; }
 
-            Event::KeyPressed(Key::Backspace) => {
+            Event::KeyPress(Key::Backspace) => {
                 let len = self.command.len();
                 if len > 0 {
                     // XXX: This is very bad juju if the string isn't entirely
@@ -43,10 +43,10 @@ impl Console {
                     self.command.truncate(len - 1);
                 }
             }
-            Event::KeyPressed(Key::Enter) => { self.process_command(); }
-            Event::KeyPressed(Key::Tab) => { self.tab_complete(); }
-            Event::KeyPressed(Key::Up) => { self.history_prev(); }
-            Event::KeyPressed(Key::Down) => { self.history_next(); }
+            Event::KeyPress(Key::Enter) => { self.process_command(); }
+            Event::KeyPress(Key::Tab) => { self.tab_complete(); }
+            Event::KeyPress(Key::Up) => { self.history_prev(); }
+            Event::KeyPress(Key::Down) => { self.history_next(); }
 
             Event::Char(ch) if (ch as i32) >= 32 && (ch as i32) < 128 => {
                 self.command.push(ch);

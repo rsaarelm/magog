@@ -22,14 +22,14 @@ impl State for TitleState {
                     .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}", ::version(), if cfg!(debug_assertions) { " debug" } else { "" }))
                     .draw(V2(320.0, 352.0));
             }
-            Event::KeyPressed(Key::Escape) => {
+            Event::KeyPress(Key::Escape) => {
                 return Some(Transition::Exit);
             }
             Event::Quit => {
                 return Some(Transition::Exit);
             }
-            Event::KeyPressed(Key::F12) => { ctx.save_screenshot(&"magog"); }
-            Event::KeyPressed(_) => {
+            Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"magog"); }
+            Event::KeyPress(_) => {
                 return Some(Transition::Game);
             }
             _ => ()
