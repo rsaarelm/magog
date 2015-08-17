@@ -4,7 +4,6 @@ use glutin;
 use glium::{self, texture, framebuffer, Surface, DisplayBuild};
 use image;
 use ::{V2, Rect, AverageDuration};
-use ::rgb::{to_srgb};
 use super::event::{Event, MouseButton};
 use super::{CanvasMagnify};
 use super::event_translator::{EventTranslator};
@@ -217,6 +216,7 @@ impl Window {
     }
 
     pub fn get_screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+        use ::rgb::{to_srgb};
         let mut ret = self.buffer.read::<image::DynamicImage>().to_rgb();
 
         // Convert to sRGB
