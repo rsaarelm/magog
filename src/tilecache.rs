@@ -28,9 +28,9 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
 pub fn init(ctx: &mut CanvasBuilder) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
-        batch(&mut *tiles, ctx, include_bytes!("../assets/tile.png"), (32, 32), (-16, -22));
-        batch(&mut *tiles, ctx, include_bytes!("../assets/icon.png"), (8, 8), (0, -8));
-        batch(&mut *tiles, ctx, include_bytes!("../assets/logo.png"), (92, 25), (0, 0));
+        batch(&mut *tiles, ctx, include_bytes!("../content/assets/tile.png"), (32, 32), (-16, -22));
+        batch(&mut *tiles, ctx, include_bytes!("../content/assets/icon.png"), (8, 8), (0, -8));
+        batch(&mut *tiles, ctx, include_bytes!("../content/assets/logo.png"), (92, 25), (0, 0));
     });
 }
 
