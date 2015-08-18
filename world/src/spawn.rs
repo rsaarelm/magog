@@ -1,9 +1,9 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
-use mapgen::{SpawnType};
+use content::{SpawnType};
 use entity::Entity;
 use action;
-use mapgen::{Biome};
+use content::{Biome};
 use location::{Location};
 use world;
 use ecs::{ComponentAccess};

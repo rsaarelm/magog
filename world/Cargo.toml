@@ -18,5 +18,5 @@ name = "world"
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
 
-[dependencies.mapgen]
-path = "../mapgen"
+[dependencies.content]
+path = "../content"

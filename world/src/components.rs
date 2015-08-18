@@ -1,6 +1,6 @@
 use std::convert::{Into};
 use calx::{Rgba};
-use mapgen::{Biome, SpawnType};
+use content::{Biome, SpawnType};
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;

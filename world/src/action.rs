@@ -13,7 +13,7 @@ use calx::Dir6;
 use area::Area;
 use location::Location;
 use ecs::{ComponentAccess};
-use mapgen::{Biome, AreaSpec};
+use content::{Biome, AreaSpec};
 use ::{Msg};
 use msg;
 

@@ -3,7 +3,7 @@ use rand::SeedableRng;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::BTreeMap;
 use location::Location;
-use mapgen::{herringbone, rooms_and_corridors, AreaSpec, TerrainType};
+use content::{herringbone, rooms_and_corridors, AreaSpec, TerrainType};
 use spawn::Spawn;
 
 // Note to maintainer: Due to the way serialization works, Area *must* be

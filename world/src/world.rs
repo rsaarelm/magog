@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use rand;
 use rand::Rng;
 use rustc_serialize::json;
-use mapgen::{AreaSpec, Biome};
+use content::{AreaSpec, Biome};
 use ecs::{Ecs, Comps};
 use area::Area;
 use spatial::Spatial;

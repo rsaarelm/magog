@@ -8,7 +8,7 @@ extern crate image;
 extern crate time;
 extern crate toml;
 extern crate calx;
-extern crate mapgen;
+extern crate content;
 extern crate world;
 
 use std::cell::RefCell;

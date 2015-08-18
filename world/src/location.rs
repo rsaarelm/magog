@@ -1,7 +1,7 @@
 use std::ops::{Add};
 use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 use entity::Entity;
-use mapgen::TerrainType;
+use content::TerrainType;
 use world;
 use action;
 use flags;

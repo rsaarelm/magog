@@ -3,7 +3,7 @@ use time;
 use calx::{V2, Rgba, timing};
 use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil};
-use mapgen::TerrainType;
+use content::TerrainType;
 use world::{Location, Chart};
 use world::{FovStatus};
 use world::{Entity};

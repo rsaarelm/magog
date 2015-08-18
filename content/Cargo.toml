@@ -1,11 +1,11 @@
 [package]
 
-name = "mapgen"
+name = "content"
 version = "0.0.1"
 authors = [ "risto.saarelma@iki.fi" ]
 
 [lib]
-name = "mapgen"
+name = "content"
 
 [dependencies.rand]
 [dependencies.num]

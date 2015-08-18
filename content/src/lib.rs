@@ -1,4 +1,4 @@
-#![crate_name="mapgen"]
+#![crate_name="content"]
 
 extern crate num;
 extern crate rustc_serialize;

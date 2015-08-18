@@ -3,9 +3,9 @@ name = "magog"
 version = "0.1.0"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "content 0.0.1",
  "getopts 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
- "mapgen 0.0.1",
  "num 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -112,6 +112,16 @@ dependencies = [
 name = "color_quant"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "content"
+version = "0.0.1"
+dependencies = [
+ "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "num 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "core-foundation"
@@ -380,16 +390,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mapgen"
-version = "0.0.1"
-dependencies = [
- "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
- "num 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "mmap"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -564,7 +564,7 @@ name = "world"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
- "mapgen 0.0.1",
+ "content 0.0.1",
  "num 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",

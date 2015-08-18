@@ -5,7 +5,7 @@ extern crate rustc_serialize;
 extern crate num;
 extern crate vec_map;
 extern crate calx;
-extern crate mapgen;
+extern crate content;
 
 pub use entity::{Entity};
 pub use flags::{camera, set_camera, get_tick};

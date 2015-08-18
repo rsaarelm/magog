@@ -1,6 +1,6 @@
 use std::default::Default;
 use calx::color::*;
-use mapgen::{SpawnType};
+use content::{SpawnType};
 use ecs::{Component, ComponentAccess};
 use entity::{Entity};
 use components::{Spawn, IsPrototype};
@@ -11,7 +11,7 @@ use item::{ItemType};
 use stats::{Stats};
 use stats::Intrinsic::*;
 use ability::Ability;
-use mapgen::Biome::*;
+use content::Biome::*;
 use world;
 
 #[derive(Copy, Clone)]
