@@ -9,6 +9,7 @@ name = "content"
 
 [dependencies.rand]
 [dependencies.num]
+[dependencies.image]
 [dependencies.rustc-serialize]
 
 [dependencies.calx]

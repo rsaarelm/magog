@@ -3,8 +3,10 @@
 extern crate num;
 extern crate rustc_serialize;
 extern crate rand;
+extern crate image;
 #[macro_use] extern crate calx;
 
+mod brush;
 mod geomorph;
 mod geomorph_data;
 mod herringbone;
@@ -14,6 +16,7 @@ mod terrain;
 use std::collections::{BTreeMap};
 use calx::{V2};
 
+pub use brush::{Brush};
 pub use herringbone::{herringbone};
 pub use rooms::{rooms_and_corridors};
 pub use terrain::{TerrainType};

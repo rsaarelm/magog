@@ -118,6 +118,7 @@ name = "content"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "image 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",

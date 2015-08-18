@@ -116,6 +116,7 @@ pub fn main() {
 
     let mut builder = CanvasBuilder::new();
     tilecache::init(&mut builder);
+    content::Brush::init(&mut builder);
     let mut state: Box<Screen> = Box::new(TitleScreen::new());
     let mut ctx = builder.build(window);
 
