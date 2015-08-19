@@ -36,6 +36,7 @@ mod gamescreen;
 mod titlescreen;
 mod sprite;
 mod msg_queue;
+mod render_terrain;
 
 pub enum ScreenAction {
     Quit,

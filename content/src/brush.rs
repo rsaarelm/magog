@@ -47,9 +47,9 @@ pub enum Brush {
 
     BlankFloor,
     Floor,
-    GrassFloor,
-    WaterFloor,
-    ShallowsFloor,
+    Grass,
+    Water,
+    Shallows,
 
     Human,
     Snake,
@@ -66,7 +66,7 @@ pub enum Brush {
     CursorBottom,
     CursorTop,
     Table,
-    Rock,
+    Stone,
     Fountain,
     Altar,
     Barrell,
@@ -105,9 +105,9 @@ fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
     for (k, img) in vec![
         BlankFloor,
         Floor,
-        GrassFloor,
-        WaterFloor,
-        ShallowsFloor,
+        Grass,
+        Water,
+        Shallows,
     ].into_iter().zip(
         builder.batch_add(offset, size, &mut load(include_bytes!("../assets/floors.png")))) {
         ret.insert(k, vec![img]);
@@ -134,7 +134,7 @@ fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
         CursorBottom,
         CursorTop,
         Table,
-        Rock,
+        Stone,
         Fountain,
         Altar,
         Barrell,
