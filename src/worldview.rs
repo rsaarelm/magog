@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use time;
-use calx::{V2, Rgba, timing};
+use calx::{V2, Rgba, timing, KernelTerrain};
 use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil};
 use content::TerrainType;
@@ -88,25 +87,8 @@ impl<'a> CellDrawable<'a> {
         self.draw_tile2(ctx, idx, offset, z, color, BLACK);
     }
 
-    /// Draw edge lines to floor tile if there are chasm tiles to the back.
-    fn floor_edges(&'a self, ctx: &mut Canvas, offset: V2<f32>, color: Rgba) {
-        // Shift edge offset from block top level to floor level.
-        let offset = offset + V2(0, PIXEL_UNIT / 2).map(|x| x as f32);
-
-        if (self.loc + V2(-1, -1)).terrain().is_hole() {
-            self.draw_tile(ctx, BLOCK_N, offset, FLOOR_Z, color);
-        }
-        if (self.loc + V2(-1, 0)).terrain().is_hole() {
-            self.draw_tile(ctx, BLOCK_NW, offset, FLOOR_Z, color);
-        }
-        if (self.loc + V2(0, -1)).terrain().is_hole() {
-            self.draw_tile(ctx, BLOCK_NE, offset, FLOOR_Z, color);
-        }
-    }
-
     fn draw_floor(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32, color: Rgba) {
         self.draw_tile(ctx, idx, offset, z, color);
-        self.floor_edges(ctx, offset, color);
     }
 
     fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
@@ -130,9 +112,7 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
-        if !self.loc.terrain().is_hole() {
-            self.draw_terrain(ctx, offset);
-        }
+        self.draw_terrain(ctx, offset);
 
         if self.fov == Some(FovStatus::Seen) && self.depth == 0 {
             // Sort mobs on top of items for drawing.
@@ -158,7 +138,6 @@ impl<'a> CellDrawable<'a> {
             },
             TerrainType::Magma => {
                 self.draw_tile2(ctx, MAGMA, offset, FLOOR_Z, DARKRED, YELLOW);
-                self.floor_edges(ctx, offset, YELLOW);
             },
             TerrainType::Tree => {
                 // A two-toner, with floor, using two z-layers
@@ -169,9 +148,6 @@ impl<'a> CellDrawable<'a> {
             TerrainType::Floor => {
                 self.draw_floor(ctx, FLOOR, offset, FLOOR_Z, SLATEGRAY);
             },
-            TerrainType::Chasm => {
-                self.draw_tile(ctx, CHASM, offset, FLOOR_Z, DARKSLATEGRAY);
-            },
             TerrainType::Grass => {
                 self.draw_floor(ctx, FLOOR, offset, FLOOR_Z, DARKGREEN);
             },
@@ -181,11 +157,6 @@ impl<'a> CellDrawable<'a> {
             TerrainType::Downstairs => {
                 self.draw_floor(ctx, FLOOR, offset, FLOOR_Z, SLATEGRAY);
                 self.draw_tile(ctx, DOWNSTAIRS, offset, BLOCK_Z, SLATEGRAY);
-            },
-            TerrainType::Portal => {
-                let glow = ((0.5 + 0.5 * (time::precise_time_s()).sin())) as f32;
-                let portal_col = Rgba::new(glow, glow, 1.0, 1.0);
-                self.draw_tile(ctx, PORTAL, offset, BLOCK_Z, portal_col);
             },
             TerrainType::Rock => {
                 blockform(self, ctx, &k, offset, BLOCK, DARKGOLDENROD);
@@ -261,9 +232,6 @@ impl<'a> CellDrawable<'a> {
             TerrainType::DeadTree => {
                 self.draw_floor(ctx, FLOOR, offset, FLOOR_Z, SLATEGRAY);
                 self.draw_tile(ctx, TREE_TRUNK, offset, BLOCK_Z, SADDLEBROWN);
-            },
-            TerrainType::TallGrass => {
-                self.draw_tile(ctx, TALLGRASS, offset, BLOCK_Z, GOLD);
             },
         }
 

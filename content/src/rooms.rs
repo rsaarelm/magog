@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet};
 use num::{Integer};
 use rand::{Rng};
-use calx::{V2, Rect, RngExt, clamp};
+use calx::{V2, Rect, RngExt, clamp, KernelTerrain};
 use ::{StaticArea, SpawnType};
 use terrain::{TerrainType};
 

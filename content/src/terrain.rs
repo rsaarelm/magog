@@ -1,3 +1,4 @@
+use calx::KernelTerrain;
 use self::TerrainType::*;
 
 // TODO: Figure out how to not require explicit element count.
@@ -10,7 +11,7 @@ macro_rules! terrain_data {
             $($symbol,)*
         }
 
-        fn _terrain_name(t: TerrainType) -> &'static str {
+        fn terrain_name(t: TerrainType) -> &'static str {
             match t {
                 $($symbol => $name,)*
             }
@@ -26,7 +27,6 @@ macro_rules! terrain_data {
 terrain_data! {
     Void, "void";
     Floor, "floor";
-    Chasm, "chasm";
     Water, "water";
     Shallows, "shallows";
     Magma, "magma";
@@ -39,7 +39,6 @@ terrain_data! {
     // Render variant, do not use directly.
     Grass2, "grass";
     Stalagmite, "stalagmite";
-    Portal, "portal";
     Door, "door";
     OpenDoor, "open door";
     Window, "window";
@@ -53,61 +52,67 @@ terrain_data! {
     Stone, "stone";
     Menhir, "menhir";
     DeadTree, "dead tree";
-    TallGrass, "tall grass";
 }
 
 
 impl TerrainType {
-    pub fn _from_name(name: &str) -> Option<TerrainType> {
+    pub fn from_name(name: &str) -> Option<TerrainType> {
         for &t in _TERRAINS.iter() {
-            if t._name() == name { return Some(t); }
+            if t.name() == name { return Some(t); }
         }
         None
     }
 
-    pub fn is_wall(self) -> bool {
-        match self {
-            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
+    pub fn blocks_sight(&self) -> bool {
+        match *self {
+            Wall | RockWall | Rock | Door | Tree | DeadTree => true,
             _ => false
         }
     }
 
-    pub fn blocks_sight(self) -> bool {
-        match self {
-            Wall | RockWall | Rock | Door | Tree | DeadTree | TallGrass => true,
-            _ => false
-        }
-    }
-
-    pub fn blocks_shot(self) -> bool {
-        match self {
+    pub fn blocks_shot(&self) -> bool {
+        match *self {
             Wall | RockWall | Rock | Tree | Stalagmite | Door | Menhir | DeadTree => true,
             _ => false
         }
     }
 
-    pub fn blocks_walk(self) -> bool {
-        match self {
-            Floor | Shallows | Grass | Grass2 | Downstairs | Portal
-                | Door | OpenDoor | TallGrass => false,
+    pub fn blocks_walk(&self) -> bool {
+        match *self {
+            Floor | Shallows | Grass | Grass2 | Downstairs
+                | Door | OpenDoor => false,
             _ => true
         }
     }
 
-    pub fn is_exit(self) -> bool {
-        match self {
+    pub fn is_exit(&self) -> bool {
+        match *self {
             Downstairs => true,
             _ => false
         }
     }
 
-    pub fn valid_spawn_spot(self) -> bool { !self.blocks_walk() && !self.is_exit() }
+    pub fn valid_spawn_spot(&self) -> bool { !self.blocks_walk() && !self.is_exit() }
 
-    pub fn is_door(self) -> bool { self == Door }
+    pub fn is_door(&self) -> bool { *self == Door }
 
-    pub fn is_luminous(self) -> bool { self == Magma }
+    pub fn is_luminous(&self) -> bool { *self == Magma }
 
-    pub fn is_hole(self) -> bool { self == Chasm }
+    pub fn name(&self) -> &'static str { terrain_name(*self) }
+}
 
-    pub fn _name(self) -> &'static str { _terrain_name(self) }
+impl KernelTerrain for TerrainType {
+    fn is_wall(&self) -> bool {
+        match *self {
+            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
+            _ => false
+        }
+    }
+
+    fn is_block(&self) -> bool {
+        match *self {
+            Rock => true,
+            _ => false
+        }
+    }
 }
