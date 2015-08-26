@@ -4,6 +4,80 @@ use std::cell::{RefCell};
 use calx::{ImageStore, IndexCache};
 use calx::backend::{CanvasBuilder, Image};
 
+#[macro_export]
+macro_rules! brush {
+    {
+        $enumname:ident {
+            // Image file to load brushes from.
+            $([$filename:expr]
+              // Named brushes
+              $($brushname:ident:
+                  // Frames for the named brush as rectangles in the current
+                  // image file.
+                  $($xoff:expr, $yoff:expr, $xdim:expr, $ydim:expr, $x:expr, $y:expr;)+
+              )+
+            )+
+        }
+    } =>
+    {
+#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+        pub enum $enumname {
+            $(
+                $($brushname,)*
+            )*
+        }
+
+        cache_key!($enumname);
+
+        impl $enumname {
+            /// Get the sprite image.
+            pub fn get(self, idx: usize) -> Image {
+                BRUSH_CACHE.with(|c| c.borrow().get(self).expect("Brush not initialized")[idx])
+            }
+
+            /// Build the actual sprites in a canvas for the enum set.
+            pub fn init(builder: &mut CanvasBuilder) {
+                BRUSH_CACHE.with(|c| { *c.borrow_mut() = build_brushes(builder); });
+            }
+        }
+
+        thread_local!(static BRUSH_CACHE: RefCell<IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
+
+        fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
+            use image;
+            use calx::{V2, color_key, color, Rgba};
+
+            let mut ret = IndexCache::new();
+
+            fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+                // XXX: Shouldn't hardcode the color::CYAN part, factor out
+                // the loader?
+                color_key(&image::load_from_memory(data).unwrap(), color::CYAN)
+            }
+
+            $({
+                let mut sheet = load(include_bytes!($filename));
+
+                $({
+                    let mut frames = Vec::new();
+
+                    $({
+                        frames.push(builder.add_image(
+                                V2($xoff, $yoff),
+                                &image::SubImage::new(&mut sheet, $x, $y, $xdim, $ydim)));
+                    })*
+
+                    ret.insert($enumname::$brushname, frames);
+                })*
+
+            })*
+
+            ret
+        }
+    }
+}
+
+/*
 cache_key!(Brush);
 
 impl Brush {
@@ -19,9 +93,80 @@ impl Brush {
 }
 
 thread_local!(static BRUSH_CACHE: RefCell<IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
+*/
+
+brush!(Brush {
+    ["../assets/logo.png"]
+    Logo:
+        0, 0, 92, 24, 0, 0;
+
+    /*
+    IconHeart,
+    IconHalfHeart,
+    IconNoHeart,
+    IconShard,
+    IconHalfShard,
+    IconNoShard,
+
+    BlockRear,
+    BlockRock,
+
+    BrickWall,
+    BrickWindowWall,
+    BrickOpenWall,
+    DoorWall,
+    BarsWall,
+    FenceWall,
+    HouseWall,
+    RockWall,
+
+    BlankFloor,
+    Floor,
+    Grass,
+    Water,
+    Shallows,
+
+    Human,
+    Snake,
+    Dreg,
+    Ogre,
+    Wraith,
+    Octopus,
+    Bug,
+    Ooze,
+    Efreet,
+    Serpent,
+    SerpentMound,
+
+    CursorBottom,
+    CursorTop,
+    Table,
+    Stone,
+    Fountain,
+    Altar,
+    Barrell,
+    Stalagmite,
+    Pillar,
+    Grave,
+    Crystal,
+    Menhir,
+    Sword,
+    Helmet,
+    Potion,
+    Wand,
+    Health,
+    Knives,
+    Armor,
+    Ring,
+    StairsDown,
+    TreeTrunk,
+    TreeFoliage,
+    */
+});
 
 //////////// Custom definitions start here ////////////
 
+/*
 #[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 pub enum Brush {
     Logo,
@@ -223,3 +368,4 @@ fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
 
     ret
 }
+*/
