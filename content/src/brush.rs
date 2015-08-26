@@ -4,368 +4,174 @@ use std::cell::{RefCell};
 use calx::{ImageStore, IndexCache};
 use calx::backend::{CanvasBuilder, Image};
 
-#[macro_export]
-macro_rules! brush {
-    {
-        $enumname:ident {
-            // Image file to load brushes from.
-            $([$filename:expr]
-              // Named brushes
-              $($brushname:ident:
-                  // Frames for the named brush as rectangles in the current
-                  // image file.
-                  $($xoff:expr, $yoff:expr, $xdim:expr, $ydim:expr, $x:expr, $y:expr;)+
-              )+
-            )+
-        }
-    } =>
-    {
-#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
-        pub enum $enumname {
-            $(
-                $($brushname,)*
-            )*
-        }
-
-        cache_key!($enumname);
-
-        impl $enumname {
-            /// Get the sprite image.
-            pub fn get(self, idx: usize) -> Image {
-                BRUSH_CACHE.with(|c| c.borrow().get(self).expect("Brush not initialized")[idx])
-            }
-
-            /// Build the actual sprites in a canvas for the enum set.
-            pub fn init(builder: &mut CanvasBuilder) {
-                BRUSH_CACHE.with(|c| { *c.borrow_mut() = build_brushes(builder); });
-            }
-        }
-
-        thread_local!(static BRUSH_CACHE: RefCell<IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
-
-        fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
-            use image;
-            use calx::{V2, color_key, color, Rgba};
-
-            let mut ret = IndexCache::new();
-
-            fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-                // XXX: Shouldn't hardcode the color::CYAN part, factor out
-                // the loader?
-                color_key(&image::load_from_memory(data).unwrap(), color::CYAN)
-            }
-
-            $({
-                let mut sheet = load(include_bytes!($filename));
-
-                $({
-                    let mut frames = Vec::new();
-
-                    $({
-                        frames.push(builder.add_image(
-                                V2($xoff, $yoff),
-                                &image::SubImage::new(&mut sheet, $x, $y, $xdim, $ydim)));
-                    })*
-
-                    ret.insert($enumname::$brushname, frames);
-                })*
-
-            })*
-
-            ret
-        }
-    }
-}
-
-/*
-cache_key!(Brush);
-
-impl Brush {
-    /// Get the sprite image.
-    pub fn get(self, idx: usize) -> Image {
-        BRUSH_CACHE.with(|c| c.borrow().get(self).expect("Brush not found")[idx])
-    }
-
-    /// Build the actual sprites in a canvas for the enum set.
-    pub fn init(builder: &mut CanvasBuilder) {
-        BRUSH_CACHE.with(|c| { *c.borrow_mut() = build_brushes(builder); });
-    }
-}
-
-thread_local!(static BRUSH_CACHE: RefCell<IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
-*/
-
 brush!(Brush {
-    ["../assets/logo.png"]
-    Logo:
-        0, 0, 92, 24, 0, 0;
+    ["../assets/logo.png",
+        [Logo,
+        0, 0, 92, 24, 0, 0]
+    ]
 
-    /*
-    IconHeart,
-    IconHalfHeart,
-    IconNoHeart,
-    IconShard,
-    IconHalfShard,
-    IconNoShard,
+    ["../assets/icon.png",
+        [IconHeart,
+            0, 8, 8, 8, 0, 0]
+        [IconHalfHeart,
+            0, 8, 8, 8, 8, 0]
+        [IconNoHeart,
+            0, 8, 8, 8, 16, 0]
+        [IconShard,
+            0, 8, 8, 8, 24, 0]
+        [IconHalfShard,
+            0, 8, 8, 8, 32, 0]
+        [IconNoShard,
+            0, 8, 8, 8, 40, 0]
+    ]
 
-    BlockRear,
-    BlockRock,
+    ["../assets/blocks.png",
+        [BlockRear,
+            16, 16, 32, 32,   0,   0,
+            16, 16, 32, 32,  32,   0,
+            16, 16, 32, 32,  64,   0,
+            16, 16, 32, 16,  96,   0,
+             0, 16, 32, 16, 112,   0,
+            16, 16, 32, 16, 128,   0,
+             0, 16, 32, 16, 144,   0]
+        [BlockRock,
+            16, 16, 32, 32,   0,  32,
+            16, 16, 32, 32,  32,  32,
+            16, 16, 32, 32,  64,  32,
+            16, 16, 32, 16,  96,  32,
+             0, 16, 32, 16, 112,  32,
+            16, 16, 32, 16, 128,  32,
+             0, 16, 32, 16, 144,  32]
+    ]
 
-    BrickWall,
-    BrickWindowWall,
-    BrickOpenWall,
-    DoorWall,
-    BarsWall,
-    FenceWall,
-    HouseWall,
-    RockWall,
+    ["../assets/walls.png",
+        [BrickWall,
+            16, 16, 32, 16,   0,   0,
+             0, 16, 32, 16,  16,   0,
+            16, 16, 32, 16,  32,   0,
+             0, 16, 32, 16,  48,   0]
+        [BrickWindowWall,
+            16, 16, 32, 16,   0,   0,
+             0, 16, 32, 16,  16,   0,
+            16, 16, 32, 16,  64,   0,
+             0, 16, 32, 16,  80,   0]
+        [BrickOpenWall,
+            16, 16, 32, 16,   0,   0,
+             0, 16, 32, 16,  16,   0,
+            16, 16, 32, 16,  96,   0,
+             0, 16, 32, 16, 112,   0]
+        [DoorWall,
+            16, 16, 32, 16, 128,   0,
+             0, 16, 32, 16, 144,   0,
+            16, 16, 32, 16, 160,   0,
+             0, 16, 32, 16, 176,   0]
+        [BarsWall,
+            16, 16, 32, 16, 192,   0,
+             0, 16, 32, 16, 208,   0,
+            16, 16, 32, 16, 224,   0,
+             0, 16, 32, 16, 240,   0]
+        [FenceWall,
+            16, 16, 32, 16,   0,  32,
+             0, 16, 32, 16,  16,  32,
+            16, 16, 32, 16,  32,  32,
+             0, 16, 32, 16,  48,  32]
+        [HouseWall,
+            16, 16, 32, 16,  64,  32,
+             0, 16, 32, 16,  80,  32,
+            16, 16, 32, 16,  96,  32,
+             0, 16, 32, 16, 112,  32]
+        [RockWall,
+            16, 16, 32, 16, 128,  32,
+             0, 16, 32, 16, 144,  32,
+            16, 16, 32, 16, 160,  32,
+             0, 16, 32, 16, 176,  32]
+    ]
 
-    BlankFloor,
-    Floor,
-    Grass,
-    Water,
-    Shallows,
+    ["../assets/floors.png",
+        [BlankFloor,
+            16, 16, 32, 32,   0,   0]
+        [Floor,
+            16, 16, 32, 32,  32,   0]
+        [Grass,
+            16, 16, 32, 32,  64,   0]
+        [Water,
+            16, 16, 32, 32,  96,   0]
+        [Shallows,
+            16, 16, 32, 32, 128,   0]
+    ]
 
-    Human,
-    Snake,
-    Dreg,
-    Ogre,
-    Wraith,
-    Octopus,
-    Bug,
-    Ooze,
-    Efreet,
-    Serpent,
-    SerpentMound,
+    ["../assets/mobs.png",
+        [Human,
+            16, 16, 32, 32,   0,   0]
+        [Snake,
+            16, 16, 32, 32,  32,   0]
+        [Dreg,
+            16, 16, 32, 32,  64,   0]
+        [Ogre,
+            16, 16, 32, 32,  96,   0]
+        [Wraith,
+            16, 16, 32, 32, 128,   0]
+        [Octopus,
+            16, 16, 32, 32, 160,   0]
+        [Bug,
+            16, 16, 32, 32, 192,   0]
+        [Ooze,
+            16, 16, 32, 32, 224,   0]
+        [Efreet,
+            16, 16, 32, 32,   0,  32]
+        [Serpent,
+            // Head
+            16, 16, 32, 32,  32,  32,
+            // Burrow mound
+            16, 16, 32, 32,  64,  32]
+    ]
 
-    CursorBottom,
-    CursorTop,
-    Table,
-    Stone,
-    Fountain,
-    Altar,
-    Barrell,
-    Stalagmite,
-    Pillar,
-    Grave,
-    Crystal,
-    Menhir,
-    Sword,
-    Helmet,
-    Potion,
-    Wand,
-    Health,
-    Knives,
-    Armor,
-    Ring,
-    StairsDown,
-    TreeTrunk,
-    TreeFoliage,
-    */
+    ["../assets/props.png",
+        [CursorBottom,
+            16, 16, 32, 32,   0,   0]
+        [CursorTop,
+            16, 16, 32, 32,  32,   0]
+        [Table,
+            16, 16, 32, 32,  64,   0]
+        [Stone,
+            16, 16, 32, 32,  96,   0]
+        [Fountain,
+            16, 16, 32, 32, 128,   0]
+        [Altar,
+            16, 16, 32, 32, 160,   0]
+        [Barrell,
+            16, 16, 32, 32, 192,   0]
+        [Stalagmite,
+            16, 16, 32, 32, 224,   0]
+        [Pillar,
+            16, 16, 32, 32,   0,  32]
+        [Grave,
+            16, 16, 32, 32,  32,  32]
+        [Crystal,
+            16, 16, 32, 32,  64,  32]
+        [Menhir,
+            16, 16, 32, 32,  96,  32]
+        [Sword,
+            16, 16, 32, 32, 128,  32]
+        [Helmet,
+            16, 16, 32, 32, 160,  32]
+        [Potion,
+            16, 16, 32, 32, 192,  32]
+        [Wand,
+            16, 16, 32, 32, 224,  32]
+        [Health,
+            16, 16, 32, 32,   0,  64]
+        [Knives,
+            16, 16, 32, 32,  32,  64]
+        [Armor,
+            16, 16, 32, 32,  64,  64]
+        [Ring,
+            16, 16, 32, 32,  96,  64]
+        [StairsDown,
+            16, 16, 32, 32, 128,  64]
+        [TreeTrunk,
+            16, 16, 32, 32, 160,  64]
+        [TreeFoliage,
+            16, 16, 32, 32, 192,  64]
+    ]
 });
-
-//////////// Custom definitions start here ////////////
-
-/*
-#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
-pub enum Brush {
-    Logo,
-
-    IconHeart,
-    IconHalfHeart,
-    IconNoHeart,
-    IconShard,
-    IconHalfShard,
-    IconNoShard,
-
-    BlockRear,
-    BlockRock,
-
-    BrickWall,
-    BrickWindowWall,
-    BrickOpenWall,
-    DoorWall,
-    BarsWall,
-    FenceWall,
-    HouseWall,
-    RockWall,
-
-    BlankFloor,
-    Floor,
-    Grass,
-    Water,
-    Shallows,
-
-    Human,
-    Snake,
-    Dreg,
-    Ogre,
-    Wraith,
-    Octopus,
-    Bug,
-    Ooze,
-    Efreet,
-    Serpent,
-    SerpentMound,
-
-    CursorBottom,
-    CursorTop,
-    Table,
-    Stone,
-    Fountain,
-    Altar,
-    Barrell,
-    Stalagmite,
-    Pillar,
-    Grave,
-    Crystal,
-    Menhir,
-    Sword,
-    Helmet,
-    Potion,
-    Wand,
-    Health,
-    Knives,
-    Armor,
-    Ring,
-    StairsDown,
-    TreeTrunk,
-    TreeFoliage,
-}
-
-fn build_brushes(builder: &mut CanvasBuilder) -> IndexCache<Brush, Vec<Image>> {
-    use image;
-    use calx::{V2, IterTiles, color_key, color, Rgba};
-    use self::Brush::*;
-
-    fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        color_key(&image::load_from_memory(data).unwrap(), color::CYAN)
-    }
-
-    let offset = V2(-16, -16);
-    let size = V2(32, 32);
-
-    let mut ret = IndexCache::new();
-
-    for (k, img) in vec![
-        BlankFloor,
-        Floor,
-        Grass,
-        Water,
-        Shallows,
-    ].into_iter().zip(
-        builder.batch_add(offset, size, &mut load(include_bytes!("../assets/floors.png")))) {
-        ret.insert(k, vec![img]);
-    }
-
-    for (k, img) in vec![
-        Human,
-        Snake,
-        Dreg,
-        Ogre,
-        Wraith,
-        Octopus,
-        Bug,
-        Ooze,
-        Efreet,
-        Serpent,
-        SerpentMound,
-    ].into_iter().zip(
-        builder.batch_add(offset, size, &mut load(include_bytes!("../assets/mobs.png")))) {
-        ret.insert(k, vec![img]);
-    }
-
-    for (k, img) in vec![
-        CursorBottom,
-        CursorTop,
-        Table,
-        Stone,
-        Fountain,
-        Altar,
-        Barrell,
-        Stalagmite,
-        Pillar,
-        Grave,
-        Crystal,
-        Menhir,
-        Sword,
-        Helmet,
-        Potion,
-        Wand,
-        Health,
-        Knives,
-        Armor,
-        Ring,
-        StairsDown,
-        TreeTrunk,
-        TreeFoliage,
-    ].into_iter().zip(
-        builder.batch_add(offset, size, &mut load(include_bytes!("../assets/props.png")))) {
-        ret.insert(k, vec![img]);
-    }
-
-    // Wall tiles.
-    {
-        let mut wall_images = Vec::new();
-        let mut wall_sheet = load(include_bytes!("../assets/walls.png"));
-        // Can't use batch_add for walls because the offsets alternate.
-        for (i, rect) in wall_sheet.tiles(V2(16, 32)).take(28).enumerate() {
-            let offset = V2(if i % 2 == 0 { -16 } else { 0 }, -16);
-            let image = image::SubImage::new(&mut wall_sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
-            wall_images.push(builder.add_image(offset, &image));
-        }
-
-        // Also I'm reusing the center wall piece a bit so I can't generalize
-        // these either.
-
-        ret.insert(BrickWall, vec![0, 1, 2, 3]          .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(BrickWindowWall, vec![0, 1, 4, 5]    .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(BrickOpenWall, vec![0, 1, 6, 7]      .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(DoorWall, vec![8, 9, 10, 11]         .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(BarsWall, vec![12, 13, 14, 15]       .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(FenceWall, vec![16, 17, 18, 19]      .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(HouseWall, vec![20, 21, 22, 23]      .into_iter().map(|x| wall_images[x]).collect());
-        ret.insert(RockWall, vec![24, 25, 26, 27]       .into_iter().map(|x| wall_images[x]).collect());
-    }
-
-    // Block tiles
-    {
-        let mut block_sheet = load(include_bytes!("../assets/blocks.png"));
-
-        for (y, brush) in vec![
-            BlockRear,
-            BlockRock,
-        ].into_iter().enumerate() {
-            // Another tricky setup. The first three tiles are 32x32 brushes,
-            // the last four are 16x32.
-            let mut frames = Vec::new();
-            let y = y as u32;
-            let mut x = 0u32;
-            for &width in &[32, 32, 32, 16, 16, 16, 16] {
-                let offset = (x as i32 % 32) - 16;
-                frames.push(builder.add_image(V2(offset, -16),
-                    &image::SubImage::new(&mut block_sheet, x, y * 32, width, 32)));
-                x += width;
-            }
-
-            ret.insert(brush, frames)
-        }
-    }
-
-    ret.insert(Logo, vec![builder.add_image(V2(0, 0), &load(include_bytes!("../assets/logo.png")))]);
-
-    for (k, img) in vec![
-        IconHeart,
-        IconHalfHeart,
-        IconNoHeart,
-        IconShard,
-        IconHalfShard,
-        IconNoShard,
-    ].into_iter().zip(
-        builder.batch_add(V2(0, -8), V2(8, 8), &mut load(include_bytes!("../assets/icon.png")))) {
-        ret.insert(k, vec![img]);
-    }
-
-    ret
-}
-*/
