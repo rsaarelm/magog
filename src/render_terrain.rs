@@ -12,7 +12,7 @@ pub trait RenderTerrain {
         where F: FnMut(Image, Angle, Rgba, Rgba);
 }
 
-/// Angle of the sprite, can be used for dynamic lighting.
+/// Surface angle for a visible sprite, used for dynamic lighting.
 ///
 /// ```notrust
 ///
@@ -27,39 +27,30 @@ pub trait RenderTerrain {
 ///      # south #
 /// ```
 pub enum Angle {
-    /// Floor
-    Flat,
-    /// North
-    Dir0,
-    /// Northeast
-    Dir1,
-    /// Southeast
-    Dir2,
-    /// Wall along y-axis
+    Up,
+    North,
+    Northeast,
+    Southeast,
     YWall,
-    /// South, facing the screen.
-    Dir3,
-    /// Wall along x-axis.
+    South,
     XWall,
-    /// Southwest
-    Dir4,
-    /// Northwest
-    Dir5,
+    Southwest,
+    Northwest,
 }
 
 impl Angle {
     /// Return the angle of the vertical surface, if any, in degrees.
     pub fn degree(&self) -> Option<f32> {
         match *self {
-            Angle::Flat => None,
-            Angle::Dir0 => Some(0.0),
-            Angle::Dir1 => Some(60.0),
-            Angle::Dir2 => Some(120.0),
+            Angle::Up => None,
+            Angle::North => Some(0.0),
+            Angle::Northeast => Some(60.0),
+            Angle::Southeast => Some(120.0),
             Angle::YWall => Some(150.0),
-            Angle::Dir3 => Some(180.0),
+            Angle::South => Some(180.0),
             Angle::XWall => Some(210.0),
-            Angle::Dir4 => Some(240.0),
-            Angle::Dir5 => Some(300.0),
+            Angle::Southwest => Some(240.0),
+            Angle::Northwest => Some(300.0),
         }
     }
 }
@@ -93,10 +84,10 @@ impl RenderTerrain for Kernel<TerrainType> {
                 T::Block(brush, color) => process(k, draw, T::Block2(brush, color, BLACK)),
 
                 T::Floor2(brush, color, back) => {
-                    draw(brush.get(0), Flat, color, back);
+                    draw(brush.get(0), Up, color, back);
                 }
                 T::Prop2(brush, color, back) => {
-                    draw(brush.get(0), Dir3, color, back);
+                    draw(brush.get(0), South, color, back);
                 }
                 T::Wall2(brush, color, back) => {
                     let extends = k.wall_extends();
@@ -114,12 +105,12 @@ impl RenderTerrain for Kernel<TerrainType> {
                 T::Block2(brush, color, back) => {
                     let faces = k.block_faces();
 
-                    if faces[5] { draw(BlockRear.get(0), Dir5, color, BLACK); }
-                    if faces[0] { draw(BlockRear.get(1), Dir0, color, BLACK); }
-                    if faces[1] { draw(BlockRear.get(2), Dir1, color, BLACK); }
-                    if faces[4] { draw(brush.get(0), Dir4, color, back); }
-                    if faces[3] { draw(brush.get(1), Dir3, color, back); }
-                    if faces[2] { draw(brush.get(2), Dir2, color, back); }
+                    if faces[5] { draw(BlockRear.get(0), Northwest, color, BLACK); }
+                    if faces[0] { draw(BlockRear.get(1), North, color, BLACK); }
+                    if faces[1] { draw(BlockRear.get(2), Northeast, color, BLACK); }
+                    if faces[4] { draw(brush.get(0), Southwest, color, back); }
+                    if faces[3] { draw(brush.get(1), South, color, back); }
+                    if faces[2] { draw(brush.get(2), Southeast, color, back); }
                 }
             }
         }
