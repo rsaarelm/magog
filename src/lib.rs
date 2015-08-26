@@ -36,6 +36,7 @@ pub use projection::{Projection};
 pub use rng::{EncodeRng, RngExt};
 
 mod atlas;
+mod brush;
 mod fs;
 mod geom;
 mod hex;
