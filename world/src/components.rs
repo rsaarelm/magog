@@ -1,6 +1,6 @@
 use std::convert::{Into};
 use calx::{Rgba};
-use content::{Biome, SpawnType};
+use content::{Biome, SpawnType, Brush};
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
@@ -14,12 +14,12 @@ pub struct IsPrototype;
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
-    pub icon: usize,
+    pub icon: Brush,
     pub color: Rgba,
 }
 
 impl Desc {
-    pub fn new<C: Into<Rgba>>(name: &str, icon: usize, color: C) -> Desc {
+    pub fn new<C: Into<Rgba>>(name: &str, icon: Brush, color: C) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned
         // &str instead of a String, I just want to get away from typing
         // .to_string() everywhere with the calls that mostly use string

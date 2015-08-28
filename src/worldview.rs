@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use calx::{V2, Rgba, timing, KernelTerrain};
 use calx::color::*;
-use calx::backend::{Canvas, CanvasUtil};
-use content::TerrainType;
+use calx::backend::{Canvas, CanvasUtil, Image};
+use content::{TerrainType, Brush};
 use world::{Location, Chart};
 use world::{FovStatus};
 use world::{Entity};
@@ -91,7 +91,7 @@ impl<'a> CellDrawable<'a> {
         self.draw_tile(ctx, idx, offset, z, color);
     }
 
-    fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
+    fn draw_image(&'a self, ctx: &mut Canvas, img: Image, offset: V2<f32>, z: f32,
                   color: Rgba, back_color: Rgba) {
         let (mut color, mut back_color) = match self.fov {
             // XXX: Special case for the solid-black objects that are used to
@@ -108,7 +108,17 @@ impl<'a> CellDrawable<'a> {
         if self.depth != 0 && self.fov != Some(FovStatus::Seen) { return; }
 
         let offset = offset + level_z_to_view(self.depth).map(|x| x as f32);
-        ctx.draw_image(tilecache::get(idx), offset, z, color, back_color);
+        ctx.draw_image(img, offset, z, color, back_color);
+    }
+
+    fn draw_tile2(&'a self, ctx: &mut Canvas, idx: usize, offset: V2<f32>, z: f32,
+                  color: Rgba, back_color: Rgba) {
+        self.draw_image(ctx, tilecache::get(idx), offset, z, color, back_color);
+    }
+
+    fn draw_brush(&'a self, ctx: &mut Canvas, brush: Brush, frame: usize, offset: V2<f32>, z: f32,
+                  color: Rgba, back_color: Rgba) {
+        self.draw_image(ctx, brush.get(frame), offset, z, color, back_color);
     }
 
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
@@ -303,10 +313,6 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_entity(&'a self, ctx: &mut Canvas, offset: V2<f32>, entity: &Entity) {
-        // SPECIAL CASE: The serpent mob has an extra mound element that
-        // doesn't bob along with the main body.
-        static SERPENT_ICON: usize = 94;
-
         let body_pos =
             if entity.is_bobbing() {
                 offset + *(timing::cycle_anim(
@@ -314,7 +320,7 @@ impl<'a> CellDrawable<'a> {
                         &[V2(0.0, 0.0), V2(0.0, -1.0)]))
             } else { offset };
 
-        if let Some((icon, mut color)) = entity.get_icon() {
+        if let Some((brush, mut color)) = entity.get_brush() {
             let mut back_color = BLACK;
 
             // Damage blink animation.
@@ -345,15 +351,17 @@ impl<'a> CellDrawable<'a> {
                 }
             }
 
-            if icon == SERPENT_ICON {
+            // The serpent mob has an extra mound element that
+            // doesn't bob along with the main body.
+            if brush == Brush::Serpent {
                 // Body
-                self.draw_tile2(ctx, icon, body_pos, BLOCK_Z, color, back_color);
+                self.draw_brush(ctx, brush, 0, body_pos, BLOCK_Z, color, back_color);
                 // Ground mound, doesn't bob.
-                self.draw_tile2(ctx, icon + 1, offset, BLOCK_Z, color, back_color);
+                self.draw_brush(ctx, brush, 1, offset, BLOCK_Z, color, back_color);
                 return;
+            } else {
+                self.draw_brush(ctx, brush, 0, body_pos, BLOCK_Z, color, back_color);
             }
-
-            self.draw_tile2(ctx, icon, body_pos, BLOCK_Z, color, back_color);
         }
     }
 }

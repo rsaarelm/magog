@@ -2,6 +2,7 @@ use std::default::Default;
 use std::cmp::{max};
 use rand::Rng;
 use calx::{Dijkstra, Rgba, Dir6, HexGeom, HexFov, RngExt};
+use content::{Brush};
 use world;
 use location::{Location};
 use flags;
@@ -55,7 +56,7 @@ impl Entity {
         )
     }
 
-    pub fn get_icon(self) -> Option<(usize, Rgba)> {
+    pub fn get_brush(self) -> Option<(Brush, Rgba)> {
         world::with(|w|
             if let Some(desc) = w.descs().get(self) {
                 Some((desc.icon, desc.color))
