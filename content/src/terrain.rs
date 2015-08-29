@@ -104,7 +104,7 @@ impl TerrainType {
 impl KernelTerrain for TerrainType {
     fn is_wall(&self) -> bool {
         match *self {
-            Wall | RockWall | Rock | Door | OpenDoor | Window | Bars | Fence => true,
+            Wall | RockWall | Door | OpenDoor | Window | Bars | Fence => true,
             _ => false
         }
     }
