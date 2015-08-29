@@ -4,7 +4,7 @@ version = "0.1.0"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "content 0.0.1",
- "getopts 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "getopts 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -55,14 +55,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#3216f74124b14fc6994097e6da84ee4bc4e4850d"
+source = "git+https://github.com/rsaarelm/calx#d77736682a605d943d7866f6601d85625b294bfa"
 dependencies = [
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "cpal 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glium 0.8.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.8.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
- "nalgebra 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -73,7 +73,7 @@ dependencies = [
 [[package]]
 name = "calx_ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#3216f74124b14fc6994097e6da84ee4bc4e4850d"
+source = "git+https://github.com/rsaarelm/calx#d77736682a605d943d7866f6601d85625b294bfa"
 dependencies = [
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -213,11 +213,8 @@ dependencies = [
 
 [[package]]
 name = "getopts"
-version = "0.2.13"
+version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "gif"
@@ -242,7 +239,7 @@ version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "khronos_api 0.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "xml-rs 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -252,7 +249,7 @@ version = "0.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "khronos_api 0.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "xml-rs 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -262,7 +259,7 @@ version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "khronos_api 0.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "xml-rs 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -279,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "glium"
-version = "0.8.6"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cgmath 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -290,7 +287,7 @@ dependencies = [
  "khronos_api 0.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "nalgebra 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "smallvec 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -372,7 +369,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "log"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -402,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.2.21"
+version = "0.2.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "num 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
