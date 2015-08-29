@@ -17,6 +17,7 @@ use content::{TerrainType, Brush};
 ///       y-   -x
 ///      # south #
 /// ```
+#[derive(Copy, Eq, PartialEq, Clone, Debug)]
 pub enum Angle {
     Up,
     North,
@@ -27,6 +28,12 @@ pub enum Angle {
     XWall,
     Southwest,
     Northwest,
+}
+
+#[derive(Copy, Eq, PartialEq, Clone, Debug)]
+pub enum Purpose {
+    Element,
+    Filler,
 }
 
 impl Angle {
@@ -51,10 +58,11 @@ impl Angle {
 /// Params to the draw function: Draw layer, brush, brush frame, main
 /// color, border color.
 pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
-    where F: FnMut(Image, Angle, Rgba, Rgba)
+    where F: FnMut(Image, Angle, Purpose, Rgba, Rgba)
 {
     use content::Brush::*;
     use self::Angle::*;
+    use self::Purpose::*;
 
     enum T {
         Floor(Brush, Rgba),
@@ -65,11 +73,12 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
         Wall2(Brush, Rgba, Rgba),
         Block(Brush, Rgba),
         Block2(Brush, Rgba, Rgba),
+        Filler(Brush),
     }
 
     fn process<C: KernelTerrain, F>(
         k: &Kernel<C>, draw: &mut F, kind: T)
-        where F: FnMut(Image, Angle, Rgba, Rgba)
+        where F: FnMut(Image, Angle, Purpose, Rgba, Rgba)
         {
             match kind {
                 T::Floor(brush, color) => process(k, draw, T::Floor2(brush, color, BLACK)),
@@ -78,33 +87,36 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                 T::Block(brush, color) => process(k, draw, T::Block2(brush, color, BLACK)),
 
                 T::Floor2(brush, color, back) => {
-                    draw(brush.get(0), Up, color, back);
+                    draw(brush.get(0), Up, Element, color, back);
                 }
                 T::Prop2(brush, color, back) => {
-                    draw(brush.get(0), South, color, back);
+                    draw(brush.get(0), South, Element, color, back);
                 }
                 T::Wall2(brush, color, back) => {
                     let extends = k.wall_extends();
                     if extends[0] {
-                        draw(brush.get(2), XWall, color, back);
+                        draw(brush.get(2), XWall, Element, color, back);
                     } else {
-                        draw(brush.get(0), XWall, color, back);
+                        draw(brush.get(0), XWall, Element, color, back);
                     }
                     if extends[1] {
-                        draw(brush.get(3), YWall, color, back);
+                        draw(brush.get(3), YWall, Element, color, back);
                     } else {
-                        draw(brush.get(1), YWall, color, back);
+                        draw(brush.get(1), YWall, Element, color, back);
                     }
                 }
                 T::Block2(brush, color, back) => {
                     let faces = k.block_faces();
 
-                    if faces[5] { draw(BlockRear.get(0), Northwest, color, BLACK); }
-                    if faces[0] { draw(BlockRear.get(1), North, color, BLACK); }
-                    if faces[1] { draw(BlockRear.get(2), Northeast, color, BLACK); }
-                    if faces[4] { draw(brush.get(0), Southwest, color, back); }
-                    if faces[3] { draw(brush.get(1), South, color, back); }
-                    if faces[2] { draw(brush.get(2), Southeast, color, back); }
+                    if faces[5] { draw(BlockRear.get(0), Northwest, Element, color, BLACK); }
+                    if faces[0] { draw(BlockRear.get(1), North, Element, color, BLACK); }
+                    if faces[1] { draw(BlockRear.get(2), Northeast, Element, color, BLACK); }
+                    if faces[4] { draw(brush.get(0), Southwest, Element, color, back); }
+                    if faces[3] { draw(brush.get(1), South, Element, color, back); }
+                    if faces[2] { draw(brush.get(2), Southeast, Element, color, back); }
+                }
+                T::Filler(brush) => {
+                    draw(brush.get(0), Up, Filler, BLACK, BLACK);
                 }
             }
         }
@@ -117,15 +129,15 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
         TerrainType::Magma => vec![T::Floor2(Water, YELLOW, DARKRED)],
         TerrainType::Downstairs => vec![T::Floor(StairsDown, SLATEGRAY)],
         TerrainType::Wall => vec![
-            T::Floor(BlankFloor, SLATEGRAY),
+            T::Filler(BlankFloor),
             T::Wall(BrickWall, LIGHTSLATEGRAY),
         ],
         TerrainType::RockWall => vec![
-            T::Floor(BlankFloor, SLATEGRAY),
+            T::Filler(BlankFloor),
             T::Wall(RockWall, LIGHTSLATEGRAY),
         ],
         TerrainType::Rock => vec![
-            T::Floor(BlankFloor, SLATEGRAY),
+            T::Filler(BlankFloor),
             T::Block(BlockRock, DARKGOLDENROD),
         ],
         TerrainType::Tree => vec![
