@@ -47,7 +47,7 @@ impl<C: KernelTerrain> Kernel<C> {
 
     /// Bool is true if left/right half of wall should be extended.
     pub fn wall_extends(&self) -> [bool; 2] {
-        [self.nw.is_hull(), self.ne.is_hull()]
+        [self.nw.is_wall(), self.ne.is_wall()]
     }
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
