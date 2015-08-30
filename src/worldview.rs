@@ -11,7 +11,7 @@ use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
 use gamescreen::{Blink};
-use render_terrain::{self, Angle, Purpose};
+use render_terrain::{self, Angle};
 
 pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
     for pt in cells_on_screen() {
@@ -62,19 +62,23 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_image(&'a self, ctx: &mut Canvas, img: Image, offset: V2<f32>, z: f32,
-                  color: Rgba, back_color: Rgba) {
-        let (mut color, mut back_color) = match self.fov {
+                  mut color: Rgba, mut back_color: Rgba) {
+        match self.fov {
             // XXX: Special case for the solid-black objects that are used to
             // block out stuff to not get recolored. Don't use total black as
             // an actual object color, have something like #010101 instead.
-            Some(FovStatus::Remembered) if color != BLACK => (BLACK, Rgba::from(0x332200FF)),
-            _ => (color, back_color),
-        };
-        if self.fov == Some(FovStatus::Seen) {
-            color = self.light.apply(color);
-            back_color = self.light.apply(back_color);
+            Some(FovStatus::Remembered) => {
+                if color != BLACK {
+                    color = BLACK;
+                    back_color = Rgba::from(0x332200FF);
+                }
+            }
+            Some(FovStatus::Seen) => {
+                color = self.light.apply(color);
+                back_color = self.light.apply(back_color);
+            }
+            None => { return; }
         }
-        if self.depth != 0 && self.fov != Some(FovStatus::Seen) { return; }
 
         ctx.draw_image(img, offset, z, color, back_color);
     }
@@ -82,14 +86,12 @@ impl<'a> CellDrawable<'a> {
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
         let visible = self.fov == Some(FovStatus::Seen);
         let k = Kernel::new(|loc| loc.terrain(), self.loc);
-        render_terrain::render(&k, |img, angle, purpose, fore, back| {
+        render_terrain::render(&k, |img, angle, fore, back| {
                  let z = match angle {
                      Angle::Up => FLOOR_Z,
                      _ => BLOCK_Z
                  };
-                 if visible || purpose == Purpose::Element {
-                     self.draw_image(ctx, img, offset, z, fore, back)
-                 }
+                 self.draw_image(ctx, img, offset, z, fore, back)
         });
 
         if visible {

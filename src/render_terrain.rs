@@ -34,12 +34,6 @@ pub enum Angle {
     YWallBack,
 }
 
-#[derive(Copy, Eq, PartialEq, Clone, Debug)]
-pub enum Purpose {
-    Element,
-    Filler,
-}
-
 impl Angle {
     /// Return the angle of the vertical surface, if any, in degrees.
     pub fn degree(&self) -> Option<f32> {
@@ -66,11 +60,10 @@ impl Angle {
 /// Params to the draw function: Draw layer, brush, brush frame, main
 /// color, border color.
 pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
-    where F: FnMut(Image, Angle, Purpose, Rgba, Rgba)
+    where F: FnMut(Image, Angle, Rgba, Rgba)
 {
     use content::Brush::*;
     use self::Angle::*;
-    use self::Purpose::*;
 
     enum T {
         Floor(Brush, Rgba),
@@ -81,13 +74,14 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
         Wall2(Brush, Rgba, Rgba),
         Block(Brush, Rgba),
         Block2(Brush, Rgba, Rgba),
-        Filler(Brush),
     }
 
     fn process<C: KernelTerrain, F>(
         k: &Kernel<C>, draw: &mut F, kind: T)
-        where F: FnMut(Image, Angle, Purpose, Rgba, Rgba)
+        where F: FnMut(Image, Angle, Rgba, Rgba)
         {
+            // NB: Black-#000 foreground color prohibits recoloring of the
+            // tile in FOV view, only use for special blocks.
             match kind {
                 T::Floor(brush, color) => process(k, draw, T::Floor2(brush, color, BLACK)),
                 T::Prop(brush, color) => process(k, draw, T::Prop2(brush, color, BLACK)),
@@ -95,26 +89,25 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                 T::Block(brush, color) => process(k, draw, T::Block2(brush, color, BLACK)),
 
                 T::Floor2(brush, color, back) => {
-                    draw(brush.get(0), Up, Element, color, back);
+                    draw(brush.get(0), Up, color, back);
                 }
                 T::Prop2(brush, color, back) => {
-                    draw(brush.get(0), South, Element, color, back);
+                    draw(brush.get(0), South, color, back);
                 }
                 T::Wall2(brush, color, back) => {
                     let extends = k.wall_extends();
                     if extends[0] {
-                        draw(brush.get(2), XWall, Element, color, back);
+                        draw(brush.get(2), XWall, color, back);
                     } else {
-                        draw(brush.get(0), XWall, Element, color, back);
+                        draw(brush.get(0), XWall, color, back);
                     }
                     if extends[1] {
-                        draw(brush.get(3), YWall, Element, color, back);
+                        draw(brush.get(3), YWall, color, back);
                     } else {
-                        draw(brush.get(1), YWall, Element, color, back);
+                        draw(brush.get(1), YWall, color, back);
                     }
                 }
                 T::Block2(brush, color, back) => {
-
                     // This part gets a little tricky. Basic idea is that
                     // there's an inner pointy-top hex core and the block hull
                     // will snap to that instead of the outer flat-top hex
@@ -138,20 +131,23 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     {
                         if faces[0] {
                             if nw_vertex && ne_vertex {
-                                draw(BlockRear.get(1), North, Element, color, BLACK);
+                                draw(BlockShadow.get(1), North, BLACK, BLACK);
+                                draw(BlockRear.get(1), North, color, BLACK);
                             } else if nw_vertex {
-                                draw(BlockRear.get(9), XWallBack, Element, color, BLACK);
+                                draw(BlockShadow.get(9), XWallBack, BLACK, BLACK);
+                                draw(BlockRear.get(9), XWallBack, color, BLACK);
                             } else {
-                                draw(BlockRear.get(5), YWallBack, Element, color, BLACK);
+                                draw(BlockShadow.get(5), YWallBack, BLACK, BLACK);
+                                draw(BlockRear.get(5), YWallBack, color, BLACK);
                             }
                         }
                         if faces[3] {
                             if sw_vertex && se_vertex {
-                                draw(brush.get(1), South, Element, color, back);
+                                draw(brush.get(1), South, color, back);
                             } else if sw_vertex {
-                                draw(brush.get(5), YWall, Element, color, back);
+                                draw(brush.get(5), YWall, color, back);
                             } else {
-                                draw(brush.get(9), XWall, Element, color, back);
+                                draw(brush.get(9), XWall, color, back);
                             }
                         }
                     }
@@ -160,20 +156,23 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     {
                         if faces[0] {
                             if ne_vertex && nw_vertex {
-                                draw(BlockRear.get(2), North, Element, color, BLACK);
+                                draw(BlockShadow.get(2), North, BLACK, BLACK);
+                                draw(BlockRear.get(2), North, color, BLACK);
                             } else if ne_vertex {
-                                draw(BlockRear.get(6), YWallBack, Element, color, BLACK);
+                                draw(BlockShadow.get(6), YWallBack, BLACK, BLACK);
+                                draw(BlockRear.get(6), YWallBack, color, BLACK);
                             } else {
-                                draw(BlockRear.get(10), XWallBack, Element, color, BLACK);
+                                draw(BlockShadow.get(10), XWallBack, BLACK, BLACK);
+                                draw(BlockRear.get(10), XWallBack, color, BLACK);
                             }
                         }
                         if faces[3] {
                             if se_vertex && sw_vertex {
-                                draw(brush.get(2), South, Element, color, back);
+                                draw(brush.get(2), South, color, back);
                             } else if se_vertex {
-                                draw(brush.get(10), XWall, Element, color, back);
+                                draw(brush.get(10), XWall, color, back);
                             } else {
-                                draw(brush.get(6), YWall, Element, color, back);
+                                draw(brush.get(6), YWall, color, back);
                             }
                         }
                     }
@@ -187,27 +186,29 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                         if w_vertex {
                             if faces[5] {
                                 if nw_vertex {
-                                    draw(BlockRear.get(0), Northwest, Element, color, BLACK);
+                                    draw(BlockShadow.get(0), Northwest, BLACK, BLACK);
+                                    draw(BlockRear.get(0), Northwest, color, BLACK);
                                 } else {
-                                    draw(BlockRear.get(4), YWallBack, Element, color, BLACK);
+                                    draw(BlockShadow.get(4), YWallBack, BLACK, BLACK);
+                                    draw(BlockRear.get(4), YWallBack, color, BLACK);
                                 }
                             }
 
                             if faces[4] {
                                 if sw_vertex {
-                                    draw(brush.get(0), Southwest, Element, color, back);
+                                    draw(brush.get(0), Southwest, color, back);
                                 } else {
-                                    draw(brush.get(8), XWall, Element, color, back);
+                                    draw(brush.get(8), XWall, color, back);
                                 }
                             }
                         } else {
                             // Draw the left vertical line.
-                            draw(BlockVertical.get(2), West, Element, color, BLACK);
+                            draw(BlockVertical.get(2), West, color, BLACK);
                             if !faces[0] {
-                                draw(BlockVertical.get(0), West, Element, color, BLACK);
+                                draw(BlockVertical.get(0), West, color, BLACK);
                             }
                             if !faces[3] {
-                                draw(BlockVertical.get(4), West, Element, color, BLACK);
+                                draw(BlockVertical.get(4), West, color, BLACK);
                             }
                         }
                     }
@@ -217,33 +218,32 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                         if e_vertex {
                             if faces[1] {
                                 if ne_vertex {
-                                    draw(BlockRear.get(3), Northeast, Element, color, BLACK);
+                                    draw(BlockShadow.get(3), Northeast, BLACK, BLACK);
+                                    draw(BlockRear.get(3), Northeast, color, BLACK);
                                 } else {
-                                    draw(BlockRear.get(11), XWallBack, Element, color, BLACK);
+                                    draw(BlockShadow.get(11), XWallBack, BLACK, BLACK);
+                                    draw(BlockRear.get(11), XWallBack, color, BLACK);
                                 }
                             }
 
                             if faces[2] {
                                 if se_vertex {
-                                    draw(brush.get(3), Southeast, Element, color, back);
+                                    draw(brush.get(3), Southeast, color, back);
                                 } else {
-                                    draw(brush.get(7), YWall, Element, color, back);
+                                    draw(brush.get(7), YWall, color, back);
                                 }
                             }
                         } else {
                             // Draw the right vertical line.
-                            draw(BlockVertical.get(3), East, Element, color, BLACK);
+                            draw(BlockVertical.get(3), East, color, BLACK);
                             if !faces[0] {
-                                draw(BlockVertical.get(1), East, Element, color, BLACK);
+                                draw(BlockVertical.get(1), East, color, BLACK);
                             }
                             if !faces[3] {
-                                draw(BlockVertical.get(5), East, Element, color, BLACK);
+                                draw(BlockVertical.get(5), East, color, BLACK);
                             }
                         }
                     }
-                }
-                T::Filler(brush) => {
-                    draw(brush.get(0), Up, Filler, BLACK, BLACK);
                 }
             }
         }
@@ -256,15 +256,15 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
         TerrainType::Magma => vec![T::Floor2(Water, YELLOW, DARKRED)],
         TerrainType::Downstairs => vec![T::Floor(StairsDown, SLATEGRAY)],
         TerrainType::Wall => vec![
-            T::Filler(BlankFloor),
+            T::Floor(BlankFloor, SLATEGRAY),
             T::Wall(BrickWall, LIGHTSLATEGRAY),
         ],
         TerrainType::RockWall => vec![
-            T::Filler(BlankFloor),
+            T::Floor(BlankFloor, SLATEGRAY),
             T::Wall(RockWall, LIGHTSLATEGRAY),
         ],
         TerrainType::Rock => vec![
-            T::Filler(BlankFloor),
+            T::Floor(BlankFloor, SLATEGRAY),
             T::Block(BlockRock, DARKGOLDENROD),
         ],
         TerrainType::Tree => vec![
