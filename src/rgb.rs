@@ -270,7 +270,7 @@ macro_rules! color_constants {
         // hardcoding the size since the dataset is pretty stable.
 
         /// Named color constant table.
-        pub static NAMED_COLORS: [(&'static str, Rgba, SRgba); 139] = [
+        pub static NAMED_COLORS: [(&'static str, Rgba, SRgba); 155] = [
             $((stringify!($name), Rgba { r: $r, g: $g, b: $b, a: 1.0 }, SRgba { r: $sr, g: $sg, b: $sb, a: 0xFF }),)+
         ];
 
@@ -356,6 +356,22 @@ color_constants! {
     GOLD                 = ([0xFF, 0xD7, 0x00], [1.0, 0.6795, 0.0]),
     GOLDENROD            = ([0xDA, 0xA5, 0x20], [0.7011, 0.3763, 0.01444]),
     GRAY                 = ([0x80, 0x80, 0x80], [0.2159, 0.2159, 0.2159]),
+    GRAY0                = ([0x00, 0x00, 0x00], [0.0, 0.0, 0.0]),
+    GRAY1                = ([0x11, 0x11, 0x11], [0.005605, 0.005605, 0.005605]),
+    GRAY2                = ([0x22, 0x22, 0x22], [0.016, 0.016, 0.016]),
+    GRAY3                = ([0x33, 0x33, 0x33], [0.0331, 0.0331, 0.0331]),
+    GRAY4                = ([0x44, 0x44, 0x44], [0.05781, 0.05781, 0.05781]),
+    GRAY5                = ([0x55, 0x55, 0x55], [0.09084, 0.09084, 0.09084]),
+    GRAY6                = ([0x66, 0x66, 0x66], [0.1329, 0.1329, 0.1329]),
+    GRAY7                = ([0x77, 0x77, 0x77], [0.1845, 0.1845, 0.1845]),
+    GRAY8                = ([0x88, 0x88, 0x88], [0.2462, 0.2462, 0.2462]),
+    GRAY9                = ([0x99, 0x99, 0x99], [0.3185, 0.3185, 0.3185]),
+    GRAYA                = ([0xAA, 0xAA, 0xAA], [0.402, 0.402, 0.402]),
+    GRAYB                = ([0xBB, 0xBB, 0xBB], [0.4969, 0.4969, 0.4969]),
+    GRAYC                = ([0xCC, 0xCC, 0xCC], [0.6038, 0.6038, 0.6038]),
+    GRAYD                = ([0xDD, 0xDD, 0xDD], [0.7231, 0.7231, 0.7231]),
+    GRAYE                = ([0xEE, 0xEE, 0xEE], [0.855, 0.855, 0.855]),
+    GRAYF                = ([0xFF, 0xFF, 0xFF], [1.0, 1.0, 1.0]),
     GREEN                = ([0x00, 0x80, 0x00], [0.0, 0.2159, 0.0]),
     GREENYELLOW          = ([0xAD, 0xFF, 0x2F], [0.4179, 1.0, 0.02843]),
     HONEYDEW             = ([0xF0, 0xFF, 0xF0], [0.8714, 1.0, 0.8714]),
