@@ -74,6 +74,7 @@ impl GameScreen {
     }
 
     fn base_paint(&mut self, ctx: &mut Canvas) {
+        ctx.clear_color = color::GRAY1;
         let camera = world::camera();
         worldview::draw_world(&camera, ctx, &self.damage_timers);
 
@@ -389,6 +390,7 @@ impl Screen for GameScreen {
         }
 
         if !running {
+            ctx.clear_color = color::BLACK;
             Some(ScreenAction::Change(Box::new(TitleScreen::new())))
         } else {
             None
