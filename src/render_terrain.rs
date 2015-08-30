@@ -131,13 +131,10 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     {
                         if faces[0] {
                             if nw_vertex && ne_vertex {
-                                draw(BlockShadow.get(1), North, BLACK, BLACK);
                                 draw(BlockRear.get(1), North, color, BLACK);
                             } else if nw_vertex {
-                                draw(BlockShadow.get(9), XWallBack, BLACK, BLACK);
                                 draw(BlockRear.get(9), XWallBack, color, BLACK);
                             } else {
-                                draw(BlockShadow.get(5), YWallBack, BLACK, BLACK);
                                 draw(BlockRear.get(5), YWallBack, color, BLACK);
                             }
                         }
@@ -156,13 +153,10 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     {
                         if faces[0] {
                             if ne_vertex && nw_vertex {
-                                draw(BlockShadow.get(2), North, BLACK, BLACK);
                                 draw(BlockRear.get(2), North, color, BLACK);
                             } else if ne_vertex {
-                                draw(BlockShadow.get(6), YWallBack, BLACK, BLACK);
                                 draw(BlockRear.get(6), YWallBack, color, BLACK);
                             } else {
-                                draw(BlockShadow.get(10), XWallBack, BLACK, BLACK);
                                 draw(BlockRear.get(10), XWallBack, color, BLACK);
                             }
                         }
@@ -186,10 +180,8 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                         if w_vertex {
                             if faces[5] {
                                 if nw_vertex {
-                                    draw(BlockShadow.get(0), Northwest, BLACK, BLACK);
                                     draw(BlockRear.get(0), Northwest, color, BLACK);
                                 } else {
-                                    draw(BlockShadow.get(4), YWallBack, BLACK, BLACK);
                                     draw(BlockRear.get(4), YWallBack, color, BLACK);
                                 }
                             }
@@ -218,10 +210,8 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                         if e_vertex {
                             if faces[1] {
                                 if ne_vertex {
-                                    draw(BlockShadow.get(3), Northeast, BLACK, BLACK);
                                     draw(BlockRear.get(3), Northeast, color, BLACK);
                                 } else {
-                                    draw(BlockShadow.get(11), XWallBack, BLACK, BLACK);
                                     draw(BlockRear.get(11), XWallBack, color, BLACK);
                                 }
                             }
