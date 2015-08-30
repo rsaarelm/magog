@@ -55,7 +55,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#d77736682a605d943d7866f6601d85625b294bfa"
+source = "git+https://github.com/rsaarelm/calx#64ed96265ad70c0766c1c4a744f3d6c900f90a6c"
 dependencies = [
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "cpal 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -73,7 +73,7 @@ dependencies = [
 [[package]]
 name = "calx_ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#d77736682a605d943d7866f6601d85625b294bfa"
+source = "git+https://github.com/rsaarelm/calx#64ed96265ad70c0766c1c4a744f3d6c900f90a6c"
 dependencies = [
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
