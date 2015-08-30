@@ -244,7 +244,9 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
         TerrainType::Water => vec![T::Floor(Water, ROYALBLUE)],
         TerrainType::Shallows => vec![T::Floor(Shallows, CORNFLOWERBLUE)],
         TerrainType::Magma => vec![T::Floor2(Water, YELLOW, DARKRED)],
-        TerrainType::Downstairs => vec![T::Floor(StairsDown, SLATEGRAY)],
+        TerrainType::Downstairs => vec![
+            T::Floor(BlankFloor, SLATEGRAY),
+            T::Prop(StairsDown, SLATEGRAY)],
         TerrainType::Wall => vec![
             T::Floor(BlankFloor, SLATEGRAY),
             T::Wall(BrickWall, LIGHTSLATEGRAY),
