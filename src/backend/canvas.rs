@@ -2,7 +2,7 @@ use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
 use glium::{Surface};
-use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore};
+use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore, color};
 use super::event::{Event, MouseButton};
 use super::mesh;
 use super::{WidgetId, RenderTarget};
@@ -76,6 +76,7 @@ impl ImageStore<Image> for CanvasBuilder {
 /// Interface to render to a live display.
 pub struct Canvas {
     pub window: Window,
+    pub clear_color: ::Rgba,
     atlas: Atlas,
     buffer: mesh::Buffer,
 
@@ -95,6 +96,7 @@ impl Canvas {
         let buffer = mesh::Buffer::new(&window.display, tex_image);
         Canvas {
             window: window,
+            clear_color: color::BLACK,
             atlas: atlas,
             buffer: buffer,
 
@@ -134,8 +136,9 @@ impl Canvas {
     pub fn end_frame(&mut self) {
         let display = self.window.display.clone();
         let buffer = &mut self.buffer;
+        let clear_color = self.clear_color;
         self.window.draw(|target| {
-            target.clear_color(0.0, 0.0, 0.0, 1.0);
+            target.clear_color(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
             target.clear_depth(1.0);
             buffer.flush(&display, target)
         });

@@ -3,7 +3,7 @@ use std::thread;
 use glutin;
 use glium::{self, texture, framebuffer, Surface, DisplayBuild};
 use image;
-use ::{V2, Rect, AverageDuration};
+use ::{V2, Rect, AverageDuration, color, Rgba};
 use super::event::{Event, MouseButton};
 use super::{CanvasMagnify};
 use super::event_translator::{EventTranslator};
@@ -77,6 +77,7 @@ impl WindowBuilder {
 /// Toplevel application object.
 pub struct Window {
     pub display: glium::Display,
+    pub clear_color: Rgba,
 
     resolution: LogicalResolution,
 
@@ -144,6 +145,7 @@ impl Window {
 
         Window {
             display: display,
+            clear_color: color::BLACK,
             resolution: resolution,
             blit_shader: blit_shader,
             buffer: buffer,
@@ -235,7 +237,11 @@ impl Window {
         let mut target = self.display.draw();
 
         // Clear the window.
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        target.clear_color(
+            self.clear_color.r,
+            self.clear_color.g,
+            self.clear_color.b,
+            self.clear_color.a);
         target.clear_depth(1.0);
         let (w, h) = self.display.get_framebuffer_dimensions();
         // Clip viewport dimensions to even to prevent rounding errors in
