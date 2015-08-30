@@ -109,11 +109,17 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     let faces = k.block_faces();
 
                     if faces[5] { draw(BlockRear.get(0), Northwest, Element, color, BLACK); }
-                    if faces[0] { draw(BlockRear.get(1), North, Element, color, BLACK); }
-                    if faces[1] { draw(BlockRear.get(2), Northeast, Element, color, BLACK); }
+                    if faces[0] {
+                        draw(BlockRear.get(1), North, Element, color, BLACK);
+                        draw(BlockRear.get(2), North, Element, color, BLACK);
+                    }
+                    if faces[1] { draw(BlockRear.get(3), Northeast, Element, color, BLACK); }
                     if faces[4] { draw(brush.get(0), Southwest, Element, color, back); }
-                    if faces[3] { draw(brush.get(1), South, Element, color, back); }
-                    if faces[2] { draw(brush.get(2), Southeast, Element, color, back); }
+                    if faces[3] {
+                        draw(brush.get(1), South, Element, color, back);
+                        draw(brush.get(2), South, Element, color, back);
+                    }
+                    if faces[2] { draw(brush.get(3), Southeast, Element, color, back); }
                 }
                 T::Filler(brush) => {
                     draw(brush.get(0), Up, Filler, BLACK, BLACK);
