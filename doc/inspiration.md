@@ -37,6 +37,13 @@ Character build crunching.
 time model. Ended up a bit dull with few tactical options at times
 though, what should be done better?
 
+**Far Cry 3**: Industry standard AAA open-world game template: Map
+revealing and clearing metagame, lair-cleaning missions,
+miscellaneous collectibles, open-world respawning, instanced quests
+and character building with a skill tree and a shallow power curve.
+Probably not the best way to go about all of the things, but
+certainly something to be aware of.
+
 **Legend of Zelda**: Making overland and dungeon crawling compelling
 without any RPG stat cruft.
 
