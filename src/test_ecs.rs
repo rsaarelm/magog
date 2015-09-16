@@ -14,8 +14,8 @@ pub struct Pos {
 }
 
 Ecs! {
-    desc: ::test_ecs::Desc,
-    pos: ::test_ecs::Pos,
+    desc: Desc,
+    pos: Pos,
 }
 
 #[test]

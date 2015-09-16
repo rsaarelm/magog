@@ -143,8 +143,6 @@ macro_rules! Ecs {
     {
         // Declare the type of the (plain old data) component and the
         // identifier to use for it in the ECS.
-        //
-        // Component paths must be absolute.
         $($compname:ident: $comptype:ty,)+
     } => {
         mod _ecs_inner {
