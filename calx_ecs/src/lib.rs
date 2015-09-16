@@ -156,6 +156,7 @@ macro_rules! Ecs {
 
         pub use self::_ecs_inner::ComponentNum;
 
+#[derive(RustcEncodable, RustcDecodable)]
         pub struct _ComponentStore {
             $(pub $compname: ::calx_ecs::ComponentData<$comptype>),+
         }

@@ -113,6 +113,7 @@ impl Tween {
     }
 }
 
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct World {
     pub world_t: u32,
     pub anim_t: u32,

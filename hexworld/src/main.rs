@@ -28,7 +28,7 @@ use brush::Brush;
 use render::RenderTerrain;
 use world::World;
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
 #[repr(u8)]
 pub enum Terrain {
     Floor,
