@@ -44,11 +44,12 @@ impl Buffer {
 
         let params = glium::DrawParameters {
             backface_culling: glium::BackfaceCullingMode::CullCounterClockWise,
-            depth_test: glium::DepthTest::IfLessOrEqual,
-            depth_write: true,
-            blending_function: Some(glium::BlendingFunction::Addition {
-                source: glium::LinearBlendingFactor::SourceAlpha,
-                destination: glium::LinearBlendingFactor::OneMinusSourceAlpha }),
+            depth: glium::Depth {
+                test: glium::DepthTest::IfLessOrEqual,
+                write: true,
+                .. Default::default()
+            },
+            blend: glium::Blend::alpha_blending(),
             .. Default::default() };
 
         // Extract the geometry accumulation buffers and convert into

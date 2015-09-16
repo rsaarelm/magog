@@ -141,7 +141,7 @@ impl Window {
         let buffer = texture::Texture2d::empty(
             &display, size.0, size.1).unwrap();
         let depth = framebuffer::DepthRenderBuffer::new(
-            &display, texture::DepthFormat::F32, size.0, size.1);
+            &display, texture::DepthFormat::F32, size.0, size.1).unwrap();
 
         Window {
             display: display,
@@ -177,7 +177,7 @@ impl Window {
     pub fn draw<F>(&self, draw_f: F)
         where F: FnOnce(&mut framebuffer::SimpleFrameBuffer) {
         let mut target = framebuffer::SimpleFrameBuffer::with_depth_buffer(
-            &self.display, &self.buffer, &self.depth);
+            &self.display, &self.buffer, &self.depth).unwrap();
         draw_f(&mut target);
     }
 
