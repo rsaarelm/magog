@@ -149,7 +149,7 @@ macro_rules! Ecs {
     } => {
         mod _ecs_inner {
             // Use the enum to convert components to numbers for component bit masks etc.
-            #[allow(non_camel_case_types)]
+            #[allow(non_camel_case_types, dead_code)]
             pub enum ComponentNum {
                 $($compname,)+
             }
@@ -178,6 +178,7 @@ macro_rules! Ecs {
             }
         }
 
+#[allow(dead_code)]
         pub fn matches_mask(ecs: &::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity, mask: u64) -> bool {
             $(if mask & (1 << ComponentNum::$compname as u8) != 0 && !ecs.$compname.contains(e) {
                 return false;
