@@ -1,17 +1,20 @@
 /*! Audio generation and playing utilities */
 
-use std::i16;
+//use std::i16;
 use std::f64::consts::{PI};
 use std::sync::{Arc, Mutex};
-use std::thread;
-use cpal;
+//use std::thread;
+//use cpal;
 use ::{noise, lerp};
 
 const SAMPLE_RATE: u32 = 44100;
 
 /// Play a 44100 Hz mono sound using the sample data from the input
 /// iterator. The input sound samples should be in range [-1.0, 1.0].
-pub fn play<T: Iterator<Item=f64> + Send + 'static>(sample: Arc<Mutex<T>>) {
+pub fn play<T: Iterator<Item=f64> + Send + 'static>(_sample: Arc<Mutex<T>>) {
+    // TODO: Get this working with the new CPAL API
+    unimplemented!();
+    /*
     let mut voice = cpal::Voice::new();
 
     thread::spawn(move || loop {
@@ -29,6 +32,7 @@ pub fn play<T: Iterator<Item=f64> + Send + 'static>(sample: Arc<Mutex<T>>) {
         }
         voice.play();
     });
+    */
 }
 
 pub struct Sample<W> {
