@@ -15,6 +15,9 @@ name = "world"
 
 [dependencies.vec_map]
 
+[dependencies.calx_ecs]
+git = "https://github.com/rsaarelm/calx"
+
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
 

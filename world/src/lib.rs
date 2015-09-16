@@ -4,6 +4,7 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
 extern crate vec_map;
+#[macro_use] extern crate calx_ecs;
 extern crate calx;
 extern crate content;
 

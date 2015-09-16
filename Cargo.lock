@@ -656,6 +656,7 @@ name = "world"
 version = "0.0.1"
 dependencies = [
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "content 0.0.1",
  "num 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",

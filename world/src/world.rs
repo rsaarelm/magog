@@ -3,14 +3,26 @@ use rand;
 use rand::Rng;
 use rustc_serialize::json;
 use content::{AreaSpec, Biome};
-use ecs::{Ecs, Comps};
+use ecs::{self, Comps};
 use area::Area;
 use spatial::Spatial;
 use flags::Flags;
 use action;
 use prototype;
+use components;
+use stats;
 
 thread_local!(static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new(None)));
+
+Ecs! {
+    desc: components::Desc,
+    map_memory: components::MapMemory,
+    health: components::Health,
+    brain: components::Brain,
+    item: components::Item,
+    stats_cache: components::StatsCache,
+    stats: stats::Stats,
+}
 
 /// Access world state for reading. The world state may not be reaccessed for
 /// writing while within this function.
@@ -49,8 +61,10 @@ pub fn load(json: &str) -> Result<(), json::DecoderError> {
 /// The internal object that holds all the world state data.
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct WorldState {
-    /// Global entity handler.
-    pub old_ecs: Ecs,
+    /// Entity component system.
+    pub ecs: Ecs,
+    /// ***DEPRECATED***
+    pub old_ecs: ecs::Ecs,
     /// World terrain generation and storage.
     pub area: Area,
     /// Spatial index for game entities.
@@ -71,7 +85,8 @@ impl<'a> WorldState {
             None => rand::thread_rng().gen()
         };
         WorldState {
-            old_ecs: Ecs::new(),
+            ecs: Ecs::new(),
+            old_ecs: ecs::Ecs::new(),
             area: Area::new(seed, AreaSpec::new(Biome::Overland, 1)),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
