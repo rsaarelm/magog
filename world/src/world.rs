@@ -50,7 +50,7 @@ pub fn load(json: &str) -> Result<(), json::DecoderError> {
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct WorldState {
     /// Global entity handler.
-    pub ecs: Ecs,
+    pub old_ecs: Ecs,
     /// World terrain generation and storage.
     pub area: Area,
     /// Spatial index for game entities.
@@ -71,7 +71,7 @@ impl<'a> WorldState {
             None => rand::thread_rng().gen()
         };
         WorldState {
-            ecs: Ecs::new(),
+            old_ecs: Ecs::new(),
             area: Area::new(seed, AreaSpec::new(Biome::Overland, 1)),
             spatial: Spatial::new(),
             flags: Flags::new(seed),

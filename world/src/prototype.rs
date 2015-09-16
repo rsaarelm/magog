@@ -24,7 +24,7 @@ impl Prototype {
     pub fn new(parent: Option<Entity>) -> Prototype {
         Prototype {
             target: world::with_mut(|w| {
-                let e = w.ecs.new_entity(parent);
+                let e = w.old_ecs.new_entity(parent);
                 w.prototypes_mut().insert(e, IsPrototype);
                 e
             }),

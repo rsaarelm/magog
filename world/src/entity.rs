@@ -38,11 +38,11 @@ impl Entity {
             if w.flags.player == Some(self) { w.flags.player = None; });
         world::with_mut(|w| w.comps.remove(self));
         world::with_mut(|w| w.spatial.remove(self));
-        world::with_mut(|w| w.ecs.delete(self));
+        world::with_mut(|w| w.old_ecs.delete(self));
     }
 
     pub fn exists(self) -> bool {
-        world::with(|w| w.ecs.exists(self))
+        world::with(|w| w.old_ecs.exists(self))
     }
 
     pub fn blocks_walk(self) -> bool { self.is_mob() }
@@ -70,7 +70,7 @@ impl Entity {
     /// prototype. Components not defined in the clone entity will be read
     /// from the current entity.
     pub fn clone_at(self, loc: Location) -> Entity {
-        let ret = world::with_mut(|w| { w.ecs.new_entity(Some(self)) });
+        let ret = world::with_mut(|w| { w.old_ecs.new_entity(Some(self)) });
         ret.place(loc);
         ret
     }
@@ -80,12 +80,12 @@ impl Entity {
     }
 
     pub fn _parent(self) -> Option<Entity> {
-        world::with(|w| w.ecs.parent(self))
+        world::with(|w| w.old_ecs.parent(self))
     }
 
     pub fn _reparent(self, new_parent: Entity) {
         assert!(new_parent.is_prototype());
-        world::with_mut(|w| w.ecs._reparent(self, new_parent));
+        world::with_mut(|w| w.old_ecs._reparent(self, new_parent));
     }
 
 // Spatial methods /////////////////////////////////////////////////////

@@ -123,7 +123,7 @@ pub fn input(input: Input) {
 
 /// Return an iterator of all the world entities.
 pub fn entities() -> EntityIter {
-    world::with(|w| w.ecs.iter())
+    world::with(|w| w.old_ecs.iter())
 }
 
 /// Return an iterator of all the world mobs.

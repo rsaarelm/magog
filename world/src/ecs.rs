@@ -100,10 +100,10 @@ impl Iterator for EntityIter {
         world::with(|w| {
             let &mut EntityIter(ref mut idx) = self;
             loop {
-                if *idx >= w.ecs.active.len() { return None; }
+                if *idx >= w.old_ecs.active.len() { return None; }
                 let ret = Entity(*idx);
                 *idx += 1;
-                if !w.ecs.active[*idx - 1] { continue; }
+                if !w.old_ecs.active[*idx - 1] { continue; }
                 return Some(ret);
             }
         })
@@ -170,10 +170,10 @@ macro_rules! components {
         impl<'a> ComponentAccess<'a> for WorldState {
             $(
             fn $access(&'a self) -> ComponentRef<'a, $comp> {
-                ComponentRef::new(&self.ecs, &self.comps.$access)
+                ComponentRef::new(&self.old_ecs, &self.comps.$access)
             }
             fn $access_mut(&'a mut self) -> ComponentRefMut<'a, $comp> {
-                ComponentRefMut::new(&mut self.ecs, &mut self.comps.$access)
+                ComponentRefMut::new(&mut self.old_ecs, &mut self.comps.$access)
             }
             )+
         }
