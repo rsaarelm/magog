@@ -217,7 +217,7 @@ impl Entity {
         let loc = self.location().expect("no location");
         if rng().one_chance_in(12 - max(self.stats().power, 6) as u32) {
             // Drop a heart. More likely if more powerful.
-            action::spawn_named("heart", loc);
+            action::spawn_named("heart", loc).unwrap();
         }
         if self.has_intrinsic(Intrinsic::Deathsplosion) {
             action::explode(loc, self.stats().power);

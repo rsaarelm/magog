@@ -12,7 +12,6 @@ use flags;
 use calx::Dir6;
 use area::Area;
 use location::Location;
-use ecs::{ComponentAccess};
 use content::{Biome, AreaSpec};
 use ::{Msg};
 use msg;
@@ -48,23 +47,9 @@ pub fn is_game_over() -> bool {
     player().is_none()
 }
 
-/// Find the first entity that has a local (not inherited) Desc component with
-/// the given name.
-pub fn find_prototype(name: &str) -> Option<Entity> {
-    world::with(|w|
-        entities().find(|&e| {
-            if let Some(d) = w.descs().get_local(e) {
-                if d.name == name { return true; }
-            }
-            false
-        })
-    )
-}
-
 /// Spawn a specific type of entity
-pub fn spawn_named(name: &str, loc: Location) {
-    find_prototype(name).expect(&format!("Spawn prototype '{}' not found", name)[..])
-        .clone_at(loc);
+pub fn spawn_named(name: &str, loc: Location) -> Result<Entity, ()> {
+    unimplemented!();
 }
 
 // World update state machine //////////////////////////////////////////
@@ -163,10 +148,13 @@ pub fn start_level(depth: i32) {
         w.area = new_area.clone();
     });
 
+    /*
+    // TODO: Get spawns working again.
     let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][..]);
     for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
         spawn.spawn(&mut rng, loc);
     }
+    */
 
     let start_loc = world::with(|w| w.area.player_entrance());
     // Either reuse the existing player or create a new one.
@@ -176,8 +164,7 @@ pub fn start_level(depth: i32) {
             p.place(start_loc);
         }
         None => {
-            let player = find_prototype("player").expect("No Player prototype found!")
-            .clone_at(start_loc);
+            let player = spawn_named("player", start_loc).unwrap();
             world::with_mut(|w| w.flags.player = Some(player));
         }
     };

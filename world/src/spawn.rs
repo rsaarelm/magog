@@ -37,6 +37,8 @@ impl Spawn {
     }
 
     pub fn spawn<R: Rng>(&self, rng: &mut R, loc: Location) -> Entity {
+        unimplemented!();
+        /*
         // XXX: Optimization option: memoize WeightedChoices for the biomask,
         // catmask, depth tuples.
         let mut items: Vec<Weighted<Entity>> = action::entities()
@@ -56,5 +58,6 @@ impl Spawn {
         let e = dist.ind_sample(rng);
         e.clone_at(loc);
         e
+        */
     }
 }

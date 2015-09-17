@@ -8,7 +8,6 @@ use area::Area;
 use spatial::Spatial;
 use flags::Flags;
 use action;
-use prototype;
 use components;
 use stats;
 
@@ -100,7 +99,6 @@ impl<'a> WorldState {
 /// be discarded.
 pub fn init_world(seed: Option<u32>) {
     WORLD_STATE.with(|w| *w.borrow_mut() = WorldState::new(seed));
-    prototype::init();
 
     action::start_level(1);
 }
