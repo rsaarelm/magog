@@ -50,7 +50,7 @@ impl<'a> World {
             flags: Flags::new(seed),
         };
 
-        action::start_level(&mut ret, 1);
+        //action::start_level(&mut ret, 1);
         ret
     }
 

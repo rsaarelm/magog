@@ -27,27 +27,3 @@ impl Flags {
         }
     }
 }
-
-/// Get the location where the current view should be centered.
-pub fn camera() -> Location {
-    world::with(|w| w.flags.camera)
-}
-
-/// Move the current view location.
-pub fn set_camera(loc: Location) {
-    world::with_mut(|w| w.flags.camera = loc);
-}
-
-/// Return the frame count since the start of the game.
-pub fn get_tick() -> u64 {
-    world::with(|w| w.flags.tick)
-}
-
-/// Return a wrapper handle to the world state random number generator.
-pub fn rng() -> WorldRng { WorldRng }
-
-pub struct WorldRng;
-
-impl Rng for WorldRng {
-    fn next_u32(&mut self) -> u32 { world::with_mut(|w| w.flags.rng.next_u32()) }
-}

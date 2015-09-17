@@ -2,10 +2,8 @@ use std::ops::{Add};
 use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 use entity::Entity;
 use content::TerrainType;
-use world;
 use action;
 use flags;
-use ecs::{ComponentAccess};
 use {Light};
 
 /// Unambiguous location in the game world.
@@ -19,6 +17,7 @@ pub struct Location {
 impl Location {
     pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
 
+    /*
     /// Return terrain at the location.
     pub fn terrain(&self) -> TerrainType {
         let mut ret = world::with(|w| w.area.terrain(*self));
@@ -83,6 +82,7 @@ impl Location {
         }
         None
     }
+    */
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
@@ -101,6 +101,7 @@ impl Location {
         if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
     }
 
+    /*
     /// Return the status of the location in the player's field of view.
     /// Returns None if the location is unexplored.
     pub fn fov_status(&self) -> Option<::FovStatus> {
@@ -151,6 +152,7 @@ impl Location {
         }
         return Light::new(1.0);
     }
+    */
 }
 
 impl Add<V2<i32>> for Location {

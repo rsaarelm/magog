@@ -6,7 +6,6 @@ use action;
 use content::{Biome};
 use location::{Location};
 use world;
-use ecs::{ComponentAccess};
 
 /// Representation for an abstract spawnable object. Does not refer to
 /// concrete entity prototypes and can be used before the prototype set has

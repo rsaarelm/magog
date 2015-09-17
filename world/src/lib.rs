@@ -9,10 +9,10 @@ extern crate calx;
 extern crate content;
 
 pub use entity::{Entity};
-pub use flags::{camera, set_camera, get_tick};
+pub use flags::{Flags};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
-pub use world::{init_world, load, save};
+pub use world::{World};
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))

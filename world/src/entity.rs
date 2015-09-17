@@ -12,8 +12,7 @@ use action;
 use msg;
 use item::{ItemType, Slot};
 use stats::{Stats, Intrinsic};
-use ecs::{ComponentAccess};
-use flags::{rng};
+use flags::{Flags};
 
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]

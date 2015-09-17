@@ -6,8 +6,7 @@ use rand::SeedableRng;
 use std::iter::Filter;
 use calx::Dijkstra;
 use entity::Entity;
-use ecs::EntityIter;
-use world;
+use world::{World};
 use flags;
 use calx::Dir6;
 use area::Area;
@@ -36,6 +35,7 @@ pub enum Input {
     Pass,
 }
 
+/*
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
     world::with(|w| w.flags.player)
@@ -305,3 +305,5 @@ pub fn _delete_save() {
 }
 
 pub fn save_exists() -> bool { fs::metadata(SAVE_FILENAME).is_ok() }
+
+*/

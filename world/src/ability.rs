@@ -24,6 +24,9 @@ impl Ability {
             return;
         }
 
+        unimplemented!();
+        /*
+
         // Target entity.
         let te = match target {
             Place::In(e, _) => Some(e),
@@ -41,5 +44,6 @@ impl Ability {
             }
             _ => ()
         }
+        */
     }
 }
