@@ -35,8 +35,6 @@ pub mod item;
 
 mod ability;
 mod area;
-mod component_ref;
-mod ecs;
 mod entity;
 mod flags;
 pub mod location;
