@@ -18,8 +18,7 @@ pub struct Entity {
     /// Unique identifier for the entity.
     ///
     /// No two entities should get the same UID during the lifetime of the ECS.
-    /// UIDs for regular entities are increasing positive integers. UIDs for
-    /// prototype entities are negative integers.
+    /// UIDs for regular entities are increasing positive integers.
     uid: Uid,
 }
 
