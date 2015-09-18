@@ -1,3 +1,5 @@
+/*! Functions for changing world and entity state. */
+
 use std::io::prelude::*;
 use std::path::{Path};
 use std::fs::{self, File};
@@ -14,13 +16,6 @@ use content::{Biome, AreaSpec};
 use ::{Msg};
 use msg;
 
-/// Game update control.
-#[derive(Copy, Clone, PartialEq)]
-pub enum ControlState {
-    AwaitingInput,
-    ReadyToUpdate,
-}
-
 /// Player input action.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Input {
@@ -33,6 +28,7 @@ pub enum Input {
     /// Do nothing for a turn.
     Pass,
 }
+
 
 /*
 /// Return the player entity if one exists.

@@ -39,9 +39,11 @@ mod flags;
 pub mod location;
 mod location_set;
 mod msg;
+mod query;
 mod spatial;
 mod spawn;
 mod stats;
+mod support;
 mod world;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

@@ -40,6 +40,8 @@ pub struct GameScreen {
 
     msg: MsgQueue,
     ui_state: UiState,
+
+    world: World,
 }
 
 enum UiState {
@@ -49,13 +51,13 @@ enum UiState {
 
 impl GameScreen {
     pub fn new() -> GameScreen {
-        world::init_world(::with_config(|c| c.rng_seed));
         GameScreen {
             world_spr: WorldSprites::new(),
             damage_timers: HashMap::new(),
             exploring: false,
             msg: MsgQueue::new(),
             ui_state: UiState::Gameplay,
+            world: World::new(::with_config(|c| c.rng_seed)),
         }
     }
 
