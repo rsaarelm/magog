@@ -4,7 +4,7 @@ use calx::backend::{Canvas, CanvasUtil, Event, Key, Fonter, Align};
 use world;
 use world::action;
 use world::action::Input::*;
-use world::action::ControlState::*;
+use world::query::ControlState::*;
 use world::{Msg, FovStatus};
 use calx::Dir6;
 use calx::Dir6::*;

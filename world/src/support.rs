@@ -28,7 +28,7 @@ pub fn refresh_stats_cache(w: &mut World, e: Entity) {
         Slot::TrinketG,
         Slot::TrinketH,
         Slot::TrinketI].iter() {
-        if let Some(item) = query::equipped(w, e, slot) {
+        if let Some(item) = w.spatial.entity_equipped(e, slot) {
             stats = stats + query::stats(w, item);
         }
     }
