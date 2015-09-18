@@ -9,18 +9,12 @@ use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::collections::{HashMap, HashSet};
 use std::collections::hash_set;
 
-/// Entity unique identifier type.
-type Uid = i32;
-
 /// Handle for an entity in the entity component system.
+///
+/// The internal value is the unique identifier for the entity. No two
+/// entities should get the same UID during the lifetime of the ECS.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
-pub struct Entity {
-    /// Unique identifier for the entity.
-    ///
-    /// No two entities should get the same UID during the lifetime of the ECS.
-    /// UIDs for regular entities are increasing positive integers.
-    uid: Uid,
-}
+pub struct Entity(pub usize);
 
 pub trait AnyComponent {
     /// Remove an entity's component.
@@ -33,7 +27,7 @@ pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
-    data: HashMap<Uid, C>,
+    data: HashMap<usize, C>,
 }
 
 impl<C> ComponentData<C> {
@@ -44,33 +38,33 @@ impl<C> ComponentData<C> {
     }
 
     /// Insert a component to an entity.
-    pub fn insert(&mut self, e: Entity, comp: C) {
-        self.data.insert(e.uid, comp);
+    pub fn insert(&mut self, Entity(uid): Entity, comp: C) {
+        self.data.insert(uid, comp);
     }
 
     /// Return whether an entity contains this component.
-    pub fn contains(&self, e: Entity) -> bool {
-        self.data.contains_key(&e.uid)
+    pub fn contains(&self, Entity(uid): Entity) -> bool {
+        self.data.contains_key(&uid)
     }
 }
 
 impl<C> Index<Entity> for ComponentData<C> {
     type Output = C;
 
-    fn index<'a>(&'a self, e: Entity) -> &'a C {
-        self.data.get(&e.uid).unwrap()
+    fn index<'a>(&'a self, Entity(uid): Entity) -> &'a C {
+        self.data.get(&uid).unwrap()
     }
 }
 
 impl<C> IndexMut<Entity> for ComponentData<C> {
-    fn index_mut<'a>(&'a mut self, e: Entity) -> &'a mut C {
-        self.data.get_mut(&e.uid).unwrap()
+    fn index_mut<'a>(&'a mut self, Entity(uid): Entity) -> &'a mut C {
+        self.data.get_mut(&uid).unwrap()
     }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
-    fn remove(&mut self, e: Entity) {
-        self.data.remove(&e.uid);
+    fn remove(&mut self, Entity(uid): Entity) {
+        self.data.remove(&uid);
     }
 }
 
@@ -83,7 +77,7 @@ pub trait Store {
 
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Ecs<S> {
-    next_uid: Uid,
+    next_uid: usize,
     active: HashSet<Entity>,
     store: S,
 }
@@ -101,7 +95,7 @@ impl<S: Default+Store> Ecs<S> {
     pub fn make(&mut self) -> Entity {
         let next = self.next_uid;
         self.next_uid += 1;
-        let ret = Entity { uid: next };
+        let ret = Entity(next);
         self.active.insert(ret);
         ret
     }
