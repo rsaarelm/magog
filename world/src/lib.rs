@@ -8,7 +8,6 @@ extern crate vec_map;
 extern crate calx;
 extern crate content;
 
-pub use entity::{Entity};
 pub use flags::{Flags};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
@@ -60,7 +59,7 @@ pub enum Msg {
     Caption(String),
     // TODO: Type of effect.
     Explosion(Location),
-    Damage(Entity),
+    Damage(calx_ecs::Entity),
     Gib(Location),
     Beam(Location, Location),
     /// Beam hitting a wall.

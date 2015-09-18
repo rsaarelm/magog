@@ -1,4 +1,4 @@
-use entity::Entity;
+use calx_ecs::Entity;
 use spatial::Place;
 use self::Ability::*;
 

@@ -1,7 +1,7 @@
 use rand::{XorShiftRng, SeedableRng, Rng};
 use location::Location;
 use calx::EncodeRng;
-use entity::Entity;
+use calx_ecs::Entity;
 use world;
 
 #[derive(RustcEncodable, RustcDecodable)]

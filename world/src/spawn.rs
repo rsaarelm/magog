@@ -1,7 +1,7 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
+use calx_ecs::Entity;
 use content::{SpawnType};
-use entity::Entity;
 use action;
 use content::{Biome};
 use location::{Location};

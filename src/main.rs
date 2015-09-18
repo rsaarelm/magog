@@ -8,6 +8,7 @@ extern crate image;
 extern crate time;
 extern crate toml;
 extern crate calx;
+extern crate calx_ecs;
 extern crate content;
 extern crate world;
 

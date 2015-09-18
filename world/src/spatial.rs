@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use vec_map::{VecMap};
-use entity::{Entity};
+use calx_ecs::{Entity};
 use location::{Location};
 use item::Slot;
 use self::Place::*;

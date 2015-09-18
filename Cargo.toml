@@ -29,6 +29,9 @@ lto = true
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"
 
+[dependencies.calx_ecs]
+git = "https://github.com/rsaarelm/calx"
+
 [dependencies.world]
 path = "world"
 

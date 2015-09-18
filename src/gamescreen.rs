@@ -8,7 +8,7 @@ use world::action::ControlState::*;
 use world::{Msg, FovStatus};
 use calx::Dir6;
 use calx::Dir6::*;
-use world::{Entity};
+use calx_ecs::{Entity};
 use world::item::{Slot};
 use worldview;
 use sprite::{WorldSprites, GibSprite, BeamSprite, ExplosionSprite};

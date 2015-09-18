@@ -14,6 +14,7 @@ use item::{ItemType, Slot};
 use stats::{Stats, Intrinsic};
 use flags::{Flags};
 
+/*
 /// Game object handle.
 #[derive(Copy, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entity(pub usize);
@@ -716,3 +717,5 @@ impl Entity {
         }
     }
 }
+
+*/
