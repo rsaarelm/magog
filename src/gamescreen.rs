@@ -250,7 +250,7 @@ impl GameScreen {
             // Shoot instead of moving if you'd hit an enemy and there's no
             // melee target.
             let shoot_range = player.stats().ranged_range as usize;
-            if let Some(e) = action::find_target(player, dir, shoot_range) {
+            if let Some(e) = query::find_target(&self.world, player, dir, shoot_range) {
                 if player.is_hostile_to(e) {
                     action::input(Shoot(dir));
                     return;
@@ -340,8 +340,13 @@ impl GameScreen {
             // Open inventory
             Key::Tab => { self.ui_state = UiState::Inventory; }
 
-            Key::F5 if cfg!(debug_assertions) => { action::save_game(); }
-            Key::F9 if cfg!(debug_assertions) => { action::load_game(); }
+            Key::F5 if cfg!(debug_assertions) => { action::save_game(&self.world); }
+            Key::F9 if cfg!(debug_assertions) => {
+                match action::load_game() {
+                    Ok(world) => self.world = world,
+                    _ => {}
+                };
+            }
             _ => { return false; }
         }
         return true;
@@ -367,7 +372,10 @@ impl GameScreen {
                 // TODO: Chars and keypresses in same lookup (use variants?)
                 match ch {
                     // Debug
-                    '>' if cfg!(debug_assertions) => { action::next_level(); }
+                    '>' if cfg!(debug_assertions) => {
+                        unimplemented!();
+                        //action::next_level();
+                    }
                     _ => ()
                 }
             }

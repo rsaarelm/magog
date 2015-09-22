@@ -97,6 +97,10 @@ impl Location {
         if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
     }
 
+    pub fn noise(&self) -> f32 {
+        noise(self.x as i32 + self.y as i32 * 57)
+    }
+
     /*
     /// Return the status of the location in the player's field of view.
     /// Returns None if the location is unexplored.

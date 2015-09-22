@@ -295,43 +295,32 @@ pub fn autoexplore_map(pathing_depth: u32) -> Option<Dijkstra<Location>> {
     Some(Dijkstra::new(locs, |&loc| !loc.blocks_walk(), pathing_depth))
 }
 
-/// Look for targets to shoot in a direction.
-pub fn find_target(shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
-    let origin = shooter.location().unwrap();
-    for i in 1..(range + 1) {
-        let loc = origin + dir.to_v2() * (i as i32);
-        if loc.terrain().blocks_shot() {
-            break;
-        }
-        if let Some(e) = loc.mob_at() {
-            if shooter.is_hostile_to(e) { return Some(e); }
-        }
-    }
-    None
-}
-
+*/
 ////////////////////////////////////////////////////////////////////////
 
 static SAVE_FILENAME: &'static str = "magog_save.json";
 
-pub fn save_game() {
+pub fn save_game(w: &World) {
     // Only save if there's still a living player around.
-    if is_game_over() {
+    if query::game_over(w) {
         return;
     }
 
-    let save_data = world::save();
+    let save_data = w.save();
     File::create(SAVE_FILENAME).unwrap()
         .write_all(&save_data.into_bytes()).unwrap();
 }
 
-pub fn load_game() {
-    if !save_exists() { return; }
+pub fn load_game() -> Result<World, ()> {
+    if !save_exists() { return Err(()); }
     let path = Path::new(SAVE_FILENAME);
     let mut save_data = String::new();
     File::open(&path).unwrap().read_to_string(&mut save_data).unwrap();
-    // TODO: Handle failed load nicely.
-    world::load(&save_data[..]).unwrap();
+    // TODO: Informative error message if load fails.
+    match World::load(&save_data[..]) {
+        Ok(w) => Ok(w),
+        _ => Err(())
+    }
 }
 
 pub fn _delete_save() {
@@ -340,4 +329,3 @@ pub fn _delete_save() {
 
 pub fn save_exists() -> bool { fs::metadata(SAVE_FILENAME).is_ok() }
 
-*/

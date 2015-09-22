@@ -1,6 +1,8 @@
 /*! Non-mutating world and entity state querying functions. */
 
+use calx::{noise, Dir6};
 use calx_ecs::{Entity};
+use content::TerrainType;
 use world::World;
 use components::{BrainState, Alignment};
 use stats::{Stats, Intrinsic};
@@ -103,5 +105,60 @@ pub fn location(w: &World, e: Entity) -> Option<Location> {
         Some(Place::At(loc)) => Some(loc),
         Some(Place::In(container, _)) => location(w, container),
         _ => None
+    }
+}
+
+/// Look for targets to shoot in a direction.
+pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
+    let origin = location(w, shooter).unwrap();
+    for i in 1..(range + 1) {
+        let loc = origin + dir.to_v2() * (i as i32);
+        if terrain(w, loc).blocks_shot() {
+            break;
+        }
+        if let Some(e) = mob_at(w, loc) {
+            if is_hostile_to(w, shooter, e) { return Some(e); }
+        }
+    }
+    None
+}
+
+pub fn terrain(w: &World, loc: Location) -> TerrainType {
+    let mut ret = w.area.terrain(loc);
+    // Mobs standing on doors make the doors open.
+    if ret == TerrainType::Door && has_mobs(w, loc) {
+        ret = TerrainType::OpenDoor;
+    }
+    // Grass is only occasionally fancy.
+    // TODO: Make variant tiles into a generic method.
+    if ret == TerrainType::Grass {
+        if loc.noise() > 0.85 {
+            ret = TerrainType::Grass2;
+        }
+    }
+    ret
+}
+
+pub fn has_mobs(w: &World, loc: Location) -> bool { mob_at(w, loc).is_some() }
+
+pub fn mob_at(w: &World, loc: Location) -> Option<Entity> {
+    w.spatial.entities_at(loc).into_iter().find(|&e| is_mob(w, e))
+}
+
+pub fn is_hostile_to(w: &World, e: Entity, other: Entity) -> bool {
+    match (alignment(w, e), alignment(w, other)) {
+        (Some(Alignment::Chaotic), Some(_)) => true,
+        (Some(_), Some(Alignment::Chaotic)) => true,
+        (Some(Alignment::Evil), Some(Alignment::Good)) => true,
+        (Some(Alignment::Good), Some(Alignment::Evil)) => true,
+        _ => false,
+    }
+}
+
+pub fn alignment(w: &World, e: Entity) -> Option<Alignment> {
+    if w.ecs.brain.contains(e) {
+        Some(w.ecs.brain[e].alignment)
+    } else {
+        None
     }
 }
