@@ -15,6 +15,7 @@ use location::{Location};
 use content::{Biome, AreaSpec};
 use ::{Msg};
 use msg;
+use query::{self, ControlState};
 
 /// Player input action.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -29,6 +30,92 @@ pub enum Input {
     Pass,
 }
 
+
+/// Top-level game state update function. Only valid to call if
+/// control_state() returned ReadyToUpdate.
+pub fn update(w: &mut World) {
+    assert!(query::control_state(w) == ControlState::ReadyToUpdate);
+
+    ai_main(w);
+
+    w.flags.tick += 1;
+    w.flags.player_acted = false;
+}
+
+/// Run AI for all autonomous mobs.
+fn ai_main(w: &mut World) {
+    println!("TODO");
+    /*
+    for entity in query::entities(w) {
+        entity.update();
+    }
+    */
+}
+
+/// Give player input. Only valid to call if control_state() returned
+/// AwaitingInput.
+pub fn input(w: &mut World, input: Input) {
+    assert!(query::control_state(w) == ControlState::AwaitingInput);
+    let p = query::player(w).expect("No player to receive input");
+    match input {
+        Input::Step(d) => {
+            step(w, p, d);
+        }
+        Input::Melee(d) => {
+            melee(w, p, d);
+        }
+        Input::Shoot(d) => {
+            shoot(w, p, d);
+        }
+        Input::Pass => {
+        }
+    }
+    w.flags.player_acted = true;
+
+    // Run one world update cycle right away, so that we don't get awkward
+    // single frames rendered where the player has acted and the rest of the
+    // world hasn't.
+    if query::control_state(w) == ControlState::ReadyToUpdate {
+        update(w);
+    }
+}
+
+/// Try to move the entity in direction.
+pub fn step(w: &mut World, e: Entity, dir: Dir6) {
+    unimplemented!();
+    /*
+    let place = world::with(|w| w.spatial.get(self));
+    if let Some(Place::At(loc)) = place {
+        let new_loc = loc + dir.to_v2();
+        if self.can_enter(new_loc) {
+            world::with_mut(|w| w.spatial.insert_at(self, new_loc));
+            self.on_move_to(new_loc);
+        }
+    }
+    */
+}
+
+pub fn melee(w: &mut World, e: Entity, dir: Dir6) {
+    unimplemented!();
+    /*
+    let loc = self.location().expect("no location") + dir.to_v2();
+    if let Some(e) = loc.mob_at() {
+        let us = self.stats();
+        e.damage(us.power + us.attack);
+    }
+    */
+}
+
+pub fn shoot(w: &mut World, e: Entity, dir: Dir6) {
+    unimplemented!();
+    /*
+    let stats = self.stats();
+
+    if stats.ranged_range > 0 {
+        action::shoot(self.location().unwrap(), dir, stats.ranged_range, stats.ranged_power);
+    }
+    */
+}
 
 /*
 /// Return the player entity if one exists.
@@ -58,47 +145,6 @@ pub fn control_state() -> ControlState {
     }
 }
 
-/// Top-level game state update function. Only valid to call if
-/// control_state() returned ReadyToUpdate.
-pub fn update() {
-    assert!(control_state() == ControlState::ReadyToUpdate);
-
-    ai_main();
-
-    world::with_mut(|w| {
-        w.flags.tick += 1;
-        w.flags.player_acted = false;
-    });
-}
-
-/// Give player input. Only valid to call if control_state() returned
-/// AwaitingInput.
-pub fn input(input: Input) {
-    assert!(control_state() == ControlState::AwaitingInput);
-    let p = player().expect("No player to receive input");
-    match input {
-        Input::Step(d) => {
-            p.step(d);
-        }
-        Input::Melee(d) => {
-            p.melee(d);
-        }
-        Input::Shoot(d) => {
-            p.shoot(d);
-        }
-        Input::Pass => {
-        }
-    }
-    world::with_mut(|w| w.flags.player_acted = true);
-
-    // Run one world update cycle right away, so that we don't get awkward
-    // single frames rendered where the player has acted and the rest of the
-    // world hasn't.
-    if control_state() == ControlState::ReadyToUpdate {
-        update();
-    }
-}
-
 // Entities ////////////////////////////////////////////////////////////
 
 /// Return an iterator of all the world entities.
@@ -110,13 +156,6 @@ pub fn entities() -> EntityIter {
 pub fn _mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
     fn _is_mob(e: &Entity) -> bool { e.is_mob() }
     entities().filter(_is_mob)
-}
-
-/// Run AI for all autonomous mobs.
-fn ai_main() {
-    for entity in entities() {
-        entity.update();
-    }
 }
 
 // World logic /////////////////////////////////////////////////////////

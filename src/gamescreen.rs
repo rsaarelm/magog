@@ -4,8 +4,9 @@ use calx::backend::{Canvas, CanvasUtil, Event, Key, Fonter, Align};
 use world;
 use world::action;
 use world::action::Input::*;
+use world::query;
 use world::query::ControlState::*;
-use world::{Msg, FovStatus};
+use world::{Msg, FovStatus, World};
 use calx::Dir6;
 use calx::Dir6::*;
 use calx_ecs::{Entity};
@@ -77,7 +78,7 @@ impl GameScreen {
 
     fn base_paint(&mut self, ctx: &mut Canvas) {
         ctx.clear_color = color::GRAY1;
-        let camera = world::camera();
+        let camera = self.world.flags.camera;
         worldview::draw_world(&camera, ctx, &self.damage_timers);
 
         self.world_spr.draw(|x| (camera + x).fov_status() == Some(FovStatus::Seen), &camera, ctx);
@@ -92,7 +93,7 @@ impl GameScreen {
             .draw(V2(638.0, 0.0));
 
         self.msg.draw(ctx);
-        if let Some(player) = action::player() {
+        if let Some(player) = query::player(&self.world) {
             self.draw_player_ui(ctx, player);
         }
 
@@ -136,12 +137,12 @@ impl GameScreen {
 
         self.base_paint(ctx);
 
-        if action::control_state() == ReadyToUpdate {
-            action::update();
+        if query::control_state(&self.world) == ReadyToUpdate {
+            action::update(&self.world);
         }
 
         if self.exploring {
-            if action::control_state() == AwaitingInput {
+            if query::control_state(&self.world) == AwaitingInput {
                 self.exploring = self.autoexplore();
             }
         }
@@ -157,7 +158,7 @@ impl GameScreen {
     }
 
     fn inventory_update(&mut self, ctx: &mut Canvas) {
-        let player = action::player().unwrap();
+        let player = query::player(&self.world).unwrap();
         for (i, slot_data) in SLOT_DATA.iter().enumerate() {
             let y = 8.0 * (i as f32);
             Fonter::new(ctx).color(color::LIGHTGRAY)
@@ -187,7 +188,7 @@ impl GameScreen {
     }
 
     pub fn inventory_process(&mut self, ctx: &mut Canvas, event: Event) -> bool {
-        let player = action::player().unwrap();
+        let player = query::player(&self.world).unwrap();
         match event {
             Event::RenderFrame => { self.update(ctx); }
             Event::KeyPress(Key::Escape) | Event::KeyPress(Key::Tab) => {
@@ -242,7 +243,7 @@ impl GameScreen {
     }
 
     fn smart_move(&mut self, dir: Dir6) {
-        let player = action::player().unwrap();
+        let player = query::player(&self.world).unwrap();
         let loc = player.location().unwrap();
 
         if !(loc + dir.to_v2()).has_mobs() {
@@ -276,7 +277,10 @@ impl GameScreen {
     }
 
     fn autoexplore(&mut self) -> bool {
-        let player = action::player().unwrap();
+        let player = query::player(&self.world).unwrap();
+
+        unimplemented!();
+        /*
         let threats = player.is_threatened(6);
         if !threats.is_empty() {
             for &e in threats.iter() {
@@ -296,13 +300,14 @@ impl GameScreen {
             action::input(Step(loc.dir6_towards(steps[0]).unwrap()));
             return true;
         }
+        */
 
         false
     }
 
     /// Context-specific interaction with the current cell.
     fn interact(&mut self) {
-        let player = action::player().unwrap();
+        let player = query::player(&self.world).unwrap();
         let loc = player.location().unwrap();
         if let Some(item) = loc.top_item() {
             player.pick_up(item);
@@ -312,7 +317,7 @@ impl GameScreen {
 
     /// Process a player control keypress.
     pub fn gameplay_process_key(&mut self, key: Key) -> bool {
-        if action::control_state() != AwaitingInput {
+        if query::control_state(&self.world) != AwaitingInput {
             return false;
         }
 

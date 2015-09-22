@@ -110,18 +110,6 @@ impl Entity {
         return false;
     }
 
-    /// Try to move the entity in direction.
-    pub fn step(self, dir: Dir6) {
-        let place = world::with(|w| w.spatial.get(self));
-        if let Some(Place::At(loc)) = place {
-            let new_loc = loc + dir.to_v2();
-            if self.can_enter(new_loc) {
-                world::with_mut(|w| w.spatial.insert_at(self, new_loc));
-                self.on_move_to(new_loc);
-            }
-        }
-    }
-
     pub fn location(self) -> Option<Location> {
         match world::with(|w| w.spatial.get(self)) {
             Some(Place::At(loc)) => Some(loc),
@@ -279,22 +267,6 @@ impl Entity {
     /// animated with a bob.
     pub fn is_bobbing(self) -> bool {
         self.is_active() && !self.is_player()
-    }
-
-    pub fn melee(self, dir: Dir6) {
-        let loc = self.location().expect("no location") + dir.to_v2();
-        if let Some(e) = loc.mob_at() {
-            let us = self.stats();
-            e.damage(us.power + us.attack);
-        }
-    }
-
-    pub fn shoot(self, dir: Dir6) {
-        let stats = self.stats();
-
-        if stats.ranged_range > 0 {
-            action::shoot(self.location().unwrap(), dir, stats.ranged_range, stats.ranged_power);
-        }
     }
 
     pub fn hp(self) -> i32 {

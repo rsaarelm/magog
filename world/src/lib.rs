@@ -31,6 +31,7 @@ macro_rules! caption(
 pub mod action;
 pub mod components;
 pub mod item;
+pub mod query;
 
 mod ability;
 mod area;
@@ -39,7 +40,6 @@ mod flags;
 pub mod location;
 mod location_set;
 mod msg;
-mod query;
 mod spatial;
 mod spawn;
 mod stats;
