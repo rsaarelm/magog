@@ -12,6 +12,7 @@ pub use flags::{Flags};
 pub use location::{Location, Chart, Unchart};
 pub use msg::{pop_msg};
 pub use world::{World};
+pub use spatial::{Spatial};
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))
