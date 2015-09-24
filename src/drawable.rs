@@ -1,3 +1,4 @@
+use world::{World};
 use calx::{V2};
 use calx::backend::{Canvas};
 

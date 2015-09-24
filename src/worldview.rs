@@ -4,27 +4,29 @@ use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil, Image};
 use calx_ecs::{Entity};
 use content::{Brush};
-use world::{Location, Chart};
+use world::{Location, Chart, World};
 use world::{FovStatus};
 use world::{Light};
+use world::query;
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::{Drawable};
 use gamescreen::{Blink};
 use render_terrain::{self, Angle};
 
-pub fn draw_world<C: Chart+Copy>(chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
+pub fn draw_world<C: Chart+Copy>(w: &World, chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
         let cell_drawable = CellDrawable::new(
-            loc, 0, loc.fov_status(), loc.light(), damage_timers);
+            w, loc, 0, query::fov_status(w, loc), query::light_at(w, loc), damage_timers);
         cell_drawable.draw(ctx, screen_pos);
     }
 }
 
 /// Drawable representation of a single map location.
 pub struct CellDrawable<'a> {
+    world: &'a World,
     pub loc: Location,
     pub depth: i32,
     pub fov: Option<FovStatus>,
@@ -47,12 +49,14 @@ impl<'a> Drawable for CellDrawable<'a> {
 
 impl<'a> CellDrawable<'a> {
     pub fn new(
+        world: &'a World,
         loc: Location,
         depth: i32,
         fov: Option<FovStatus>,
         light: Light,
         damage_timers: &'a HashMap<Entity, (Blink, u32)>) -> CellDrawable<'a> {
         CellDrawable {
+            world: world,
             loc: loc,
             depth: depth,
             fov: fov,
@@ -85,7 +89,7 @@ impl<'a> CellDrawable<'a> {
 
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
         let visible = self.fov == Some(FovStatus::Seen);
-        let k = Kernel::new(|loc| loc.terrain(), self.loc);
+        let k = Kernel::new(|loc| query::terrain(self.world, loc), self.loc);
         render_terrain::render(&k, |img, angle, fore, back| {
                  let z = match angle {
                      Angle::Up => FLOOR_Z,
@@ -96,27 +100,27 @@ impl<'a> CellDrawable<'a> {
 
         if visible {
             // Sort mobs on top of items for drawing.
-            let mut es = self.loc.entities();
-            es.sort_by(|a, b| a.is_mob().cmp(&b.is_mob()));
-            for e in es.iter() {
+            let mut es = self.world.spatial.entities_at(self.loc);
+            es.sort_by(|&a, &b| query::is_mob(self.world, a).cmp(&query::is_mob(self.world, b)));
+            for e in es.into_iter() {
                 self.draw_entity(ctx, offset, e);
             }
         }
     }
 
-    fn draw_entity(&'a self, ctx: &mut Canvas, offset: V2<f32>, entity: &Entity) {
+    fn draw_entity(&'a self, ctx: &mut Canvas, offset: V2<f32>, entity: Entity) {
         let body_pos =
-            if entity.is_bobbing() {
+            if query::is_bobbing(self.world, entity) {
                 offset + *(timing::cycle_anim(
                         0.3f64,
                         &[V2(0.0, 0.0), V2(0.0, -1.0)]))
             } else { offset };
 
-        if let Some((brush, mut color)) = entity.get_brush() {
+        if let Some((brush, mut color)) = query::entity_brush(self.world, entity) {
             let mut back_color = BLACK;
 
             // Damage blink animation.
-            if let Some(&(ref b, ref t)) = self.damage_timers.get(entity) {
+            if let Some(&(ref b, ref t)) = self.damage_timers.get(&entity) {
                 match b {
                     &Blink::Damaged => {
                         if t % 2 == 0 {
@@ -135,7 +139,7 @@ impl<'a> CellDrawable<'a> {
                 }
             }
 
-            if entity.is_item() {
+            if query::is_item(self.world, entity) {
                 // Blink pickups intermittently to draw attention.
                 if timing::spike(1.5, 0.1) {
                     color = WHITE;

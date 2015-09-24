@@ -1,15 +1,15 @@
 /*! Non-mutating world and entity state querying functions. */
 
-use calx::{noise, Dir6};
+use calx::{noise, Dir6, Rgba};
 use calx_ecs::{Entity};
-use content::TerrainType;
+use content::{Brush, TerrainType};
 use world::World;
 use components::{BrainState, Alignment};
 use stats::{Stats, Intrinsic};
 use location::Location;
 use spatial::{Place};
 use item::{ItemType, Slot};
-use ::{FovStatus};
+use ::{FovStatus, Light};
 
 /// Game update control.
 #[derive(Copy, Clone, PartialEq)]
@@ -35,6 +35,11 @@ pub fn control_state(w: &World) -> ControlState {
     }
 
     return ControlState::ReadyToUpdate;
+}
+
+/// Return whether this mob is the player avatar.
+pub fn is_player(w: &World, e: Entity) -> bool {
+    brain_state(w, e) == Some(BrainState::PlayerControl) && location(w, e).is_some()
 }
 
 /// Return whether the entity is an awake mob.
@@ -251,6 +256,8 @@ pub fn top_item(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| can_be_picked_up(w, e))
 }
 
+pub fn is_item(w: &World, e: Entity) -> bool { w.ecs.item.contains(e) }
+
 pub fn area_name(w: &World, _loc: Location) -> String {
     match current_depth(w) {
         0 => "Limbo".to_string(),
@@ -287,4 +294,35 @@ pub fn fov_status(w: &World, loc: Location) -> Option<FovStatus> {
     }
     // Just show everything by default.
     Some(::FovStatus::Seen)
+}
+
+/// Light level for the location.
+pub fn light_at(w: &World, loc: Location) -> Light {
+    if current_depth(w) == 1 {
+        // Topside, full light.
+        return Light::new(1.0);
+    }
+    if terrain(w, loc).is_luminous() {
+        return Light::new(1.0);
+    }
+
+    if let Some(d) = loc.distance_from(w.flags.camera) {
+        let lum = 0.8 - d as f32 / 10.0;
+        return Light::new(if lum >= 0.0 { lum } else { 0.0 });
+    }
+    return Light::new(1.0);
+}
+
+/// Return whether the entity is an awake non-player mob and should be
+/// animated with a bob.
+pub fn is_bobbing(w: &World, e: Entity) -> bool {
+    is_active(w, e) && !is_player(w, e)
+}
+
+pub fn entity_brush(w: &World, e: Entity) -> Option<(Brush, Rgba)> {
+    if w.ecs.desc.contains(e) {
+        Some((w.ecs.desc[e].icon, w.ecs.desc[e].color))
+    } else {
+        None
+    }
 }

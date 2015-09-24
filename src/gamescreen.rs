@@ -79,7 +79,7 @@ impl GameScreen {
     fn base_paint(&mut self, ctx: &mut Canvas) {
         ctx.clear_color = color::GRAY1;
         let camera = self.world.flags.camera;
-        worldview::draw_world(&camera, ctx, &self.damage_timers);
+        worldview::draw_world(&self.world, &camera, ctx, &self.damage_timers);
 
         self.world_spr.draw(|x| query::fov_status(&self.world, (camera + x)) == Some(FovStatus::Seen), &camera, ctx);
         self.world_spr.update();
