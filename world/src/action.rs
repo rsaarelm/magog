@@ -14,10 +14,10 @@ use area::{Area};
 use location::{Location};
 use content::{Biome, AreaSpec};
 use item::{Slot};
+use components::{CompositeStats};
 use ::{Msg};
 use msg;
 use query::{self, ControlState};
-use support;
 
 /// Player input action.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -137,9 +137,31 @@ pub fn pick_up(w: &mut World, picker: Entity, item: Entity) -> bool {
 /// Equip an item to a slot. Slot must be empty.
 pub fn equip(w: &mut World, item: Entity, e: Entity, slot: Slot) {
     w.spatial.equip(item, e, slot);
-    support::refresh_stats_cache(w, e)
+    recompose_stats(w, e)
 }
 
+/// Generate composed stats from base stats and the stats of equipped items.
+/// This function must be called after any operation that changes the composed
+/// stats affecting state of an entity.
+pub fn recompose_stats(w: &mut World, e: Entity) {
+    let mut stats = query::base_stats(w, e);
+    for &slot in [
+        Slot::Body,
+        Slot::Feet,
+        Slot::Head,
+        Slot::Melee,
+        Slot::Ranged,
+        Slot::TrinketF,
+        Slot::TrinketG,
+        Slot::TrinketH,
+        Slot::TrinketI].iter() {
+        if let Some(item) = w.spatial.entity_equipped(e, slot) {
+            stats = stats + query::stats(w, item);
+        }
+    }
+
+    w.ecs.composite_stats[e] = CompositeStats(stats);
+}
 /*
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {

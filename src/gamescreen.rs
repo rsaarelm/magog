@@ -63,8 +63,8 @@ impl GameScreen {
     }
 
     fn draw_player_ui(&mut self, ctx: &mut Canvas, player: Entity) {
-        let hp = player.hp();
-        let max_hp = player.max_hp();
+        let hp = query::hp(&self.world, player);
+        let max_hp = query::max_hp(&self.world, player);
 
         // Draw heart containers.
         for i in 0..((max_hp + 1) / 2) {
@@ -81,15 +81,13 @@ impl GameScreen {
         let camera = self.world.flags.camera;
         worldview::draw_world(&camera, ctx, &self.damage_timers);
 
-        self.world_spr.draw(|x| (camera + x).fov_status() == Some(FovStatus::Seen), &camera, ctx);
+        self.world_spr.draw(|x| query::fov_status(&self.world, (camera + x)) == Some(FovStatus::Seen), &camera, ctx);
         self.world_spr.update();
-
-        let location_name = camera.name();
 
         Fonter::new(ctx)
             .color(color::LIGHTGRAY).border(color::BLACK)
             .anchor(Anchor::TopRight).align(Align::Right)
-            .text(location_name)
+            .text(query::area_name(&self.world, camera))
             .draw(V2(638.0, 0.0));
 
         self.msg.draw(ctx);
@@ -138,7 +136,7 @@ impl GameScreen {
         self.base_paint(ctx);
 
         if query::control_state(&self.world) == ReadyToUpdate {
-            action::update(&self.world);
+            action::update(&mut self.world);
         }
 
         if self.exploring {
@@ -158,6 +156,8 @@ impl GameScreen {
     }
 
     fn inventory_update(&mut self, ctx: &mut Canvas) {
+        unimplemented!();
+        /*
         let player = query::player(&self.world).unwrap();
         for (i, slot_data) in SLOT_DATA.iter().enumerate() {
             let y = 8.0 * (i as f32);
@@ -185,9 +185,12 @@ impl GameScreen {
             .anchor(Anchor::BottomLeft)
             .text("Press letter to equip/unequip item. Press shift+letter to drop item.".to_string())
             .draw(V2(0.0, 360.0));
+        */
     }
 
     pub fn inventory_process(&mut self, ctx: &mut Canvas, event: Event) -> bool {
+        unimplemented!();
+        /*
         let player = query::player(&self.world).unwrap();
         match event {
             Event::RenderFrame => { self.update(ctx); }
@@ -241,6 +244,7 @@ impl GameScreen {
             _ => ()
         }
         true
+        */
     }
 
     fn smart_move(&mut self, dir: Dir6) {
@@ -252,7 +256,7 @@ impl GameScreen {
             // melee target.
             let shoot_range = query::stats(&self.world, player).ranged_range as usize;
             if let Some(e) = query::find_target(&self.world, player, dir, shoot_range) {
-                if player.is_hostile_to(e) {
+                if query::is_hostile_to(&self.world, player, e) {
                     action::input(&mut self.world, Shoot(dir));
                     return;
                 }

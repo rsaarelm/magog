@@ -148,7 +148,9 @@ pub struct Item {
 }
 
 
-/// Stats cache is a transient component made from adding up a mob's intrinsic
-/// stats and the stat bonuses of its equipment and whatever spell effects may
-/// apply.
-pub type StatsCache = Option<Stats>;
+/// Composite stats are generated from adding up a mob's intrinsic base stats
+/// and stat bonuses from equipment it is wearing and any other transient
+/// effects. They need to be updated whenever the relevant state of the entity
+/// changes.
+#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+pub struct CompositeStats(pub Stats);

@@ -16,7 +16,7 @@ Ecs! {
     health: components::Health,
     brain: components::Brain,
     item: components::Item,
-    stats_cache: components::StatsCache,
+    composite_stats: components::CompositeStats,
     stats: stats::Stats,
 }
 

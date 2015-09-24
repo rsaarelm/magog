@@ -9,7 +9,7 @@ use stats::{Stats, Intrinsic};
 use location::Location;
 use spatial::{Place};
 use item::{ItemType, Slot};
-use support;
+use ::{FovStatus};
 
 /// Game update control.
 #[derive(Copy, Clone, PartialEq)]
@@ -78,15 +78,25 @@ pub fn ticks_this_frame(w: &World, e: Entity) -> bool {
 }
 
 pub fn has_intrinsic(w: &World, e: Entity, intrinsic: Intrinsic) -> bool {
-    if !w.ecs.stats_cache.contains(e) { return false; }
-    w.ecs.stats_cache[e].map_or(false, |stat| stat.intrinsics & intrinsic as u32 != 0)
+    stats(w, e).intrinsics & intrinsic as u32 != 0
 }
 
+/// Return the (composite) stats for an entity.
 pub fn stats(w: &World, e: Entity) -> Stats {
-    if w.ecs.stats_cache.contains(e) {
-        w.ecs.stats_cache[e].expect("Existing stats_cache value must be Some after cache refresh")
+    if w.ecs.composite_stats.contains(e) {
+        w.ecs.composite_stats[e].0
     } else {
-        support::base_stats(w, e)
+        base_stats(w, e)
+    }
+}
+
+/// Return the base stats of the entity. Does not include any added effects.
+/// You almost always want to use the stats function instead of this one.
+pub fn base_stats(w: &World, e: Entity) -> Stats {
+    if w.ecs.stats.contains(e) {
+        w.ecs.stats[e]
+    } else {
+        Default::default()
     }
 }
 
@@ -239,4 +249,42 @@ pub fn can_be_picked_up(w: &World, e: Entity) -> bool {
 /// Return an item at the location that can be interacted with.
 pub fn top_item(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| can_be_picked_up(w, e))
+}
+
+pub fn area_name(w: &World, _loc: Location) -> String {
+    match current_depth(w) {
+        0 => "Limbo".to_string(),
+        1 => "Overworld".to_string(),
+        n => format!("Dungeon {}", n - 1)
+    }
+}
+
+/// Return the current floor depth. Greater depths mean more powerful monsters
+/// and stranger terrain.
+pub fn current_depth(w: &World) -> i32 { w.area.seed.spec.depth }
+
+pub fn hp(w: &World, e: Entity) -> i32 {
+    max_hp(w, e) -
+        if w.ecs.health.contains(e) { w.ecs.health[e].wounds }
+        else { 0 }
+}
+
+pub fn max_hp(w: &World, e: Entity) -> i32 {
+    stats(w, e).power
+}
+
+pub fn fov_status(w: &World, loc: Location) -> Option<FovStatus> {
+    if let Some(p) = player(w) {
+        if w.ecs.map_memory.contains(p) {
+            if w.ecs.map_memory[p].seen.contains(&loc) {
+                return Some(FovStatus::Seen);
+            }
+            if w.ecs.map_memory[p].remembered.contains(&loc) {
+                return Some(FovStatus::Remembered);
+            }
+            return None;
+        }
+    }
+    // Just show everything by default.
+    Some(::FovStatus::Seen)
 }

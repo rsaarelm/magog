@@ -43,7 +43,6 @@ mod msg;
 mod spatial;
 mod spawn;
 mod stats;
-mod support;
 mod world;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
