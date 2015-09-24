@@ -230,7 +230,8 @@ impl GameScreen {
                     if ch == slot_data.key.to_uppercase().next().unwrap() {
                         // Drop item in slot.
                         if let Some(item) = player.equipped(slot_data.slot) {
-                            item.place(player.location().unwrap());
+                            let loc = query::location(&self.world, player);
+                            self.world.spatial.insert_at(item, loc);
                         }
                         break;
                     }
@@ -244,15 +245,15 @@ impl GameScreen {
 
     fn smart_move(&mut self, dir: Dir6) {
         let player = query::player(&self.world).unwrap();
-        let loc = player.location().unwrap();
+        let loc = query::location(&self.world, player).unwrap();
 
-        if !(loc + dir.to_v2()).has_mobs() {
+        if !query::has_mobs(&self.world, loc + dir.to_v2()) {
             // Shoot instead of moving if you'd hit an enemy and there's no
             // melee target.
-            let shoot_range = player.stats().ranged_range as usize;
+            let shoot_range = query::stats(&self.world, player).ranged_range as usize;
             if let Some(e) = query::find_target(&self.world, player, dir, shoot_range) {
                 if player.is_hostile_to(e) {
-                    action::input(Shoot(dir));
+                    action::input(&mut self.world, Shoot(dir));
                     return;
                 }
             }
@@ -266,11 +267,11 @@ impl GameScreen {
 
         for &d in dirset.iter() {
             let target_loc = loc + d.to_v2();
-            if target_loc.has_mobs() {
-                action::input(Melee(d));
+            if query::has_mobs(&self.world, target_loc) {
+                action::input(&mut self.world, Melee(d));
                 return;
-            } else if player.can_step(d) {
-                action::input(Step(d));
+            } else if query::can_step(&self.world, player, d) {
+                action::input(&mut self.world, Step(d));
                 return;
             }
         }
@@ -308,9 +309,9 @@ impl GameScreen {
     /// Context-specific interaction with the current cell.
     fn interact(&mut self) {
         let player = query::player(&self.world).unwrap();
-        let loc = player.location().unwrap();
-        if let Some(item) = loc.top_item() {
-            player.pick_up(item);
+        let loc = query::location(&self.world, player).unwrap();
+        if let Some(item) = query::top_item(&self.world, loc) {
+            action::pick_up(&mut self.world, player, item);
             return;
         }
     }
@@ -334,7 +335,7 @@ impl GameScreen {
             Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
 
             Key::Enter => { self.interact(); }
-            Key::Space => { action::input(Pass); }
+            Key::Space => { action::input(&mut self.world, Pass); }
             Key::X => { self.exploring = true; }
 
             // Open inventory

@@ -13,9 +13,11 @@ use flags;
 use area::{Area};
 use location::{Location};
 use content::{Biome, AreaSpec};
+use item::{Slot};
 use ::{Msg};
 use msg;
 use query::{self, ControlState};
+use support;
 
 /// Player input action.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -115,6 +117,27 @@ pub fn shoot(w: &mut World, e: Entity, dir: Dir6) {
         action::shoot(self.location().unwrap(), dir, stats.ranged_range, stats.ranged_power);
     }
     */
+}
+
+pub fn pick_up(w: &mut World, picker: Entity, item: Entity) -> bool {
+    if !query::can_be_picked_up(w, item) {
+        return false;
+    }
+
+    match query::free_bag_slot(w, picker) {
+        Some(slot) => {
+            equip(w, item, picker, slot);
+            return true;
+        }
+        // Inventory full.
+        None => { return false; }
+    }
+}
+
+/// Equip an item to a slot. Slot must be empty.
+pub fn equip(w: &mut World, item: Entity, e: Entity, slot: Slot) {
+    w.spatial.equip(item, e, slot);
+    support::refresh_stats_cache(w, e)
 }
 
 /*

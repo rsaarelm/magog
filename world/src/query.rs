@@ -8,6 +8,7 @@ use components::{BrainState, Alignment};
 use stats::{Stats, Intrinsic};
 use location::Location;
 use spatial::{Place};
+use item::{ItemType, Slot};
 use support;
 
 /// Game update control.
@@ -25,7 +26,7 @@ pub fn player(w: &World) -> Option<Entity> { w.flags.player }
 pub fn game_over(w: &World) -> bool { player(w).is_none() }
 
 /// Get the current control state.
-pub fn control_state(w: &mut World) -> ControlState {
+pub fn control_state(w: &World) -> ControlState {
     if w.flags.player_acted { return ControlState::ReadyToUpdate; }
 
     let p = player(w);
@@ -46,7 +47,7 @@ pub fn is_active(w: &World, e: Entity) -> bool {
 }
 
 /// Return whether the entity is a mob that will act this frame.
-pub fn acts_this_frame(w: &mut World, e: Entity) -> bool {
+pub fn acts_this_frame(w: &World, e: Entity) -> bool {
     if !is_active(w, e) { return false; }
     return ticks_this_frame(w, e);
 }
@@ -59,7 +60,7 @@ fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
 /// Return if the entity is a mob that should get an update this frame
 /// based on its speed properties. Does not check for status effects like
 /// sleep that might prevent actual action.
-pub fn ticks_this_frame(w: &mut World, e: Entity) -> bool {
+pub fn ticks_this_frame(w: &World, e: Entity) -> bool {
     if !is_mob(w, e) { return false; }
 
     let tick = w.flags.tick;
@@ -76,15 +77,12 @@ pub fn ticks_this_frame(w: &mut World, e: Entity) -> bool {
     }
 }
 
-pub fn has_intrinsic(w: &mut World, e: Entity, intrinsic: Intrinsic) -> bool {
+pub fn has_intrinsic(w: &World, e: Entity, intrinsic: Intrinsic) -> bool {
     if !w.ecs.stats_cache.contains(e) { return false; }
-
-    support::refresh_stats_cache(w, e);
     w.ecs.stats_cache[e].map_or(false, |stat| stat.intrinsics & intrinsic as u32 != 0)
 }
 
-pub fn stats(w: &mut World, e: Entity) -> Stats {
-    support::refresh_stats_cache(w, e);
+pub fn stats(w: &World, e: Entity) -> Stats {
     if w.ecs.stats_cache.contains(e) {
         w.ecs.stats_cache[e].expect("Existing stats_cache value must be Some after cache refresh")
     } else {
@@ -139,6 +137,20 @@ pub fn terrain(w: &World, loc: Location) -> TerrainType {
     ret
 }
 
+/// Return whether the location obstructs entity movement.
+pub fn blocks_walk(w: &World, loc: Location) -> bool {
+    if terrain(w, loc).blocks_walk() { return true; }
+    if w.spatial.entities_at(loc).into_iter().any(|e| is_blocking_entity(w, e)) {
+        return true;
+    }
+    false
+}
+
+/// Return whether the entity blocks movement of other entities.
+pub fn is_blocking_entity(w: &World, e: Entity) -> bool {
+    is_mob(w, e)
+}
+
 pub fn has_mobs(w: &World, loc: Location) -> bool { mob_at(w, loc).is_some() }
 
 pub fn mob_at(w: &World, loc: Location) -> Option<Entity> {
@@ -161,4 +173,70 @@ pub fn alignment(w: &World, e: Entity) -> Option<Alignment> {
     } else {
         None
     }
+}
+
+/// Return whether the entity can occupy a location.
+pub fn can_enter(w: &World, e: Entity, loc: Location) -> bool {
+    if is_mob(w, e) && has_mobs(w, loc) { return false; }
+    if terrain(w, loc).is_door() && !has_intrinsic(w, e, Intrinsic::Hands) {
+        // Can't open doors without hands.
+        return false;
+    }
+    if blocks_walk(w, loc) { return false; }
+    true
+}
+
+/// Return whether the entity can move in a direction.
+pub fn can_step(w: &World, e: Entity, dir: Dir6) -> bool {
+    let place = w.spatial.get(e);
+    if let Some(Place::At(loc)) = place {
+        let new_loc = loc + dir.to_v2();
+        return can_enter(w, e, new_loc);
+    }
+    return false;
+}
+
+/// Return the first free storage bag inventory slot on this entity.
+pub fn free_bag_slot(w: &World, e: Entity) -> Option<Slot> {
+    for &slot in vec![
+        Slot::InventoryJ,
+        Slot::InventoryK,
+        Slot::InventoryL,
+        Slot::InventoryM,
+        Slot::InventoryN,
+        Slot::InventoryO,
+        Slot::InventoryP,
+        Slot::InventoryQ,
+        Slot::InventoryR,
+        Slot::InventoryS,
+        Slot::InventoryT,
+        Slot::InventoryU,
+        Slot::InventoryV,
+        Slot::InventoryW,
+        Slot::InventoryX,
+        Slot::InventoryY,
+        Slot::InventoryZ].iter() {
+        if equipped(w, e, slot).is_none() {
+            return Some(slot);
+    }
+}
+None
+}
+
+/// Return the item equipped by this entity in the given inventory slot.
+pub fn equipped(w: &World, e: Entity, slot: Slot) -> Option<Entity> {
+w.spatial.entity_equipped(e, slot)
+}
+
+pub fn can_be_picked_up(w: &World, e: Entity) -> bool {
+    if w.ecs.item.contains(e) {
+        w.ecs.item[e].item_type != ItemType::Instant
+    } else {
+        false
+    }
+}
+
+/// Return an item at the location that can be interacted with.
+pub fn top_item(w: &World, loc: Location) -> Option<Entity> {
+    w.spatial.entities_at(loc).into_iter().find(|&e| can_be_picked_up(w, e))
 }
