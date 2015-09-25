@@ -211,8 +211,88 @@ pub fn recompose_stats(w: &mut World, e: Entity) {
         }
     }
 
-    w.ecs.composite_stats[e] = CompositeStats(stats);
+    w.ecs.composite_stats.insert(e, CompositeStats(stats));
 }
+
+pub fn start_level(w: &mut World, depth: i32) {
+    let biome = match depth {
+        1 => Biome::Overland,
+        _ => Biome::Dungeon,
+    };
+
+    clear_nonplayers(w);
+
+    let seed = w.flags.seed;
+
+    w.area = Area::new(
+        seed,
+        AreaSpec::new(biome, depth));
+
+    /*
+    // TODO: Get spawns working again.
+    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][..]);
+    for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
+        spawn.spawn(&mut rng, loc);
+    }
+    */
+
+    let start_loc = w.area.player_entrance();
+    // Either reuse the existing player or create a new one.
+    match query::player(w) {
+        Some(p) => {
+            forget_map(w, p);
+            w.spatial.insert_at(p, start_loc);
+        }
+        None => {
+            // TODO: Use factory.
+            use calx::color;
+            use content::Brush;
+            use components::{Desc, MapMemory, Health, Brain, BrainState, Alignment};
+            use stats::{Stats};
+            use stats::Intrinsic::*;
+            let player = w.ecs.make();
+            w.ecs.desc.insert(player, Desc::new("player", Brush::Human, color::AZURE));
+            w.ecs.map_memory.insert(player, MapMemory::new());
+            w.ecs.brain.insert(player, Brain { state: BrainState::PlayerControl, alignment: Alignment::Good });
+            w.ecs.stats.insert(player, Stats::new(10, &[Hands]).mana(5));
+            recompose_stats(w, player);
+
+            w.flags.player = Some(player);
+
+            w.spatial.insert_at(player, start_loc);
+            // TODO: run FOV
+        }
+    };
+    w.flags.camera = start_loc;
+}
+
+fn clear_nonplayers(w: &mut World) {
+    let po = query::player(w);
+    let entities: Vec<Entity> = w.ecs.iter().map(|&e| e).collect();
+    for e in entities.into_iter() {
+        // Don't destroy player or player's inventory.
+        if let Some(p) = po {
+            if e == p || w.spatial.contains(p, e) {
+                continue;
+            }
+        }
+
+        if query::location(w, e).is_some() {
+            w.ecs.remove(e);
+        }
+    }
+}
+
+/// Clear map memory of an entity.
+pub fn forget_map(w: &mut World, e: Entity) {
+    w.ecs.map_memory.get_mut(e).map(
+        |mm| {
+            mm.seen.clear();
+            mm.remembered.clear();
+        });
+}
+
+
 /*
 /// Return the player entity if one exists.
 pub fn player() -> Option<Entity> {
@@ -260,62 +340,6 @@ pub fn _mobs() -> Filter<EntityIter, fn(&Entity) -> bool> {
 /// and stranger terrain.
 pub fn current_depth() -> i32 { world::with(|w| w.area.seed.spec.depth) }
 
-pub fn start_level(w: &mut World, depth: i32) {
-    let biome = match depth {
-        1 => Biome::Overland,
-        _ => Biome::Dungeon,
-    };
-
-    clear_nonplayers();
-
-    let seed = world::with(|w| w.flags.seed);
-
-    let new_area = Area::new(
-        seed,
-        AreaSpec::new(biome, depth));
-    // XXX: How to move area into the closure without cloning?
-    world::with_mut(|w| {
-        w.area = new_area.clone();
-    });
-
-    /*
-    // TODO: Get spawns working again.
-    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][..]);
-    for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
-        spawn.spawn(&mut rng, loc);
-    }
-    */
-
-    let start_loc = world::with(|w| w.area.player_entrance());
-    // Either reuse the existing player or create a new one.
-    match player() {
-        Some(p) => {
-            p.forget_map();
-            p.place(start_loc);
-        }
-        None => {
-            let player = spawn_named("player", start_loc).unwrap();
-            world::with_mut(|w| w.flags.player = Some(player));
-        }
-    };
-    flags::set_camera(start_loc);
-}
-
-fn clear_nonplayers() {
-    let po = player();
-    for e in entities() {
-        // Don't destroy player or player's inventory.
-        if let Some(p) = po {
-            if e == p || p.contains(e) {
-                continue;
-            }
-        }
-
-        if e.location().is_some() {
-            e.delete();
-        }
-    }
-}
 
 /// Move the player to the next level.
 pub fn next_level() {
