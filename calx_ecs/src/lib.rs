@@ -6,7 +6,7 @@ extern crate rustc_serialize;
 
 use std::default::{Default};
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{HashMap, HashSet};
+use std::collections::{hash_map, HashMap, HashSet};
 use std::collections::hash_set;
 
 /// Handle for an entity in the entity component system.
@@ -27,7 +27,7 @@ pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
-    data: HashMap<usize, C>,
+    data: HashMap<Entity, C>,
 }
 
 impl<C> ComponentData<C> {
@@ -38,33 +38,53 @@ impl<C> ComponentData<C> {
     }
 
     /// Insert a component to an entity.
-    pub fn insert(&mut self, Entity(uid): Entity, comp: C) {
-        self.data.insert(uid, comp);
+    pub fn insert(&mut self, e: Entity, comp: C) {
+        self.data.insert(e, comp);
     }
 
     /// Return whether an entity contains this component.
-    pub fn contains(&self, Entity(uid): Entity) -> bool {
-        self.data.contains_key(&uid)
+    pub fn contains(&self, e: Entity) -> bool {
+        self.data.contains_key(&e)
+    }
+
+    /// Get a reference to a component only if it exists for this entity.
+    pub fn get(&self, e: Entity) -> Option<&C> {
+        self.data.get(&e)
+    }
+
+    /// Get a mutable reference to a component only if it exists for this entity.
+    pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
+        self.data.get_mut(&e)
+    }
+
+    /// Iterate entity-component pairs for this component.
+    pub fn iter(&self) -> hash_map::Iter<Entity, C> {
+        self.data.iter()
+    }
+
+    /// Iterate mutable entity-component pairs for this component.
+    pub fn iter_mut(&mut self) -> hash_map::IterMut<Entity, C> {
+        self.data.iter_mut()
     }
 }
 
 impl<C> Index<Entity> for ComponentData<C> {
     type Output = C;
 
-    fn index<'a>(&'a self, Entity(uid): Entity) -> &'a C {
-        self.data.get(&uid).unwrap()
+    fn index<'a>(&'a self, e: Entity) -> &'a C {
+        self.data.get(&e).unwrap()
     }
 }
 
 impl<C> IndexMut<Entity> for ComponentData<C> {
-    fn index_mut<'a>(&'a mut self, Entity(uid): Entity) -> &'a mut C {
-        self.data.get_mut(&uid).unwrap()
+    fn index_mut<'a>(&'a mut self, e: Entity) -> &'a mut C {
+        self.data.get_mut(&e).unwrap()
     }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
-    fn remove(&mut self, Entity(uid): Entity) {
-        self.data.remove(&uid);
+    fn remove(&mut self, e: Entity) {
+        self.data.remove(&e);
     }
 }
 
