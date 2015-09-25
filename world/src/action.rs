@@ -46,12 +46,63 @@ pub fn update(w: &mut World) {
 
 /// Run AI for all autonomous mobs.
 fn ai_main(w: &mut World) {
-    println!("TODO");
-    /*
-    for entity in query::entities(w) {
-        entity.update();
+    let actives: Vec<Entity> = w.ecs.brain.iter().map(|(&e, _)| e).collect();
+    for e in actives.into_iter() { update_entity(w, e); }
+}
+
+pub fn update_entity(w: &mut World, e: Entity) {
+    if query::is_mob(w, e) && !query::is_player(w, e) && query::ticks_this_frame(w, e) {
+        mob_ai(w, e);
     }
-    */
+}
+
+pub fn mob_ai(w: &mut World, e: Entity) {
+    unimplemented!();
+    /*
+        assert!(self.is_mob());
+        assert!(!self.is_player());
+        assert!(self.ticks_this_frame());
+
+        if self.brain_state() == Some(BrainState::Asleep) {
+            if let Some(p) = action::player() {
+                // TODO: Line-of-sight, stealth concerns, other enemies than
+                // player etc.
+                if let Some(d) = p.distance_from(self) {
+                    if d < 6 {
+                        self.wake_up();
+                    }
+                }
+            }
+
+            return;
+        }
+
+        if let Some(p) = action::player() {
+            let loc = self.location().expect("no location");
+
+            let vec_to_enemy = loc.v2_at(p.location().expect("no location"));
+            if let Some(v) = vec_to_enemy {
+                if v.hex_dist() == 1 {
+                    // Melee range, hit.
+                    self.melee(Dir6::from_v2(v));
+                } else {
+                    // Walk towards.
+                    let pathing_depth = 16;
+                    let pathing = Dijkstra::new(
+                        vec![p.location().expect("no location")], |&loc| !loc.blocks_walk(),
+                        pathing_depth);
+
+                    let steps = pathing.sorted_neighbors(&loc);
+                    if steps.len() > 0 {
+                        self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
+                    } else {
+                        self.step(rng().gen());
+                        // TODO: Fall asleep if things get boring.
+                    }
+                }
+            }
+        }
+        */
 }
 
 /// Give player input. Only valid to call if control_state() returned
