@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use rand;
 use rand::Rng;
 use rustc_serialize::json;

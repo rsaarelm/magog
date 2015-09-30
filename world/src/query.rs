@@ -58,8 +58,7 @@ pub fn acts_this_frame(w: &World, e: Entity) -> bool {
 }
 
 fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
-    if !w.ecs.brain.contains(e) { return None; }
-    Some(w.ecs.brain[e].state)
+    w.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
 }
 
 /// Return if the entity is a mob that should get an update this frame
@@ -152,6 +151,8 @@ pub fn terrain(w: &World, loc: Location) -> TerrainType {
     ret
 }
 
+pub fn blocks_sight(w: &World, loc: Location) -> bool { terrain(w, loc).blocks_sight() }
+
 /// Return whether the location obstructs entity movement.
 pub fn blocks_walk(w: &World, loc: Location) -> bool {
     if terrain(w, loc).blocks_walk() { return true; }
@@ -203,12 +204,9 @@ pub fn can_enter(w: &World, e: Entity, loc: Location) -> bool {
 
 /// Return whether the entity can move in a direction.
 pub fn can_step(w: &World, e: Entity, dir: Dir6) -> bool {
-    let place = w.spatial.get(e);
-    if let Some(Place::At(loc)) = place {
-        let new_loc = loc + dir.to_v2();
-        return can_enter(w, e, new_loc);
-    }
-    return false;
+    if let Some(Place::At(loc)) = w.spatial.get(e) {
+        can_enter(w, e, loc + dir.to_v2())
+    } else { false }
 }
 
 /// Return the first free storage bag inventory slot on this entity.
@@ -325,4 +323,8 @@ pub fn entity_brush(w: &World, e: Entity) -> Option<(Brush, Rgba)> {
     } else {
         None
     }
+}
+
+pub fn is_instant_item(w: &World, e: Entity) -> bool {
+    w.ecs.item.get(e).map_or(false, |item| item.item_type == ItemType::Instant)
 }

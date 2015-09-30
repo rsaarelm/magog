@@ -6,7 +6,7 @@ use std::fs::{self, File};
 use rand::StdRng;
 use rand::SeedableRng;
 use std::iter::Filter;
-use calx::{Dijkstra, Dir6};
+use calx::{Dijkstra, Dir6, HexFov};
 use calx_ecs::{Entity};
 use world::{World};
 use flags;
@@ -135,19 +135,13 @@ pub fn input(w: &mut World, input: Input) {
 
 /// Try to move the entity in direction.
 pub fn step(w: &mut World, e: Entity, dir: Dir6) {
-    unimplemented!();
-    /*
-    let place = world::with(|w| w.spatial.get(self));
-    if let Some(Place::At(loc)) = place {
-        let new_loc = loc + dir.to_v2();
-        if self.can_enter(new_loc) {
-            world::with_mut(|w| w.spatial.insert_at(self, new_loc));
-            self.on_move_to(new_loc);
-        }
+    let target_loc = query::location(w, e).unwrap() + dir.to_v2();
+    if query::can_enter(w, e, target_loc) {
+        place_entity(w, e, target_loc);
     }
-    */
 }
 
+/// Fight in a direction.
 pub fn melee(w: &mut World, e: Entity, dir: Dir6) {
     unimplemented!();
     /*
@@ -239,9 +233,9 @@ pub fn start_level(w: &mut World, depth: i32) {
     let start_loc = w.area.player_entrance();
     // Either reuse the existing player or create a new one.
     match query::player(w) {
-        Some(p) => {
-            forget_map(w, p);
-            w.spatial.insert_at(p, start_loc);
+        Some(player) => {
+            forget_map(w, player);
+            place_entity(w, player, start_loc);
         }
         None => {
             // TODO: Use factory.
@@ -259,7 +253,7 @@ pub fn start_level(w: &mut World, depth: i32) {
 
             w.flags.player = Some(player);
 
-            w.spatial.insert_at(player, start_loc);
+            place_entity(w, player, start_loc);
             // TODO: run FOV
         }
     };
@@ -283,6 +277,21 @@ fn clear_nonplayers(w: &mut World) {
     }
 }
 
+pub fn next_level(w: &mut World) {
+    // This is assuming a really simple, original Rogue style descent-only, no
+    // persistent maps style world.
+    let new_depth = query::current_depth(w) + 1;
+    start_level(w, new_depth);
+    // 1st level is the overworld, so we want to call depth=2, first dungeon
+    // level as "Depth 1" in game.
+    caption!("Depth {}", new_depth - 1);
+}
+
+pub fn place_entity(w: &mut World, e: Entity, loc: Location) {
+    w.spatial.insert_at(e, loc);
+    after_entity_move(w, e);
+}
+
 /// Clear map memory of an entity.
 pub fn forget_map(w: &mut World, e: Entity) {
     w.ecs.map_memory.get_mut(e).map(
@@ -290,6 +299,50 @@ pub fn forget_map(w: &mut World, e: Entity) {
             mm.seen.clear();
             mm.remembered.clear();
         });
+}
+
+/// Callback when entity moves to a new location.
+fn after_entity_move(w: &mut World, e: Entity) {
+    let loc = query::location(w, e).expect("Entity must have location for callback");
+
+    do_fov(w, e);
+
+    for item in w.spatial.entities_at(loc).into_iter() {
+        if item != e {
+            on_step_on(w, e, item);
+        }
+    }
+
+    if query::is_player(w, e) {
+        w.flags.camera = loc;
+
+        if query::terrain(w, loc).is_exit() {
+            next_level(w);
+        }
+    }
+}
+
+pub fn do_fov(w: &mut World, e: Entity) {
+    if !w.ecs.map_memory.contains(e) { return; }
+
+    if let Some(loc) = query::location(w, e) {
+        let sight_range = 12;
+        let seen_locs: Vec<Location> = HexFov::new(
+            |pt| query::blocks_sight(w, (loc + pt)), sight_range)
+            .fake_isometric()
+            .map(|pt| loc + pt)
+            .collect();
+        let mut mm = &mut w.ecs.map_memory[e];
+        mm.seen.clear();
+        mm.seen.extend(seen_locs.clone().into_iter());
+        mm.remembered.extend(seen_locs.into_iter());
+    }
+}
+
+pub fn on_step_on(w: &mut World, stepper: Entity, item: Entity) {
+    if query::is_instant_item(w, item) && query::is_player(w, stepper) {
+        unimplemented!();
+    }
 }
 
 
