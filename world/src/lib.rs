@@ -37,6 +37,7 @@ pub mod query;
 mod ability;
 mod area;
 mod flags;
+mod form;
 pub mod location;
 mod location_set;
 mod msg;

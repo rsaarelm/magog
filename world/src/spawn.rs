@@ -1,7 +1,7 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use calx_ecs::Entity;
-use content::{SpawnType};
+use content::{FormType};
 use action;
 use content::{Biome};
 use location::{Location};
@@ -16,7 +16,7 @@ pub struct Spawn {
     // Though this one can become more complex if we want greater detail, the
     // component thing is just for sampling, this could be used to eg. create
     // specific entities by name.
-    spawn_type: SpawnType,
+    spawn_type: FormType,
     biome_mask: u32,
     depth: i32,
 }
@@ -24,7 +24,7 @@ pub struct Spawn {
 impl Spawn {
     /// Empty categories or biomes are treated as matching any category or
     /// biome.
-    pub fn new(depth: i32, spawn_type: SpawnType, biomes: Vec<Biome>) -> Spawn {
+    pub fn new(depth: i32, spawn_type: FormType, biomes: Vec<Biome>) -> Spawn {
         let biome_mask = if biomes.is_empty() { ::std::u32::MAX }
         else { biomes.into_iter().fold(0, |a, x| a | x as u32) };
 

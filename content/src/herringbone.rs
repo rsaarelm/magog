@@ -4,7 +4,7 @@ use rand::{Rng};
 use calx::{V2};
 use geomorph;
 use geomorph::{Chunk};
-use ::{StaticArea, SpawnType, AreaSpec};
+use ::{StaticArea, FormType, AreaSpec};
 
 static CHUNK_W: i32 = 11;
 
@@ -12,7 +12,7 @@ static CHUNK_W: i32 = 11;
 ///
 /// Designed after http://nothings.org/gamedev/herringbone/
 pub fn herringbone<R: Rng>(
-    rng: &mut R, spec: &AreaSpec) -> StaticArea<SpawnType> {
+    rng: &mut R, spec: &AreaSpec) -> StaticArea<FormType> {
 
     // Generate the terrain.
     let mut area = geomorph::with_cache(|cs| generate_terrain(rng, spec, cs));
@@ -36,8 +36,8 @@ pub fn herringbone<R: Rng>(
     let num_items = 12;
 
     area.spawns.extend(
-        iter::repeat(SpawnType::Creature).take(num_mobs).chain(
-        iter::repeat(SpawnType::Item).take(num_items))
+        iter::repeat(FormType::Creature).take(num_mobs).chain(
+        iter::repeat(FormType::Item).take(num_items))
         .filter_map(|spawn| {
             if let Some(loc) = opens.pop() {
                 Some((loc, spawn))
@@ -50,7 +50,7 @@ pub fn herringbone<R: Rng>(
     area
 }
 
-fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea<SpawnType> {
+fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea<FormType> {
     let mut area = StaticArea::new();
 
     let chunks = cs.iter().filter(

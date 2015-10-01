@@ -56,7 +56,7 @@ impl AreaSpec {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
-pub enum SpawnType {
+pub enum FormType {
     Anything,
 
     Creature,
@@ -67,10 +67,10 @@ pub enum SpawnType {
     Equipment,
 }
 
-impl SpawnType {
-    /// Return whether a SpawnType is a subtype of another type.
-    pub fn is_a(self, other: SpawnType) -> bool {
-        use SpawnType::*;
+impl FormType {
+    /// Return whether a FormType is a subtype of another type.
+    pub fn is_a(self, other: FormType) -> bool {
+        use FormType::*;
 
         match (self, other) {
             (x, y) if x == y => true,

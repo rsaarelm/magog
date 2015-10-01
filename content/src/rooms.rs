@@ -2,7 +2,7 @@ use std::collections::{BTreeSet};
 use num::{Integer};
 use rand::{Rng};
 use calx::{V2, Rect, RngExt, clamp, KernelTerrain};
-use ::{StaticArea, SpawnType};
+use ::{StaticArea, FormType};
 use terrain::{TerrainType};
 
 /// Rooms have random size, but they are all placed inside grid cells.
@@ -13,7 +13,7 @@ pub static CELL_SIZE: i32 = 16;
 
 /// Generate a classic rooms and corridors rogue map.
 pub fn rooms_and_corridors<R: Rng>(
-    rng: &mut R, depth: i32) -> StaticArea<SpawnType> {
+    rng: &mut R, depth: i32) -> StaticArea<FormType> {
     // TODO: Vary room number.
     let num_rooms = 6;
 
@@ -59,7 +59,7 @@ pub fn rooms_and_corridors<R: Rng>(
     area
 }
 
-fn door_positions(area: &StaticArea<SpawnType>, node: Node, dir: Direction) -> Vec<V2<i32>> {
+fn door_positions(area: &StaticArea<FormType>, node: Node, dir: Direction) -> Vec<V2<i32>> {
     let (start, fwd_dir) = match dir {
         North => (V2(0, 0), V2(0, 1)),
         East => (V2(CELL_SIZE - 2, 0), V2(-1, 0)),
@@ -95,7 +95,7 @@ fn door_positions(area: &StaticArea<SpawnType>, node: Node, dir: Direction) -> V
     ret
 }
 
-fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, room_type: RoomType) {
+fn dig_room<R: Rng>(area: &mut StaticArea<FormType>, rng: &mut R, node: Node, room_type: RoomType) {
     static MIN_SIZE: i32 = 5;
 
     let p1 = V2(
@@ -122,11 +122,11 @@ fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, r
     let inside = Rect(room.0 + V2(1, 1), room.1 - V2(2, 2));
     for p in inside.iter() {
         if room_type == Warren || rng.one_chance_in(24) {
-            area.spawns.push((p, SpawnType::Creature));
+            area.spawns.push((p, FormType::Creature));
         }
 
         if rng.one_chance_in(96) {
-            area.spawns.push((p, SpawnType::Item));
+            area.spawns.push((p, FormType::Item));
         }
     }
 
@@ -139,7 +139,7 @@ fn dig_room<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, node: Node, r
     }
 }
 
-fn connect_rooms<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, wall: Wall) {
+fn connect_rooms<R: Rng>(area: &mut StaticArea<FormType>, rng: &mut R, wall: Wall) {
     let rooms = wall.rooms();
     let (dir1, room1) = rooms[0];
     let (dir2, room2) = rooms[1];
@@ -151,7 +151,7 @@ fn connect_rooms<R: Rng>(area: &mut StaticArea<SpawnType>, rng: &mut R, wall: Wa
     area.terrain.insert(door2, TerrainType::Door);
 }
 
-fn dig_tunnel(area: &mut StaticArea<SpawnType>, p1: V2<i32>, p2: V2<i32>) {
+fn dig_tunnel(area: &mut StaticArea<FormType>, p1: V2<i32>, p2: V2<i32>) {
     let (n1, n2) = (Node::from_pos(p1), Node::from_pos(p2));
 
     let fwd = (n2.0 - n1.0) / 2;

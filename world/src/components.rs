@@ -1,6 +1,6 @@
 use std::convert::{Into};
 use calx::{Rgba};
-use content::{Biome, SpawnType, Brush};
+use content::{Biome, FormType, Brush};
 use item::{ItemType};
 use ability::Ability;
 use stats::Stats;
@@ -50,56 +50,28 @@ impl MapMemory {
 }
 
 
-/// Spawning properties for prototype objects.
-#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
-pub struct Spawn {
-    /// Types of areas where this entity can spawn.
-    pub biome: Biome,
-    /// Weight of this entity in the random sampling distribution.
-    pub commonness: u32,
-    /// Minimum depth where the entity will show up. More powerful entities
-    /// only start showing up in large depths.
-    pub min_depth: i32,
-
-    pub category: SpawnType,
-}
-
-impl Spawn {
-    pub fn new(category: SpawnType) -> Spawn {
-        Spawn {
-            biome: Biome::Anywhere,
-            commonness: 1000,
-            min_depth: 1,
-            category: category,
-        }
-    }
-
-    /// Set the biome(s) where this entity can be spawned. By default entities
-    /// can spawn anywhere.
-    pub fn biome(mut self, biome: Biome) -> Spawn {
-        self.biome = biome; self
-    }
-
-    /// Set the minimum depth where the entity can spawn. More powerful
-    /// entities should only spawn in greater depths. By default this is 1.
-    pub fn depth(mut self, min_depth: i32) -> Spawn {
-        self.min_depth = min_depth; self
-    }
-
-    /// Set the probability for this entity to spawn. Twice as large is twice
-    /// as common. The default is 1000.
-    pub fn commonness(mut self, commonness: u32) -> Spawn {
-        assert!(commonness > 0);
-        self.commonness = commonness; self
-    }
-}
-
-
-
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment
+}
+
+impl Brain {
+    /// Create default enemy brain.
+    pub fn enemy() -> Brain {
+        Brain {
+            state: BrainState::Asleep,
+            alignment: Alignment::Evil,
+        }
+    }
+
+    /// Create default player brain.
+    pub fn player() -> Brain {
+        Brain {
+            state: BrainState::PlayerControl,
+            alignment: Alignment::Good,
+        }
+    }
 }
 
 /// Mob behavior state.
@@ -138,6 +110,8 @@ pub struct Health {
     /// Armor points get eaten away before you start getting wounds.
     pub armor: i32,
 }
+
+impl Health { pub fn new() -> Health { Default::default() } }
 
 
 /// Items can be picked up and carried and they do stuff.
