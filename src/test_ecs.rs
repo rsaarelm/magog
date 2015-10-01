@@ -38,4 +38,18 @@ fn test_ecs() {
 
     let e2 = ecs.make();
     assert!(e2 != e1);
+
+    // Use the loadout system to create a form.
+    let form = loadout! [
+        Desc { name: "Critter".to_string(), icon: 10 },
+        Pos { x: 12, y: 15 }
+    ];
+
+    // Then instantiate an entity with that form.
+    let instance = ecs.make();
+    for comp in form.iter() {
+        comp.add_to(&mut ecs, instance);
+    }
+    assert!(ecs.pos[instance] == Pos { x: 12, y: 15 });
+
 }
