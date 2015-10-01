@@ -122,7 +122,7 @@ impl<T: Iterator<Item=char>> Iterator for Map2DIterator<T> {
     }
 }
 
-pub trait Map2DUtil {
+pub trait Map2DUtil: Sized {
     /// Convert an input value into a sequence of 2D coordinates associated
     /// with a subvalue.
     ///

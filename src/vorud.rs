@@ -113,7 +113,7 @@ impl Vorud {
 }
 
 /// Convert vorud into data.
-pub trait FromVorud<E> {
+pub trait FromVorud<E>: Sized {
     fn from_vorud(v: &Vorud) -> Result<Self, E>;
 }
 
