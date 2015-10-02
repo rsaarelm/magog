@@ -78,7 +78,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#752c2c5f6513cb438b9ee5600481964a76cf316a"
+source = "git+https://github.com/rsaarelm/calx#32d313be5e62a2b3334fb34770dd134571636f35"
 dependencies = [
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "cpal 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -96,7 +96,7 @@ dependencies = [
 [[package]]
 name = "calx_ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#752c2c5f6513cb438b9ee5600481964a76cf316a"
+source = "git+https://github.com/rsaarelm/calx#32d313be5e62a2b3334fb34770dd134571636f35"
 dependencies = [
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -111,7 +111,7 @@ name = "cgl"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gleam 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gleam 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -306,7 +306,7 @@ dependencies = [
 
 [[package]]
 name = "gleam"
-version = "0.1.9"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gl_common 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
