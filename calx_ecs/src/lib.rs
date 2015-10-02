@@ -204,28 +204,63 @@ macro_rules! Ecs {
             ///
             /// Can't move the component itself since we might be using this
             /// through a trait object.
-            fn add_to(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity);
+            fn add_to_ecs(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity);
+
+            /// Add a clone of the component to a loadout struct.
+            fn add_to_loadout(self, loadout: &mut Loadout);
         }
 
         $(impl Component for $comptype {
-            fn add_to(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity) {
+            fn add_to_ecs(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity) {
                 ecs.$compname.insert(e, self.clone());
+            }
+
+            fn add_to_loadout(self, loadout: &mut Loadout) {
+                loadout.$compname = Some(self);
             }
         })+
 
         pub type Ecs = ::calx_ecs::Ecs<_ComponentStore>;
-    }
-}
 
-/// Build a vector of Component trait objects from component values.
-///
-/// Use to set up prototype templates for entities.
-#[macro_export]
-macro_rules! loadout {
-    [ $($comp:expr),+ ] => {
-        vec![
-            $(Box::new($comp) as Box<Component>),+
-        ]
+        /// A straightforward representation for the complete data of an
+        /// entity.
+        #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+        pub struct Loadout {
+            $(pub $compname: Option<$comptype>),+
+        }
+
+        impl ::std::default::Default for Loadout {
+            fn default() -> Loadout {
+                Loadout {
+                    $($compname: None),+
+                }
+            }
+        }
+
+        impl Loadout {
+            /// Create a new blank loadout.
+            pub fn new() -> Loadout { Default::default() }
+
+            /// Get the loadout that corresponds to an existing entity.
+            pub fn get(ecs: &Ecs, e: ::calx_ecs::Entity) -> Loadout {
+                Loadout {
+                    $($compname: ecs.$compname.get(e).map(|e| e.clone())),+
+                }
+            }
+
+            /// Create a new entity in the ECS with this loadout.
+            pub fn make(&self, ecs: &mut Ecs) -> ::calx_ecs::Entity {
+                let e = ecs.make();
+                $(self.$compname.as_ref().map(|c| ecs.$compname.insert(e, c.clone()));)+
+                e
+            }
+
+            /// Builder method for adding a component to this loadout.
+            pub fn c<C: Component>(mut self, comp: C) -> Loadout {
+                comp.add_to_loadout(&mut self);
+                self
+            }
+        }
     }
 }
 
