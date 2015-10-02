@@ -7,7 +7,7 @@ use world::{Component};
 use stats::{Stats, Intrinsic};
 use stats::Intrinsic::*;
 use components::{Desc, Brain, Health};
-use world::{World};
+use world::{World, Loadout};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Forms {
@@ -31,14 +31,8 @@ pub struct Form {
     pub min_depth: i32,
     /// Type of thing 
     pub category: FormType,
-
-    // Stats needs to be kept outside the trait object bag in form, since it
-    // will be modified by fluent operations, and once something is in the
-    // loadout bag, it's stuck behind the opaque trait object interface.
-    stats: Stats,
-
     /// Actual components to set up the thing.
-    form: Vec<Box<Component>>,
+    pub loadout: Loadout,
 }
 
 impl Form {
@@ -54,12 +48,11 @@ impl Form {
             commonness: 1000,
             min_depth: 0,
             category: FormType::Creature,
-            stats: Stats::new(power, intrinsics),
-            form: loadout! {
-                Desc::new(name, icon, color),
-                Brain::enemy(),
-                Health::new()
-            },
+            loadout: Loadout::new()
+                .c(Stats::new(power, intrinsics))
+                .c(Desc::new(name, icon, color))
+                .c(Brain::enemy())
+                .c(Health::new()),
         }
     }
 
@@ -80,14 +73,7 @@ impl Form {
 
     /// Build a new entity with this form.
     pub fn build(&self, w: &mut World) -> Entity {
-        let ret = w.ecs.make();
-        for comp in self.form.iter() {
-            comp.add_to(&mut w.ecs, ret);
-        }
-
-        self.stats.add_to(&mut w.ecs, ret);
-
-        ret
+        self.loadout.make(&mut w.ecs)
     }
 }
 
