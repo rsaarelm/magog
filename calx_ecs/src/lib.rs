@@ -4,7 +4,7 @@
 
 extern crate rustc_serialize;
 
-use std::default::{Default};
+use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::collections::{hash_map, HashMap, HashSet};
 use std::collections::hash_set;
@@ -32,9 +32,7 @@ pub struct ComponentData<C> {
 
 impl<C> ComponentData<C> {
     pub fn new() -> ComponentData<C> {
-        ComponentData {
-            data: HashMap::new()
-        }
+        ComponentData { data: HashMap::new() }
     }
 
     /// Insert a component to an entity.
@@ -90,8 +88,7 @@ impl<C> AnyComponent for ComponentData<C> {
 
 pub trait Store {
     /// Perform an operation for each component container.
-    fn for_each_component<F>(&mut self, f: F)
-        where F: FnMut(&mut AnyComponent);
+    fn for_each_component<F>(&mut self, f: F) where F: FnMut(&mut AnyComponent);
 }
 
 
@@ -139,11 +136,15 @@ impl<S: Default+Store> Ecs<S> {
 impl<S> Deref for Ecs<S> {
     type Target = S;
 
-    fn deref(&self) -> &S { &self.store }
+    fn deref(&self) -> &S {
+        &self.store
+    }
 }
 
 impl<S> DerefMut for Ecs<S> {
-    fn deref_mut(&mut self) -> &mut S {&mut self.store}
+    fn deref_mut(&mut self) -> &mut S {
+        &mut self.store
+    }
 }
 
 /// Entity component system builder macro.
