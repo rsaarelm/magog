@@ -10,7 +10,7 @@ use calx::{Dijkstra, Dir6, HexFov};
 use calx_ecs::{Entity};
 use world::{World};
 use flags;
-use area::{Area};
+use area::{self, Area};
 use location::{Location};
 use content::{Biome, AreaSpec};
 use item::{Slot};
@@ -208,85 +208,6 @@ pub fn recompose_stats(w: &mut World, e: Entity) {
     w.ecs.composite_stats.insert(e, CompositeStats(stats));
 }
 
-pub fn start_level(w: &mut World, depth: i32) {
-    let biome = match depth {
-        1 => Biome::Overland,
-        _ => Biome::Dungeon,
-    };
-
-    clear_nonplayers(w);
-
-    let seed = w.flags.seed;
-
-    w.area = Area::new(
-        seed,
-        AreaSpec::new(biome, depth));
-
-    /*
-    // TODO: Get spawns working again.
-    let mut rng: StdRng = SeedableRng::from_seed(&[seed as usize + depth as usize][..]);
-    for (spawn, loc) in world::with(|w| w.area.get_spawns()).into_iter() {
-        spawn.spawn(&mut rng, loc);
-    }
-    */
-
-    let start_loc = w.area.player_entrance();
-    // Either reuse the existing player or create a new one.
-    match query::player(w) {
-        Some(player) => {
-            forget_map(w, player);
-            place_entity(w, player, start_loc);
-        }
-        None => {
-            // TODO: Use factory.
-            use calx::color;
-            use content::Brush;
-            use components::{Desc, MapMemory, Health, Brain, BrainState, Alignment};
-            use stats::{Stats};
-            use stats::Intrinsic::*;
-            let player = w.ecs.make();
-            w.ecs.desc.insert(player, Desc::new("player", Brush::Human, color::AZURE));
-            w.ecs.map_memory.insert(player, MapMemory::new());
-            w.ecs.brain.insert(player, Brain { state: BrainState::PlayerControl, alignment: Alignment::Good });
-            w.ecs.stats.insert(player, Stats::new(10, &[Hands]).mana(5));
-            recompose_stats(w, player);
-
-            w.flags.player = Some(player);
-
-            place_entity(w, player, start_loc);
-            // TODO: run FOV
-        }
-    };
-    w.flags.camera = start_loc;
-}
-
-fn clear_nonplayers(w: &mut World) {
-    let po = query::player(w);
-    let entities: Vec<Entity> = w.ecs.iter().map(|&e| e).collect();
-    for e in entities.into_iter() {
-        // Don't destroy player or player's inventory.
-        if let Some(p) = po {
-            if e == p || w.spatial.contains(p, e) {
-                continue;
-            }
-        }
-
-        if query::location(w, e).is_some() {
-            w.ecs.remove(e);
-        }
-    }
-}
-
-pub fn next_level(w: &mut World) {
-    // This is assuming a really simple, original Rogue style descent-only, no
-    // persistent maps style world.
-    let new_depth = query::current_depth(w) + 1;
-    start_level(w, new_depth);
-    // 1st level is the overworld, so we want to call depth=2, first dungeon
-    // level as "Depth 1" in game.
-    caption!("Depth {}", new_depth - 1);
-}
-
 pub fn place_entity(w: &mut World, e: Entity, loc: Location) {
     w.spatial.insert_at(e, loc);
     after_entity_move(w, e);
@@ -317,7 +238,7 @@ fn after_entity_move(w: &mut World, e: Entity) {
         w.flags.camera = loc;
 
         if query::terrain(w, loc).is_exit() {
-            next_level(w);
+            area::next_level(w);
         }
     }
 }

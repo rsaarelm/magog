@@ -30,12 +30,12 @@ macro_rules! caption(
 );
 
 pub mod action;
+pub mod area;
 pub mod components;
 pub mod item;
 pub mod query;
 
 mod ability;
-mod area;
 mod flags;
 mod form;
 pub mod location;

@@ -2,10 +2,9 @@ use rand;
 use rand::Rng;
 use rustc_serialize::json;
 use content::{AreaSpec, Biome};
-use area::Area;
+use area::{self, Area};
 use spatial::Spatial;
 use flags::Flags;
-use action;
 use components;
 use stats;
 
@@ -49,7 +48,7 @@ impl<'a> World {
             flags: Flags::new(seed),
         };
 
-        action::start_level(&mut ret, 1);
+        area::start_level(&mut ret, 1);
         ret
     }
 
