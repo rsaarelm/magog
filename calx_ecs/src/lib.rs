@@ -237,6 +237,7 @@ macro_rules! Ecs {
             }
         }
 
+#[allow(dead_code)]
         impl Loadout {
             /// Create a new blank loadout.
             pub fn new() -> Loadout { Default::default() }
