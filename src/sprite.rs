@@ -1,5 +1,5 @@
 use std::slice::Iter;
-use std::convert::{Into};
+use std::convert::Into;
 use calx::{color, V2, Dir6, Rgba, clamp};
 use calx::backend::{Canvas, CanvasUtil, RenderTarget, mesh};
 use world::{Location, Unchart};
@@ -26,9 +26,7 @@ pub struct WorldSprites {
 
 impl WorldSprites {
     pub fn new() -> WorldSprites {
-        WorldSprites {
-            sprites: vec!(),
-        }
+        WorldSprites { sprites: vec!() }
     }
 
     pub fn add(&mut self, spr: Box<WorldSprite + 'static>) {
@@ -36,7 +34,8 @@ impl WorldSprites {
     }
 
     pub fn draw<F>(&self, is_visible: F, chart: &Location, ctx: &mut Canvas)
-        where F: Fn(V2<i32>) -> bool {
+        where F: Fn(V2<i32>) -> bool
+    {
         // XXX: Ineffective if there are many sprites outside the visible
         // area.
         for s in self.sprites.iter() {
@@ -50,7 +49,9 @@ impl WorldSprites {
     }
 
     pub fn update(&mut self) {
-        for spr in self.sprites.iter_mut() { spr.update(); }
+        for spr in self.sprites.iter_mut() {
+            spr.update();
+        }
         self.sprites.retain(|spr| spr.is_alive());
     }
 }
@@ -77,8 +78,12 @@ impl BeamSprite {
 }
 
 impl WorldSprite for BeamSprite {
-    fn update(&mut self) { self.life -= 1; }
-    fn is_alive(&self) -> bool { self.life >= 0 }
+    fn update(&mut self) {
+        self.life -= 1;
+    }
+    fn is_alive(&self) -> bool {
+        self.life >= 0
+    }
     fn footprint<'a>(&'a self) -> Iter<'a, Location> {
         self.footprint.iter()
     }
@@ -86,9 +91,10 @@ impl WorldSprite for BeamSprite {
         if let (Some(p1), Some(p2)) = (chart.chart_pos(self.p1), chart.chart_pos(self.p2)) {
             let pixel_adjust = V2(0.0, -2.0);
             ctx.draw_line(2.0,
-                chart_to_screen(p1) + pixel_adjust,
-                chart_to_screen(p2) + pixel_adjust,
-                FX_Z, color::ORANGE);
+                          chart_to_screen(p1) + pixel_adjust,
+                          chart_to_screen(p2) + pixel_adjust,
+                          FX_Z,
+                          color::ORANGE);
         }
     }
 }
@@ -110,14 +116,24 @@ impl GibSprite {
 }
 
 impl WorldSprite for GibSprite {
-    fn update(&mut self) { self.life -= 1; }
-    fn is_alive(&self) -> bool { self.life >= 0 }
-    fn footprint<'a>(&'a self) -> Iter<'a, Location> { self.footprint.iter() }
+    fn update(&mut self) {
+        self.life -= 1;
+    }
+    fn is_alive(&self) -> bool {
+        self.life >= 0
+    }
+    fn footprint<'a>(&'a self) -> Iter<'a, Location> {
+        self.footprint.iter()
+    }
     fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let Some(p) = chart.chart_pos(self.loc) {
             // TODO: Robust anim cycle with clamping.
             let idx = tile::SPLATTER + ((11 - self.life) / 3) as usize;
-            ctx.draw_image(tilecache::get(idx), chart_to_screen(p), FX_Z, color::RED, color::BLACK);
+            ctx.draw_image(tilecache::get(idx),
+                           chart_to_screen(p),
+                           FX_Z,
+                           color::RED,
+                           color::BLACK);
         }
     }
 }
@@ -139,9 +155,15 @@ impl ExplosionSprite {
 }
 
 impl WorldSprite for ExplosionSprite {
-    fn update(&mut self) { self.life -= 1; }
-    fn is_alive(&self) -> bool { self.life >= 0 }
-    fn footprint<'a>(&'a self) -> Iter<'a, Location> { self.footprint.iter() }
+    fn update(&mut self) {
+        self.life -= 1;
+    }
+    fn is_alive(&self) -> bool {
+        self.life >= 0
+    }
+    fn footprint<'a>(&'a self) -> Iter<'a, Location> {
+        self.footprint.iter()
+    }
     fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let Some(p) = chart.chart_pos(self.loc) {
             let center = chart_to_screen(p);
@@ -150,23 +172,26 @@ impl WorldSprite for ExplosionSprite {
             let t = clamp(0.0, 1.0, (12 - self.life) as f32 / 4.0);
             let t2 = clamp(0.0, 1.0, (8 - self.life) as f32 / 4.0);
 
-            hexagon(ctx, center, FX_Z, color::ORANGE, color::RED, t2 * 1.8, t * 2.0);
+            hexagon(ctx,
+                    center,
+                    FX_Z,
+                    color::ORANGE,
+                    color::RED,
+                    t2 * 1.8,
+                    t * 2.0);
         }
     }
 }
 
-fn hexagon<C: Into<Rgba>+Copy>(ctx: &mut Canvas, center: V2<f32>, z: f32,
-                            color_inner: C, color_outer: C,
-                            inner_radius: f32, outer_radius: f32) {
+fn hexagon<C: Into<Rgba> + Copy>(ctx: &mut Canvas,
+                                 center: V2<f32>,
+                                 z: f32,
+                                 color_inner: C,
+                                 color_outer: C,
+                                 inner_radius: f32,
+                                 outer_radius: f32) {
     let tex = ctx.solid_tex_coord();
-    static HEXAGON: [V2<f32>; 6] = [
-        V2(-8.0,  -4.0),
-        V2( 0.0,  -8.0),
-        V2( 8.0,  -4.0),
-        V2( 8.0,   4.0),
-        V2( 0.0,   8.0),
-        V2(-8.0,   4.0),
-    ];
+    static HEXAGON: [V2<f32>; 6] = [V2(-8.0, -4.0), V2(0.0, -8.0), V2(8.0, -4.0), V2(8.0, 4.0), V2(0.0, 8.0), V2(-8.0, 4.0)];
 
     let mut vertices = Vec::new();
 
@@ -175,19 +200,27 @@ fn hexagon<C: Into<Rgba>+Copy>(ctx: &mut Canvas, center: V2<f32>, z: f32,
 
     // Inner vertices
     for p in HEXAGON.iter() {
-        vertices.push(mesh::Vertex::new(center + (*p * inner_radius), z, tex, color_inner, color::BLACK));
+        vertices.push(mesh::Vertex::new(center + (*p * inner_radius),
+                                        z,
+                                        tex,
+                                        color_inner,
+                                        color::BLACK));
     }
 
     // Outer vertices
     for p in HEXAGON.iter() {
-        vertices.push(mesh::Vertex::new(center + (*p * outer_radius), z, tex, color_outer, color::BLACK));
+        vertices.push(mesh::Vertex::new(center + (*p * outer_radius),
+                                        z,
+                                        tex,
+                                        color_outer,
+                                        color::BLACK));
     }
 
     let mut faces = Vec::new();
     for i in 0..6 {
         let i2 = (i + 1) % 6;
         faces.push([i, 6 + i2, i2]);
-        faces.push([i, 6 + i,  6 + i2]);
+        faces.push([i, 6 + i, 6 + i2]);
     }
 
     ctx.add_mesh(vertices, faces);

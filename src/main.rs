@@ -15,12 +15,12 @@ extern crate world;
 use std::cell::RefCell;
 use std::env;
 use std::process;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::fs::{self, File};
-use std::io::{Write};
+use std::io::Write;
 use std::default::Default;
 // TODO: Get a stable standard library PathExt to replace this.
-use calx::{PathExt};
+use calx::PathExt;
 use calx::backend::{WindowBuilder, Canvas, CanvasBuilder};
 use titlescreen::TitleScreen;
 use config::Config;
@@ -74,7 +74,8 @@ pub fn app_data_path() -> PathBuf {
 thread_local!(static CONFIG: RefCell<Config> = RefCell::new(Default::default()));
 
 pub fn with_config<U, F>(f: F) -> U
-  where F: FnOnce(&Config) -> U + 'static + Sized {
+    where F: FnOnce(&Config) -> U + 'static + Sized
+{
     CONFIG.with(|c| f(&*c.borrow()))
 }
 
@@ -107,12 +108,12 @@ pub fn main() {
     };
 
     let window = WindowBuilder::new()
-        .set_size(SCREEN_W, SCREEN_H)
-        .set_magnify(config.magnify_mode)
-        .set_title("Magog")
-        .set_fullscreen(config.fullscreen)
-        .set_frame_interval(0.030f64)
-        .build();
+                     .set_size(SCREEN_W, SCREEN_H)
+                     .set_magnify(config.magnify_mode)
+                     .set_title("Magog")
+                     .set_fullscreen(config.fullscreen)
+                     .set_frame_interval(0.030f64)
+                     .build();
 
     CONFIG.with(|c| *c.borrow_mut() = config);
 
@@ -126,7 +127,9 @@ pub fn main() {
         let result = state.update(&mut ctx);
         ctx.end_frame();
         match result {
-            Some(ScreenAction::Quit) => { return; }
+            Some(ScreenAction::Quit) => {
+                return;
+            }
             Some(ScreenAction::Change(new_state)) => {
                 state = new_state;
             }

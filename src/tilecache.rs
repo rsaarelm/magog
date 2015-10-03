@@ -6,20 +6,23 @@ use calx::{color_key, V2, ImageStore};
 
 thread_local!(static TILE_CACHE: RefCell<Vec<Image>> = RefCell::new(vec![]));
 
-fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
-       elt_dim: (i32, i32), offset: (i32, i32)) {
-    let mut image = color_key(
-        &image::load_from_memory(data).unwrap(),
-        0x00FFFFFF);
+fn batch(tiles: &mut Vec<Image>,
+         ctx: &mut CanvasBuilder,
+         data: &[u8],
+         elt_dim: (i32, i32),
+         offset: (i32, i32)) {
+    let mut image = color_key(&image::load_from_memory(data).unwrap(), 0x00FFFFFF);
     let (w, h) = image.dimensions();
     let (columns, rows) = (w / elt_dim.0 as u32, h / elt_dim.1 as u32);
 
     for y in 0..(rows) {
         for x in 0..(columns) {
-            tiles.push(ctx.add_image(V2(offset.0, offset.1), &SubImage::new(
-                &mut image,
-                x * elt_dim.0 as u32, y * elt_dim.1 as u32,
-                elt_dim.0 as u32, elt_dim.1 as u32)));
+            tiles.push(ctx.add_image(V2(offset.0, offset.1),
+                                     &SubImage::new(&mut image,
+                                                    x * elt_dim.0 as u32,
+                                                    y * elt_dim.1 as u32,
+                                                    elt_dim.0 as u32,
+                                                    elt_dim.1 as u32)));
         }
     }
 }
@@ -28,9 +31,21 @@ fn batch(tiles: &mut Vec<Image>, ctx: &mut CanvasBuilder, data: &[u8],
 pub fn init(ctx: &mut CanvasBuilder) {
     TILE_CACHE.with(|c| {
         let mut tiles = c.borrow_mut();
-        batch(&mut *tiles, ctx, include_bytes!("../content/assets/tile.png"), (32, 32), (-16, -22));
-        batch(&mut *tiles, ctx, include_bytes!("../content/assets/icon.png"), (8, 8), (0, -8));
-        batch(&mut *tiles, ctx, include_bytes!("../content/assets/logo.png"), (92, 25), (0, 0));
+        batch(&mut *tiles,
+              ctx,
+              include_bytes!("../content/assets/tile.png"),
+              (32, 32),
+              (-16, -22));
+        batch(&mut *tiles,
+              ctx,
+              include_bytes!("../content/assets/icon.png"),
+              (8, 8),
+              (0, -8));
+        batch(&mut *tiles,
+              ctx,
+              include_bytes!("../content/assets/logo.png"),
+              (92, 25),
+              (0, 0));
     });
 }
 

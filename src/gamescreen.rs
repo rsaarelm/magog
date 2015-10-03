@@ -9,14 +9,14 @@ use world::query::ControlState::*;
 use world::{Msg, FovStatus, World};
 use calx::Dir6;
 use calx::Dir6::*;
-use calx_ecs::{Entity};
-use world::item::{Slot};
+use calx_ecs::Entity;
+use world::item::Slot;
 use worldview;
 use sprite::{WorldSprites, GibSprite, BeamSprite, ExplosionSprite};
 use tilecache;
 use tilecache::icon;
 use msg_queue::MsgQueue;
-use ::{Screen, ScreenAction};
+use {Screen, ScreenAction};
 use titlescreen::TitleScreen;
 
 /// Type of effect signaled by making a visible entity blink for a moment.
@@ -69,10 +69,18 @@ impl GameScreen {
         // Draw heart containers.
         for i in 0..((max_hp + 1) / 2) {
             let pos = V2(i as f32 * 8.0, 8.0);
-            let idx = if hp >= (i + 1) * 2 { icon::HEART }
-                else if hp == i * 2 + 1 { icon::HALF_HEART }
-                else { icon::NO_HEART };
-            ctx.draw_image(tilecache::get(idx), pos, 0.0, color::FIREBRICK, color::BLACK);
+            let idx = if hp >= (i + 1) * 2 {
+                icon::HEART
+            } else if hp == i * 2 + 1 {
+                icon::HALF_HEART
+            } else {
+                icon::NO_HEART
+            };
+            ctx.draw_image(tilecache::get(idx),
+                           pos,
+                           0.0,
+                           color::FIREBRICK,
+                           color::BLACK);
         }
     }
 
@@ -81,12 +89,17 @@ impl GameScreen {
         let camera = self.world.flags.camera;
         worldview::draw_world(&self.world, &camera, ctx, &self.damage_timers);
 
-        self.world_spr.draw(|x| query::fov_status(&self.world, (camera + x)) == Some(FovStatus::Seen), &camera, ctx);
+        self.world_spr
+            .draw(|x| query::fov_status(&self.world, (camera + x)) == Some(FovStatus::Seen),
+                  &camera,
+                  ctx);
         self.world_spr.update();
 
         Fonter::new(ctx)
-            .color(color::LIGHTGRAY).border(color::BLACK)
-            .anchor(Anchor::TopRight).align(Align::Right)
+            .color(color::LIGHTGRAY)
+            .border(color::BLACK)
+            .anchor(Anchor::TopRight)
+            .align(Align::Right)
             .text(query::area_name(&self.world, camera))
             .draw(V2(638.0, 0.0));
 
@@ -98,7 +111,8 @@ impl GameScreen {
         if ::with_config(|c| c.show_fps) {
             let fps = 1.0 / ctx.window.frame_duration();
             Fonter::new(ctx)
-                .color(color::LIGHTGRAY).border(color::BLACK)
+                .color(color::LIGHTGRAY)
+                .border(color::BLACK)
                 .text(format!("FPS {:.0}", fps))
                 .draw(V2(0.0, 8.0));
         }
@@ -129,7 +143,7 @@ impl GameScreen {
                 Some(Msg::Explosion(loc)) => {
                     self.world_spr.add(Box::new(ExplosionSprite::new(loc)));
                 }
-                None => break
+                None => break,
             }
         }
 
@@ -147,10 +161,12 @@ impl GameScreen {
 
         // Decrement damage timers.
         // XXX: Can we do mutable contents iter without the cloning?
-        self.damage_timers = self.damage_timers.clone().into_iter()
-            .filter(|&(_, (_, t))| t > 0)
-            .map(|(e, (b, t))| (e, (b, t - 1)))
-            .collect();
+        self.damage_timers = self.damage_timers
+                                 .clone()
+                                 .into_iter()
+                                 .filter(|&(_, (_, t))| t > 0)
+                                 .map(|(e, (b, t))| (e, (b, t - 1)))
+                                 .collect();
 
         self.msg.update();
     }
@@ -331,28 +347,52 @@ impl GameScreen {
         }
 
         match key {
-            Key::Q | Key::Pad7 => { self.smart_move(NorthWest); }
-            Key::W | Key::Pad8 | Key::Up => { self.smart_move(North); }
-            Key::E | Key::Pad9 => { self.smart_move(NorthEast); }
-            Key::A | Key::Pad1 => { self.smart_move(SouthWest); }
-            Key::S | Key::Pad2 | Key::Down => { self.smart_move(South); }
-            Key::D | Key::Pad3 => { self.smart_move(SouthEast); }
+            Key::Q | Key::Pad7 => {
+                self.smart_move(NorthWest);
+            }
+            Key::W | Key::Pad8 | Key::Up => {
+                self.smart_move(North);
+            }
+            Key::E | Key::Pad9 => {
+                self.smart_move(NorthEast);
+            }
+            Key::A | Key::Pad1 => {
+                self.smart_move(SouthWest);
+            }
+            Key::S | Key::Pad2 | Key::Down => {
+                self.smart_move(South);
+            }
+            Key::D | Key::Pad3 => {
+                self.smart_move(SouthEast);
+            }
 
-            Key::Enter => { self.interact(); }
-            Key::Space => { action::input(&mut self.world, Pass); }
-            Key::X => { self.exploring = true; }
+            Key::Enter => {
+                self.interact();
+            }
+            Key::Space => {
+                action::input(&mut self.world, Pass);
+            }
+            Key::X => {
+                self.exploring = true;
+            }
 
             // Open inventory
-            Key::Tab => { self.ui_state = UiState::Inventory; }
+            Key::Tab => {
+                self.ui_state = UiState::Inventory;
+            }
 
-            Key::F5 if cfg!(debug_assertions) => { action::save_game(&self.world); }
+            Key::F5 if cfg!(debug_assertions) => {
+                action::save_game(&self.world);
+            }
             Key::F9 if cfg!(debug_assertions) => {
                 match action::load_game() {
                     Ok(world) => self.world = world,
                     _ => {}
                 };
             }
-            _ => { return false; }
+            _ => {
+                return false;
+            }
         }
         return true;
     }
@@ -381,11 +421,11 @@ impl GameScreen {
                         unimplemented!();
                         //action::next_level();
                     }
-                    _ => ()
+                    _ => (),
                 }
             }
 
-            _ => ()
+            _ => (),
         }
         true
     }
@@ -402,8 +442,11 @@ impl Screen for GameScreen {
         let mut running = true;
 
         for event in ctx.events().into_iter() {
-            if event == Event::Quit { return Some(ScreenAction::Quit); }
-            running = running && match self.ui_state {
+            if event == Event::Quit {
+                return Some(ScreenAction::Quit);
+            }
+            running = running &&
+                      match self.ui_state {
                 UiState::Gameplay => self.gameplay_process(ctx, event),
                 UiState::Inventory => self.inventory_process(ctx, event),
             };

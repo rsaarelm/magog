@@ -1,6 +1,6 @@
-use world::{World};
-use calx::{V2};
-use calx::backend::{Canvas};
+use world::World;
+use calx::V2;
+use calx::backend::Canvas;
 
 pub trait Drawable {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>);
@@ -15,7 +15,7 @@ impl<T: Drawable> Translated<T> {
     pub fn new(offset: V2<f32>, inner: T) -> Translated<T> {
         Translated {
             inner: inner,
-            offset: offset
+            offset: offset,
         }
     }
 }

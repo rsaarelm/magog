@@ -2,9 +2,9 @@ use std::default::Default;
 use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::prelude::*;
-use getopts::{Options};
+use getopts::Options;
 use toml::{self, Value};
-use calx::backend::{CanvasMagnify};
+use calx::backend::CanvasMagnify;
 use calx::vorud::{Vorud, FromVorud};
 use super::app_data_path;
 
@@ -42,12 +42,19 @@ impl Config {
     ///
     /// Returning a string with Ok indicates that the string should be printed
     /// and the program should then exit.
-    pub fn parse_args<T: Iterator<Item=String>>(&mut self, args: T) -> Result<Option<String>, String> {
+    pub fn parse_args<T: Iterator<Item = String>>(&mut self,
+                                                  args: T)
+                                                  -> Result<Option<String>, String> {
         let mut opts = Options::new();
-        opts.optflag("", "no-wall-sliding", "Don't move diagonally along obstacles when walking into them");
+        opts.optflag("",
+                     "no-wall-sliding",
+                     "Don't move diagonally along obstacles when walking into them");
         opts.optflag("h", "help", "Display this message");
         opts.optflag("V", "version", "Print version info and exit");
-        opts.optopt("", "magnify-mode", "How to filter magnified graphics. MODE = pixel | nearest | smooth", "MODE");
+        opts.optopt("",
+                    "magnify-mode",
+                    "How to filter magnified graphics. MODE = pixel | nearest | smooth",
+                    "MODE");
         opts.optopt("", "seed", "World generation seed", "VORUD");
         opts.optflag("", "fullscreen", "Run in fullscreen mode");
         opts.optflag("", "fps", "Show FPS counter");
@@ -66,8 +73,7 @@ impl Config {
         }
 
         if parse.opt_present("version") {
-            return Ok(Some(format!("Magog v{}",
-                                ::version())));
+            return Ok(Some(format!("Magog v{}", ::version())));
         }
 
         if parse.opt_present("no-wall-sliding") {
@@ -84,9 +90,15 @@ impl Config {
 
         if let Some(x) = parse.opt_str("magnify-mode") {
             match &x[..] {
-                "pixel" => { self.magnify_mode = CanvasMagnify::PixelPerfect; }
-                "nearest" => { self.magnify_mode = CanvasMagnify::Nearest; }
-                "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }
+                "pixel" => {
+                    self.magnify_mode = CanvasMagnify::PixelPerfect;
+                }
+                "nearest" => {
+                    self.magnify_mode = CanvasMagnify::Nearest;
+                }
+                "smooth" => {
+                    self.magnify_mode = CanvasMagnify::Smooth;
+                }
                 err => {
                     return Err(usage_error(format!("Unknown magnify mode '{}'", err), &opts));
                 }
@@ -111,7 +123,8 @@ impl Config {
 
         fn usage_error(msg: String, opts: &Options) -> String {
             format!("{}\n{}",
-                    msg, opts.usage("Usage:\n    magog [options]"))
+                    msg,
+                    opts.usage("Usage:\n    magog [options]"))
         }
     }
 
@@ -125,8 +138,7 @@ impl Config {
     pub fn default_file(&self) -> String {
         // TODO: Make this data-driven, have option metadata that specifies
         // the help string and what to print out.
-        format!(
-r#"# Move diagonally along obstacles when walking into them
+        format!(r#"# Move diagonally along obstacles when walking into them
 wall-sliding = true
 
 # How to filter magnified graphics. pixel | nearest | smooth
@@ -172,10 +184,18 @@ fps = false
 
         if let Some(&Value::String(ref mag)) = settings.get("magnify-mode") {
             match &mag[..] {
-                "pixel" => { self.magnify_mode = CanvasMagnify::PixelPerfect; }
-                "nearest" => { self.magnify_mode = CanvasMagnify::Nearest; }
-                "smooth" => { self.magnify_mode = CanvasMagnify::Smooth; }
-                _ => { return Err(format!("Bad magnify mode '{}'", mag)); }
+                "pixel" => {
+                    self.magnify_mode = CanvasMagnify::PixelPerfect;
+                }
+                "nearest" => {
+                    self.magnify_mode = CanvasMagnify::Nearest;
+                }
+                "smooth" => {
+                    self.magnify_mode = CanvasMagnify::Smooth;
+                }
+                _ => {
+                    return Err(format!("Bad magnify mode '{}'", mag));
+                }
             };
         }
 

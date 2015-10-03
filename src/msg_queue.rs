@@ -54,8 +54,11 @@ impl MsgQueue {
     }
 
     fn draw_msgs(&self, ctx: &mut Canvas) {
-        Fonter::new(ctx).color(color::LIGHTGRAY).border(color::BLACK)
-            .width(320.0).max_lines(16)
+        Fonter::new(ctx)
+            .color(color::LIGHTGRAY)
+            .border(color::BLACK)
+            .width(320.0)
+            .max_lines(16)
             .anchor(Anchor::BottomLeft)
             .text(self.msgs.iter().fold(String::new(), |a, m| a + &m.text))
             .draw(V2(0.0, 360.0));
@@ -63,8 +66,12 @@ impl MsgQueue {
 
     fn draw_caption(&self, ctx: &mut Canvas) {
         if !self.captions.is_empty() {
-            Fonter::new(ctx).color(color::LIGHTGRAY).border(color::BLACK).width(160.0)
-                .align(Align::Center).anchor(Anchor::Bottom)
+            Fonter::new(ctx)
+                .color(color::LIGHTGRAY)
+                .border(color::BLACK)
+                .width(160.0)
+                .align(Align::Center)
+                .anchor(Anchor::Bottom)
                 .text(self.captions[0].text.clone())
                 .draw(V2(320.0, 172.0));
         }
@@ -84,7 +91,9 @@ impl MsgQueue {
                 break;
             }
         }
-        if self.msgs.is_empty() { self.msg_done_time = None; }
+        if self.msgs.is_empty() {
+            self.msg_done_time = None;
+        }
 
         while !self.captions.is_empty() {
             if self.captions[0].timeout < t {
@@ -93,7 +102,9 @@ impl MsgQueue {
                 break;
             }
         }
-        if self.captions.is_empty() { self.caption_done_time = None; }
+        if self.captions.is_empty() {
+            self.caption_done_time = None;
+        }
     }
 }
 
@@ -104,7 +115,6 @@ fn add_time_to_read(old_time: Option<f64>, text: &str) -> f64 {
 
     return match old_time {
         Some(t) => t,
-        None => time::precise_time_s()
+        None => time::precise_time_s(),
     } + read_time;
 }
-

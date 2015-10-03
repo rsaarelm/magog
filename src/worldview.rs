@@ -2,24 +2,31 @@ use std::collections::HashMap;
 use calx::{V2, Rgba, timing, Kernel};
 use calx::color::*;
 use calx::backend::{Canvas, CanvasUtil, Image};
-use calx_ecs::{Entity};
-use content::{Brush};
+use calx_ecs::Entity;
+use content::Brush;
 use world::{Location, Chart, World};
-use world::{FovStatus};
-use world::{Light};
+use world::FovStatus;
+use world::Light;
 use world::query;
 use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
-use drawable::{Drawable};
-use gamescreen::{Blink};
+use drawable::Drawable;
+use gamescreen::Blink;
 use render_terrain::{self, Angle};
 
-pub fn draw_world<C: Chart+Copy>(w: &World, chart: &C, ctx: &mut Canvas, damage_timers: &HashMap<Entity, (Blink, u32)>) {
+pub fn draw_world<C: Chart + Copy>(w: &World,
+                                   chart: &C,
+                                   ctx: &mut Canvas,
+                                   damage_timers: &HashMap<Entity, (Blink, u32)>) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = *chart + pt;
-        let cell_drawable = CellDrawable::new(
-            w, loc, 0, query::fov_status(w, loc), query::light_at(w, loc), damage_timers);
+        let cell_drawable = CellDrawable::new(w,
+                                              loc,
+                                              0,
+                                              query::fov_status(w, loc),
+                                              query::light_at(w, loc),
+                                              damage_timers);
         cell_drawable.draw(ctx, screen_pos);
     }
 }
@@ -48,13 +55,13 @@ impl<'a> Drawable for CellDrawable<'a> {
 }
 
 impl<'a> CellDrawable<'a> {
-    pub fn new(
-        world: &'a World,
-        loc: Location,
-        depth: i32,
-        fov: Option<FovStatus>,
-        light: Light,
-        damage_timers: &'a HashMap<Entity, (Blink, u32)>) -> CellDrawable<'a> {
+    pub fn new(world: &'a World,
+               loc: Location,
+               depth: i32,
+               fov: Option<FovStatus>,
+               light: Light,
+               damage_timers: &'a HashMap<Entity, (Blink, u32)>)
+               -> CellDrawable<'a> {
         CellDrawable {
             world: world,
             loc: loc,
@@ -65,8 +72,13 @@ impl<'a> CellDrawable<'a> {
         }
     }
 
-    fn draw_image(&'a self, ctx: &mut Canvas, img: Image, offset: V2<f32>, z: f32,
-                  mut color: Rgba, mut back_color: Rgba) {
+    fn draw_image(&'a self,
+                  ctx: &mut Canvas,
+                  img: Image,
+                  offset: V2<f32>,
+                  z: f32,
+                  mut color: Rgba,
+                  mut back_color: Rgba) {
         match self.fov {
             // XXX: Special case for the solid-black objects that are used to
             // block out stuff to not get recolored. Don't use total black as
@@ -81,7 +93,9 @@ impl<'a> CellDrawable<'a> {
                 color = self.light.apply(color);
                 back_color = self.light.apply(back_color);
             }
-            None => { return; }
+            None => {
+                return;
+            }
         }
 
         ctx.draw_image(img, offset, z, color, back_color);
@@ -90,13 +104,14 @@ impl<'a> CellDrawable<'a> {
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
         let visible = self.fov == Some(FovStatus::Seen);
         let k = Kernel::new(|loc| query::terrain(self.world, loc), self.loc);
-        render_terrain::render(&k, |img, angle, fore, back| {
-                 let z = match angle {
-                     Angle::Up => FLOOR_Z,
-                     _ => BLOCK_Z
-                 };
-                 self.draw_image(ctx, img, offset, z, fore, back)
-        });
+        render_terrain::render(&k,
+                               |img, angle, fore, back| {
+                                   let z = match angle {
+                                       Angle::Up => FLOOR_Z,
+                                       _ => BLOCK_Z,
+                                   };
+                                   self.draw_image(ctx, img, offset, z, fore, back)
+                               });
 
         if visible {
             // Sort mobs on top of items for drawing.
@@ -109,12 +124,11 @@ impl<'a> CellDrawable<'a> {
     }
 
     fn draw_entity(&'a self, ctx: &mut Canvas, offset: V2<f32>, entity: Entity) {
-        let body_pos =
-            if query::is_bobbing(self.world, entity) {
-                offset + *(timing::cycle_anim(
-                        0.3f64,
-                        &[V2(0.0, 0.0), V2(0.0, -1.0)]))
-            } else { offset };
+        let body_pos = if query::is_bobbing(self.world, entity) {
+            offset + *(timing::cycle_anim(0.3f64, &[V2(0.0, 0.0), V2(0.0, -1.0)]))
+        } else {
+            offset
+        };
 
         if let Some((brush, mut color)) = query::entity_brush(self.world, entity) {
             let mut back_color = BLACK;

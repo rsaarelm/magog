@@ -1,6 +1,6 @@
 use std::iter::Map;
 use calx::{V2, Rect};
-use ::{SCREEN_W, SCREEN_H};
+use {SCREEN_W, SCREEN_H};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -30,7 +30,9 @@ pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
 }
 
 /// Convert depth difference to pixel offset.
-pub fn level_z_to_view(z: i32) -> V2<i32> { V2(0, z * -PIXEL_UNIT) }
+pub fn level_z_to_view(z: i32) -> V2<i32> {
+    V2(0, z * -PIXEL_UNIT)
+}
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).
@@ -52,13 +54,13 @@ pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<ColumnRectIter, fn(V2<i32
         x0: x0,
         x1: x1,
         y1: y1,
-    }.map(column_to_chart)
+    }
+        .map(column_to_chart)
 }
 
 pub fn cells_on_screen() -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
-    cells_in_view_rect(Rect(
-        V2(-(SCREEN_W as i32) / 2, -(SCREEN_H as i32) / 2),
-        V2(SCREEN_W as i32, SCREEN_H as i32)))
+    cells_in_view_rect(Rect(V2(-(SCREEN_W as i32) / 2, -(SCREEN_H as i32) / 2),
+                            V2(SCREEN_W as i32, SCREEN_H as i32)))
 }
 
 /// Transform to the column space point that contains the pixel space point
@@ -99,17 +101,19 @@ pub struct ColumnRectIter {
 impl Iterator for ColumnRectIter {
     type Item = V2<i32>;
     fn next(&mut self) -> Option<V2<i32>> {
-        if self.y >= self.y1 { return None; }
+        if self.y >= self.y1 {
+            return None;
+        }
         let ret = Some(V2(self.x, self.y));
         self.x = self.x + 2;
 
         if self.x >= self.x1 {
             self.x = self.x0 +
-                if ((self.x0 % 2) == 1) ^ !self.upper_row {
-                    1
-                } else {
-                    0
-                };
+                     if ((self.x0 % 2) == 1) ^ !self.upper_row {
+                1
+            } else {
+                0
+            };
             if self.upper_row {
                 self.upper_row = false;
             } else {
@@ -128,21 +132,21 @@ mod test {
 
     #[test]
     fn c2c() {
-        assert_eq!(V2(-1,  0), column_to_chart(V2(-1, -1)));
-        assert_eq!(V2(-1, -1), column_to_chart(V2( 0, -1)));
-        assert_eq!(V2( 0, -1), column_to_chart(V2( 1, -1)));
+        assert_eq!(V2(-1, 0), column_to_chart(V2(-1, -1)));
+        assert_eq!(V2(-1, -1), column_to_chart(V2(0, -1)));
+        assert_eq!(V2(0, -1), column_to_chart(V2(1, -1)));
 
-        assert_eq!(V2( 0,  1), column_to_chart(V2(-1,  0)));
-        assert_eq!(V2( 0,  0), column_to_chart(V2( 0,  0)));
-        assert_eq!(V2( 1,  0), column_to_chart(V2( 1,  0)));
+        assert_eq!(V2(0, 1), column_to_chart(V2(-1, 0)));
+        assert_eq!(V2(0, 0), column_to_chart(V2(0, 0)));
+        assert_eq!(V2(1, 0), column_to_chart(V2(1, 0)));
 
-        assert_eq!(V2( 1,  2), column_to_chart(V2(-1,  1)));
-        assert_eq!(V2( 1,  1), column_to_chart(V2( 0,  1)));
-        assert_eq!(V2( 2,  1), column_to_chart(V2( 1,  1)));
+        assert_eq!(V2(1, 2), column_to_chart(V2(-1, 1)));
+        assert_eq!(V2(1, 1), column_to_chart(V2(0, 1)));
+        assert_eq!(V2(2, 1), column_to_chart(V2(1, 1)));
 
         assert_eq!(V2(-3, -1), column_to_chart(V2(-2, -2)));
-        assert_eq!(V2( 1,  3), column_to_chart(V2(-2,  2)));
-        assert_eq!(V2( 3,  1), column_to_chart(V2( 2,  2)));
-        assert_eq!(V2(-1, -3), column_to_chart(V2( 2, -2)));
+        assert_eq!(V2(1, 3), column_to_chart(V2(-2, 2)));
+        assert_eq!(V2(3, 1), column_to_chart(V2(2, 2)));
+        assert_eq!(V2(-1, -3), column_to_chart(V2(2, -2)));
     }
 }
