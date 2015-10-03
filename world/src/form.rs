@@ -18,6 +18,7 @@ pub enum Forms {
 }
 
 /// Forms are the prototypes for the entities you create.
+#[derive(Clone, Debug)]
 pub struct Form {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -85,4 +86,10 @@ fn init_forms() -> Vec<Form> {
         Form::mob("dreg",       Brush::Dreg,    OLIVE,      1,  &[Hands]),
         Form::mob("snake",      Brush::Snake,   GREEN,      1,  &[]).biome(Overland),
     ]
+}
+
+/// Perform operations on the collection of entity forms.
+pub fn with_forms<F, U>(f: F) -> U
+  where F: FnOnce(&Vec<Form>) -> U + 'static + Sized {
+    FORMS.with(|v| f(v))
 }
