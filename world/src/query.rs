@@ -136,7 +136,7 @@ pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Optio
 }
 
 pub fn terrain(w: &World, loc: Location) -> TerrainType {
-    let mut ret = w.area.terrain(loc);
+    let mut ret = w.terrain.get(loc);
     // Mobs standing on doors make the doors open.
     if ret == TerrainType::Door && has_mobs(w, loc) {
         ret = TerrainType::OpenDoor;
@@ -266,7 +266,7 @@ pub fn area_name(w: &World, _loc: Location) -> String {
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
 /// and stranger terrain.
-pub fn current_depth(w: &World) -> i32 { w.area.seed.spec.depth }
+pub fn current_depth(w: &World) -> i32 { w.flags.depth }
 
 pub fn hp(w: &World, e: Entity) -> i32 {
     max_hp(w, e) -

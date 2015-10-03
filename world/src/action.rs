@@ -10,7 +10,7 @@ use calx::{Dijkstra, Dir6, HexFov};
 use calx_ecs::{Entity};
 use world::{World};
 use flags;
-use area::{self, Area};
+use area;
 use location::{Location};
 use content::{Biome, AreaSpec};
 use item::{Slot};
