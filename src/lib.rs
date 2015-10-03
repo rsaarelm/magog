@@ -24,6 +24,7 @@ use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
 
 pub use rgb::{Rgba, SRgba, color, scolor, NAMED_COLORS};
+pub use field::{Backdrop, ConstBackdrop, Patch, Field};
 pub use fs::{PathExt};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key, ImageStore};
@@ -37,6 +38,7 @@ pub use rng::{EncodeRng, RngExt};
 
 mod atlas;
 mod brush;
+mod field;
 mod fs;
 mod geom;
 mod hex;
