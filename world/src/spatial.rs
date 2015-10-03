@@ -1,8 +1,8 @@
-use std::collections::{BTreeMap};
+use std::collections::BTreeMap;
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
-use vec_map::{VecMap};
-use calx_ecs::{Entity};
-use location::{Location};
+use vec_map::VecMap;
+use calx_ecs::Entity;
+use location::Location;
 use item::Slot;
 use self::Place::*;
 
@@ -41,8 +41,11 @@ impl Spatial {
 
         self.entity_to_place.insert(idx, p);
         match self.place_to_entities.get_mut(&p) {
-            Some(v) => { v.push(Entity(idx)); return; }
-            _ => ()
+            Some(v) => {
+                v.push(Entity(idx));
+                return;
+            }
+            _ => (),
         };
         // Didn't return above, that means this location isn't indexed
         // yet and needs a brand new container. (Can't do this in match
@@ -61,13 +64,14 @@ impl Spatial {
         match self.entity_to_place.get(&idx) {
             Some(&In(p, _)) if p == parent => true,
             Some(&In(p, _)) => self.contains(parent, p),
-            _ => false
+            _ => false,
         }
     }
 
     /// Insert an entity into container.
     pub fn insert_in(&mut self, e: Entity, parent: Entity) {
-        assert!(!self.contains(e, parent), "Trying to create circular containment");
+        assert!(!self.contains(e, parent),
+                "Trying to create circular containment");
         self.insert(e, In(parent, None));
     }
 
@@ -81,7 +85,9 @@ impl Spatial {
     /// items. Unless the entity is added back in or the contents are handled
     /// somehow, this will leave the spatial index in an inconsistent state.
     fn single_remove(&mut self, Entity(idx): Entity) {
-        if !self.entity_to_place.contains_key(&idx) { return; }
+        if !self.entity_to_place.contains_key(&idx) {
+            return;
+        }
 
         let &p = self.entity_to_place.get(&idx).unwrap();
         self.entity_to_place.remove(&idx);
@@ -149,11 +155,15 @@ impl Spatial {
 
         // XXX: This replacement thing is quite nasty, it iterates over the
         // whole collection for every query.
-        self.place_to_entities.iter()
-            .filter(|&(ref k, _)|
-                        if let &&In(ref p, _) = k {*p == parent} else { false })
-
-            // Flatten the Vec results into a single stream.
+        self.place_to_entities
+            .iter()
+            .filter(|&(ref k, _)| {
+                if let &&In(ref p, _) = k {
+                    *p == parent
+                } else {
+                    false
+                }
+            })
             .flat_map(|(_, ref v)| v.iter())
             .map(|&x| x)
             .collect()
@@ -211,7 +221,7 @@ impl Encodable for Spatial {
 
 #[cfg(test)]
 mod test {
-    use super::{Place};
+    use super::Place;
     use item::Slot;
     use entity::Entity;
 
@@ -233,7 +243,7 @@ mod test {
 
         places.sort();
         assert_eq!(places,
-            vec![
+                   vec![
                 Place::In(Entity(0), None),
                 Place::In(Entity(0), Some(Slot::Melee)),
                 Place::In(Entity(0), Some(Slot::Ranged)),

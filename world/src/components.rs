@@ -1,7 +1,7 @@
-use std::convert::{Into};
-use calx::{Rgba};
+use std::convert::Into;
+use calx::Rgba;
 use content::{Biome, FormType, Brush};
-use item::{ItemType};
+use item::ItemType;
 use ability::Ability;
 use stats::Stats;
 use location_set::LocationSet;
@@ -53,7 +53,7 @@ impl MapMemory {
 #[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Brain {
     pub state: BrainState,
-    pub alignment: Alignment
+    pub alignment: Alignment,
 }
 
 impl Brain {
@@ -111,7 +111,9 @@ pub struct Health {
     pub armor: i32,
 }
 
-impl Health { pub fn new() -> Health { Default::default() } }
+impl Health {    pub fn new() -> Health {
+        Default::default()
+    } }
 
 
 /// Items can be picked up and carried and they do stuff.

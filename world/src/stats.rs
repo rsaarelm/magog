@@ -1,5 +1,5 @@
 use std::default::Default;
-use std::ops::{Add};
+use std::ops::Add;
 
 /// Stats specifies static bonuses for an entity. Stats values can be added
 /// together to build composites. The Default value for Stats must be an
@@ -27,19 +27,31 @@ pub struct Stats {
 impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
         let mut intr = 0u32;
-        for &i in intrinsics.iter() { intr = intr | (i as u32); }
+        for &i in intrinsics.iter() {
+            intr = intr | (i as u32);
+        }
         Stats {
             power: power,
             intrinsics: intr,
-            .. Default::default()
+            ..Default::default()
         }
     }
 
-    pub fn mana(self, mana: i32) -> Stats { Stats { mana: mana, .. self } }
-    pub fn protection(self, protection: i32) -> Stats { Stats { protection: protection, .. self } }
-    pub fn attack(self, attack: i32) -> Stats { Stats { attack: attack, .. self } }
-    pub fn ranged_range(self, ranged_range: u32) -> Stats { Stats { ranged_range: ranged_range, .. self } }
-    pub fn ranged_power(self, ranged_power: i32) -> Stats { Stats { ranged_power: ranged_power, .. self } }
+    pub fn mana(self, mana: i32) -> Stats {
+        Stats { mana: mana, ..self }
+    }
+    pub fn protection(self, protection: i32) -> Stats {
+        Stats { protection: protection, ..self }
+    }
+    pub fn attack(self, attack: i32) -> Stats {
+        Stats { attack: attack, ..self }
+    }
+    pub fn ranged_range(self, ranged_range: u32) -> Stats {
+        Stats { ranged_range: ranged_range, ..self }
+    }
+    pub fn ranged_power(self, ranged_power: i32) -> Stats {
+        Stats { ranged_power: ranged_power, ..self }
+    }
 }
 
 impl Add<Stats> for Stats {
@@ -65,15 +77,15 @@ impl Add<Stats> for Stats {
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
-    Slow          = 0b1,
+    Slow = 0b1,
     /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast          = 0b10,
+    Fast = 0b10,
     /// Moves 1/3 faster than usual, stacks with Fast status.
-    Quick         = 0b100,
+    Quick = 0b100,
     /// Can manipulate objects and doors.
-    Hands         = 0b1000,
+    Hands = 0b1000,
     /// Explodes on death
     Deathsplosion = 0b10000,
     /// Is dead (not undead-dead, no-longer-subject-to-living-things-logic-dead)
-    Dead          = 0b100000,
+    Dead = 0b100000,
 }

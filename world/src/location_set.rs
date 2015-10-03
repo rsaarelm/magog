@@ -9,14 +9,12 @@ pub struct LocationSet {
     /// coordinates of the location catenated into one integer for the
     /// location of the chunk, and the value uses the 64 bits of the u64 to
     /// cover the 8x8 chunk with a bitmap.
-    chunks: HashMap<u32, u64>
+    chunks: HashMap<u32, u64>,
 }
 
 impl LocationSet {
     pub fn new() -> LocationSet {
-        LocationSet {
-            chunks: HashMap::new()
-        }
+        LocationSet { chunks: HashMap::new() }
     }
 
     /// Return the chunk index and the bit offset for a location.
@@ -34,8 +32,12 @@ impl LocationSet {
     pub fn contains(&self, loc: &Location) -> bool {
         let (index, bit) = LocationSet::chunk(loc);
         match self.chunks.get(&index) {
-            Some(b) if b & bit != 0 => { true }
-            _ => { false }
+            Some(b) if b & bit != 0 => {
+                true
+            }
+            _ => {
+                false
+            }
         }
     }
 
@@ -59,7 +61,7 @@ impl LocationSet {
         }
     }
 
-    pub fn extend<I: Iterator<Item=Location>>(&mut self, iter: I) {
+    pub fn extend<I: Iterator<Item = Location>>(&mut self, iter: I) {
         for i in iter {
             self.insert(i);
         }

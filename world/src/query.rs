@@ -1,15 +1,15 @@
 /*! Non-mutating world and entity state querying functions. */
 
 use calx::{noise, Dir6, Rgba};
-use calx_ecs::{Entity};
+use calx_ecs::Entity;
 use content::{Brush, TerrainType};
 use world::World;
 use components::{BrainState, Alignment};
 use stats::{Stats, Intrinsic};
 use location::Location;
-use spatial::{Place};
+use spatial::Place;
 use item::{ItemType, Slot};
-use ::{FovStatus, Light};
+use {FovStatus, Light};
 
 /// Game update control.
 #[derive(Copy, Clone, PartialEq)]
@@ -19,19 +19,27 @@ pub enum ControlState {
 }
 
 /// Return the player entity if one exists.
-pub fn player(w: &World) -> Option<Entity> { w.flags.player }
+pub fn player(w: &World) -> Option<Entity> {
+    w.flags.player
+}
 
 /// Return true if the game has ended and the player can make no further
 /// actions.
-pub fn game_over(w: &World) -> bool { player(w).is_none() }
+pub fn game_over(w: &World) -> bool {
+    player(w).is_none()
+}
 
 /// Get the current control state.
 pub fn control_state(w: &World) -> ControlState {
-    if w.flags.player_acted { return ControlState::ReadyToUpdate; }
+    if w.flags.player_acted {
+        return ControlState::ReadyToUpdate;
+    }
 
     let p = player(w);
     if let Some(p) = p {
-        if acts_this_frame(w, p) { return ControlState::AwaitingInput; }
+        if acts_this_frame(w, p) {
+            return ControlState::AwaitingInput;
+        }
     }
 
     return ControlState::ReadyToUpdate;
@@ -47,13 +55,15 @@ pub fn is_active(w: &World, e: Entity) -> bool {
     match brain_state(w, e) {
         Some(BrainState::Asleep) => false,
         Some(_) => true,
-        _ => false
+        _ => false,
     }
 }
 
 /// Return whether the entity is a mob that will act this frame.
 pub fn acts_this_frame(w: &World, e: Entity) -> bool {
-    if !is_active(w, e) { return false; }
+    if !is_active(w, e) {
+        return false;
+    }
     return ticks_this_frame(w, e);
 }
 
@@ -65,7 +75,9 @@ fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
 /// based on its speed properties. Does not check for status effects like
 /// sleep that might prevent actual action.
 pub fn ticks_this_frame(w: &World, e: Entity) -> bool {
-    if !is_mob(w, e) { return false; }
+    if !is_mob(w, e) {
+        return false;
+    }
 
     let tick = w.flags.tick;
     // Go through a cycle of 5 phases to get 4 possible speeds.
@@ -116,7 +128,7 @@ pub fn location(w: &World, e: Entity) -> Option<Location> {
     match w.spatial.get(e) {
         Some(Place::At(loc)) => Some(loc),
         Some(Place::In(container, _)) => location(w, container),
-        _ => None
+        _ => None,
     }
 }
 
@@ -129,7 +141,9 @@ pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Optio
             break;
         }
         if let Some(e) = mob_at(w, loc) {
-            if is_hostile_to(w, shooter, e) { return Some(e); }
+            if is_hostile_to(w, shooter, e) {
+                return Some(e);
+            }
         }
     }
     None
@@ -151,11 +165,15 @@ pub fn terrain(w: &World, loc: Location) -> TerrainType {
     ret
 }
 
-pub fn blocks_sight(w: &World, loc: Location) -> bool { terrain(w, loc).blocks_sight() }
+pub fn blocks_sight(w: &World, loc: Location) -> bool {
+    terrain(w, loc).blocks_sight()
+}
 
 /// Return whether the location obstructs entity movement.
 pub fn blocks_walk(w: &World, loc: Location) -> bool {
-    if terrain(w, loc).blocks_walk() { return true; }
+    if terrain(w, loc).blocks_walk() {
+        return true;
+    }
     if w.spatial.entities_at(loc).into_iter().any(|e| is_blocking_entity(w, e)) {
         return true;
     }
@@ -167,7 +185,9 @@ pub fn is_blocking_entity(w: &World, e: Entity) -> bool {
     is_mob(w, e)
 }
 
-pub fn has_mobs(w: &World, loc: Location) -> bool { mob_at(w, loc).is_some() }
+pub fn has_mobs(w: &World, loc: Location) -> bool {
+    mob_at(w, loc).is_some()
+}
 
 pub fn mob_at(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| is_mob(w, e))
@@ -193,12 +213,16 @@ pub fn alignment(w: &World, e: Entity) -> Option<Alignment> {
 
 /// Return whether the entity can occupy a location.
 pub fn can_enter(w: &World, e: Entity, loc: Location) -> bool {
-    if is_mob(w, e) && has_mobs(w, loc) { return false; }
+    if is_mob(w, e) && has_mobs(w, loc) {
+        return false;
+    }
     if terrain(w, loc).is_door() && !has_intrinsic(w, e, Intrinsic::Hands) {
         // Can't open doors without hands.
         return false;
     }
-    if blocks_walk(w, loc) { return false; }
+    if blocks_walk(w, loc) {
+        return false;
+    }
     true
 }
 
@@ -206,39 +230,41 @@ pub fn can_enter(w: &World, e: Entity, loc: Location) -> bool {
 pub fn can_step(w: &World, e: Entity, dir: Dir6) -> bool {
     if let Some(Place::At(loc)) = w.spatial.get(e) {
         can_enter(w, e, loc + dir.to_v2())
-    } else { false }
+    } else {
+        false
+    }
 }
 
 /// Return the first free storage bag inventory slot on this entity.
 pub fn free_bag_slot(w: &World, e: Entity) -> Option<Slot> {
-    for &slot in vec![
-        Slot::InventoryJ,
-        Slot::InventoryK,
-        Slot::InventoryL,
-        Slot::InventoryM,
-        Slot::InventoryN,
-        Slot::InventoryO,
-        Slot::InventoryP,
-        Slot::InventoryQ,
-        Slot::InventoryR,
-        Slot::InventoryS,
-        Slot::InventoryT,
-        Slot::InventoryU,
-        Slot::InventoryV,
-        Slot::InventoryW,
-        Slot::InventoryX,
-        Slot::InventoryY,
-        Slot::InventoryZ].iter() {
+    for &slot in vec![Slot::InventoryJ,
+                      Slot::InventoryK,
+                      Slot::InventoryL,
+                      Slot::InventoryM,
+                      Slot::InventoryN,
+                      Slot::InventoryO,
+                      Slot::InventoryP,
+                      Slot::InventoryQ,
+                      Slot::InventoryR,
+                      Slot::InventoryS,
+                      Slot::InventoryT,
+                      Slot::InventoryU,
+                      Slot::InventoryV,
+                      Slot::InventoryW,
+                      Slot::InventoryX,
+                      Slot::InventoryY,
+                      Slot::InventoryZ]
+                     .iter() {
         if equipped(w, e, slot).is_none() {
             return Some(slot);
+        }
     }
-}
-None
+    None
 }
 
 /// Return the item equipped by this entity in the given inventory slot.
 pub fn equipped(w: &World, e: Entity, slot: Slot) -> Option<Entity> {
-w.spatial.entity_equipped(e, slot)
+    w.spatial.entity_equipped(e, slot)
 }
 
 pub fn can_be_picked_up(w: &World, e: Entity) -> bool {
@@ -254,24 +280,31 @@ pub fn top_item(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| can_be_picked_up(w, e))
 }
 
-pub fn is_item(w: &World, e: Entity) -> bool { w.ecs.item.contains(e) }
+pub fn is_item(w: &World, e: Entity) -> bool {
+    w.ecs.item.contains(e)
+}
 
 pub fn area_name(w: &World, _loc: Location) -> String {
     match current_depth(w) {
         0 => "Limbo".to_string(),
         1 => "Overworld".to_string(),
-        n => format!("Dungeon {}", n - 1)
+        n => format!("Dungeon {}", n - 1),
     }
 }
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
 /// and stranger terrain.
-pub fn current_depth(w: &World) -> i32 { w.flags.depth }
+pub fn current_depth(w: &World) -> i32 {
+    w.flags.depth
+}
 
 pub fn hp(w: &World, e: Entity) -> i32 {
     max_hp(w, e) -
-        if w.ecs.health.contains(e) { w.ecs.health[e].wounds }
-        else { 0 }
+    if w.ecs.health.contains(e) {
+        w.ecs.health[e].wounds
+    } else {
+        0
+    }
 }
 
 pub fn max_hp(w: &World, e: Entity) -> i32 {
@@ -306,7 +339,11 @@ pub fn light_at(w: &World, loc: Location) -> Light {
 
     if let Some(d) = loc.distance_from(w.flags.camera) {
         let lum = 0.8 - d as f32 / 10.0;
-        return Light::new(if lum >= 0.0 { lum } else { 0.0 });
+        return Light::new(if lum >= 0.0 {
+            lum
+        } else {
+            0.0
+        });
     }
     return Light::new(1.0);
 }

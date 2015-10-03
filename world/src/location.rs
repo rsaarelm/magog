@@ -1,4 +1,4 @@
-use std::ops::{Add};
+use std::ops::Add;
 use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 use content::TerrainType;
 
@@ -6,12 +6,13 @@ use content::TerrainType;
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub struct Location {
     pub x: i8,
-    pub y: i8,
-    // TODO: Add third dimension for multiple persistent levels.
+    pub y: i8, // TODO: Add third dimension for multiple persistent levels.
 }
 
 impl Location {
-    pub fn new(x: i8, y: i8) -> Location { Location { x: x, y: y } }
+    pub fn new(x: i8, y: i8) -> Location {
+        Location { x: x, y: y }
+    }
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
@@ -23,11 +24,19 @@ impl Location {
 
     /// Hex distance from this location to the other one, if applicable.
     pub fn distance_from(&self, other: Location) -> Option<i32> {
-        if let Some(v) = self.v2_at(other) { Some(v.hex_dist()) } else { None }
+        if let Some(v) = self.v2_at(other) {
+            Some(v.hex_dist())
+        } else {
+            None
+        }
     }
 
     pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
-        if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
+        if let Some(v) = self.v2_at(other) {
+            Some(Dir6::from_v2(v))
+        } else {
+            None
+        }
     }
 
     pub fn noise(&self) -> f32 {
@@ -38,9 +47,8 @@ impl Location {
 impl Add<V2<i32>> for Location {
     type Output = Location;
     fn add(self, other: V2<i32>) -> Location {
-        Location::new(
-            (self.x as i32 + other.0) as i8,
-            (self.y as i32 + other.1) as i8)
+        Location::new((self.x as i32 + other.0) as i8,
+                      (self.y as i32 + other.1) as i8)
     }
 }
 
@@ -61,7 +69,8 @@ pub trait Unchart {
 
 impl Unchart for Location {
     fn chart_pos(&self, loc: Location) -> Option<V2<i32>> {
-        Some(V2(loc.x as i32 - self.x as i32, loc.y as i32 - self.y as i32))
+        Some(V2(loc.x as i32 - self.x as i32,
+                loc.y as i32 - self.y as i32))
     }
 }
 

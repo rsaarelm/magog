@@ -1,9 +1,9 @@
-use calx_ecs::{Entity};
+use calx_ecs::Entity;
 use calx::color::*;
-use calx::{Rgba};
+use calx::Rgba;
 use content::{Biome, FormType, Brush};
 use content::Biome::*;
-use world::{Component};
+use world::Component;
 use stats::{Stats, Intrinsic};
 use stats::Intrinsic::*;
 use components::{Desc, Brain, Health};
@@ -38,22 +38,17 @@ pub struct Form {
 
 impl Form {
     /// Create a standard form for a living creature.
-    pub fn mob(
-        name: &str,
-        icon: Brush,
-        color: Rgba,
-        power: i32,
-        intrinsics: &[Intrinsic]) -> Form {
+    pub fn mob(name: &str, icon: Brush, color: Rgba, power: i32, intrinsics: &[Intrinsic]) -> Form {
         Form {
             biome: Anywhere,
             commonness: 1000,
             min_depth: 0,
             category: FormType::Creature,
             loadout: Loadout::new()
-                .c(Stats::new(power, intrinsics))
-                .c(Desc::new(name, icon, color))
-                .c(Brain::enemy())
-                .c(Health::new()),
+                         .c(Stats::new(power, intrinsics))
+                         .c(Desc::new(name, icon, color))
+                         .c(Brain::enemy())
+                         .c(Health::new()),
         }
     }
 
@@ -90,6 +85,7 @@ fn init_forms() -> Vec<Form> {
 
 /// Perform operations on the collection of entity forms.
 pub fn with_forms<F, U>(f: F) -> U
-  where F: FnOnce(&Vec<Form>) -> U + 'static + Sized {
+    where F: FnOnce(&Vec<Form>) -> U + 'static + Sized
+{
     FORMS.with(|v| f(v))
 }

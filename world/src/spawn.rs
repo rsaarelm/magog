@@ -1,10 +1,10 @@
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use calx_ecs::Entity;
-use content::{FormType};
+use content::FormType;
 use action;
-use content::{Biome};
-use location::{Location};
+use content::Biome;
+use location::Location;
 use world;
 
 /// Representation for an abstract spawnable object. Does not refer to
@@ -25,8 +25,11 @@ impl Spawn {
     /// Empty categories or biomes are treated as matching any category or
     /// biome.
     pub fn new(depth: i32, spawn_type: FormType, biomes: Vec<Biome>) -> Spawn {
-        let biome_mask = if biomes.is_empty() { ::std::u32::MAX }
-        else { biomes.into_iter().fold(0, |a, x| a | x as u32) };
+        let biome_mask = if biomes.is_empty() {
+            ::std::u32::MAX
+        } else {
+            biomes.into_iter().fold(0, |a, x| a | x as u32)
+        };
 
         Spawn {
             spawn_type: spawn_type,

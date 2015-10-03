@@ -1,21 +1,21 @@
 /*! Functions for changing world and entity state. */
 
 use std::io::prelude::*;
-use std::path::{Path};
+use std::path::Path;
 use std::fs::{self, File};
 use rand::StdRng;
 use rand::SeedableRng;
 use std::iter::Filter;
 use calx::{Dijkstra, Dir6, HexFov};
-use calx_ecs::{Entity};
-use world::{World};
+use calx_ecs::Entity;
+use world::World;
 use flags;
 use area;
-use location::{Location};
+use location::Location;
 use content::{Biome, AreaSpec};
-use item::{Slot};
-use components::{CompositeStats};
-use ::{Msg};
+use item::Slot;
+use components::CompositeStats;
+use Msg;
 use msg;
 use query::{self, ControlState};
 
@@ -47,7 +47,9 @@ pub fn update(w: &mut World) {
 /// Run AI for all autonomous mobs.
 fn ai_main(w: &mut World) {
     let actives: Vec<Entity> = w.ecs.brain.iter().map(|(&e, _)| e).collect();
-    for e in actives.into_iter() { update_entity(w, e); }
+    for e in actives.into_iter() {
+        update_entity(w, e);
+    }
 }
 
 pub fn update_entity(w: &mut World, e: Entity) {
@@ -120,8 +122,7 @@ pub fn input(w: &mut World, input: Input) {
         Input::Shoot(d) => {
             shoot(w, p, d);
         }
-        Input::Pass => {
-        }
+        Input::Pass => {}
     }
     w.flags.player_acted = true;
 
@@ -175,7 +176,9 @@ pub fn pick_up(w: &mut World, picker: Entity, item: Entity) -> bool {
             return true;
         }
         // Inventory full.
-        None => { return false; }
+        None => {
+            return false;
+        }
     }
 }
 
@@ -190,16 +193,16 @@ pub fn equip(w: &mut World, item: Entity, e: Entity, slot: Slot) {
 /// stats affecting state of an entity.
 pub fn recompose_stats(w: &mut World, e: Entity) {
     let mut stats = query::base_stats(w, e);
-    for &slot in [
-        Slot::Body,
-        Slot::Feet,
-        Slot::Head,
-        Slot::Melee,
-        Slot::Ranged,
-        Slot::TrinketF,
-        Slot::TrinketG,
-        Slot::TrinketH,
-        Slot::TrinketI].iter() {
+    for &slot in [Slot::Body,
+                  Slot::Feet,
+                  Slot::Head,
+                  Slot::Melee,
+                  Slot::Ranged,
+                  Slot::TrinketF,
+                  Slot::TrinketG,
+                  Slot::TrinketH,
+                  Slot::TrinketI]
+                     .iter() {
         if let Some(item) = w.spatial.entity_equipped(e, slot) {
             stats = stats + query::stats(w, item);
         }
@@ -215,11 +218,10 @@ pub fn place_entity(w: &mut World, e: Entity, loc: Location) {
 
 /// Clear map memory of an entity.
 pub fn forget_map(w: &mut World, e: Entity) {
-    w.ecs.map_memory.get_mut(e).map(
-        |mm| {
-            mm.seen.clear();
-            mm.remembered.clear();
-        });
+    w.ecs.map_memory.get_mut(e).map(|mm| {
+        mm.seen.clear();
+        mm.remembered.clear();
+    });
 }
 
 /// Callback when entity moves to a new location.
@@ -244,15 +246,17 @@ fn after_entity_move(w: &mut World, e: Entity) {
 }
 
 pub fn do_fov(w: &mut World, e: Entity) {
-    if !w.ecs.map_memory.contains(e) { return; }
+    if !w.ecs.map_memory.contains(e) {
+        return;
+    }
 
     if let Some(loc) = query::location(w, e) {
         let sight_range = 12;
-        let seen_locs: Vec<Location> = HexFov::new(
-            |pt| query::blocks_sight(w, (loc + pt)), sight_range)
-            .fake_isometric()
-            .map(|pt| loc + pt)
-            .collect();
+        let seen_locs: Vec<Location> = HexFov::new(|pt| query::blocks_sight(w, (loc + pt)),
+                                                   sight_range)
+                                           .fake_isometric()
+                                           .map(|pt| loc + pt)
+                                           .collect();
         let mut mm = &mut w.ecs.map_memory[e];
         mm.seen.clear();
         mm.seen.extend(seen_locs.clone().into_iter());
@@ -278,19 +282,23 @@ pub fn save_game(w: &World) {
     }
 
     let save_data = w.save();
-    File::create(SAVE_FILENAME).unwrap()
-        .write_all(&save_data.into_bytes()).unwrap();
+    File::create(SAVE_FILENAME)
+        .unwrap()
+        .write_all(&save_data.into_bytes())
+        .unwrap();
 }
 
 pub fn load_game() -> Result<World, ()> {
-    if !save_exists() { return Err(()); }
+    if !save_exists() {
+        return Err(());
+    }
     let path = Path::new(SAVE_FILENAME);
     let mut save_data = String::new();
     File::open(&path).unwrap().read_to_string(&mut save_data).unwrap();
     // TODO: Informative error message if load fails.
     match World::load(&save_data[..]) {
         Ok(w) => Ok(w),
-        _ => Err(())
+        _ => Err(()),
     }
 }
 
@@ -298,5 +306,6 @@ pub fn _delete_save() {
     let _ = fs::remove_file(SAVE_FILENAME);
 }
 
-pub fn save_exists() -> bool { fs::metadata(SAVE_FILENAME).is_ok() }
-
+pub fn save_exists() -> bool {
+    fs::metadata(SAVE_FILENAME).is_ok()
+}

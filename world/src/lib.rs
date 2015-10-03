@@ -4,15 +4,16 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
 extern crate vec_map;
-#[macro_use] extern crate calx_ecs;
+#[macro_use]
+extern crate calx_ecs;
 extern crate calx;
 extern crate content;
 
-pub use flags::{Flags};
+pub use flags::Flags;
 pub use location::{Location, Chart, Unchart};
-pub use msg::{pop_msg};
-pub use world::{World};
-pub use spatial::{Spatial};
+pub use msg::pop_msg;
+pub use world::World;
+pub use spatial::Spatial;
 
 macro_rules! msg(
     ($($arg:tt)*) => ( ::msg::push(::Msg::Text(format!($($arg)*))))
