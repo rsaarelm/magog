@@ -1,6 +1,6 @@
 //////////// Brush cache boilerplate ////////////
 
-use std::cell::{RefCell};
+use std::cell::RefCell;
 use calx::{ImageStore, IndexCache};
 use calx::backend::{CanvasBuilder, Image};
 

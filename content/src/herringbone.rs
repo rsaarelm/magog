@@ -1,18 +1,17 @@
 use std::iter;
-use num::{Integer};
-use rand::{Rng};
-use calx::{V2};
+use num::Integer;
+use rand::Rng;
+use calx::V2;
 use geomorph;
-use geomorph::{Chunk};
-use ::{StaticArea, FormType, AreaSpec};
+use geomorph::Chunk;
+use {StaticArea, FormType, AreaSpec};
 
 static CHUNK_W: i32 = 11;
 
 /// Generate a map using Herringbone Wang Tiles.
 ///
 /// Designed after http://nothings.org/gamedev/herringbone/
-pub fn herringbone<R: Rng>(
-    rng: &mut R, spec: &AreaSpec) -> StaticArea<FormType> {
+pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea<FormType> {
 
     // Generate the terrain.
     let mut area = geomorph::with_cache(|cs| generate_terrain(rng, spec, cs));
@@ -23,10 +22,11 @@ pub fn herringbone<R: Rng>(
     // total connectivity. Later on, use Dijkstra map that spreads from
     // entrance/exit as a reachability floodfill to do something cleverer
     // here.
-    let mut opens: Vec<V2<i32>> = area.terrain.iter()
-        .filter(|&(_, &t)| t.valid_spawn_spot())
-        .map(|(&loc, _)| loc)
-        .collect();
+    let mut opens: Vec<V2<i32>> = area.terrain
+                                      .iter()
+                                      .filter(|&(_, &t)| t.valid_spawn_spot())
+                                      .map(|(&loc, _)| loc)
+                                      .collect();
 
     rng.shuffle(&mut opens);
 
@@ -35,17 +35,16 @@ pub fn herringbone<R: Rng>(
     let num_mobs = 32;
     let num_items = 12;
 
-    area.spawns.extend(
-        iter::repeat(FormType::Creature).take(num_mobs).chain(
-        iter::repeat(FormType::Item).take(num_items))
-        .filter_map(|spawn| {
-            if let Some(loc) = opens.pop() {
-                Some((loc, spawn))
-            } else {
-                None
-            }
-        })
-    );
+    area.spawns.extend(iter::repeat(FormType::Creature)
+                           .take(num_mobs)
+                           .chain(iter::repeat(FormType::Item).take(num_items))
+                           .filter_map(|spawn| {
+                               if let Some(loc) = opens.pop() {
+                                   Some((loc, spawn))
+                               } else {
+                                   None
+                               }
+                           }));
 
     area
 }
@@ -53,16 +52,22 @@ pub fn herringbone<R: Rng>(
 fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea<FormType> {
     let mut area = StaticArea::new();
 
-    let chunks = cs.iter().filter(
-            |c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
-            .collect::<Vec<&Chunk>>();
+    let chunks = cs.iter()
+                   .filter(|c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
+                   .collect::<Vec<&Chunk>>();
 
-    let edge = chunks.iter().filter(|c| !c.exit && c.connected)
-        .map(|&c| c).collect::<Vec<&Chunk>>();
-    let inner = chunks.iter().filter(|c| !c.exit)
-        .map(|&c| c).collect::<Vec<&Chunk>>();
-    let exit = chunks.iter().filter(|c| c.exit)
-        .map(|&c| c).collect::<Vec<&Chunk>>();
+    let edge = chunks.iter()
+                     .filter(|c| !c.exit && c.connected)
+                     .map(|&c| c)
+                     .collect::<Vec<&Chunk>>();
+    let inner = chunks.iter()
+                      .filter(|c| !c.exit)
+                      .map(|&c| c)
+                      .collect::<Vec<&Chunk>>();
+    let exit = chunks.iter()
+                     .filter(|c| c.exit)
+                     .map(|&c| c)
+                     .collect::<Vec<&Chunk>>();
 
     assert!(!exit.is_empty(), "No exit chunks found");
     assert!(inner.len() + exit.len() == chunks.len());
@@ -74,10 +79,14 @@ fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> St
         for cx in -2i32..2 {
             let on_edge = cy == -2 || cx == -2 || cy == 1 || cx == 1;
 
-            let chunk = rng.choose(
-                if (cx, cy) == (exit_x, exit_y) { &exit[..] }
-                else if on_edge { &edge[..] }
-                else { &inner[..] }).unwrap();
+            let chunk = rng.choose(if (cx, cy) == (exit_x, exit_y) {
+                               &exit[..]
+                           } else if on_edge {
+                               &edge[..]
+                           } else {
+                               &inner[..]
+                           })
+                           .unwrap();
 
             for (&(x, y), &terrain) in chunk.cells.iter() {
                 area.terrain.insert(herringbone_pos((cx, cy), (x, y)), terrain);

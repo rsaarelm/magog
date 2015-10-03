@@ -4,7 +4,8 @@ extern crate num;
 extern crate rustc_serialize;
 extern crate rand;
 extern crate image;
-#[macro_use] extern crate calx;
+#[macro_use]
+extern crate calx;
 
 mod brush;
 mod geomorph;
@@ -13,20 +14,20 @@ mod herringbone;
 mod rooms;
 mod terrain;
 
-use std::collections::{BTreeMap};
-use calx::{V2};
+use std::collections::BTreeMap;
+use calx::V2;
 
-pub use brush::{Brush};
-pub use herringbone::{herringbone};
-pub use rooms::{rooms_and_corridors};
-pub use terrain::{TerrainType};
+pub use brush::Brush;
+pub use herringbone::herringbone;
+pub use rooms::rooms_and_corridors;
+pub use terrain::TerrainType;
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
-    Dungeon  = 0b10,
+    Dungeon = 0b10,
 
     // For things showing up at a biome.
     Anywhere = -1,
@@ -51,7 +52,10 @@ pub struct AreaSpec {
 
 impl AreaSpec {
     pub fn new(biome: Biome, depth: i32) -> AreaSpec {
-        AreaSpec { biome: biome, depth: depth }
+        AreaSpec {
+            biome: biome,
+            depth: depth,
+        }
     }
 }
 

@@ -1,9 +1,9 @@
-use std::collections::{BTreeSet};
-use num::{Integer};
-use rand::{Rng};
+use std::collections::BTreeSet;
+use num::Integer;
+use rand::Rng;
 use calx::{V2, Rect, RngExt, clamp, KernelTerrain};
-use ::{StaticArea, FormType};
-use terrain::{TerrainType};
+use {StaticArea, FormType};
+use terrain::TerrainType;
 
 /// Rooms have random size, but they are all placed inside grid cells.
 /// Includes one line of buffer beyond the extents of the room plus outer
@@ -12,8 +12,7 @@ use terrain::{TerrainType};
 pub static CELL_SIZE: i32 = 16;
 
 /// Generate a classic rooms and corridors rogue map.
-pub fn rooms_and_corridors<R: Rng>(
-    rng: &mut R, depth: i32) -> StaticArea<FormType> {
+pub fn rooms_and_corridors<R: Rng>(rng: &mut R, depth: i32) -> StaticArea<FormType> {
     // TODO: Vary room number.
     let num_rooms = 6;
 
@@ -30,7 +29,8 @@ pub fn rooms_and_corridors<R: Rng>(
     dig_room(&mut area, rng, starting_room, Entrance);
 
     while rooms.len() < num_rooms {
-        let wall = *rng.choose(&walls.clone().into_iter().collect::<Vec<Wall>>()).expect("No expandable walls");
+        let wall = *rng.choose(&walls.clone().into_iter().collect::<Vec<Wall>>())
+                       .expect("No expandable walls");
 
         let wall_rooms = wall.rooms();
         for &(entrance_dir, room) in wall_rooms.iter() {
@@ -64,7 +64,7 @@ fn door_positions(area: &StaticArea<FormType>, node: Node, dir: Direction) -> Ve
         North => (V2(0, 0), V2(0, 1)),
         East => (V2(CELL_SIZE - 2, 0), V2(-1, 0)),
         South => (V2(CELL_SIZE - 2, CELL_SIZE - 2), V2(0, -1)),
-        West => (V2(0, CELL_SIZE - 2), V2(1, 0))
+        West => (V2(0, CELL_SIZE - 2), V2(1, 0)),
     };
 
     let start = node.origin() + start;
@@ -95,16 +95,17 @@ fn door_positions(area: &StaticArea<FormType>, node: Node, dir: Direction) -> Ve
     ret
 }
 
-fn dig_room<R: Rng>(area: &mut StaticArea<FormType>, rng: &mut R, node: Node, room_type: RoomType) {
+fn dig_room<R: Rng>(area: &mut StaticArea<FormType>,
+                    rng: &mut R,
+                    node: Node,
+                    room_type: RoomType) {
     static MIN_SIZE: i32 = 5;
 
-    let p1 = V2(
-        rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE),
-        rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE));
+    let p1 = V2(rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE),
+                rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE));
 
-    let dim = V2(
-        rng.gen_range(MIN_SIZE, CELL_SIZE - p1.0),
-        rng.gen_range(MIN_SIZE, CELL_SIZE - p1.1));
+    let dim = V2(rng.gen_range(MIN_SIZE, CELL_SIZE - p1.0),
+                 rng.gen_range(MIN_SIZE, CELL_SIZE - p1.1));
 
     assert!(dim.0 >= MIN_SIZE && dim.1 >= MIN_SIZE);
 
@@ -155,7 +156,8 @@ fn dig_tunnel(area: &mut StaticArea<FormType>, p1: V2<i32>, p2: V2<i32>) {
     let (n1, n2) = (Node::from_pos(p1), Node::from_pos(p2));
 
     let fwd = (n2.0 - n1.0) / 2;
-    assert!(fwd.0.abs() + fwd.1.abs() == 1, "Unhandled tunnel configuration");
+    assert!(fwd.0.abs() + fwd.1.abs() == 1,
+            "Unhandled tunnel configuration");
 
     // Project the vector between the end points on the sideways line to get
     // the direction to move sideways towards the target point.
@@ -164,7 +166,8 @@ fn dig_tunnel(area: &mut StaticArea<FormType>, p1: V2<i32>, p2: V2<i32>) {
 
     let mut pos = p1;
 
-    while pos.0.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 && pos.1.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 {
+    while pos.0.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 &&
+          pos.1.mod_floor(&CELL_SIZE) != CELL_SIZE - 1 {
         area.terrain.insert(pos, TerrainType::Floor);
         pos = pos + fwd;
     }
@@ -188,17 +191,24 @@ struct Node(V2<i32>);
 
 impl Node {
     fn from_pos(pos: V2<i32>) -> Node {
-        Node(V2(
-            (pos.0 as f32 / CELL_SIZE as f32).floor() as i32 * 2,
-            (pos.1 as f32 / CELL_SIZE as f32).floor() as i32 * 2))
+        Node(V2((pos.0 as f32 / CELL_SIZE as f32).floor() as i32 * 2,
+                (pos.1 as f32 / CELL_SIZE as f32).floor() as i32 * 2))
     }
 
     fn build_walls(&self, exclude: Option<Direction>) -> Vec<Wall> {
         let mut ret = Vec::new();
-        if exclude != Some(North) { ret.push(Wall(self.0 + V2( 0, -1))); }
-        if exclude != Some(West)  { ret.push(Wall(self.0 + V2(-1,  0))); }
-        if exclude != Some(East)  { ret.push(Wall(self.0 + V2( 1,  0))); }
-        if exclude != Some(South) { ret.push(Wall(self.0 + V2( 0,  1))); }
+        if exclude != Some(North) {
+            ret.push(Wall(self.0 + V2(0, -1)));
+        }
+        if exclude != Some(West) {
+            ret.push(Wall(self.0 + V2(-1, 0)));
+        }
+        if exclude != Some(East) {
+            ret.push(Wall(self.0 + V2(1, 0)));
+        }
+        if exclude != Some(South) {
+            ret.push(Wall(self.0 + V2(0, 1)));
+        }
         ret
     }
 
@@ -216,7 +226,8 @@ impl Node {
 
     pub fn origin(&self) -> V2<i32> {
         assert!(self._is_valid(), "Off-grid node coordinates");
-        V2((self.0).0 / 2 * CELL_SIZE, (self.0).1 / 2 * CELL_SIZE)
+        V2((self.0).0 / 2 * CELL_SIZE,
+           (self.0).1 / 2 * CELL_SIZE)
     }
 }
 
@@ -229,7 +240,7 @@ enum Direction {
     North,
     East,
     South,
-    West
+    West,
 }
 
 use self::Direction::*;
@@ -237,7 +248,7 @@ use self::Direction::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum WallType {
     Horizontal,
-    Vertical
+    Vertical,
 }
 
 use self::WallType::*;
@@ -291,7 +302,7 @@ impl RoomType {
 mod test {
     use super::Direction::*;
     use super::WallType::*;
-    use calx::{V2};
+    use calx::V2;
     use super::{Wall, Node, CELL_SIZE};
 
     #[test]
@@ -302,13 +313,17 @@ mod test {
         assert_eq!(Horizontal, horizontal.classify());
         assert_eq!(Vertical, vertical.classify());
 
-        assert_eq!([(South, Node(V2(0, -2))), (North, Node(V2(0, 0)))], horizontal.rooms());
-        assert_eq!([(East, Node(V2(-2, 0))), (West, Node(V2(0, 0)))], vertical.rooms());
+        assert_eq!([(South, Node(V2(0, -2))), (North, Node(V2(0, 0)))],
+                   horizontal.rooms());
+        assert_eq!([(East, Node(V2(-2, 0))), (West, Node(V2(0, 0)))],
+                   vertical.rooms());
     }
 
     #[test]
     fn test_from_pos() {
-        assert_eq!(Node(V2(-2, -2)), Node::from_pos(V2(-CELL_SIZE / 2, -CELL_SIZE / 2)));
-        assert_eq!(Node(V2(0, 0)), Node::from_pos(V2(CELL_SIZE / 2, CELL_SIZE / 2)));
+        assert_eq!(Node(V2(-2, -2)),
+                   Node::from_pos(V2(-CELL_SIZE / 2, -CELL_SIZE / 2)));
+        assert_eq!(Node(V2(0, 0)),
+                   Node::from_pos(V2(CELL_SIZE / 2, CELL_SIZE / 2)));
     }
 }

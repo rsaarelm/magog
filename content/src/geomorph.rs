@@ -30,7 +30,8 @@ pub fn add_cache_chunk(biome: Biome, depth: i32, text: &str) {
 // Only use this to access the cache, make sure the lazy init check gets
 // called before access.
 pub fn with_cache<A, F>(mut f: F) -> A
-    where F: FnMut(&Vec<Chunk>) -> A {
+    where F: FnMut(&Vec<Chunk>) -> A
+{
     check_cache();
     CHUNK_CACHE.with(|c| f(&*c.borrow()))
 }
@@ -65,7 +66,7 @@ fn legend(glyph: char) -> Option<TerrainType> {
         '!' => Some(Stalagmite),
         '>' => Some(Downstairs),
         'q' => Some(Void),
-        _ => None
+        _ => None,
     }
 }
 
@@ -80,13 +81,14 @@ impl Chunk {
                 println!("{}", text);
                 return Err("Bad chunk size.".to_string());
             }
-            cells.insert((x, y), match legend(glyph) {
-                Some(t) => t,
-                None => {
-                    println!("{}", text);
-                    return Err(format!("Unrecognized chunk glyph {}", glyph));
-                }
-            });
+            cells.insert((x, y),
+                         match legend(glyph) {
+                             Some(t) => t,
+                             None => {
+                                 println!("{}", text);
+                                 return Err(format!("Unrecognized chunk glyph {}", glyph));
+                             }
+                         });
         }
 
         let regions = make_topology(&cells);
@@ -116,10 +118,9 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
     let span_3 = 5;
 
     let set_1 = vec!((0, span_1), (span_2, 0), (chunk_dim - 1, span_2));
-    let set_2 = vec!(
-        (0, chunk_dim + span_3),
-        (span_3, chunk_dim * 2 - 1),
-        (chunk_dim - 1, chunk_dim + span_1));
+    let set_2 = vec!((0, chunk_dim + span_3),
+                     (span_3, chunk_dim * 2 - 1),
+                     (chunk_dim - 1, chunk_dim + span_1));
 
     if regions.len() < 1 || regions.len() > 2 {
         return Some(format!("Bad number of connected regions {}", regions.len()));
@@ -158,10 +159,10 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
 }
 
 fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
-    let mut open : HashSet<(i32, i32)> = cells.iter()
-        .filter(|&(_p, t)| !t.blocks_walk())
-        .map(|(&p, _t)| p)
-        .collect();
+    let mut open: HashSet<(i32, i32)> = cells.iter()
+                                             .filter(|&(_p, t)| !t.blocks_walk())
+                                             .map(|(&p, _t)| p)
+                                             .collect();
     let mut ret = vec!();
 
     if cells.is_empty() {
@@ -181,8 +182,7 @@ fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
 }
 
 /// Split a point set into an arbitrary connected region and the remaining set.
-fn split_connected(set: &HashSet<(i32, i32)>) ->
-(HashSet<(i32, i32)>, HashSet<(i32, i32)>) {
+fn split_connected(set: &HashSet<(i32, i32)>) -> (HashSet<(i32, i32)>, HashSet<(i32, i32)>) {
     if set.is_empty() {
         return (HashSet::new(), HashSet::new());
     }
@@ -214,7 +214,9 @@ fn split_connected(set: &HashSet<(i32, i32)>) ->
                     }
                 }
             }
-            None => { break; }
+            None => {
+                break;
+            }
         }
     }
 

@@ -58,7 +58,9 @@ terrain_data! {
 impl TerrainType {
     pub fn from_name(name: &str) -> Option<TerrainType> {
         for &t in _TERRAINS.iter() {
-            if t.name() == name { return Some(t); }
+            if t.name() == name {
+                return Some(t);
+            }
         }
         None
     }
@@ -66,53 +68,66 @@ impl TerrainType {
     pub fn blocks_sight(&self) -> bool {
         match *self {
             Wall | RockWall | Rock | Door | Tree | DeadTree => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn blocks_shot(&self) -> bool {
         match *self {
             Wall | RockWall | Rock | Tree | Stalagmite | Door | Menhir | DeadTree => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn blocks_walk(&self) -> bool {
         match *self {
-            Floor | Shallows | Grass | Grass2 | Downstairs
-                | Door | OpenDoor => false,
-            _ => true
+            Floor |
+            Shallows |
+            Grass |
+            Grass2 |
+            Downstairs |
+            Door |
+            OpenDoor => false,
+            _ => true,
         }
     }
 
     pub fn is_exit(&self) -> bool {
         match *self {
             Downstairs => true,
-            _ => false
+            _ => false,
         }
     }
 
-    pub fn valid_spawn_spot(&self) -> bool { !self.blocks_walk() && !self.is_exit() }
+    pub fn valid_spawn_spot(&self) -> bool {
+        !self.blocks_walk() && !self.is_exit()
+    }
 
-    pub fn is_door(&self) -> bool { *self == Door }
+    pub fn is_door(&self) -> bool {
+        *self == Door
+    }
 
-    pub fn is_luminous(&self) -> bool { *self == Magma }
+    pub fn is_luminous(&self) -> bool {
+        *self == Magma
+    }
 
-    pub fn name(&self) -> &'static str { terrain_name(*self) }
+    pub fn name(&self) -> &'static str {
+        terrain_name(*self)
+    }
 }
 
 impl KernelTerrain for TerrainType {
     fn is_wall(&self) -> bool {
         match *self {
             Wall | RockWall | Door | OpenDoor | Window | Bars | Fence => true,
-            _ => false
+            _ => false,
         }
     }
 
     fn is_block(&self) -> bool {
         match *self {
             Rock => true,
-            _ => false
+            _ => false,
         }
     }
 }
