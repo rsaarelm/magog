@@ -11,7 +11,7 @@ static CHUNK_W: i32 = 11;
 /// Generate a map using Herringbone Wang Tiles.
 ///
 /// Designed after http://nothings.org/gamedev/herringbone/
-pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea<FormType> {
+pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea {
 
     // Generate the terrain.
     let mut area = geomorph::with_cache(|cs| generate_terrain(rng, spec, cs));
@@ -49,7 +49,7 @@ pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea<FormType>
     area
 }
 
-fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea<FormType> {
+fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea {
     let mut area = StaticArea::new();
 
     let chunks = cs.iter()

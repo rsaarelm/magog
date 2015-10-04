@@ -1,6 +1,6 @@
 use std::convert::Into;
 use calx::Rgba;
-use content::{Biome, FormType, Brush};
+use content::Brush;
 use item::ItemType;
 use ability::Ability;
 use stats::Stats;

@@ -12,7 +12,7 @@ use terrain::TerrainType;
 pub static CELL_SIZE: i32 = 16;
 
 /// Generate a classic rooms and corridors rogue map.
-pub fn rooms_and_corridors<R: Rng>(rng: &mut R, depth: i32) -> StaticArea<FormType> {
+pub fn rooms_and_corridors<R: Rng>(rng: &mut R, depth: i32) -> StaticArea {
     // TODO: Vary room number.
     let num_rooms = 6;
 
@@ -59,7 +59,7 @@ pub fn rooms_and_corridors<R: Rng>(rng: &mut R, depth: i32) -> StaticArea<FormTy
     area
 }
 
-fn door_positions(area: &StaticArea<FormType>, node: Node, dir: Direction) -> Vec<V2<i32>> {
+fn door_positions(area: &StaticArea, node: Node, dir: Direction) -> Vec<V2<i32>> {
     let (start, fwd_dir) = match dir {
         North => (V2(0, 0), V2(0, 1)),
         East => (V2(CELL_SIZE - 2, 0), V2(-1, 0)),
@@ -95,7 +95,7 @@ fn door_positions(area: &StaticArea<FormType>, node: Node, dir: Direction) -> Ve
     ret
 }
 
-fn dig_room<R: Rng>(area: &mut StaticArea<FormType>,
+fn dig_room<R: Rng>(area: &mut StaticArea,
                     rng: &mut R,
                     node: Node,
                     room_type: RoomType) {
@@ -140,7 +140,7 @@ fn dig_room<R: Rng>(area: &mut StaticArea<FormType>,
     }
 }
 
-fn connect_rooms<R: Rng>(area: &mut StaticArea<FormType>, rng: &mut R, wall: Wall) {
+fn connect_rooms<R: Rng>(area: &mut StaticArea, rng: &mut R, wall: Wall) {
     let rooms = wall.rooms();
     let (dir1, room1) = rooms[0];
     let (dir2, room2) = rooms[1];
@@ -152,7 +152,7 @@ fn connect_rooms<R: Rng>(area: &mut StaticArea<FormType>, rng: &mut R, wall: Wal
     area.terrain.insert(door2, TerrainType::Door);
 }
 
-fn dig_tunnel(area: &mut StaticArea<FormType>, p1: V2<i32>, p2: V2<i32>) {
+fn dig_tunnel(area: &mut StaticArea, p1: V2<i32>, p2: V2<i32>) {
     let (n1, n2) = (Node::from_pos(p1), Node::from_pos(p2));
 
     let fwd = (n2.0 - n1.0) / 2;

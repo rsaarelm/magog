@@ -106,7 +106,7 @@ fn spawn_player(w: &mut World, start_loc: Location) -> Entity {
     player
 }
 
-fn spawn_entities(w: &mut World, origin: Location, spec: &AreaSpec, area: &StaticArea<FormType>) {
+fn spawn_entities(w: &mut World, origin: Location, spec: &AreaSpec, area: &StaticArea) {
     let mut spawner = Spawner::new();
 
     for &(pos, typ) in area.spawns.iter() {

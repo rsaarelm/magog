@@ -90,28 +90,18 @@ impl FormType {
     }
 }
 
-pub struct StaticArea<T> {
+pub struct StaticArea {
     pub terrain: BTreeMap<V2<i32>, TerrainType>,
-    pub spawns: Vec<(V2<i32>, T)>,
+    pub spawns: Vec<(V2<i32>, FormType)>,
     pub player_entrance: V2<i32>,
 }
 
-impl<T> StaticArea<T> {
-    pub fn new() -> StaticArea<T> {
+impl StaticArea {
+    pub fn new() -> StaticArea {
         StaticArea {
             terrain: BTreeMap::new(),
             spawns: Vec::new(),
             player_entrance: V2(0, 0),
-        }
-    }
-
-    pub fn map_spawns<U, F>(self, f: F) -> StaticArea<U>
-        where F: Fn(T) -> U
-    {
-        StaticArea {
-            terrain: self.terrain,
-            spawns: self.spawns.into_iter().map(|(p, x)| (p, f(x))).collect(),
-            player_entrance: self.player_entrance,
         }
     }
 
