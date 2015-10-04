@@ -24,7 +24,7 @@ pub use terrain::TerrainType;
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Hash, RustcEncodable, RustcDecodable)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon = 0b10,
@@ -48,7 +48,7 @@ impl Biome {
     }
 }
 
-#[derive(Copy, Eq, PartialEq, Debug, Clone, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Debug, Clone, Hash, RustcEncodable, RustcDecodable)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: i32,
@@ -63,7 +63,7 @@ impl AreaSpec {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, RustcEncodable, RustcDecodable)]
 pub enum FormType {
     Anything,
 

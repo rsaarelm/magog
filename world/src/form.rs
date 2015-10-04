@@ -1,4 +1,6 @@
-use rand::distributions::Weighted;
+use std::collections::HashMap;
+use rand::Rng;
+use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use calx_ecs::Entity;
 use calx::color::*;
 use calx::Rgba;
@@ -118,4 +120,27 @@ pub fn form_distribution(spec: &AreaSpec, category: FormType) -> Vec<Weighted<Fo
          .map(|f| f.as_weighted())
          .collect()
     })
+}
+
+/// Memoizing entity spawner construct.
+pub struct Spawner(HashMap<(AreaSpec, FormType), Vec<Weighted<Form>>>);
+
+impl Spawner {
+    pub fn new() -> Spawner {
+        Spawner(HashMap::new())
+    }
+
+    pub fn spawn<R: Rng>(&mut self, rng: &mut R, spec: &AreaSpec, category: FormType) -> Option<Form> {
+        let key = (*spec, category); // XXX: Do I need to always make a copy of spec to make the key work?
+        if !self.0.contains_key(&key) {
+            self.0.insert(key, form_distribution(spec, category));
+        }
+
+        let items = self.0.get_mut(&key).unwrap();
+        if items.len() == 0 {
+            None
+        } else {
+            Some(WeightedChoice::new(items).ind_sample(rng))
+        }
+    }
 }

@@ -5,9 +5,10 @@ use std::collections::BTreeMap;
 use calx_ecs::Entity;
 use calx::{Field, Backdrop, ConstBackdrop, Patch};
 use location::Location;
-use content::{self, AreaSpec, TerrainType, Biome};
+use content::{self, AreaSpec, TerrainType, Biome, StaticArea, FormType};
 use rand::Rng;
 use world::World;
+use form::{Spawner};
 use query;
 use action;
 
@@ -70,8 +71,7 @@ fn init_area(w: &mut World, depth: i32) {
     w.terrain = terrain;
 
     spawn_player(w, origin + static_area.player_entrance);
-
-    // TODO: Process spawns from static_area.
+    spawn_entities(w, origin, &spec, &static_area);
 }
 
 fn spawn_player(w: &mut World, start_loc: Location) -> Entity {
@@ -105,4 +105,17 @@ fn spawn_player(w: &mut World, start_loc: Location) -> Entity {
     action::forget_map(w, player);
     action::place_entity(w, player, start_loc);
     player
+}
+
+fn spawn_entities(w: &mut World, origin: Location, spec: &AreaSpec, area: &StaticArea<FormType>) {
+    let mut spawner = Spawner::new();
+
+    for &(pos, typ) in area.spawns.iter() {
+        if let Some(form) = spawner.spawn(&mut w.flags.rng, spec, typ) {
+            let e = form.build(w);
+            action::place_entity(w, e, origin + pos);
+        } else {
+            println!("Failed to spawn {:?} for {:?}", typ, spec);
+        }
+    }
 }
