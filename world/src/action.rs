@@ -3,20 +3,13 @@
 use std::io::prelude::*;
 use std::path::Path;
 use std::fs::{self, File};
-use rand::StdRng;
-use rand::SeedableRng;
-use std::iter::Filter;
 use calx::{Dijkstra, Dir6, HexFov};
 use calx_ecs::Entity;
 use world::World;
-use flags;
 use area;
 use location::Location;
-use content::{Biome, AreaSpec};
 use item::Slot;
 use components::CompositeStats;
-use Msg;
-use msg;
 use query::{self, ControlState};
 
 /// Player input action.

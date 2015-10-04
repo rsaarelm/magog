@@ -6,7 +6,6 @@ use calx::color::*;
 use calx::Rgba;
 use content::{Biome, FormType, Brush, AreaSpec};
 use content::Biome::*;
-use world::Component;
 use stats::{Stats, Intrinsic};
 use stats::Intrinsic::*;
 use components::{Desc, Brain, Health};

@@ -1,6 +1,6 @@
 /*! Non-mutating world and entity state querying functions. */
 
-use calx::{noise, Dir6, Rgba};
+use calx::{Dir6, Rgba};
 use calx_ecs::Entity;
 use content::{Brush, TerrainType};
 use world::World;

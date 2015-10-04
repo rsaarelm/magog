@@ -1,8 +1,7 @@
-use rand::{XorShiftRng, SeedableRng, Rng};
+use rand::{XorShiftRng, SeedableRng};
 use location::Location;
 use calx::EncodeRng;
 use calx_ecs::Entity;
-use world;
 
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Flags {

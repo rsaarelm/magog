@@ -1,6 +1,5 @@
 use std::ops::Add;
 use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
-use content::TerrainType;
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]

@@ -1,12 +1,10 @@
 use rand::StdRng;
 use rand::SeedableRng;
-use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::BTreeMap;
 use calx_ecs::Entity;
-use calx::{Field, Backdrop, ConstBackdrop, Patch};
+use calx::{Field, ConstBackdrop, Patch};
 use location::Location;
 use content::{self, AreaSpec, TerrainType, Biome, StaticArea, FormType};
-use rand::Rng;
 use world::World;
 use form::{Spawner};
 use query;
@@ -95,6 +93,7 @@ fn spawn_player(w: &mut World, start_loc: Location) -> Entity {
                                    alignment: Alignment::Good,
                                });
             w.ecs.stats.insert(player, Stats::new(10, &[Hands]).mana(5));
+            w.ecs.health.insert(player, Health::new());
             action::recompose_stats(w, player);
             w.flags.player = Some(player);
 
