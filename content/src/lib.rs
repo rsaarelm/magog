@@ -42,6 +42,10 @@ impl Biome {
             _ => TerrainType::Void,
         }
     }
+
+    pub fn intersects(self, other: Biome) -> bool {
+        (self as u32) & (other as u32) != 0
+    }
 }
 
 #[derive(Copy, Eq, PartialEq, Debug, Clone, RustcEncodable, RustcDecodable)]

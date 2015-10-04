@@ -1,7 +1,8 @@
+use rand::distributions::Weighted;
 use calx_ecs::Entity;
 use calx::color::*;
 use calx::Rgba;
-use content::{Biome, FormType, Brush};
+use content::{Biome, FormType, Brush, AreaSpec};
 use content::Biome::*;
 use world::Component;
 use stats::{Stats, Intrinsic};
@@ -71,6 +72,23 @@ impl Form {
     pub fn build(&self, w: &mut World) -> Entity {
         self.loadout.make(&mut w.ecs)
     }
+
+    pub fn as_weighted(&self) -> Weighted<Form> {
+        Weighted {
+            weight: self.commonness,
+            item: self.clone(),
+        }
+    }
+
+    /// Return whether this form can be spawned on given type of area.
+    pub fn can_spawn(&self, spec: &AreaSpec) -> bool {
+        // Special check, zero commonness forms never spawn.
+        if self.commonness == 0 {
+            return false;
+        }
+
+        self.min_depth <= spec.depth && self.biome.intersects(spec.biome)
+    }
 }
 
 thread_local!(static FORMS: Vec<Form> = init_forms());
@@ -88,4 +106,16 @@ pub fn with_forms<F, U>(f: F) -> U
     where F: FnOnce(&Vec<Form>) -> U + 'static + Sized
 {
     FORMS.with(|v| f(v))
+}
+
+/// Generate a spawn probability weighted list of forms of a specific category
+/// that can spawn in the desired type of area.
+pub fn form_distribution(spec: &AreaSpec, category: FormType) -> Vec<Weighted<Form>> {
+    let spec = *spec; // Make the borrow checker happy.
+    with_forms(move |v| {
+        v.iter()
+         .filter(|f| f.can_spawn(&spec) && f.category == category)
+         .map(|f| f.as_weighted())
+         .collect()
+    })
 }
