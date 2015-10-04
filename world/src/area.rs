@@ -7,7 +7,6 @@ use calx::{Field, Backdrop, ConstBackdrop, Patch};
 use location::Location;
 use content::{self, AreaSpec, TerrainType, Biome};
 use rand::Rng;
-use spawn::Spawn;
 use world::World;
 use query;
 use action;

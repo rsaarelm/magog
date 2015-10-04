@@ -43,7 +43,6 @@ pub mod location;
 mod location_set;
 mod msg;
 mod spatial;
-mod spawn;
 mod stats;
 mod world;
 
