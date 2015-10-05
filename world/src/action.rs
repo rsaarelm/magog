@@ -3,13 +3,14 @@
 use std::io::prelude::*;
 use std::path::Path;
 use std::fs::{self, File};
-use calx::{Dijkstra, Dir6, HexFov};
+use rand::Rng;
+use calx::{Dijkstra, Dir6, HexFov, HexGeom};
 use calx_ecs::Entity;
 use world::World;
 use area;
 use location::Location;
 use item::Slot;
-use components::CompositeStats;
+use components::{CompositeStats, BrainState};
 use query::{self, ControlState};
 
 /// Player input action.
@@ -52,52 +53,54 @@ pub fn update_entity(w: &mut World, e: Entity) {
 }
 
 pub fn mob_ai(w: &mut World, e: Entity) {
-    unimplemented!();
-    /*
-        assert!(self.is_mob());
-        assert!(!self.is_player());
-        assert!(self.ticks_this_frame());
+    assert!(query::is_mob(w, e));
+    assert!(!query::is_player(w, e));
+    assert!(query::ticks_this_frame(w, e));
 
-        if self.brain_state() == Some(BrainState::Asleep) {
-            if let Some(p) = action::player() {
-                // TODO: Line-of-sight, stealth concerns, other enemies than
-                // player etc.
-                if let Some(d) = p.distance_from(self) {
-                    if d < 6 {
-                        self.wake_up();
-                    }
+    if query::brain_state(w, e) == Some(BrainState::Asleep) {
+        let self_loc = query::location(w, e).unwrap();
+        // Mob is inactive, but may wake up if it spots the player.
+        if let Some(player_loc) = query::player(w).and_then(|e| query::location(w, e)) {
+            // TODO: Line-of-sight, stealth concerns, other enemies than
+            // player etc.
+            if let Some(d) = player_loc.distance_from(self_loc) {
+                if d < 6 {
+                    wake_up(w, e);
                 }
             }
-
-            return;
         }
 
-        if let Some(p) = action::player() {
-            let loc = self.location().expect("no location");
+        return;
+    }
 
-            let vec_to_enemy = loc.v2_at(p.location().expect("no location"));
-            if let Some(v) = vec_to_enemy {
-                if v.hex_dist() == 1 {
-                    // Melee range, hit.
-                    self.melee(Dir6::from_v2(v));
+    if let Some(p) = query::player(w) {
+        let loc = query::location(w, e).expect("no location");
+
+        let vec_to_enemy = loc.v2_at(query::location(w, p).expect("no location"));
+        if let Some(v) = vec_to_enemy {
+            if v.hex_dist() == 1 {
+                // Melee range, hit.
+                melee(w, e, Dir6::from_v2(v));
+            } else {
+                // Walk towards.
+                let pathing_depth = 16;
+                let pathing = Dijkstra::new(vec![query::location(w, p).expect("no location")],
+                                            |&loc| !query::blocks_walk(w, loc),
+                                            pathing_depth);
+
+                let steps = pathing.sorted_neighbors(&loc);
+                if steps.len() > 0 {
+                    step(w,
+                         e,
+                         loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
                 } else {
-                    // Walk towards.
-                    let pathing_depth = 16;
-                    let pathing = Dijkstra::new(
-                        vec![p.location().expect("no location")], |&loc| !loc.blocks_walk(),
-                        pathing_depth);
-
-                    let steps = pathing.sorted_neighbors(&loc);
-                    if steps.len() > 0 {
-                        self.step(loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
-                    } else {
-                        self.step(rng().gen());
-                        // TODO: Fall asleep if things get boring.
-                    }
+                    let dir = w.flags.rng.gen();
+                    step(w, e, dir);
+                    // TODO: Fall asleep if things get boring.
                 }
             }
         }
-        */
+    }
 }
 
 /// Give player input. Only valid to call if control_state() returned
@@ -263,6 +266,15 @@ pub fn on_step_on(w: &mut World, stepper: Entity, item: Entity) {
     }
 }
 
+pub fn set_brain_state(w: &mut World, e: Entity, state: BrainState) {
+    w.ecs.brain.get_mut(e).map(|b| b.state = state);
+}
+
+pub fn wake_up(w: &mut World, e: Entity) {
+    if query::brain_state(w, e) == Some(BrainState::Asleep) {
+        set_brain_state(w, e, BrainState::Hunting);
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////
 

@@ -67,7 +67,7 @@ pub fn acts_this_frame(w: &World, e: Entity) -> bool {
     return ticks_this_frame(w, e);
 }
 
-fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
+pub fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
     w.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
 }
 
