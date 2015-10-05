@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 use rand::Rng;
 use rand::distributions::{Weighted, WeightedChoice, IndependentSample};
 use calx_ecs::Entity;
@@ -20,7 +21,7 @@ pub enum Forms {
 }
 
 /// Forms are the prototypes for the entities you create.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Form {
     /// Types of areas where this entity can spawn.
     pub biome: Biome,
@@ -32,7 +33,7 @@ pub struct Form {
     /// Minimum depth where the entity will show up. More powerful entities
     /// only start showing up in large depths.
     pub min_depth: i32,
-    /// Type of thing 
+    /// Type of thing.
     pub category: FormType,
     /// Actual components to set up the thing.
     pub loadout: Loadout,
@@ -74,13 +75,6 @@ impl Form {
         self.loadout.make(&mut w.ecs)
     }
 
-    pub fn as_weighted(&self) -> Weighted<Form> {
-        Weighted {
-            weight: self.commonness,
-            item: self.clone(),
-        }
-    }
-
     /// Return whether this form can be spawned on given type of area.
     pub fn can_spawn(&self, spec: &AreaSpec) -> bool {
         // Special check, zero commonness forms never spawn.
@@ -92,45 +86,55 @@ impl Form {
     }
 }
 
-thread_local!(static FORMS: Vec<Form> = init_forms());
+thread_local!(static FORMS: Vec<Rc<Form>> = init_forms());
 
-fn init_forms() -> Vec<Form> {
+fn init_forms() -> Vec<Rc<Form>> {
     vec![
-        Form::mob("player",     Brush::Human,   AZURE,      10, &[Hands]).common(0),
-        Form::mob("dreg",       Brush::Dreg,    OLIVE,      1,  &[Hands]),
-        Form::mob("snake",      Brush::Snake,   GREEN,      1,  &[]).biome(Overland),
+        Rc::new(Form::mob("player",     Brush::Human,   AZURE,      10, &[Hands]).common(0)),
+        Rc::new(Form::mob("dreg",       Brush::Dreg,    OLIVE,      1,  &[Hands])),
+        Rc::new(Form::mob("snake",      Brush::Snake,   GREEN,      1,  &[]).biome(Overland)),
     ]
 }
 
 /// Perform operations on the collection of entity forms.
 pub fn with_forms<F, U>(f: F) -> U
-    where F: FnOnce(&Vec<Form>) -> U + 'static + Sized
+    where F: FnOnce(&Vec<Rc<Form>>) -> U + 'static + Sized
 {
     FORMS.with(|v| f(v))
 }
 
 /// Generate a spawn probability weighted list of forms of a specific category
 /// that can spawn in the desired type of area.
-pub fn form_distribution(spec: &AreaSpec, category: FormType) -> Vec<Weighted<Form>> {
+pub fn form_distribution(spec: &AreaSpec, category: FormType) -> Vec<Weighted<Rc<Form>>> {
     let spec = *spec; // Make the borrow checker happy.
     with_forms(move |v| {
         v.iter()
          .filter(|f| f.can_spawn(&spec) && f.category == category)
-         .map(|f| f.as_weighted())
+         .map(|f| {
+             Weighted {
+                 weight: f.commonness,
+                 item: f.clone(),
+             }
+         })
          .collect()
     })
 }
 
 /// Memoizing entity spawner construct.
-pub struct Spawner(HashMap<(AreaSpec, FormType), Vec<Weighted<Form>>>);
+pub struct Spawner(HashMap<(AreaSpec, FormType), Vec<Weighted<Rc<Form>>>>);
 
 impl Spawner {
     pub fn new() -> Spawner {
         Spawner(HashMap::new())
     }
 
-    pub fn spawn<R: Rng>(&mut self, rng: &mut R, spec: &AreaSpec, category: FormType) -> Option<Form> {
-        let key = (*spec, category); // XXX: Do I need to always make a copy of spec to make the key work?
+    pub fn spawn<R: Rng>(&mut self,
+                         rng: &mut R,
+                         spec: &AreaSpec,
+                         category: FormType)
+                         -> Option<Rc<Form>> {
+        // XXX: Bit ineffective making a copy of the spec here.
+        let key = (*spec, category);
         if !self.0.contains_key(&key) {
             self.0.insert(key, form_distribution(spec, category));
         }
