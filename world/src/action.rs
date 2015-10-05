@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::fs::{self, File};
 use rand::Rng;
-use calx::{Dijkstra, Dir6, HexFov, HexGeom};
+use calx::{Dijkstra, Dir6, HexFov, HexGeom, RngExt};
 use calx_ecs::Entity;
 use world::World;
 use area;
@@ -12,6 +12,7 @@ use location::Location;
 use item::Slot;
 use components::{CompositeStats, BrainState};
 use query::{self, ControlState};
+use msg;
 
 /// Player input action.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -140,14 +141,11 @@ pub fn step(w: &mut World, e: Entity, dir: Dir6) {
 
 /// Fight in a direction.
 pub fn melee(w: &mut World, e: Entity, dir: Dir6) {
-    unimplemented!();
-    /*
-    let loc = self.location().expect("no location") + dir.to_v2();
-    if let Some(e) = loc.mob_at() {
-        let us = self.stats();
-        e.damage(us.power + us.attack);
+    let loc = query::location(w, e).expect("no location") + dir.to_v2();
+    if let Some(e) = query::mob_at(w, loc) {
+        let us = query::stats(w, e);
+        damage(w, e, us.power + us.attack);
     }
-    */
 }
 
 pub fn shoot(w: &mut World, e: Entity, dir: Dir6) {
@@ -274,6 +272,60 @@ pub fn wake_up(w: &mut World, e: Entity) {
     if query::brain_state(w, e) == Some(BrainState::Asleep) {
         set_brain_state(w, e, BrainState::Hunting);
     }
+}
+
+/// Apply damage to entity, subject to damage reduction.
+pub fn damage(w: &mut World, e: Entity, mut power: i32) {
+    let stats = query::stats(w, e);
+    power -= stats.protection;
+
+    if power < 1 {
+        // Give damage a bit under the reduction an off-chance to hit.
+        // Power that's too low can't do anything though.
+        if power >= -5 {
+            power = 1;
+        } else {
+            return;
+        }
+    }
+
+    // Every five points of power is one certain hit.
+    let full = power / 5;
+    // The fractional points are one probabilistic hit.
+    let partial = (power % 5) as f32 / 5.0;
+
+    let damage = full +
+                 if w.flags.rng.with_chance(partial) {
+        1
+    } else {
+        0
+    };
+    apply_damage(w, e, damage);
+}
+
+/// Actually subtract points from the entity's hit points. Called from
+/// damage method.
+fn apply_damage(w: &mut World, e: Entity, amount: i32) {
+    if amount <= 0 {
+        return;
+    }
+    let max_hp = query::max_hp(w, e);
+
+    let is_killed = w.ecs.health.get_mut(e).map_or(false,
+                                                   |h| {
+                                                       h.wounds += amount;
+                                                       h.wounds >= max_hp
+                                                   });
+
+    msg::push(::Msg::Damage(e));
+
+    if is_killed {
+        kill(w, e);
+    }
+}
+
+pub fn kill(w: &mut World, e: Entity) {
+    unimplemented!();
 }
 
 ////////////////////////////////////////////////////////////////////////
