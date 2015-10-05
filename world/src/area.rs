@@ -6,11 +6,15 @@ use calx::{Field, ConstBackdrop, Patch};
 use location::Location;
 use content::{self, AreaSpec, TerrainType, Biome, StaticArea, FormType};
 use world::World;
-use form::{Spawner};
+use form::Spawner;
 use query;
 use action;
 
-pub type TerrainField = Field<Location, TerrainType, ConstBackdrop<TerrainType>, BTreeMap<Location, TerrainType>>;
+pub type TerrainField = Field<
+    Location,
+    TerrainType,
+    ConstBackdrop<TerrainType>,
+    BTreeMap<Location, TerrainType>>;
 
 pub fn start_level(w: &mut World, depth: i32) {
     clear_nonplayers(w);

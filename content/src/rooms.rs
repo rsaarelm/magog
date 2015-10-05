@@ -95,10 +95,7 @@ fn door_positions(area: &StaticArea, node: Node, dir: Direction) -> Vec<V2<i32>>
     ret
 }
 
-fn dig_room<R: Rng>(area: &mut StaticArea,
-                    rng: &mut R,
-                    node: Node,
-                    room_type: RoomType) {
+fn dig_room<R: Rng>(area: &mut StaticArea, rng: &mut R, node: Node, room_type: RoomType) {
     static MIN_SIZE: i32 = 5;
 
     let p1 = V2(rng.gen_range(0, CELL_SIZE - 1 - MIN_SIZE),
