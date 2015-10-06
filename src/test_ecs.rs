@@ -31,7 +31,10 @@ fn test_ecs() {
     ecs.pos.insert(e1, Pos { x: 3, y: 4 });
     assert_eq!(ecs.pos[e1], Pos { x: 3, y: 4 });
 
-    Desc { name: "Orc".to_string(), icon: 8 }.add_to_ecs(&mut ecs, e1);
+    Desc {
+        name: "Orc".to_string(),
+        icon: 8,
+    }.add_to_ecs(&mut ecs, e1);
     assert_eq!(ecs.desc[e1].name, "Orc");
 
     ecs.remove(e1);
@@ -42,8 +45,10 @@ fn test_ecs() {
     assert!(e2 != e1);
 
     // Use the loadout system to create an entity.
-    let loadout = Loadout::new()
-        .c(Desc { name: "Critter".to_string(), icon: 10 });
+    let loadout = Loadout::new().c(Desc {
+        name: "Critter".to_string(),
+        icon: 10,
+    });
 
     // Then instantiate an entity with that form.
     let e3 = loadout.make(&mut ecs);

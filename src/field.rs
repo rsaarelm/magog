@@ -1,5 +1,5 @@
-use std::hash::{Hash};
-use std::marker::{PhantomData};
+use std::hash::Hash;
+use std::marker::PhantomData;
 use std::collections::{BTreeMap, HashMap};
 use std::default::Default;
 
@@ -15,7 +15,9 @@ pub trait Backdrop<D, R> {
 pub struct ConstBackdrop<R>(pub R);
 
 impl<D, R: Copy> Backdrop<D, R> for ConstBackdrop<R> {
-    fn get(&self, _key: D) -> R { self.0 }
+    fn get(&self, _key: D) -> R {
+        self.0
+    }
 }
 
 /// A patch dynamically overwrites some values in a field.
@@ -26,15 +28,27 @@ pub trait Patch<D, R>: Default {
 }
 
 impl<D: Ord, R> Patch<D, R> for BTreeMap<D, R> {
-    fn get<'a>(&'a self, pos: D) -> Option<&'a R> { self.get(&pos) }
-    fn set(&mut self, pos: D, val: R) { self.insert(pos, val); }
-    fn clear(&mut self, pos: D) { self.remove(&pos); }
+    fn get<'a>(&'a self, pos: D) -> Option<&'a R> {
+        self.get(&pos)
+    }
+    fn set(&mut self, pos: D, val: R) {
+        self.insert(pos, val);
+    }
+    fn clear(&mut self, pos: D) {
+        self.remove(&pos);
+    }
 }
 
 impl<D: Eq+Hash, R> Patch<D, R> for HashMap<D, R> {
-    fn get<'a>(&'a self, pos: D) -> Option<&'a R> { self.get(&pos) }
-    fn set(&mut self, pos: D, val: R) { self.insert(pos, val); }
-    fn clear(&mut self, pos: D) { self.remove(&pos); }
+    fn get<'a>(&'a self, pos: D) -> Option<&'a R> {
+        self.get(&pos)
+    }
+    fn set(&mut self, pos: D, val: R) {
+        self.insert(pos, val);
+    }
+    fn clear(&mut self, pos: D) {
+        self.remove(&pos);
+    }
 }
 
 #[derive(Clone, RustcEncodable, RustcDecodable)]
@@ -70,26 +84,30 @@ impl<D: Copy, R: Copy, B, P> Field<D, R, B, P>
     pub fn get(&self, pos: D) -> R {
         match self.patch.get(pos) {
             Some(&v) => v,
-            None => self.backdrop.get(pos)
+            None => self.backdrop.get(pos),
         }
     }
 
     /// Override the value in a given point.
-    pub fn set(&mut self, pos: D, val: R) { self.patch.set(pos, val); }
+    pub fn set(&mut self, pos: D, val: R) {
+        self.patch.set(pos, val);
+    }
 
     /// Clear the value in a given point.
-    pub fn clear(&mut self, pos: D) { self.patch.clear(pos); }
+    pub fn clear(&mut self, pos: D) {
+        self.patch.clear(pos);
+    }
 }
 
 #[cfg(test)]
 mod test {
     #[test]
     fn test_field() {
-        use std::collections::BTreeMap;
-        use ::{Field, ConstBackdrop, Patch};
+        use std::collections::HashMap;
+        use {Field, ConstBackdrop, Patch};
         use rustc_serialize::json;
 
-        type MyField = Field<(i32, i32), i32, ConstBackdrop<i32>, BTreeMap<(i32, i32), i32>>;
+        type MyField = Field<(i32, i32), i32, ConstBackdrop<i32>, HashMap<(i32, i32), i32>>;
         let mut field: MyField = Field::new(ConstBackdrop(-7));
 
         // Test basic ops.
