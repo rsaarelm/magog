@@ -1,5 +1,6 @@
+use std::hash::{Hash};
 use std::marker::{PhantomData};
-use std::collections::{BTreeMap};
+use std::collections::{BTreeMap, HashMap};
 use std::default::Default;
 
 /// A backdrop maps all points of a field to some value.
@@ -25,6 +26,12 @@ pub trait Patch<D, R>: Default {
 }
 
 impl<D: Ord, R> Patch<D, R> for BTreeMap<D, R> {
+    fn get<'a>(&'a self, pos: D) -> Option<&'a R> { self.get(&pos) }
+    fn set(&mut self, pos: D, val: R) { self.insert(pos, val); }
+    fn clear(&mut self, pos: D) { self.remove(&pos); }
+}
+
+impl<D: Eq+Hash, R> Patch<D, R> for HashMap<D, R> {
     fn get<'a>(&'a self, pos: D) -> Option<&'a R> { self.get(&pos) }
     fn set(&mut self, pos: D, val: R) { self.insert(pos, val); }
     fn clear(&mut self, pos: D) { self.remove(&pos); }
