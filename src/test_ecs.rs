@@ -20,6 +20,8 @@ Ecs! {
 
 #[test]
 fn test_ecs() {
+    use rustc_serialize::json;
+
     let mut ecs = Ecs::new();
 
     let e1 = ecs.make();
@@ -46,4 +48,9 @@ fn test_ecs() {
     // Then instantiate an entity with that form.
     let e3 = loadout.make(&mut ecs);
     assert!(ecs.desc[e3].icon == 10);
+
+    // Check that serialization works.
+    let save_game = json::encode(&ecs).expect("ECS JSON encoding failed");
+    let ecs2 = json::decode::<Ecs>(&save_game).expect("ECS JSON decoding failed");
+    assert!(ecs2.desc[e3].icon == 10);
 }

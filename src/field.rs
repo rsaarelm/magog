@@ -80,3 +80,31 @@ impl<D: Copy, R: Copy, B, P> Field<D, R, B, P>
     /// Clear the value in a given point.
     pub fn clear(&mut self, pos: D) { self.patch.clear(pos); }
 }
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_field() {
+        use std::collections::BTreeMap;
+        use ::{Field, ConstBackdrop, Patch};
+        use rustc_serialize::json;
+
+        type MyField = Field<(i32, i32), i32, ConstBackdrop<i32>, BTreeMap<(i32, i32), i32>>;
+        let mut field: MyField = Field::new(ConstBackdrop(-7));
+
+        // Test basic ops.
+        assert!(field.get((0, 0)) == -7);
+        field.set((0, 0), 12);
+        field.set((1, 2), 19);
+        assert!(field.get((0, 0)) == 12);
+        assert!(field.get((1, 2)) == 19);
+        field.clear((0, 0));
+        assert!(field.get((0, 0)) == -7);
+
+        // Check that serialization works.
+        let save = json::encode(&field).expect("Field JSON encoding failed");
+        let field2 = json::decode::<MyField>(&save).expect("Field JSON decoding failed");
+        assert!(field2.get((0, 0)) == -7);
+        assert!(field2.get((1, 2)) == 19);
+    }
+}
