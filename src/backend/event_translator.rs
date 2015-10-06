@@ -1,6 +1,5 @@
 use time;
-use glutin;
-use glium;
+use glium::{self, glutin};
 use ::{V2};
 use super::key::{Key};
 use super::event::{Event, MouseButton};
@@ -171,7 +170,7 @@ impl EventTranslator {
 }
 
 fn vko_to_key(vko: glutin::VirtualKeyCode) -> Option<Key> {
-    use glutin::VirtualKeyCode::*;
+    use glium::glutin::VirtualKeyCode::*;
 
     match vko {
     A => Some(Key::A),

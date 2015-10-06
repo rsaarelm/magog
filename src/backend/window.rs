@@ -1,7 +1,6 @@
 use time;
 use std::thread;
-use glutin;
-use glium::{self, texture, framebuffer, Surface, DisplayBuild};
+use glium::{self, glutin, texture, framebuffer, Surface, DisplayBuild};
 use image;
 use ::{V2, Rect, AverageDuration, color, Rgba};
 use super::event::{Event, MouseButton};
@@ -97,7 +96,7 @@ pub struct Window {
 
 impl Window {
     fn new(builder: WindowBuilder) -> Window {
-        use glutin::{GlRequest, Api};
+        use glium::glutin::{GlRequest, Api};
         let size = builder.size;
         let title = &builder.title[..];
 

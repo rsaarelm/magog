@@ -23,8 +23,6 @@ path = "calx_ecs"
 
 [dependencies.nalgebra]
 
-[dependencies.glutin]
-
 [dependencies.glium]
 
 [dependencies.cpal]
