@@ -25,7 +25,7 @@ impl HexGeom for V2<i32> {
 }
 
 /// Hex grid directions.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Dir6 {
     North = 0,
     NorthEast,

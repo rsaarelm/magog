@@ -5,7 +5,10 @@ Miscellaneous utilities grab-bag.
 
 #![crate_name="calx"]
 
-extern crate rustc_serialize;
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
+extern crate serde;
 extern crate time;
 extern crate rand;
 extern crate num;
@@ -13,6 +16,7 @@ extern crate vec_map;
 extern crate nalgebra;
 extern crate image;
 extern crate cpal;
+extern crate bincode;
 
 #[macro_use] extern crate glium;
 

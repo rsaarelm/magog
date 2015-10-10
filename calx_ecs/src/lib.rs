@@ -2,7 +2,10 @@
  * Entity component system
  */
 
-extern crate rustc_serialize;
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
+extern crate serde;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
@@ -13,7 +16,7 @@ use std::collections::hash_set;
 ///
 /// The internal value is the unique identifier for the entity. No two
 /// entities should get the same UID during the lifetime of the ECS.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, RustcDecodable, RustcEncodable)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Entity(pub usize);
 
 pub trait AnyComponent {
@@ -22,7 +25,7 @@ pub trait AnyComponent {
 }
 
 /// Storage for a single component type.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
@@ -92,15 +95,15 @@ pub trait Store {
 }
 
 
-#[derive(RustcEncodable, RustcDecodable)]
-pub struct Ecs<S> {
+#[derive(Serialize, Deserialize)]
+pub struct Ecs<ST> {
     next_uid: usize,
     active: HashSet<Entity>,
-    store: S,
+    store: ST,
 }
 
-impl<S: Default+Store> Ecs<S> {
-    pub fn new() -> Ecs<S> {
+impl<ST: Default+Store> Ecs<ST> {
+    pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
             active: HashSet::new(),
@@ -133,16 +136,16 @@ impl<S: Default+Store> Ecs<S> {
     }
 }
 
-impl<S> Deref for Ecs<S> {
-    type Target = S;
+impl<ST> Deref for Ecs<ST> {
+    type Target = ST;
 
-    fn deref(&self) -> &S {
+    fn deref(&self) -> &ST {
         &self.store
     }
 }
 
-impl<S> DerefMut for Ecs<S> {
-    fn deref_mut(&mut self) -> &mut S {
+impl<ST> DerefMut for Ecs<ST> {
+    fn deref_mut(&mut self) -> &mut ST {
         &mut self.store
     }
 }
@@ -170,7 +173,7 @@ macro_rules! Ecs {
 
         pub use self::_ecs_inner::ComponentNum;
 
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
         pub struct _ComponentStore {
             $(pub $compname: ::calx_ecs::ComponentData<$comptype>),+
         }
@@ -225,7 +228,7 @@ macro_rules! Ecs {
 
         /// A straightforward representation for the complete data of an
         /// entity.
-        #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+        #[derive(Clone, Debug, Serialize, Deserialize)]
         pub struct Loadout {
             $(pub $compname: Option<$comptype>),+
         }

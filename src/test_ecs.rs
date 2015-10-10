@@ -1,13 +1,13 @@
 // Tests for calx_ecs are off-crate because the Ecs macro expects to
 // find Ecs stuff with an absolute crate path.
 
-#[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Desc {
     name: String,
     icon: usize,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Pos {
     x: i32,
     y: i32,
@@ -20,7 +20,7 @@ Ecs! {
 
 #[test]
 fn test_ecs() {
-    use rustc_serialize::json;
+    use bincode::{serde, SizeLimit};
 
     let mut ecs = Ecs::new();
 
@@ -55,7 +55,7 @@ fn test_ecs() {
     assert!(ecs.desc[e3].icon == 10);
 
     // Check that serialization works.
-    let save_game = json::encode(&ecs).expect("ECS JSON encoding failed");
-    let ecs2 = json::decode::<Ecs>(&save_game).expect("ECS JSON decoding failed");
+    let saved = serde::serialize(&ecs, SizeLimit::Infinite).expect("ECS serialization failed");
+    let ecs2 = serde::deserialize::<Ecs>(&saved).expect("ECS deserialization failed");
     assert!(ecs2.desc[e3].icon == 10);
 }

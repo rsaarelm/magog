@@ -14,7 +14,7 @@ macro_rules! brush {
         }
     } =>
     {
-#[derive(Copy, Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
         pub enum $enumname {
             $(
                 $($brushname,)*

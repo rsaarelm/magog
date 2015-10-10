@@ -11,7 +11,9 @@ path = "calx_ecs"
 
 [dependencies]
 rand = "*"
-rustc-serialize = "*"
+serde = "*"
+serde_macros = "*"
+bincode = "*"
 time = "*"
 num = "*"
 vec_map = "*"

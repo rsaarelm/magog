@@ -6,4 +6,6 @@ description = "Rust entity component library"
 keywords = ["gamedev", "ecs"]
 license = "MIT"
 
-[dependencies.rustc-serialize]
+[dependencies]
+serde = "*"
+serde_macros = "*"
