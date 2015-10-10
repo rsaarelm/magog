@@ -37,6 +37,7 @@ pub mod item;
 pub mod query;
 
 mod ability;
+mod field;
 mod flags;
 mod form;
 pub mod location;

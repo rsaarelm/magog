@@ -1,9 +1,9 @@
 use rand;
 use rand::Rng;
 use rustc_serialize::json;
-use calx::{Backdrop, ConstBackdrop};
 use content::TerrainType;
-use area::{self, TerrainField};
+use area;
+use field::Field;
 use spatial::Spatial;
 use flags::Flags;
 use components;
@@ -25,7 +25,7 @@ pub struct World {
     /// Entity component system.
     pub ecs: Ecs,
     /// Terrain data.
-    pub terrain: TerrainField,
+    pub terrain: Field<TerrainType>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
@@ -44,7 +44,7 @@ impl<'a> World {
 
         let mut ret = World {
             ecs: Ecs::new(),
-            terrain: TerrainField::new(ConstBackdrop(TerrainType::Tree)),
+            terrain: Field::new(TerrainType::Tree),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
         };

@@ -2,19 +2,13 @@ use rand::StdRng;
 use rand::SeedableRng;
 use std::collections::BTreeMap;
 use calx_ecs::Entity;
-use calx::{Field, ConstBackdrop, Patch};
 use location::Location;
 use content::{self, AreaSpec, TerrainType, Biome, StaticArea, FormType};
 use world::World;
 use form::Spawner;
+use field::Field;
 use query;
 use action;
-
-pub type TerrainField = Field<
-    Location,
-    TerrainType,
-    ConstBackdrop<TerrainType>,
-    BTreeMap<Location, TerrainType>>;
 
 pub fn start_level(w: &mut World, depth: i32) {
     clear_nonplayers(w);
@@ -65,7 +59,7 @@ fn init_area(w: &mut World, depth: i32) {
     };
 
     let origin = Location::new(0, 0);
-    let mut terrain = TerrainField::new(ConstBackdrop(biome.default_terrain()));
+    let mut terrain = Field::new(biome.default_terrain());
     for (&pos, &t) in static_area.terrain.iter() {
         terrain.set(origin + pos, t);
     }
