@@ -7,10 +7,11 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "content"
 
-[dependencies.rand]
-[dependencies.num]
-[dependencies.image]
-[dependencies.rustc-serialize]
+[dependencies]
+rand = "*"
+num = "*"
+image = "*"
+rustc-serialize = "*"
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"

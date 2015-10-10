@@ -12,19 +12,14 @@ name = "magog"
 [profile.release]
 lto = true
 
-[dependencies.num]
-
-[dependencies.rand]
-
-[dependencies.getopts]
-
-[dependencies.toml]
-
-[dependencies.image]
-
-[dependencies.time]
-
-[dependencies.rustc-serialize]
+[dependencies]
+num = "*"
+rand = "*"
+getopts = "*"
+toml = "*"
+image = "*"
+time = "*"
+rustc-serialize = "*"
 
 [dependencies.calx]
 git = "https://github.com/rsaarelm/calx"

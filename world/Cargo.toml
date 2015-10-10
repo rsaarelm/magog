@@ -7,13 +7,11 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "world"
 
-[dependencies.rustc-serialize]
-
-[dependencies.num]
-
-[dependencies.rand]
-
-[dependencies.vec_map]
+[dependencies]
+num = "*"
+rand = "*"
+vec_map = "*"
+rustc-serialize = "*"
 
 [dependencies.calx_ecs]
 git = "https://github.com/rsaarelm/calx"
