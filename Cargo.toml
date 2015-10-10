@@ -9,23 +9,16 @@ license = "MIT"
 [dependencies.calx_ecs]
 path = "calx_ecs"
 
-[dependencies.rand]
-
-[dependencies.rustc-serialize]
-
-[dependencies.time]
-
-[dependencies.num]
-
-[dependencies.vec_map]
-
-[dependencies.image]
-
-[dependencies.nalgebra]
-
-[dependencies.glium]
-
-[dependencies.cpal]
+[dependencies]
+rand = "*"
+rustc-serialize = "*"
+time = "*"
+num = "*"
+vec_map = "*"
+image = "*"
+nalgebra = "*"
+glium = "*"
+cpal = "*"
 
 [[example]]
 name = "demo"
