@@ -722,6 +722,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "world"
 version = "0.0.1"
 dependencies = [
+ "bincode 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "calx_ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
  "content 0.0.1",

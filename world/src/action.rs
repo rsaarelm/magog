@@ -15,7 +15,7 @@ use query::{self, ControlState};
 use msg;
 
 /// Player input action.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),
@@ -329,7 +329,7 @@ pub fn kill(w: &mut World, e: Entity) {
 
 ////////////////////////////////////////////////////////////////////////
 
-static SAVE_FILENAME: &'static str = "magog_save.json";
+static SAVE_FILENAME: &'static str = "magog_save.dat";
 
 pub fn save_game(w: &World) {
     // Only save if there's still a living player around.
@@ -337,11 +337,8 @@ pub fn save_game(w: &World) {
         return;
     }
 
-    let save_data = w.save();
-    File::create(SAVE_FILENAME)
-        .unwrap()
-        .write_all(&save_data.into_bytes())
-        .unwrap();
+    let mut file = File::create(SAVE_FILENAME).expect("Opening save file failed");
+    w.save(&mut file).expect("Saving game failed");
 }
 
 pub fn load_game() -> Result<World, ()> {
@@ -349,13 +346,9 @@ pub fn load_game() -> Result<World, ()> {
         return Err(());
     }
     let path = Path::new(SAVE_FILENAME);
-    let mut save_data = String::new();
-    File::open(&path).unwrap().read_to_string(&mut save_data).unwrap();
-    // TODO: Informative error message if load fails.
-    match World::load(&save_data[..]) {
-        Ok(w) => Ok(w),
-        _ => Err(()),
-    }
+    let mut file = File::open(&path).expect("Opening save file failed");
+    // TODO: Use separate error code instead of panic.
+    Ok(World::load(&mut file).expect("Invalid save file"))
 }
 
 pub fn _delete_save() {

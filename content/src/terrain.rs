@@ -6,7 +6,7 @@ macro_rules! terrain_data {
     {
         $($symbol:ident, $name:expr;)*
     } => {
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
         pub enum TerrainType {
             $($symbol,)*
         }

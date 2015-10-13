@@ -1,7 +1,11 @@
 #![crate_name="world"]
 
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
 extern crate rand;
-extern crate rustc_serialize;
+extern crate serde;
+extern crate bincode;
 extern crate num;
 extern crate vec_map;
 #[macro_use]
@@ -70,7 +74,7 @@ pub enum Msg {
 }
 
 /// Light level value.
-#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Light {
     lum: f32,
 }

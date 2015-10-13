@@ -7,11 +7,11 @@ use stats::Stats;
 use location_set::LocationSet;
 
 /// Dummy component to mark prototype objects
-#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct IsPrototype;
 
 /// Entity name and appearance.
-#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Desc {
     pub name: String,
     pub icon: Brush,
@@ -34,7 +34,7 @@ impl Desc {
 
 
 /// Map field-of-view and remembered terrain.
-#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MapMemory {
     pub seen: LocationSet,
     pub remembered: LocationSet,
@@ -50,7 +50,7 @@ impl MapMemory {
 }
 
 
-#[derive(Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment,
@@ -75,7 +75,7 @@ impl Brain {
 }
 
 /// Mob behavior state.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum BrainState {
     /// AI mob is inactive, but can be startled into action by noise or
     /// motion.
@@ -87,7 +87,7 @@ pub enum BrainState {
 }
 
 /// Used to determine who tries to fight whom.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Alignment {
     /// Attack anything and everything.
     Chaotic,
@@ -101,7 +101,7 @@ pub enum Alignment {
 
 
 /// Damage state component. The default state is undamaged and unarmored.
-#[derive(Copy, Clone, Debug, Default, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
@@ -117,7 +117,7 @@ impl Health {    pub fn new() -> Health {
 
 
 /// Items can be picked up and carried and they do stuff.
-#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub item_type: ItemType,
     pub ability: Ability,
@@ -128,5 +128,5 @@ pub struct Item {
 /// and stat bonuses from equipment it is wearing and any other transient
 /// effects. They need to be updated whenever the relevant state of the entity
 /// changes.
-#[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CompositeStats(pub Stats);

@@ -11,7 +11,9 @@ name = "world"
 num = "*"
 rand = "*"
 vec_map = "*"
-rustc-serialize = "*"
+serde = "*"
+serde_macros = "*"
+bincode = "*"
 
 [dependencies.calx_ecs]
 git = "https://github.com/rsaarelm/calx"

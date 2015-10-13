@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use vec_map::VecMap;
 use calx_ecs::Entity;
 use location::Location;
@@ -8,7 +8,7 @@ use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub enum Place {
     At(Location),
     In(Entity, Option<Slot>),
@@ -204,26 +204,32 @@ impl Spatial {
     }
 }
 
-#[derive(Clone, RustcDecodable, RustcEncodable)]
+#[derive(Clone, Serialize, Deserialize)]
 struct Elt(Entity, Place);
 
-impl Decodable for Spatial {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Spatial, D::Error> {
-        Ok(Spatial::slurp(try!(Decodable::decode(d))))
+impl Serialize for Spatial {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: Serializer
+    {
+        self.dump().serialize(serializer)
     }
 }
 
-impl Encodable for Spatial {
-    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        self.dump().encode(s)
+impl Deserialize for Spatial {
+    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
+        where D: Deserializer
+    {
+        Ok(Spatial::slurp(try!(Deserialize::deserialize(deserializer))))
     }
 }
+
 
 #[cfg(test)]
 mod test {
-    use super::Place;
+    use super::{Spatial, Place};
     use item::Slot;
-    use entity::Entity;
+    use calx_ecs::Entity;
+    use location::Location;
 
     #[test]
     fn test_place_adjacency() {
@@ -249,5 +255,24 @@ mod test {
                 Place::In(Entity(0), Some(Slot::Ranged)),
                 Place::In(Entity(1), None),
             ]);
+    }
+
+    #[test]
+    fn test_serialization() {
+        use bincode::{serde, SizeLimit};
+
+        let mut spatial = Spatial::new();
+        let p1 = Place::At(Location::new(10, 10));
+        let p2 = Place::In(Entity(1), None);
+        spatial.insert(Entity(1), p1);
+        spatial.insert(Entity(2), p2);
+
+        let saved = serde::serialize(&spatial, SizeLimit::Infinite)
+                        .expect("Spatial serialization failed");
+        let spatial2 = serde::deserialize::<Spatial>(&saved)
+                           .expect("Spatial deserialization failed");
+
+        assert_eq!(spatial2.get(Entity(1)), Some(p1));
+        assert_eq!(spatial2.get(Entity(2)), Some(p2));
     }
 }

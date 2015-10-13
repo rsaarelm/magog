@@ -1,9 +1,13 @@
 #![crate_name="content"]
 
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
 extern crate num;
-extern crate rustc_serialize;
 extern crate rand;
 extern crate image;
+extern crate serde;
+
 #[macro_use]
 extern crate calx;
 
@@ -24,7 +28,7 @@ pub use terrain::TerrainType;
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
 /// for entity spawning etc.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, Hash, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Hash, Serialize, Deserialize)]
 pub enum Biome {
     Overland = 0b1,
     Dungeon = 0b10,
@@ -48,7 +52,7 @@ impl Biome {
     }
 }
 
-#[derive(Copy, Eq, PartialEq, Debug, Clone, Hash, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct AreaSpec {
     pub biome: Biome,
     pub depth: i32,
@@ -63,7 +67,7 @@ impl AreaSpec {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash, Serialize, Deserialize)]
 pub enum FormType {
     Anything,
 

@@ -1,6 +1,7 @@
+use std::io::{Read, Write};
 use rand;
 use rand::Rng;
-use rustc_serialize::json;
+use bincode::{self, serde};
 use content::TerrainType;
 use area;
 use field::Field;
@@ -20,7 +21,7 @@ Ecs! {
 }
 
 /// Toplevel game state object.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct World {
     /// Entity component system.
     pub ecs: Ecs,
@@ -53,13 +54,26 @@ impl<'a> World {
         ret
     }
 
-    /// Load a world state from a json string.
-    pub fn load(json: &str) -> Result<World, json::DecoderError> {
-        json::decode::<World>(json)
+    pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
+        serde::deserialize_from(reader, bincode::SizeLimit::Infinite)
     }
 
-    /// Save the global world state into a json string.
-    pub fn save(&self) -> String {
-        json::encode(self).unwrap()
+    pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
+        serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::World;
+
+    #[test]
+    fn test_serialize() {
+        use bincode::{serde, SizeLimit};
+
+        let w1 = World::new(Some(123));
+        let saved = serde::serialize(&w1, SizeLimit::Infinite).expect("Serialization failed");
+        let w2: World = serde::deserialize(&saved).expect("Deserialization failed")
+        assert!(w1.flags.seed == w2.flags.seed);
     }
 }

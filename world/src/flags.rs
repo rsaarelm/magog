@@ -3,7 +3,7 @@ use location::Location;
 use calx::EncodeRng;
 use calx_ecs::Entity;
 
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct Flags {
     pub seed: u32,
     pub camera: Location,

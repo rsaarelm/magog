@@ -3,7 +3,7 @@ use std::mem;
 use super::location::Location;
 
 /// Compact Location set collection
-#[derive(Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct LocationSet {
     /// Chunks of 8x8 locations. The key has top 5 bits of the x and y
     /// coordinates of the location catenated into one integer for the

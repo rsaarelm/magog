@@ -2,7 +2,7 @@ use std::ops::Add;
 use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 
 /// Unambiguous location in the game world.
-#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Location {
     pub x: i8,
     pub y: i8, // TODO: Add third dimension for multiple persistent levels.
