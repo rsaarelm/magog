@@ -311,11 +311,10 @@ fn apply_damage(w: &mut World, e: Entity, amount: i32) {
     }
     let max_hp = query::max_hp(w, e);
 
-    let is_killed = w.ecs.health.get_mut(e).map_or(false,
-                                                   |h| {
-                                                       h.wounds += amount;
-                                                       h.wounds >= max_hp
-                                                   });
+    let is_killed = w.ecs.health.get_mut(e).map_or(false, |h| {
+        h.wounds += amount;
+        h.wounds >= max_hp
+    });
 
     msg::push(::Msg::Damage(e));
 

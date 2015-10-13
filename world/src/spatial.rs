@@ -98,7 +98,7 @@ impl Spatial {
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
-                for i in (0..v.len()) {
+                for i in 0..v.len() {
                     if v[i] == Entity(idx) {
                         v.swap_remove(i);
                         return;
