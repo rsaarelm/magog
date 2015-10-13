@@ -1,7 +1,6 @@
 use std::mem;
 use rand::{Rng, SeedableRng};
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::impls::VecVisitor;
 use serde::de::Error;
 use to_log_odds;
 
@@ -90,7 +89,7 @@ impl<T: Rng+'static> Serialize for EncodeRng<T> {
                 vec.push(*view.offset(i as isize));
             }
         }
-        serializer.visit_bytes(&vec)
+        vec.serialize(serializer)
     }
 }
 
@@ -98,7 +97,7 @@ impl<T: Rng+'static> Deserialize for EncodeRng<T> {
     fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
         where D: Deserializer
     {
-        let blob: Vec<u8> = try!(deserializer.visit(VecVisitor::new()));
+        let blob: Vec<u8> = try!(Deserialize::deserialize(deserializer));
         unsafe {
             if blob.len() == mem::size_of::<T>() {
                 Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
@@ -106,5 +105,23 @@ impl<T: Rng+'static> Deserialize for EncodeRng<T> {
                 Err(Error::syntax("Bad RNG blob length"))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+use rand::{Rng, XorShiftRng, SeedableRng};
+use super::EncodeRng;
+
+    #[test]
+    fn test_serialize_rng() {
+        use bincode::{serde, SizeLimit};
+
+        let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
+
+        let saved = serde::serialize(&rng, SizeLimit::Infinite).expect("Serialization failed");
+        let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved).expect("Deserialization failed");
+
+        assert!(rng.next_u32() == rng2.next_u32());
     }
 }
