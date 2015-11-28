@@ -73,7 +73,7 @@ mod test {
 
         let w1 = World::new(Some(123));
         let saved = serde::serialize(&w1, SizeLimit::Infinite).expect("Serialization failed");
-        let w2: World = serde::deserialize(&saved).expect("Deserialization failed")
+        let w2: World = serde::deserialize(&saved).expect("Deserialization failed");
         assert!(w1.flags.seed == w2.flags.seed);
     }
 }
