@@ -204,7 +204,6 @@ impl Window {
     /// duration in seconds.
     pub fn frame_duration(&self) -> f64 { self.frame_duration.value }
 
-    //pub fn events<'a>(&'a mut self) -> EventIterator<'a> { EventIterator { window: self } }
     pub fn events(&mut self) -> Vec<Event> {
         // XXX: Not returning an iterator because of locking crap. May want to
         // do mutable stuff on window in response to events.
