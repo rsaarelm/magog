@@ -1,6 +1,6 @@
-/*!
- * Entity component system
- */
+// !
+// Entity component system
+//
 
 #![feature(custom_derive, plugin)]
 #![plugin(serde_macros)]
@@ -102,7 +102,7 @@ pub struct Ecs<ST> {
     store: ST,
 }
 
-impl<ST: Default+Store> Ecs<ST> {
+impl<ST: Default + Store> Ecs<ST> {
     pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,

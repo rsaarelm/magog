@@ -1,6 +1,6 @@
 use std::convert::{From, Into};
-use std::str::{FromStr};
-use std::ascii::{AsciiExt};
+use std::str::FromStr;
+use std::ascii::AsciiExt;
 use std::ops::{Add, Sub, Mul};
 use std::fmt;
 use num::{Float, Num};
@@ -32,34 +32,39 @@ pub struct SRgba {
 
 impl SRgba {
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba {
-        SRgba { r: r, g: g, b: b, a: a }
+        SRgba {
+            r: r,
+            g: g,
+            b: b,
+            a: a,
+        }
     }
 }
 
 impl fmt::Display for SRgba {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "#{:02X}{:02X}{:02X}{:02X}", self.r, self.g, self.b, self.a)
+        write!(f,
+               "#{:02X}{:02X}{:02X}{:02X}",
+               self.r,
+               self.g,
+               self.b,
+               self.a)
     }
 }
 
 impl From<Rgba> for SRgba {
     #[inline]
     fn from(c: Rgba) -> SRgba {
-        SRgba::new(
-            (to_srgb(c.r) * 255.0).round() as u8,
-            (to_srgb(c.g) * 255.0).round() as u8,
-            (to_srgb(c.b) * 255.0).round() as u8,
-            (to_srgb(c.a) * 255.0).round() as u8)
+        SRgba::new((to_srgb(c.r) * 255.0).round() as u8,
+                   (to_srgb(c.g) * 255.0).round() as u8,
+                   (to_srgb(c.b) * 255.0).round() as u8,
+                   (to_srgb(c.a) * 255.0).round() as u8)
     }
 }
 
 impl From<u32> for SRgba {
     fn from(u: u32) -> SRgba {
-        SRgba::new(
-            (u >> 24) as u8,
-            (u >> 16) as u8,
-            (u >> 8)  as u8,
-            u         as u8)
+        SRgba::new((u >> 24) as u8, (u >> 16) as u8, (u >> 8) as u8, u as u8)
     }
 }
 
@@ -105,7 +110,9 @@ impl FromStr for SRgba {
                     digits = 2;
                     alpha = true;
                 }
-                _ => { return Err(()); }
+                _ => {
+                    return Err(());
+                }
             }
 
             assert!(digits == 1 || digits == 2);
@@ -116,7 +123,11 @@ impl FromStr for SRgba {
             let a = if alpha {
                 Num::from_str_radix(&s[(3 * digits)..(4 * digits)], 16)
             } else {
-                if digits == 1 { Ok(0xFu8) } else { Ok(0xFFu8) }
+                if digits == 1 {
+                    Ok(0xFu8)
+                } else {
+                    Ok(0xFFu8)
+                }
             };
 
             return match (r, g, b, a) {
@@ -130,7 +141,7 @@ impl FromStr for SRgba {
 
                     Ok(SRgba::new(r, g, b, a))
                 }
-                _ => Err(())
+                _ => Err(()),
             };
         }
 
@@ -156,7 +167,12 @@ pub struct Rgba {
 
 impl Rgba {
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Rgba {
-        Rgba { r: r, g: g, b: b, a: a }
+        Rgba {
+            r: r,
+            g: g,
+            b: b,
+            a: a,
+        }
     }
 
     /// Turn color to monochrome preserving brightness.
@@ -177,7 +193,7 @@ impl FromStr for Rgba {
     fn from_str(s: &str) -> Result<Rgba, ()> {
         match SRgba::from_str(s) {
             Ok(a) => Ok(a.into()),
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 }
@@ -185,11 +201,10 @@ impl FromStr for Rgba {
 impl From<SRgba> for Rgba {
     #[inline]
     fn from(s: SRgba) -> Rgba {
-        Rgba::new(
-            to_linear(s.r as f32 / 255.0),
-            to_linear(s.g as f32 / 255.0),
-            to_linear(s.b as f32 / 255.0),
-            to_linear(s.a as f32 / 255.0))
+        Rgba::new(to_linear(s.r as f32 / 255.0),
+                  to_linear(s.g as f32 / 255.0),
+                  to_linear(s.b as f32 / 255.0),
+                  to_linear(s.a as f32 / 255.0))
     }
 }
 
@@ -202,54 +217,47 @@ impl From<u32> for Rgba {
 impl Add<Rgba> for Rgba {
     type Output = Rgba;
     fn add(self, rhs: Rgba) -> Rgba {
-        Rgba::new(
-            self.r + rhs.r,
-            self.g + rhs.g,
-            self.b + rhs.b,
-            self.a + rhs.a)
+        Rgba::new(self.r + rhs.r,
+                  self.g + rhs.g,
+                  self.b + rhs.b,
+                  self.a + rhs.a)
     }
 }
 
 impl Sub<Rgba> for Rgba {
     type Output = Rgba;
     fn sub(self, rhs: Rgba) -> Rgba {
-        Rgba::new(
-            self.r - rhs.r,
-            self.g - rhs.g,
-            self.b - rhs.b,
-            self.a - rhs.a)
+        Rgba::new(self.r - rhs.r,
+                  self.g - rhs.g,
+                  self.b - rhs.b,
+                  self.a - rhs.a)
     }
 }
 
 impl Mul<f32> for Rgba {
     type Output = Rgba;
     fn mul(self, rhs: f32) -> Rgba {
-        Rgba::new(
-            self.r * rhs,
-            self.g * rhs,
-            self.b * rhs,
-            self.a)
+        Rgba::new(self.r * rhs, self.g * rhs, self.b * rhs, self.a)
     }
 }
 
 impl Mul<Rgba> for Rgba {
     type Output = Rgba;
     fn mul(self, rhs: Rgba) -> Rgba {
-        Rgba::new(
-            self.r * rhs.r,
-            self.g * rhs.g,
-            self.b * rhs.b,
-            self.a * rhs.a)
+        Rgba::new(self.r * rhs.r,
+                  self.g * rhs.g,
+                  self.b * rhs.b,
+                  self.a * rhs.a)
     }
 }
 
 #[inline]
 pub fn to_linear(srgb: f32) -> f32 {
-   if srgb <= 0.04045 {
-       srgb / 12.92
-   } else {
-       ((srgb + 0.055) / (1.055)).powf(2.4)
-   }
+    if srgb <= 0.04045 {
+        srgb / 12.92
+    } else {
+        ((srgb + 0.055) / (1.055)).powf(2.4)
+    }
 }
 
 #[inline]
@@ -466,8 +474,8 @@ color_constants! {
 mod test {
     #[test]
     fn test_parse_color() {
-        use std::convert::{From};
-        use std::str::{FromStr};
+        use std::convert::From;
+        use std::str::FromStr;
         use super::{Rgba, SRgba};
 
         assert!(SRgba::from_str("").is_err());
@@ -479,14 +487,22 @@ mod test {
         assert!(SRgba::from_str("actuallynotacolorname").is_err());
         assert!(SRgba::from_str("redd").is_err());
 
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("#f00"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("#f00f"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("#ff0000"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("#ff0000ff"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("#FF0000FF"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("red"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("Red"));
-        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)), SRgba::from_str("RED"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("#f00"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("#f00f"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("#ff0000"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("#ff0000ff"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("#FF0000FF"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("red"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("Red"));
+        assert_eq!(Ok(SRgba::new(0xff, 0x00, 0x00, 0xff)),
+                   SRgba::from_str("RED"));
         assert_eq!(Ok(Rgba::new(1.0, 0.0, 0.0, 1.0)), Rgba::from_str("RED"));
 
         assert_eq!(SRgba::new(0x33, 0x77, 0xbb, 0xff), SRgba::from(0x3377bbff));

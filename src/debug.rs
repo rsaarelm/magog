@@ -1,4 +1,4 @@
-/*! Debugging and logging utilities */
+//! Debugging and logging utilities
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -10,16 +10,14 @@ struct TimeLog {
 
 impl TimeLog {
     pub fn new() -> TimeLog {
-        TimeLog {
-            logs: HashMap::new(),
-        }
+        TimeLog { logs: HashMap::new() }
     }
 
     pub fn log(name: String, mut duration: f64) {
         // TODO: Enable this when it's stable. Otherwise occasionally getting
         // 'access a TLS value during or after it is destroyed' errors when
         // exiting program and dumping the timing data.
-        //if TIME_LOG.state() == LocalKeyState::Destroyed { return; }
+        // if TIME_LOG.state() == LocalKeyState::Destroyed { return; }
         TIME_LOG.with(|a| {
             let mut n = 1;
             let contains = a.borrow().logs.contains_key(&name);
@@ -38,7 +36,10 @@ impl Drop for TimeLog {
     fn drop(&mut self) {
         println!("Timing logs:");
         for (name, &(n, total)) in self.logs.iter() {
-            println!("  {}:\t{:.3} s\t(avg. {:.3} s)", name, total, total / (n as f64));
+            println!("  {}:\t{:.3} s\t(avg. {:.3} s)",
+                     name,
+                     total,
+                     total / (n as f64));
         }
     }
 }

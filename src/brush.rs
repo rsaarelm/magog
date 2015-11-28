@@ -1,3 +1,5 @@
+//! Macro for constructing sets of named sprites
+
 #[macro_export]
 macro_rules! brush {
     {

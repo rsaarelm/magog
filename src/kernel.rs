@@ -1,5 +1,5 @@
-use std::ops::{Add};
-use geom::{V2};
+use std::ops::Add;
+use geom::V2;
 
 /// Shaping properties for hex terrain cells.
 pub trait KernelTerrain {
@@ -10,7 +10,9 @@ pub trait KernelTerrain {
     fn is_block(&self) -> bool;
 
     /// Terrain is either a wall or a block.
-    fn is_hull(&self) -> bool { self.is_wall() || self.is_block() }
+    fn is_hull(&self) -> bool {
+        self.is_wall() || self.is_block()
+    }
 }
 
 /// 3x3 grid of terrain cells.
@@ -30,8 +32,9 @@ pub struct Kernel<C> {
 }
 
 impl<C: KernelTerrain> Kernel<C> {
-    pub fn new<F, L: Add<V2<i32>, Output=L>+Copy>(get: F, loc: L) -> Kernel<C>
-        where F: Fn(L) -> C {
+    pub fn new<F, L: Add<V2<i32>, Output = L> + Copy>(get: F, loc: L) -> Kernel<C>
+        where F: Fn(L) -> C
+    {
         Kernel {
             n: get(loc + V2(-1, -1)),
             ne: get(loc + V2(0, -1)),

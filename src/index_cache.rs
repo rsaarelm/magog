@@ -1,5 +1,5 @@
-use std::marker::{PhantomData};
-use std::fmt::{Debug};
+use std::marker::PhantomData;
+use std::fmt::Debug;
 use vec_map::VecMap;
 
 /// A resource cache indexed with an enum type.
@@ -36,7 +36,7 @@ pub struct IndexCache<K, V> {
     phantom: PhantomData<K>,
 }
 
-impl<K: Debug+Copy+CacheKey, V> IndexCache<K, V> {
+impl<K: Debug + Copy + CacheKey, V> IndexCache<K, V> {
     pub fn new() -> IndexCache<K, V> {
         IndexCache {
             cache: VecMap::new(),

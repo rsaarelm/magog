@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::BTreeMap;
 use num::{Zero, One};
-use num::traits::{Num};
+use num::traits::Num;
 
 /// A node in a graph with a regular lattice.
 pub trait LatticeNode: PartialEq+Eq+Clone+Hash+PartialOrd+Ord {
@@ -50,17 +50,17 @@ impl<N: LatticeNode> Dijkstra<N> {
 
             edge = new_edge;
 
-            if edge.is_empty() { break; }
+            if edge.is_empty() {
+                break;
+            }
         }
 
-        Dijkstra {
-            weights: weights,
-        }
+        Dijkstra { weights: weights }
     }
 
     /// Return the neighbors of a cell (if any), sorted from downhill to
     /// uphill.
-    pub fn sorted_neighbors(& self, node: &N) -> Vec<N> {
+    pub fn sorted_neighbors(&self, node: &N) -> Vec<N> {
         let mut ret = Vec::new();
         for n in node.neighbors().iter() {
             if let Some(w) = self.weights.get(n) {
@@ -73,16 +73,21 @@ impl<N: LatticeNode> Dijkstra<N> {
 }
 
 /// Find a path between two points using the A* algorithm.
-pub fn astar_path_with<N: LatticeNode, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
-    where F: Fn(&N, &N) -> T,
-          T: Num+Ord+Copy
+pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
+    where N: LatticeNode,
+          F: Fn(&N, &N) -> T,
+          T: Num + Ord + Copy
 {
-    fn build_path<'a, N: LatticeNode>(mut end: &'a N, path: &'a HashMap<N, N>) -> Vec<N> {
+    fn build_path<'a, N>(mut end: &'a N, path: &'a HashMap<N, N>) -> Vec<N>
+        where N: LatticeNode
+    {
         let mut ret = Vec::new();
         loop {
             ret.push(end.clone());
             match path.get(end) {
-                Some(n) => { end = n; }
+                Some(n) => {
+                    end = n;
+                }
                 None => {
                     ret.reverse();
                     return ret;
@@ -98,16 +103,23 @@ pub fn astar_path_with<N: LatticeNode, F, T>(metric: F, from: N, to: N, mut limi
     open.insert(from, Zero::zero());
 
     while !open.is_empty() && limit > 0 {
-        let (pick, dist) = open.iter().fold(None, |a, (x, &pathlen_x)| {
-            let x_cost = pathlen_x + metric(x, &to);
+        let (pick, dist) = open.iter()
+                               .fold(None, |a, (x, &pathlen_x)| {
+                                   let x_cost = pathlen_x + metric(x, &to);
 
-            match a {
-                None => Some((x.clone(), pathlen_x)),
-                Some((y, pathlen_y)) => {
-                    let y_cost = pathlen_y + metric(&y, &to);
-                    if x_cost < y_cost { Some((x.clone(), pathlen_x)) } else { Some((y, pathlen_y)) }
-                }
-            }}).unwrap();
+                                   match a {
+                                       None => Some((x.clone(), pathlen_x)),
+                                       Some((y, pathlen_y)) => {
+                                           let y_cost = pathlen_y + metric(&y, &to);
+                                           if x_cost < y_cost {
+                                               Some((x.clone(), pathlen_x))
+                                           } else {
+                                               Some((y, pathlen_y))
+                                           }
+                                       }
+                                   }
+                               })
+                               .unwrap();
 
         if pick == to {
             return Some(build_path(&pick, &path));
@@ -117,10 +129,14 @@ pub fn astar_path_with<N: LatticeNode, F, T>(metric: F, from: N, to: N, mut limi
 
         let new_pathlen = dist + One::one();
         for x in pick.neighbors().into_iter() {
-            if visited.contains(&x) { continue; }
+            if visited.contains(&x) {
+                continue;
+            }
 
             if let Some(&old_pathlen) = open.get(&x) {
-                if old_pathlen <= new_pathlen { continue; }
+                if old_pathlen <= new_pathlen {
+                    continue;
+                }
             }
 
             path.insert(x.clone(), pick.clone());
@@ -139,7 +155,7 @@ mod test {
     #[test]
     fn test_astar() {
         use super::{LatticeNode, astar_path_with};
-        use geom::{V2};
+        use geom::V2;
 
         impl LatticeNode for V2<i32> {
             fn neighbors(&self) -> Vec<V2<i32>> {
@@ -152,7 +168,14 @@ mod test {
             }
         }
 
-        let path = astar_path_with(|a, b| { let v = *b - *a; v.dot(v) }, V2(1, 1), V2(10, 10), 10000).unwrap();
+        let path = astar_path_with(|a, b| {
+                                       let v = *b - *a;
+                                       v.dot(v)
+                                   },
+                                   V2(1, 1),
+                                   V2(10, 10),
+                                   10000)
+                       .unwrap();
         assert!(path[0] == V2(1, 1));
         assert!(path[path.len() - 1] == V2(10, 10));
     }

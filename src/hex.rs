@@ -62,7 +62,9 @@ impl Dir6 {
         let hexadecant = {
             let width = PI / 8.0;
             let mut radian = (v.0 as f32).atan2(-v.1 as f32);
-            if radian < 0.0 { radian += 2.0 * PI }
+            if radian < 0.0 {
+                radian += 2.0 * PI
+            }
             (radian / width).floor() as i32
         };
 
@@ -73,48 +75,52 @@ impl Dir6 {
             5 | 6 => 3,
             7 | 8 | 9 => 4,
             10 | 11 | 12 => 5,
-            _ => panic!("Bad hexadecant")
+            _ => panic!("Bad hexadecant"),
         })
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
-    pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
+    pub fn from_int(i: i32) -> Dir6 {
+        DIRS[i.mod_floor(&6) as usize]
+    }
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(&self) -> V2<i32> {
-        [V2(-1, -1),
-         V2( 0, -1),
-         V2( 1,  0),
-         V2( 1,  1),
-         V2( 0,  1),
-         V2(-1,  0)][*self as usize]
+        [V2(-1, -1), V2(0, -1), V2(1, 0), V2(1, 1), V2(0, 1), V2(-1, 0)][*self as usize]
     }
 
     /// Iterate through the six hex dirs in the standard order.
-    pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
+    pub fn iter() -> slice::Iter<'static, Dir6> {
+        DIRS.iter()
+    }
 }
 
 impl Add<i32> for Dir6 {
     type Output = Dir6;
-    fn add(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 + other) }
+    fn add(self, other: i32) -> Dir6 {
+        Dir6::from_int(self as i32 + other)
+    }
 }
 
 impl Sub<i32> for Dir6 {
     type Output = Dir6;
-    fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
+    fn sub(self, other: i32) -> Dir6 {
+        Dir6::from_int(self as i32 - other)
+    }
 }
 
 impl Rand for Dir6 {
-    fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
+    fn rand<R: Rng>(rng: &mut R) -> Dir6 {
+        Dir6::from_int(rng.gen_range(0, 6))
+    }
 }
 
-static DIRS: [Dir6; 6] = [
-    Dir6::North,
-    Dir6::NorthEast,
-    Dir6::SouthEast,
-    Dir6::South,
-    Dir6::SouthWest,
-    Dir6::NorthWest];
+static DIRS: [Dir6; 6] = [Dir6::North,
+                          Dir6::NorthEast,
+                          Dir6::SouthEast,
+                          Dir6::South,
+                          Dir6::SouthWest,
+                          Dir6::NorthWest];
 
 /// Field of view iterator for a hexagonal map.
 ///
@@ -131,8 +137,7 @@ pub struct HexFov<F> {
     side_channel: Vec<V2<i32>>,
 }
 
-impl<F> HexFov<F>
-    where F: Fn(V2<i32>) -> bool
+impl<F> HexFov<F> where F: Fn(V2<i32>) -> bool
 {
     pub fn new(is_opaque: F, range: u32) -> HexFov<F> {
         let init_group = is_opaque(Dir6::from_int(0).to_v2());
@@ -140,11 +145,11 @@ impl<F> HexFov<F>
             is_opaque: is_opaque,
             range: range,
             stack: vec![Sector {
-                begin: PolarPoint::new(0.0, 1),
-                pt: PolarPoint::new(0.0, 1),
-                end: PolarPoint::new(6.0, 1),
-                group_opaque: init_group,
-            }],
+                            begin: PolarPoint::new(0.0, 1),
+                            pt: PolarPoint::new(0.0, 1),
+                            end: PolarPoint::new(6.0, 1),
+                            group_opaque: init_group,
+                        }],
             fake_isometric_hack: false,
             // The FOV algorithm will not generate the origin point, so we use
             // the side channel to explicitly add it in the beginning.
@@ -161,8 +166,7 @@ impl<F> HexFov<F>
     }
 }
 
-impl<F> Iterator for HexFov<F>
-    where F: Fn(V2<i32>) -> bool
+impl<F> Iterator for HexFov<F> where F: Fn(V2<i32>) -> bool
 {
     type Item = V2<i32>;
     fn next(&mut self) -> Option<V2<i32>> {
@@ -209,12 +213,11 @@ impl<F> Iterator for HexFov<F>
                         // Only do this if both the front tiles and the target
                         // tile are opaque.
                         let next = current.pt.next();
-                        if next.is_below(current.end)
-                            && current.group_opaque
-                            && (self.is_opaque)(next.to_v2())
-                            && (self.is_opaque)(side_pt)
-                            && current.begin.radius < self.range {
-                                self.side_channel.push(side_pt);
+                        if next.is_below(current.end) && current.group_opaque &&
+                           (self.is_opaque)(next.to_v2()) &&
+                           (self.is_opaque)(side_pt) &&
+                           current.begin.radius < self.range {
+                            self.side_channel.push(side_pt);
                         }
                     }
                 }
@@ -260,19 +263,32 @@ struct Sector {
 #[derive(Copy, Clone, PartialEq)]
 struct PolarPoint {
     pos: f32,
-    radius: u32
+    radius: u32,
 }
 
 impl PolarPoint {
-    pub fn new(pos: f32, radius: u32) -> PolarPoint { PolarPoint { pos: pos, radius: radius } }
+    pub fn new(pos: f32, radius: u32) -> PolarPoint {
+        PolarPoint {
+            pos: pos,
+            radius: radius,
+        }
+    }
     /// Index of the discrete hex cell along the circle that corresponds to this point.
-    fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
+    fn winding_index(self) -> i32 {
+        (self.pos + 0.5).floor() as i32
+    }
 
-    pub fn is_below(self, other: PolarPoint) -> bool { self.winding_index() < other.end_index() }
-    fn end_index(self) -> i32 { (self.pos + 0.5).ceil() as i32 }
+    pub fn is_below(self, other: PolarPoint) -> bool {
+        self.winding_index() < other.end_index()
+    }
+    fn end_index(self) -> i32 {
+        (self.pos + 0.5).ceil() as i32
+    }
 
     pub fn to_v2(self) -> V2<i32> {
-        if self.radius == 0 { return V2(0, 0); }
+        if self.radius == 0 {
+            return V2(0, 0);
+        }
         let index = self.winding_index();
         let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
         let offset = index.mod_floor(&(self.radius as i32));
@@ -306,9 +322,8 @@ impl PolarPoint {
 
     /// The point corresponding to this one on the hex circle with radius +1.
     pub fn further(self) -> PolarPoint {
-        PolarPoint::new(
-            self.pos * (self.radius + 1) as f32 / self.radius as f32,
-            self.radius + 1)
+        PolarPoint::new(self.pos * (self.radius + 1) as f32 / self.radius as f32,
+                        self.radius + 1)
     }
 
     /// The point next to this one along the hex circle.
@@ -321,7 +336,7 @@ impl PolarPoint {
 mod test {
     use geom::V2;
     // XXX: Why doesn't super::* work here?
-    use super::{Dir6};
+    use super::Dir6;
     use super::Dir6::*;
 
     #[test]

@@ -1,45 +1,45 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
-use std::cmp::{Ordering};
+use std::cmp::Ordering;
 use num::{Zero, One};
-use num::traits::{Num};
+use num::traits::Num;
 use image::{Primitive, GenericImage, Pixel};
-use {Anchor};
+use Anchor;
 
 /// 2D geometric vector.
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, Serialize, Deserialize)]
 pub struct V2<T>(pub T, pub T);
 
-impl<T: Eq> Eq for V2<T> { }
+impl<T: Eq> Eq for V2<T> {}
 
-impl<T: Add<U, Output=V>, U, V> Add<V2<U>> for V2<T> {
+impl<T: Add<U, Output = V>, U, V> Add<V2<U>> for V2<T> {
     type Output = V2<V>;
     fn add(self, rhs: V2<U>) -> V2<V> {
         V2(self.0 + rhs.0, self.1 + rhs.1)
     }
 }
 
-impl<T: Sub<U, Output=V>, U, V> Sub<V2<U>> for V2<T> {
+impl<T: Sub<U, Output = V>, U, V> Sub<V2<U>> for V2<T> {
     type Output = V2<V>;
     fn sub(self, rhs: V2<U>) -> V2<V> {
         V2(self.0 - rhs.0, self.1 - rhs.1)
     }
 }
 
-impl<T: Neg<Output=U>, U> Neg<> for V2<T> {
+impl<T: Neg<Output = U>, U> Neg for V2<T> {
     type Output = V2<U>;
     fn neg(self) -> V2<U> {
         V2(-self.0, -self.1)
     }
 }
 
-impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V2<T> {
+impl<T: Mul<U, Output = V>, U: Copy, V> Mul<U> for V2<T> {
     type Output = V2<V>;
     fn mul(self, rhs: U) -> V2<V> {
         V2(self.0 * rhs, self.1 * rhs)
     }
 }
 
-impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V2<T> {
+impl<T: Div<U, Output = V>, U: Copy, V> Div<U> for V2<T> {
     type Output = V2<V>;
     fn div(self, rhs: U) -> V2<V> {
         V2(self.0 / rhs, self.1 / rhs)
@@ -75,7 +75,7 @@ impl<T: Num> V2<T> {
     }
 }
 
-impl<T: Ord+Copy> Ord for V2<T> {
+impl<T: Ord + Copy> Ord for V2<T> {
     fn cmp(&self, other: &V2<T>) -> Ordering {
         (self.0, self.1).cmp(&(other.0, other.1))
     }
@@ -85,37 +85,37 @@ impl<T: Ord+Copy> Ord for V2<T> {
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, Serialize, Deserialize)]
 pub struct V3<T>(pub T, pub T, pub T);
 
-impl<T: Eq> Eq for V3<T> { }
+impl<T: Eq> Eq for V3<T> {}
 
-impl<T: Add<U, Output=V>, U, V> Add<V3<U>> for V3<T> {
+impl<T: Add<U, Output = V>, U, V> Add<V3<U>> for V3<T> {
     type Output = V3<V>;
     fn add(self, rhs: V3<U>) -> V3<V> {
         V3(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
     }
 }
 
-impl<T: Sub<U, Output=V>, U, V> Sub<V3<U>> for V3<T> {
+impl<T: Sub<U, Output = V>, U, V> Sub<V3<U>> for V3<T> {
     type Output = V3<V>;
     fn sub(self, rhs: V3<U>) -> V3<V> {
         V3(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2)
     }
 }
 
-impl<T: Neg<Output=U>, U> Neg<> for V3<T> {
+impl<T: Neg<Output = U>, U> Neg for V3<T> {
     type Output = V3<U>;
     fn neg(self) -> V3<U> {
         V3(-self.0, -self.1, -self.2)
     }
 }
 
-impl<T: Mul<U, Output=V>, U: Copy, V> Mul<U> for V3<T> {
+impl<T: Mul<U, Output = V>, U: Copy, V> Mul<U> for V3<T> {
     type Output = V3<V>;
     fn mul(self, rhs: U) -> V3<V> {
         V3(self.0 * rhs, self.1 * rhs, self.2 * rhs)
     }
 }
 
-impl<T: Div<U, Output=V>, U: Copy, V> Div<U> for V3<T> {
+impl<T: Div<U, Output = V>, U: Copy, V> Div<U> for V3<T> {
     type Output = V3<V>;
     fn div(self, rhs: U) -> V3<V> {
         V3(self.0 / rhs, self.1 / rhs, self.2 / rhs)
@@ -151,7 +151,7 @@ impl<T: Num> V3<T> {
     }
 }
 
-impl<T: Ord+Copy> Ord for V3<T> {
+impl<T: Ord + Copy> Ord for V3<T> {
     fn cmp(&self, other: &V3<T>) -> Ordering {
         (self.0, self.1, self.2).cmp(&(other.0, other.1, other.2))
     }
@@ -161,9 +161,9 @@ impl<T: Ord+Copy> Ord for V3<T> {
 #[derive(Copy, Debug, PartialEq, PartialOrd, Clone, Default, Hash, Serialize, Deserialize)]
 pub struct Rect<T>(pub V2<T>, pub V2<T>);
 
-impl<T: Eq> Eq for Rect<T> { }
+impl<T: Eq> Eq for Rect<T> {}
 
-impl<T: Num+Copy+PartialOrd> Rect<T> {
+impl<T: Num + Copy + PartialOrd> Rect<T> {
     pub fn from_points(p1: V2<T>, p2: V2<T>) -> Rect<T> {
         let (x1, x2) = ::sorted_pair(p1.0, p2.0);
         let (y1, y2) = ::sorted_pair(p1.1, p2.1);
@@ -188,7 +188,7 @@ impl<T: Num+Copy+PartialOrd> Rect<T> {
     pub fn point(&self, anchor: Anchor) -> V2<T> {
         let one: T = One::one();
         let two = one + one;
-        //let two: T = One::one() + One::one();
+        // let two: T = One::one() + One::one();
         match anchor {
             Anchor::TopLeft => self.mn(),
             Anchor::TopRight => V2((self.0).0 + (self.1).0, (self.0).1),
@@ -198,7 +198,7 @@ impl<T: Num+Copy+PartialOrd> Rect<T> {
             Anchor::Left => V2((self.0).0, (self.0).1 + (self.1).1 / two),
             Anchor::Right => V2((self.0).0 + (self.1).0, (self.0).1 + (self.1).1 / two),
             Anchor::Bottom => V2((self.0).0 + (self.1).0 / two, (self.0).1 + (self.1).1),
-            Anchor::Center => V2((self.0).0 + (self.1).0 / two, (self.0).1 + (self.1).1 / two)
+            Anchor::Center => V2((self.0).0 + (self.1).0 / two, (self.0).1 + (self.1).1 / two),
         }
     }
 
@@ -216,17 +216,20 @@ impl<T: Num+Copy+PartialOrd> Rect<T> {
             (self.0).1 = p.1;
         }
 
-        if p.0 > mx.0 { (self.1).0 = p.0 - mn.0; }
+        if p.0 > mx.0 {
+            (self.1).0 = p.0 - mn.0;
+        }
 
-        if p.1 > mx.1 { (self.1).1 = p.1 - mn.1; }
+        if p.1 > mx.1 {
+            (self.1).1 = p.1 - mn.1;
+        }
     }
 
     pub fn intersects(&self, rhs: &Rect<T>) -> bool {
         let (mn, mx) = (self.mn(), self.mx());
         let (rmn, rmx) = (rhs.mn(), rhs.mx());
 
-        !(mx.0 <= rmn.0 || mn.0 >= rmx.0 ||
-          mx.1 <= rmn.1 || mn.1 >= rmx.1)
+        !(mx.0 <= rmn.0 || mn.0 >= rmx.0 || mx.1 <= rmn.1 || mn.1 >= rmx.1)
     }
 
     pub fn contains(&self, p: &V2<T>) -> bool {
@@ -252,14 +255,14 @@ impl<T: Num+Copy+PartialOrd> Rect<T> {
     }
 }
 
-impl<T: Add<U, Output=T> + Clone, U> Add<V2<U>> for Rect<T> {
+impl<T: Add<U, Output = T> + Clone, U> Add<V2<U>> for Rect<T> {
     type Output = Rect<T>;
     fn add(self, rhs: V2<U>) -> Rect<T> {
         Rect(self.0 + rhs, self.1.clone())
     }
 }
 
-impl<T: Sub<U, Output=T> + Clone, U> Sub<V2<U>> for Rect<T> {
+impl<T: Sub<U, Output = T> + Clone, U> Sub<V2<U>> for Rect<T> {
     type Output = Rect<T>;
     fn sub(self, rhs: V2<U>) -> Rect<T> {
         Rect(self.0 - rhs, self.1.clone())
@@ -272,15 +275,15 @@ pub trait IterTiles<T> {
     fn tiles(&self, tile_dim: V2<T>) -> TileIter<T>;
 }
 
-impl<T: Num+PartialOrd+Copy> IterTiles<T> for Rect<T> {
+impl<T: Num + PartialOrd + Copy> IterTiles<T> for Rect<T> {
     fn tiles(&self, tile_dim: V2<T>) -> TileIter<T> {
         TileIter::new(*self, tile_dim)
     }
 }
 
 impl<I, P, T> IterTiles<u32> for I
-    where I: GenericImage<Pixel=P>,
-          P: Pixel<Subpixel=T>,
+    where I: GenericImage<Pixel = P>,
+          P: Pixel<Subpixel = T>,
           T: Primitive
 {
     fn tiles(&self, tile_dim: V2<u32>) -> TileIter<u32> {
@@ -298,11 +301,13 @@ pub struct RectIter<T> {
     y1: T,
 }
 
-impl<T: Num+PartialOrd+Copy> Iterator for RectIter<T> {
+impl<T: Num + PartialOrd + Copy> Iterator for RectIter<T> {
     type Item = V2<T>;
 
     fn next(&mut self) -> Option<V2<T>> {
-        if self.y >= self.y1 { return None; }
+        if self.y >= self.y1 {
+            return None;
+        }
         let ret = Some(V2(self.x, self.y));
         self.x = self.x + One::one();
         if self.x >= self.x1 {
@@ -322,7 +327,7 @@ pub struct TileIter<T> {
     y: T,
 }
 
-impl<T: Num+PartialOrd+Copy> TileIter<T> {
+impl<T: Num + PartialOrd + Copy> TileIter<T> {
     pub fn new(base: Rect<T>, dim: V2<T>) -> TileIter<T> {
         assert!(dim.0 > Zero::zero() && dim.1 > Zero::zero());
         TileIter {
@@ -330,16 +335,18 @@ impl<T: Num+PartialOrd+Copy> TileIter<T> {
             tile_w: dim.0,
             tile_h: dim.1,
             x: Zero::zero(),
-            y: Zero::zero()
+            y: Zero::zero(),
         }
     }
 }
 
-impl<T: Num+PartialOrd+Copy> Iterator for TileIter<T> {
+impl<T: Num + PartialOrd + Copy> Iterator for TileIter<T> {
     type Item = Rect<T>;
 
     fn next(&mut self) -> Option<Rect<T>> {
-        if self.tile_w > self.base.dim().0 { return None; }
+        if self.tile_w > self.base.dim().0 {
+            return None;
+        }
 
         if (self.x + One::one()) * self.tile_w > self.base.dim().0 {
             self.y = self.y + One::one();

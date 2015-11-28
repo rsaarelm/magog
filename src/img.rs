@@ -1,7 +1,7 @@
-use std::marker::{PhantomData};
-use std::default::{Default};
+use std::marker::PhantomData;
+use std::default::Default;
 use std::cmp::{min, max};
-use std::convert::{Into};
+use std::convert::Into;
 use image::{Primitive, GenericImage, SubImage, Pixel, ImageBuffer, Rgba};
 use geom::{V2, Rect, TileIter, IterTiles};
 use rgb;
@@ -40,20 +40,26 @@ pub fn crop_alpha<T: Primitive+Default, P: Pixel<Subpixel=T>, I: GenericImage<Pi
         }
     }
 
-    if p1.0 > p2.0 { Rect(V2(0, 0), V2(0, 0)) } // Empty image.
-    else { Rect(p1, p2 - p1) }
+    if p1.0 > p2.0 {
+        Rect(V2(0, 0), V2(0, 0))
+    } else {
+        Rect(p1, p2 - p1)
+    }
 }
 
 pub fn blit<T, P, I, J>(image: &I, target: &mut J, offset: V2<i32>)
-    where T: Primitive+Default,
-          P: Pixel<Subpixel=T>,
-          I: GenericImage<Pixel=P>,
-          J: GenericImage<Pixel=P> {
+    where T: Primitive + Default,
+          P: Pixel<Subpixel = T>,
+          I: GenericImage<Pixel = P>,
+          J: GenericImage<Pixel = P>
+{
     let (w, h) = image.dimensions();
     // TODO: Check for going over bounds.
     for y in 0..(h) {
         for x in 0..(w) {
-            target.put_pixel(x + offset.0 as u32, y + offset.1 as u32, image.get_pixel(x, y));
+            target.put_pixel(x + offset.0 as u32,
+                             y + offset.1 as u32,
+                             image.get_pixel(x, y));
         }
     }
 }
@@ -61,8 +67,8 @@ pub fn blit<T, P, I, J>(image: &I, target: &mut J, offset: V2<i32>)
 /// Interface for objects that store multiple images, like an image atlas.
 pub trait ImageStore<H>: Sized {
     fn add_image<P, I>(&mut self, offset: V2<i32>, image: &I) -> H
-        where P: Pixel<Subpixel=u8> + 'static,
-        I: GenericImage<Pixel=P>;
+        where P: Pixel<Subpixel = u8> + 'static,
+              I: GenericImage<Pixel = P>;
 
     /// Return an iterator for adding multiple subimages from an image sheet.
     /// The subimages are assumed to be in the largest grid of tightly packed
@@ -70,10 +76,14 @@ pub trait ImageStore<H>: Sized {
     /// the image area. Subimages are only added when the iterator is made to
     /// yield values, so halting the iteration early will cause the remaining
     /// subimages to be discarded.
-    fn batch_add<'a, 'b, P, I>(&'a mut self, offset: V2<i32>, tile_size: V2<u32>,
-                       sheet: &'b mut I) -> ImageBatchIterator<'a, 'b, Self, I, H>
-        where P: Pixel<Subpixel=u8> + 'static,
-        I: GenericImage<Pixel=P> {
+    fn batch_add<'a, 'b, P, I>(&'a mut self,
+                               offset: V2<i32>,
+                               tile_size: V2<u32>,
+                               sheet: &'b mut I)
+                               -> ImageBatchIterator<'a, 'b, Self, I, H>
+        where P: Pixel<Subpixel = u8> + 'static,
+              I: GenericImage<Pixel = P>
+    {
         let tiles = sheet.tiles(tile_size);
         ImageBatchIterator {
             store: self,
@@ -95,17 +105,22 @@ pub struct ImageBatchIterator<'a, 'b, S: 'static, I: 'static, H> {
 
 impl<'a, 'b, H, S, I, P> Iterator for ImageBatchIterator<'a, 'b, S, I, H>
     where S: ImageStore<H>,
-    I: GenericImage<Pixel=P>,
-    P: Pixel<Subpixel=u8>+'static {
+          I: GenericImage<Pixel = P>,
+          P: Pixel<Subpixel = u8> + 'static
+{
     type Item = H;
 
     fn next(&mut self) -> Option<H> {
         match self.tiles.next() {
             Some(rect) => {
-                let sub = SubImage::new(self.sheet, rect.mn().0, rect.mn().1, rect.dim().0, rect.dim().1);
+                let sub = SubImage::new(self.sheet,
+                                        rect.mn().0,
+                                        rect.mn().1,
+                                        rect.dim().0,
+                                        rect.dim().1);
                 Some(self.store.add_image(self.offset, &sub))
             }
-            None => { None }
+            None => None,
         }
     }
 }

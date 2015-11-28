@@ -1,7 +1,7 @@
 use std::f32;
 use nalgebra::{inv, Mat2, Vec2};
 use geom::{V2, Rect};
-use {Anchor};
+use Anchor;
 
 /// Reversible affine 2D projection.
 pub struct Projection {
@@ -60,7 +60,8 @@ impl Projection {
     pub fn inv_project_rectangle(&self, screen_area: &Rect<f32>) -> Rect<f32> {
         let mut mn = V2(f32::INFINITY, f32::INFINITY);
         let mut mx = V2(f32::NEG_INFINITY, f32::NEG_INFINITY);
-        for &sp in [Anchor::TopLeft, Anchor::TopRight, Anchor::BottomLeft, Anchor::BottomRight].iter() {
+        for &sp in [Anchor::TopLeft, Anchor::TopRight, Anchor::BottomLeft, Anchor::BottomRight]
+                       .iter() {
             let wp = self.inv_project(screen_area.point(sp));
             mx = V2(mx.0.max(wp.0.ceil()), mx.1.max(wp.1.ceil()));
             mn = V2(mn.0.min(wp.0.floor()), mn.1.min(wp.1.floor()));
@@ -71,8 +72,8 @@ impl Projection {
 
 #[cfg(test)]
 mod test {
-    use ::geom::{V2};
-    use ::{Projection};
+    use geom::V2;
+    use Projection;
 
     fn verify(proj: &Projection, world: V2<f32>, screen: V2<f32>) {
         assert_eq!(proj.project(world), screen);
@@ -80,13 +81,14 @@ mod test {
         assert_eq!(proj.inv_project(proj.project(world)), world);
     }
     #[test]
-    fn test_projection(){
+    fn test_projection() {
         // Degenerate axes
         assert!(Projection::new(V2(-10.0, 0.0), V2(10.0, 0.0)).is_none());
 
         // Isometric projection
         let proj = Projection::new(V2(16.0, 8.0), V2(-16.0, 8.0))
-            .unwrap().view_offset(V2(32.0, 16.0));
+                       .unwrap()
+                       .view_offset(V2(32.0, 16.0));
         verify(&proj, V2(0.0, 0.0), V2(32.0, 16.0));
         verify(&proj, V2(1.0, 0.0), V2(48.0, 24.0));
         verify(&proj, V2(0.0, 1.0), V2(16.0, 24.0));

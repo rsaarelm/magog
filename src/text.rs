@@ -1,4 +1,4 @@
-/*! String processing utilities */
+//! String processing utilities
 
 /// Divide a string into the longest slice that fits within maximum line
 /// length and the rest of the string.
@@ -7,10 +7,13 @@
 /// whitespace between the two segments is trimmed. Newlines will cause a
 /// segment split when encountered.
 pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a str, &'a str)
-    where F: Fn(char) -> f32 {
+    where F: Fn(char) -> f32
+{
     assert!(max_len >= 0.0);
 
-    if text.len() == 0 { return (text, text); }
+    if text.len() == 0 {
+        return (text, text);
+    }
 
     // Init the split position to 1 because we always want to return at least
     // 1 character in the head partition.
@@ -32,7 +35,9 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
         if eat_whitespace {
             if c.is_whitespace() {
                 tail_start = i + 1;
-                if c == '\n' { return (&text[..head_end], &text[tail_start..]); }
+                if c == '\n' {
+                    return (&text[..head_end], &text[tail_start..]);
+                }
                 continue;
             } else {
                 eat_whitespace = false;
@@ -50,7 +55,9 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
         if c.is_whitespace() {
             head_end = i;
             tail_start = i + 1;
-            if c == '\n' { return (&text[..head_end], &text[tail_start..]); }
+            if c == '\n' {
+                return (&text[..head_end], &text[tail_start..]);
+            }
             eat_whitespace = true;
             continue;
         }
@@ -82,19 +89,26 @@ pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a st
 
 /// Wrap a text into multiple lines separated by newlines.
 pub fn wrap_lines<F>(mut text: &str, char_width: &F, max_len: f32) -> String
-    where F: Fn(char) -> f32 {
+    where F: Fn(char) -> f32
+{
     let mut result = String::new();
     loop {
         let (head, tail) = split_line(text, char_width, max_len);
-        if head.len() == 0 && tail.len() == 0 { break; }
+        if head.len() == 0 && tail.len() == 0 {
+            break;
+        }
         assert!(head.len() > 0, "Line splitter caught in infinite loop");
-        assert!(tail.len() < text.len(), "Line splitter not shrinking string");
+        assert!(tail.len() < text.len(),
+                "Line splitter not shrinking string");
         result = result + head;
         // Must preserve a hard newline at the end if the input string had
         // one. The else branch checks for the very last char being a newline,
         // this would be clipped off otherwise.
-        if tail.len() != 0 { result = result + "\n"; }
-        else if text.chars().last() == Some('\n') { result = result + "\n"; }
+        if tail.len() != 0 {
+            result = result + "\n";
+        } else if text.chars().last() == Some('\n') {
+            result = result + "\n";
+        }
         text = tail;
     }
     result
@@ -107,16 +121,22 @@ pub struct Map2DIterator<T> {
     y: i32,
 }
 
-impl<T: Iterator<Item=char>> Iterator for Map2DIterator<T> {
+impl<T: Iterator<Item = char>> Iterator for Map2DIterator<T> {
     type Item = (char, i32, i32);
 
     fn next(&mut self) -> Option<(char, i32, i32)> {
         loop {
             match self.iter.next() {
-                None => { return None }
-                Some(c) if c == '\n' => { self.y += 1; self.x = 0; }
-                Some(c) if (c as u32) < 32 => { }
-                Some(c) => { self.x += 1; return Some((c, self.x - 1, self.y)) }
+                None => return None,
+                Some(c) if c == '\n' => {
+                    self.y += 1;
+                    self.x = 0;
+                }
+                Some(c) if (c as u32) < 32 => {}
+                Some(c) => {
+                    self.x += 1;
+                    return Some((c, self.x - 1, self.y));
+                }
             }
         }
     }
@@ -131,9 +151,13 @@ pub trait Map2DUtil: Sized {
     fn map2d(self) -> Map2DIterator<Self>;
 }
 
-impl<T: Iterator<Item=char>> Map2DUtil for T {
+impl<T: Iterator<Item = char>> Map2DUtil for T {
     fn map2d(self) -> Map2DIterator<T> {
-        Map2DIterator{ iter: self, x: 0, y: 0 }
+        Map2DIterator {
+            iter: self,
+            x: 0,
+            y: 0,
+        }
     }
 }
 
@@ -149,7 +173,8 @@ mod test {
         assert_eq!(("the", "cat"), split_line("the     cat", &|_| 1.0, 5.0));
         assert_eq!(("the", "cat"), split_line("the  \t cat", &|_| 1.0, 5.0));
         assert_eq!(("the", "cat"), split_line("the \ncat", &|_| 1.0, 32.0));
-        assert_eq!(("the", "   cat"), split_line("the \n   cat", &|_| 1.0, 32.0));
+        assert_eq!(("the", "   cat"),
+                   split_line("the \n   cat", &|_| 1.0, 32.0));
         assert_eq!(("the  cat", ""), split_line("the  cat", &|_| 1.0, 32.0));
         assert_eq!(("the", "cat sat"), split_line("the cat sat", &|_| 1.0, 6.0));
         assert_eq!(("the cat", "sat"), split_line("the cat sat", &|_| 1.0, 7.0));

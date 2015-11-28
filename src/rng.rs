@@ -56,13 +56,13 @@ pub struct EncodeRng<T> {
     inner: T,
 }
 
-impl<T: Rng+'static> EncodeRng<T> {
+impl<T: Rng + 'static> EncodeRng<T> {
     pub fn new(inner: T) -> EncodeRng<T> {
         EncodeRng { inner: inner }
     }
 }
 
-impl<T: SeedableRng<S>+Rng+'static, S> SeedableRng<S> for EncodeRng<T> {
+impl<T: SeedableRng<S> + Rng + 'static, S> SeedableRng<S> for EncodeRng<T> {
     fn reseed(&mut self, seed: S) {
         self.inner.reseed(seed);
     }
@@ -78,7 +78,7 @@ impl<T: Rng> Rng for EncodeRng<T> {
     }
 }
 
-impl<T: Rng+'static> Serialize for EncodeRng<T> {
+impl<T: Rng + 'static> Serialize for EncodeRng<T> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
@@ -93,7 +93,7 @@ impl<T: Rng+'static> Serialize for EncodeRng<T> {
     }
 }
 
-impl<T: Rng+'static> Deserialize for EncodeRng<T> {
+impl<T: Rng + 'static> Deserialize for EncodeRng<T> {
     fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
         where D: Deserializer
     {
@@ -110,8 +110,8 @@ impl<T: Rng+'static> Deserialize for EncodeRng<T> {
 
 #[cfg(test)]
 mod test {
-use rand::{Rng, XorShiftRng, SeedableRng};
-use super::EncodeRng;
+    use rand::{Rng, XorShiftRng, SeedableRng};
+    use super::EncodeRng;
 
     #[test]
     fn test_serialize_rng() {
@@ -120,7 +120,8 @@ use super::EncodeRng;
         let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
         let saved = serde::serialize(&rng, SizeLimit::Infinite).expect("Serialization failed");
-        let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved).expect("Deserialization failed");
+        let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved)
+                           .expect("Deserialization failed");
 
         assert!(rng.next_u32() == rng2.next_u32());
     }

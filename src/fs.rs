@@ -1,4 +1,4 @@
-use std::path::{Path};
+use std::path::Path;
 use std::fs;
 
 /// Temporary replacement for unstable library PathExt.
@@ -7,7 +7,9 @@ pub trait PathExt {
 }
 
 impl<P: AsRef<Path>> PathExt for P {
-    fn exists(&self) -> bool { fs::metadata(self).is_ok() }
+    fn exists(&self) -> bool {
+        fs::metadata(self).is_ok()
+    }
 }
 
 #[cfg(test)]

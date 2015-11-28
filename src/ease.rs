@@ -1,14 +1,18 @@
-/*!
- * Easing functions for animated interpolation between values
- */
+//! Easing functions for animated interpolation between values
 
-use std::f32::consts::{FRAC_PI_2};
+use std::f32::consts::FRAC_PI_2;
 
-pub fn linear(t: f32) -> f32 { t }
+pub fn linear(t: f32) -> f32 {
+    t
+}
 
-pub fn quadratic_in(t: f32) -> f32 { t * t }
+pub fn quadratic_in(t: f32) -> f32 {
+    t * t
+}
 
-pub fn quadratic_out(t: f32) -> f32 { -(t * (t - 2.0)) }
+pub fn quadratic_out(t: f32) -> f32 {
+    -(t * (t - 2.0))
+}
 
 pub fn quadratic_in_out(t: f32) -> f32 {
     if t < 0.5 {
@@ -18,7 +22,9 @@ pub fn quadratic_in_out(t: f32) -> f32 {
     }
 }
 
-pub fn cubic_in(t: f32) -> f32 { t * t * t }
+pub fn cubic_in(t: f32) -> f32 {
+    t * t * t
+}
 
 pub fn cubic_out(t: f32) -> f32 {
     let u = t - 1.0;
