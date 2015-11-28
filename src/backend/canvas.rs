@@ -1,7 +1,7 @@
 use image::{GenericImage, SubImage, Pixel};
 use image::{ImageBuffer, Rgba};
 use image;
-use glium::{Surface};
+use glium::Surface;
 use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore, color};
 use super::event::{Event, MouseButton};
 use super::mesh;
@@ -92,8 +92,7 @@ impl Canvas {
     fn new(builder: CanvasBuilder, window: Window) -> Canvas {
         let atlas = Atlas::new(&builder.atlas_builder);
 
-        let tex_image = image::imageops::flip_vertical(&atlas.image);
-        let buffer = mesh::Buffer::new(&window.display, tex_image);
+        let buffer = mesh::Buffer::new(&window.display, atlas.image.clone());
         Canvas {
             window: window,
             clear_color: color::BLACK,

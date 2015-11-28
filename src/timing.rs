@@ -2,6 +2,7 @@
 
 use time;
 use std::thread;
+use std::time::Duration;
 
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
     assert!(period_s > 0.0);
@@ -62,7 +63,7 @@ impl Ticker {
     pub fn wait_for_tick(&mut self) {
         match self.time_remaining() {
             Some(t) => {
-                thread::sleep_ms((t * 1e3) as u32);
+                thread::sleep(Duration::from_millis((t * 1e3) as u64));
                 self.last_t += self.period_s;
             }
             _ => {}

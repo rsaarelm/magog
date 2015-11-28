@@ -1,5 +1,6 @@
 use time;
 use std::thread;
+use std::time::Duration;
 use glium::{self, glutin, texture, framebuffer, Surface, DisplayBuild};
 use image;
 use ::{V2, Rect, AverageDuration, color, Rgba};
@@ -164,7 +165,7 @@ impl Window {
         // Stick to a target frame rate if one is set.
         if let Some(target_t) = self.frame_interval {
             let sleepytime = target_t - (time::precise_time_s() - self.previous_frame_t);
-            if sleepytime > 0.0 { thread::sleep_ms((sleepytime * 1e3) as u32); }
+            if sleepytime > 0.0 { thread::sleep(Duration::from_millis((sleepytime * 1e3) as u64)); }
         }
         self.previous_frame_t = time::precise_time_s();
 
@@ -217,17 +218,20 @@ impl Window {
 
     pub fn get_screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
         use ::rgb::{to_srgb};
-        let mut ret = self.buffer.read::<image::DynamicImage>().to_rgb();
+
+        let image: glium::texture::RawImage2d<u8> = self.buffer.read();
+        let image = image::ImageBuffer::from_raw(image.width, image.height, image.data.into_owned()).unwrap();
+        let mut image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
 
         // Convert to sRGB
         // XXX: Probably horribly slow, can we make OpenGL do this?
-        for p in ret.pixels_mut() {
+        for p in image.pixels_mut() {
             p.data[0] = (to_srgb(p.data[0] as f32 / 255.0) * 255.0).round() as u8;
             p.data[1] = (to_srgb(p.data[1] as f32 / 255.0) * 255.0).round() as u8;
             p.data[2] = (to_srgb(p.data[2] as f32 / 255.0) * 255.0).round() as u8;
         }
 
-        ret
+        image
     }
 
     /// Show the graphics buffer on screen.

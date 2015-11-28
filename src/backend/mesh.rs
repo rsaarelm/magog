@@ -2,6 +2,7 @@ use std::rc::{Rc};
 use std::default::{Default};
 use std::u16;
 use glium;
+use image;
 use super::{RenderTarget};
 use ::{V2, Rgba};
 
@@ -23,8 +24,14 @@ impl Buffer {
 
     /// Create a mesh render buffer with locally owned shader and texture.
     /// This uses the default sprite shader.
-    pub fn new<'a, T>(display: &glium::Display, atlas_image: T) -> Buffer
-        where T: glium::texture::Texture2dDataSource<'a> {
+    pub fn new<'a, P>(display: &glium::Display, atlas_image: image::ImageBuffer<P, Vec<u8>>) -> Buffer
+        where P: image::Pixel<Subpixel=u8> + 'static
+    {
+        //where T: glium::texture::Texture2dDataSource<'a> {
+        let atlas_dim = atlas_image.dimensions();
+        let tex_image = glium::texture::RawImage2d::from_raw_rgba(
+            atlas_image.into_raw(), atlas_dim);
+
         Buffer::new_shared(
             Rc::new(glium::Program::from_source(
                 display,
@@ -32,7 +39,7 @@ impl Buffer {
                 include_str!("sprite.frag"),
                 None).unwrap()),
             Rc::new(glium::texture::Texture2d::new(
-                display, atlas_image).unwrap()))
+                display, tex_image).unwrap()))
     }
 
     pub fn flush<S>(&mut self, display: &glium::Display, target: &mut S)
@@ -43,7 +50,7 @@ impl Buffer {
                 .. Default::default() }));
 
         let params = glium::DrawParameters {
-            backface_culling: glium::BackfaceCullingMode::CullCounterClockWise,
+            backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
             depth: glium::Depth {
                 test: glium::DepthTest::IfLessOrEqual,
                 write: true,
