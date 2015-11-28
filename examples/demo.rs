@@ -86,6 +86,7 @@ fn main() {
                 Event::MouseMove(pos) => {
                     mouse_pos = pos;
                 }
+                Event::KeyPress(Key::F12) => { ctx.save_screenshot(&"calx"); }
                 _ => ()
             }
         }
