@@ -18,9 +18,20 @@ pub enum ControlState {
     ReadyToUpdate,
 }
 
+/// Return whether the entity is dead and should be removed from the world.
+pub fn is_alive(w: &World, e: Entity) -> bool {
+    location(w, e).is_some()
+}
+
 /// Return the player entity if one exists.
 pub fn player(w: &World) -> Option<Entity> {
-    w.flags.player
+    if let Some(p) = w.flags.player {
+        if is_alive(w, p) {
+            return Some(p);
+        }
+    }
+
+    None
 }
 
 /// Return true if the game has ended and the player can make no further
@@ -47,7 +58,8 @@ pub fn control_state(w: &World) -> ControlState {
 
 /// Return whether this mob is the player avatar.
 pub fn is_player(w: &World, e: Entity) -> bool {
-    brain_state(w, e) == Some(BrainState::PlayerControl) && location(w, e).is_some()
+    // TODO: Should this just check w.flags.player?
+    brain_state(w, e) == Some(BrainState::PlayerControl) && is_alive(w, e)
 }
 
 /// Return whether the entity is an awake mob.
@@ -75,7 +87,7 @@ pub fn brain_state(w: &World, e: Entity) -> Option<BrainState> {
 /// based on its speed properties. Does not check for status effects like
 /// sleep that might prevent actual action.
 pub fn ticks_this_frame(w: &World, e: Entity) -> bool {
-    if !is_mob(w, e) {
+    if !is_mob(w, e) || !is_alive(w, e) {
         return false;
     }
 
@@ -117,7 +129,7 @@ pub fn base_stats(w: &World, e: Entity) -> Stats {
 }
 
 pub fn is_mob(w: &World, e: Entity) -> bool {
-    w.ecs.brain.contains(e) && location(w, e).is_some()
+    w.ecs.brain.contains(e)
 }
 
 /// Return the location of an entity.

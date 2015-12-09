@@ -32,6 +32,7 @@ pub enum Input {
 pub fn update(w: &mut World) {
     assert!(query::control_state(w) == ControlState::ReadyToUpdate);
 
+    clean_dead(w);
     ai_main(w);
 
     w.flags.tick += 1;
@@ -43,6 +44,13 @@ fn ai_main(w: &mut World) {
     let actives: Vec<Entity> = w.ecs.brain.iter().map(|(&e, _)| e).collect();
     for e in actives.into_iter() {
         update_entity(w, e);
+    }
+}
+
+fn clean_dead(w: &mut World) {
+    let dead: Vec<Entity> = w.ecs.iter().filter(|&&e| !query::is_alive(w, e)).map(|&e| e).collect();
+    for e in dead.into_iter() {
+        w.ecs.remove(e);
     }
 }
 
@@ -323,7 +331,9 @@ fn apply_damage(w: &mut World, e: Entity, amount: i32) {
 }
 
 pub fn kill(w: &mut World, e: Entity) {
-    unimplemented!();
+    // We use not being present in the spatial index as a shorthand for being
+    // dead.
+    w.spatial.remove(e);
 }
 
 ////////////////////////////////////////////////////////////////////////
