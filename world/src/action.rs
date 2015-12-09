@@ -1,6 +1,5 @@
 /*! Functions for changing world and entity state. */
 
-use std::io::prelude::*;
 use std::path::Path;
 use std::fs::{self, File};
 use rand::Rng;

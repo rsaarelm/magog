@@ -73,9 +73,9 @@ fn door_positions(area: &StaticArea, node: Node, dir: Direction) -> Vec<V2<i32>>
 
     let mut ret = Vec::new();
 
-    for side in (1..(CELL_SIZE - 2)) {
+    for side in 1..(CELL_SIZE - 2) {
         let origin = start + side_dir * side;
-        for fwd in (0..(CELL_SIZE - 2)) {
+        for fwd in 0..(CELL_SIZE - 2) {
             let pos = origin + fwd_dir * fwd;
 
             if area.is_open(pos + side_dir) || area.is_open(pos - side_dir) {
