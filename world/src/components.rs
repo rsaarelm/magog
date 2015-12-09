@@ -107,9 +107,11 @@ pub struct Health {
     pub armor: i32,
 }
 
-impl Health {    pub fn new() -> Health {
+impl Health {
+    pub fn new() -> Health {
         Default::default()
-    } }
+    }
+}
 
 
 /// Items can be picked up and carried and they do stuff.
