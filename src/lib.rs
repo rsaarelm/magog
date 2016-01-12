@@ -57,7 +57,6 @@ pub mod debug;
 pub mod ease;
 pub mod text;
 pub mod timing;
-pub mod vorud;
 
 #[cfg(test)]
 mod test_ecs;
