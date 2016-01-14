@@ -10,6 +10,8 @@ use flags::Flags;
 use components;
 use stats;
 
+pub const GAME_VERSION: &'static str = "0.1.0";
+
 Ecs! {
     desc: components::Desc,
     map_memory: components::MapMemory,
@@ -23,6 +25,9 @@ Ecs! {
 /// Toplevel game state object.
 #[derive(Serialize, Deserialize)]
 pub struct World {
+    /// Game version. Not mutable in the slightest, but the simplest way to
+    /// get versioned save files is to just drop it here.
+    version: String,
     /// Entity component system.
     pub ecs: Ecs,
     /// Terrain data.
@@ -44,6 +49,7 @@ impl<'a> World {
         };
 
         let mut ret = World {
+            version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
             terrain: Field::new(TerrainType::Tree),
             spatial: Spatial::new(),
@@ -55,7 +61,15 @@ impl<'a> World {
     }
 
     pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
-        serde::deserialize_from(reader, bincode::SizeLimit::Infinite)
+        let ret: serde::DeserializeResult<World> =
+            serde::deserialize_from(reader, bincode::SizeLimit::Infinite);
+        if let &Ok(ref x) = &ret {
+            if &x.version != GAME_VERSION {
+                panic!("Save game version {} does not match current version {}",
+                       x.version, GAME_VERSION);
+            }
+        }
+        ret
     }
 
     pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
