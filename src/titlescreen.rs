@@ -24,7 +24,7 @@ impl Screen for TitleScreen {
             .color(color::DARKRED)
             .anchor(Anchor::Bottom)
             .align(Align::Center)
-            .text(format!("Copyright (C) Risto Saarelma 2011 - 2015\nv{}{}",
+            .text(format!("Copyright (C) Risto Saarelma 2011 - 2016\nv{}{}",
                           ::version(),
                           if cfg!(debug_assertions) {
                               " debug"
