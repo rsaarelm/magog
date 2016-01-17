@@ -175,27 +175,27 @@ macro_rules! Ecs {
 
 #[derive(Serialize, Deserialize)]
         pub struct _ComponentStore {
-            $(pub $compname: ::calx_ecs::ComponentData<$comptype>),+
+            $(pub $compname: $crate::ComponentData<$comptype>),+
         }
 
         impl ::std::default::Default for _ComponentStore {
             fn default() -> _ComponentStore {
                 _ComponentStore {
-                    $($compname: ::calx_ecs::ComponentData::new()),+
+                    $($compname: $crate::ComponentData::new()),+
                 }
             }
         }
 
-        impl ::calx_ecs::Store for _ComponentStore {
+        impl $crate::Store for _ComponentStore {
             fn for_each_component<F>(&mut self, mut f: F)
-                where F: FnMut(&mut ::calx_ecs::AnyComponent)
+                where F: FnMut(&mut $crate::AnyComponent)
             {
-                $(f(&mut self.$compname as &mut ::calx_ecs::AnyComponent);)+
+                $(f(&mut self.$compname as &mut $crate::AnyComponent);)+
             }
         }
 
 #[allow(dead_code)]
-        pub fn matches_mask(ecs: &::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity, mask: u64) -> bool {
+        pub fn matches_mask(ecs: &$crate::Ecs<_ComponentStore>, e: $crate::Entity, mask: u64) -> bool {
             $(if mask & (1 << ComponentNum::$compname as u8) != 0 && !ecs.$compname.contains(e) {
                 return false;
             })+
@@ -208,14 +208,14 @@ macro_rules! Ecs {
             ///
             /// Can't move the component itself since we might be using this
             /// through a trait object.
-            fn add_to_ecs(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity);
+            fn add_to_ecs(&self, ecs: &mut $crate::Ecs<_ComponentStore>, e: $crate::Entity);
 
             /// Add a clone of the component to a loadout struct.
             fn add_to_loadout(self, loadout: &mut Loadout);
         }
 
         $(impl Component for $comptype {
-            fn add_to_ecs(&self, ecs: &mut ::calx_ecs::Ecs<_ComponentStore>, e: ::calx_ecs::Entity) {
+            fn add_to_ecs(&self, ecs: &mut $crate::Ecs<_ComponentStore>, e: $crate::Entity) {
                 ecs.$compname.insert(e, self.clone());
             }
 
@@ -224,7 +224,7 @@ macro_rules! Ecs {
             }
         })+
 
-        pub type Ecs = ::calx_ecs::Ecs<_ComponentStore>;
+        pub type Ecs = $crate::Ecs<_ComponentStore>;
 
         /// A straightforward representation for the complete data of an
         /// entity.
@@ -247,14 +247,14 @@ macro_rules! Ecs {
             pub fn new() -> Loadout { Default::default() }
 
             /// Get the loadout that corresponds to an existing entity.
-            pub fn get(ecs: &Ecs, e: ::calx_ecs::Entity) -> Loadout {
+            pub fn get(ecs: &Ecs, e: $crate::Entity) -> Loadout {
                 Loadout {
                     $($compname: ecs.$compname.get(e).map(|e| e.clone())),+
                 }
             }
 
             /// Create a new entity in the ECS with this loadout.
-            pub fn make(&self, ecs: &mut Ecs) -> ::calx_ecs::Entity {
+            pub fn make(&self, ecs: &mut Ecs) -> $crate::Entity {
                 let e = ecs.make();
                 $(self.$compname.as_ref().map(|c| ecs.$compname.insert(e, c.clone()));)+
                 e

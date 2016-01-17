@@ -37,13 +37,13 @@ macro_rules! brush {
             }
         }
 
-        thread_local!(static BRUSH_CACHE: RefCell<::calx::IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
+        thread_local!(static BRUSH_CACHE: RefCell<$crate::IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
 
-        fn build_brushes(builder: &mut ::calx::backend::CanvasBuilder) -> ::calx::IndexCache<Brush, Vec<Image>> {
+        fn build_brushes(builder: &mut $crate::backend::CanvasBuilder) -> $crate::IndexCache<Brush, Vec<Image>> {
             use image;
-            use calx::{V2, color_key, color, Rgba};
+            use $crate::{V2, color_key, color};
 
-            let mut ret = ::calx::IndexCache::new();
+            let mut ret = $crate::IndexCache::new();
 
             fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
                 // XXX: Shouldn't hardcode the color::CYAN part, factor out
