@@ -1,7 +1,7 @@
 use calx::{V2, color, Anchor};
 use calx::backend::{Key, Event};
 use calx::backend::{Canvas, CanvasUtil, Fonter, Align};
-use tilecache;
+use content::Brush;
 use {Screen, ScreenAction};
 use gamescreen::GameScreen;
 
@@ -15,7 +15,7 @@ impl TitleScreen {
 
 impl Screen for TitleScreen {
     fn update(&mut self, ctx: &mut Canvas) -> Option<ScreenAction> {
-        ctx.draw_image(tilecache::get(tilecache::LOGO),
+        ctx.draw_image(Brush::Logo.get(0),
                        V2(274.0, 180.0),
                        0.0,
                        color::FIREBRICK,
