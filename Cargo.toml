@@ -21,23 +21,3 @@ image = "*"
 nalgebra = "*"
 glium = "*"
 cpal = "*"
-
-[[example]]
-name = "demo"
-path = "examples/demo.rs"
-
-[[example]]
-name = "noise"
-path = "examples/noise.rs"
-
-[[example]]
-name = "grid"
-path = "examples/grid.rs"
-
-[[example]]
-name = "isoworld"
-path = "examples/isoworld.rs"
-
-[[example]]
-name = "window"
-path = "examples/window.rs"
