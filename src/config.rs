@@ -5,7 +5,6 @@ use std::io::prelude::*;
 use getopts::Options;
 use toml::{self, Value};
 use calx::backend::CanvasMagnify;
-use calx::vorud::{Vorud, FromVorud};
 use super::app_data_path;
 
 thread_local!(pub static _CONFIG: Config = Default::default());
@@ -55,7 +54,7 @@ impl Config {
                     "magnify-mode",
                     "How to filter magnified graphics. MODE = pixel | nearest | smooth",
                     "MODE");
-        opts.optopt("", "seed", "World generation seed", "VORUD");
+        opts.optopt("", "seed", "World generation seed number", "SEED");
         opts.optflag("", "fullscreen", "Run in fullscreen mode");
         opts.optflag("", "fps", "Show FPS counter");
 
@@ -108,12 +107,8 @@ impl Config {
         if let Some(seed) = parse.opt_str("seed") {
             // XXX: Could this be written to use the try! macro?
             let err = Err(usage_error(format!("Invalid seed value '{}'", seed), &opts));
-            if let Ok(vorud) = Vorud::new(seed.clone()) {
-                if let Ok(val) = FromVorud::from_vorud(&vorud) {
-                    self.rng_seed = Some(val);
-                } else {
-                    return err;
-                }
+            if let Ok(val) = seed.parse::<u32>() {
+                self.rng_seed = Some(val);
             } else {
                 return err;
             }
