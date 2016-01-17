@@ -10,11 +10,10 @@ use world::{Msg, FovStatus, World};
 use calx::Dir6;
 use calx::Dir6::*;
 use calx_ecs::Entity;
+use content::Brush;
 use world::item::Slot;
 use worldview;
 use sprite::{WorldSprites, GibSprite, BeamSprite, ExplosionSprite};
-use tilecache;
-use tilecache::icon;
 use msg_queue::MsgQueue;
 use {Screen, ScreenAction};
 use titlescreen::TitleScreen;
@@ -69,14 +68,14 @@ impl GameScreen {
         // Draw heart containers.
         for i in 0..((max_hp + 1) / 2) {
             let pos = V2(i as f32 * 8.0, 8.0);
-            let idx = if hp >= (i + 1) * 2 {
-                icon::HEART
+            let heart_phase = if hp >= (i + 1) * 2 {
+                0
             } else if hp == i * 2 + 1 {
-                icon::HALF_HEART
+                1
             } else {
-                icon::NO_HEART
+                2
             };
-            ctx.draw_image(tilecache::get(idx),
+            ctx.draw_image(Brush::IconHeart.get(heart_phase),
                            pos,
                            0.0,
                            color::FIREBRICK,

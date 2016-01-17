@@ -1,5 +1,3 @@
-//////////// Brush cache boilerplate ////////////
-
 use std::cell::RefCell;
 use calx::{ImageStore, IndexCache};
 use calx::backend::{CanvasBuilder, Image};
@@ -12,17 +10,13 @@ brush!(Brush {
 
     ["../assets/icon.png",
         [IconHeart,
-            0, 8, 8, 8, 0, 0]
-        [IconHalfHeart,
-            0, 8, 8, 8, 8, 0]
-        [IconNoHeart,
-            0, 8, 8, 8, 16, 0]
+            0, 8, 8, 8, 0, 0,   // Full
+            0, 8, 8, 8, 8, 0,   // Half
+            0, 8, 8, 8, 16, 0]  // Empty
         [IconShard,
-            0, 8, 8, 8, 24, 0]
-        [IconHalfShard,
-            0, 8, 8, 8, 32, 0]
-        [IconNoShard,
-            0, 8, 8, 8, 40, 0]
+            0, 8, 8, 8, 24, 0,  // Full
+            0, 8, 8, 8, 32, 0,  // Half
+            0, 8, 8, 8, 40, 0]  // Empty
     ]
 
     ["../assets/blocks.png",

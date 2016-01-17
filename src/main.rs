@@ -30,7 +30,6 @@ pub static SCREEN_W: u32 = 640;
 pub static SCREEN_H: u32 = 360;
 
 pub mod drawable;
-pub mod tilecache;
 pub mod viewutil;
 pub mod worldview;
 mod config;
@@ -118,7 +117,6 @@ pub fn main() {
     CONFIG.with(|c| *c.borrow_mut() = config);
 
     let mut builder = CanvasBuilder::new();
-    tilecache::init(&mut builder);
     content::Brush::init(&mut builder);
     let mut state: Box<Screen> = Box::new(TitleScreen::new());
     let mut ctx = builder.build(window);
