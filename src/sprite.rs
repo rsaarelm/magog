@@ -3,9 +3,8 @@ use std::convert::Into;
 use calx::{color, V2, Dir6, Rgba, clamp};
 use calx::backend::{Canvas, CanvasUtil, RenderTarget, mesh};
 use world::{Location, Unchart};
+use content::Brush;
 use viewutil::{FX_Z, chart_to_screen};
-use tilecache;
-use tilecache::tile;
 
 pub trait WorldSprite {
     fn update(&mut self);
@@ -128,8 +127,8 @@ impl WorldSprite for GibSprite {
     fn draw(&self, chart: &Location, ctx: &mut Canvas) {
         if let Some(p) = chart.chart_pos(self.loc) {
             // TODO: Robust anim cycle with clamping.
-            let idx = tile::SPLATTER + ((11 - self.life) / 3) as usize;
-            ctx.draw_image(tilecache::get(idx),
+            let idx = ((11 - self.life) / 3) as usize;
+            ctx.draw_image(Brush::Splatter.get(idx),
                            chart_to_screen(p),
                            FX_Z,
                            color::RED,
