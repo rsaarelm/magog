@@ -59,7 +59,7 @@ impl Angle {
 ///
 /// Params to the draw function: Draw layer, brush, brush frame, main
 /// color, border color.
-pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
+pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
     where F: FnMut(Image, Angle, Rgba, Rgba)
 {
     use content::Brush::*;
@@ -79,8 +79,8 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
     fn process<C: KernelTerrain, F>(k: &Kernel<C>, draw: &mut F, kind: T)
         where F: FnMut(Image, Angle, Rgba, Rgba)
     {
-            // NB: Black-#000 foreground color prohibits recoloring of the
-            // tile in FOV view, only use for special blocks.
+        // NB: Black-#000 foreground color prohibits recoloring of the
+        // tile in FOV view, only use for special blocks.
         match kind {
             T::Floor(brush, color) => process(k, draw, T::Floor2(brush, color, BLACK)),
             T::Prop(brush, color) => process(k, draw, T::Prop2(brush, color, BLACK)),
@@ -107,18 +107,18 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                 }
             }
             T::Block2(brush, color, back) => {
-                    // This part gets a little tricky. Basic idea is that
-                    // there's an inner pointy-top hex core and the block hull
-                    // will snap to that instead of the outer flat-top hex
-                    // edge if neither adjacent face to the outer hex vertex
-                    // is connected to another block.
-                    //
-                    // Based on how the sprites split up, the processing is
-                    // done in four vertical segments.
+                // This part gets a little tricky. Basic idea is that
+                // there's an inner pointy-top hex core and the block hull
+                // will snap to that instead of the outer flat-top hex
+                // edge if neither adjacent face to the outer hex vertex
+                // is connected to another block.
+                //
+                // Based on how the sprites split up, the processing is
+                // done in four vertical segments.
 
                 let faces = k.block_faces();
 
-                    // Do we snap to the outer vertices?
+                // Do we snap to the outer vertices?
                 let ne_vertex = !faces[0] || !faces[1];
                 let e_vertex = !faces[1] || !faces[2];
                 let se_vertex = !faces[2] || !faces[3];
@@ -126,7 +126,7 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                 let w_vertex = !faces[4] || !faces[5];
                 let nw_vertex = !faces[5] || !faces[0];
 
-                    // Segment 2, middle left
+                // Segment 2, middle left
                 {
                     if faces[0] {
                         if nw_vertex && ne_vertex {
@@ -148,7 +148,7 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     }
                 }
 
-                    // Segment 3, middle right
+                // Segment 3, middle right
                 {
                     if faces[0] {
                         if ne_vertex && nw_vertex {
@@ -170,11 +170,11 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     }
                 }
 
-                    // The side segments need to come after the middle
-                    // segments so that the vertical edges can overwrite the
-                    // middle segment pixels.
+                // The side segments need to come after the middle
+                // segments so that the vertical edges can overwrite the
+                // middle segment pixels.
 
-                    // Segment 1, left edge
+                // Segment 1, left edge
                 {
                     if w_vertex {
                         if faces[5] {
@@ -193,7 +193,7 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                             }
                         }
                     } else {
-                            // Draw the left vertical line.
+                        // Draw the left vertical line.
                         draw(BlockVertical.get(2), West, color, BLACK);
                         if !faces[0] {
                             draw(BlockVertical.get(0), West, color, BLACK);
@@ -204,7 +204,7 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                     }
                 }
 
-                    // Segment 4, right edge
+                // Segment 4, right edge
                 {
                     if e_vertex {
                         if faces[1] {
@@ -223,7 +223,7 @@ pub fn render<F>(k: &Kernel<TerrainType>, mut draw: F)
                             }
                         }
                     } else {
-                            // Draw the right vertical line.
+                        // Draw the right vertical line.
                         draw(BlockVertical.get(3), East, color, BLACK);
                         if !faces[0] {
                             draw(BlockVertical.get(1), East, color, BLACK);

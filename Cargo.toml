@@ -32,3 +32,6 @@ path = "world"
 
 [dependencies.content]
 path = "content"
+
+[dependencies.render]
+path = "render"

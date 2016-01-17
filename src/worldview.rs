@@ -12,7 +12,7 @@ use viewutil::{chart_to_screen, cells_on_screen};
 use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::Drawable;
 use gamescreen::Blink;
-use render_terrain::{self, Angle};
+use render::{render_terrain, Angle};
 
 pub fn draw_world<C: Chart + Copy>(w: &World,
                                    chart: &C,
@@ -44,9 +44,7 @@ pub struct CellDrawable<'a> {
 impl<'a> Drawable for CellDrawable<'a> {
     fn draw(&self, ctx: &mut Canvas, offset: V2<f32>) {
         match self.fov {
-            Some(_) => {
-                self.draw_cell(ctx, offset)
-            }
+            Some(_) => self.draw_cell(ctx, offset),
             None => {
                 self.draw_image(ctx, Brush::BlankFloor.get(0), offset, FLOOR_Z, BLACK, BLACK);
             }
@@ -104,14 +102,13 @@ impl<'a> CellDrawable<'a> {
     fn draw_cell(&'a self, ctx: &mut Canvas, offset: V2<f32>) {
         let visible = self.fov == Some(FovStatus::Seen);
         let k = Kernel::new(|loc| query::terrain(self.world, loc), self.loc);
-        render_terrain::render(&k,
-                               |img, angle, fore, back| {
-                                   let z = match angle {
-                                       Angle::Up => FLOOR_Z,
-                                       _ => BLOCK_Z,
-                                   };
-                                   self.draw_image(ctx, img, offset, z, fore, back)
-                               });
+        render_terrain(&k, |img, angle, fore, back| {
+            let z = match angle {
+                Angle::Up => FLOOR_Z,
+                _ => BLOCK_Z,
+            };
+            self.draw_image(ctx, img, offset, z, fore, back)
+        });
 
         if visible {
             // Sort mobs on top of items for drawing.

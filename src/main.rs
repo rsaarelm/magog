@@ -11,6 +11,7 @@ extern crate calx;
 extern crate calx_ecs;
 extern crate content;
 extern crate world;
+extern crate render;
 
 use std::cell::RefCell;
 use std::env;
@@ -37,7 +38,6 @@ mod gamescreen;
 mod titlescreen;
 mod sprite;
 mod msg_queue;
-mod render_terrain;
 
 pub enum ScreenAction {
     Quit,

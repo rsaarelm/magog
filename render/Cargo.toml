@@ -1,0 +1,14 @@
+[package]
+
+name = "render"
+version = "0.0.1"
+authors = [ "risto.saarelma@iki.fi" ]
+
+[lib]
+name = "render"
+
+[dependencies.calx]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.content]
+path = "../content"
