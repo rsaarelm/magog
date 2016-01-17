@@ -8,11 +8,11 @@ use world::{Location, Chart, World};
 use world::FovStatus;
 use world::Light;
 use world::query;
-use viewutil::{chart_to_screen, cells_on_screen};
-use viewutil::{FLOOR_Z, BLOCK_Z};
 use drawable::Drawable;
 use gamescreen::Blink;
+use render::{chart_to_screen, cells_on_screen};
 use render::{render_terrain, Angle};
+use render::{FLOOR_Z, BLOCK_Z};
 
 pub fn draw_world<C: Chart + Copy>(w: &World,
                                    chart: &C,

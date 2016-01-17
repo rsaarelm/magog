@@ -30,7 +30,6 @@ pub static SCREEN_W: u32 = 640;
 pub static SCREEN_H: u32 = 360;
 
 pub mod drawable;
-pub mod viewutil;
 pub mod worldview;
 mod config;
 mod gamescreen;

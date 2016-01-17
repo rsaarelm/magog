@@ -4,7 +4,7 @@ use calx::{color, V2, Dir6, Rgba, clamp};
 use calx::backend::{Canvas, CanvasUtil, RenderTarget, mesh};
 use world::{Location, Unchart};
 use content::Brush;
-use viewutil::{FX_Z, chart_to_screen};
+use render::{FX_Z, chart_to_screen};
 
 pub trait WorldSprite {
     fn update(&mut self);
