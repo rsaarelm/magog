@@ -7,7 +7,7 @@ use viewutil::{FX_Z, chart_to_screen};
 use tilecache;
 use tilecache::tile;
 
-trait WorldSprite {
+pub trait WorldSprite {
     fn update(&mut self);
     fn is_alive(&self) -> bool;
 
