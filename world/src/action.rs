@@ -326,6 +326,7 @@ fn apply_damage(w: &mut World, e: Entity, amount: i32) {
     msg::push(::Msg::Damage(e));
 
     if is_killed {
+        query::location(w, e).map(|loc| msg::push(::Msg::Gib(loc)));
         kill(w, e);
     }
 }
