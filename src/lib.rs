@@ -20,8 +20,6 @@ extern crate bincode;
 
 #[macro_use] extern crate glium;
 
-#[macro_use] extern crate calx_ecs;
-
 use num::{Float};
 use std::path::{Path, PathBuf};
 use std::ops::{Add, Sub, Mul};
@@ -57,9 +55,6 @@ pub mod debug;
 pub mod ease;
 pub mod text;
 pub mod timing;
-
-#[cfg(test)]
-mod test_ecs;
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd+Copy>(mn: C, mx: C, x: C) -> C {
