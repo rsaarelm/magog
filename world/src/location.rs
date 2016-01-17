@@ -5,19 +5,19 @@ use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Location {
     pub x: i8,
-    pub y: i8, // TODO: Add third dimension for multiple persistent levels.
+    pub y: i8,
+    pub z: i8,
 }
 
 impl Location {
     pub fn new(x: i8, y: i8) -> Location {
-        Location { x: x, y: y }
+        Location { x: x, y: y, z: 0 }
     }
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
     pub fn v2_at(&self, other: Location) -> Option<V2<i32>> {
-        // Return None for pairs on different floors if multi-floor support is
-        // added.
+        if self.z != other.z { return None; }
         Some(V2(other.x as i32, other.y as i32) - V2(self.x as i32, self.y as i32))
     }
 
@@ -39,15 +39,18 @@ impl Location {
     }
 
     pub fn noise(&self) -> f32 {
-        noise(self.x as i32 + self.y as i32 * 57)
+        noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919)
     }
 }
 
 impl Add<V2<i32>> for Location {
     type Output = Location;
     fn add(self, other: V2<i32>) -> Location {
-        Location::new((self.x as i32 + other.0) as i8,
-                      (self.y as i32 + other.1) as i8)
+        Location {
+            x: (self.x as i32 + other.0) as i8,
+            y: (self.y as i32 + other.1) as i8,
+            z: self.z,
+        }
     }
 }
 
@@ -68,6 +71,7 @@ pub trait Unchart {
 
 impl Unchart for Location {
     fn chart_pos(&self, loc: Location) -> Option<V2<i32>> {
+        if self.z != loc.z { return None; }
         Some(V2(loc.x as i32 - self.x as i32,
                 loc.y as i32 - self.y as i32))
     }

@@ -1,4 +1,5 @@
 use std::io::{Read, Write};
+use std::collections::{HashMap};
 use rand;
 use rand::Rng;
 use bincode::{self, serde};
@@ -7,6 +8,7 @@ use area;
 use field::Field;
 use spatial::Spatial;
 use flags::Flags;
+use location::Location;
 use components;
 use stats;
 
@@ -32,6 +34,8 @@ pub struct World {
     pub ecs: Ecs,
     /// Terrain data.
     pub terrain: Field<TerrainType>,
+    /// Optional portals between map zones.
+    pub portals: HashMap<Location, Location>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
@@ -52,6 +56,7 @@ impl<'a> World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
             terrain: Field::new(TerrainType::Tree),
+            portals: HashMap::new(),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
         };

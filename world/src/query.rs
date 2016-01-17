@@ -161,6 +161,11 @@ pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Optio
     None
 }
 
+/// If location contains a portal, return the destination of the portal.
+pub fn portal(w: &World, loc: Location) -> Option<Location> {
+    w.portals.get(&loc).map(|&x| x)
+}
+
 pub fn terrain(w: &World, loc: Location) -> TerrainType {
     let mut ret = w.terrain.get(loc);
     // Mobs standing on doors make the doors open.
@@ -376,4 +381,8 @@ pub fn entity_brush(w: &World, e: Entity) -> Option<(Brush, Rgba)> {
 
 pub fn is_instant_item(w: &World, e: Entity) -> bool {
     w.ecs.item.get(e).map_or(false, |item| item.item_type == ItemType::Instant)
+}
+
+pub fn can_enter_portals(w: &World, e: Entity) -> bool {
+    is_player(w, e)
 }

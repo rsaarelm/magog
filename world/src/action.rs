@@ -140,7 +140,12 @@ pub fn input(w: &mut World, input: Input) {
 
 /// Try to move the entity in direction.
 pub fn step(w: &mut World, e: Entity, dir: Dir6) {
-    let target_loc = query::location(w, e).unwrap() + dir.to_v2();
+    let mut target_loc = query::location(w, e).unwrap() + dir.to_v2();
+
+    if query::can_enter_portals(w, e) {
+        target_loc = query::portal(w, target_loc).unwrap_or(target_loc);
+    }
+
     if query::can_enter(w, e, target_loc) {
         place_entity(w, e, target_loc);
     }
