@@ -30,7 +30,7 @@ pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key, ImageStore};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use search::{LatticeNode, Dijkstra, astar_path_with};
-pub use hex::{HexGeom, Dir6, HexFov};
+pub use hex::{HexGeom, Dir6, HexFov, Dir12};
 pub use index_cache::{IndexCache, CacheKey};
 pub use kernel::{Kernel, KernelTerrain};
 pub use projection::{Projection};

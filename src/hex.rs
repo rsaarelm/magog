@@ -122,6 +122,96 @@ static DIRS: [Dir6; 6] = [Dir6::North,
                           Dir6::SouthWest,
                           Dir6::NorthWest];
 
+/// Hex grid directions with transitional directions.
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+pub enum Dir12 {
+    North = 0,
+    NorthNorthEast,
+    NorthEast,
+    East,
+    SouthEast,
+    SouthSouthEast,
+    South,
+    SouthSouthWest,
+    SouthWest,
+    West,
+    NorthWest,
+    NorthNorthWest,
+}
+
+impl Dir12 {
+    /// If there is exactly one cluster of neighbors in the neighbor mask,
+    /// return a direction pointing away from that cluster.
+    pub fn away_from(neighbors: &[bool; 6]) -> Option<Dir12> {
+        use std::mem;
+
+        let (begin, end) = match find_cluster(neighbors) {
+            Some((a, b)) => (a, b),
+            None => return None,
+        };
+
+        if !is_single_cluster(neighbors, begin, end) {
+            return None;
+        }
+
+        let cluster_size = if end < begin {
+            end + 6 - begin
+        } else {
+            end - begin
+        };
+        assert!(cluster_size > 0);
+
+        // Dir12 in use from here on.
+        let center_dir = begin * 2 + (cluster_size - 1);
+        let away_dir: u8 = ((center_dir + 6) % 12) as u8;
+        assert!(away_dir < 12);
+
+        // XXX: Unsafe because I'm too lazy to do int conversion func by hand.
+        return Some(unsafe { mem::transmute(away_dir) });
+
+        fn find_cluster(neighbors: &[bool; 6]) -> Option<(usize, usize)> {
+            // Start of the active cluster, inclusive.
+            let mut cluster_start = None;
+            // End of the active cluster, exclusive.
+            let mut cluster_end = None;
+
+            for i in 0..6 {
+                if cluster_start.is_none() && neighbors[i] && !neighbors[(i + 5) % 6] {
+                    cluster_start = Some(i);
+                }
+
+                if cluster_end.is_none() && !neighbors[i] && neighbors[(i + 5) % 6] {
+                    cluster_end = Some(i);
+                }
+            }
+
+            if cluster_start.is_none() {
+                return None;
+            }
+
+            assert!(cluster_end.is_some()); // Must be some if start is some.
+
+            Some((cluster_start.unwrap(), cluster_end.unwrap()))
+        }
+
+        fn is_single_cluster(neighbors: &[bool; 6], start: usize, end: usize) -> bool {
+            let mut in_cluster = true;
+
+            for i in 0..6 {
+                if (start + i) % 6 == end {
+                    in_cluster = false;
+                }
+
+                if neighbors[(start + i) % 6] != in_cluster {
+                    return false;
+                }
+            }
+
+            true
+        }
+    }
+}
+
 /// Field of view iterator for a hexagonal map.
 ///
 /// Takes a function that
@@ -338,6 +428,7 @@ mod test {
     // XXX: Why doesn't super::* work here?
     use super::Dir6;
     use super::Dir6::*;
+    use super::Dir12;
 
     #[test]
     fn test_dir6() {
@@ -371,5 +462,29 @@ mod test {
             assert_eq!(d, Dir6::from_v2(v * 3 + v1));
             assert_eq!(d, Dir6::from_v2(v * 3 + v2));
         }
+    }
+
+    #[test]
+    fn test_dir12() {
+        assert_eq!(None,
+                   Dir12::away_from(&[false, false, false, false, false, false]));
+        assert_eq!(None,
+                   Dir12::away_from(&[true, true, true, true, true, true]));
+        assert_eq!(None,
+                   Dir12::away_from(&[false, true, false, false, true, false]));
+        assert_eq!(None,
+                   Dir12::away_from(&[true, true, false, true, false, false]));
+        assert_eq!(None,
+                   Dir12::away_from(&[true, false, true, false, true, false]));
+        assert_eq!(Some(Dir12::South),
+                   Dir12::away_from(&[true, false, false, false, false, false]));
+        assert_eq!(Some(Dir12::East),
+                   Dir12::away_from(&[true, false, false, true, true, true]));
+        assert_eq!(Some(Dir12::SouthSouthWest),
+                   Dir12::away_from(&[true, true, false, false, false, false]));
+        assert_eq!(Some(Dir12::SouthWest),
+                   Dir12::away_from(&[true, true, true, false, false, false]));
+        assert_eq!(Some(Dir12::SouthSouthEast),
+                   Dir12::away_from(&[true, true, false, false, true, true]));
     }
 }
