@@ -82,10 +82,18 @@ pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
         // NB: Black-#000 foreground color prohibits recoloring of the
         // tile in FOV view, only use for special blocks.
         match kind {
-            T::Floor(brush, color) => process(k, draw, T::Floor2(brush, color, BLACK)),
-            T::Prop(brush, color) => process(k, draw, T::Prop2(brush, color, BLACK)),
-            T::Wall(brush, color) => process(k, draw, T::Wall2(brush, color, BLACK)),
-            T::Block(brush, color) => process(k, draw, T::Block2(brush, color, BLACK)),
+            T::Floor(brush, color) => {
+                process(k, draw, T::Floor2(brush, color, BLACK))
+            }
+            T::Prop(brush, color) => {
+                process(k, draw, T::Prop2(brush, color, BLACK))
+            }
+            T::Wall(brush, color) => {
+                process(k, draw, T::Wall2(brush, color, BLACK))
+            }
+            T::Block(brush, color) => {
+                process(k, draw, T::Block2(brush, color, BLACK))
+            }
 
             T::Floor2(brush, color, back) => {
                 draw(brush.get(0), Up, color, back);
@@ -211,7 +219,10 @@ pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
                             if ne_vertex {
                                 draw(BlockRear.get(3), Northeast, color, BLACK);
                             } else {
-                                draw(BlockRear.get(11), XWallBack, color, BLACK);
+                                draw(BlockRear.get(11),
+                                     XWallBack,
+                                     color,
+                                     BLACK);
                             }
                         }
 

@@ -33,7 +33,8 @@ pub fn chart_to_view(chart_pos: V2<i32>) -> V2<i32> {
 /// Transform from chart space into the default on-screen space centered on
 /// window center.
 pub fn chart_to_screen(chart_pos: V2<i32>) -> V2<f32> {
-    (chart_to_view(chart_pos) + V2(SCREEN_W as i32 / 2, SCREEN_H as i32 / 2)).map(|x| x as f32)
+    (chart_to_view(chart_pos) + V2(SCREEN_W as i32 / 2, SCREEN_H as i32 / 2))
+        .map(|x| x as f32)
 }
 
 /// Convert depth difference to pixel offset.
@@ -51,7 +52,8 @@ pub fn view_to_chart(view_pos: V2<i32>) -> V2<i32> {
 }
 
 /// Return the chart positions for which chart_to_view is inside view_rect.
-pub fn cells_in_view_rect(view_rect: Rect<i32>) -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
+pub fn cells_in_view_rect(view_rect: Rect<i32>)
+                          -> Map<ColumnRectIter, fn(V2<i32>) -> V2<i32>> {
     let V2(x0, y0) = pixel_to_min_column(view_rect.mn());
     let V2(x1, y1) = pixel_to_max_column(view_rect.mx());
     ColumnRectIter {
