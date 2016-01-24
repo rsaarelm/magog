@@ -3,7 +3,8 @@ extern crate calx;
 
 use std::ascii::AsciiExt;
 use calx::{color, V2, Rgba, Rect};
-use calx::backend::{CanvasBuilder, WindowBuilder, Key, Event, Fonter, CanvasUtil};
+use calx::backend::{CanvasBuilder, WindowBuilder, Key, Event, Fonter,
+                    CanvasUtil};
 use calx::lerp;
 
 fn main() {
@@ -32,7 +33,8 @@ fn main() {
     let mut ctx = CanvasBuilder::new().build(WindowBuilder::new().build());
     loop {
         // Change pangram every 10 seconds.
-        let pangram_idx = (time::precise_time_s() / 10.0) as usize % pangrams.len();
+        let pangram_idx = (time::precise_time_s() / 10.0) as usize %
+                          pangrams.len();
 
         let img = ctx.font_image('@').unwrap();
 
@@ -72,7 +74,9 @@ fn main() {
         let fps = 1.0 / ctx.window.frame_duration();
         {
             let mut fonter = Fonter::new(&mut ctx)
-                                 .color(lerp(color::RED, color::GREEN, (t as f32 / 100.0) % 1.0))
+                                 .color(lerp(color::RED,
+                                             color::GREEN,
+                                             (t as f32 / 100.0) % 1.0))
                                  .border(color::BLACK)
                                  .layer(0.1)
                                  .text(format!("FPS {:.0}\n", fps))

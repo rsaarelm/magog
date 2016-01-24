@@ -3,16 +3,15 @@ extern crate glium;
 extern crate image;
 extern crate calx;
 
-use glium::{Surface};
-use calx::{scolor};
+use glium::Surface;
+use calx::scolor;
 use calx::backend::{WindowBuilder, mesh, RenderTarget};
 
 fn main() {
-    let mut window =
-        WindowBuilder::new()
-        .set_title("Window demo")
-        .set_frame_interval(0.1)
-        .build();
+    let mut window = WindowBuilder::new()
+                         .set_title("Window demo")
+                         .set_frame_interval(0.1)
+                         .build();
 
     let pixel: image::Rgba<u8> = scolor::YELLOW.into();
     let atlas = image::ImageBuffer::from_pixel(32, 32, pixel);
@@ -37,8 +36,12 @@ fn main() {
             use calx::backend::Event::*;
             use calx::backend::Key;
             match event {
-                Quit => { return; }
-                KeyPress(Key::Escape) => { return; }
+                Quit => {
+                    return;
+                }
+                KeyPress(Key::Escape) => {
+                    return;
+                }
                 _ => {}
             }
         }

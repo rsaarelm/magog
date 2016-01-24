@@ -7,8 +7,11 @@ use geom::{V2, Rect, TileIter, IterTiles};
 use rgb;
 
 /// Set alpha channel to transparent if pixels have a specific color.
-pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>, C: Into<rgb::SRgba>>(
-    image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+pub fn color_key<P, I, C>(image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>>
+    where P: Pixel<Subpixel = u8>,
+          I: GenericImage<Pixel = P>,
+          C: Into<rgb::SRgba>
+{
     let (w, h) = image.dimensions();
     let srgba = color.into();
     ImageBuffer::from_fn(w, h, |x, y| {
@@ -22,8 +25,11 @@ pub fn color_key<P: Pixel<Subpixel=u8>, I: GenericImage<Pixel=P>, C: Into<rgb::S
 
 /// Return the rectangle enclosing the parts of the image that aren't fully
 /// transparent.
-pub fn crop_alpha<T: Primitive+Default, P: Pixel<Subpixel=T>, I: GenericImage<Pixel=P>>(
-    image: &I) -> Rect<i32> {
+pub fn crop_alpha<T, P, I>(image: &I) -> Rect<i32>
+    where T: Primitive + Default,
+          P: Pixel<Subpixel = T>,
+          I: GenericImage<Pixel = P>
+{
     let (w, h) = image.dimensions();
     let mut p1 = V2(w as i32, h as i32);
     let mut p2 = V2(0i32, 0i32);
