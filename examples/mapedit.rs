@@ -13,38 +13,61 @@ use world::query;
 use render::{chart_to_screen, view_to_chart, cells_on_screen, render_terrain};
 use render::{Angle, FLOOR_Z, BLOCK_Z};
 
-fn draw_world(w: &World,
-              ctx: &mut Canvas,
-              center: Location,
-              cursor_loc: Location) {
-    for pt in cells_on_screen() {
-        let screen_pos = chart_to_screen(pt);
-        let loc = center + pt;
+/// State object for configuring world display.
+struct DrawState {
+    pub center: Location,
+    pub cursor_loc: Option<Location>,
+}
 
-        let k = Kernel::new(|loc| query::terrain(w, loc), loc);
-        render_terrain(&k, |img, angle, fore, back| {
-            let z = match angle {
-                Angle::Up => FLOOR_Z,
-                _ => BLOCK_Z,
-            };
-            ctx.draw_image(img, screen_pos, z, fore, back)
-        });
+impl DrawState {
+    pub fn new(center: Location) -> DrawState {
+        DrawState {
+            center: center,
+            cursor_loc: None,
+        }
     }
 
-    if let Some(pt) = center.v2_at(cursor_loc) {
-        // Draw cursor
-        let screen_pos = chart_to_screen(pt);
-        ctx.draw_image(Brush::CursorBottom.get(0),
-                       screen_pos,
-                       FLOOR_Z,
-                       color::RED,
-                       color::BLACK);
-        ctx.draw_image(Brush::CursorTop.get(0),
-                       screen_pos,
-                       BLOCK_Z,
-                       color::RED,
-                       color::BLACK);
+    pub fn cursor(mut self, cursor_loc: Location) -> DrawState {
+        self.cursor_loc = Some(cursor_loc);
+        self
+    }
 
+    fn draw(&self, ctx: &mut Canvas, w: &World) {
+        for pt in cells_on_screen() {
+            let screen_pos = chart_to_screen(pt);
+            let loc = self.center + pt;
+
+            let k = Kernel::new(|loc| query::terrain(w, loc), loc);
+            render_terrain(&k, |img, angle, fore, back| {
+                let z = match angle {
+                    Angle::Up => FLOOR_Z,
+                    _ => BLOCK_Z,
+                };
+                ctx.draw_image(img, screen_pos, z, fore, back)
+            });
+        }
+
+        if let Some(cursor_loc) = self.cursor_loc {
+            self.draw_cursor(ctx, cursor_loc)
+        }
+    }
+
+    fn draw_cursor(&self, ctx: &mut Canvas, cursor_loc: Location) {
+        if let Some(pt) = self.center.v2_at(cursor_loc) {
+            // Draw cursor
+            let screen_pos = chart_to_screen(pt);
+            ctx.draw_image(Brush::CursorBottom.get(0),
+                           screen_pos,
+                           FLOOR_Z,
+                           color::RED,
+                           color::BLACK);
+            ctx.draw_image(Brush::CursorTop.get(0),
+                           screen_pos,
+                           BLOCK_Z,
+                           color::RED,
+                           color::BLACK);
+
+        }
     }
 }
 
@@ -62,7 +85,10 @@ pub fn main() {
 
     loop {
         let cursor_loc = state.center + view_to_chart(cursor_pos);
-        draw_world(&state.world, &mut ctx, state.center, cursor_loc);
+
+        DrawState::new(state.center)
+            .cursor(cursor_loc)
+            .draw(&mut ctx, &state.world);
 
         for event in ctx.events().into_iter() {
             match event {
