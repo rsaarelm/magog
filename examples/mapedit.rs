@@ -3,16 +3,20 @@ extern crate content;
 extern crate world;
 extern crate render;
 
-use calx::backend::{Key, Event};
-use calx::{Kernel, V2};
+use calx::backend::{Key, Event, MouseButton};
+use calx::{Kernel, V2, color};
 use calx::backend::{WindowBuilder, Canvas, CanvasUtil, CanvasBuilder};
 use content::TerrainType;
+use content::Brush;
 use world::{World, Location};
 use world::query;
-use render::{chart_to_screen, cells_on_screen, render_terrain};
+use render::{chart_to_screen, view_to_chart, cells_on_screen, render_terrain};
 use render::{Angle, FLOOR_Z, BLOCK_Z};
 
-fn draw_world(w: &World, ctx: &mut Canvas, center: Location) {
+fn draw_world(w: &World,
+              ctx: &mut Canvas,
+              center: Location,
+              cursor_loc: Location) {
     for pt in cells_on_screen() {
         let screen_pos = chart_to_screen(pt);
         let loc = center + pt;
@@ -26,6 +30,22 @@ fn draw_world(w: &World, ctx: &mut Canvas, center: Location) {
             ctx.draw_image(img, screen_pos, z, fore, back)
         });
     }
+
+    if let Some(pt) = center.v2_at(cursor_loc) {
+        // Draw cursor
+        let screen_pos = chart_to_screen(pt);
+        ctx.draw_image(Brush::CursorBottom.get(0),
+                       screen_pos,
+                       FLOOR_Z,
+                       color::RED,
+                       color::BLACK);
+        ctx.draw_image(Brush::CursorTop.get(0),
+                       screen_pos,
+                       BLOCK_Z,
+                       color::RED,
+                       color::BLACK);
+
+    }
 }
 
 pub fn main() {
@@ -38,9 +58,11 @@ pub fn main() {
     let mut ctx = builder.build(window);
 
     let mut state = EditState::new();
+    let mut cursor_pos = V2(0, 0);
 
     loop {
-        draw_world(&state.world, &mut ctx, state.center);
+        let cursor_loc = state.center + view_to_chart(cursor_pos);
+        draw_world(&state.world, &mut ctx, state.center, cursor_loc);
 
         for event in ctx.events().into_iter() {
             match event {
@@ -60,6 +82,28 @@ pub fn main() {
                     state.center = state.center + V2(1, -1)
                 }
 
+                Event::MouseMove(V2(x, y)) => {
+                    state.paint(cursor_loc);
+
+                    let size = ctx.window.size();
+                    cursor_pos = V2(x as i32 - (size.0 / 2) as i32,
+                                    y as i32 - (size.1 / 2) as i32);
+                }
+
+                Event::MousePress(MouseButton::Left) => {
+                    state.paint_state = Some(PaintState::Draw);
+                    state.paint(cursor_loc);
+                }
+
+                Event::MousePress(MouseButton::Right) => {
+                    state.paint_state = Some(PaintState::Clear);
+                    state.paint(cursor_loc);
+                }
+
+                Event::MouseRelease(_) => {
+                    state.paint_state = None;
+                }
+
                 _ => (),
             }
         }
@@ -67,10 +111,16 @@ pub fn main() {
     }
 }
 
+enum PaintState {
+    Draw,
+    Clear,
+}
+
 pub struct EditState {
     world: World,
     center: Location,
     brush: TerrainType,
+    paint_state: Option<PaintState>,
 }
 
 impl EditState {
@@ -79,6 +129,17 @@ impl EditState {
             world: World::new(None),
             center: Location::new(0, 0),
             brush: TerrainType::Rock,
+            paint_state: None,
+        }
+    }
+
+    pub fn paint(&mut self, cursor_loc: Location) {
+        match self.paint_state {
+            Some(PaintState::Draw) => {
+                self.world.terrain.set(cursor_loc, self.brush)
+            }
+            Some(PaintState::Clear) => self.world.terrain.clear(cursor_loc),
+            None => {}
         }
     }
 }
