@@ -1,0 +1,16 @@
+[package]
+name = "calx-alg"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Game development helper algorithm grab bag"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = "0.6"
+serde_macros = "0.6"
+num = "0.1"
+rand = "0.3"
+
+[dev-dependencies]
+bincode = "0.4"

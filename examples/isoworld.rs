@@ -1,10 +1,12 @@
 //! Sprite display demo
 
 extern crate image;
+extern crate calx_alg;
 #[macro_use]
 extern crate calx;
 
-use calx::{V2, V3, color_key, Projection, Rect, ImageStore, IndexCache, noise};
+use calx_alg::{noise};
+use calx::{V2, V3, color_key, Projection, Rect, ImageStore, IndexCache};
 use calx::color::*;
 use calx::backend::{CanvasBuilder, WindowBuilder, CanvasUtil, Image, Event,
                     Key};

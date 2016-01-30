@@ -9,6 +9,9 @@ license = "MIT OR Apache-2.0"
 [dependencies.calx-ecs]
 path = "calx-ecs"
 
+[dependencies.calx-alg]
+path = "calx-alg"
+
 [dependencies]
 rand = "*"
 serde = "*"

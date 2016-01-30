@@ -1,11 +1,12 @@
 extern crate time;
+extern crate calx_alg;
 extern crate calx;
 
 use std::ascii::AsciiExt;
 use calx::{color, V2, Rgba, Rect};
 use calx::backend::{CanvasBuilder, WindowBuilder, Key, Event, Fonter,
                     CanvasUtil};
-use calx::lerp;
+use calx_alg::lerp;
 
 fn main() {
     let mut t = 0i32;

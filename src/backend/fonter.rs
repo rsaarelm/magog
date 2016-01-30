@@ -1,6 +1,6 @@
 use std::convert::{Into};
+use calx_alg::wrap_lines;
 use ::{color, Rgba, V2, Rect, Anchor};
-use ::text;
 use super::canvas::{Canvas, FONT_H};
 use super::canvas_util::{CanvasUtil};
 
@@ -89,7 +89,7 @@ impl<'a> Fonter<'a> {
         let new_len = self.lines.len() - 1;
         self.lines.truncate(new_len);
         if let Some(w) = self.max_width {
-            new_txt = text::wrap_lines(&new_txt[..], &|c| self.canvas.char_width(c), w);
+            new_txt = wrap_lines(&new_txt[..], &|c| self.canvas.char_width(c), w);
         }
 
         let new_lines: Vec<(String, f32)> = new_txt.split('\n').map(|s| (s.to_string(), self.str_width(s))).collect();

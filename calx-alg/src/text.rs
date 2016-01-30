@@ -6,7 +6,10 @@
 /// Place the split before a whitespace or after a hyphen if possible. Any
 /// whitespace between the two segments is trimmed. Newlines will cause a
 /// segment split when encountered.
-pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a str, &'a str)
+pub fn split_line<'a, F>(text: &'a str,
+                         char_width: &F,
+                         max_len: f32)
+                         -> (&'a str, &'a str)
     where F: Fn(char) -> f32
 {
     assert!(max_len >= 0.0);
@@ -158,28 +161,5 @@ impl<T: Iterator<Item = char>> Map2DUtil for T {
             x: 0,
             y: 0,
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_split_line() {
-        use super::split_line;
-
-        assert_eq!(("", ""), split_line("", &|_| 1.0, 12.0));
-        assert_eq!(("a", ""), split_line("a", &|_| 1.0, 5.0));
-        assert_eq!(("the", "cat"), split_line("the cat", &|_| 1.0, 5.0));
-        assert_eq!(("the", "cat"), split_line("the     cat", &|_| 1.0, 5.0));
-        assert_eq!(("the", "cat"), split_line("the  \t cat", &|_| 1.0, 5.0));
-        assert_eq!(("the", "cat"), split_line("the \ncat", &|_| 1.0, 32.0));
-        assert_eq!(("the", "   cat"),
-                   split_line("the \n   cat", &|_| 1.0, 32.0));
-        assert_eq!(("the  cat", ""), split_line("the  cat", &|_| 1.0, 32.0));
-        assert_eq!(("the", "cat sat"), split_line("the cat sat", &|_| 1.0, 6.0));
-        assert_eq!(("the cat", "sat"), split_line("the cat sat", &|_| 1.0, 7.0));
-        assert_eq!(("a", "bc"), split_line("abc", &|_| 1.0, 0.01));
-        assert_eq!(("dead", "beef"), split_line("deadbeef", &|_| 1.0, 4.0));
-        assert_eq!(("the-", "cat"), split_line("the-cat", &|_| 1.0, 5.0));
     }
 }

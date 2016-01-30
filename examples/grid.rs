@@ -1,8 +1,10 @@
 //! Interactive grid projection demo
 
+extern crate calx_alg;
 extern crate calx;
 
-use calx::{noise, color, V2, Rgba, Rect, Projection, Anchor};
+use calx_alg::{noise};
+use calx::{color, V2, Rgba, Rect, Projection, Anchor};
 use calx::backend::{WindowBuilder, CanvasBuilder, Canvas, CanvasUtil, Event,
                     Key, RenderTarget};
 use calx::backend::mesh::Vertex;

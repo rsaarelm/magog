@@ -107,22 +107,3 @@ impl<T: Rng + 'static> Deserialize for EncodeRng<T> {
         }
     }
 }
-
-#[cfg(test)]
-mod test {
-    use rand::{Rng, XorShiftRng, SeedableRng};
-    use super::EncodeRng;
-
-    #[test]
-    fn test_serialize_rng() {
-        use bincode::{serde, SizeLimit};
-
-        let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
-
-        let saved = serde::serialize(&rng, SizeLimit::Infinite).expect("Serialization failed");
-        let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved)
-                           .expect("Deserialization failed");
-
-        assert!(rng.next_u32() == rng2.next_u32());
-    }
-}

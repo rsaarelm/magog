@@ -24,7 +24,10 @@ pub struct Dijkstra<N> {
 impl<N: LatticeNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
-    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {
+    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>,
+                                  is_valid: F,
+                                  limit: u32)
+                                  -> Dijkstra<N> {
         assert!(goals.len() > 0);
 
         let mut weights = HashMap::new();
@@ -73,7 +76,11 @@ impl<N: LatticeNode> Dijkstra<N> {
 }
 
 /// Find a path between two points using the A* algorithm.
-pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
+pub fn astar_path_with<N, F, T>(metric: F,
+                                from: N,
+                                to: N,
+                                mut limit: u32)
+                                -> Option<Vec<N>>
     where N: LatticeNode,
           F: Fn(&N, &N) -> T,
           T: Num + Ord + Copy
@@ -110,7 +117,8 @@ pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Op
                                    match a {
                                        None => Some((x.clone(), pathlen_x)),
                                        Some((y, pathlen_y)) => {
-                                           let y_cost = pathlen_y + metric(&y, &to);
+                                           let y_cost = pathlen_y +
+                                                        metric(&y, &to);
                                            if x_cost < y_cost {
                                                Some((x.clone(), pathlen_x))
                                            } else {
@@ -148,35 +156,4 @@ pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Op
     }
 
     return None;
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_astar() {
-        use super::{LatticeNode, astar_path_with};
-        use geom::V2;
-
-        impl LatticeNode for V2<i32> {
-            fn neighbors(&self) -> Vec<V2<i32>> {
-                vec![
-                    V2(self.0 - 1, self.1),
-                    V2(self.0, self.1 - 1),
-                    V2(self.0 + 1, self.1),
-                    V2(self.0, self.1 + 1),
-                ]
-            }
-        }
-
-        let path = astar_path_with(|a, b| {
-                                       let v = *b - *a;
-                                       v.dot(v)
-                                   },
-                                   V2(1, 1),
-                                   V2(10, 10),
-                                   10000)
-                       .unwrap();
-        assert!(path[0] == V2(1, 1));
-        assert!(path[path.len() - 1] == V2(10, 10));
-    }
 }

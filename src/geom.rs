@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use num::{Zero, One};
 use num::traits::Num;
 use image::{Primitive, GenericImage, Pixel};
+use calx_alg::sorted_pair;
 use Anchor;
 
 /// 2D geometric vector.
@@ -165,8 +166,8 @@ impl<T: Eq> Eq for Rect<T> {}
 
 impl<T: Num + Copy + PartialOrd> Rect<T> {
     pub fn from_points(p1: V2<T>, p2: V2<T>) -> Rect<T> {
-        let (x1, x2) = ::sorted_pair(p1.0, p2.0);
-        let (y1, y2) = ::sorted_pair(p1.1, p2.1);
+        let (x1, x2) = sorted_pair(p1.0, p2.0);
+        let (y1, y2) = sorted_pair(p1.1, p2.1);
 
         Rect(V2(x1, y1), V2(x2 - x1, y2 - y1))
     }
