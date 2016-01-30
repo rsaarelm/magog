@@ -25,7 +25,13 @@ macro_rules! terrain_data {
 }
 
 terrain_data! {
+    // Void denotes non-terrain at the edges of map. Portals in void next to
+    // regular terrain will be shown as symbols pointing towards the void.
     Void, "void";
+    // Portal void is otherwise exactly the same as the regular void, but
+    // portals on top of portal void will actually show the terrain behind the
+    // portal when viewed in game.
+    PortalVoid, "void";
     Floor, "floor";
     Water, "water";
     Shallows, "shallows";

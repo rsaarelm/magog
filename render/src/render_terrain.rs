@@ -250,6 +250,7 @@ pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
 
     for i in match k.center {
         TerrainType::Void => vec![T::Floor(BlankFloor, MAGENTA)],
+        TerrainType::PortalVoid => vec![T::Floor(BlankFloor, MAGENTA)],
         TerrainType::Floor => vec![T::Floor(Floor, SLATEGRAY)],
         TerrainType::Water => vec![T::Floor(Water, ROYALBLUE)],
         TerrainType::Shallows => vec![T::Floor(Shallows, CORNFLOWERBLUE)],
