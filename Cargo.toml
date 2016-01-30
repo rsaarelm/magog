@@ -6,8 +6,8 @@ description = "Rust game development helper library collection"
 keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
-[dependencies.calx_ecs]
-path = "calx_ecs"
+[dependencies.calx-ecs]
+path = "calx-ecs"
 
 [dependencies]
 rand = "*"

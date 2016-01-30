@@ -1,5 +1,5 @@
 [package]
-name = "calx_ecs"
+name = "calx-ecs"
 version = "0.0.1"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Rust entity component library"
