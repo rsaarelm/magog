@@ -28,7 +28,6 @@ pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key, ImageStore};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
 pub use index_cache::{IndexCache, CacheKey};
-pub use kernel::{Kernel, KernelTerrain};
 pub use projection::{Projection};
 
 mod atlas;
@@ -36,7 +35,6 @@ mod brush;
 #[deprecated] mod geom;
 mod img;
 mod index_cache;
-mod kernel;
 mod projection;
 #[deprecated] mod rgb;
 pub mod backend;
