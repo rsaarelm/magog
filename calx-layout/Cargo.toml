@@ -1,0 +1,11 @@
+[package]
+name = "calx-layout"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "GUI layout utilities for games"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+cgmath = "0.7"
+num = "0.1"
