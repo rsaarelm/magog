@@ -4,7 +4,6 @@ use std::f32::consts::PI;
 use std::cmp::max;
 use rand::{Rand, Rng};
 use num::{Integer, Float};
-use geom::V2;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
@@ -12,7 +11,7 @@ pub trait HexGeom {
     fn hex_dist(&self) -> i32;
 }
 
-impl HexGeom for V2<i32> {
+impl<T: Into<[i32; 2]>> HexGeom for T {
     fn hex_dist(&self) -> i32 {
         let xd = self.0;
         let yd = self.1;
@@ -86,7 +85,8 @@ impl Dir6 {
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(&self) -> V2<i32> {
-        [V2(-1, -1), V2(0, -1), V2(1, 0), V2(1, 1), V2(0, 1), V2(-1, 0)][*self as usize]
+        [V2(-1, -1), V2(0, -1), V2(1, 0),
+         V2(1, 1), V2(0, 1), V2(-1, 0)][*self as usize]
     }
 
     /// Iterate through the six hex dirs in the standard order.
@@ -176,11 +176,13 @@ impl Dir12 {
             let mut cluster_end = None;
 
             for i in 0..6 {
-                if cluster_start.is_none() && neighbors[i] && !neighbors[(i + 5) % 6] {
+                if cluster_start.is_none() && neighbors[i] &&
+                   !neighbors[(i + 5) % 6] {
                     cluster_start = Some(i);
                 }
 
-                if cluster_end.is_none() && !neighbors[i] && neighbors[(i + 5) % 6] {
+                if cluster_end.is_none() && !neighbors[i] &&
+                   neighbors[(i + 5) % 6] {
                     cluster_end = Some(i);
                 }
             }
@@ -194,7 +196,10 @@ impl Dir12 {
             Some((cluster_start.unwrap(), cluster_end.unwrap()))
         }
 
-        fn is_single_cluster(neighbors: &[bool; 6], start: usize, end: usize) -> bool {
+        fn is_single_cluster(neighbors: &[bool; 6],
+                             start: usize,
+                             end: usize)
+                             -> bool {
             let mut in_cluster = true;
 
             for i in 0..6 {
@@ -281,7 +286,8 @@ impl<F> Iterator for HexFov<F> where F: Fn(V2<i32>) -> bool
 
                     // If this was a visible sector and we're below range, branch
                     // out further.
-                    if !current.group_opaque && current.begin.radius < self.range {
+                    if !current.group_opaque &&
+                       current.begin.radius < self.range {
                         self.stack.push(Sector {
                             begin: current.begin.further(),
                             pt: current.begin.further(),
@@ -326,7 +332,9 @@ impl<F> Iterator for HexFov<F> where F: Fn(V2<i32>) -> bool
                         begin: current.begin.further(),
                         pt: current.begin.further(),
                         end: current.end.further(),
-                        group_opaque: (self.is_opaque)(current.begin.further().to_v2()),
+                        group_opaque: (self.is_opaque)(current.begin
+                                                              .further()
+                                                              .to_v2()),
                     });
                 }
 
@@ -380,7 +388,8 @@ impl PolarPoint {
             return V2(0, 0);
         }
         let index = self.winding_index();
-        let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
+        let sector = index.mod_floor(&(self.radius as i32 * 6)) /
+                     self.radius as i32;
         let offset = index.mod_floor(&(self.radius as i32));
         let rod = Dir6::from_int(sector).to_v2() * (self.radius as i32);
         let tangent = Dir6::from_int((sector + 2) % 6).to_v2() * offset;
@@ -412,7 +421,8 @@ impl PolarPoint {
 
     /// The point corresponding to this one on the hex circle with radius +1.
     pub fn further(self) -> PolarPoint {
-        PolarPoint::new(self.pos * (self.radius + 1) as f32 / self.radius as f32,
+        PolarPoint::new(self.pos * (self.radius + 1) as f32 /
+                        self.radius as f32,
                         self.radius + 1)
     }
 
@@ -467,7 +477,8 @@ mod test {
     #[test]
     fn test_dir12() {
         assert_eq!(None,
-                   Dir12::away_from(&[false, false, false, false, false, false]));
+                   Dir12::away_from(&[false, false, false, false, false,
+                                      false]));
         assert_eq!(None,
                    Dir12::away_from(&[true, true, true, true, true, true]));
         assert_eq!(None,
@@ -477,7 +488,8 @@ mod test {
         assert_eq!(None,
                    Dir12::away_from(&[true, false, true, false, true, false]));
         assert_eq!(Some(Dir12::South),
-                   Dir12::away_from(&[true, false, false, false, false, false]));
+                   Dir12::away_from(&[true, false, false, false, false,
+                                      false]));
         assert_eq!(Some(Dir12::East),
                    Dir12::away_from(&[true, false, false, true, true, true]));
         assert_eq!(Some(Dir12::SouthSouthWest),

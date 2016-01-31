@@ -42,37 +42,6 @@ fn test_log_odds() {
     assert_eq!(to_log_odds(0.909091) as i32, 10);
 }
 
-
-#[test]
-fn test_astar() {
-    use calx_alg::{LatticeNode, astar_path_with};
-
-    #[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
-    struct V([i32; 2]);
-
-    impl LatticeNode for V {
-        fn neighbors(&self) -> Vec<V> {
-            vec![
-                V([self.0[0] - 1, self.0[1]]),
-                V([self.0[0], self.0[1] - 1]),
-                V([self.0[0] + 1, self.0[1]]),
-                V([self.0[0], self.0[1] + 1]),
-            ]
-        }
-    }
-
-    let path = astar_path_with(|a, b| {
-                                   (a.0[0] - b.0[0]).abs() +
-                                   (a.0[1] - b.0[1]).abs()
-                               },
-                               V([1, 1]),
-                               V([10, 10]),
-                               10000)
-                   .unwrap();
-    assert!(path[0] == V([1, 1]));
-    assert!(path[path.len() - 1] == V([10, 10]));
-}
-
 #[test]
 fn test_split_line() {
     use calx_alg::split_line;

@@ -7,12 +7,10 @@ extern crate rand;
 use std::ops::{Add, Sub, Mul};
 use num::Float;
 
-pub use search::{LatticeNode, Dijkstra, astar_path_with};
 pub use rng::{EncodeRng, RngExt};
 pub use text::{split_line, wrap_lines, Map2DIterator, Map2DUtil};
 
 mod rng;
-mod search;
 mod text;
 
 pub mod ease;

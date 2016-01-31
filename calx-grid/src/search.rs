@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 use num::{Zero, One};
 use num::traits::Num;
 
-/// A node in a graph with a regular lattice.
-pub trait LatticeNode: PartialEq+Eq+Clone+Hash+PartialOrd+Ord {
+/// A node in a graph with a regular grid.
+pub trait GridNode: PartialEq+Eq+Clone+Hash+PartialOrd+Ord {
     /// List the neighbor nodes of this graph node.
     fn neighbors(&self) -> Vec<Self>;
 }
@@ -21,7 +21,7 @@ pub struct Dijkstra<N> {
     weights: HashMap<N, u32>,
 }
 
-impl<N: LatticeNode> Dijkstra<N> {
+impl<N: GridNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
     pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>,
@@ -81,12 +81,12 @@ pub fn astar_path_with<N, F, T>(metric: F,
                                 to: N,
                                 mut limit: u32)
                                 -> Option<Vec<N>>
-    where N: LatticeNode,
+    where N: GridNode,
           F: Fn(&N, &N) -> T,
           T: Num + Ord + Copy
 {
     fn build_path<'a, N>(mut end: &'a N, path: &'a HashMap<N, N>) -> Vec<N>
-        where N: LatticeNode
+        where N: GridNode
     {
         let mut ret = Vec::new();
         loop {
@@ -156,4 +156,37 @@ pub fn astar_path_with<N, F, T>(metric: F,
     }
 
     return None;
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_astar() {
+        use calx_alg::{LatticeNode, astar_path_with};
+
+        #[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
+        struct V([i32; 2]);
+
+        impl LatticeNode for V {
+            fn neighbors(&self) -> Vec<V> {
+                vec![
+                V([self.0[0] - 1, self.0[1]]),
+                V([self.0[0], self.0[1] - 1]),
+                V([self.0[0] + 1, self.0[1]]),
+                V([self.0[0], self.0[1] + 1]),
+            ]
+            }
+        }
+
+        let path = astar_path_with(|a, b| {
+                                       (a.0[0] - b.0[0]).abs() +
+                                       (a.0[1] - b.0[1]).abs()
+                                   },
+                                   V([1, 1]),
+                                   V([10, 10]),
+                                   10000)
+                       .unwrap();
+        assert!(path[0] == V([1, 1]));
+        assert!(path[path.len() - 1] == V([10, 10]));
+    }
 }
