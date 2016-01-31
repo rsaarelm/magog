@@ -5,6 +5,7 @@ Miscellaneous utilities grab-bag.
 
 #![crate_name="calx"]
 
+#![feature(deprecated)]
 #![feature(custom_derive, plugin)]
 #![plugin(serde_macros)]
 
@@ -33,14 +34,13 @@ pub use projection::{Projection};
 
 mod atlas;
 mod brush;
-mod geom;
+#[deprecated] mod geom;
 mod hex;
 mod img;
 mod index_cache;
 mod kernel;
 mod projection;
-mod rgb;
-
+#[deprecated] mod rgb;
 pub mod backend;
 pub mod debug;
 pub mod timing;
