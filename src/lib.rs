@@ -95,34 +95,6 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
     }
 }
 
-/// Exponential moving average duration.
-pub struct AverageDuration {
-    weight: f64,
-    last_time: f64,
-    pub value: f64,
-}
-
-impl AverageDuration {
-    /// Init is the initial value for the duration, somewhere in the scale you
-    /// expect the actual values to be. Weight is between 0 and 1 and
-    /// indicates how fast the older values should decay. Weight 1.0 causes
-    /// old values to decay immediately.
-    pub fn new(init: f64, weight: f64) -> AverageDuration {
-        assert!(weight > 0.0 && weight <= 1.0);
-        AverageDuration {
-            weight: weight,
-            last_time: time::precise_time_s(),
-            value: init,
-        }
-    }
-
-    pub fn tick(&mut self) {
-        let t = time::precise_time_s();
-        self.value = self.weight * (t - self.last_time) + (1.0 - self.weight) * self.value;
-        self.last_time = t;
-    }
-}
-
 #[macro_export]
 macro_rules! count_exprs {
     () => { 0 };

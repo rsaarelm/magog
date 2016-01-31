@@ -1,4 +1,3 @@
-use ::{V2};
 use super::Key;
 
 /// Canvas event.
@@ -9,7 +8,7 @@ pub enum Event {
     Char(char),
     KeyPress(Key),
     KeyRelease(Key),
-    MouseMove(V2<f32>),
+    MouseMove([f32; 2]),
     MouseWheel(i32),
     MousePress(MouseButton),
     MouseRelease(MouseButton),
@@ -18,9 +17,9 @@ pub enum Event {
     /// Ongoing mouse drag event.
     ///
     /// A drag is a movement of the mouse while a button is pressed.
-    MouseDrag(MouseButton, V2<f32>, V2<f32>),
+    MouseDrag(MouseButton, [f32; 2], [f32; 2]),
     /// A drag that ended with the button being released.
-    MouseDragEnd(MouseButton, V2<f32>, V2<f32>),
+    MouseDragEnd(MouseButton, [f32; 2], [f32; 2]),
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
