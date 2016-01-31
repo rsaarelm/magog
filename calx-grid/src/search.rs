@@ -162,12 +162,12 @@ pub fn astar_path_with<N, F, T>(metric: F,
 mod test {
     #[test]
     fn test_astar() {
-        use calx_alg::{LatticeNode, astar_path_with};
+        use super::{GridNode, astar_path_with};
 
         #[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
         struct V([i32; 2]);
 
-        impl LatticeNode for V {
+        impl GridNode for V {
             fn neighbors(&self) -> Vec<V> {
                 vec![
                 V([self.0[0] - 1, self.0[1]]),
