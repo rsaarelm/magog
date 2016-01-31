@@ -233,10 +233,10 @@ impl Window {
     }
 
     /// Map screen position (eg. of a mouse cursor) to canvas position.
-    pub fn screen_to_canvas<V: AsRef<[i32; 2]>>(&self,
-                                                screen_pos: &V)
-                                                -> [i32; 2] {
-        self.resolution.screen_to_canvas(screen_pos.as_ref())
+    pub fn screen_to_canvas<V: Into<[i32; 2]>>(&self,
+                                               screen_pos: V)
+                                               -> [i32; 2] {
+        self.resolution.screen_to_canvas(&screen_pos.into())
     }
 
     pub fn get_screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
