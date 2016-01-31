@@ -1,8 +1,10 @@
 extern crate cgmath;
 extern crate num;
 
+mod projection;
 mod rect;
 
+pub use projection::Projection;
 pub use rect::Rect;
 
 /// Rectangle anchoring points.
@@ -17,10 +19,4 @@ pub enum Anchor {
     Right,
     Bottom,
     Center,
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn it_works() {}
 }
