@@ -23,7 +23,6 @@ extern crate calx_alg;
 use std::path::{Path, PathBuf};
 
 pub use rgb::{Rgba, SRgba, color, scolor, NAMED_COLORS};
-pub use fs::{PathExt};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 pub use img::{color_key, ImageStore};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
@@ -34,7 +33,6 @@ pub use projection::{Projection};
 
 mod atlas;
 mod brush;
-mod fs;
 mod geom;
 mod hex;
 mod img;
