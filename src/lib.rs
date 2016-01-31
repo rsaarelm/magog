@@ -15,7 +15,6 @@ extern crate num;
 extern crate vec_map;
 extern crate nalgebra;
 extern crate image;
-extern crate cpal;
 extern crate bincode;
 
 #[macro_use] extern crate glium;
@@ -49,7 +48,6 @@ mod rgb;
 mod rng;
 mod search;
 
-pub mod audio;
 pub mod backend;
 pub mod debug;
 pub mod ease;
