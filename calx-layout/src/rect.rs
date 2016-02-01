@@ -1,5 +1,6 @@
 use std::cmp::PartialOrd;
 use num::{Num, Signed, Zero, One, abs};
+use Anchor;
 
 pub struct Rect<T> {
     /// Top left (closest to the origin) corner of the rectange.
@@ -17,6 +18,22 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
         Rect {
             top: [*min(&p1[0], &p2[0]), *min(&p1[1], &p2[1])],
             size: [abs(p2[0] - p1[0]), abs(p2[1] - p1[1])],
+        }
+    }
+
+    pub fn point(&self, point: Anchor) -> [T; 2] {
+        let one: T = One::one();
+        let two = one + one;
+        match point {
+            Anchor::TopLeft => self.top,
+            Anchor::TopRight => [self.top[0] + self.size[0], self.top[1]],
+            Anchor::BottomLeft => [self.top[0], self.top[1] + self.size[1]],
+            Anchor::BottomRight => [self.top[0] + self.size[0], self.top[1] + self.size[1]],
+            Anchor::Top => [self.top[0] + self.size[0] / two, self.top[1]],
+            Anchor::Left => [self.top[0], self.top[1] + self.size[1] / two],
+            Anchor::Right => [self.top[0] + self.size[0], self.top[1] + self.size[1] / two],
+            Anchor::Bottom => [self.top[0] + self.size[0] / two, self.top[1] + self.size[1]],
+            Anchor::Center => [self.top[0] + self.size[0] / two, self.top[1] + self.size[1] / two],
         }
     }
 

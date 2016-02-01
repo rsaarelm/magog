@@ -1,5 +1,5 @@
 use std::f32;
-use cgmath::{SquareMatrix, Matrix2, Vector2};
+use cgmath::{SquareMatrix, Matrix2, Vector2, vec2};
 use {Rect, Anchor};
 
 /// Reversible affine 2D projection.
@@ -23,7 +23,7 @@ impl Projection {
             Some(Projection {
                 fwd: fwd,
                 inv: inv,
-                offset: Vector2::new(0.0, 0.0),
+                offset: vec2(0.0, 0.0),
             })
         } else {
             // Degenerate matrix, no inverse found.
@@ -38,9 +38,9 @@ impl Projection {
     }
 
     /// Add a world space offset to the projection.
-    pub fn world_offset<V: Into<[f32; 2]>>(self, offset: V) -> Projection {
-        let offset = self.offset +
-                     self.fwd.clone() * Vector2::from(offset.into());
+    pub fn world_offset<V: Into<[f32; 2]>>(mut self, offset: V) -> Projection {
+        self.offset = self.offset +
+                      self.fwd.clone() * Vector2::from(offset.into());
         self
     }
 
@@ -60,21 +60,18 @@ impl Projection {
     /// Return the world rectangle that perfectly covers the given
     /// screen rectangle.
     pub fn inv_project_rectangle(&self, screen_area: &Rect<f32>) -> Rect<f32> {
-        unimplemented!();
-        /*
-        let mut mn = V2(f32::INFINITY, f32::INFINITY);
-        let mut mx = V2(f32::NEG_INFINITY, f32::NEG_INFINITY);
+        let mut mn = vec2(f32::INFINITY, f32::INFINITY);
+        let mut mx = vec2(f32::NEG_INFINITY, f32::NEG_INFINITY);
         for &sp in [Anchor::TopLeft,
                     Anchor::TopRight,
                     Anchor::BottomLeft,
                     Anchor::BottomRight]
                        .iter() {
             let wp = self.inv_project(screen_area.point(sp));
-            mx = V2(mx.0.max(wp.0.ceil()), mx.1.max(wp.1.ceil()));
-            mn = V2(mn.0.min(wp.0.floor()), mn.1.min(wp.1.floor()));
+            mx = vec2(mx.x.max(wp[0].ceil()), mx.y.max(wp[1].ceil()));
+            mn = vec2(mn.x.min(wp[0].floor()), mn.y.min(wp[1].floor()));
         }
-        Rect(mn, mx - mn)
-        */
+        Rect::new(mn, mx)
     }
 }
 
