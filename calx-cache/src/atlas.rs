@@ -3,8 +3,8 @@ use std::cmp::max;
 use num::{Float, Zero};
 use num::traits::Num;
 use image::{GenericImage, ImageBuffer, Rgba, Pixel};
+use calx_layout::Rect;
 use img;
-use geom::{V2, Rect};
 
 /// Constructor object for atlases.
 pub struct AtlasBuilder {

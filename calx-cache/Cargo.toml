@@ -1,0 +1,13 @@
+[package]
+name = "calx-cache"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Resource caching for games"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+image = "0.6"
+
+[dependencies.calx-layout]
+path = "../calx-layout"
