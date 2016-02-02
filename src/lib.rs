@@ -25,15 +25,8 @@ use std::path::{Path, PathBuf};
 
 pub use rgb::{Rgba, SRgba, color, scolor, NAMED_COLORS};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
-pub use img::{color_key, ImageStore};
-pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
-pub use index_cache::{IndexCache, CacheKey};
 
-mod atlas;
-mod brush;
 #[deprecated] mod geom;
-mod img;
-mod index_cache;
 #[deprecated] mod rgb;
 pub mod backend;
 pub mod debug;

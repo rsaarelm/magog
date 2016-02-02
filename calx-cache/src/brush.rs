@@ -39,6 +39,7 @@ macro_rules! brush {
 
         thread_local!(static BRUSH_CACHE: RefCell<$crate::IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
 
+        // TODO: Builder as generic ImageStore
         fn build_brushes(builder: &mut $crate::backend::CanvasBuilder) -> $crate::IndexCache<Brush, Vec<Image>> {
             use image;
             use $crate::{V2, color_key, color};
