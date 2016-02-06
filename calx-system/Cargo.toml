@@ -1,0 +1,7 @@
+[package]
+name = "calx-system"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Miscellaneous operating system related utilities"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"

@@ -1,0 +1,7 @@
+[package]
+name = "calx-draw"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "UI drawing utilities"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
