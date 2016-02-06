@@ -88,8 +88,7 @@ impl Dir6 {
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(&self) -> [i32; 2] {
-        [[-1, -1], [0, -1], [1, 0],
-         [1, 1], [0, 1], [-1, 0]][*self as usize]
+        [[-1, -1], [0, -1], [1, 0], [1, 1], [0, 1], [-1, 0]][*self as usize]
     }
 
     /// Iterate through the six hex dirs in the standard order.
@@ -399,7 +398,7 @@ impl PolarPoint {
         let tangent = Dir6::from_int((sector + 2) % 6).to_v2();
 
         [rod[0] * self.radius as i32 + tangent[0] * offset,
-        rod[1] * self.radius as i32 + tangent[1] * offset]
+         rod[1] * self.radius as i32 + tangent[1] * offset]
     }
 
     /// If this point and the next point are adjacent vertically (along the xy

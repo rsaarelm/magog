@@ -1,5 +1,4 @@
 use std::ops::Add;
-use geom::V2;
 
 /// Shaping properties for hex terrain cells.
 pub trait KernelTerrain {
@@ -32,19 +31,21 @@ pub struct Kernel<C> {
 }
 
 impl<C: KernelTerrain> Kernel<C> {
-    pub fn new<F, L: Add<V2<i32>, Output = L> + Copy>(get: F, loc: L) -> Kernel<C>
-        where F: Fn(L) -> C
+    pub fn new<F, L, V>(get: F, loc: L) -> Kernel<C>
+        where F: Fn(L) -> C,
+              L: Add<V, Output = L> + Copy,
+              V: From<[i32; 2]>
     {
         Kernel {
-            n: get(loc + V2(-1, -1)),
-            ne: get(loc + V2(0, -1)),
-            e: get(loc + V2(1, -1)),
-            nw: get(loc + V2(-1, 0)),
+            n: get(loc + V::from([-1, -1])),
+            ne: get(loc + V::from([0, -1])),
+            e: get(loc + V::from([1, -1])),
+            nw: get(loc + V::from([-1, 0])),
             center: get(loc),
-            se: get(loc + V2(1, 0)),
-            w: get(loc + V2(-1, 1)),
-            sw: get(loc + V2(0, 1)),
-            s: get(loc + V2(1, 1)),
+            se: get(loc + V::from([1, 0])),
+            w: get(loc + V::from([-1, 1])),
+            sw: get(loc + V::from([0, 1])),
+            s: get(loc + V::from([1, 1])),
         }
     }
 
