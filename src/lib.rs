@@ -23,11 +23,9 @@ extern crate calx_alg;
 
 use std::path::{Path, PathBuf};
 
-pub use rgb::{Rgba, SRgba, color, scolor, NAMED_COLORS};
 pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 
 #[deprecated] mod geom;
-#[deprecated] mod rgb;
 pub mod backend;
 pub mod debug;
 pub mod timing;
