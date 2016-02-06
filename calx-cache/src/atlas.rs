@@ -26,6 +26,7 @@ impl AtlasBuilder {
               I: GenericImage<Pixel = P>,
               V: Into<[i32; 2]>
     {
+        let offset = offset.into();
         let Rect { top: pos, size: dim } = img::crop_alpha(image);
         let image = ImageBuffer::from_fn(dim[0] as u32,
                                          dim[1] as u32,
@@ -35,7 +36,7 @@ impl AtlasBuilder {
                                                   .to_rgba()
                                          });
         self.images.push(image);
-        self.draw_offsets.push(pos + offset);
+        self.draw_offsets.push([pos[0] + offset[0], pos[1] + offset[1]]);
         self.images.len() - 1
     }
 }
@@ -66,13 +67,13 @@ impl Atlas {
                               let (w, h) = img.dimensions();
                               [w as i32, h as i32]
                           })
-                          .collect::<[i32; 2]>();
+                          .collect::<Vec<[i32; 2]>>();
 
         // Add 1 pixel edges to images to prevent texturing artifacts from
         // adjacent pixels in separate subimages.
         let expanded_dims = dims.iter()
                                 .map(|&v| [v[0] + 1, v[1] + 1])
-                                .collect::<[i32; 2]>();
+                                .collect::<Vec<[i32; 2]>>();
 
         // Guesstimate the size for the atlas container.
         let total_area = dims.iter()
@@ -83,7 +84,7 @@ impl Atlas {
 
         loop {
             assert!(d < 1000000000); // Sanity check
-            match pack_rectangles(V2(d as i32, d as i32), &expanded_dims) {
+            match pack_rectangles([d as i32, d as i32], &expanded_dims) {
                 Some(ret) => {
                     offsets = ret;
                     break;

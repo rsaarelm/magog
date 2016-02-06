@@ -9,9 +9,9 @@ use vec_map::VecMap;
 /// compile-time constants or lazily initialized thread-local variables.
 ///
 /// ```rust
-/// #[macro_use] extern crate calx;
+/// #[macro_use] extern crate calx_cache;
 ///
-/// use calx::IndexCache;
+/// use calx_cache::IndexCache;
 ///
 /// #[derive(Debug, Copy, Clone)]
 /// enum CacheItem {
@@ -69,6 +69,6 @@ pub trait CacheKey {
 /// Derive CacheKey trait for a given enum to use it with IndexCache.
 macro_rules! cache_key {
     ( $name:ident ) => {
-        impl ::calx::CacheKey for $name { fn to_usize(self) -> usize { self as usize } }
+        impl $crate::CacheKey for $name { fn to_usize(self) -> usize { self as usize } }
     }
 }

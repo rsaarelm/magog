@@ -1,9 +1,8 @@
-use std::marker::PhantomData;
 use std::default::Default;
 use std::cmp::{min, max};
 use std::convert::Into;
-use image::{Primitive, GenericImage, SubImage, Pixel, ImageBuffer, Rgba};
-use calx_layout::{Rect};
+use image::{Primitive, GenericImage, Pixel, ImageBuffer, Rgba};
+use calx_layout::Rect;
 use calx_color;
 
 /// Set alpha channel to transparent if pixels have a specific color.
