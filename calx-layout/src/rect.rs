@@ -29,12 +29,21 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
             Anchor::TopLeft => self.top,
             Anchor::TopRight => [self.top[0] + self.size[0], self.top[1]],
             Anchor::BottomLeft => [self.top[0], self.top[1] + self.size[1]],
-            Anchor::BottomRight => [self.top[0] + self.size[0], self.top[1] + self.size[1]],
+            Anchor::BottomRight => {
+                [self.top[0] + self.size[0], self.top[1] + self.size[1]]
+            }
             Anchor::Top => [self.top[0] + self.size[0] / two, self.top[1]],
             Anchor::Left => [self.top[0], self.top[1] + self.size[1] / two],
-            Anchor::Right => [self.top[0] + self.size[0], self.top[1] + self.size[1] / two],
-            Anchor::Bottom => [self.top[0] + self.size[0] / two, self.top[1] + self.size[1]],
-            Anchor::Center => [self.top[0] + self.size[0] / two, self.top[1] + self.size[1] / two],
+            Anchor::Right => {
+                [self.top[0] + self.size[0], self.top[1] + self.size[1] / two]
+            }
+            Anchor::Bottom => {
+                [self.top[0] + self.size[0] / two, self.top[1] + self.size[1]]
+            }
+            Anchor::Center => {
+                [self.top[0] + self.size[0] / two,
+                 self.top[1] + self.size[1] / two]
+            }
         }
     }
 
@@ -66,7 +75,7 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
 }
 
 /// Iterator for packed left-to-right top-to-bottom subrectangles
-pub struct TileIter<'a, T: 'a+Copy> {
+pub struct TileIter<'a, T: 'a + Copy> {
     base: &'a Rect<T>,
     dim: [T; 2],
     x: T,
