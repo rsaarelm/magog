@@ -1,5 +1,9 @@
+#![feature(custom_derive, plugin)]
+#![plugin(serde_macros)]
+
 extern crate cgmath;
 extern crate num;
+extern crate serde;
 
 mod projection;
 mod rect;

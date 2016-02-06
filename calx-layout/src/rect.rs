@@ -2,7 +2,8 @@ use std::cmp::PartialOrd;
 use num::{Num, Signed, Zero, One, abs};
 use Anchor;
 
-pub struct Rect<T> {
+#[derive(Copy, Clone, PartialEq, PartialOrd, Hash, Default, Debug, Serialize, Deserialize)]
+pub struct Rect<T: Copy> {
     /// Top left (closest to the origin) corner of the rectange.
     pub top: [T; 2],
     /// Size of the rectangle, all elements are assumed to always be positive.
@@ -61,7 +62,7 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
 }
 
 /// Iterator for packed left-to-right top-to-bottom subrectangles
-pub struct TileIter<'a, T: 'a> {
+pub struct TileIter<'a, T: 'a+Copy> {
     base: &'a Rect<T>,
     dim: [T; 2],
     x: T,
