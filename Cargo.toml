@@ -18,6 +18,15 @@ path = "calx-color"
 [dependencies.calx-window]
 path = "calx-window"
 
+[dependencies.calx-cache]
+path = "calx-cache"
+
+[dependencies.calx-grid]
+path = "calx-grid"
+
+[dependencies.calx-layout]
+path = "calx-layout"
+
 [dependencies]
 rand = "*"
 serde = "*"
