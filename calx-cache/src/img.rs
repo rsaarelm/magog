@@ -3,14 +3,14 @@ use std::default::Default;
 use std::cmp::{min, max};
 use std::convert::Into;
 use image::{Primitive, GenericImage, SubImage, Pixel, ImageBuffer, Rgba};
-use geom::{V2, Rect, TileIter, IterTiles};
-use rgb;
+use calx_layout::{Rect};
+use calx_color;
 
 /// Set alpha channel to transparent if pixels have a specific color.
 pub fn color_key<P, I, C>(image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>>
     where P: Pixel<Subpixel = u8>,
           I: GenericImage<Pixel = P>,
-          C: Into<rgb::SRgba>
+          C: Into<calx_color::SRgba>
 {
     let (w, h) = image.dimensions();
     let srgba = color.into();
@@ -61,6 +61,7 @@ pub fn blit<T, P, I, J, V>(image: &I, target: &mut J, offset: V)
           V: Into<[i32; 2]>
 {
     let (w, h) = image.dimensions();
+    let offset = offset.into();
     // TODO: Check for going over bounds.
     for y in 0..(h) {
         for x in 0..(w) {

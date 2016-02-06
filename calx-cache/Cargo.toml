@@ -9,6 +9,10 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 image = "0.6"
 vec_map = "0.4"
+num = "0.1"
 
 [dependencies.calx-layout]
 path = "../calx-layout"
+
+[dependencies.calx-color]
+path = "../calx-color"

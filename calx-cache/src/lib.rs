@@ -1,6 +1,8 @@
+extern crate num;
+extern crate vec_map;
 extern crate image;
 extern crate calx_layout;
-extern crate vec_map;
+extern crate calx_color;
 
 pub use img::{color_key, ImageStore};
 pub use atlas::{AtlasBuilder, Atlas, AtlasItem};
