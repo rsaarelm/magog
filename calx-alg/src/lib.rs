@@ -3,6 +3,7 @@
 extern crate serde;
 extern crate num;
 extern crate rand;
+extern crate time;
 
 use std::ops::{Add, Sub, Mul};
 use num::Float;
@@ -12,6 +13,7 @@ pub use text::{split_line, wrap_lines, Map2DIterator, Map2DUtil};
 
 mod rng;
 mod text;
+pub mod timing;
 
 pub mod ease;
 

@@ -4,6 +4,7 @@ extern crate image;
 extern crate glium;
 extern crate calx_layout;
 extern crate calx_color;
+extern crate calx_alg;
 
 pub use key::Key;
 pub use event::{Event, MouseButton};

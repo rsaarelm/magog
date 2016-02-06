@@ -11,6 +11,7 @@ serde = "0.6"
 serde_macros = "0.6"
 num = "0.1"
 rand = "0.3"
+time = "0.1"
 
 [dev-dependencies]
 bincode = "0.4"
