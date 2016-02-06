@@ -59,6 +59,10 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
     pub fn tiles<'a, V: Into<[T; 2]>>(&'a self, dim: V) -> TileIter<'a, T> {
         TileIter::new(self, dim.into())
     }
+
+    pub fn area(&self) -> T {
+        self.size[0] * self.size[1]
+    }
 }
 
 /// Iterator for packed left-to-right top-to-bottom subrectangles
