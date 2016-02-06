@@ -27,7 +27,6 @@ pub use geom::{V2, V3, Rect, RectIter, IterTiles};
 
 #[deprecated] mod geom;
 pub mod backend;
-pub mod debug;
 pub mod timing;
 
 /// Rectangle anchoring points.

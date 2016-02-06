@@ -5,3 +5,6 @@ authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Miscellaneous operating system related utilities"
 keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
+
+[dependencies]
+time = "0.1"
