@@ -27,10 +27,13 @@ impl AtlasBuilder {
               V: Into<[i32; 2]>
     {
         let Rect { top: pos, size: dim } = img::crop_alpha(image);
-        let image = ImageBuffer::from_fn(dim[0] as u32, dim[1] as u32, |x, y| {
-            image.get_pixel(pos[0] as u32 + x, pos[1] as u32 + y)
-                 .to_rgba()
-        });
+        let image = ImageBuffer::from_fn(dim[0] as u32,
+                                         dim[1] as u32,
+                                         |x, y| {
+                                             image.get_pixel(pos[0] as u32 + x,
+                                                             pos[1] as u32 + y)
+                                                  .to_rgba()
+                                         });
         self.images.push(image);
         self.draw_offsets.push(pos + offset);
         self.images.len() - 1
@@ -58,21 +61,23 @@ pub struct AtlasItem {
 impl Atlas {
     pub fn new(builder: &AtlasBuilder) -> Atlas {
         let dims = builder.images
-                                        .iter()
-                                        .map(|img| {
-                                            let (w, h) = img.dimensions();
-                                            V2(w as i32, h as i32)
-                                        })
-                                        .collect::<[i32; 2]>();
+                          .iter()
+                          .map(|img| {
+                              let (w, h) = img.dimensions();
+                              [w as i32, h as i32]
+                          })
+                          .collect::<[i32; 2]>();
 
         // Add 1 pixel edges to images to prevent texturing artifacts from
         // adjacent pixels in separate subimages.
         let expanded_dims = dims.iter()
-                                .map(|&v| v + V2(1, 1))
-                                .collect();
+                                .map(|&v| [v[0] + 1, v[1] + 1])
+                                .collect::<[i32; 2]>();
 
         // Guesstimate the size for the atlas container.
-        let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(0, |a, b| a + b);
+        let total_area = dims.iter()
+                             .map(|dim| dim[0] * dim[1])
+                             .fold(0, |a, b| a + b);
         let mut d = ((total_area as f64).sqrt() as u32).next_power_of_two();
         let offsets;
 
@@ -95,56 +100,74 @@ impl Atlas {
             img::blit(&builder.images[i], &mut image, offset);
         }
 
-        let image_dim = V2(d, d);
+        let image_dim = [d, d];
 
         assert!(offsets.len() == builder.draw_offsets.len());
 
-        let items: Vec<AtlasItem> = (0..(offsets.len()))
-                                        .map(|i| {
-                                            AtlasItem {
-                                                pos: Rect(builder.draw_offsets[i].map(|x| x as f32),
-                                                          dims[i].map(|x| x as f32)),
-                                                tex: Rect(scale_vec(offsets[i], image_dim),
-                                                          scale_vec(dims[i], image_dim)),
-                                            }
-                                        })
-                                        .collect();
+        let items = (0..(offsets.len()))
+                        .map(|i| {
+                            let top = [builder.draw_offsets[i][0] as f32,
+                                       builder.draw_offsets[i][1] as f32];
+                            let size = [dims[i][0] as f32, dims[i][1] as f32];
+                            AtlasItem {
+                                pos: Rect {
+                                    top: top,
+                                    size: size,
+                                },
+                                tex: Rect {
+                                    top: scale_vec(offsets[i], image_dim),
+                                    size: scale_vec(dims[i], image_dim),
+                                },
+                            }
+                        })
+                        .collect::<Vec<AtlasItem>>();
 
         return Atlas {
             image: image,
             items: items,
         };
 
-        fn scale_vec(pixel_vec: V2<i32>, image_dim: V2<u32>) -> V2<f32> {
-            V2(pixel_vec.0 as f32 / image_dim.0 as f32,
-               pixel_vec.1 as f32 / image_dim.1 as f32)
+        fn scale_vec(pixel_vec: [i32; 2], image_dim: [u32; 2]) -> [f32; 2] {
+            [pixel_vec[0] as f32 / image_dim[0] as f32,
+             pixel_vec[1] as f32 / image_dim[1] as f32]
         }
     }
 }
 
 /// Try to pack several small rectangles into one large rectangle. Return
 /// offsets for the subrectangles within the container if a packing was found.
-fn pack_rectangles<T>(container_dim: V2<T>, dims: &Vec<V2<T>>) -> Option<Vec<V2<T>>>
-    where T: Num + PartialOrd + Ord + Copy
+fn pack_rectangles<T>(container_dim: [T; 2],
+                      dims: &Vec<[T; 2]>)
+                      -> Option<Vec<[T; 2]>>
+    where T: Num + PartialOrd + Ord + Copy + Signed
 {
     let init: T = Zero::zero();
-    let total_area = dims.iter().map(|dim| dim.0 * dim.1).fold(init, |a, b| a + b);
+    let total_area = dims.iter()
+                         .map(|dim| dim[0] * dim[1])
+                         .fold(init, |a, b| a + b);
 
     // Too much rectangle area to fit in container no matter how you pack it.
     // Fail early.
-    if total_area > container_dim.0 * container_dim.1 {
+    if total_area > container_dim[0] * container_dim[1] {
         return None;
     }
 
     // Take enumeration to keep the original indices around.
-    let mut largest_first: Vec<(usize, &V2<T>)> = dims.iter().enumerate().collect();
-    largest_first.sort_by(|&(_i, a), &(_j, b)| (b.0 * b.1).cmp(&(a.0 * a.1)));
+    let mut largest_first: Vec<(usize, &[T; 2])> = dims.iter()
+                                                       .enumerate()
+                                                       .collect();
+    largest_first.sort_by(|&(_i, a), &(_j, b)| {
+        (b[0] * b[1]).cmp(&(a[0] * a[1]))
+    });
 
-    let mut slots = vec![Rect(V2(Zero::zero(), Zero::zero()), container_dim)];
+    let mut slots = vec![Rect {
+                             top: [Zero::zero(), Zero::zero()],
+                             size: container_dim,
+                         }];
 
-    let mut ret: Vec<V2<T>> = iter::repeat(V2(Zero::zero(), Zero::zero()))
-                                  .take(dims.len())
-                                  .collect();
+    let mut ret: Vec<[T; 2]> = iter::repeat([Zero::zero(), Zero::zero()])
+                                   .take(dims.len())
+                                   .collect();
 
     for i in 0..(largest_first.len()) {
         let (idx, &dim) = largest_first[i];
@@ -170,7 +193,11 @@ fn pack_rectangles<T>(container_dim: V2<T>, dims: &Vec<V2<T>>) -> Option<Vec<V2<
             if fits(dim, slot_dim) {
                 // Remove the original slot, it gets the item. Add the two new
                 // rectangles that form around the item.
-                let (new_1, new_2) = remaining_rects(dim, Rect { top: slot_pos, size: slot_dim });
+                let (new_1, new_2) = remaining_rects(dim,
+                                                     Rect {
+                                                         top: slot_pos,
+                                                         size: slot_dim,
+                                                     });
                 slots.swap_remove(i);
                 slots.push(new_1);
                 slots.push(new_2);
@@ -184,7 +211,9 @@ fn pack_rectangles<T>(container_dim: V2<T>, dims: &Vec<V2<T>>) -> Option<Vec<V2<
 
     /// Return the two remaining parts of container rect when the dim-sized
     /// item is placed in the top left corner.
-    fn remaining_rects<T>(dim: [T; 2], Rect { top: rect_pos, size: rect_dim }: Rect<T>) -> (Rect<T>, Rect<T>)
+    fn remaining_rects<T>(dim: [T; 2],
+                          Rect { top: rect_pos, size: rect_dim }: Rect<T>)
+                          -> (Rect<T>, Rect<T>)
         where T: Num + PartialOrd + Ord + Copy + Signed
     {
         assert!(fits(dim, rect_dim));
@@ -201,19 +230,27 @@ fn pack_rectangles<T>(container_dim: V2<T>, dims: &Vec<V2<T>>) -> Option<Vec<V2<
             // ----+--
             // BBBBBBB
             // BBBBBBB
-            (Rect { top: [rect_pos[0] + dim[0], rect_pos[1]],
-                    size: [rect_dim[0] - dim[0], dim[1]] },
-             Rect { top: [rect_pos[0], rect_pos[1] + dim[1]],
-                    size: [rect_dim[0], rect_dim[1] - dim[1]] })
+            (Rect {
+                top: [rect_pos[0] + dim[0], rect_pos[1]],
+                size: [rect_dim[0] - dim[0], dim[1]],
+            },
+             Rect {
+                top: [rect_pos[0], rect_pos[1] + dim[1]],
+                size: [rect_dim[0], rect_dim[1] - dim[1]],
+            })
         } else {
             //     |BB
             // ----+BB
             // AAAA|BB
             // AAAA|BB
-            (Rect { top: [rect_pos[0], rect_pos[1] + dim[1]],
-                    size: [dim[0], rect_dim[1] - dim[1]] },
-             Rect { top: [rect_pos[0] + dim[0], rect_pos[1]],
-                    size: [rect_dim[0] - dim[0], rect_dim[1]] })
+            (Rect {
+                top: [rect_pos[0], rect_pos[1] + dim[1]],
+                size: [dim[0], rect_dim[1] - dim[1]],
+            },
+             Rect {
+                top: [rect_pos[0] + dim[0], rect_pos[1]],
+                size: [rect_dim[0] - dim[0], rect_dim[1]],
+            })
         }
     }
 
