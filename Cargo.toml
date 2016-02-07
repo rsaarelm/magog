@@ -32,15 +32,3 @@ path = "calx-system"
 
 [dependencies.calx-draw]
 path = "calx-draw"
-
-[dependencies]
-rand = "*"
-serde = "*"
-serde_macros = "*"
-bincode = "*"
-time = "*"
-num = "*"
-vec_map = "*"
-image = "*"
-nalgebra = "*"
-glium = "*"
