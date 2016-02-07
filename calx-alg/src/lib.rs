@@ -69,3 +69,18 @@ pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) {
         (b, a)
     }
 }
+
+// TODO: Remove this thing once Rust has a proper way of counting macro
+// arguments.
+
+/// Macro hack for counting the number of arguments.
+///
+/// Use for determining the size of a fixed array type created by a macro that
+/// takes variadic arguments. Due to its hackiness, will fail around 100
+/// elements.
+#[macro_export]
+macro_rules! count_exprs {
+    () => { 0 };
+    ($e:expr) => { 1 };
+    ($e:expr, $($es:expr),+) => { 1 + count_exprs!($($es),*) };
+}
