@@ -3,10 +3,9 @@ use image::{ImageBuffer, Rgba};
 use image;
 use glium::Surface;
 use ::{AtlasBuilder, Atlas, AtlasItem, V2, IterTiles, ImageStore, color};
-use super::event::{Event, MouseButton};
-use super::mesh;
-use super::{WidgetId, RenderTarget};
-use super::window::{Window};
+use calx_window::{Window, Event, MouseButton};
+use mesh;
+use {WidgetId, RenderTarget};
 
 /// Width of the full font cell. Actual variable-width letters occupy some
 /// portion of the left side of the cell.

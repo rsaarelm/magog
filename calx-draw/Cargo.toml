@@ -5,3 +5,16 @@ authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "UI drawing utilities"
 keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
+
+[dependencies]
+glium = "0.13"
+image = "0.6"
+
+[dependencies.calx-window]
+path = "../calx-window"
+
+[dependencies.calx-color]
+path = "../calx-color"
+
+[dependencies.calx-layout]
+path = "../calx-layout"

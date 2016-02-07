@@ -3,8 +3,8 @@ use std::default::{Default};
 use std::u16;
 use glium;
 use image;
-use super::{RenderTarget};
-use ::{V2, Rgba};
+use calx_color::Rgba;
+use RenderTarget;
 
 pub struct Buffer {
     shader: Rc<glium::Program>,
@@ -132,10 +132,13 @@ implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 impl Vertex {
     #[inline(always)]
-    pub fn new(pos: V2<f32>, z: f32, texcoord: V2<f32>, color: Rgba, back_color: Rgba) -> Vertex {
+    pub fn new<V>(pos: V, z: f32, tex_coord: V, color: Rgba, back_color: Rgba) -> Vertex
+        where V: Into<[f32; 2]> {
+        let pos = pos.into();
+        let tex_coord = tex_coord.into();
         Vertex {
-            pos: [pos.0, pos.1, z],
-            tex_coord: [texcoord.0, texcoord.1],
+            pos: [pos[0], pos[1], z],
+            tex_coord: tex_coord,
             color: [color.r, color.g, color.b, color.a],
             back_color: [back_color.r, back_color.g, back_color.b, back_color.a],
         }

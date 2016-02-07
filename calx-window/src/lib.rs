@@ -1,7 +1,6 @@
 extern crate time;
 extern crate image;
-#[macro_use]
-extern crate glium;
+#[macro_use] extern crate glium;
 extern crate calx_layout;
 extern crate calx_color;
 extern crate calx_alg;
