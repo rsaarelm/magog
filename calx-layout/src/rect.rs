@@ -1,6 +1,6 @@
 use std::cmp::PartialOrd;
 use num::{Num, Signed, Zero, One, abs};
-use Anchor;
+use {Anchor, Shape2D};
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Hash, Default, Debug, Serialize, Deserialize)]
 pub struct Rect<T: Copy> {
@@ -77,10 +77,25 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
     /// rectangles.
     pub fn merge(&self, other: &Rect<T>) -> Rect<T> {
         Rect {
-            top: [*min(&self.top[0], &other.top[0]), *min(&self.top[1], &other.top[1])],
-            size: [*max(&self.size[0], &other.size[0]), *max(&self.size[1], &other.size[1])]
+            top: [*min(&self.top[0], &other.top[0]),
+                  *min(&self.top[1], &other.top[1])],
+            size: [*max(&self.size[0], &other.size[0]),
+                   *max(&self.size[1], &other.size[1])],
         }
 
+    }
+}
+
+impl<T: Copy + Num + PartialOrd> Shape2D<T> for Rect<T> {
+    fn bounding_box(&self) -> Rect<T> {
+        *self
+    }
+
+    fn contains<V: Into<[T; 2]>>(&self, p: V) -> bool {
+        let p = p.into();
+        p[0] >= self.top[0] && p[1] >= self.top[1] &&
+        p[0] < self.top[0] + self.size[0] &&
+        p[1] < self.top[1] + self.size[1]
     }
 }
 
