@@ -76,12 +76,12 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
     /// Produce the smallest new rectangle that contains both input
     /// rectangles.
     pub fn merge(&self, other: &Rect<T>) -> Rect<T> {
-        Rect {
-            top: [*min(&self.top[0], &other.top[0]),
-                  *min(&self.top[1], &other.top[1])],
-            size: [*max(&self.size[0], &other.size[0]),
-                   *max(&self.size[1], &other.size[1])],
-        }
+        Rect::new([*min(&self.top[0], &other.top[0]),
+                   *min(&self.top[1], &other.top[1])],
+                  [*max(&(self.top[0] + self.size[0]),
+                        &(other.top[0] + other.size[0])),
+                   *max(&(self.top[1] + self.size[1]),
+                        &(other.top[1] + other.size[1]))])
 
     }
 }
