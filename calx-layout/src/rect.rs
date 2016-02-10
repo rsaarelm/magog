@@ -72,6 +72,16 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
     pub fn area(&self) -> T {
         self.size[0] * self.size[1]
     }
+
+    /// Produce the smallest new rectangle that contains both input
+    /// rectangles.
+    pub fn merge(&self, other: &Rect<T>) -> Rect<T> {
+        Rect {
+            top: [*min(&self.top[0], &other.top[0]), *min(&self.top[1], &other.top[1])],
+            size: [*max(&self.size[0], &other.size[0]), *max(&self.size[1], &other.size[1])]
+        }
+
+    }
 }
 
 /// Iterator for packed left-to-right top-to-bottom subrectangles
@@ -122,6 +132,14 @@ impl<'a, T: Num + PartialOrd + Copy> Iterator for TileIter<'a, T> {
 
 fn min<'a, T: PartialOrd>(a: &'a T, b: &'a T) -> &'a T {
     if a.lt(b) {
+        a
+    } else {
+        b
+    }
+}
+
+fn max<'a, T: PartialOrd>(a: &'a T, b: &'a T) -> &'a T {
+    if a.gt(b) {
         a
     } else {
         b
