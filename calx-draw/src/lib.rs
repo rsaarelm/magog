@@ -4,20 +4,24 @@
 #[macro_use]
 extern crate glium;
 extern crate image;
+extern crate cgmath;
 extern crate calx_window;
 extern crate calx_color;
 extern crate calx_layout;
+extern crate calx_cache;
 
 // pub use canvas::{CanvasBuilder, Canvas};
 // pub use canvas::{Image};
-// pub use canvas_util::{CanvasUtil};
+pub use draw_util::DrawUtil;
 // pub use fonter::{Fonter, Align};
 pub use mesh::{Buffer, Vertex};
+pub use mesh_context::MeshContext;
 
 // mod canvas;
-// mod canvas_util;
+mod draw_util;
 // mod fonter;
 mod mesh;
+mod mesh_context;
 
 /// Drawable images stored in the atlas texture of a Mesh.
 ///
@@ -25,10 +29,6 @@ mod mesh;
 /// drawing solid polygons.
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
 pub struct Image(usize);
-
-pub trait RenderTarget {
-    fn add_mesh(&mut self, vertices: Vec<mesh::Vertex>, faces: Vec<[u16; 3]>);
-}
 
 /// UI Widget static identifier, unique for a specific site in source code.
 #[derive(Copy, Clone, Debug, PartialEq)]

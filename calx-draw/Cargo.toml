@@ -7,6 +7,7 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+cgmath = "0.7"
 glium = "0.13"
 image = "0.6"
 
@@ -19,5 +20,5 @@ path = "../calx-color"
 [dependencies.calx-layout]
 path = "../calx-layout"
 
-[dev-dependencies.calx-cache]
+[dependencies.calx-cache]
 path = "../calx-cache"

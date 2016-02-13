@@ -1,56 +1,68 @@
-use std::convert::{Into};
-use super::canvas::{Canvas, Image, FONT_W};
-use super::event::{MouseButton};
-use super::{WidgetId};
-use super::{RenderTarget};
-use super::mesh::{Vertex};
-use ::{V2, Rect, color, Rgba};
-use ::Anchor::*;
+use cgmath::{Vector2, vec2, dot};
+use calx_color::{color, Rgba};
+use calx_layout::Rect;
+use calx_layout::Anchor::*;
+use mesh::{Vertex};
+use mesh_context::MeshContext;
 
-/// Helper methods for canvas context that do not depend on the underlying
+/// Helper methods for render context that do not depend on the underlying
 /// implementation details.
-pub trait CanvasUtil {
+pub trait DrawUtil {
     /// Draw a thick solid line on the canvas.
-    fn draw_line<C: Into<Rgba>+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: C);
+    fn draw_line<C, V>(&mut self, width: f32, p1: V, p2: V, layer: f32, color: C)
+        where C: Into<Rgba>+Copy,
+              V: Into<[f32; 2]>;
+
     /// Get the size of an atlas image.
-    fn image_dim(&self, img: Image) -> V2<u32>;
+    fn image_dim(&self, img: usize) -> [u32; 2];
 
     /// Draw a stored image on the canvas.
-    fn draw_image<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: C, back_color: D);
+    fn draw_image<C, D, V>(&mut self, img: usize, offset: V, z: f32, color: C, back_color: D)
+        where C: Into<Rgba>+Copy,
+              D: Into<Rgba>+Copy,
+              V: Into<[f32; 2]>;
 
     /// Draw a filled rectangle.
     fn fill_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C);
 
     /// Draw a wireframe rectangle.
     fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C);
-
-    /// Draw an immediate GUI button and return whether it was pressed.
-    fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool;
-
-    fn draw_char<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: C, border: Option<D>);
+/*
+    fn draw_char<C, D, V>(&mut self, c: char, offset: V, z: f32, color: C, border: Option<D>)
+        where C: Into<Rgba>+Copy,
+              D: Into<Rgba>+Copy,
+              V: Into<[f32; 2]>;
 
     fn char_width(&self, c: char) -> f32;
+    */
 
+    /*
     /// Write a timestamped screenshot PNG to disk.
     fn save_screenshot(&mut self, basename: &str);
+    */
 }
 
-impl CanvasUtil for Canvas {
-    fn draw_line<C: Into<Rgba>+Copy>(&mut self, width: f32, p1: V2<f32>, p2: V2<f32>, layer: f32, color: C) {
+impl DrawUtil for MeshContext {
+    fn draw_line<C, V>(&mut self, width: f32, p1: V, p2: V, layer: f32, color: C)
+        where C: Into<Rgba>+Copy,
+              V: Into<[f32; 2]>
+    {
+        let p1: Vector2<f32> = Vector2::from(p1.into());
+        let p2: Vector2<f32> = Vector2::from(p2.into());
+
         if p1 == p2 { return; }
 
-        let tex = self.solid_tex_coord();
+        let tex = self.tiles[0].tex.top;
 
         // The front vector. Extend by width.
         let v1 = p2 - p1;
-        let scalar = v1.dot(v1);
+        let scalar = dot(v1, v1);
         let scalar = (scalar + width * width) / scalar;
         let v1 = v1 * scalar;
 
         // The sideways vector, turn into unit vector, then multiply by half the width.
-        let v2 = V2(-v1.1, v1.0);
-        let scalar = width / 2.0 * 1.0 / v2.dot(v2).sqrt();
+        let v2 = vec2(-v1[1], v1[0]);
+        let scalar = width / 2.0 * 1.0 / dot(v2, v2).sqrt();
         let v2 = v2 * scalar;
 
         let color: Rgba = color.into();
@@ -64,19 +76,27 @@ impl CanvasUtil for Canvas {
             vec![[0, 1, 2], [0, 2, 3]]);
     }
 
-    fn image_dim(&self, img: Image) -> V2<u32> {
-        self.image_data(img).pos.1.map(|x| x as u32)
+    fn image_dim(&self, img: usize) -> [u32; 2] {
+        let size = self.tiles[img].pos.size;
+        [size[0] as u32, size[1] as u32]
     }
 
-    fn draw_image<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, img: Image,
-        offset: V2<f32>, z: f32, color: C, back_color: D) {
+    fn draw_image<C, D, V>(&mut self, img: usize, offset: V, z: f32, color: C, back_color: D)
+        where C: Into<Rgba>+Copy,
+              D: Into<Rgba>+Copy,
+              V: Into<[f32; 2]> {
         // Use round numbers, fractions seem to cause artifacts to pixels.
-        let offset = offset.map(|x| x.floor());
-        let pos;
+        let mut offset = offset.into();
+        offset[0] = offset[0].floor();
+        offset[1] = offset[1].floor();
+
+        let mut pos;
         let tex;
         {
-            let data = self.image_data(img);
-            pos = data.pos + offset;
+            let data = self.tiles[img];
+            pos = data.pos;
+            pos.top[0] += offset[0];
+            pos.top[1] += offset[1];
             tex = data.tex;
         }
 
@@ -93,7 +113,7 @@ impl CanvasUtil for Canvas {
     }
 
     fn fill_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {
-        let tex = self.solid_tex_coord();
+        let tex = self.tiles[0].tex.top;
 
         let color: Rgba = color.into();
         self.add_mesh(
@@ -107,31 +127,13 @@ impl CanvasUtil for Canvas {
     }
 
     fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C) {
-        self.draw_line(1.0, rect.point(TopLeft), rect.point(TopRight) - V2(1.0, 0.0), z, color);
-        self.draw_line(1.0, rect.point(TopRight) - V2(1.0, 0.0), rect.point(BottomRight) - V2(1.0, 0.0), z, color);
-        self.draw_line(1.0, rect.point(BottomLeft) - V2(0.0, 1.0), rect.point(BottomRight) - V2(1.0, 1.0), z, color);
+        self.draw_line(1.0, Vector2::from(rect.point(TopLeft)), Vector2::from(rect.point(TopRight)) - vec2(1.0, 0.0), z, color);
+        self.draw_line(1.0, Vector2::from(rect.point(TopRight)) - vec2(1.0, 0.0), Vector2::from(rect.point(BottomRight)) - vec2(1.0, 0.0), z, color);
+        self.draw_line(1.0, Vector2::from(rect.point(BottomLeft)) - vec2(0.0, 1.0), Vector2::from(rect.point(BottomRight)) - vec2(1.0, 1.0), z, color);
         self.draw_line(1.0, rect.point(TopLeft), rect.point(BottomLeft), z, color);
     }
 
-    fn button(&mut self, id: WidgetId, pos: V2<f32>, z: f32) -> bool {
-        // TODO: Button visual style! Closures?
-        let area = Rect(pos, V2(64.0, 16.0));
-        let mut color = color::GREEN;
-        if area.contains(&self.mouse_pos()) {
-            self.hot_widget = Some(id);
-            if self.active_widget.is_none() && self.mouse_pressed(MouseButton::Left) {
-                self.active_widget = Some(id);
-            }
-            color = color::RED;
-        }
-
-        self.fill_rect(&area, z, color);
-
-        return !self.mouse_pressed(MouseButton::Left) // Mouse is released
-            && self.active_widget == Some(id) // But this button is hot and active
-            && self.hot_widget == Some(id);
-    }
-
+    /*
     fn draw_char<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: C, border: Option<D>) {
         static BORDER: [V2<f32>; 8] =
             [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
@@ -151,21 +153,20 @@ impl CanvasUtil for Canvas {
     }
 
     fn char_width(&self, c: char) -> f32 {
-        // Special case for space, the atlas image won't have a width.
-        if c == ' ' { return (FONT_W / 2) as f32; }
-
         // Infer letter width from the cropped atlas image. (Use mx instead of
         // dim on the pos rectangle so that the left-side space will be
         // preserved and the letters are kept slightly apart.)
         if let Some(img) = self.font_image(c) {
-            let width = self.image_data(img).pos.mx().0;
+            let width = self.tiles[img].pos.mx().0;
             return width;
         }
 
         // Not a valid letter.
         (FONT_W / 2) as f32
     }
+    */
 
+    /*
     fn save_screenshot(&mut self, basename: &str) {
         use time;
         use std::path::{Path};
@@ -206,4 +207,5 @@ impl CanvasUtil for Canvas {
 
         let _ = image::save_buffer(&Path::new(&filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
     }
+    */
 }

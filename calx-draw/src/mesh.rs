@@ -4,7 +4,6 @@ use std::u16;
 use glium;
 use image;
 use calx_color::Rgba;
-use RenderTarget;
 
 /// Collect textured mesh elements that make up a single rendered frame.
 pub struct Buffer {
@@ -78,10 +77,8 @@ impl Buffer {
         }
         self.meshes = vec![Mesh::new()];
     }
-}
 
-impl RenderTarget for Buffer {
-    fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
+    pub fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
         assert!(self.meshes.len() > 0);
 
         if self.meshes[self.meshes.len() - 1].is_full() {
@@ -143,13 +140,14 @@ implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 impl Vertex {
     #[inline(always)]
-    pub fn new<V>(pos: V,
+    pub fn new<V, W>(pos: V,
                   z: f32,
-                  tex_coord: V,
+                  tex_coord: W,
                   color: Rgba,
                   back_color: Rgba)
                   -> Vertex
-        where V: Into<[f32; 2]>
+        where V: Into<[f32; 2]>,
+              W: Into<[f32; 2]>
     {
         let pos = pos.into();
         let tex_coord = tex_coord.into();
