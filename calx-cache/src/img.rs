@@ -1,8 +1,8 @@
 use std::default::Default;
 use std::cmp::{min, max};
 use std::convert::Into;
-use image::{Primitive, GenericImage, Pixel, ImageBuffer, Rgba};
-use calx_layout::Rect;
+use image::{Primitive, GenericImage, Pixel, ImageBuffer, SubImage, Rgba};
+use calx_layout::{Anchor, Rect, Shape2D};
 use calx_color;
 
 /// Set alpha channel to transparent if pixels have a specific color.
@@ -69,6 +69,143 @@ pub fn blit<T, P, I, J, V>(image: &I, target: &mut J, offset: V)
                              image.get_pixel(x, y));
         }
     }
+}
+
+/// Convenience function for extracting a subimage with a Rect as bounds.
+#[inline(always)]
+pub fn subimage<'a, T, P, I>(image: &'a mut I,
+                              rect: &Rect<i32>)
+                              -> SubImage<'a, I>
+    where T: Primitive + Default + 'static,
+          P: Pixel<Subpixel = T> + PartialEq + 'static,
+          I: GenericImage<Pixel = P> + 'static
+{
+    image.sub_image(rect.top[0] as u32,
+                    rect.top[1] as u32,
+                    rect.size[0] as u32,
+                    rect.size[1] as u32)
+}
+
+/// Return the tiles on a tile sheet image.
+///
+/// Tiles are bounding boxes of non-background pixel groups surrounded by
+/// only background pixels or image edges. Background color is the color of
+/// the bottom right corner pixel of the image. The bounding boxes are
+/// returned lexically sorted by the coordinates of their bottom right
+/// corners, first along the y-axis then along the x-axis. This produces a
+/// natural left-to-right, bottom-to-top ordering for a cleanly laid out
+/// tile sheet.
+pub fn tilesheet_bounds<T, P, I>(image: &I) -> Vec<Rect<i32>>
+    where T: Primitive + Default,
+          P: Pixel<Subpixel = T> + PartialEq,
+          I: GenericImage<Pixel = P>
+{
+    let mut ret = Vec::new();
+    let image_rect = Rect::new([0, 0],
+                               [image.width() as i32, image.height() as i32]);
+    let background = image.get_pixel(image.width() - 1, image.height() - 1);
+
+    for pt in image_rect.tiles([1, 1]).map(|x| x.top) {
+        // Skip areas that already contain known tiles.
+        //
+        // XXX: Using the union Shape2D is an ineffective way to test against
+        // the area to skip.
+        if ret.contains(pt) {
+            continue;
+        }
+
+        if image.get_pixel(pt[0] as u32, pt[1] as u32) != background {
+            ret.push(tile_bounds(image, pt, background));
+        }
+    }
+
+    ret.sort_by(|a, b| rect_key(a).cmp(&rect_key(b)));
+    return ret;
+
+    fn rect_key(x: &Rect<i32>) -> (i32, i32) {
+        let p = x.point(Anchor::BottomRight);
+        (p[1], p[0])
+    }
+}
+
+/// Find the smallest bounding box around seed pixel whose sides are either
+/// all background color or image edge.
+fn tile_bounds<T, P, I>(image: &I,
+                        seed_pos: [i32; 2],
+                        background: P)
+                        -> Rect<i32>
+    where T: Primitive + Default,
+          P: Pixel<Subpixel = T> + PartialEq,
+          I: GenericImage<Pixel = P>
+{
+    let image_rect = Rect::new([0, 0],
+                               [image.width() as i32, image.height() as i32]);
+    let mut ret = Rect::new(seed_pos, [seed_pos[0] + 1, seed_pos[1] + 1]);
+
+    struct Edge {
+        p1: Anchor,
+        p2: Anchor,
+        d: [i32; 2],
+    };
+
+    const EDGE: [Edge; 4] = [Edge {
+                                 p1: Anchor::TopLeft,
+                                 p2: Anchor::TopRight,
+                                 d: [0, -1],
+                             },
+                             Edge {
+                                 p1: Anchor::TopRight,
+                                 p2: Anchor::BottomRight,
+                                 d: [1, 0],
+                             },
+                             Edge {
+                                 p1: Anchor::BottomRight,
+                                 p2: Anchor::BottomLeft,
+                                 d: [0, 1],
+                             },
+                             Edge {
+                                 p1: Anchor::BottomLeft,
+                                 p2: Anchor::TopLeft,
+                                 d: [-1, 0],
+                             }];
+
+    let mut unchanged_count = 0;
+
+    'outer: loop {
+        for dir in 0..4 {
+            if unchanged_count >= 4 {
+                break 'outer;
+            }
+
+            let p1 = ret.point(EDGE[dir].p1);
+            let mut p2 = ret.point(EDGE[dir].p2);
+            p2[0] += EDGE[dir].d[0];
+            p2[1] += EDGE[dir].d[1];
+            let expand = Rect::new(p1, p2);
+
+            // Expansion would go outside the image area, abandon expansion.
+            if !image_rect.contains_rect(&expand) {
+                unchanged_count += 1;
+                continue;
+            }
+
+            // Expansion has only background pixels, abandon expansion.
+            if expand.tiles([1, 1])
+                     .map(|x| x.top)
+                     .all(|p| {
+                         image.get_pixel(p[0] as u32, p[1] as u32) == background
+                     }) {
+                unchanged_count += 1;
+                continue;
+            }
+
+            // Otherwise add the expansion to the result.
+            ret = vec![ret, expand].bounding_box();
+            unchanged_count = 0;
+        }
+    }
+
+    ret
 }
 
 /// Interface for objects that store multiple images, like an image atlas.
