@@ -59,14 +59,17 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
     ///
     /// let x = Rect::new([0, 0], [8, 16]);
     /// // To iterate integer points in the rectangle, just use [1, 1] tiles.
-    /// assert_eq!(x.tiles([1, 1]).map(|x| x.top).next(), Some([0, 0]));
+    /// assert_eq!(x.tiles([1, 1]).map(|t| t.top).next(), Some([0, 0]));
     /// assert_eq!(x.tiles([1, 1]).count(), 8 * 16);
     ///
     /// let y = Rect::new([0.0, 0.0], [3.141, 2.718]);
     /// assert_eq!(y.tiles([1.0, 1.0]).count(), 3 * 2);
+    ///
+    /// let z = Rect::new([3, 6], [8, 16]);
+    /// assert_eq!(z.tiles([1, 1]).map(|t| t.top).next(), Some([3, 6]));
     /// ```
-    pub fn tiles<'a, V: Into<[T; 2]>>(&'a self, dim: V) -> TileIter<'a, T> {
-        TileIter::new(self, dim.into())
+    pub fn tiles<'a, V: Into<[T; 2]>>(&'a self, dim: V) -> RectIter<'a, T> {
+        RectIter::new(self, dim.into())
     }
 
     pub fn area(&self) -> T {
@@ -84,6 +87,14 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
                         &(other.top[1] + other.size[1]))])
 
     }
+
+    /// Return whether this rect completely contains another rect.
+    pub fn contains_rect(&self, other: &Rect<T>) -> bool {
+        let p2 = self.point(Anchor::BottomRight);
+        let q2 = other.point(Anchor::BottomRight);
+        self.contains(other.point(Anchor::TopLeft)) && q2[0] <= p2[0] &&
+        q2[1] <= p2[1]
+    }
 }
 
 impl<T: Copy + Num + PartialOrd> Shape2D<T> for Rect<T> {
@@ -100,17 +111,17 @@ impl<T: Copy + Num + PartialOrd> Shape2D<T> for Rect<T> {
 }
 
 /// Iterator for packed left-to-right top-to-bottom subrectangles
-pub struct TileIter<'a, T: 'a + Copy> {
+pub struct RectIter<'a, T: 'a + Copy> {
     base: &'a Rect<T>,
     dim: [T; 2],
     x: T,
     y: T,
 }
 
-impl<'a, T: Num + PartialOrd + Copy + 'a> TileIter<'a, T> {
-    fn new(base: &'a Rect<T>, dim: [T; 2]) -> TileIter<T> {
+impl<'a, T: Num + PartialOrd + Copy + 'a> RectIter<'a, T> {
+    fn new(base: &'a Rect<T>, dim: [T; 2]) -> RectIter<T> {
         assert!(dim[0] > Zero::zero() && dim[1] > Zero::zero());
-        TileIter {
+        RectIter {
             base: base,
             dim: dim,
             x: Zero::zero(),
@@ -119,7 +130,7 @@ impl<'a, T: Num + PartialOrd + Copy + 'a> TileIter<'a, T> {
     }
 }
 
-impl<'a, T: Num + PartialOrd + Copy> Iterator for TileIter<'a, T> {
+impl<'a, T: Num + PartialOrd + Copy> Iterator for RectIter<'a, T> {
     type Item = Rect<T>;
 
     fn next(&mut self) -> Option<Rect<T>> {
@@ -137,7 +148,7 @@ impl<'a, T: Num + PartialOrd + Copy> Iterator for TileIter<'a, T> {
         }
 
         let ret = Rect {
-            top: [self.x * self.dim[0], self.y * self.dim[1]],
+            top: [self.base.top[0] + self.x * self.dim[0], self.base.top[1] + self.y * self.dim[1]],
             size: self.dim,
         };
         self.x = self.x + One::one();
