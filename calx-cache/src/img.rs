@@ -207,4 +207,18 @@ pub trait ImageStore<H>: Sized {
     fn add_image<I, V>(&mut self, offset: V, image: &I) -> H
         where I: GenericImage,
               V: Into<[i32; 2]>;
+
+    /// Add a single-pixel solid image to the store to be used with solid
+    /// color shapes.
+    ///
+    /// You may want to call this as the first thing with a new store
+    /// (assuming the image handles are something like numbers couting up from
+    /// 0), to get the default image handle to point to the solid texture.
+    fn add_solid_image(&mut self) -> H {
+        let image: ImageBuffer<Rgba<u8>, Vec<u8>>;
+        image = ImageBuffer::from_fn(1, 1, |_, _| {
+            Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])
+        });
+        self.add_image([0, 0], &image)
+    }
 }
