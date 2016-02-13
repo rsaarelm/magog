@@ -1,8 +1,9 @@
+extern crate image;
 extern crate calx_window;
 extern crate calx_cache;
 extern crate calx_draw;
 
-use calx_cache::{AtlasBuilder, Atlas, AtlasItem};
+use calx_cache::{AtlasBuilder, Atlas, AtlasItem, tilesheet_bounds, subimage};
 use calx_window::{WindowBuilder, Window, Event, Key};
 use calx_draw::Buffer;
 
@@ -16,7 +17,14 @@ impl Context {
     pub fn new() -> Context {
         let window = WindowBuilder::new().set_title("Calx demo").build();
         let mut atlas_builder = AtlasBuilder::new();
-        atlas_builder.push_solid();
+
+        // Solid color as the default element.
+        assert!(atlas_builder.push_solid() == Default::default());
+
+        let mut sheet = image::load_from_memory(include_bytes!("../assets/font.png")).unwrap();
+        let bounds = tilesheet_bounds(&sheet);
+
+
         let Atlas {
             image: img,
             items: tiles,
