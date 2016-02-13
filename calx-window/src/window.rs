@@ -233,6 +233,18 @@ impl Window {
         self.translator.next()
     }
 
+    /// Convenience method for collecting incoming events.
+    pub fn events(&mut self) -> Vec<Event> {
+        let mut ret = Vec::new();
+        loop {
+            if let Some(e) = self.next_event() {
+                ret.push(e);
+            } else {
+                return ret;
+            }
+        }
+    }
+
     /// Map screen position (eg. of a mouse cursor) to canvas position.
     pub fn screen_to_canvas<V: Into<[i32; 2]>>(&self,
                                                screen_pos: V)

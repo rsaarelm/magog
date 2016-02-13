@@ -1,22 +1,23 @@
-/*!
-Window-wrangling, polygon-pushing and input-grabbing
-*/
+//! Window-wrangling, polygon-pushing and input-grabbing
+//!
 
-#[macro_use] extern crate glium;
+#[macro_use]
+extern crate glium;
 extern crate image;
 extern crate calx_window;
 extern crate calx_color;
 extern crate calx_layout;
 
-//pub use canvas::{CanvasBuilder, Canvas};
-//pub use canvas::{Image};
-//pub use canvas_util::{CanvasUtil};
-//pub use fonter::{Fonter, Align};
+// pub use canvas::{CanvasBuilder, Canvas};
+// pub use canvas::{Image};
+// pub use canvas_util::{CanvasUtil};
+// pub use fonter::{Fonter, Align};
+pub use mesh::{Buffer, Vertex};
 
-//mod canvas;
-//mod canvas_util;
-//mod fonter;
-pub mod mesh;
+// mod canvas;
+// mod canvas_util;
+// mod fonter;
+mod mesh;
 
 /// Drawable images stored in the atlas texture of a Mesh.
 ///

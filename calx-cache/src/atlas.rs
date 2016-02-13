@@ -39,35 +39,28 @@ impl AtlasBuilder {
         self.draw_offsets.push([pos[0] + offset[0], pos[1] + offset[1]]);
         self.images.len() - 1
     }
-}
 
-/// A collection of images packed into a single large image for more efficient
-/// caching in graphics hardware.
-pub struct Atlas {
-    /// The atlas image containing all the subimages.
-    pub image: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    /// Metadata for the subimages.
-    pub items: Vec<AtlasItem>,
-}
+    /// Add a single-pixel solid image to atlas to be used with solid color
+    /// shapes.
+    ///
+    /// You may want to call this as the first thing with a new atlas to get
+    /// the default image handle to point to the solid texture.
+    pub fn push_solid(&mut self) -> usize {
+        let image: ImageBuffer<Rgba<u8>, Vec<u8>>;
+        image = ImageBuffer::from_fn(1, 1, |_, _| {
+            Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])
+        });
+        self.push([0, 0], &image)
+    }
 
-/// One image stored in a texture atlas
-#[derive(Copy, Clone, Debug)]
-pub struct AtlasItem {
-    /// Vertices for the image rectangle when drawn at origin
-    pub pos: Rect<f32>,
-    /// Texture coordinates for the image rectangle on the atlas texture
-    pub tex: Rect<f32>,
-}
-
-impl Atlas {
-    pub fn new(builder: &AtlasBuilder) -> Atlas {
-        let dims = builder.images
-                          .iter()
-                          .map(|img| {
-                              let (w, h) = img.dimensions();
-                              [w as i32, h as i32]
-                          })
-                          .collect::<Vec<[i32; 2]>>();
+    pub fn build(self) -> Atlas {
+        let dims = self.images
+                       .iter()
+                       .map(|img| {
+                           let (w, h) = img.dimensions();
+                           [w as i32, h as i32]
+                       })
+                       .collect::<Vec<[i32; 2]>>();
 
         // Add 1 pixel edges to images to prevent texturing artifacts from
         // adjacent pixels in separate subimages.
@@ -98,17 +91,17 @@ impl Atlas {
         // Blit subimages to atlas image.
         let mut image: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(d, d);
         for (i, &offset) in offsets.iter().enumerate() {
-            img::blit(&builder.images[i], &mut image, offset);
+            img::blit(&self.images[i], &mut image, offset);
         }
 
         let image_dim = [d, d];
 
-        assert!(offsets.len() == builder.draw_offsets.len());
+        assert!(offsets.len() == self.draw_offsets.len());
 
         let items = (0..(offsets.len()))
                         .map(|i| {
-                            let top = [builder.draw_offsets[i][0] as f32,
-                                       builder.draw_offsets[i][1] as f32];
+                            let top = [self.draw_offsets[i][0] as f32,
+                                       self.draw_offsets[i][1] as f32];
                             let size = [dims[i][0] as f32, dims[i][1] as f32];
                             AtlasItem {
                                 pos: Rect {
@@ -133,6 +126,24 @@ impl Atlas {
              pixel_vec[1] as f32 / image_dim[1] as f32]
         }
     }
+}
+
+/// A collection of images packed into a single large image for more efficient
+/// caching in graphics hardware.
+pub struct Atlas {
+    /// The atlas image containing all the subimages.
+    pub image: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    /// Metadata for the subimages.
+    pub items: Vec<AtlasItem>,
+}
+
+/// One image stored in a texture atlas
+#[derive(Copy, Clone, Debug)]
+pub struct AtlasItem {
+    /// Vertices for the image rectangle when drawn at origin
+    pub pos: Rect<f32>,
+    /// Texture coordinates for the image rectangle on the atlas texture
+    pub tex: Rect<f32>,
 }
 
 /// Try to pack several small rectangles into one large rectangle. Return
