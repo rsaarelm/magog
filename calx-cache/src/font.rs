@@ -14,11 +14,13 @@ pub struct Font<H> {
 }
 
 impl<H> Font<H> {
-    pub fn new<I, S>(tilesheet: &mut I, chars: &str, store: &mut S) -> Font<H>
+    pub fn new<I, P, S>(tilesheet: &mut I,
+                        chars: &str,
+                        store: &mut S)
+                        -> Font<H>
         where S: ImageStore<H>,
-              I: image::GenericImage + 'static,
-              I::Pixel: PartialEq + 'static,
-              <I::Pixel as image::Pixel>::Subpixel: 'static
+              I: image::GenericImage<Pixel = P> + 'static,
+              P: image::Pixel<Subpixel = u8> + PartialEq + 'static
     {
         let mut glyphs = HashMap::new();
 
@@ -27,7 +29,11 @@ impl<H> Font<H> {
             let sub = subimage(tilesheet, rect);
             let width = sub.width() as f32;
             let h = store.add_image([0, -(sub.height() as i32)], &sub);
-            glyphs.insert(ch, Glyph { image: h, width: width });
+            glyphs.insert(ch,
+                          Glyph {
+                              image: h,
+                              width: width,
+                          });
         }
 
         Font { glyphs: glyphs }

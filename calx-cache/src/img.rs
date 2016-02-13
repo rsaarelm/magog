@@ -1,6 +1,6 @@
-use std::default::Default;
 use std::cmp::{min, max};
 use std::convert::Into;
+use num::traits::Zero;
 use image::{GenericImage, Pixel, ImageBuffer, SubImage, Rgba};
 use calx_layout::{Anchor, Rect, Shape2D};
 use calx_color;
@@ -16,7 +16,7 @@ pub fn color_key<P, I, C>(image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>>
     ImageBuffer::from_fn(w, h, |x, y| {
         let (pr, pg, pb, mut pa) = image.get_pixel(x, y).to_rgba().channels4();
         if pr == srgba.r && pg == srgba.g && pb == srgba.b {
-            pa = Default::default();
+            pa = Zero::zero()
         }
         Pixel::from_channels(pr, pg, pb, pa)
     })
@@ -25,13 +25,12 @@ pub fn color_key<P, I, C>(image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>>
 /// Return the rectangle enclosing the parts of the image that aren't fully
 /// transparent.
 pub fn crop_alpha<I>(image: &I) -> Rect<i32>
-    where I: GenericImage,
-          <I::Pixel as Pixel>::Subpixel: Default
+    where I: GenericImage
 {
     let (w, h) = image.dimensions();
     let (mut x1, mut y1) = (w as i32, h as i32);
     let (mut x2, mut y2) = (0i32, 0i32);
-    let transparent: <I::Pixel as Pixel>::Subpixel = Default::default();
+    let transparent: <I::Pixel as Pixel>::Subpixel = Zero::zero();
     for y in 0..(h as i32) {
         for x in 0..(w as i32) {
             let (_, _, _, a) = image.get_pixel(x as u32, y as u32).channels4();
@@ -204,8 +203,9 @@ fn tile_bounds<I>(image: &I,
 
 /// Interface for objects that store multiple images, like an image atlas.
 pub trait ImageStore<H>: Sized {
-    fn add_image<I, V>(&mut self, offset: V, image: &I) -> H
-        where I: GenericImage,
+    fn add_image<I, V, P>(&mut self, offset: V, image: &I) -> H
+        where I: GenericImage<Pixel = P>,
+              P: Pixel<Subpixel = u8>,
               V: Into<[i32; 2]>;
 
     /// Add a single-pixel solid image to the store to be used with solid

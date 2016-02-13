@@ -20,39 +20,6 @@ impl AtlasBuilder {
         }
     }
 
-    /// Add an image to the image atlas with the given draw offset.
-    pub fn push<P, I, V>(&mut self, offset: V, image: &I) -> usize
-        where P: Pixel<Subpixel = u8> + 'static,
-              I: GenericImage<Pixel = P>,
-              V: Into<[i32; 2]>
-    {
-        let offset = offset.into();
-        let Rect { top: pos, size: dim } = img::crop_alpha(image);
-        let image = ImageBuffer::from_fn(dim[0] as u32,
-                                         dim[1] as u32,
-                                         |x, y| {
-                                             image.get_pixel(pos[0] as u32 + x,
-                                                             pos[1] as u32 + y)
-                                                  .to_rgba()
-                                         });
-        self.images.push(image);
-        self.draw_offsets.push([pos[0] + offset[0], pos[1] + offset[1]]);
-        self.images.len() - 1
-    }
-
-    /// Add a single-pixel solid image to atlas to be used with solid color
-    /// shapes.
-    ///
-    /// You may want to call this as the first thing with a new atlas to get
-    /// the default image handle to point to the solid texture.
-    pub fn push_solid(&mut self) -> usize {
-        let image: ImageBuffer<Rgba<u8>, Vec<u8>>;
-        image = ImageBuffer::from_fn(1, 1, |_, _| {
-            Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])
-        });
-        self.push([0, 0], &image)
-    }
-
     pub fn build(self) -> Atlas {
         let dims = self.images
                        .iter()
@@ -125,6 +92,25 @@ impl AtlasBuilder {
             [pixel_vec[0] as f32 / image_dim[0] as f32,
              pixel_vec[1] as f32 / image_dim[1] as f32]
         }
+    }
+}
+
+impl img::ImageStore<usize> for AtlasBuilder {
+    fn add_image<I, V, P>(&mut self, offset: V, image: &I) -> usize
+        where I: GenericImage<Pixel = P>,
+              P: Pixel<Subpixel = u8>,
+              V: Into<[i32; 2]>
+    {
+        let offset = offset.into();
+        let Rect { top: pos, size: dim } = img::crop_alpha(image);
+        let cropped: ImageBuffer<Rgba<u8>, Vec<u8>>;
+        cropped = ImageBuffer::from_fn(dim[0] as u32, dim[1] as u32, |x, y| {
+            image.get_pixel(pos[0] as u32 + x, pos[1] as u32 + y)
+                 .to_rgba()
+        });
+        self.images.push(cropped);
+        self.draw_offsets.push([pos[0] + offset[0], pos[1] + offset[1]]);
+        self.images.len() - 1
     }
 }
 
