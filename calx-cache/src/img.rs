@@ -1,7 +1,7 @@
 use std::default::Default;
 use std::cmp::{min, max};
 use std::convert::Into;
-use image::{Primitive, GenericImage, Pixel, ImageBuffer, SubImage, Rgba};
+use image::{GenericImage, Pixel, ImageBuffer, SubImage, Rgba};
 use calx_layout::{Anchor, Rect, Shape2D};
 use calx_color;
 
@@ -24,15 +24,14 @@ pub fn color_key<P, I, C>(image: &I, color: C) -> ImageBuffer<Rgba<u8>, Vec<u8>>
 
 /// Return the rectangle enclosing the parts of the image that aren't fully
 /// transparent.
-pub fn crop_alpha<T, P, I>(image: &I) -> Rect<i32>
-    where T: Primitive + Default,
-          P: Pixel<Subpixel = T>,
-          I: GenericImage<Pixel = P>
+pub fn crop_alpha<I>(image: &I) -> Rect<i32>
+    where I: GenericImage,
+          <I::Pixel as Pixel>::Subpixel: Default
 {
     let (w, h) = image.dimensions();
     let (mut x1, mut y1) = (w as i32, h as i32);
     let (mut x2, mut y2) = (0i32, 0i32);
-    let transparent: T = Default::default();
+    let transparent: <I::Pixel as Pixel>::Subpixel = Default::default();
     for y in 0..(h as i32) {
         for x in 0..(w as i32) {
             let (_, _, _, a) = image.get_pixel(x as u32, y as u32).channels4();
@@ -52,9 +51,8 @@ pub fn crop_alpha<T, P, I>(image: &I) -> Rect<i32>
     }
 }
 
-pub fn blit<T, P, I, J, V>(image: &I, target: &mut J, offset: V)
-    where T: Primitive + Default,
-          P: Pixel<Subpixel = T>,
+pub fn blit<P, I, J, V>(image: &I, target: &mut J, offset: V)
+    where P: Pixel,
           I: GenericImage<Pixel = P>,
           J: GenericImage<Pixel = P>,
           V: Into<[i32; 2]>
@@ -73,12 +71,10 @@ pub fn blit<T, P, I, J, V>(image: &I, target: &mut J, offset: V)
 
 /// Convenience function for extracting a subimage with a Rect as bounds.
 #[inline(always)]
-pub fn subimage<'a, T, P, I>(image: &'a mut I,
-                              rect: &Rect<i32>)
-                              -> SubImage<'a, I>
-    where T: Primitive + Default + 'static,
-          P: Pixel<Subpixel = T> + PartialEq + 'static,
-          I: GenericImage<Pixel = P> + 'static
+pub fn subimage<'a, I>(image: &'a mut I, rect: &Rect<i32>) -> SubImage<'a, I>
+    where I: GenericImage + 'static,
+          I::Pixel: 'static,
+          <I::Pixel as Pixel>::Subpixel: 'static
 {
     image.sub_image(rect.top[0] as u32,
                     rect.top[1] as u32,
@@ -95,10 +91,9 @@ pub fn subimage<'a, T, P, I>(image: &'a mut I,
 /// corners, first along the y-axis then along the x-axis. This produces a
 /// natural left-to-right, bottom-to-top ordering for a cleanly laid out
 /// tile sheet.
-pub fn tilesheet_bounds<T, P, I>(image: &I) -> Vec<Rect<i32>>
-    where T: Primitive + Default,
-          P: Pixel<Subpixel = T> + PartialEq,
-          I: GenericImage<Pixel = P>
+pub fn tilesheet_bounds<I>(image: &I) -> Vec<Rect<i32>>
+    where I: GenericImage,
+          I::Pixel: PartialEq
 {
     let mut ret = Vec::new();
     let image_rect = Rect::new([0, 0],
@@ -130,13 +125,12 @@ pub fn tilesheet_bounds<T, P, I>(image: &I) -> Vec<Rect<i32>>
 
 /// Find the smallest bounding box around seed pixel whose sides are either
 /// all background color or image edge.
-fn tile_bounds<T, P, I>(image: &I,
-                        seed_pos: [i32; 2],
-                        background: P)
-                        -> Rect<i32>
-    where T: Primitive + Default,
-          P: Pixel<Subpixel = T> + PartialEq,
-          I: GenericImage<Pixel = P>
+fn tile_bounds<I>(image: &I,
+                  seed_pos: [i32; 2],
+                  background: I::Pixel)
+                  -> Rect<i32>
+    where I: GenericImage,
+          I::Pixel: PartialEq
 {
     let image_rect = Rect::new([0, 0],
                                [image.width() as i32, image.height() as i32]);
@@ -210,8 +204,7 @@ fn tile_bounds<T, P, I>(image: &I,
 
 /// Interface for objects that store multiple images, like an image atlas.
 pub trait ImageStore<H>: Sized {
-    fn add_image<P, I, V>(&mut self, offset: V, image: &I) -> H
-        where P: Pixel<Subpixel = u8> + 'static,
-              I: GenericImage<Pixel = P>,
+    fn add_image<I, V>(&mut self, offset: V, image: &I) -> H
+        where I: GenericImage,
               V: Into<[i32; 2]>;
 }
