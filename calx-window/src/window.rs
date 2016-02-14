@@ -212,8 +212,9 @@ impl Window {
 
     /// Fill the frame with the given pixel buffer. The pixel data dimensions
     /// must match the logical size of the window.
-    pub fn set_frame<'a, T: glium::texture::Texture2dDataSource<'a>>(&mut self,
-                                                                     pixels: T) {
+    pub fn set_frame<'a, T>(&mut self, pixels: T)
+        where T: glium::texture::Texture2dDataSource<'a>
+    {
         let new_texture = texture::Texture2d::new(&self.display, pixels)
                               .unwrap();
         assert!(new_texture.get_width() == self.resolution.canvas[0] &&
