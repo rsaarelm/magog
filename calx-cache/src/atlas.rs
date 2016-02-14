@@ -96,7 +96,7 @@ impl AtlasBuilder {
     }
 }
 
-impl ImageStore<usize> for AtlasBuilder {
+impl ImageStore for AtlasBuilder {
     fn add_image<I, V, P>(&mut self, center: V, image: &I) -> usize
         where I: GenericImage<Pixel = P>,
               P: Pixel<Subpixel = u8>,

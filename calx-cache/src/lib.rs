@@ -16,8 +16,12 @@ mod img;
 mod index_cache;
 
 /// Interface for objects that store multiple images, like an image atlas.
-pub trait ImageStore<H>: Sized {
-    fn add_image<I, V, P>(&mut self, center: V, image: &I) -> H
+pub trait ImageStore: Sized {
+    /// Add an image to the store.
+    ///
+    /// Return a handle value that can be used to access the stored image
+    /// later.
+    fn add_image<I, V, P>(&mut self, center: V, image: &I) -> usize
         where I: image::GenericImage<Pixel = P>,
               P: image::Pixel<Subpixel = u8>,
               V: Into<[i32; 2]>;
@@ -26,9 +30,8 @@ pub trait ImageStore<H>: Sized {
     /// color shapes.
     ///
     /// You may want to call this as the first thing with a new store
-    /// (assuming the image handles are something like numbers couting up from
-    /// 0), to get the default image handle to point to the solid texture.
-    fn add_solid_image(&mut self) -> H {
+    /// to get the default (0) image handle to point to the solid texture.
+    fn add_solid_image(&mut self) -> usize {
         let image: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
         image = image::ImageBuffer::from_fn(1, 1, |_, _| {
             image::Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])
