@@ -26,19 +26,6 @@ pub trait DrawUtil {
 
     /// Draw a wireframe rectangle.
     fn draw_rect<C: Into<Rgba>+Copy>(&mut self, rect: &Rect<f32>, z: f32, color: C);
-/*
-    fn draw_char<C, D, V>(&mut self, c: char, offset: V, z: f32, color: C, border: Option<D>)
-        where C: Into<Rgba>+Copy,
-              D: Into<Rgba>+Copy,
-              V: Into<[f32; 2]>;
-
-    fn char_width(&self, c: char) -> f32;
-    */
-
-    /*
-    /// Write a timestamped screenshot PNG to disk.
-    fn save_screenshot(&mut self, basename: &str);
-    */
 }
 
 impl DrawUtil for Wall {
