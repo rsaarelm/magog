@@ -119,37 +119,4 @@ impl DrawUtil for Wall {
         self.draw_line(1.0, rect.point(TopLeft), rect.point(BottomLeft), z, color);
     }
 
-    /*
-    fn draw_char<C: Into<Rgba>+Copy, D: Into<Rgba>+Copy>(&mut self, c: char, offset: V2<f32>, z: f32, color: C, border: Option<D>) {
-        static BORDER: [V2<f32>; 8] =
-            [V2(-1.0, -1.0), V2( 0.0, -1.0), V2( 1.0, -1.0),
-             V2(-1.0,  0.0),                 V2( 1.0,  0.0),
-             V2(-1.0,  1.0), V2( 0.0,  1.0), V2( 1.0,  1.0)];
-        if let Some(img) = self.font_image(c) {
-            if let Some(b) = border {
-                // Put the border a tiny bit further in the z-buffer so it
-                // won't clobber the text on the same layer.
-                let border_z = z + 0.00001;
-                for &d in BORDER.iter() {
-                    self.draw_image(img, offset + d, border_z, b, color::BLACK);
-                }
-            }
-            self.draw_image(img, offset, z, color, color::BLACK);
-        }
-    }
-
-    fn char_width(&self, c: char) -> f32 {
-        // Infer letter width from the cropped atlas image. (Use mx instead of
-        // dim on the pos rectangle so that the left-side space will be
-        // preserved and the letters are kept slightly apart.)
-        if let Some(img) = self.font_image(c) {
-            let width = self.tiles[img].pos.mx().0;
-            return width;
-        }
-
-        // Not a valid letter.
-        (FONT_W / 2) as f32
-    }
-    */
-
 }
