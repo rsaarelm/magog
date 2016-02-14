@@ -11,7 +11,8 @@ pub struct Rect<T: Copy> {
     pub size: [T; 2],
 }
 
-impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
+impl<T> Rect<T>
+    where T: Num + PartialOrd + Signed + Copy
 {
     /// Create a new rectangle from two corner points.
     pub fn new<V: Into<[T; 2]>>(p1: V, p2: V) -> Rect<T> {

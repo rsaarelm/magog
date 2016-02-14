@@ -234,7 +234,8 @@ pub struct HexFov<F> {
     side_channel: Vec<[i32; 2]>,
 }
 
-impl<F> HexFov<F> where F: Fn([i32; 2]) -> bool
+impl<F> HexFov<F>
+    where F: Fn([i32; 2]) -> bool
 {
     pub fn new(is_opaque: F, range: u32) -> HexFov<F> {
         let init_group = is_opaque(Dir6::from_int(0).to_v2());
@@ -263,7 +264,8 @@ impl<F> HexFov<F> where F: Fn([i32; 2]) -> bool
     }
 }
 
-impl<F> Iterator for HexFov<F> where F: Fn([i32; 2]) -> bool
+impl<F> Iterator for HexFov<F>
+    where F: Fn([i32; 2]) -> bool
 {
     type Item = [i32; 2];
     fn next(&mut self) -> Option<[i32; 2]> {
@@ -294,7 +296,9 @@ impl<F> Iterator for HexFov<F> where F: Fn([i32; 2]) -> bool
                             begin: current.begin.further(),
                             pt: current.begin.further(),
                             end: current.pt.further(),
-                            group_opaque: (self.is_opaque)(current.begin.further().to_v2()),
+                            group_opaque: (self.is_opaque)(current.begin
+                                                                  .further()
+                                                                  .to_v2()),
                         });
                     }
                     return self.next();

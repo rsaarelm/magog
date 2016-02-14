@@ -34,7 +34,8 @@ impl Wall {
                                                 include_str!("sprite.frag"),
                                                 None)
                         .unwrap(),
-            texture: glium::texture::Texture2d::new(display, tex_image).unwrap(),
+            texture: glium::texture::Texture2d::new(display, tex_image)
+                         .unwrap(),
             meshes: vec![Mesh::new()],
             tiles: tiles,
         }
@@ -152,7 +153,10 @@ impl Vertex {
             pos: [pos[0], pos[1], z],
             tex_coord: tex_coord,
             color: [color.r, color.g, color.b, color.a],
-            back_color: [back_color.r, back_color.g, back_color.b, back_color.a],
+            back_color: [back_color.r,
+                         back_color.g,
+                         back_color.b,
+                         back_color.a],
         }
     }
 }

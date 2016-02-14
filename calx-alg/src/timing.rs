@@ -18,7 +18,10 @@ pub fn spike(down_s: f64, up_s: f64) -> bool {
     time::precise_time_s() % (down_s + up_s) > down_s
 }
 
-pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T {
+pub fn single_anim<'a, T>(start_s: f64,
+                          period_s: f64,
+                          frames: &'a [T])
+                          -> &'a T {
     assert!(period_s > 0.0);
     assert!(frames.len() > 0);
     let mut idx = ((time::precise_time_s() - start_s) / period_s) as i32;
@@ -101,7 +104,8 @@ impl TimePerFrame {
 
     pub fn end(&mut self) {
         self.last = time::precise_time_s() - self.start_t;
-        self.average = self.update_weight * self.last + (1.0 - self.update_weight) * self.average;
+        self.average = self.update_weight * self.last +
+                       (1.0 - self.update_weight) * self.average;
     }
 }
 

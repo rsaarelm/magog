@@ -18,25 +18,30 @@ pub fn app_data_path(app_name: &str) -> path::PathBuf {
     if cfg!(windows) {
         if is_portable_application {
             match env::current_exe() {
-                Ok(mut p) => { p.pop(); p }
+                Ok(mut p) => {
+                    p.pop();
+                    p
+                }
                 // If couldn't get self exe path, just use the local relative path and
                 // hope for the best.
-                _ => path::Path::new(".").to_path_buf()
+                _ => path::Path::new(".").to_path_buf(),
             }
         } else {
-            path::Path::new(
-                &format!("{}\\{}", env::var("APPDATA").unwrap(), app_name))
-            .to_path_buf()
+            path::Path::new(&format!("{}\\{}",
+                                     env::var("APPDATA").unwrap(),
+                                     app_name))
+                .to_path_buf()
         }
     } else if cfg!(macos) {
-        path::Path::new(
-            &format!("{}/Library/Application Support/{}",
-                    env::var("HOME").unwrap(), app_name))
-        .to_path_buf()
+        path::Path::new(&format!("{}/Library/Application Support/{}",
+                                 env::var("HOME").unwrap(),
+                                 app_name))
+            .to_path_buf()
     } else {
-        path::Path::new(
-            &format!("{}/.config/{}", env::var("HOME").unwrap(), app_name))
-        .to_path_buf()
+        path::Path::new(&format!("{}/.config/{}",
+                                 env::var("HOME").unwrap(),
+                                 app_name))
+            .to_path_buf()
     }
 }
 
