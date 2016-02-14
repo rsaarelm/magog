@@ -169,6 +169,18 @@ impl Window {
         }
     }
 
+    /// Clear the screen buffer.
+    pub fn clear<C: Into<Rgba>>(&mut self, color: C) {
+        let color: Rgba = color.into();
+        let mut target =
+            framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.display,
+                                                              &self.buffer,
+                                                              &self.depth)
+                .unwrap();
+        target.clear_color(color.r, color.g, color.b, color.a);
+        target.clear_depth(1.0);
+    }
+
     /// Display the screen buffer and do end-of-frame bookkeeping.
     pub fn end_frame(&mut self) {
         self.frame_duration.tick();

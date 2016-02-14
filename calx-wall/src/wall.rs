@@ -1,57 +1,63 @@
-use std::rc::Rc;
-use std::default::Default;
 use std::u16;
 use glium;
-use image;
 use calx_color::Rgba;
+use calx_cache::{Atlas, AtlasBuilder, AtlasItem};
+use calx_window::Displayable;
 
-/// Collect textured mesh elements that make up a single rendered frame.
-pub struct Buffer {
-    shader: Rc<glium::Program>,
-    texture: Rc<glium::texture::Texture2d>,
+/// Collect textured 2D mesh elements that make up a single rendered frame.
+pub struct Wall {
+    shader: glium::Program,
+    texture: glium::texture::Texture2d,
     meshes: Vec<Mesh>,
+    /// Geometries of the atlas subitems.
+    ///
+    /// Stored heae next to the atlas texture for convenience, not actually
+    /// used by the internal Wall logic.
+    pub tiles: Vec<AtlasItem>,
 }
 
-impl Buffer {
-    /// Create a mesh render buffer with shared shader and texture.
-    pub fn new_shared(shader: Rc<glium::Program>,
-                      texture: Rc<glium::texture::Texture2d>)
-                      -> Buffer {
-        Buffer {
-            shader: shader,
-            texture: texture,
+impl Wall {
+    pub fn new(display: &glium::Display, a: AtlasBuilder) -> Wall {
+        let Atlas {
+            image: img,
+            items: tiles,
+        } = a.build();
+
+        let atlas_dim = img.dimensions();
+        let tex_image =
+            glium::texture::RawImage2d::from_raw_rgba(img.into_raw(),
+                                                      atlas_dim);
+
+        Wall {
+            shader: glium::Program::from_source(display,
+                                                include_str!("sprite.vert"),
+                                                include_str!("sprite.frag"),
+                                                None)
+                        .unwrap(),
+            texture: glium::texture::Texture2d::new(display, tex_image).unwrap(),
             meshes: vec![Mesh::new()],
+            tiles: tiles,
         }
     }
 
-    /// Create a mesh render buffer with locally owned shader and texture.
-    /// This uses the default sprite shader.
-    pub fn new<'a, P>(display: &glium::Display,
-                      atlas_image: image::ImageBuffer<P, Vec<u8>>)
-                      -> Buffer
-        where P: image::Pixel<Subpixel = u8> + 'static
-    {
-        let atlas_dim = atlas_image.dimensions();
-        let tex_image =
-            glium::texture::RawImage2d::from_raw_rgba(atlas_image.into_raw(),
-                                                      atlas_dim);
+    pub fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
+        assert!(self.meshes.len() > 0);
 
-        Buffer::new_shared(
-            Rc::new(glium::Program::from_source(
-                display,
-                include_str!("sprite.vert"),
-                include_str!("sprite.frag"),
-                None).unwrap()),
-            Rc::new(glium::texture::Texture2d::new(
-                display, tex_image).unwrap()))
+        if self.meshes[self.meshes.len() - 1].is_full() {
+            self.meshes.push(Mesh::new());
+        }
+        let idx = self.meshes.len() - 1;
+        self.meshes[idx].push(vertices, faces);
     }
+}
 
-    pub fn flush<S>(&mut self, display: &glium::Display, target: &mut S)
+impl Displayable for Wall {
+    fn display<S>(&mut self, display: &glium::Display, target: &mut S)
         where S: glium::Surface
     {
         let (w, h) = target.get_dimensions();
         let uniforms = glium::uniforms::UniformsStorage::new("tex",
-            glium::uniforms::Sampler(&*self.texture, glium::uniforms::SamplerBehavior {
+            glium::uniforms::Sampler(&self.texture, glium::uniforms::SamplerBehavior {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
                 .. Default::default() }))
             .add("canvas_size", [w as f32, h as f32]);
@@ -73,20 +79,10 @@ impl Buffer {
                                .unwrap();
             let indices = glium::IndexBuffer::new(
                 display, glium::index::PrimitiveType::TrianglesList, &mesh.indices).unwrap();
-            target.draw(&vertices, &indices, &*self.shader, &uniforms, &params)
+            target.draw(&vertices, &indices, &self.shader, &uniforms, &params)
                   .unwrap();
         }
         self.meshes = vec![Mesh::new()];
-    }
-
-    pub fn add_mesh(&mut self, vertices: Vec<Vertex>, faces: Vec<[u16; 3]>) {
-        assert!(self.meshes.len() > 0);
-
-        if self.meshes[self.meshes.len() - 1].is_full() {
-            self.meshes.push(Mesh::new());
-        }
-        let idx = self.meshes.len() - 1;
-        self.meshes[idx].push(vertices, faces);
     }
 }
 
@@ -106,7 +102,7 @@ impl Mesh {
 
     pub fn is_full(&self) -> bool {
         // When you're getting within an order of magnitude of the u16 max
-        // limit it's time to flush.
+        // limit it's time to start a new mesh.
         self.vertices.len() > 1 << 15
     }
 
@@ -142,11 +138,11 @@ implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 impl Vertex {
     #[inline(always)]
     pub fn new<V, W>(pos: V,
-                  z: f32,
-                  tex_coord: W,
-                  color: Rgba,
-                  back_color: Rgba)
-                  -> Vertex
+                     z: f32,
+                     tex_coord: W,
+                     color: Rgba,
+                     back_color: Rgba)
+                     -> Vertex
         where V: Into<[f32; 2]>,
               W: Into<[f32; 2]>
     {

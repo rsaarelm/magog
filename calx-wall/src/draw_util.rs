@@ -2,8 +2,7 @@ use cgmath::{Vector2, vec2, dot};
 use calx_color::{color, Rgba};
 use calx_layout::Rect;
 use calx_layout::Anchor::*;
-use mesh::{Vertex};
-use mesh_context::MeshContext;
+use wall::{Wall, Vertex};
 
 /// Helper methods for render context that do not depend on the underlying
 /// implementation details.
@@ -42,7 +41,7 @@ pub trait DrawUtil {
     */
 }
 
-impl DrawUtil for MeshContext {
+impl DrawUtil for Wall {
     fn draw_line<C, V>(&mut self, width: f32, p1: V, p2: V, layer: f32, color: C)
         where C: Into<Rgba>+Copy,
               V: Into<[f32; 2]>

@@ -9,7 +9,7 @@ use std::char;
 use calx_color::color;
 use calx_cache::{AtlasBuilder, ImageStore, Font};
 use calx_window::{WindowBuilder, Event, Key};
-use calx_wall::{MeshContext, DrawUtil};
+use calx_wall::{Wall, DrawUtil};
 
 fn main() {
     let mut atlas_builder = AtlasBuilder::new();
@@ -26,11 +26,9 @@ fn main() {
                          &mut atlas_builder);
 
     let mut window = WindowBuilder::new().set_title("Calx demo").build();
-    let mut ctx = MeshContext::new(atlas_builder, &window);
+    let mut wall = Wall::new(&window.display, atlas_builder);
 
     'top: loop {
-        ctx.draw_image(10, [10.0, 10.0], 0.4, color::BLACK, color::BLACK);
-
         for e in window.events().into_iter() {
             match e {
                 Event::Quit => break 'top,
@@ -38,7 +36,13 @@ fn main() {
                 _ => (),
             }
         }
-        window.display(&mut ctx);
+
+        window.clear(0x7799DDFF);
+
+        wall.draw_image(10, [10.0, 10.0], 0.4, color::BLACK, color::BLACK);
+        window.display(&mut wall);
+
         window.end_frame();
+
     }
 }

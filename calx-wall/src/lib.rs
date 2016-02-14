@@ -14,14 +14,12 @@ extern crate calx_cache;
 // pub use canvas::{Image};
 pub use draw_util::DrawUtil;
 // pub use fonter::{Fonter, Align};
-pub use mesh::{Buffer, Vertex};
-pub use mesh_context::MeshContext;
+pub use wall::{Wall, Vertex};
 
 // mod canvas;
 mod draw_util;
 // mod fonter;
-mod mesh;
-mod mesh_context;
+mod wall;
 
 /// Drawable images stored in the atlas texture of a Mesh.
 ///
