@@ -30,5 +30,5 @@ path = "calx-layout"
 [dependencies.calx-system]
 path = "calx-system"
 
-[dependencies.calx-draw]
-path = "calx-draw"
+[dependencies.calx-wall]
+path = "calx-wall"

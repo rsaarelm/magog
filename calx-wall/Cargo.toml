@@ -1,8 +1,8 @@
 [package]
-name = "calx-draw"
+name = "calx-wall"
 version = "0.1.0"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
-description = "UI drawing utilities"
+description = "2D drawing utilities"
 keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 

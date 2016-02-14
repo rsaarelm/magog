@@ -3,13 +3,13 @@ extern crate glium;
 extern crate calx_color;
 extern crate calx_window;
 extern crate calx_cache;
-extern crate calx_draw;
+extern crate calx_wall;
 
 use std::char;
 use calx_color::color;
 use calx_cache::{AtlasBuilder, ImageStore, Font};
 use calx_window::{WindowBuilder, Event, Key};
-use calx_draw::{MeshContext, DrawUtil};
+use calx_wall::{MeshContext, DrawUtil};
 
 fn main() {
     let mut atlas_builder = AtlasBuilder::new();
