@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use image::{self, GenericImage};
-use img::{ImageStore, tilesheet_bounds, subimage};
+use img::{tilesheet_bounds, subimage};
+use ImageStore;
 
 #[derive(Copy, Clone)]
 pub struct Glyph<H> {
@@ -28,7 +29,7 @@ impl<H> Font<H> {
         for (ch, rect) in chars.chars().zip(bounds.iter()) {
             let sub = subimage(tilesheet, rect);
             let width = sub.width() as f32;
-            let h = store.add_image([0, -(sub.height() as i32)], &sub);
+            let h = store.add_image([0, sub.height() as i32], &sub);
             glyphs.insert(ch,
                           Glyph {
                               image: h,

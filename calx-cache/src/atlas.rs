@@ -5,6 +5,7 @@ use num::traits::{Num, Signed};
 use image::{GenericImage, ImageBuffer, Rgba, Pixel};
 use calx_layout::Rect;
 use img;
+use ImageStore;
 
 /// Constructor object for atlases.
 pub struct AtlasBuilder {
@@ -95,13 +96,13 @@ impl AtlasBuilder {
     }
 }
 
-impl img::ImageStore<usize> for AtlasBuilder {
-    fn add_image<I, V, P>(&mut self, offset: V, image: &I) -> usize
+impl ImageStore<usize> for AtlasBuilder {
+    fn add_image<I, V, P>(&mut self, center: V, image: &I) -> usize
         where I: GenericImage<Pixel = P>,
               P: Pixel<Subpixel = u8>,
               V: Into<[i32; 2]>
     {
-        let offset = offset.into();
+        let center = center.into();
         let Rect { top: pos, size: dim } = img::crop_alpha(image);
         let cropped: ImageBuffer<Rgba<u8>, Vec<u8>>;
         cropped = ImageBuffer::from_fn(dim[0] as u32, dim[1] as u32, |x, y| {
@@ -109,7 +110,7 @@ impl img::ImageStore<usize> for AtlasBuilder {
                  .to_rgba()
         });
         self.images.push(cropped);
-        self.draw_offsets.push([pos[0] + offset[0], pos[1] + offset[1]]);
+        self.draw_offsets.push([pos[0] - center[0], pos[1] - center[1]]);
         self.images.len() - 1
     }
 }
