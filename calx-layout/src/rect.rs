@@ -2,6 +2,7 @@ use std::cmp::PartialOrd;
 use num::{Num, Signed, Zero, One, abs};
 use {Anchor, Shape2D};
 
+/// A rectangle type.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Hash, Default, Debug, Serialize, Deserialize)]
 pub struct Rect<T: Copy> {
     /// Top left (closest to the origin) corner of the rectange.
@@ -22,6 +23,7 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
         }
     }
 
+    /// Get a point at an anchor position in the rectangle.
     pub fn point(&self, point: Anchor) -> [T; 2] {
         let one: T = One::one();
         let two = one + one;
@@ -72,6 +74,7 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
         RectIter::new(self, dim.into())
     }
 
+    /// Get the area of the rectangle.
     pub fn area(&self) -> T {
         self.size[0] * self.size[1]
     }
@@ -88,7 +91,7 @@ impl<T> Rect<T> where T: Num + PartialOrd + Signed + Copy
 
     }
 
-    /// Return whether this rect completely contains another rect.
+    /// Return whether this rectangle completely contains another rectangle.
     pub fn contains_rect(&self, other: &Rect<T>) -> bool {
         let p2 = self.point(Anchor::BottomRight);
         let q2 = other.point(Anchor::BottomRight);
@@ -148,7 +151,8 @@ impl<'a, T: Num + PartialOrd + Copy> Iterator for RectIter<'a, T> {
         }
 
         let ret = Rect {
-            top: [self.base.top[0] + self.x * self.dim[0], self.base.top[1] + self.y * self.dim[1]],
+            top: [self.base.top[0] + self.x * self.dim[0],
+                  self.base.top[1] + self.y * self.dim[1]],
             size: self.dim,
         };
         self.x = self.x + One::one();

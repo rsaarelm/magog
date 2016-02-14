@@ -1,5 +1,6 @@
-//! Macro for constructing sets of named sprites
-
+/// Macro for constructing sets of named sprites
+///
+/// Currently hardcoded to use CYAN / #00FFFF as the transparent color key.
 #[macro_export]
 macro_rules! brush {
     {
