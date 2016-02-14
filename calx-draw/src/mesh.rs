@@ -49,10 +49,12 @@ impl Buffer {
     pub fn flush<S>(&mut self, display: &glium::Display, target: &mut S)
         where S: glium::Surface
     {
+        let (w, h) = target.get_dimensions();
         let uniforms = glium::uniforms::UniformsStorage::new("tex",
             glium::uniforms::Sampler(&*self.texture, glium::uniforms::SamplerBehavior {
                 magnify_filter: glium::uniforms::MagnifySamplerFilter::Nearest,
-                .. Default::default() }));
+                .. Default::default() }))
+            .add("canvas_size", [w as f32, h as f32]);
 
         let params = glium::DrawParameters {
             backface_culling: glium::draw_parameters::BackfaceCullingMode::CullCounterClockwise,
