@@ -31,7 +31,6 @@ impl Buffer {
                       -> Buffer
         where P: image::Pixel<Subpixel = u8> + 'static
     {
-        // where T: glium::texture::Texture2dDataSource<'a> {
         let atlas_dim = atlas_image.dimensions();
         let tex_image =
             glium::texture::RawImage2d::from_raw_rgba(atlas_image.into_raw(),

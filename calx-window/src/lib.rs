@@ -1,6 +1,7 @@
 extern crate time;
 extern crate image;
-#[macro_use] extern crate glium;
+#[macro_use]
+extern crate glium;
 extern crate calx_layout;
 extern crate calx_color;
 extern crate calx_alg;
@@ -40,4 +41,10 @@ pub enum CanvasMagnify {
     PixelPerfect,
     /// Use smooth filtering, may look blurry
     Smooth,
+}
+
+/// Things that draw themselves on the Window
+pub trait Displayable {
+    fn display<S>(&mut self, display: &glium::Display, target: &mut S)
+        where S: glium::Surface;
 }

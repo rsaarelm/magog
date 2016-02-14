@@ -9,6 +9,7 @@ use calx_alg::timing::AverageDuration;
 use event::{Event, MouseButton};
 use CanvasMagnify;
 use event_translator::EventTranslator;
+use Displayable;
 
 pub struct WindowBuilder {
     title: String,
@@ -78,7 +79,9 @@ impl WindowBuilder {
 
 /// Toplevel application object.
 pub struct Window {
+    /// Low-level display object.
     pub display: glium::Display,
+    /// Main area clear color.
     pub clear_color: Rgba,
 
     resolution: LogicalResolution,
@@ -186,15 +189,13 @@ impl Window {
         self.translator.pump(&mut self.display, &self.resolution);
     }
 
-    pub fn draw<F>(&self, draw_f: F)
-        where F: FnOnce(&mut framebuffer::SimpleFrameBuffer)
-    {
+    pub fn display<D: Displayable>(&self, d: &mut D) {
         let mut target =
             framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.display,
                                                               &self.buffer,
                                                               &self.depth)
                 .unwrap();
-        draw_f(&mut target);
+        d.display(&self.display, &mut target);
     }
 
     /// Fill the frame with the given pixel buffer. The pixel data dimensions
