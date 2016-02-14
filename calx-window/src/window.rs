@@ -266,7 +266,8 @@ impl Window {
         self.resolution.screen_to_canvas(&screen_pos.into())
     }
 
-    pub fn get_screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+    /// Get the screenshot image for the window.
+    pub fn screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
         use calx_color::to_srgb;
 
         let image: glium::texture::RawImage2d<u8> = self.buffer.read();

@@ -1,5 +1,6 @@
 extern crate image;
 extern crate glium;
+extern crate calx_system;
 extern crate calx_color;
 extern crate calx_window;
 extern crate calx_cache;
@@ -33,6 +34,9 @@ fn main() {
             match e {
                 Event::Quit => break 'top,
                 Event::KeyPress(Key::Escape) => break 'top,
+                Event::KeyPress(Key::F12) => {
+                    calx_system::save_screenshot("calx", window.screenshot()).unwrap();
+                }
                 _ => (),
             }
         }

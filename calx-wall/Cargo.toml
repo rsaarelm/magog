@@ -22,3 +22,6 @@ path = "../calx-layout"
 
 [dependencies.calx-cache]
 path = "../calx-cache"
+
+[dev-dependencies.calx-system]
+path = "../calx-system"

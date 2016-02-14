@@ -1,11 +1,16 @@
 extern crate time;
+extern crate tempdir;
+extern crate image;
 
-use std::path;
+use std::io;
+use std::path::{Path, PathBuf};
+use std::fs;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use tempdir::TempDir;
 
 /// Return the application data directory path for the current platform.
-pub fn app_data_path(app_name: &str) -> path::PathBuf {
+pub fn app_data_path(app_name: &str) -> PathBuf {
     use std::env;
     // On Windows, a portable application is just an .exe the user downloads
     // and drops somewhere. The convention here is for a portable application
@@ -24,23 +29,23 @@ pub fn app_data_path(app_name: &str) -> path::PathBuf {
                 }
                 // If couldn't get self exe path, just use the local relative path and
                 // hope for the best.
-                _ => path::Path::new(".").to_path_buf(),
+                _ => Path::new(".").to_path_buf(),
             }
         } else {
-            path::Path::new(&format!("{}\\{}",
-                                     env::var("APPDATA").unwrap(),
-                                     app_name))
+            Path::new(&format!("{}\\{}",
+                               env::var("APPDATA").unwrap(),
+                               app_name))
                 .to_path_buf()
         }
     } else if cfg!(macos) {
-        path::Path::new(&format!("{}/Library/Application Support/{}",
-                                 env::var("HOME").unwrap(),
-                                 app_name))
+        Path::new(&format!("{}/Library/Application Support/{}",
+                           env::var("HOME").unwrap(),
+                           app_name))
             .to_path_buf()
     } else {
-        path::Path::new(&format!("{}/.config/{}",
-                                 env::var("HOME").unwrap(),
-                                 app_name))
+        Path::new(&format!("{}/.config/{}",
+                           env::var("HOME").unwrap(),
+                           app_name))
             .to_path_buf()
     }
 }
@@ -108,4 +113,23 @@ impl Drop for TimeLogItem {
     fn drop(&mut self) {
         TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin);
     }
+}
+
+/// Save a timestamped screenshot to disk.
+pub fn save_screenshot(basename: &str,
+                       shot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>>)
+                       -> io::Result<()> {
+
+    let tmpdir = try!(TempDir::new("calx"));
+    let timestamp = (time::precise_time_s() * 100.0) as u64;
+    let file = Path::new(&format!("{}-{}.png", basename, timestamp))
+                   .to_path_buf();
+    let tmpfile = tmpdir.path().join(file.clone());
+    try!(image::save_buffer(&tmpfile,
+                            &shot,
+                            shot.width(),
+                            shot.height(),
+                            image::ColorType::RGB(8)));
+
+    fs::copy(&tmpfile, &file).map(|_| ())
 }

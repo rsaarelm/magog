@@ -8,3 +8,5 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 time = "0.1"
+image = "0.6"
+tempdir = "0.3"
