@@ -11,6 +11,9 @@ cgmath = "0.7"
 glium = "0.13"
 image = "0.6"
 
+[dependencies.calx-alg]
+path = "../calx-alg"
+
 [dependencies.calx-window]
 path = "../calx-window"
 

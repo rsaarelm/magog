@@ -5,17 +5,18 @@
 extern crate glium;
 extern crate image;
 extern crate cgmath;
+extern crate calx_alg;
 extern crate calx_window;
 extern crate calx_color;
 extern crate calx_layout;
 extern crate calx_cache;
 
 pub use draw_util::DrawUtil;
-// pub use fonter::{Fonter, Align};
+pub use font::{Font, Fonter, Align};
 pub use wall::{Wall, Vertex};
 
 mod draw_util;
-// mod fonter;
+mod font;
 mod wall;
 
 /// UI Widget static identifier, unique for a specific site in source code.

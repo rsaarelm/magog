@@ -8,9 +8,9 @@ extern crate calx_wall;
 
 use std::char;
 use calx_color::color;
-use calx_cache::{AtlasBuilder, ImageStore, Font};
+use calx_cache::{AtlasBuilder, ImageStore};
 use calx_window::{WindowBuilder, Event, Key};
-use calx_wall::{Wall, DrawUtil};
+use calx_wall::{Wall, Font, Fonter};
 
 fn main() {
     let mut atlas_builder = AtlasBuilder::new();
@@ -35,7 +35,8 @@ fn main() {
                 Event::Quit => break 'top,
                 Event::KeyPress(Key::Escape) => break 'top,
                 Event::KeyPress(Key::F12) => {
-                    calx_system::save_screenshot("calx", window.screenshot()).unwrap();
+                    calx_system::save_screenshot("calx", window.screenshot())
+                        .unwrap();
                 }
                 _ => (),
             }
@@ -43,7 +44,18 @@ fn main() {
 
         window.clear(0x7799DDFF);
 
-        wall.draw_image(10, [10.0, 10.0], 0.4, color::BLACK, color::BLACK);
+        {
+            let mut fonter = Fonter::new(&mut wall, &font)
+                                 .width(128.0)
+                                 .color(color::WHITE)
+                                 .border(color::BLACK)
+                                 .layer(0.4)
+                                 .text("The quick brown fox jumps over the \
+                                        lazy dog"
+                                           .to_string());
+
+            fonter.draw([48.0, 48.0]);
+        }
         window.display(&mut wall);
 
         window.end_frame();
