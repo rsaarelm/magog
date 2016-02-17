@@ -28,29 +28,34 @@ macro_rules! brush {
 
         impl $enumname {
             /// Get the sprite image.
-            pub fn get(self, idx: usize) -> Image {
+            pub fn get(self, idx: usize) -> usize {
                 BRUSH_CACHE.with(|c| c.borrow().get(self).expect("Brush not initialized")[idx])
             }
 
             /// Build the actual sprites in a canvas for the enum set.
-            pub fn init(builder: &mut CanvasBuilder) {
+            pub fn init<S>(builder: &mut S)
+                where S: $crate::ImageStore
+            {
                 BRUSH_CACHE.with(|c| { *c.borrow_mut() = build_brushes(builder); });
             }
         }
 
-        thread_local!(static BRUSH_CACHE: RefCell<$crate::IndexCache<Brush, Vec<Image>>> = RefCell::new(IndexCache::new()));
+        thread_local!(static BRUSH_CACHE: RefCell<$crate::IndexCache<Brush, Vec<usize>>> = RefCell::new(IndexCache::new()));
 
         // TODO: Builder as generic ImageStore
-        fn build_brushes(builder: &mut $crate::backend::CanvasBuilder) -> $crate::IndexCache<Brush, Vec<Image>> {
+        fn build_brushes<S>(builder: &mut S) -> $crate::IndexCache<Brush, Vec<usize>>
+            where S: $crate::ImageStore
+        {
             use image;
-            use $crate::{V2, color_key, color};
+            use $crate::color_key;
 
             let mut ret = $crate::IndexCache::new();
 
             fn load(data: &'static [u8]) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-                // XXX: Shouldn't hardcode the color::CYAN part, factor out
-                // the loader?
-                color_key(&image::load_from_memory(data).unwrap(), color::CYAN)
+                // Don't force the macro user have calx_color imported, use
+                // the convert from u32 interface for colors.
+                let cyan = 0x00FFFFFF;
+                color_key(&image::load_from_memory(data).unwrap(), cyan)
             }
 
             $({
@@ -60,11 +65,8 @@ macro_rules! brush {
                     let mut frames = Vec::new();
 
                     $({
-                        // Offset vector is the negative of the center
-                        // position. Center position is nicer for humans doing
-                        // data entry.
                         frames.push(builder.add_image(
-                                V2(-$xcenter, -$ycenter),
+                                [$xcenter, $ycenter],
                                 &image::SubImage::new(&mut sheet, $x, $y, $xdim, $ydim)));
                     })*
 
