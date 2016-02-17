@@ -14,5 +14,14 @@ image = "*"
 serde = "*"
 serde_macros = "*"
 
-[dependencies.calx]
+[dependencies.calx-alg]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-layout]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-grid]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-cache]
 git = "https://github.com/rsaarelm/calx"

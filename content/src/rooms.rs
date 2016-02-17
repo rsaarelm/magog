@@ -1,7 +1,9 @@
 use std::collections::BTreeSet;
 use num::Integer;
 use rand::Rng;
-use calx::{V2, Rect, RngExt, clamp, KernelTerrain};
+use calx_alg::{RngExt, clamp};
+use calx_layout::Rect;
+use calx_grid::KernelTerrain;
 use {StaticArea, FormType};
 use terrain::TerrainType;
 
@@ -117,7 +119,7 @@ fn dig_room<R: Rng>(area: &mut StaticArea, rng: &mut R, node: Node, room_type: R
         }
     }
 
-    let inside = Rect(room.0 + V2(1, 1), room.1 - V2(2, 2));
+    let inside = Rect::new{ pos: room.0 + vec2(1, 1), size: room.1 - vec2(2, 2) };
     for p in inside.iter() {
         if room_type == Warren || rng.one_chance_in(24) {
             area.spawns.push((p, FormType::Creature));

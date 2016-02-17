@@ -1,11 +1,11 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use calx::text::Map2DUtil;
+use calx_alg::Map2DUtil;
+use calx_grid::Dir6;
 use terrain::TerrainType::*;
 use terrain::TerrainType;
 use {AreaSpec, Biome};
 use geomorph_data;
-use calx::Dir6;
 
 thread_local!(static CHUNK_CACHE: RefCell<Vec<Chunk>> = RefCell::new(vec![]));
 
@@ -206,7 +206,7 @@ fn split_connected(set: &HashSet<(i32, i32)>) -> (HashSet<(i32, i32)>, HashSet<(
 
                 for dir in Dir6::iter() {
                     let d = dir.to_v2();
-                    let edge_point = (x + d.0, y + d.1);
+                    let edge_point = (x + d[0], y + d[1]);
                     if rest.contains(&edge_point) {
                         assert!(!connected.contains(&edge_point));
                         rest.remove(&edge_point);

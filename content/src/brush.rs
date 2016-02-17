@@ -1,6 +1,5 @@
 use std::cell::RefCell;
-use calx::{ImageStore, IndexCache};
-use calx::backend::{CanvasBuilder, Image};
+use calx_cache::{ImageStore, IndexCache};
 
 brush!(Brush {
     ["../assets/logo.png",

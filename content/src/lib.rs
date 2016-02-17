@@ -9,21 +9,26 @@ extern crate image;
 extern crate serde;
 
 #[macro_use]
-extern crate calx;
+extern crate calx_alg;
+
+#[macro_use]
+extern crate calx_cache;
+
+extern crate calx_grid;
+extern crate calx_layout;
 
 mod brush;
 mod geomorph;
 mod geomorph_data;
 mod herringbone;
-mod rooms;
+//mod rooms;
 mod terrain;
 
 use std::collections::BTreeMap;
-use calx::V2;
 
 pub use brush::Brush;
 pub use herringbone::herringbone;
-pub use rooms::rooms_and_corridors;
+//pub use rooms::rooms_and_corridors;
 pub use terrain::TerrainType;
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks
@@ -95,9 +100,9 @@ impl FormType {
 }
 
 pub struct StaticArea {
-    pub terrain: BTreeMap<V2<i32>, TerrainType>,
-    pub spawns: Vec<(V2<i32>, FormType)>,
-    pub player_entrance: V2<i32>,
+    pub terrain: BTreeMap<[i32; 2], TerrainType>,
+    pub spawns: Vec<([i32; 2], FormType)>,
+    pub player_entrance: [i32; 2],
 }
 
 impl StaticArea {
@@ -105,11 +110,11 @@ impl StaticArea {
         StaticArea {
             terrain: BTreeMap::new(),
             spawns: Vec::new(),
-            player_entrance: V2(0, 0),
+            player_entrance: [0, 0],
         }
     }
 
-    pub fn is_open(&self, p: V2<i32>) -> bool {
+    pub fn is_open(&self, p: [i32; 2]) -> bool {
         if let Some(t) = self.terrain.get(&p) {
             !t.blocks_walk()
         } else {

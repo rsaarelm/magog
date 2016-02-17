@@ -1,7 +1,6 @@
 use std::iter;
 use num::Integer;
 use rand::Rng;
-use calx::V2;
 use geomorph;
 use geomorph::Chunk;
 use {StaticArea, FormType, AreaSpec};
@@ -22,7 +21,7 @@ pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea {
     // total connectivity. Later on, use Dijkstra map that spreads from
     // entrance/exit as a reachability floodfill to do something cleverer
     // here.
-    let mut opens: Vec<V2<i32>> = area.terrain
+    let mut opens: Vec<[i32; 2]> = area.terrain
                                       .iter()
                                       .filter(|&(_, &t)| t.valid_spawn_spot())
                                       .map(|(&loc, _)| loc)
@@ -99,7 +98,7 @@ fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> St
 
 // Map in-chunk coordinates to on-map coordinates based on chunk position in
 // the herringbone chunk grid.
-fn herringbone_pos(chunk_pos: (i32, i32), in_chunk_pos: (i32, i32)) -> V2<i32> {
+fn herringbone_pos(chunk_pos: (i32, i32), in_chunk_pos: (i32, i32)) -> [i32; 2] {
     let (cx, cy) = chunk_pos;
     let (div, m) = cx.div_mod_floor(&2);
     let (x, y) = in_chunk_pos;
@@ -108,8 +107,8 @@ fn herringbone_pos(chunk_pos: (i32, i32), in_chunk_pos: (i32, i32)) -> V2<i32> {
     let origin_y = cy * CHUNK_W - m * CHUNK_W - 3 * div * CHUNK_W;
 
     if m == 0 {
-        V2(origin_x + x, origin_y + y)
+        [origin_x + x, origin_y + y]
     } else {
-        V2(origin_x + y, origin_y + x)
+        [origin_x + y, origin_y + x]
     }
 }
