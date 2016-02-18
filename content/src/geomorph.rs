@@ -117,13 +117,14 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
     let span_2 = 7;
     let span_3 = 5;
 
-    let set_1 = vec!((0, span_1), (span_2, 0), (chunk_dim - 1, span_2));
-    let set_2 = vec!((0, chunk_dim + span_3),
+    let set_1 = vec![(0, span_1), (span_2, 0), (chunk_dim - 1, span_2)];
+    let set_2 = vec![(0, chunk_dim + span_3),
                      (span_3, chunk_dim * 2 - 1),
-                     (chunk_dim - 1, chunk_dim + span_1));
+                     (chunk_dim - 1, chunk_dim + span_1)];
 
     if regions.len() < 1 || regions.len() > 2 {
-        return Some(format!("Bad number of connected regions {}", regions.len()));
+        return Some(format!("Bad number of connected regions {}",
+                            regions.len()));
     }
 
     let r1;
@@ -160,10 +161,12 @@ fn verify_topology(regions: &Vec<HashSet<(i32, i32)>>) -> Option<String> {
 
 fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
     let mut open: HashSet<(i32, i32)> = cells.iter()
-                                             .filter(|&(_p, t)| !t.blocks_walk())
+                                             .filter(|&(_p, t)| {
+                                                 !t.blocks_walk()
+                                             })
                                              .map(|(&p, _t)| p)
                                              .collect();
-    let mut ret = vec!();
+    let mut ret = vec![];
 
     if cells.is_empty() {
         return ret;
@@ -182,13 +185,14 @@ fn make_topology(cells: &Cells) -> Vec<HashSet<(i32, i32)>> {
 }
 
 /// Split a point set into an arbitrary connected region and the remaining set.
-fn split_connected(set: &HashSet<(i32, i32)>) -> (HashSet<(i32, i32)>, HashSet<(i32, i32)>) {
+fn split_connected(set: &HashSet<(i32, i32)>)
+                   -> (HashSet<(i32, i32)>, HashSet<(i32, i32)>) {
     if set.is_empty() {
         return (HashSet::new(), HashSet::new());
     }
 
     let mut connected = HashSet::new();
-    let mut edge = vec!();
+    let mut edge = vec![];
     let mut rest = set.clone();
 
     let first = set.iter().next().unwrap();

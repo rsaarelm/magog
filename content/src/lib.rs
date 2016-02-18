@@ -21,14 +21,14 @@ mod brush;
 mod geomorph;
 mod geomorph_data;
 mod herringbone;
-//mod rooms;
+// mod rooms;
 mod terrain;
 
 use std::collections::BTreeMap;
 
 pub use brush::Brush;
 pub use herringbone::herringbone;
-//pub use rooms::rooms_and_corridors;
+// pub use rooms::rooms_and_corridors;
 pub use terrain::TerrainType;
 
 /// Landscape type. Also serves as bit field in order to produce habitat masks

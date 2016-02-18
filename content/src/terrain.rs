@@ -80,7 +80,14 @@ impl TerrainType {
 
     pub fn blocks_shot(&self) -> bool {
         match *self {
-            Wall | RockWall | Rock | Tree | Stalagmite | Door | Menhir | DeadTree => true,
+            Wall |
+            RockWall |
+            Rock |
+            Tree |
+            Stalagmite |
+            Door |
+            Menhir |
+            DeadTree => true,
             _ => false,
         }
     }

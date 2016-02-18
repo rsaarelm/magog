@@ -22,10 +22,10 @@ pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea {
     // entrance/exit as a reachability floodfill to do something cleverer
     // here.
     let mut opens: Vec<[i32; 2]> = area.terrain
-                                      .iter()
-                                      .filter(|&(_, &t)| t.valid_spawn_spot())
-                                      .map(|(&loc, _)| loc)
-                                      .collect();
+                                       .iter()
+                                       .filter(|&(_, &t)| t.valid_spawn_spot())
+                                       .map(|(&loc, _)| loc)
+                                       .collect();
 
     rng.shuffle(&mut opens);
 
@@ -36,7 +36,8 @@ pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea {
 
     area.spawns.extend(iter::repeat(FormType::Creature)
                            .take(num_mobs)
-                           .chain(iter::repeat(FormType::Item).take(num_items))
+                           .chain(iter::repeat(FormType::Item)
+                                      .take(num_items))
                            .filter_map(|spawn| {
                                if let Some(loc) = opens.pop() {
                                    Some((loc, spawn))
@@ -48,11 +49,16 @@ pub fn herringbone<R: Rng>(rng: &mut R, spec: &AreaSpec) -> StaticArea {
     area
 }
 
-fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> StaticArea {
+fn generate_terrain<R: Rng>(rng: &mut R,
+                            spec: &AreaSpec,
+                            cs: &Vec<Chunk>)
+                            -> StaticArea {
     let mut area = StaticArea::new();
 
     let chunks = cs.iter()
-                   .filter(|c| c.spec.biome == spec.biome && c.spec.depth <= spec.depth)
+                   .filter(|c| {
+                       c.spec.biome == spec.biome && c.spec.depth <= spec.depth
+                   })
                    .collect::<Vec<&Chunk>>();
 
     let edge = chunks.iter()
@@ -98,7 +104,9 @@ fn generate_terrain<R: Rng>(rng: &mut R, spec: &AreaSpec, cs: &Vec<Chunk>) -> St
 
 // Map in-chunk coordinates to on-map coordinates based on chunk position in
 // the herringbone chunk grid.
-fn herringbone_pos(chunk_pos: (i32, i32), in_chunk_pos: (i32, i32)) -> [i32; 2] {
+fn herringbone_pos(chunk_pos: (i32, i32),
+                   in_chunk_pos: (i32, i32))
+                   -> [i32; 2] {
     let (cx, cy) = chunk_pos;
     let (div, m) = cx.div_mod_floor(&2);
     let (x, y) = in_chunk_pos;
