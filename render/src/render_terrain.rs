@@ -1,6 +1,6 @@
-use calx::color::*;
-use calx::{Rgba, Kernel, KernelTerrain};
-use calx::backend::Image;
+use calx_color::color::*;
+use calx_color::Rgba;
+use calx_grid::{Kernel, KernelTerrain};
 use content::{TerrainType, Brush};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
@@ -60,7 +60,7 @@ impl Angle {
 /// Params to the draw function: Draw layer, brush, brush frame, main
 /// color, border color.
 pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
-    where F: FnMut(Image, Angle, Rgba, Rgba)
+    where F: FnMut(usize, Angle, Rgba, Rgba)
 {
     use content::Brush::*;
     use self::Angle::*;
@@ -77,7 +77,7 @@ pub fn render_terrain<F>(k: &Kernel<TerrainType>, mut draw: F)
     }
 
     fn process<C: KernelTerrain, F>(k: &Kernel<C>, draw: &mut F, kind: T)
-        where F: FnMut(Image, Angle, Rgba, Rgba)
+        where F: FnMut(usize, Angle, Rgba, Rgba)
     {
         // NB: Black-#000 foreground color prohibits recoloring of the
         // tile in FOV view, only use for special blocks.

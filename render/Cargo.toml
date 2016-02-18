@@ -7,7 +7,16 @@ authors = [ "risto.saarelma@iki.fi" ]
 [lib]
 name = "render"
 
-[dependencies.calx]
+[dependencies]
+cgmath = "0.7"
+
+[dependencies.calx-color]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-layout]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-grid]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.content]
