@@ -24,6 +24,21 @@ impl<T> Rect<T>
         }
     }
 
+    /// Create a new rectangle from top corner and size
+    pub fn new_ts<V, U>(top: V, size: U) -> Rect<T>
+        where V: Into<[T; 2]>,
+              U: Into<[T; 2]>
+    {
+        let top = top.into();
+        let size = size.into();
+        assert!(size[0] >= T::zero() && size[1] >= T::zero());
+
+        Rect {
+            top: top,
+            size: size,
+        }
+    }
+
     /// Get a point at an anchor position in the rectangle.
     pub fn point(&self, point: Anchor) -> [T; 2] {
         let one: T = One::one();
