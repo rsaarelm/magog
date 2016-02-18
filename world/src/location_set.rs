@@ -32,12 +32,8 @@ impl LocationSet {
     pub fn contains(&self, loc: &Location) -> bool {
         let (index, bit) = LocationSet::chunk(loc);
         match self.chunks.get(&index) {
-            Some(b) if b & bit != 0 => {
-                true
-            }
-            _ => {
-                false
-            }
+            Some(b) if b & bit != 0 => true,
+            _ => false,
         }
     }
 

@@ -1,4 +1,4 @@
-/*! Non-mutating world and entity state querying functions. */
+//! Non-mutating world and entity state querying functions.
 
 use cgmath::Vector2;
 use calx_color::Rgba;
@@ -147,7 +147,11 @@ pub fn location(w: &World, e: Entity) -> Option<Location> {
 }
 
 /// Look for targets to shoot in a direction.
-pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
+pub fn find_target(w: &World,
+                   shooter: Entity,
+                   dir: Dir6,
+                   range: usize)
+                   -> Option<Entity> {
     let origin = location(w, shooter).unwrap();
     for i in 1..(range + 1) {
         let loc = origin + Vector2::from(dir.to_v2()) * (i as i32);
@@ -193,7 +197,10 @@ pub fn blocks_walk(w: &World, loc: Location) -> bool {
     if terrain(w, loc).blocks_walk() {
         return true;
     }
-    if w.spatial.entities_at(loc).into_iter().any(|e| is_blocking_entity(w, e)) {
+    if w.spatial
+        .entities_at(loc)
+        .into_iter()
+        .any(|e| is_blocking_entity(w, e)) {
         return true;
     }
     false

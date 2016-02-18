@@ -41,7 +41,12 @@ pub struct Form {
 
 impl Form {
     /// Create a standard form for a living creature.
-    pub fn mob(name: &str, icon: Brush, color: Rgba, power: i32, intrinsics: &[Intrinsic]) -> Form {
+    pub fn mob(name: &str,
+               icon: Brush,
+               color: Rgba,
+               power: i32,
+               intrinsics: &[Intrinsic])
+               -> Form {
         Form {
             biome: Anywhere,
             commonness: 1000,
@@ -105,7 +110,9 @@ pub fn with_forms<F, U>(f: F) -> U
 
 /// Generate a spawn probability weighted list of forms of a specific category
 /// that can spawn in the desired type of area.
-pub fn form_distribution(spec: &AreaSpec, category: FormType) -> Vec<Weighted<Rc<Form>>> {
+pub fn form_distribution(spec: &AreaSpec,
+                         category: FormType)
+                         -> Vec<Weighted<Rc<Form>>> {
     let spec = *spec; // Make the borrow checker happy.
     with_forms(move |v| {
         v.iter()

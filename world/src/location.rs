@@ -19,8 +19,11 @@ impl Location {
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
     pub fn v2_at(&self, other: Location) -> Option<Vector2<i32>> {
-        if self.z != other.z { return None; }
-        Some(vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32))
+        if self.z != other.z {
+            return None;
+        }
+        Some(vec2(other.x as i32, other.y as i32) -
+             vec2(self.x as i32, self.y as i32))
     }
 
     /// Hex distance from this location to the other one, if applicable.
@@ -74,9 +77,10 @@ pub trait Unchart {
 
 impl Unchart for Location {
     fn chart_pos(&self, loc: Location) -> Option<Vector2<i32>> {
-        if self.z != loc.z { return None; }
-        Some(vec2(loc.x as i32 - self.x as i32,
-                  loc.y as i32 - self.y as i32))
+        if self.z != loc.z {
+            return None;
+        }
+        Some(vec2(loc.x as i32 - self.x as i32, loc.y as i32 - self.y as i32))
     }
 }
 

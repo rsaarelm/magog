@@ -7,7 +7,7 @@ pub struct Field<T: PartialEq> {
     patch: BTreeMap<Location, T>,
 }
 
-impl<T: Copy+PartialEq> Field<T> {
+impl<T: Copy + PartialEq> Field<T> {
     pub fn new(default: T) -> Field<T> {
         Field {
             patch: BTreeMap::new(),

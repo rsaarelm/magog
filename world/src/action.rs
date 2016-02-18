@@ -1,4 +1,4 @@
-/*! Functions for changing world and entity state. */
+//! Functions for changing world and entity state.
 
 use std::path::Path;
 use std::fs::{self, File};
@@ -49,14 +49,19 @@ fn ai_main(w: &mut World) {
 }
 
 fn clean_dead(w: &mut World) {
-    let dead: Vec<Entity> = w.ecs.iter().filter(|&&e| !query::is_alive(w, e)).map(|&e| e).collect();
+    let dead: Vec<Entity> = w.ecs
+                             .iter()
+                             .filter(|&&e| !query::is_alive(w, e))
+                             .map(|&e| e)
+                             .collect();
     for e in dead.into_iter() {
         w.ecs.remove(e);
     }
 }
 
 pub fn update_entity(w: &mut World, e: Entity) {
-    if query::is_mob(w, e) && !query::is_player(w, e) && query::ticks_this_frame(w, e) {
+    if query::is_mob(w, e) && !query::is_player(w, e) &&
+       query::ticks_this_frame(w, e) {
         mob_ai(w, e);
     }
 }
@@ -69,7 +74,8 @@ pub fn mob_ai(w: &mut World, e: Entity) {
     if query::brain_state(w, e) == Some(BrainState::Asleep) {
         let self_loc = query::location(w, e).unwrap();
         // Mob is inactive, but may wake up if it spots the player.
-        if let Some(player_loc) = query::player(w).and_then(|e| query::location(w, e)) {
+        if let Some(player_loc) = query::player(w)
+                                      .and_then(|e| query::location(w, e)) {
             // TODO: Line-of-sight, stealth concerns, other enemies than
             // player etc.
             if let Some(d) = player_loc.distance_from(self_loc) {
@@ -85,7 +91,8 @@ pub fn mob_ai(w: &mut World, e: Entity) {
     if let Some(p) = query::player(w) {
         let loc = query::location(w, e).expect("no location");
 
-        let vec_to_enemy = loc.v2_at(query::location(w, p).expect("no location"));
+        let vec_to_enemy = loc.v2_at(query::location(w, p)
+                                         .expect("no location"));
         if let Some(v) = vec_to_enemy {
             if v.hex_dist() == 1 {
                 // Melee range, hit.
@@ -93,7 +100,8 @@ pub fn mob_ai(w: &mut World, e: Entity) {
             } else {
                 // Walk towards.
                 let pathing_depth = 16;
-                let pathing = Dijkstra::new(vec![query::location(w, p).expect("no location")],
+                let pathing = Dijkstra::new(vec![query::location(w, p)
+                                                     .expect("no location")],
                                             |&loc| !query::blocks_walk(w, loc),
                                             pathing_depth);
 
@@ -101,7 +109,8 @@ pub fn mob_ai(w: &mut World, e: Entity) {
                 if steps.len() > 0 {
                     step(w,
                          e,
-                         loc.dir6_towards(steps[0]).expect("No loc pair orientation"));
+                         loc.dir6_towards(steps[0])
+                            .expect("No loc pair orientation"));
                 } else {
                     let dir = w.flags.rng.gen();
                     step(w, e, dir);
@@ -233,7 +242,8 @@ pub fn forget_map(w: &mut World, e: Entity) {
 
 /// Callback when entity moves to a new location.
 fn after_entity_move(w: &mut World, e: Entity) {
-    let loc = query::location(w, e).expect("Entity must have location for callback");
+    let loc = query::location(w, e)
+                  .expect("Entity must have location for callback");
 
     do_fov(w, e);
 
@@ -259,11 +269,11 @@ pub fn do_fov(w: &mut World, e: Entity) {
 
     if let Some(loc) = query::location(w, e) {
         let sight_range = 12;
-        let seen_locs: Vec<Location> = HexFov::new(|pt| query::blocks_sight(w, (loc + pt)),
-                                                   sight_range)
-                                           .fake_isometric()
-                                           .map(|pt| loc + pt)
-                                           .collect();
+        let seen_locs: Vec<Location> =
+            HexFov::new(|pt| query::blocks_sight(w, (loc + pt)), sight_range)
+                .fake_isometric()
+                .map(|pt| loc + pt)
+                .collect();
         let mut mm = &mut w.ecs.map_memory[e];
         mm.seen.clear();
         mm.seen.extend(seen_locs.clone().into_iter());
@@ -353,7 +363,8 @@ pub fn save_game(w: &World) {
         return;
     }
 
-    let mut file = File::create(SAVE_FILENAME).expect("Opening save file failed");
+    let mut file = File::create(SAVE_FILENAME)
+                       .expect("Opening save file failed");
     w.save(&mut file).expect("Saving game failed");
 }
 

@@ -1,5 +1,5 @@
 use std::io::{Read, Write};
-use std::collections::{HashMap};
+use std::collections::HashMap;
 use rand;
 use rand::Rng;
 use bincode::{self, serde};
@@ -70,8 +70,10 @@ impl<'a> World {
             serde::deserialize_from(reader, bincode::SizeLimit::Infinite);
         if let &Ok(ref x) = &ret {
             if &x.version != GAME_VERSION {
-                panic!("Save game version {} does not match current version {}",
-                       x.version, GAME_VERSION);
+                panic!("Save game version {} does not match current version \
+                        {}",
+                       x.version,
+                       GAME_VERSION);
             }
         }
         ret
@@ -91,8 +93,10 @@ mod test {
         use bincode::{serde, SizeLimit};
 
         let w1 = World::new(Some(123));
-        let saved = serde::serialize(&w1, SizeLimit::Infinite).expect("Serialization failed");
-        let w2: World = serde::deserialize(&saved).expect("Deserialization failed");
+        let saved = serde::serialize(&w1, SizeLimit::Infinite)
+                        .expect("Serialization failed");
+        let w2: World = serde::deserialize(&saved)
+                            .expect("Deserialization failed");
         assert!(w1.flags.seed == w2.flags.seed);
     }
 }

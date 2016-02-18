@@ -169,7 +169,10 @@ impl Spatial {
             .collect()
     }
 
-    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
+    pub fn entity_equipped(&self,
+                           parent: Entity,
+                           slot: Slot)
+                           -> Option<Entity> {
         match self.place_to_entities.get(&In(parent, Some(slot))) {
             None => None,
             Some(v) => {
