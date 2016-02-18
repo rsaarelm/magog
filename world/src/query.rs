@@ -1,6 +1,8 @@
 /*! Non-mutating world and entity state querying functions. */
 
-use calx::{Dir6, Rgba};
+use cgmath::Vector2;
+use calx_color::Rgba;
+use calx_grid::Dir6;
 use calx_ecs::Entity;
 use content::{Brush, TerrainType};
 use world::World;
@@ -148,7 +150,7 @@ pub fn location(w: &World, e: Entity) -> Option<Location> {
 pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
     let origin = location(w, shooter).unwrap();
     for i in 1..(range + 1) {
-        let loc = origin + dir.to_v2() * (i as i32);
+        let loc = origin + Vector2::from(dir.to_v2()) * (i as i32);
         if terrain(w, loc).blocks_shot() {
             break;
         }

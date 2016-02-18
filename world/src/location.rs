@@ -1,5 +1,7 @@
 use std::ops::Add;
-use calx::{V2, Dir6, HexGeom, LatticeNode, noise};
+use cgmath::{Vector2, vec2};
+use calx_alg::noise;
+use calx_grid::{Dir6, HexGeom, GridNode};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
@@ -16,9 +18,9 @@ impl Location {
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
-    pub fn v2_at(&self, other: Location) -> Option<V2<i32>> {
+    pub fn v2_at(&self, other: Location) -> Option<Vector2<i32>> {
         if self.z != other.z { return None; }
-        Some(V2(other.x as i32, other.y as i32) - V2(self.x as i32, self.y as i32))
+        Some(vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32))
     }
 
     /// Hex distance from this location to the other one, if applicable.
@@ -43,12 +45,13 @@ impl Location {
     }
 }
 
-impl Add<V2<i32>> for Location {
+impl<T: Into<Vector2<i32>>> Add<T> for Location {
     type Output = Location;
-    fn add(self, other: V2<i32>) -> Location {
+    fn add(self, other: T) -> Location {
+        let other = other.into();
         Location {
-            x: (self.x as i32 + other.0) as i8,
-            y: (self.y as i32 + other.1) as i8,
+            x: (self.x as i32 + other.x) as i8,
+            y: (self.y as i32 + other.y) as i8,
             z: self.z,
         }
     }
@@ -58,7 +61,7 @@ impl Add<V2<i32>> for Location {
 /// be just a straightforward mapping, or it can involve something exotic like
 /// a non-Euclidean space where the lines from the Chart origin are raycast
 /// through portals.
-pub trait Chart: Add<V2<i32>, Output=Location> {}
+pub trait Chart: Add<Vector2<i32>, Output=Location> {}
 
 impl Chart for Location {}
 
@@ -66,18 +69,18 @@ impl Chart for Location {}
 /// mapping exists. It depends on the weirdness of a space how trivial this is
 /// to do.
 pub trait Unchart {
-    fn chart_pos(&self, loc: Location) -> Option<V2<i32>>;
+    fn chart_pos(&self, loc: Location) -> Option<Vector2<i32>>;
 }
 
 impl Unchart for Location {
-    fn chart_pos(&self, loc: Location) -> Option<V2<i32>> {
+    fn chart_pos(&self, loc: Location) -> Option<Vector2<i32>> {
         if self.z != loc.z { return None; }
-        Some(V2(loc.x as i32 - self.x as i32,
-                loc.y as i32 - self.y as i32))
+        Some(vec2(loc.x as i32 - self.x as i32,
+                  loc.y as i32 - self.y as i32))
     }
 }
 
-impl LatticeNode for Location {
+impl GridNode for Location {
     fn neighbors(&self) -> Vec<Location> {
         Dir6::iter().map(|d| *self + d.to_v2()).collect()
     }

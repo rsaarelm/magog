@@ -55,7 +55,10 @@ fn init_area(w: &mut World, depth: i32) {
     let static_area = if spec.depth == 1 {
         content::herringbone(&mut rng, &spec)
     } else {
-        content::rooms_and_corridors(&mut rng, spec.depth)
+        content::herringbone(&mut rng, &spec)
+        // FIXME: rooms_and_corridors gen currently disabled. Also it was
+        // kinda lame.
+        // content::rooms_and_corridors(&mut rng, spec.depth)
     };
 
     let origin = Location::new(0, 0);
@@ -76,7 +79,7 @@ fn spawn_player(w: &mut World, start_loc: Location) -> Entity {
         Some(player) => player,
         None => {
             // TODO: Use factory.
-            use calx::color;
+            use calx_color::color;
             use content::Brush;
             use components::{Desc, MapMemory, Health, Brain, BrainState, Alignment};
             use stats::Stats;

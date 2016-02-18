@@ -3,7 +3,8 @@
 use std::path::Path;
 use std::fs::{self, File};
 use rand::Rng;
-use calx::{Dijkstra, Dir6, HexFov, HexGeom, RngExt};
+use calx_alg::RngExt;
+use calx_grid::{Dijkstra, Dir6, HexFov, HexGeom};
 use calx_ecs::Entity;
 use world::World;
 use area;

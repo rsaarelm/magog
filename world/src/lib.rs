@@ -8,9 +8,12 @@ extern crate serde;
 extern crate bincode;
 extern crate num;
 extern crate vec_map;
+extern crate cgmath;
 #[macro_use]
 extern crate calx_ecs;
-extern crate calx;
+extern crate calx_alg;
+extern crate calx_grid;
+extern crate calx_color;
 extern crate content;
 
 pub use flags::Flags;
@@ -85,8 +88,8 @@ impl Light {
         Light { lum: lum }
     }
 
-    pub fn apply(&self, color: calx::Rgba) -> calx::Rgba {
-        let darkness_color = calx::Rgba::new(0.05, 0.10, 0.25, color.a);
-        calx::lerp(color * darkness_color, color, self.lum)
+    pub fn apply(&self, color: calx_color::Rgba) -> calx_color::Rgba {
+        let darkness_color = calx_color::Rgba::new(0.05, 0.10, 0.25, color.a);
+        calx_alg::lerp(color * darkness_color, color, self.lum)
     }
 }

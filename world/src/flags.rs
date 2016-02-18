@@ -1,6 +1,6 @@
 use rand::{XorShiftRng, SeedableRng};
 use location::Location;
-use calx::EncodeRng;
+use calx_alg::EncodeRng;
 use calx_ecs::Entity;
 
 #[derive(Serialize, Deserialize)]
