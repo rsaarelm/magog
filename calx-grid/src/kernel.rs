@@ -31,21 +31,20 @@ pub struct Kernel<C> {
 }
 
 impl<C: KernelTerrain> Kernel<C> {
-    pub fn new<F, L, V>(get: F, loc: L) -> Kernel<C>
+    pub fn new<F, L>(get: F, loc: L) -> Kernel<C>
         where F: Fn(L) -> C,
-              L: Add<V, Output = L> + Copy,
-              V: From<[i32; 2]>
+              L: Add<[i32; 2], Output = L> + Copy,
     {
         Kernel {
-            n: get(loc + V::from([-1, -1])),
-            ne: get(loc + V::from([0, -1])),
-            e: get(loc + V::from([1, -1])),
-            nw: get(loc + V::from([-1, 0])),
+            n: get(loc + [-1, -1]),
+            ne: get(loc + [0, -1]),
+            e: get(loc + [1, -1]),
+            nw: get(loc + [-1, 0]),
             center: get(loc),
-            se: get(loc + V::from([1, 0])),
-            w: get(loc + V::from([-1, 1])),
-            sw: get(loc + V::from([0, 1])),
-            s: get(loc + V::from([1, 1])),
+            se: get(loc + [1, 0]),
+            w: get(loc + [-1, 1]),
+            sw: get(loc + [0, 1]),
+            s: get(loc + [1, 1]),
         }
     }
 
