@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use calx_cache::{ImageStore, IndexCache};
-
 brush!(Brush {
     ["../assets/logo.png",
         [Logo,
