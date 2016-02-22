@@ -19,12 +19,31 @@ getopts = "*"
 toml = "*"
 image = "*"
 time = "*"
+cgmath = "0.7"
 rustc-serialize = "*"
 
-[dependencies.calx]
+[dependencies.calx-ecs]
 git = "https://github.com/rsaarelm/calx"
 
-[dependencies.calx_ecs]
+[dependencies.calx-alg]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-layout]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-cache]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-grid]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-color]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-window]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-wall]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.world]
