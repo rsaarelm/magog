@@ -1,5 +1,3 @@
-use std::ops::Add;
-
 /// Shaping properties for hex terrain cells.
 pub trait KernelTerrain {
     /// Terrain is a wall with thin, shaped pieces along the (1, 0) and (0, 1) hex axes.
@@ -31,20 +29,19 @@ pub struct Kernel<C> {
 }
 
 impl<C: KernelTerrain> Kernel<C> {
-    pub fn new<F, L>(get: F, loc: L) -> Kernel<C>
-        where F: Fn(L) -> C,
-              L: Add<[i32; 2], Output = L> + Copy,
+    pub fn new<F>(get: F) -> Kernel<C>
+        where F: Fn(i32, i32) -> C
     {
         Kernel {
-            n: get(loc + [-1, -1]),
-            ne: get(loc + [0, -1]),
-            e: get(loc + [1, -1]),
-            nw: get(loc + [-1, 0]),
-            center: get(loc),
-            se: get(loc + [1, 0]),
-            w: get(loc + [-1, 1]),
-            sw: get(loc + [0, 1]),
-            s: get(loc + [1, 1]),
+            n: get(-1, -1),
+            ne: get(0, -1),
+            e: get(1, -1),
+            nw: get(-1, 0),
+            center: get(0, 0),
+            se: get(1, 0),
+            w: get(-1, 1),
+            sw: get(0, 1),
+            s: get(1, 1),
         }
     }
 
