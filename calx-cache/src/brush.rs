@@ -40,9 +40,8 @@ macro_rules! brush {
             }
         }
 
-        thread_local!(static BRUSH_CACHE: RefCell<$crate::IndexCache<Brush, Vec<usize>>> = RefCell::new(IndexCache::new()));
+        thread_local!(static BRUSH_CACHE: ::std::cell::RefCell<$crate::IndexCache<Brush, Vec<usize>>> = ::std::cell::RefCell::new($crate::IndexCache::new()));
 
-        // TODO: Builder as generic ImageStore
         fn build_brushes<S>(builder: &mut S) -> $crate::IndexCache<Brush, Vec<usize>>
             where S: $crate::ImageStore
         {

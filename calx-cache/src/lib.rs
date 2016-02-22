@@ -1,3 +1,5 @@
+#![feature(custom_derive, plugin)]
+
 extern crate num;
 extern crate vec_map;
 extern crate image;
@@ -9,8 +11,10 @@ pub use img::{color_key, subimage, tilesheet_bounds};
 pub use index_cache::{IndexCache, CacheKey};
 
 mod atlas;
+#[macro_use]
 mod brush;
 mod img;
+#[macro_use]
 mod index_cache;
 
 /// Interface for objects that store multiple images, like an image atlas.
@@ -35,5 +39,30 @@ pub trait ImageStore: Sized {
             image::Rgba([0xffu8, 0xffu8, 0xffu8, 0xffu8])
         });
         self.add_image([0, 0], &image)
+    }
+}
+
+#[cfg(test)]
+mod test {
+#![allow(unused_attributes)]
+#![allow(dead_code)]
+    use super::{ImageStore, AtlasBuilder};
+
+    brush!(Brush {
+    ["../../calx-wall/assets/font.png",
+        [Test,
+        0, 0, 32, 32, 0, 0]
+    ]
+});
+
+    fn store<S: ImageStore>(s: &mut S) {
+        Brush::init(s);
+    }
+
+    #[test]
+    fn test_cache() {
+        let mut x = AtlasBuilder::new();
+
+        store(&mut x);
     }
 }
