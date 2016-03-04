@@ -1,7 +1,6 @@
 use std::mem;
 use rand::{Rng, SeedableRng};
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::Error;
+use serde;
 use to_log_odds;
 
 /// Additional methods for random number generators.
@@ -78,9 +77,9 @@ impl<T: Rng> Rng for EncodeRng<T> {
     }
 }
 
-impl<T: Rng + 'static> Serialize for EncodeRng<T> {
+impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: Serializer
+        where S: serde::Serializer
     {
         let mut vec = Vec::new();
         unsafe {
@@ -93,16 +92,16 @@ impl<T: Rng + 'static> Serialize for EncodeRng<T> {
     }
 }
 
-impl<T: Rng + 'static> Deserialize for EncodeRng<T> {
+impl<T: Rng + 'static> serde::Deserialize for EncodeRng<T> {
     fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: Deserializer
+        where D: serde::Deserializer
     {
-        let blob: Vec<u8> = try!(Deserialize::deserialize(deserializer));
+        let blob: Vec<u8> = try!(serde::Deserialize::deserialize(deserializer));
         unsafe {
             if blob.len() == mem::size_of::<T>() {
                 Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
             } else {
-                Err(Error::syntax("Bad RNG blob length"))
+                Err(serde::Error::invalid_length(blob.len()))
             }
         }
     }

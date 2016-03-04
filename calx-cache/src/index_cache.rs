@@ -51,7 +51,7 @@ impl<K: Debug + Copy + CacheKey, V> IndexCache<K, V> {
 
     pub fn get(&self, key: K) -> Option<&V> {
         let idx = key.to_usize();
-        self.cache.get(&idx)
+        self.cache.get(idx)
     }
 }
 
