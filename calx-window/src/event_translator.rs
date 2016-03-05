@@ -34,6 +34,7 @@ impl EventTranslator {
         static MOUSE_DRAG_THRESHOLD_T: f64 = 0.1;
 
         match glutin_event {
+            glutin::Event::TouchpadPressure(_w, _h) => {}
             glutin::Event::Resized(_w, _h) => {}
             glutin::Event::Moved(_x, _y) => {}
             glutin::Event::DroppedFile(_path) => {}

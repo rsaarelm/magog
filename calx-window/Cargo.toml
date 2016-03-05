@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 time = "0.1"
 glium = "0.13"
-image = "0.6"
+image = "0.7"
 
 [dependencies.calx-alg]
 path = "../calx-alg"
