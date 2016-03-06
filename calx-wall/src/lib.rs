@@ -1,4 +1,4 @@
-//! Window-wrangling, polygon-pushing and input-grabbing
+//! 2D drawing utilities
 //!
 
 #[macro_use]
