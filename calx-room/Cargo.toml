@@ -1,0 +1,23 @@
+[package]
+name = "calx-room"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "3D drawing utilities"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+cgmath = "0.7"
+glium = "0.13"
+
+[dependencies.calx-alg]
+path = "../calx-alg"
+
+[dependencies.calx-window]
+path = "../calx-window"
+
+[dependencies.calx-color]
+path = "../calx-color"
+
+[dev-dependencies.calx-system]
+path = "../calx-system"
