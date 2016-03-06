@@ -64,13 +64,13 @@ impl Face {
 #[inline]
 fn cube_vertex(index: usize) -> [f32; 3] {
     [[0.0, 0.0, 0.0],
-     [0.1, 0.0, 0.0],
-     [0.0, 0.1, 0.0],
-     [0.1, 0.1, 0.0],
-     [0.0, 0.0, 0.1],
-     [0.1, 0.0, 0.1],
-     [0.0, 0.1, 0.1],
-     [0.1, 0.1, 0.1]][index]
+     [1.0, 0.0, 0.0],
+     [0.0, 1.0, 0.0],
+     [1.0, 1.0, 0.0],
+     [0.0, 0.0, 1.0],
+     [1.0, 0.0, 1.0],
+     [0.0, 1.0, 1.0],
+     [1.0, 1.0, 1.0]][index]
 }
 
 #[derive(Copy, Clone)]
@@ -136,6 +136,7 @@ fn main() {
             }
         ).unwrap();
 
+    let mut tick = 0;
     loop {
         for e in window.events().into_iter() {
             match e {
@@ -150,20 +151,22 @@ fn main() {
         }
         window.clear(0x7799DDFF);
 
+
         // Camera setup
 
         let projection: cgmath::Matrix4<f32> =
             cgmath::PerspectiveFov {
-                fovy: cgmath::Deg::new(90.0).into(),
+                fovy: cgmath::Deg::new(45.0).into(),
                 aspect: 640.0 / 380.0, // XXX: Hardcoding
-                near: 0.01,
+                near: 0.1,
                 far: 1024.0,
             }
             .into();
 
+        let a = (tick as f32) / 32.0;
         let modelview: cgmath::Matrix4<f32> =
-            cgmath::Matrix4::look_at(cgmath::Point3::new(1.0, -1.0, 2.0),
-                                     cgmath::Point3::new(0.0, 0.0, 0.0),
+            cgmath::Matrix4::look_at(cgmath::Point3::new(5.0 * a.sin() + 0.5, 5.0 * a.cos() + 0.5, 2.0),
+                                     cgmath::Point3::new(0.5, 0.5, 0.0),
                                      cgmath::vec3(0.0, 0.0, 1.0));
 
         // Convert to the format the shader expects.
@@ -232,5 +235,7 @@ fn main() {
         // window.display(&mut room);
 
         window.end_frame();
+
+        tick += 1;
     }
 }
