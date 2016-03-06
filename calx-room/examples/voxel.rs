@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate glium;
+extern crate rand;
+extern crate noise;
 extern crate calx_system;
 extern crate calx_window;
 extern crate cgmath;
@@ -8,6 +10,7 @@ use std::default::Default;
 use calx_window::{WindowBuilder, Event, Key};
 use cgmath::Angle;
 use glium::Surface;
+use rand::random;
 
 /// Cube face.
 #[derive(Copy, Clone)]
@@ -81,16 +84,131 @@ pub struct Vertex {
 }
 implement_vertex!(Vertex, pos, normal, color);
 
-struct Voxel {
-    color: [f32; 4],
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+enum Voxel {
+    Dirt,
 }
 
-fn get_voxel(voxel_pos: [i32; 3]) -> Option<Voxel> {
-    // TODO: Perlin noise landscape or something.
-    if voxel_pos[2] < 0 {
-        Some(Voxel { color: [0.0, 1.0, 0.0, 1.0] })
-    } else {
-        None
+impl Voxel {
+    pub fn color(&self, face: Face) -> [f32; 4] {
+        match self {
+            &Voxel::Dirt => {
+                match face {
+                    Face::Up => [0.0, 0.6, 0.0, 1.0],
+                    _ => [0.5, 0.3, 0.0, 1.0],
+                }
+            }
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+struct VoxelPos {
+    x: i16,
+    y: i16,
+    z: i8,
+}
+
+impl VoxelPos {
+    pub fn new(x: i16, y: i16, z: i8) -> VoxelPos {
+        VoxelPos { x: x, y: y, z: z }
+    }
+}
+
+struct World {
+    seed: noise::Seed,
+}
+
+
+impl World {
+    pub fn new() -> World {
+        World { seed: random() }
+    }
+
+    fn ground_height(&self, x: f32, y: f32) -> f32 {
+        4.0 * noise::perlin2(&self.seed, &[x / 14.1, y / 14.1])
+    }
+
+    pub fn get_voxel(&self, voxel_pos: &VoxelPos) -> Option<Voxel> {
+        if (voxel_pos.z as f32) <
+           self.ground_height(voxel_pos.x as f32, voxel_pos.y as f32) {
+            Some(Voxel::Dirt)
+        } else {
+            None
+        }
+    }
+}
+
+struct Chunk {
+    pub vtx: glium::VertexBuffer<Vertex>,
+    pub idx: glium::IndexBuffer<u16>,
+}
+
+impl Chunk {
+    pub fn new(display: &glium::Display,
+               world: &World,
+               min: VoxelPos,
+               max: VoxelPos)
+               -> Chunk {
+        let mut vertices = Vec::new();
+        let mut indices = Vec::new();
+
+        let faces = [Face::East,
+                     Face::North,
+                     Face::Up,
+                     Face::West,
+                     Face::South,
+                     Face::Down];
+
+        for z in min.z..max.z {
+            for y in min.y..max.y {
+                for x in min.x..max.x {
+                    let pos = VoxelPos::new(x, y, z);
+                    if let Some(voxel) = world.get_voxel(&pos) {
+
+                        for f in 0..6 {
+                            let normal = faces[f].normal();
+                            let neighbor = VoxelPos::new(pos.x +
+                                                         normal[0] as i16,
+                                                         pos.y +
+                                                         normal[1] as i16,
+                                                         pos.z +
+                                                         normal[2] as i8);
+                            if world.get_voxel(&neighbor).is_some() {
+                                continue;
+                            }
+
+                            let idx = vertices.len() as u16;
+                            for &v_idx in faces[f].vertices().into_iter() {
+                                let p = cube_vertex(v_idx);
+                                vertices.push(Vertex {
+                                    pos: [p[0] + pos.x as f32,
+                                          p[1] + pos.y as f32,
+                                          p[2] + pos.z as f32],
+                                    normal: normal,
+                                    color: voxel.color(faces[f]),
+                                });
+
+                            }
+                            indices.push(idx);
+                            indices.push(idx + 1);
+                            indices.push(idx + 2);
+                            indices.push(idx);
+                            indices.push(idx + 2);
+                            indices.push(idx + 3);
+                        }
+                    }
+                }
+            }
+        }
+
+        Chunk {
+            vtx: glium::VertexBuffer::new(display, &vertices).unwrap(),
+            idx: glium::IndexBuffer::new(display,
+                                    glium::index::PrimitiveType::TrianglesList,
+                                    &indices)
+                .unwrap()
+        }
     }
 }
 
@@ -126,7 +244,7 @@ fn main() {
                 in vec3 v_normal;
                 in vec4 v_color;
                 out vec4 f_color;
-                const vec3 LIGHT = vec3(-0.2, 0.8, 0.1);
+                const vec3 LIGHT = vec3(-0.2, 0.1, 0.8);
 
                 void main() {
                     float lum = max(dot(normalize(v_normal), normalize(LIGHT)), 0.0);
@@ -137,6 +255,13 @@ fn main() {
         ).unwrap();
 
     let mut tick = 0;
+
+    let world = World::new();
+    let chunk = Chunk::new(&window.display,
+                           &world,
+                           VoxelPos::new(0, 0, -16),
+                           VoxelPos::new(32, 32, 16));
+
     loop {
         for e in window.events().into_iter() {
             match e {
@@ -163,10 +288,14 @@ fn main() {
             }
             .into();
 
-        let a = (tick as f32) / 32.0;
+        let a = (tick as f32) / 96.0;
         let modelview: cgmath::Matrix4<f32> =
-            cgmath::Matrix4::look_at(cgmath::Point3::new(5.0 * a.sin() + 0.5, 5.0 * a.cos() + 0.5, 2.0),
-                                     cgmath::Point3::new(0.5, 0.5, 0.0),
+            cgmath::Matrix4::look_at(cgmath::Point3::new(15.0 * a.sin() +
+                                                         16.0,
+                                                         15.0 * a.cos() +
+                                                         16.0,
+                                                         16.0),
+                                     cgmath::Point3::new(16.0, 16.0, 0.0),
                                      cgmath::vec3(0.0, 0.0, 1.0));
 
         // Convert to the format the shader expects.
@@ -186,49 +315,16 @@ fn main() {
                 write: true,
                 ..Default::default()
             },
+            backface_culling: glium::BackfaceCullingMode::CullClockwise,
             ..Default::default()
         };
-
-        // Setup the cube model
-        let faces = [Face::East,
-                     Face::North,
-                     Face::Up,
-                     Face::West,
-                     Face::South,
-                     Face::Down];
-        let mut vertices = Vec::new();
-        let mut indices = Vec::new();
-        for f in 0..6 {
-            let normal = faces[f].normal();
-            let idx = vertices.len() as u16;
-            for &v_idx in faces[f].vertices().into_iter() {
-                vertices.push(Vertex {
-                    pos: cube_vertex(v_idx),
-                    normal: normal,
-                    color: [1.0, 0.0, 0.0, 1.0],
-                });
-
-            }
-            indices.push(idx);
-            indices.push(idx + 1);
-            indices.push(idx + 2);
-            indices.push(idx);
-            indices.push(idx + 2);
-            indices.push(idx + 3);
-        }
-        let v_buf = glium::VertexBuffer::new(&window.display, &vertices).unwrap();
-        let i_buf =
-            glium::IndexBuffer::new(&window.display,
-                                    glium::index::PrimitiveType::TrianglesList,
-                                    &indices)
-                .unwrap();
-
 
         // Draw the thing
 
         {
             let mut target = window.get_framebuffer_target();
-            target.draw(&v_buf, &i_buf, &shader, &uniforms, &params).unwrap();
+            target.draw(&chunk.vtx, &chunk.idx, &shader, &uniforms, &params)
+                  .unwrap();
         }
 
 
