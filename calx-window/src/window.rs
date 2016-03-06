@@ -201,6 +201,14 @@ impl Window {
         self.translator.pump(&mut self.display, &self.resolution);
     }
 
+    /// Get the render target to the pixel-perfect framebuffer.
+    pub fn get_framebuffer_target(&mut self) -> glium::framebuffer::SimpleFrameBuffer {
+        framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.display,
+                                                          &self.buffer,
+                                                          &self.depth)
+            .unwrap()
+    }
+
     pub fn display<D: Displayable>(&self, d: &mut D) {
         let mut target =
             framebuffer::SimpleFrameBuffer::with_depth_buffer(&self.display,
