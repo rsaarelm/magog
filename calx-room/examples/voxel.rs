@@ -7,6 +7,7 @@ extern crate cgmath;
 use std::default::Default;
 use calx_window::{WindowBuilder, Event, Key};
 use cgmath::Angle;
+use glium::Surface;
 
 /// Cube face.
 #[derive(Copy, Clone)]
@@ -75,7 +76,8 @@ fn cube_vertex(index: usize) -> [f32; 3] {
 #[derive(Copy, Clone)]
 pub struct Vertex {
     pub pos: [f32; 3],
-    pub normal: [f32; 3], // pub color: [f32; 4],
+    pub normal: [f32; 3],
+    pub color: [f32; 4],
 }
 implement_vertex!(Vertex, pos, normal, color);
 
@@ -83,9 +85,9 @@ struct Voxel {
     color: [f32; 4],
 }
 
-fn get_voxel(voxelPos: [i32; 3]) -> Option<Voxel> {
+fn get_voxel(voxel_pos: [i32; 3]) -> Option<Voxel> {
     // TODO: Perlin noise landscape or something.
-    if voxelPos[2] < 0 {
+    if voxel_pos[2] < 0 {
         Some(Voxel { color: [0.0, 1.0, 0.0, 1.0] })
     } else {
         None
@@ -103,15 +105,18 @@ fn main() {
                 uniform mat4 projection;
                 uniform mat4 modelview;
 
-                in vec3 position;
+                in vec3 pos;
                 in vec3 normal;
-                out vec3 v_position;
+                in vec4 color;
+                out vec3 v_pos;
                 out vec3 v_normal;
+                out vec4 v_color;
 
                 void main() {
-                    v_position = position;
+                    v_pos = pos;
                     v_normal = normal;
-                    gl_Position = projection * modelview * vec4(v_position, 1.0);
+                    v_color = color;
+                    gl_Position = projection * modelview * vec4(v_pos, 1.0);
                 }
             ",
 
@@ -119,13 +124,13 @@ fn main() {
                 #version 150 core
 
                 in vec3 v_normal;
+                in vec4 v_color;
                 out vec4 f_color;
                 const vec3 LIGHT = vec3(-0.2, 0.8, 0.1);
 
                 void main() {
                     float lum = max(dot(normalize(v_normal), normalize(LIGHT)), 0.0);
-                    vec3 color = (0.3 + 0.7 * lum) * vec3(1.0, 1.0, 1.0);
-                    f_color = vec4(color, 1.0);
+                    f_color = (0.3 + 0.7 * lum) * v_color;
                 }
             ",
             }
@@ -150,14 +155,14 @@ fn main() {
         let projection: cgmath::Matrix4<f32> =
             cgmath::PerspectiveFov {
                 fovy: cgmath::Deg::new(90.0).into(),
-                aspect: 380.0 / 640.0, // XXX: Hardcoding
-                near: 1.0,
+                aspect: 640.0 / 380.0, // XXX: Hardcoding
+                near: 0.01,
                 far: 1024.0,
             }
             .into();
 
         let modelview: cgmath::Matrix4<f32> =
-            cgmath::Matrix4::look_at(cgmath::Point3::new(0.0, -10.0, 10.0),
+            cgmath::Matrix4::look_at(cgmath::Point3::new(1.0, -1.0, 2.0),
                                      cgmath::Point3::new(0.0, 0.0, 0.0),
                                      cgmath::vec3(0.0, 0.0, 1.0));
 
@@ -191,12 +196,13 @@ fn main() {
         let mut vertices = Vec::new();
         let mut indices = Vec::new();
         for f in 0..6 {
-            normal = faces[f].normal();
+            let normal = faces[f].normal();
             let idx = vertices.len() as u16;
-            for v_idx in faces[f].vertices().iter() {
+            for &v_idx in faces[f].vertices().into_iter() {
                 vertices.push(Vertex {
                     pos: cube_vertex(v_idx),
                     normal: normal,
+                    color: [1.0, 0.0, 0.0, 1.0],
                 });
 
             }
@@ -207,7 +213,7 @@ fn main() {
             indices.push(idx + 2);
             indices.push(idx + 3);
         }
-        let v_buf = glium::VertexBuffer::new(&window.display, &vertices);
+        let v_buf = glium::VertexBuffer::new(&window.display, &vertices).unwrap();
         let i_buf =
             glium::IndexBuffer::new(&window.display,
                                     glium::index::PrimitiveType::TrianglesList,
@@ -217,9 +223,10 @@ fn main() {
 
         // Draw the thing
 
-        let mut target = window.display.draw();
-        target.draw(&v_buf, &i_buf, &shader, &uniforms, &params).unwrap();
-        target.finish().unwrap();
+        {
+            let mut target = window.get_framebuffer_target();
+            target.draw(&v_buf, &i_buf, &shader, &uniforms, &params).unwrap();
+        }
 
 
         // window.display(&mut room);
