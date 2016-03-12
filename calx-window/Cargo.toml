@@ -19,3 +19,13 @@ path = "../calx-layout"
 
 [dependencies.calx-color]
 path = "../calx-color"
+
+[dev-dependencies.calx-system]
+path = "../calx-system"
+
+[dev-dependencies.calx-color]
+path = "../calx-color"
+
+[dev-dependencies]
+cgmath = "0.5"
+collision = "0.5"
