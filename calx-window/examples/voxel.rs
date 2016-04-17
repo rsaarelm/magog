@@ -47,6 +47,12 @@ fn main() {
             }
         }
 
+        let orb = collision::Sphere {
+            center: cgmath::Point3::new(0.0, 0.0, 0.0),
+            radius: 1.0,
+        };
+
+
         let projection = cgmath::Matrix4::from(
             cgmath::PerspectiveFov {
                 fovy: cgmath::deg(45.0),
@@ -55,25 +61,18 @@ fn main() {
                 far: 1024.0,
             });
 
-        /*
         let a = (tick as f32) / 96.0;
         let eye =  cgmath::Point3::new(15.0 * a.sin(),
             -15.0 * a.cos(),
             0.0);
-            */
-        let eye = cgmath::Point3::new(0.0, -20.0, 0.0);
+        //let eye = cgmath::Point3::new(0.0, -20.0, 0.0);
         let modelview: cgmath::Matrix4<f32> =
             cgmath::Matrix4::look_at(
                     eye,
-                    cgmath::Point3::new(0.0, 0.0, 0.0),
+                    orb.center,
                     cgmath::vec3(0.0, 0.0, 1.0));
 
         let mut frame = Frame::new();
-
-        let orb = collision::Sphere {
-            center: cgmath::Point3::new(0.0, 0.0, 0.0),
-            radius: 1.0,
-        };
 
         for y in 0..180 {
             for x in 0..320 {
@@ -87,8 +86,8 @@ fn main() {
                 if let Some(p) = (orb, ray).intersection() {
                     let normal = p.sub_p(orb.center).normalize();
                     let mut n = cgmath::dot(normal, cgmath::vec3(-1.0, -1.0, -1.0).normalize());
-                    if n < 0.1 {
-                        n = 0.1;
+                    if n < 0.01 {
+                        n = 0.01;
                     }
                     let c: SRgba = Rgba::new(n, n, 0.0, 0.0).into();
                     frame.pixels[x + 320 * y] = ((c.a as u32) << 24) + ((c.b as u32) << 16) + ((c.g as u32) << 8) + c.r as u32;
