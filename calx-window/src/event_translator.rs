@@ -83,7 +83,7 @@ impl EventTranslator {
                 }
             }
 
-            glutin::Event::MouseMoved((x, y)) => {
+            glutin::Event::MouseMoved(x, y) => {
                 let pixel_pos = resolution.screen_to_canvas(&[x, y]);
                 self.mouse_pos = [pixel_pos[0] as f32, pixel_pos[1] as f32];
 
@@ -105,13 +105,13 @@ impl EventTranslator {
                 self.queue.push(Event::MouseMove(self.mouse_pos));
             }
             glutin::Event::MouseWheel(glutin::MouseScrollDelta::LineDelta(x,
-                                                                          _)) => {
+                                                                          _), _) => {
                 {
                     self.queue.push(Event::MouseWheel(x as i32));
                 }
             }
             // TODO: Handle LineDelta and PixelDelta events...
-            glutin::Event::MouseWheel(_) => {}
+            glutin::Event::MouseWheel(_, _) => {}
 
             glutin::Event::MouseInput(state, button) => {
                 if let Some(button) = match button {

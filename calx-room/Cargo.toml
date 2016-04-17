@@ -7,8 +7,8 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cgmath = "0.7"
-glium = "0.13"
+cgmath = "0.8"
+glium = "0.14"
 
 [dependencies.calx-alg]
 path = "../calx-alg"
@@ -20,7 +20,7 @@ path = "../calx-window"
 path = "../calx-color"
 
 [dev-dependencies]
-noise = "0.1"
+noise = "0.2"
 rand = "0.3"
 
 [dev-dependencies.calx-system]

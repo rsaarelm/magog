@@ -8,7 +8,7 @@ extern crate collision;
 use calx_window::{WindowBuilder, Event, Key, Window};
 use calx_color::{SRgba, Rgba};
 use collision::Intersect;
-use cgmath::{EuclideanVector, Matrix, Point};
+use cgmath::EuclideanVector;
 
 struct Frame {
     pub pixels: Vec<u32>,
@@ -22,8 +22,6 @@ impl Frame {
             pixels: pixels
         }
     }
-
-
 
     pub fn blit(self, window: &mut Window) {
         window.set_frame(glium::texture::RawImage2d::from_raw_rgba(self.pixels, (320, 180)));
@@ -55,7 +53,7 @@ fn main() {
 
         let projection = cgmath::Matrix4::from(
             cgmath::PerspectiveFov {
-                fovy: cgmath::deg(45.0),
+                fovy: cgmath::deg(45.0).into(),
                 aspect: 16.0 / 9.0, // XXX: Hardcoding
                 near: 0.1,
                 far: 1024.0,
@@ -81,10 +79,10 @@ fn main() {
 
                 let ray = collision::Ray::new(
                         eye,
-                        projection.mul_m(&modelview).mul_v(cgmath::vec4(u, v, 1.0, 0.0)).truncate().normalize());
+                        (projection * modelview * cgmath::vec4(u, v, 1.0, 0.0)).truncate().normalize());
 
                 if let Some(p) = (orb, ray).intersection() {
-                    let normal = p.sub_p(orb.center).normalize();
+                    let normal = (p - orb.center).normalize();
                     let mut n = cgmath::dot(normal, cgmath::vec3(-1.0, -1.0, -1.0).normalize());
                     if n < 0.01 {
                         n = 0.01;
