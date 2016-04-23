@@ -1,0 +1,11 @@
+[package]
+name = "vitral"
+version = "0.0.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Platform-agnostic immediate mode GUI"
+keywords = ["gui"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rsaarelm/vitral"
+
+[dependencies]
+euclid = "0.6"
