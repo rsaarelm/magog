@@ -1,6 +1,7 @@
 extern crate euclid;
 
 use std::mem;
+use euclid::{Rect, Point2D, Size2D};
 
 /// An immediate mode graphical user interface context.
 ///
@@ -13,13 +14,11 @@ pub struct Context<T> {
 
 impl<T> Context<T> {
     pub fn new() -> Context<T> {
-        Context {
-            draw_list: Vec::new(),
-        }
+        Context { draw_list: Vec::new() }
     }
 
     pub fn begin_frame(&mut self) {
-        unimplemented!();
+        // TODO
     }
 
     pub fn text(&mut self, text: &str) {
@@ -28,6 +27,21 @@ impl<T> Context<T> {
 
     pub fn button(&mut self, caption: &str) -> bool {
         unimplemented!();
+    }
+
+    pub fn demo(&mut self, tex: T) {
+        let vertices = vec![
+            Vertex { pos: [-0.5, -0.5], color: [0.0, 1.0, 0.0, 1.0], tex: [0.0, 0.0] },
+            Vertex { pos: [ 0.0,  0.5], color: [0.0, 0.0, 1.0, 1.0], tex: [0.0, 0.0] },
+            Vertex { pos: [ 0.5, -0.5], color: [1.0, 0.0, 0.0, 1.0], tex: [0.0, 0.0] },
+        ];
+
+        self.draw_list.push(DrawBatch {
+            texture_id: tex,
+            clip: None,
+            vertices: vertices,
+            triangle_indices: vec![0, 1, 2],
+        });
     }
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T>> {
@@ -43,13 +57,12 @@ pub struct DrawBatch<T> {
     /// implementation
     pub texture_id: T,
     /// Clipping rectangle for the current batch
-    pub clip: euclid::Rect<f32>,
+    pub clip: Option<Rect<f32>>,
     /// Vertex data
     pub vertices: Vec<Vertex>,
     /// Indices into the vertex array for the triangles that make up the batch
     pub triangle_indices: Vec<u16>,
 }
-
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
