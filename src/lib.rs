@@ -30,10 +30,11 @@ impl<T> Context<T> {
     }
 
     pub fn demo(&mut self, tex: T) {
+        // TODO: Temporary crap, remove in favor of actual stuff.
         let vertices = vec![
-            Vertex { pos: [-0.5, -0.5], color: [0.0, 1.0, 0.0, 1.0], tex: [0.0, 0.0] },
-            Vertex { pos: [ 0.0,  0.5], color: [0.0, 0.0, 1.0, 1.0], tex: [0.0, 0.0] },
-            Vertex { pos: [ 0.5, -0.5], color: [1.0, 0.0, 0.0, 1.0], tex: [0.0, 0.0] },
+            Vertex { pos: [ 10.0, 10.0], color: [0.0, 1.0, 0.0, 1.0], tex: [0.0, 0.0] },
+            Vertex { pos: [ 500.0, 0.0], color: [0.0, 0.0, 1.0, 1.0], tex: [0.0, 0.0] },
+            Vertex { pos: [ 0.0, 500.0], color: [1.0, 0.0, 0.0, 1.0], tex: [0.0, 0.0] },
         ];
 
         self.draw_list.push(DrawBatch {
@@ -48,6 +49,35 @@ impl<T> Context<T> {
         let mut ret = Vec::new();
         mem::swap(&mut ret, &mut self.draw_list);
         ret
+    }
+
+    /// Register mouse button state.
+    pub fn input_mouse_button(&mut self, id: ButtonId, x: i32, y: i32, is_down: bool) {
+        // TODO
+    }
+
+    /// Register mouse motion.
+    pub fn input_mouse_move(&mut self, x: i32, y: i32) {
+        // TODO
+    }
+
+    /// Register printable character input.
+    pub fn input_char(&mut self, c: char) {
+        // TODO
+    }
+
+    /// Register a nonprintable key state.
+    pub fn input_key_state(&mut self, k: Keycode, is_down: bool) {
+        // TODO
+    }
+
+    /// Build a font atlas from a TTF and construct a texture object.
+    ///
+    /// TODO: Font customization, point size, character ranges.
+    pub fn init_font<F>(&mut self, ttf_data: &[u8], register_texture: F) -> Result<Font, ()>
+        where F: FnOnce(&[u8], u32, u32) -> T
+    {
+        unimplemented!();
     }
 }
 
@@ -78,3 +108,27 @@ pub enum Align {
     Center,
     Right,
 }
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum ButtonId {
+    Left,
+    Middle,
+    Right,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum Keycode {
+    Tab,
+    Shift,
+    Ctrl,
+    Enter,
+    Backspace,
+    Del,
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct Font(u64);

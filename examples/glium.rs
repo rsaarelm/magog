@@ -40,6 +40,8 @@ fn main() {
             vertex: "
                 #version 150 core
 
+                uniform mat4 matrix;
+
                 in vec2 pos;
                 in vec4 color;
                 in vec2 tex;
@@ -48,7 +50,7 @@ fn main() {
                 out vec2 vTexcoord;
 
                 void main() {
-                    gl_Position = vec4(pos, 0.0, 1.0);
+                    gl_Position = vec4(pos, 0.0, 1.0) * matrix;
                     vColor = color;
                     vTexcoord = tex;
                 }
@@ -79,12 +81,18 @@ fn main() {
         // drawing a frame
 
         let mut target = display.draw();
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
-        let h = target.get_dimensions().1;
+        target.clear_color(1.0, 1.0, 1.0, 0.0);
+        let (w, h) = target.get_dimensions();
 
         for batch in context.end_frame() {
             // building the uniforms
             let uniforms = uniform! {
+                matrix: [
+                    [1.0 / w as f32, 0.0, 0.0, -1.0],
+                    [0.0, -1.0 / h as f32, 0.0, 1.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0f32]
+                ],
                 tex: &*batch.texture_id,
             };
 
