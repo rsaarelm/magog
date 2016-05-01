@@ -80,6 +80,7 @@ fn main() {
 
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
+        let h = target.get_dimensions().1;
 
         for batch in context.end_frame() {
             // building the uniforms
@@ -108,7 +109,7 @@ fn main() {
                 scissor: batch.clip.map(|clip| {
                     glium::Rect {
                         left: clip.origin.x as u32,
-                        bottom: clip.origin.y as u32,
+                        bottom: h - (clip.origin.y + clip.size.height) as u32,
                         width: clip.size.width as u32,
                         height: clip.size.height as u32,
                     }
