@@ -1,3 +1,4 @@
+extern crate euclid;
 #[macro_use]
 extern crate glium;
 
@@ -6,11 +7,22 @@ extern crate vitral;
 use std::mem;
 use std::rc::Rc;
 
-use glium::Surface;
+use glium::{Surface, GlObject};
 use glium::glutin;
 use glium::index::PrimitiveType;
+use euclid::{Rect, Point2D, Size2D};
 
 use vitral::Context;
+
+type GliumTexture = glium::texture::CompressedSrgbTexture2d;
+
+struct Texture(GliumTexture);
+
+impl PartialEq<Texture> for Texture {
+    fn eq(&self, other: &Texture) -> bool {
+        self.0.get_id() == other.0.get_id()
+    }
+}
 
 // XXX: An exact copy of Vitral vertex struct, just so that I can derive a
 // Glium vertex implementatino for it.
@@ -31,8 +43,8 @@ fn main() {
                       .unwrap();
 
     let image = glium::texture::RawImage2d::from_raw_rgba(vec![0xffffffffu32], (1, 1));
-    let opengl_texture = Rc::new(glium::texture::CompressedSrgbTexture2d::new(&display, image)
-                                     .unwrap());
+    let opengl_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, image)
+                                     .unwrap()));
 
     // compiling shaders and linking them together
     let program = program!(&display,
@@ -71,12 +83,14 @@ fn main() {
     )
                       .unwrap();
 
-    let mut context = Context::new();
+    let mut context = Context::new(opengl_texture.clone());
 
     // the main loop
     loop {
         context.begin_frame();
-        context.demo(opengl_texture.clone());
+        let area = Rect::new(Point2D::new(10.0, 10.0), Size2D::new(128.0, 128.0));
+        context.fill_rect(area.inflate(2.0, 2.0), [0.0, 0.0, 0.0, 1.0]);
+        context.fill_rect(area, [1.0, 0.0, 0.0, 1.0]);
 
         // drawing a frame
 
@@ -93,7 +107,7 @@ fn main() {
                     [0.0, 0.0, 1.0, 0.0],
                     [0.0, 0.0, 0.0, 1.0f32]
                 ],
-                tex: &*batch.texture_id,
+                tex: &(*batch.texture).0,
             };
 
             let vertex_buffer = {
@@ -124,8 +138,6 @@ fn main() {
                 }),
                 ..Default::default()
             };
-
-
 
             target.draw(&vertex_buffer, &index_buffer, &program, &uniforms, &params).unwrap();
         }

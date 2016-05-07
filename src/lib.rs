@@ -10,14 +10,28 @@ use euclid::{Rect, Point2D, Size2D};
 /// converted into rendering instructions for the GUI.
 pub struct Context<T> {
     draw_list: Vec<DrawBatch<T>>,
+    /// Texture value used for solid-color drawing.
+    ///
+    /// Probably a single white pixel.
+    solid_texture: T,
+
+    // TODO: This is for demo purposes, need a proper layout state.
+    layout_pos: Point2D<f32>,
 }
 
-impl<T> Context<T> {
-    pub fn new() -> Context<T> {
-        Context { draw_list: Vec::new() }
+impl<T> Context<T>
+    where T: Clone+PartialEq {
+    pub fn new(solid_texture: T) -> Context<T> {
+        Context {
+            draw_list: Vec::new(),
+            solid_texture: solid_texture,
+
+            layout_pos: Point2D::new(0.0, 0.0),
+        }
     }
 
     pub fn begin_frame(&mut self) {
+        self.layout_pos = Point2D::new(0.0, 0.0);
         // TODO
     }
 
@@ -29,20 +43,44 @@ impl<T> Context<T> {
         unimplemented!();
     }
 
-    pub fn demo(&mut self, tex: T) {
-        // TODO: Temporary crap, remove in favor of actual stuff.
-        let vertices = vec![
-            Vertex { pos: [ 10.0, 10.0], color: [0.0, 1.0, 0.0, 1.0], tex: [0.0, 0.0] },
-            Vertex { pos: [ 500.0, 0.0], color: [0.0, 0.0, 1.0, 1.0], tex: [0.0, 0.0] },
-            Vertex { pos: [ 0.0, 500.0], color: [1.0, 0.0, 0.0, 1.0], tex: [0.0, 0.0] },
-        ];
+    pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
+        let (tl, tr, bl, br) = (area.origin, area.top_right(), area.bottom_left(), area.bottom_right());
+        self.start_solid_texture();
 
-        self.draw_list.push(DrawBatch {
-            texture_id: tex,
-            clip: None,
-            vertices: vertices,
-            triangle_indices: vec![0, 1, 2],
-        });
+        let idx = self.draw_list.len() - 1;
+        let batch = &mut self.draw_list[idx];
+        let idx_offset = batch.vertices.len() as u16;
+
+        batch.vertices.push(Vertex { pos: [tl.x, tl.y], color: color, tex: [0.0, 0.0] });
+        batch.vertices.push(Vertex { pos: [tr.x, tr.y], color: color, tex: [0.0, 0.0] });
+        batch.vertices.push(Vertex { pos: [br.x, br.y], color: color, tex: [0.0, 0.0] });
+        batch.vertices.push(Vertex { pos: [bl.x, bl.y], color: color, tex: [0.0, 0.0] });
+
+        batch.triangle_indices.push(idx_offset);
+        batch.triangle_indices.push(idx_offset + 1);
+        batch.triangle_indices.push(idx_offset + 2);
+
+        batch.triangle_indices.push(idx_offset);
+        batch.triangle_indices.push(idx_offset + 2);
+        batch.triangle_indices.push(idx_offset + 3);
+    }
+
+    fn start_solid_texture(&mut self) {
+        let tex = self.solid_texture.clone();
+        self.start_texture(tex);
+    }
+
+    /// Ensure that there current draw batch has solid texture.
+    fn start_texture(&mut self, texture: T) {
+        // TODO: Actually have the solid texture value stashed somewhere.
+        if self.draw_list.is_empty() || self.draw_list[self.draw_list.len() - 1].texture != texture {
+            self.draw_list.push(DrawBatch {
+                texture: texture,
+                clip: None,
+                vertices: Vec::new(),
+                triangle_indices: Vec::new(),
+            });
+        }
     }
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T>> {
@@ -85,7 +123,7 @@ impl<T> Context<T> {
 pub struct DrawBatch<T> {
     /// Texture used for the current batch, details depend on backend
     /// implementation
-    pub texture_id: T,
+    pub texture: T,
     /// Clipping rectangle for the current batch
     pub clip: Option<Rect<f32>>,
     /// Vertex data
