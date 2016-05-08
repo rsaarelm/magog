@@ -20,7 +20,8 @@ pub struct Context<T> {
 }
 
 impl<T> Context<T>
-    where T: Clone+PartialEq {
+    where T: Clone + PartialEq
+{
     pub fn new(solid_texture: T) -> Context<T> {
         Context {
             draw_list: Vec::new(),
@@ -44,17 +45,36 @@ impl<T> Context<T>
     }
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
-        let (tl, tr, bl, br) = (area.origin, area.top_right(), area.bottom_left(), area.bottom_right());
+        let (tl, tr, bl, br) = (area.origin,
+                                area.top_right(),
+                                area.bottom_left(),
+                                area.bottom_right());
         self.start_solid_texture();
 
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
 
-        batch.vertices.push(Vertex { pos: [tl.x, tl.y], color: color, tex: [0.0, 0.0] });
-        batch.vertices.push(Vertex { pos: [tr.x, tr.y], color: color, tex: [0.0, 0.0] });
-        batch.vertices.push(Vertex { pos: [br.x, br.y], color: color, tex: [0.0, 0.0] });
-        batch.vertices.push(Vertex { pos: [bl.x, bl.y], color: color, tex: [0.0, 0.0] });
+        batch.vertices.push(Vertex {
+            pos: [tl.x, tl.y],
+            color: color,
+            tex: [0.0, 0.0],
+        });
+        batch.vertices.push(Vertex {
+            pos: [tr.x, tr.y],
+            color: color,
+            tex: [0.0, 0.0],
+        });
+        batch.vertices.push(Vertex {
+            pos: [br.x, br.y],
+            color: color,
+            tex: [0.0, 0.0],
+        });
+        batch.vertices.push(Vertex {
+            pos: [bl.x, bl.y],
+            color: color,
+            tex: [0.0, 0.0],
+        });
 
         batch.triangle_indices.push(idx_offset);
         batch.triangle_indices.push(idx_offset + 1);
@@ -73,7 +93,8 @@ impl<T> Context<T>
     /// Ensure that there current draw batch has solid texture.
     fn start_texture(&mut self, texture: T) {
         // TODO: Actually have the solid texture value stashed somewhere.
-        if self.draw_list.is_empty() || self.draw_list[self.draw_list.len() - 1].texture != texture {
+        if self.draw_list.is_empty() ||
+           self.draw_list[self.draw_list.len() - 1].texture != texture {
             self.draw_list.push(DrawBatch {
                 texture: texture,
                 clip: None,

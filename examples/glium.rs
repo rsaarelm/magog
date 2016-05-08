@@ -43,8 +43,9 @@ fn main() {
                       .unwrap();
 
     let image = glium::texture::RawImage2d::from_raw_rgba(vec![0xffffffffu32], (1, 1));
-    let opengl_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, image)
-                                     .unwrap()));
+    let opengl_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display,
+                                                                                      image)
+                                             .unwrap()));
 
     // compiling shaders and linking them together
     let program = program!(&display,
@@ -88,9 +89,9 @@ fn main() {
     // the main loop
     loop {
         context.begin_frame();
-        let area = Rect::new(Point2D::new(10.0, 10.0), Size2D::new(128.0, 128.0));
-        context.fill_rect(area.inflate(2.0, 2.0), [0.0, 0.0, 0.0, 1.0]);
-        context.fill_rect(area, [1.0, 0.0, 0.0, 1.0]);
+        let area = Rect::new(Point2D::new(10.0, 10.0), Size2D::new(16.0, 16.0));
+        context.fill_rect(area, [0.0, 0.0, 0.0, 1.0]);
+        context.fill_rect(area.inflate(-1.0, -1.0), [1.0, 0.0, 0.0, 1.0]);
 
         // drawing a frame
 
