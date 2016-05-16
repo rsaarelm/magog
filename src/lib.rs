@@ -10,29 +10,43 @@ use euclid::{Rect, Point2D, Size2D};
 /// converted into rendering instructions for the GUI.
 pub struct Context<T> {
     draw_list: Vec<DrawBatch<T>>,
-    /// Texture value used for solid-color drawing.
-    ///
-    /// Probably a single white pixel.
+    /// Texture value used for solid-color drawing
     solid_texture: T,
 
     // TODO: This is for demo purposes, need a proper layout state.
     layout_pos: Point2D<f32>,
+
+    mouse_pos: Point2D<f32>,
+    click_state: Option<ClickState>,
 }
 
 impl<T> Context<T>
     where T: Clone + PartialEq
 {
+    /// Construct a new interface context instance.
+    ///
+    /// The client must provide an initial texture instance that is used for
+    /// drawing solid shapes. This can be a texture that consists of a single
+    /// opaque white pixel.
     pub fn new(solid_texture: T) -> Context<T> {
         Context {
             draw_list: Vec::new(),
             solid_texture: solid_texture,
 
             layout_pos: Point2D::new(0.0, 0.0),
+
+            mouse_pos: Point2D::new(0.0, 0.0),
+            click_state: None,
         }
     }
 
     pub fn begin_frame(&mut self) {
-        self.layout_pos = Point2D::new(0.0, 0.0);
+        self.layout_pos = Point2D::new(10.0, 10.0);
+
+        // Clean up transient mouse click info.
+        if let Some(ClickState::Drag(_, _)) = self.click_state {
+            self.click_state = None;
+        }
         // TODO
     }
 
@@ -41,7 +55,27 @@ impl<T> Context<T>
     }
 
     pub fn button(&mut self, caption: &str) -> bool {
-        unimplemented!();
+        let area = Rect::new(self.layout_pos, Size2D::new(64.0, 16.0));
+        self.layout_pos.y += 20.0;
+
+        let hover = area.contains(&self.mouse_pos);
+        let press = if let Some(ClickState::DragFrom(pos)) = self.click_state {
+            area.contains(&pos) && area.contains(&self.mouse_pos)
+        } else {
+            false
+        };
+
+        self.fill_rect(area, [0.0, 0.0, 0.0, 1.0]);
+        self.fill_rect(area.inflate(-1.0, -1.0),
+                       if press {
+                           [1.0, 1.0, 0.0, 1.0]
+                       } else if hover {
+                           [1.0, 0.5, 0.0, 1.0]
+                       } else {
+                           [1.0, 0.0, 0.0, 1.0]
+                       });
+
+        press
     }
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
@@ -111,13 +145,44 @@ impl<T> Context<T>
     }
 
     /// Register mouse button state.
-    pub fn input_mouse_button(&mut self, id: ButtonId, x: i32, y: i32, is_down: bool) {
-        // TODO
+    pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
+        if id == MouseButton::Left {
+            if is_down {
+                match self.click_state {
+                    // We remember button being up, start dragging.
+                    None => self.click_state = Some(ClickState::DragFrom(self.mouse_pos)),
+                    // We remember a released click, someone is spamming lots
+                    // of mouse stuff this frame? Just ignore the previous one
+                    // then. (Maybe we should log the event spam somewhere?)
+                    Some(ClickState::Drag(_, _)) => {
+                        self.click_state = Some(ClickState::DragFrom(self.mouse_pos))
+                    }
+                    // Already dragging, do nothing. (Another weird state
+                    // step, we should be getting multiple button-down events
+                    // without a button-up in between to get here. Should log
+                    // this one too if we had a log channel.)
+                    Some(ClickState::DragFrom(_)) => {}
+                }
+            } else {
+                match self.click_state {
+                    // Dragging becomes a click when the mouse is released.
+                    // The actual cleanup is done later.
+                    //
+                    // TODO: We could separate drag and click by mouse
+                    // distance?
+                    Some(ClickState::DragFrom(pos)) => {
+                        self.click_state = Some(ClickState::Drag(pos, self.mouse_pos))
+                    }
+                    _ => {}
+                }
+            }
+        }
+        // TODO handle other buttons
     }
 
     /// Register mouse motion.
     pub fn input_mouse_move(&mut self, x: i32, y: i32) {
-        // TODO
+        self.mouse_pos = Point2D::new(x as f32, y as f32);
     }
 
     /// Register printable character input.
@@ -169,10 +234,18 @@ pub enum Align {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum ButtonId {
+pub enum MouseButton {
     Left,
     Middle,
     Right,
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+enum ClickState {
+    /// Mouse was pressed down at pos and is still down.
+    DragFrom(Point2D<f32>),
+    /// Mouse was pressed down at pos, was subsequently released at pos2.
+    Drag(Point2D<f32>, Point2D<f32>),
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

@@ -10,7 +10,6 @@ use std::rc::Rc;
 use glium::{Surface, GlObject};
 use glium::glutin;
 use glium::index::PrimitiveType;
-use euclid::{Rect, Point2D, Size2D};
 
 use vitral::Context;
 
@@ -89,9 +88,9 @@ fn main() {
     // the main loop
     loop {
         context.begin_frame();
-        let area = Rect::new(Point2D::new(10.0, 10.0), Size2D::new(16.0, 16.0));
-        context.fill_rect(area, [0.0, 0.0, 0.0, 1.0]);
-        context.fill_rect(area.inflate(-1.0, -1.0), [1.0, 0.0, 0.0, 1.0]);
+        if context.button("Hello, world") {
+            println!("Click");
+        }
 
         // drawing a frame
 
@@ -149,6 +148,19 @@ fn main() {
         for event in display.poll_events() {
             match event {
                 glutin::Event::Closed => return,
+                glutin::Event::MouseMoved(x, y) => context.input_mouse_move(x, y),
+                glutin::Event::MouseInput(state, button) => {
+                    context.input_mouse_button(match button {
+                                                   glutin::MouseButton::Left => {
+                                                       vitral::MouseButton::Left
+                                                   }
+                                                   glutin::MouseButton::Right => {
+                                                       vitral::MouseButton::Right
+                                                   }
+                                                   _ => vitral::MouseButton::Middle,
+                                               },
+                                               state == glutin::ElementState::Pressed)
+                }
                 _ => (),
             }
         }
