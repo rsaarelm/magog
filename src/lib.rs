@@ -17,7 +17,7 @@ pub struct Context<T> {
     layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
-    click_state: Option<ClickState>,
+    click_state: ClickState,
 }
 
 impl<T> Context<T>
@@ -36,17 +36,13 @@ impl<T> Context<T>
             layout_pos: Point2D::new(0.0, 0.0),
 
             mouse_pos: Point2D::new(0.0, 0.0),
-            click_state: None,
+            click_state: ClickState::Unpressed,
         }
     }
 
     pub fn begin_frame(&mut self) {
         self.layout_pos = Point2D::new(10.0, 10.0);
 
-        // Clean up transient mouse click info.
-        if let Some(ClickState::Drag(_, _)) = self.click_state {
-            self.click_state = None;
-        }
         // TODO
     }
 
@@ -59,11 +55,7 @@ impl<T> Context<T>
         self.layout_pos.y += 20.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = if let Some(ClickState::DragFrom(pos)) = self.click_state {
-            area.contains(&pos) && area.contains(&self.mouse_pos)
-        } else {
-            false
-        };
+        let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
 
         self.fill_rect(area, [0.0, 0.0, 0.0, 1.0]);
         self.fill_rect(area.inflate(-1.0, -1.0),
@@ -75,7 +67,7 @@ impl<T> Context<T>
                            [1.0, 0.0, 0.0, 1.0]
                        });
 
-        press
+        press && self.click_state.is_release()
     }
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
@@ -139,6 +131,9 @@ impl<T> Context<T>
     }
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T>> {
+        // Clean up transient mouse click info.
+        self.click_state = self.click_state.tick();
+
         let mut ret = Vec::new();
         mem::swap(&mut ret, &mut self.draw_list);
         ret
@@ -148,33 +143,9 @@ impl<T> Context<T>
     pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
         if id == MouseButton::Left {
             if is_down {
-                match self.click_state {
-                    // We remember button being up, start dragging.
-                    None => self.click_state = Some(ClickState::DragFrom(self.mouse_pos)),
-                    // We remember a released click, someone is spamming lots
-                    // of mouse stuff this frame? Just ignore the previous one
-                    // then. (Maybe we should log the event spam somewhere?)
-                    Some(ClickState::Drag(_, _)) => {
-                        self.click_state = Some(ClickState::DragFrom(self.mouse_pos))
-                    }
-                    // Already dragging, do nothing. (Another weird state
-                    // step, we should be getting multiple button-down events
-                    // without a button-up in between to get here. Should log
-                    // this one too if we had a log channel.)
-                    Some(ClickState::DragFrom(_)) => {}
-                }
+                self.click_state = self.click_state.input_press(self.mouse_pos);
             } else {
-                match self.click_state {
-                    // Dragging becomes a click when the mouse is released.
-                    // The actual cleanup is done later.
-                    //
-                    // TODO: We could separate drag and click by mouse
-                    // distance?
-                    Some(ClickState::DragFrom(pos)) => {
-                        self.click_state = Some(ClickState::Drag(pos, self.mouse_pos))
-                    }
-                    _ => {}
-                }
+                self.click_state = self.click_state.input_release(self.mouse_pos);
             }
         }
         // TODO handle other buttons
@@ -242,10 +213,54 @@ pub enum MouseButton {
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 enum ClickState {
-    /// Mouse was pressed down at pos and is still down.
-    DragFrom(Point2D<f32>),
-    /// Mouse was pressed down at pos, was subsequently released at pos2.
-    Drag(Point2D<f32>, Point2D<f32>),
+    Unpressed,
+    Press(Point2D<f32>),
+    Drag(Point2D<f32>),
+    Release(Point2D<f32>, Point2D<f32>),
+}
+
+impl ClickState {
+    fn tick(self) -> ClickState {
+        match self {
+            ClickState::Unpressed => ClickState::Unpressed,
+            ClickState::Press(p) => ClickState::Drag(p),
+            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Release(_, _) => ClickState::Unpressed
+        }
+    }
+
+    fn input_press(self, pos: Point2D<f32>) -> ClickState {
+        match self {
+            ClickState::Unpressed => ClickState::Press(pos),
+            ClickState::Press(p) => ClickState::Drag(p),
+            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Release(_, _) => ClickState::Press(pos),
+        }
+    }
+
+    fn input_release(self, pos: Point2D<f32>) -> ClickState {
+        match self {
+            ClickState::Unpressed => ClickState::Unpressed,
+            ClickState::Press(p) => ClickState::Release(p, pos),
+            ClickState::Drag(p) => ClickState::Release(p, pos),
+            ClickState::Release(p, _) => ClickState::Release(p, pos),
+        }
+    }
+
+    fn is_pressed(&self) -> bool {
+        match *self {
+            ClickState::Press(_) | ClickState::Drag(_) | ClickState::Release(_, _) => true,
+            ClickState::Unpressed => false
+        }
+    }
+
+    fn is_release(&self) -> bool {
+        if let ClickState::Release(_, _) = *self {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
