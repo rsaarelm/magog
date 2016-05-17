@@ -92,6 +92,10 @@ fn main() {
             println!("Click");
         }
 
+        if context.button("Another button") {
+            println!("Clack");
+        }
+
         // drawing a frame
 
         let mut target = display.draw();
