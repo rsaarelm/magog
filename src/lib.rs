@@ -1,6 +1,9 @@
 extern crate euclid;
 
 use std::mem;
+use std::ops::Range;
+use std::rc::Rc;
+use std::collections::HashMap;
 use euclid::{Rect, Point2D, Size2D};
 
 /// An immediate mode graphical user interface context.
@@ -168,11 +171,57 @@ impl<T> Context<T>
 
     /// Build a font atlas from a TTF and construct a texture object.
     ///
+    /// The output will be have 8 alpha channel bits per pixel.
+    ///
     /// TODO: Font customization, point size, character ranges.
-    pub fn init_font<F>(&mut self, ttf_data: &[u8], register_texture: F) -> Result<Font, ()>
+    pub fn init_font<F>(&mut self,
+                        ttf_data: &[u8],
+                        point_size: f32,
+                        chars: Range<usize>,
+                        register_texture: F)
+                        -> Result<Font<T>, ()>
         where F: FnOnce(&[u8], u32, u32) -> T
     {
         unimplemented!();
+    }
+
+    pub fn init_default_font<F>(&mut self, register_texture: F) -> Font<T>
+        where F: FnOnce(&[u8], u32, u32) -> T
+    {
+        static DEFAULT_FONT: &'static [u8] = include_bytes!("profont9.raw");
+        let (width, height) = (96, 72);
+        let columns = 16;
+        let start_char = 32;
+        let end_char = 127;
+        let (char_width, char_height) = (6, 12);
+
+        let t = register_texture(DEFAULT_FONT, width, height);
+
+        let mut map = HashMap::new();
+
+        for i in start_char..end_char {
+            let x = char_width * ((i - start_char) % columns);
+            let y = char_height * ((i - start_char) / columns);
+
+            let texcoords = Rect::new(Point2D::new(x as f32 / width as f32,
+                                                   y as f32 / height as f32),
+                                      Size2D::new(char_width as f32 / width as f32,
+                                                  char_height as f32 / height as f32));
+
+            map.insert(std::char::from_u32(i).unwrap(),
+                       CharData {
+                           texcoords: texcoords,
+                           draw_offset: Point2D::new(0.0, 0.0),
+                           advance: char_width as f32,
+                       });
+
+        }
+
+        Rc::new(FontData {
+            texture: t,
+            chars: map,
+            height: char_height as f32,
+        })
     }
 }
 
@@ -225,7 +274,7 @@ impl ClickState {
             ClickState::Unpressed => ClickState::Unpressed,
             ClickState::Press(p) => ClickState::Drag(p),
             ClickState::Drag(p) => ClickState::Drag(p),
-            ClickState::Release(_, _) => ClickState::Unpressed
+            ClickState::Release(_, _) => ClickState::Unpressed,
         }
     }
 
@@ -249,8 +298,10 @@ impl ClickState {
 
     fn is_pressed(&self) -> bool {
         match *self {
-            ClickState::Press(_) | ClickState::Drag(_) | ClickState::Release(_, _) => true,
-            ClickState::Unpressed => false
+            ClickState::Press(_) |
+            ClickState::Drag(_) |
+            ClickState::Release(_, _) => true,
+            ClickState::Unpressed => false,
         }
     }
 
@@ -277,5 +328,16 @@ pub enum Keycode {
     Right,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct Font(u64);
+pub type Font<T> = Rc<FontData<T>>;
+
+pub struct FontData<T> {
+    texture: T,
+    chars: HashMap<char, CharData>,
+    height: f32,
+}
+
+struct CharData {
+    texcoords: Rect<f32>,
+    draw_offset: Point2D<f32>,
+    advance: f32,
+}
