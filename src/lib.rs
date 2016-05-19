@@ -2,7 +2,6 @@ extern crate euclid;
 
 use std::mem;
 use std::ops::Range;
-use std::rc::Rc;
 use std::collections::HashMap;
 use euclid::{Rect, Point2D, Size2D};
 
@@ -21,6 +20,8 @@ pub struct Context<T> {
 
     mouse_pos: Point2D<f32>,
     click_state: ClickState,
+
+    fonts: Vec<FontData<T>>
 }
 
 impl<T> Context<T>
@@ -40,6 +41,8 @@ impl<T> Context<T>
 
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: ClickState::Unpressed,
+
+            fonts: Vec::new(),
         }
     }
 
@@ -49,8 +52,25 @@ impl<T> Context<T>
         // TODO
     }
 
-    pub fn text(&mut self, text: &str) {
-        unimplemented!();
+    pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
+        assert!(self.fonts.len() >= font.0);
+        let id = font.0;
+        let t = self.fonts[id].texture.clone();
+        let h = self.fonts[id].height;
+        self.start_texture(t);
+
+        for c in text.chars() {
+            // FIXME: Gratuitous cloning because of borrow checker.
+            let x = self.fonts[id].chars.get(&c).cloned();
+            if let Some(f) = x {
+                self.tex_rect(Rect::new(
+                        pos - f.draw_offset,
+                        Size2D::new(f.advance, h)),
+                    f.texcoords,
+                    color);
+                pos.x += f.advance;
+            }
+        }
     }
 
     pub fn button(&mut self, caption: &str) -> bool {
@@ -73,36 +93,32 @@ impl<T> Context<T>
         press && self.click_state.is_release()
     }
 
-    pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
-        let (tl, tr, bl, br) = (area.origin,
-                                area.top_right(),
-                                area.bottom_left(),
-                                area.bottom_right());
-        self.start_solid_texture();
-
+    pub fn tex_rect(&mut self, area: Rect<f32>, texcoords: Rect<f32>, color: [f32; 4]) {
+        let (p1, p2) = (area.origin, area.bottom_right());
+        let (t1, t2) = (texcoords.origin, texcoords.bottom_right());
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
 
         batch.vertices.push(Vertex {
-            pos: [tl.x, tl.y],
+            pos: [p1.x, p1.y],
             color: color,
-            tex: [0.0, 0.0],
+            tex: [t1.x, t1.y],
         });
         batch.vertices.push(Vertex {
-            pos: [tr.x, tr.y],
+            pos: [p2.x, p1.y],
             color: color,
-            tex: [0.0, 0.0],
+            tex: [t2.x, t1.y],
         });
         batch.vertices.push(Vertex {
-            pos: [br.x, br.y],
+            pos: [p2.x, p2.y],
             color: color,
-            tex: [0.0, 0.0],
+            tex: [t2.x, t2.y],
         });
         batch.vertices.push(Vertex {
-            pos: [bl.x, bl.y],
+            pos: [p1.x, p2.y],
             color: color,
-            tex: [0.0, 0.0],
+            tex: [t1.x, t2.y],
         });
 
         batch.triangle_indices.push(idx_offset);
@@ -112,6 +128,11 @@ impl<T> Context<T>
         batch.triangle_indices.push(idx_offset);
         batch.triangle_indices.push(idx_offset + 2);
         batch.triangle_indices.push(idx_offset + 3);
+    }
+
+    pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
+        self.start_solid_texture();
+        self.tex_rect(area, Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)), color);
     }
 
     fn start_solid_texture(&mut self) {
@@ -179,13 +200,13 @@ impl<T> Context<T>
                         point_size: f32,
                         chars: Range<usize>,
                         register_texture: F)
-                        -> Result<Font<T>, ()>
+                        -> Result<Font, ()>
         where F: FnOnce(&[u8], u32, u32) -> T
     {
         unimplemented!();
     }
 
-    pub fn init_default_font<F>(&mut self, register_texture: F) -> Font<T>
+    pub fn init_default_font<F>(&mut self, register_texture: F) -> Font
         where F: FnOnce(&[u8], u32, u32) -> T
     {
         static DEFAULT_FONT: &'static [u8] = include_bytes!("profont9.raw");
@@ -211,17 +232,18 @@ impl<T> Context<T>
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
                            texcoords: texcoords,
-                           draw_offset: Point2D::new(0.0, 0.0),
+                           draw_offset: Point2D::new(0.0, char_height as f32),
                            advance: char_width as f32,
                        });
-
         }
 
-        Rc::new(FontData {
+        self.fonts.push(FontData {
             texture: t,
             chars: map,
             height: char_height as f32,
-        })
+        });
+
+        Font(self.fonts.len() - 1)
     }
 }
 
@@ -328,7 +350,8 @@ pub enum Keycode {
     Right,
 }
 
-pub type Font<T> = Rc<FontData<T>>;
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct Font(usize);
 
 pub struct FontData<T> {
     texture: T,
@@ -336,6 +359,7 @@ pub struct FontData<T> {
     height: f32,
 }
 
+#[derive(Clone, Debug)]
 struct CharData {
     texcoords: Rect<f32>,
     draw_offset: Point2D<f32>,

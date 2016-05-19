@@ -10,6 +10,7 @@ use std::rc::Rc;
 use glium::{Surface, GlObject};
 use glium::glutin;
 use glium::index::PrimitiveType;
+use euclid::{Point2D};
 
 use vitral::Context;
 
@@ -42,7 +43,7 @@ fn main() {
                       .unwrap();
 
     let image = glium::texture::RawImage2d::from_raw_rgba(vec![0xffffffffu32], (1, 1));
-    let opengl_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display,
+    let solid_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display,
                                                                                       image)
                                              .unwrap()));
 
@@ -83,7 +84,19 @@ fn main() {
     )
                       .unwrap();
 
-    let mut context = Context::new(opengl_texture.clone());
+    let mut context = Context::new(solid_texture.clone());
+    let font =
+        context.init_default_font(|alpha_data, w, h| {
+            let mut rgba = Vec::new();
+            assert!(alpha_data.len() == (w * h) as usize);
+            for a in alpha_data.iter() {
+                let a = *a as u32;
+                rgba.push((a << 24) + (a << 16) + (a << 8) + a);
+            }
+            let image = glium::texture::RawImage2d::from_raw_rgba(rgba, (w, h));
+            Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, image).unwrap()))
+        });
+
 
     // the main loop
     loop {
@@ -95,6 +108,8 @@ fn main() {
         if context.button("Another button") {
             println!("Clack");
         }
+
+        context.draw_text(font, Point2D::new(64.0, 64.0), [0.0, 0.0, 0.0, 1.0], "Hello, world");
 
         // drawing a frame
 
@@ -140,6 +155,7 @@ fn main() {
                         height: clip.size.height as u32,
                     }
                 }),
+                blend: glium::Blend::alpha_blending(),
                 ..Default::default()
             };
 
