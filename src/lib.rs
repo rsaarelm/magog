@@ -21,7 +21,7 @@ pub struct Context<T> {
     mouse_pos: Point2D<f32>,
     click_state: ClickState,
 
-    fonts: Vec<FontData<T>>
+    fonts: Vec<FontData<T>>,
 }
 
 impl<T> Context<T>
@@ -63,11 +63,9 @@ impl<T> Context<T>
             // FIXME: Gratuitous cloning because of borrow checker.
             let x = self.fonts[id].chars.get(&c).cloned();
             if let Some(f) = x {
-                self.tex_rect(Rect::new(
-                        pos - f.draw_offset,
-                        Size2D::new(f.advance, h)),
-                    f.texcoords,
-                    color);
+                self.tex_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
+                              f.texcoords,
+                              color);
                 pos.x += f.advance;
             }
         }
@@ -132,7 +130,9 @@ impl<T> Context<T>
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
         self.start_solid_texture();
-        self.tex_rect(area, Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)), color);
+        self.tex_rect(area,
+                      Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
+                      color);
     }
 
     fn start_solid_texture(&mut self) {
