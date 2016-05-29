@@ -110,13 +110,13 @@ fn main() {
 
         context.draw_text(font,
                           Point2D::new(64.0, 64.0),
-                          [0.0, 0.0, 0.0, 1.0],
+                          [0.0, 1.0, 0.0, 1.0],
                           "Hello, world");
 
         // drawing a frame
 
         let mut target = display.draw();
-        target.clear_color(1.0, 1.0, 1.0, 0.0);
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
         for batch in context.end_frame() {

@@ -78,15 +78,15 @@ impl<T> Context<T>
         let hover = area.contains(&self.mouse_pos);
         let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
 
-        self.fill_rect(area, [0.0, 0.0, 0.0, 1.0]);
-        self.fill_rect(area.inflate(-1.0, -1.0),
+        self.fill_rect(area,
                        if press {
                            [1.0, 1.0, 0.0, 1.0]
                        } else if hover {
-                           [1.0, 0.5, 0.0, 1.0]
+                           [0.5, 1.0, 0.0, 1.0]
                        } else {
-                           [1.0, 0.0, 0.0, 1.0]
+                           [0.0, 1.0, 0.0, 1.0]
                        });
+        self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
 
         press && self.click_state.is_release()
     }
