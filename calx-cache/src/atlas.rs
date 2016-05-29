@@ -1,6 +1,6 @@
 use std::iter;
 use std::cmp::max;
-use num::{Float, Zero};
+use num::Zero;
 use num::traits::{Num, Signed};
 use image::{GenericImage, ImageBuffer, Rgba, Pixel};
 use calx_layout::Rect;

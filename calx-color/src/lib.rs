@@ -9,7 +9,7 @@ use std::str::FromStr;
 use std::ascii::AsciiExt;
 use std::ops::{Add, Sub, Mul};
 use std::fmt;
-use num::{Float, Num};
+use num::Num;
 
 /// Color in sRGB color space.
 ///

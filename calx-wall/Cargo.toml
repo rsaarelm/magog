@@ -7,9 +7,9 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cgmath = "0.8"
+cgmath = "0.9"
 glium = "0.14"
-image = "0.9"
+image = "0.10"
 
 [dependencies.calx-alg]
 path = "../calx-alg"

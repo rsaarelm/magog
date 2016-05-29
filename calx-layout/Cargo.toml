@@ -7,7 +7,7 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cgmath = "0.8"
+cgmath = "0.9"
 num = "0.1"
 serde = "0.7"
 serde_macros = "0.7"

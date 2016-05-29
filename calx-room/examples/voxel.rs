@@ -8,7 +8,6 @@ extern crate cgmath;
 
 use std::default::Default;
 use calx_window::{WindowBuilder, Event, Key};
-use cgmath::Angle;
 use glium::Surface;
 use rand::random;
 
