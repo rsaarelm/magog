@@ -108,11 +108,6 @@ fn main() {
             println!("Clack");
         }
 
-        context.draw_text(font,
-                          Point2D::new(64.0, 64.0),
-                          [0.0, 1.0, 0.0, 1.0],
-                          "Hello, world");
-
         // drawing a frame
 
         let mut target = display.draw();

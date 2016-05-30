@@ -71,22 +71,36 @@ impl<T> Context<T>
         }
     }
 
+    fn default_font(&self) -> Font {
+        Font(0)
+    }
+
     pub fn button(&mut self, caption: &str) -> bool {
-        let area = Rect::new(self.layout_pos, Size2D::new(64.0, 16.0));
-        self.layout_pos.y += 20.0;
+        let font = self.default_font();
+        let area = self.fonts[font.0]
+                       .render_size(caption)
+                       .inflate(4.0, 4.0)
+                       .translate(&self.layout_pos);
+
+        self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
         let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
 
-        self.fill_rect(area,
-                       if press {
-                           [1.0, 1.0, 0.0, 1.0]
-                       } else if hover {
-                           [0.5, 1.0, 0.0, 1.0]
-                       } else {
-                           [0.0, 1.0, 0.0, 1.0]
-                       });
+        let color = if press {
+            [1.0, 1.0, 0.0, 1.0]
+        } else if hover {
+            [0.5, 1.0, 0.0, 1.0]
+        } else {
+            [0.0, 1.0, 0.0, 1.0]
+        };
+
+        self.fill_rect(area, color);
         self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
+        self.draw_text(font,
+                       area.origin + Point2D::new(4.0, area.size.height - 4.0),
+                       color,
+                       caption);
 
         press && self.click_state.is_release()
     }
@@ -357,6 +371,20 @@ pub struct FontData<T> {
     texture: T,
     chars: HashMap<char, CharData>,
     height: f32,
+}
+
+impl<T> FontData<T> {
+    pub fn render_size(&self, text: &str) -> Rect<f32> {
+        let mut w = 0.0;
+
+        for c in text.chars() {
+            if let Some(f) = self.chars.get(&c) {
+                w += f.advance;
+            }
+        }
+
+        Rect::new(Point2D::new(0.0, 0.0), Size2D::new(w, self.height))
+    }
 }
 
 #[derive(Clone, Debug)]
