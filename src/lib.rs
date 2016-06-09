@@ -223,12 +223,12 @@ impl<T> Context<T>
     pub fn init_default_font<F>(&mut self, register_texture: F) -> Font
         where F: FnOnce(&[u8], u32, u32) -> T
     {
-        static DEFAULT_FONT: &'static [u8] = include_bytes!("profont9.raw");
-        let (width, height) = (96, 72);
-        let columns = 16;
+        static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
+        let (width, height) = (256, 112);
+        let columns = 32;
         let start_char = 32;
         let end_char = 127;
-        let (char_width, char_height) = (6, 12);
+        let (char_width, char_height) = (8, 16);
 
         let t = register_texture(DEFAULT_FONT, width, height);
 
