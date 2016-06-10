@@ -225,10 +225,10 @@ impl<T> Context<T>
     {
         static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
         let (width, height) = (256, 112);
-        let columns = 32;
         let start_char = 32;
         let end_char = 127;
         let (char_width, char_height) = (8, 16);
+        let columns = width / char_width;
 
         let t = register_texture(DEFAULT_FONT, width, height);
 
