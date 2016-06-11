@@ -97,6 +97,8 @@ fn main() {
     });
 
 
+    let mut test_input = String::new();
+
     // the main loop
     loop {
         context.begin_frame();
@@ -105,8 +107,11 @@ fn main() {
         }
 
         if context.button("Another button") {
-            println!("Clack");
+            println!("Clack {}", test_input);
         }
+
+        context.text_input(font, Point2D::new(10.0, 120.0), [0.8, 0.8, 0.8, 1.0],
+            &mut test_input);
 
         // drawing a frame
 
@@ -177,6 +182,26 @@ fn main() {
                                                    _ => vitral::MouseButton::Middle,
                                                },
                                                state == glutin::ElementState::Pressed)
+                }
+                glutin::Event::ReceivedCharacter(c) => {
+                    context.input_char(c)
+                }
+                glutin::Event::KeyboardInput(s, _, Some(vk)) => {
+                    let is_down = s == glutin::ElementState::Pressed;
+                    use glium::glutin::VirtualKeyCode::*;
+                    match vk {
+                        Tab => context.input_key_state(vitral::Keycode::Tab, is_down),
+                        LShift | RShift => context.input_key_state(vitral::Keycode::Shift, is_down),
+                        LControl | RControl => context.input_key_state(vitral::Keycode::Ctrl, is_down),
+                        NumpadEnter | Return => context.input_key_state(vitral::Keycode::Enter, is_down),
+                        Back => context.input_key_state(vitral::Keycode::Backspace, is_down),
+                        Delete => context.input_key_state(vitral::Keycode::Del, is_down),
+                        Numpad8 | Up => context.input_key_state(vitral::Keycode::Up, is_down),
+                        Numpad2 | Down => context.input_key_state(vitral::Keycode::Down, is_down),
+                        Numpad4 | Left => context.input_key_state(vitral::Keycode::Left, is_down),
+                        Numpad6 | Right => context.input_key_state(vitral::Keycode::Right, is_down),
+                        _ => {}
+                    }
                 }
                 _ => (),
             }

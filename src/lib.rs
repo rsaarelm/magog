@@ -22,6 +22,10 @@ pub struct Context<T> {
     click_state: ClickState,
 
     fonts: Vec<FontData<T>>,
+
+    text_input: Vec<KeyInput>,
+
+    tick: u64,
 }
 
 impl<T> Context<T>
@@ -43,10 +47,16 @@ impl<T> Context<T>
             click_state: ClickState::Unpressed,
 
             fonts: Vec::new(),
+
+            text_input: Vec::new(),
+
+            tick: 0,
         }
     }
 
     pub fn begin_frame(&mut self) {
+        self.tick += 1;
+
         self.layout_pos = Point2D::new(10.0, 10.0);
 
         // TODO
@@ -149,6 +159,31 @@ impl<T> Context<T>
                       color);
     }
 
+    pub fn text_input(&mut self, font: Font, pos: Point2D<f32>, color: [f32; 4],
+                        text_buffer: &mut String) {
+        // TODO: Focus system. Only accept input if current input widget is focused.
+        // (Also needs widget identifiers to know which is which.)
+        for c in self.text_input.iter() {
+            match *c {
+                KeyInput::Printable(c) => {
+                    if c >= ' ' {
+                        text_buffer.push(c);
+                    }
+                }
+                KeyInput::Other(Keycode::Backspace) => {
+                    text_buffer.pop();
+                }
+                KeyInput::Other(_) => {}
+            }
+        }
+
+        // TODO: Draw cursor, track cursor pos somehow (external ref or internal
+        // cache)
+
+        // TODO: Arrow keys move cursor
+        self.draw_text(font, pos, color, text_buffer);
+    }
+
     fn start_solid_texture(&mut self) {
         let tex = self.solid_texture.clone();
         self.start_texture(tex);
@@ -171,6 +206,9 @@ impl<T> Context<T>
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T>> {
         // Clean up transient mouse click info.
         self.click_state = self.click_state.tick();
+
+        // Clean up text buffer
+        self.text_input.clear();
 
         let mut ret = Vec::new();
         mem::swap(&mut ret, &mut self.draw_list);
@@ -196,12 +234,14 @@ impl<T> Context<T>
 
     /// Register printable character input.
     pub fn input_char(&mut self, c: char) {
-        // TODO
+        self.text_input.push(KeyInput::Printable(c));
     }
 
     /// Register a nonprintable key state.
     pub fn input_key_state(&mut self, k: Keycode, is_down: bool) {
-        // TODO
+        if is_down {
+            self.text_input.push(KeyInput::Other(k));
+        }
     }
 
     /// Build a font atlas from a TTF and construct a texture object.
@@ -362,6 +402,12 @@ pub enum Keycode {
     Down,
     Left,
     Right,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+enum KeyInput {
+    Printable(char),
+    Other(Keycode),
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
