@@ -4,7 +4,6 @@ extern crate glium;
 
 extern crate vitral;
 
-use std::mem;
 use std::rc::Rc;
 
 use glium::{Surface, GlObject};
@@ -27,12 +26,22 @@ impl PartialEq<Texture> for Texture {
 // XXX: An exact copy of Vitral vertex struct, just so that I can derive a
 // Glium vertex implementatino for it.
 #[derive(Copy, Clone)]
-pub struct GliumVertex {
+pub struct Vertex {
     pub pos: [f32; 2],
     pub color: [f32; 4],
     pub tex: [f32; 2],
 }
-implement_vertex!(GliumVertex, pos, color, tex);
+implement_vertex!(Vertex, pos, color, tex);
+
+impl vitral::Vertex for Vertex {
+    fn new(pos: [f32; 2], color: [f32; 4], texcoord: [f32; 2]) -> Self {
+        Vertex {
+            pos: pos,
+            color: color,
+            tex: texcoord,
+        }
+    }
+}
 
 fn main() {
     use glium::DisplayBuild;
@@ -84,7 +93,7 @@ fn main() {
     )
                       .unwrap();
 
-    let mut context = Context::new(solid_texture.clone());
+    let mut context: Context<Rc<Texture>, Vertex> = Context::new(solid_texture.clone());
     let font = context.init_default_font(|alpha_data, w, h| {
         let mut rgba = Vec::new();
         assert!(alpha_data.len() == (w * h) as usize);
@@ -110,8 +119,10 @@ fn main() {
             println!("Clack {}", test_input);
         }
 
-        context.text_input(font, Point2D::new(10.0, 120.0), [0.8, 0.8, 0.8, 1.0],
-            &mut test_input);
+        context.text_input(font,
+                           Point2D::new(10.0, 120.0),
+                           [0.8, 0.8, 0.8, 1.0],
+                           &mut test_input);
 
         // drawing a frame
 
@@ -132,14 +143,7 @@ fn main() {
             };
 
             let vertex_buffer = {
-                glium::VertexBuffer::new(&display,
-                                         // XXX: Have to do the unsafe switcheroo here to get a
-                                         // vertex type with Glium traits derived for it.
-                                         &unsafe {
-                                             mem::transmute::<Vec<vitral::Vertex>,
-                                                              Vec<GliumVertex>>(batch.vertices)
-                                         })
-                    .unwrap()
+                glium::VertexBuffer::new(&display, &batch.vertices).unwrap()
             };
 
             // building the index buffer
@@ -183,17 +187,19 @@ fn main() {
                                                },
                                                state == glutin::ElementState::Pressed)
                 }
-                glutin::Event::ReceivedCharacter(c) => {
-                    context.input_char(c)
-                }
+                glutin::Event::ReceivedCharacter(c) => context.input_char(c),
                 glutin::Event::KeyboardInput(s, _, Some(vk)) => {
                     let is_down = s == glutin::ElementState::Pressed;
                     use glium::glutin::VirtualKeyCode::*;
                     match vk {
                         Tab => context.input_key_state(vitral::Keycode::Tab, is_down),
                         LShift | RShift => context.input_key_state(vitral::Keycode::Shift, is_down),
-                        LControl | RControl => context.input_key_state(vitral::Keycode::Ctrl, is_down),
-                        NumpadEnter | Return => context.input_key_state(vitral::Keycode::Enter, is_down),
+                        LControl | RControl => {
+                            context.input_key_state(vitral::Keycode::Ctrl, is_down)
+                        }
+                        NumpadEnter | Return => {
+                            context.input_key_state(vitral::Keycode::Enter, is_down)
+                        }
                         Back => context.input_key_state(vitral::Keycode::Backspace, is_down),
                         Delete => context.input_key_state(vitral::Keycode::Del, is_down),
                         Numpad8 | Up => context.input_key_state(vitral::Keycode::Up, is_down),

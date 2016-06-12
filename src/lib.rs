@@ -10,8 +10,8 @@ use euclid::{Rect, Point2D, Size2D};
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Context<T> {
-    draw_list: Vec<DrawBatch<T>>,
+pub struct Context<T, V> {
+    draw_list: Vec<DrawBatch<T, V>>,
     /// Texture value used for solid-color drawing
     solid_texture: T,
 
@@ -28,7 +28,7 @@ pub struct Context<T> {
     tick: u64,
 }
 
-impl<T> Context<T>
+impl<T, V: Vertex> Context<T, V>
     where T: Clone + PartialEq
 {
     /// Construct a new interface context instance.
@@ -36,7 +36,7 @@ impl<T> Context<T>
     /// The client must provide an initial texture instance that is used for
     /// drawing solid shapes. This can be a texture that consists of a single
     /// opaque white pixel.
-    pub fn new(solid_texture: T) -> Context<T> {
+    pub fn new(solid_texture: T) -> Context<T, V> {
         Context {
             draw_list: Vec::new(),
             solid_texture: solid_texture,
@@ -72,6 +72,7 @@ impl<T> Context<T>
         for c in text.chars() {
             // FIXME: Gratuitous cloning because of borrow checker.
             let x = self.fonts[id].chars.get(&c).cloned();
+            // TODO: Draw some sort of symbol for characters missing from font.
             if let Some(f) = x {
                 self.tex_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
                               f.texcoords,
@@ -122,26 +123,10 @@ impl<T> Context<T>
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
 
-        batch.vertices.push(Vertex {
-            pos: [p1.x, p1.y],
-            color: color,
-            tex: [t1.x, t1.y],
-        });
-        batch.vertices.push(Vertex {
-            pos: [p2.x, p1.y],
-            color: color,
-            tex: [t2.x, t1.y],
-        });
-        batch.vertices.push(Vertex {
-            pos: [p2.x, p2.y],
-            color: color,
-            tex: [t2.x, t2.y],
-        });
-        batch.vertices.push(Vertex {
-            pos: [p1.x, p2.y],
-            color: color,
-            tex: [t1.x, t2.y],
-        });
+        batch.vertices.push(Vertex::new([p1.x, p1.y], color, [t1.x, t1.y]));
+        batch.vertices.push(Vertex::new([p2.x, p1.y], color, [t2.x, t1.y]));
+        batch.vertices.push(Vertex::new([p2.x, p2.y], color, [t2.x, t2.y]));
+        batch.vertices.push(Vertex::new([p1.x, p2.y], color, [t1.x, t2.y]));
 
         batch.triangle_indices.push(idx_offset);
         batch.triangle_indices.push(idx_offset + 1);
@@ -159,8 +144,11 @@ impl<T> Context<T>
                       color);
     }
 
-    pub fn text_input(&mut self, font: Font, pos: Point2D<f32>, color: [f32; 4],
-                        text_buffer: &mut String) {
+    pub fn text_input(&mut self,
+                      font: Font,
+                      pos: Point2D<f32>,
+                      color: [f32; 4],
+                      text_buffer: &mut String) {
         // TODO: Focus system. Only accept input if current input widget is focused.
         // (Also needs widget identifiers to know which is which.)
         for c in self.text_input.iter() {
@@ -177,11 +165,23 @@ impl<T> Context<T>
             }
         }
 
-        // TODO: Draw cursor, track cursor pos somehow (external ref or internal
-        // cache)
+        // TODO: Option to draw cursor mid-string (font may be
+        // variable-width...), track cursor pos somehow (external ref or
+        // internal cache)
 
         // TODO: Arrow keys move cursor
-        self.draw_text(font, pos, color, text_buffer);
+
+        // TODO: Filter function for input, eg. numbers only.
+
+        // Nasty hack to show a blinking cursor. Will only work for cursor
+        // always at the end of the input.
+
+        // TODO: Maybe want to use wall clock time instead of GUI context ticks for this?
+        if (self.tick / 30) % 3 == 0 {
+            self.draw_text(font, pos, color, text_buffer);
+        } else {
+            self.draw_text(font, pos, color, &format!("{}_", text_buffer));
+        }
     }
 
     fn start_solid_texture(&mut self) {
@@ -203,7 +203,7 @@ impl<T> Context<T>
         }
     }
 
-    pub fn end_frame(&mut self) -> Vec<DrawBatch<T>> {
+    pub fn end_frame(&mut self) -> Vec<DrawBatch<T, V>> {
         // Clean up transient mouse click info.
         self.click_state = self.click_state.tick();
 
@@ -302,23 +302,20 @@ impl<T> Context<T>
 }
 
 /// A sequence of primitive draw operarations.
-pub struct DrawBatch<T> {
+pub struct DrawBatch<T, V> {
     /// Texture used for the current batch, details depend on backend
     /// implementation
     pub texture: T,
     /// Clipping rectangle for the current batch
     pub clip: Option<Rect<f32>>,
     /// Vertex data
-    pub vertices: Vec<Vertex>,
+    pub vertices: Vec<V>,
     /// Indices into the vertex array for the triangles that make up the batch
     pub triangle_indices: Vec<u16>,
 }
 
-#[derive(Copy, Clone)]
-pub struct Vertex {
-    pub pos: [f32; 2],
-    pub color: [f32; 4],
-    pub tex: [f32; 2],
+pub trait Vertex {
+    fn new(pos: [f32; 2], color: [f32; 4], texcoord: [f32; 2]) -> Self;
 }
 
 /// Text alignment.
