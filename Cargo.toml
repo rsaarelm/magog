@@ -1,13 +1,13 @@
 [package]
-name = "magog"
+name = "debris"
 version = "0.1.0"
-authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
-description = "Roguelike game"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Shooter game"
 keywords = ["gamedev"]
 license = "GPL3"
 
 [[bin]]
-name = "magog"
+name = "debris"
 
 [profile.release]
 lto = true

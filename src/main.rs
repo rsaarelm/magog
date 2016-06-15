@@ -1,5 +1,3 @@
-#![crate_name="magog"]
-
 extern crate rand;
 extern crate rustc_serialize;
 extern crate num;
