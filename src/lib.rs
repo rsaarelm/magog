@@ -4,6 +4,7 @@ extern crate image;
 use std::mem;
 use std::ops::Range;
 use std::collections::HashMap;
+use image::{Pixel, GenericImage};
 use euclid::{Rect, Point2D, Size2D};
 
 /// Configuration for rendering style.
@@ -30,14 +31,27 @@ impl Default for Style {
 
 
 pub struct Builder<T> {
-    todo: std::marker::PhantomData<T>,
+    fonts: Vec<FontData<T>>,
+    images: Vec<ImageData<T>>,
 }
 
-impl<T> Builder<T> {
+impl<T> Builder<T>
+    where T: Clone + PartialEq
+{
     pub fn new() -> Builder<T> {
-        Builder { todo: std::marker::PhantomData }
+        Builder {
+            fonts: Vec::new(),
+            images: Vec::new(),
+        }
     }
 
+    /// Add a series of images for the UI to use.
+    ///
+    /// The return value is a series of handles corresponding to the input
+    /// images that can be used to request the images to be drawn later.
+    ///
+    /// make_t is a function that converts an image into a host texture
+    /// resource and returns a host texture handle.
     pub fn add_images<F, I>(&mut self, make_t: F, images: Vec<I>) -> Vec<Image>
         where F: FnMut(I) -> T,
               I: image::GenericImage<Pixel = image::Rgba<u8>>
@@ -55,6 +69,9 @@ impl<T> Builder<T> {
         unimplemented!();
     }
 
+    /// Add a font for the UI to use.
+    ///
+    /// The return value is a font handle or an error if the data was invalid.
     pub fn add_font<F, I, R>(&mut self,
                              make_t: F,
                              ttf_data: &[u8],
@@ -64,6 +81,8 @@ impl<T> Builder<T> {
               I: image::GenericImage<Pixel = image::Rgba<u8>>,
               R: IntoIterator<Item = char>
     {
+        // TODO: A FontSource type that embody a TTF font or a bitmap font.
+
         // TODO: Parse TTF data using appropriate crate, return error if data
         // isn't valid TTF.
 
@@ -73,15 +92,30 @@ impl<T> Builder<T> {
         unimplemented!();
     }
 
-    pub fn build<F, I, V>(self, make_t: F) -> Context<T, V>
-        where F: FnMut(I) -> T,
-              I: image::GenericImage<Pixel = image::Rgba<u8>>
+    /// Construct an interface context instance.
+    pub fn build<F, V>(mut self, mut make_t: F) -> Context<T, V>
+        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
+              V: Vertex
     {
         // TODO: Use make_t to generate default font into font index 0.
 
+        // TODO: Only add the solid image here if it hasn't been already added
+        // in the first add_images call.
+        let solid = image::ImageBuffer::from_pixel(1,
+                                                   1,
+                                                   image::Rgba::from_channels(255, 255, 255, 255));
+        let solid_t = make_t(solid);
+        self.images.push(ImageData {
+            texture: solid_t,
+            size: Size2D::new(1, 1),
+            texcoords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
+        });
+
+
         // TODO: If no add_images was called, do a single pixel solid texture
         // for the solid color draw.
-        unimplemented!();
+
+        Context::new(self.fonts, self.images)
     }
 }
 
@@ -94,15 +128,13 @@ impl<T> Builder<T> {
 pub struct Context<T, V> {
     draw_list: Vec<DrawBatch<T, V>>,
     /// Texture value used for solid-color drawing
-    solid_texture: T,
-
-    // TODO: This is for demo purposes, need a proper layout state.
     layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
     click_state: ClickState,
 
     fonts: Vec<FontData<T>>,
+    images: Vec<ImageData<T>>,
 
     text_input: Vec<KeyInput>,
 
@@ -112,22 +144,17 @@ pub struct Context<T, V> {
 impl<T, V: Vertex> Context<T, V>
     where T: Clone + PartialEq
 {
-    /// Construct a new interface context instance.
-    ///
-    /// The client must provide an initial texture instance that is used for
-    /// drawing solid shapes. This can be a texture that consists of a single
-    /// opaque white pixel.
-    pub fn new(solid_texture: T) -> Context<T, V> {
+    fn new(fonts: Vec<FontData<T>>, images: Vec<ImageData<T>>) -> Context<T, V> {
         Context {
             draw_list: Vec::new(),
-            solid_texture: solid_texture,
-
+            // solid_texture: Image(0),
             layout_pos: Point2D::new(0.0, 0.0),
 
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: ClickState::Unpressed,
 
-            fonts: Vec::new(),
+            fonts: fonts,
+            images: images,
 
             text_input: Vec::new(),
 
@@ -220,9 +247,9 @@ impl<T, V: Vertex> Context<T, V>
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
         self.start_solid_texture();
-        self.tex_rect(area,
-                      Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
-                      color);
+        // Image 0 must be solid texture.
+        let tex_rect = self.images[0].texcoords;
+        self.tex_rect(area, tex_rect, color);
     }
 
     pub fn text_input(&mut self,
@@ -266,7 +293,10 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     fn start_solid_texture(&mut self) {
-        let tex = self.solid_texture.clone();
+        assert!(self.images.len() > 0);
+        // Builder must always setup Context so that the first image is the
+        // solid color.
+        let tex = self.images[0].texture.clone();
         self.start_texture(tex);
     }
 
@@ -519,4 +549,10 @@ struct CharData {
     texcoords: Rect<f32>,
     draw_offset: Point2D<f32>,
     advance: f32,
+}
+
+struct ImageData<T> {
+    texture: T,
+    size: Size2D<u32>,
+    texcoords: Rect<f32>,
 }

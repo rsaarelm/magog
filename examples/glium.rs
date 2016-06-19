@@ -51,11 +51,6 @@ fn main() {
                       .build_glium()
                       .unwrap();
 
-    let image = glium::texture::RawImage2d::from_raw_rgba(vec![0xffffffffu32], (1, 1));
-    let solid_texture = Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display,
-                                                                                     image)
-                                            .unwrap()));
-
     // compiling shaders and linking them together
     let program = program!(&display,
         150 => {
@@ -93,7 +88,14 @@ fn main() {
     )
                       .unwrap();
 
-    let mut context: Context<Rc<Texture>, Vertex> = Context::new(solid_texture.clone());
+    let mut context: Context<Rc<Texture>, Vertex>;
+    let builder = vitral::Builder::new();
+    context = builder.build(|img| {
+        let dim = (img.width(), img.height());
+        let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), dim);
+        Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, raw).unwrap()))
+    });
+
     let font = context.init_default_font(|alpha_data, w, h| {
         let mut rgba = Vec::new();
         assert!(alpha_data.len() == (w * h) as usize);
