@@ -5,6 +5,28 @@ use std::ops::Range;
 use std::collections::HashMap;
 use euclid::{Rect, Point2D, Size2D};
 
+/// Configuration for rendering style.
+#[derive(Clone, PartialEq)]
+pub struct Style {
+    pub foreground_color: [f32; 4],
+    pub background_color: [f32; 4],
+    pub font: Font,
+    // Private field so that the struct doesn't show up as fully public and
+    // fixed in the visible API.
+    _reserved: std::marker::PhantomData<()>,
+}
+
+impl Default for Style {
+    fn default() -> Self {
+        Style {
+            foreground_color: [1.0, 1.0, 1.0, 1.0],
+            background_color: [0.0, 0.0, 0.0, 1.0],
+            font: Font(0),
+            _reserved: std::marker::PhantomData,
+        }
+    }
+}
+
 /// An immediate mode graphical user interface context.
 ///
 /// The context persists over a frame and receives commands that combine GUI
