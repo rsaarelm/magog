@@ -9,6 +9,7 @@ repository = "https://github.com/rsaarelm/vitral"
 
 [dependencies]
 euclid = "0.6"
+image = "0.10"
 
 [dev-dependencies]
 glium = "0.14"

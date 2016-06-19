@@ -1,4 +1,5 @@
 extern crate euclid;
+extern crate image;
 
 use std::mem;
 use std::ops::Range;
@@ -26,6 +27,64 @@ impl Default for Style {
         }
     }
 }
+
+
+pub struct Builder<T> {
+    todo: std::marker::PhantomData<T>,
+}
+
+impl<T> Builder<T> {
+    pub fn new() -> Builder<T> {
+        Builder { todo: std::marker::PhantomData }
+    }
+
+    pub fn add_images<F, I>(&mut self, make_t: F, images: Vec<I>) -> Vec<Image>
+        where F: FnMut(I) -> T,
+              I: image::GenericImage<Pixel = image::Rgba<u8>>
+    {
+        // TODO: If this is the very first call to add_images, add a
+        // single-pixel opaque white texture as the very first image. Keep
+        // track of its index internally but make sure not to return it as
+        // Image value in the return vector. This will be used to draw
+        // solid-color shapes.
+
+        // TODO: Build atlas image from images and register it in the Builder.
+
+        // TODO: Return Image values to the caller. Make sure not to return
+        // the extra one-pixel image if that was generated.
+        unimplemented!();
+    }
+
+    pub fn add_font<F, I, R>(&mut self,
+                             make_t: F,
+                             ttf_data: &[u8],
+                             font_range: R)
+                             -> Result<Font, ()>
+        where F: FnMut(I) -> T,
+              I: image::GenericImage<Pixel = image::Rgba<u8>>,
+              R: IntoIterator<Item = char>
+    {
+        // TODO: Parse TTF data using appropriate crate, return error if data
+        // isn't valid TTF.
+
+        // TODO: Rasterize fonts with codepoints in font_range into images.
+
+        // TODO: Build atlas image from font and register it in the Builder.
+        unimplemented!();
+    }
+
+    pub fn build<F, I, V>(self, make_t: F) -> Context<T, V>
+        where F: FnMut(I) -> T,
+              I: image::GenericImage<Pixel = image::Rgba<u8>>
+    {
+        // TODO: Use make_t to generate default font into font index 0.
+
+        // TODO: If no add_images was called, do a single pixel solid texture
+        // for the solid color draw.
+        unimplemented!();
+    }
+}
+
 
 /// An immediate mode graphical user interface context.
 ///
@@ -431,6 +490,9 @@ enum KeyInput {
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Font(usize);
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct Image(usize);
 
 pub struct FontData<T> {
     texture: T,
