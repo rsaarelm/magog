@@ -32,7 +32,7 @@ impl Default for Style {
 
 pub struct Builder<T> {
     fonts: Vec<FontData<T>>,
-    images: Vec<ImageData<T>>,
+    images: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
 }
 
 impl<T> Builder<T>
@@ -41,46 +41,39 @@ impl<T> Builder<T>
     pub fn new() -> Builder<T> {
         Builder {
             fonts: Vec::new(),
-            images: Vec::new(),
+            images: vec![
+                image::ImageBuffer::from_pixel(1, 1, image::Rgba::from_channels(255, 255, 255, 255)),
+            ],
         }
     }
 
-    /// Add a series of images for the UI to use.
+    /// Add an image for the UI to use.
     ///
-    /// The return value is a series of handles corresponding to the input
-    /// images that can be used to request the images to be drawn later.
-    ///
-    /// make_t is a function that converts an image into a host texture
-    /// resource and returns a host texture handle.
-    pub fn add_images<F, I>(&mut self, make_t: F, images: Vec<I>) -> Vec<Image>
-        where F: FnMut(I) -> T,
-              I: image::GenericImage<Pixel = image::Rgba<u8>>
-    {
-        // TODO: If this is the very first call to add_images, add a
-        // single-pixel opaque white texture as the very first image. Keep
-        // track of its index internally but make sure not to return it as
-        // Image value in the return vector. This will be used to draw
-        // solid-color shapes.
-
-        // TODO: Build atlas image from images and register it in the Builder.
-
-        // TODO: Return Image values to the caller. Make sure not to return
-        // the extra one-pixel image if that was generated.
-        unimplemented!();
+    /// The return value is a handle that can be used to request the images to
+    /// be drawn later.
+    pub fn add_image<F, I>(&mut self,
+                           image: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>)
+                           -> Image {
+        self.images.push(image);
+        Image(self.images.len() - 1)
     }
 
     /// Add a font for the UI to use.
     ///
     /// The return value is a font handle or an error if the data was invalid.
-    pub fn add_font<F, I, R>(&mut self,
-                             mut make_t: F,
-                             ttf_data: &[u8],
-                             font_range: R)
-                             -> Result<Font, ()>
-        where F: FnMut(I) -> T,
-              I: image::GenericImage<Pixel = image::Rgba<u8>>,
+    pub fn add_font<F, R>(&mut self,
+                          mut make_t: F,
+                          ttf_data: &[u8],
+                          font_range: R)
+                          -> Result<Font, ()>
+        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
               R: IntoIterator<Item = char>
     {
+        // Ensure that the first font is always the baked-in default one.
+        if self.fonts.is_empty() {
+            self.add_default_font(&mut make_t);
+        }
+
         // TODO: A FontSource type that embody a TTF font or a bitmap font.
 
         // TODO: Parse TTF data using appropriate crate, return error if data
@@ -104,11 +97,10 @@ impl<T> Builder<T>
         let (char_width, char_height) = (8, 16);
         let columns = width / char_width;
 
-        let img = image::ImageBuffer::from_fn(width, height,
-            |x, y| {
-                let a = DEFAULT_FONT[(x + y * width) as usize];
-                image::Rgba::from_channels(a, a, a, a)
-            });
+        let img = image::ImageBuffer::from_fn(width, height, |x, y| {
+            let a = DEFAULT_FONT[(x + y * width) as usize];
+            image::Rgba::from_channels(a, a, a, a)
+        });
 
         let t = make_t(img);
 
@@ -143,26 +135,21 @@ impl<T> Builder<T>
         where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
               V: Vertex
     {
-        // TODO: Call this before first user font add, only call it here if no
-        // user font was added.
-        self.add_default_font(&mut make_t);
+        if self.fonts.is_empty() {
+            self.add_default_font(&mut make_t);
+        }
 
-        // TODO: Only add the solid image here if it hasn't been already added
-        // in the first add_images call.
-        let solid = image::ImageBuffer::from_pixel(
-            1, 1, image::Rgba::from_channels(255, 255, 255, 255));
-        let solid_t = make_t(solid);
-        self.images.push(ImageData {
-            texture: solid_t,
+        let mut images = Vec::new();
+
+        // TODO Actual atlas building from images, this just adds the initial
+        // solid-color image.
+        images.push(ImageData {
+            texture: make_t(self.images.pop().unwrap()),
             size: Size2D::new(1, 1),
             texcoords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
         });
 
-
-        // TODO: If no add_images was called, do a single pixel solid texture
-        // for the solid color draw.
-
-        Context::new(self.fonts, self.images)
+        Context::new(self.fonts, images)
     }
 }
 
