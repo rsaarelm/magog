@@ -96,17 +96,7 @@ fn main() {
         Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, raw).unwrap()))
     });
 
-    let font = context.init_default_font(|alpha_data, w, h| {
-        let mut rgba = Vec::new();
-        assert!(alpha_data.len() == (w * h) as usize);
-        for a in alpha_data.iter() {
-            let a = *a as u32;
-            rgba.push((a << 24) + (a << 16) + (a << 8) + a);
-        }
-        let image = glium::texture::RawImage2d::from_raw_rgba(rgba, (w, h));
-        Rc::new(Texture(glium::texture::CompressedSrgbTexture2d::new(&display, image).unwrap()))
-    });
-
+    let font = context.default_font();
 
     let mut test_input = String::new();
 

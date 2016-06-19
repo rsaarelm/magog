@@ -73,7 +73,7 @@ impl<T> Builder<T>
     ///
     /// The return value is a font handle or an error if the data was invalid.
     pub fn add_font<F, I, R>(&mut self,
-                             make_t: F,
+                             mut make_t: F,
                              ttf_data: &[u8],
                              font_range: R)
                              -> Result<Font, ()>
@@ -92,18 +92,65 @@ impl<T> Builder<T>
         unimplemented!();
     }
 
+    fn add_default_font<F>(&mut self, make_t: &mut F)
+        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T
+    {
+        assert!(self.fonts.is_empty());
+
+        static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
+        let (width, height) = (256, 112);
+        let start_char = 32;
+        let end_char = 127;
+        let (char_width, char_height) = (8, 16);
+        let columns = width / char_width;
+
+        let img = image::ImageBuffer::from_fn(width, height,
+            |x, y| {
+                let a = DEFAULT_FONT[(x + y * width) as usize];
+                image::Rgba::from_channels(a, a, a, a)
+            });
+
+        let t = make_t(img);
+
+        let mut map = HashMap::new();
+
+        for i in start_char..end_char {
+            let x = char_width * ((i - start_char) % columns);
+            let y = char_height * ((i - start_char) / columns);
+
+            let texcoords = Rect::new(Point2D::new(x as f32 / width as f32,
+                                                   y as f32 / height as f32),
+                                      Size2D::new(char_width as f32 / width as f32,
+                                                  char_height as f32 / height as f32));
+
+            map.insert(std::char::from_u32(i).unwrap(),
+                       CharData {
+                           texcoords: texcoords,
+                           draw_offset: Point2D::new(0.0, char_height as f32),
+                           advance: char_width as f32,
+                       });
+        }
+
+        self.fonts.push(FontData {
+            texture: t,
+            chars: map,
+            height: char_height as f32,
+        });
+    }
+
     /// Construct an interface context instance.
     pub fn build<F, V>(mut self, mut make_t: F) -> Context<T, V>
         where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
               V: Vertex
     {
-        // TODO: Use make_t to generate default font into font index 0.
+        // TODO: Call this before first user font add, only call it here if no
+        // user font was added.
+        self.add_default_font(&mut make_t);
 
         // TODO: Only add the solid image here if it hasn't been already added
         // in the first add_images call.
-        let solid = image::ImageBuffer::from_pixel(1,
-                                                   1,
-                                                   image::Rgba::from_channels(255, 255, 255, 255));
+        let solid = image::ImageBuffer::from_pixel(
+            1, 1, image::Rgba::from_channels(255, 255, 255, 255));
         let solid_t = make_t(solid);
         self.images.push(ImageData {
             texture: solid_t,
@@ -190,7 +237,7 @@ impl<T, V: Vertex> Context<T, V>
         }
     }
 
-    fn default_font(&self) -> Font {
+    pub fn default_font(&self) -> Font {
         Font(0)
     }
 
@@ -353,62 +400,6 @@ impl<T, V: Vertex> Context<T, V>
         if is_down {
             self.text_input.push(KeyInput::Other(k));
         }
-    }
-
-    /// Build a font atlas from a TTF and construct a texture object.
-    ///
-    /// The output will be have 8 alpha channel bits per pixel.
-    ///
-    /// TODO: Font customization, point size, character ranges.
-    pub fn init_font<F>(&mut self,
-                        ttf_data: &[u8],
-                        point_size: f32,
-                        chars: Range<usize>,
-                        register_texture: F)
-                        -> Result<Font, ()>
-        where F: FnOnce(&[u8], u32, u32) -> T
-    {
-        unimplemented!();
-    }
-
-    pub fn init_default_font<F>(&mut self, register_texture: F) -> Font
-        where F: FnOnce(&[u8], u32, u32) -> T
-    {
-        static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
-        let (width, height) = (256, 112);
-        let start_char = 32;
-        let end_char = 127;
-        let (char_width, char_height) = (8, 16);
-        let columns = width / char_width;
-
-        let t = register_texture(DEFAULT_FONT, width, height);
-
-        let mut map = HashMap::new();
-
-        for i in start_char..end_char {
-            let x = char_width * ((i - start_char) % columns);
-            let y = char_height * ((i - start_char) / columns);
-
-            let texcoords = Rect::new(Point2D::new(x as f32 / width as f32,
-                                                   y as f32 / height as f32),
-                                      Size2D::new(char_width as f32 / width as f32,
-                                                  char_height as f32 / height as f32));
-
-            map.insert(std::char::from_u32(i).unwrap(),
-                       CharData {
-                           texcoords: texcoords,
-                           draw_offset: Point2D::new(0.0, char_height as f32),
-                           advance: char_width as f32,
-                       });
-        }
-
-        self.fonts.push(FontData {
-            texture: t,
-            chars: map,
-            height: char_height as f32,
-        });
-
-        Font(self.fonts.len() - 1)
     }
 }
 
