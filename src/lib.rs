@@ -2,30 +2,45 @@ extern crate euclid;
 extern crate image;
 
 use std::mem;
-use std::ops::Range;
 use std::collections::HashMap;
-use image::{Pixel, GenericImage};
+use std::ops::Add;
+use image::{Pixel};
 use euclid::{Rect, Point2D, Size2D};
+
+// Assuming this is the texture size maximum for low-end GPUs.
+static ATLAS_SIZE_LIMIT: u32 = 2048;
 
 /// Configuration for rendering style.
 #[derive(Clone, PartialEq)]
 pub struct Style {
-    pub foreground_color: [f32; 4],
-    pub background_color: [f32; 4],
-    pub font: Font,
+    pub foreground_color: Option<[f32; 4]>,
+    pub background_color: Option<[f32; 4]>,
+    pub font: Option<Font>,
     // Private field so that the struct doesn't show up as fully public and
     // fixed in the visible API.
     _reserved: std::marker::PhantomData<()>,
 }
 
+// TODO: Should there be a separate field that gets added to the core style
+// with non-optional fields that has optional fields? The current scheme with
+// Option-only doesn't encode "cached style *must* have non-option value for
+// everything".
+
 impl Default for Style {
     fn default() -> Self {
         Style {
-            foreground_color: [1.0, 1.0, 1.0, 1.0],
-            background_color: [0.0, 0.0, 0.0, 1.0],
-            font: Font(0),
+            foreground_color: Some([1.0, 1.0, 1.0, 1.0]),
+            background_color: Some([0.0, 0.0, 0.0, 1.0]),
+            font: Some(Font(0)),
             _reserved: std::marker::PhantomData,
         }
+    }
+}
+
+impl Add<Style> for Style {
+    type Output = Style;
+    fn add(self, other: Style) -> Style {
+        unimplemented!();
     }
 }
 
@@ -54,6 +69,11 @@ impl<T> Builder<T>
     pub fn add_image<F, I>(&mut self,
                            image: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>)
                            -> Image {
+        if image.width() > ATLAS_SIZE_LIMIT || image.height() > ATLAS_SIZE_LIMIT {
+            panic!("Image with dimensions ({}, {}) is too large, maximum is ({}, {})",
+                image.width(), image.height(), ATLAS_SIZE_LIMIT, ATLAS_SIZE_LIMIT);
+        }
+
         self.images.push(image);
         Image(self.images.len() - 1)
     }
@@ -143,6 +163,12 @@ impl<T> Builder<T>
 
         // TODO Actual atlas building from images, this just adds the initial
         // solid-color image.
+
+        // TODO: Atlasing procedure: Start out trying to fit whole image list
+        // into ATLAS_SIZE_LIMIT * ATLAS_SIZE_LIMIT atlas. As long as it fits,
+        // keep halving the atlas dimensions. If the full list won't fit in
+        // the maxed out atlas, split the list in two and try again with the
+        // first half. Then recurse to the rest.
         images.push(ImageData {
             texture: make_t(self.images.pop().unwrap()),
             size: Size2D::new(1, 1),
@@ -173,6 +199,9 @@ pub struct Context<T, V> {
     text_input: Vec<KeyInput>,
 
     tick: u64,
+
+    styles: Vec<Style>,
+    current_style: Style,
 }
 
 impl<T, V: Vertex> Context<T, V>
@@ -193,6 +222,9 @@ impl<T, V: Vertex> Context<T, V>
             text_input: Vec::new(),
 
             tick: 0,
+
+            styles: Vec::new(),
+            current_style: Default::default(),
         }
     }
 
@@ -216,7 +248,7 @@ impl<T, V: Vertex> Context<T, V>
             let x = self.fonts[id].chars.get(&c).cloned();
             // TODO: Draw some sort of symbol for characters missing from font.
             if let Some(f) = x {
-                self.tex_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
+                self.push_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
                               f.texcoords,
                               color);
                 pos.x += f.advance;
@@ -258,7 +290,13 @@ impl<T, V: Vertex> Context<T, V>
         press && self.click_state.is_release()
     }
 
-    pub fn tex_rect(&mut self, area: Rect<f32>, texcoords: Rect<f32>, color: [f32; 4]) {
+    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
+        self.start_texture(image.texture.clone());
+        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
+        self.push_rect(Rect::new(pos, size), image.texcoords, color);
+    }
+
+    fn push_rect(&mut self, area: Rect<f32>, texcoords: Rect<f32>, color: [f32; 4]) {
         let (p1, p2) = (area.origin, area.bottom_right());
         let (t1, t2) = (texcoords.origin, texcoords.bottom_right());
         let idx = self.draw_list.len() - 1;
@@ -283,7 +321,7 @@ impl<T, V: Vertex> Context<T, V>
         self.start_solid_texture();
         // Image 0 must be solid texture.
         let tex_rect = self.images[0].texcoords;
-        self.tex_rect(area, tex_rect, color);
+        self.push_rect(area, tex_rect, color);
     }
 
     pub fn text_input(&mut self,
@@ -387,6 +425,27 @@ impl<T, V: Vertex> Context<T, V>
         if is_down {
             self.text_input.push(KeyInput::Other(k));
         }
+    }
+
+    /// Add a style, any set values will override existing styles.
+    pub fn push_style(&mut self, style: Style) {
+        self.styles.push(style);
+        self.recompute_style();
+    }
+
+    /// Remove the latest pushed style and revert to the previous one.
+    pub fn pop_style(&mut self) {
+        self.styles.pop();
+        self.recompute_style();
+    }
+
+    fn recompute_style(&mut self) {
+        let mut style = Style::default();
+        for i in self.styles.iter() {
+            style = style + i.clone();
+        }
+
+        self.current_style = style;
     }
 }
 
@@ -529,8 +588,9 @@ struct CharData {
     advance: f32,
 }
 
-struct ImageData<T> {
-    texture: T,
-    size: Size2D<u32>,
-    texcoords: Rect<f32>,
+#[derive(Clone, PartialEq)]
+pub struct ImageData<T> {
+    pub texture: T,
+    pub size: Size2D<u32>,
+    pub texcoords: Rect<f32>,
 }
