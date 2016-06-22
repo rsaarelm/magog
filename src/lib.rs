@@ -16,9 +16,6 @@ pub struct Style {
     pub foreground_color: Option<[f32; 4]>,
     pub background_color: Option<[f32; 4]>,
     pub font: Option<Font>,
-    // Private field so that the struct doesn't show up as fully public and
-    // fixed in the visible API.
-    _reserved: std::marker::PhantomData<()>,
 }
 
 // TODO: Should there be a separate field that gets added to the core style
@@ -32,7 +29,6 @@ impl Default for Style {
             foreground_color: Some([1.0, 1.0, 1.0, 1.0]),
             background_color: Some([0.0, 0.0, 0.0, 1.0]),
             font: Some(Font(0)),
-            _reserved: std::marker::PhantomData,
         }
     }
 }
