@@ -4,8 +4,12 @@ extern crate image;
 use std::mem;
 use std::collections::HashMap;
 use std::ops::Add;
-use image::{Pixel};
-use euclid::{Rect, Point2D, Size2D};
+use image::Pixel;
+use euclid::{Point2D, Rect, Size2D};
+
+pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
+
+mod atlas;
 
 // Assuming this is the texture size maximum for low-end GPUs.
 static ATLAS_SIZE_LIMIT: u32 = 2048;
@@ -43,7 +47,7 @@ impl Add<Style> for Style {
 
 pub struct Builder<T> {
     fonts: Vec<FontData<T>>,
-    images: Vec<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>>,
+    images: Vec<ImageBuffer>,
 }
 
 impl<T> Builder<T>
@@ -53,7 +57,8 @@ impl<T> Builder<T>
         Builder {
             fonts: Vec::new(),
             images: vec![
-                image::ImageBuffer::from_pixel(1, 1, image::Rgba::from_channels(255, 255, 255, 255)),
+                image::ImageBuffer::from_pixel(
+                    1, 1, image::Rgba::from_channels(255, 255, 255, 255)),
             ],
         }
     }
@@ -62,12 +67,14 @@ impl<T> Builder<T>
     ///
     /// The return value is a handle that can be used to request the images to
     /// be drawn later.
-    pub fn add_image<F, I>(&mut self,
-                           image: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>)
-                           -> Image {
-        if image.width() > ATLAS_SIZE_LIMIT || image.height() > ATLAS_SIZE_LIMIT {
+    pub fn add_image<F, I>(&mut self, image: ImageBuffer) -> Image {
+        if image.width() > ATLAS_SIZE_LIMIT ||
+           image.height() > ATLAS_SIZE_LIMIT {
             panic!("Image with dimensions ({}, {}) is too large, maximum is ({}, {})",
-                image.width(), image.height(), ATLAS_SIZE_LIMIT, ATLAS_SIZE_LIMIT);
+                   image.width(),
+                   image.height(),
+                   ATLAS_SIZE_LIMIT,
+                   ATLAS_SIZE_LIMIT);
         }
 
         self.images.push(image);
@@ -82,7 +89,7 @@ impl<T> Builder<T>
                           ttf_data: &[u8],
                           font_range: R)
                           -> Result<Font, ()>
-        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
+        where F: FnMut(ImageBuffer) -> T,
               R: IntoIterator<Item = char>
     {
         // Ensure that the first font is always the baked-in default one.
@@ -102,7 +109,7 @@ impl<T> Builder<T>
     }
 
     fn add_default_font<F>(&mut self, make_t: &mut F)
-        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T
+        where F: FnMut(ImageBuffer) -> T
     {
         assert!(self.fonts.is_empty());
 
@@ -128,8 +135,10 @@ impl<T> Builder<T>
 
             let texcoords = Rect::new(Point2D::new(x as f32 / width as f32,
                                                    y as f32 / height as f32),
-                                      Size2D::new(char_width as f32 / width as f32,
-                                                  char_height as f32 / height as f32));
+                                      Size2D::new(char_width as f32 /
+                                                  width as f32,
+                                                  char_height as f32 /
+                                                  height as f32));
 
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
@@ -146,30 +155,44 @@ impl<T> Builder<T>
         });
     }
 
+    fn construct_atlas<F>(&self, make_t: &mut F) -> Vec<ImageData<T>>
+        where F: FnMut(ImageBuffer) -> T
+    {
+        // TODO: Handle case where you need multiple atlases.
+        let (atlas, positions) = atlas::build_atlas(&self.images,
+                                                    ATLAS_SIZE_LIMIT)
+                                     .unwrap();
+        let w = atlas.width() as f32;
+        let h = atlas.height() as f32;
+        let atlas = make_t(atlas);
+
+        positions.iter()
+                 .enumerate()
+                 .map(|(i, p)| {
+                     let (i_w, i_h) = (self.images[i].width(),
+                                       self.images[i].height());
+                     ImageData {
+                         texture: atlas.clone(),
+                         size: Size2D::new(i_w, i_h),
+                         texcoords: Rect::new(Point2D::new(p.x as f32 / w,
+                                                           p.y as f32 / h),
+                                              Size2D::new(i_w as f32 / w,
+                                                          i_h as f32 / h)),
+                     }
+                 })
+                 .collect()
+    }
+
     /// Construct an interface context instance.
     pub fn build<F, V>(mut self, mut make_t: F) -> Context<T, V>
-        where F: FnMut(image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> T,
+        where F: FnMut(ImageBuffer) -> T,
               V: Vertex
     {
         if self.fonts.is_empty() {
             self.add_default_font(&mut make_t);
         }
 
-        let mut images = Vec::new();
-
-        // TODO Actual atlas building from images, this just adds the initial
-        // solid-color image.
-
-        // TODO: Atlasing procedure: Start out trying to fit whole image list
-        // into ATLAS_SIZE_LIMIT * ATLAS_SIZE_LIMIT atlas. As long as it fits,
-        // keep halving the atlas dimensions. If the full list won't fit in
-        // the maxed out atlas, split the list in two and try again with the
-        // first half. Then recurse to the rest.
-        images.push(ImageData {
-            texture: make_t(self.images.pop().unwrap()),
-            size: Size2D::new(1, 1),
-            texcoords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
-        });
+        let images = self.construct_atlas(&mut make_t);
 
         Context::new(self.fonts, images)
     }
@@ -203,7 +226,9 @@ pub struct Context<T, V> {
 impl<T, V: Vertex> Context<T, V>
     where T: Clone + PartialEq
 {
-    fn new(fonts: Vec<FontData<T>>, images: Vec<ImageData<T>>) -> Context<T, V> {
+    fn new(fonts: Vec<FontData<T>>,
+           images: Vec<ImageData<T>>)
+           -> Context<T, V> {
         Context {
             draw_list: Vec::new(),
             // solid_texture: Image(0),
@@ -232,7 +257,11 @@ impl<T, V: Vertex> Context<T, V>
         // TODO
     }
 
-    pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
+    pub fn draw_text(&mut self,
+                     font: Font,
+                     mut pos: Point2D<f32>,
+                     color: [f32; 4],
+                     text: &str) {
         assert!(self.fonts.len() >= font.0);
         let id = font.0;
         let t = self.fonts[id].texture.clone();
@@ -244,9 +273,10 @@ impl<T, V: Vertex> Context<T, V>
             let x = self.fonts[id].chars.get(&c).cloned();
             // TODO: Draw some sort of symbol for characters missing from font.
             if let Some(f) = x {
-                self.push_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
-                              f.texcoords,
-                              color);
+                self.push_rect(Rect::new(pos - f.draw_offset,
+                                         Size2D::new(f.advance, h)),
+                               f.texcoords,
+                               color);
                 pos.x += f.advance;
             }
         }
@@ -266,7 +296,8 @@ impl<T, V: Vertex> Context<T, V>
         self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
+        let press = self.click_state.is_pressed() &&
+                    area.contains(&self.mouse_pos);
 
         let color = if press {
             [1.0, 1.0, 0.0, 1.0]
@@ -286,13 +317,20 @@ impl<T, V: Vertex> Context<T, V>
         press && self.click_state.is_release()
     }
 
-    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
+    pub fn draw_image(&mut self,
+                      image: &ImageData<T>,
+                      pos: Point2D<f32>,
+                      color: [f32; 4]) {
         self.start_texture(image.texture.clone());
-        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
+        let size = Size2D::new(image.size.width as f32,
+                               image.size.height as f32);
         self.push_rect(Rect::new(pos, size), image.texcoords, color);
     }
 
-    fn push_rect(&mut self, area: Rect<f32>, texcoords: Rect<f32>, color: [f32; 4]) {
+    fn push_rect(&mut self,
+                 area: Rect<f32>,
+                 texcoords: Rect<f32>,
+                 color: [f32; 4]) {
         let (p1, p2) = (area.origin, area.bottom_right());
         let (t1, t2) = (texcoords.origin, texcoords.bottom_right());
         let idx = self.draw_list.len() - 1;
@@ -400,7 +438,8 @@ impl<T, V: Vertex> Context<T, V>
             if is_down {
                 self.click_state = self.click_state.input_press(self.mouse_pos);
             } else {
-                self.click_state = self.click_state.input_release(self.mouse_pos);
+                self.click_state = self.click_state
+                                       .input_release(self.mouse_pos);
             }
         }
         // TODO handle other buttons
