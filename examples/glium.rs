@@ -131,7 +131,8 @@ fn main() {
                     [0.0, 0.0, 1.0, 0.0],
                     [0.0, 0.0, 0.0, 1.0f32]
                 ],
-                tex: &(*batch.texture).0,
+                tex: glium::uniforms::Sampler::new(&(*batch.texture).0)
+                    .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
             };
 
             let vertex_buffer = {
