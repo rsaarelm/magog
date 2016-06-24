@@ -16,36 +16,69 @@ use vitral::Context;
 type GliumTexture = glium::texture::CompressedSrgbTexture2d;
 
 struct Backend {
-    display: glium::Display,
     program: glium::Program,
     textures: Vec<GliumTexture>,
 }
 
 impl Backend {
-    pub fn new(display: glium::Display, program: glium::Program) -> Backend {
+    pub fn new(display: &glium::Display) -> Backend {
+        let program = program!(
+            display,
+            150 => {
+            vertex: "
+                #version 150 core
+
+                uniform mat4 matrix;
+
+                in vec2 pos;
+                in vec4 color;
+                in vec2 tex;
+
+                out vec4 vColor;
+                out vec2 vTexcoord;
+
+                void main() {
+                    gl_Position = vec4(pos, 0.0, 1.0) * matrix;
+                    vColor = color;
+                    vTexcoord = tex;
+                }
+            ",
+
+            fragment: "
+                #version 150 core
+                uniform sampler2D tex;
+                in vec4 vColor;
+                in vec2 vTexcoord;
+                out vec4 f_color;
+
+                void main() {
+                    f_color = vColor * texture(tex, vTexcoord);
+                }
+            "})
+                          .unwrap();
+
         Backend {
-            display: display,
             program: program,
             textures: Vec::new(),
         }
     }
 
-    pub fn make_texture(&mut self, img: vitral::ImageBuffer) -> usize {
+    pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
         let dim = (img.width(), img.height());
         let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(),
                                                             dim);
-        let tex = glium::texture::CompressedSrgbTexture2d::new(&self.display,
+        let tex = glium::texture::CompressedSrgbTexture2d::new(display,
                                                                raw)
                       .unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
 
-    fn process_events<V>(&self, context: &mut Context<usize, V>) -> bool
+    fn process_events<V>(&self, display: &glium::Display, context: &mut Context<usize, V>) -> bool
         where V: vitral::Vertex
     {
         // polling and handling the events received by the window
-        for event in self.display.poll_events() {
+        for event in display.poll_events() {
             match event {
                 glutin::Event::Closed => return false,
                 glutin::Event::MouseMoved(x, y) => {
@@ -90,10 +123,10 @@ impl Backend {
         true
     }
 
-    pub fn update<V>(&self, context: &mut Context<usize, V>) -> bool
+    pub fn update<V>(&self, display: &glium::Display, context: &mut Context<usize, V>) -> bool
         where V: vitral::Vertex + glium::Vertex
     {
-        let mut target = self.display.draw();
+        let mut target = display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
@@ -111,13 +144,13 @@ impl Backend {
             };
 
             let vertex_buffer = {
-                glium::VertexBuffer::new(&self.display, &batch.vertices)
+                glium::VertexBuffer::new(display, &batch.vertices)
                     .unwrap()
             };
 
             // building the index buffer
             let index_buffer =
-                glium::IndexBuffer::new(&self.display,
+                glium::IndexBuffer::new(display,
                                         PrimitiveType::TrianglesList,
                                         &batch.triangle_indices)
                     .unwrap();
@@ -145,7 +178,7 @@ impl Backend {
 
         target.finish().unwrap();
 
-        self.process_events(context)
+        self.process_events(display, context)
     }
 }
 
@@ -176,50 +209,14 @@ fn main() {
                       .build_glium()
                       .unwrap();
 
-    // building the display, ie. the main object
-    let program = program!(
-        &display,
-        150 => {
-        vertex: "
-            #version 150 core
-
-            uniform mat4 matrix;
-
-            in vec2 pos;
-            in vec4 color;
-            in vec2 tex;
-
-            out vec4 vColor;
-            out vec2 vTexcoord;
-
-            void main() {
-                gl_Position = vec4(pos, 0.0, 1.0) * matrix;
-                vColor = color;
-                vTexcoord = tex;
-            }
-        ",
-
-        fragment: "
-            #version 150 core
-            uniform sampler2D tex;
-            in vec4 vColor;
-            in vec2 vTexcoord;
-            out vec4 f_color;
-
-            void main() {
-                f_color = vColor * texture(tex, vTexcoord);
-            }
-        "})
-                      .unwrap();
-
-    let mut backend = Backend::new(display, program);
+    let mut backend = Backend::new(&display);
 
     // Construct Vitral context.
     let mut context: Context<usize, Vertex>;
     let mut builder = vitral::Builder::new();
     let image = builder.add_image(&image::open(&Path::new("julia.png"))
                                        .unwrap());
-    context = builder.build(|img| backend.make_texture(img));
+    context = builder.build(|img| backend.make_texture(&display, img));
 
     let font = context.default_font();
 
@@ -246,7 +243,7 @@ fn main() {
                            [0.8, 0.8, 0.8, 1.0],
                            &mut test_input);
 
-        if !backend.update(&mut context) {
+        if !backend.update(&display, &mut context) {
             return;
         }
     }
