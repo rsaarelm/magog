@@ -321,10 +321,14 @@ impl<T, V: Vertex> Context<T, V>
         press && self.click_state.is_release()
     }
 
-    pub fn draw_image(&mut self,
-                      image: &ImageData<T>,
-                      pos: Point2D<f32>,
-                      color: [f32; 4]) {
+    pub fn draw_image<I>(&mut self,
+                         image: I,
+                         pos: Point2D<f32>,
+                         color: [f32; 4])
+        where I: ToImageData<T, V>
+    {
+        let image = image.to_image_data(self);
+
         self.start_texture(image.texture.clone());
         let size = Size2D::new(image.size.width as f32,
                                image.size.height as f32);
@@ -636,4 +640,21 @@ pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
     pub texcoords: Rect<f32>,
+}
+
+/// Shim for using both Image and ImageData types in draw_image calls.
+pub trait ToImageData<T, V> {
+    fn to_image_data(self, context: &Context<T, V>) -> ImageData<T>;
+}
+
+impl<T, V> ToImageData<T, V> for ImageData<T> {
+    fn to_image_data(self, _: &Context<T, V>) -> ImageData<T> {
+        self
+    }
+}
+
+impl<T: Clone, V> ToImageData<T, V> for Image {
+    fn to_image_data(self, context: &Context<T, V>) -> ImageData<T> {
+        context.images[self.0].clone()
+    }
 }
