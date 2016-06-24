@@ -4,7 +4,7 @@ extern crate image;
 use std::mem;
 use std::collections::HashMap;
 use std::ops::Add;
-use image::Pixel;
+use image::{GenericImage, Pixel};
 use euclid::{Point2D, Rect, Size2D};
 
 pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
@@ -67,7 +67,11 @@ impl<T> Builder<T>
     ///
     /// The return value is a handle that can be used to request the images to
     /// be drawn later.
-    pub fn add_image<F, I>(&mut self, image: ImageBuffer) -> Image {
+    pub fn add_image<I>(&mut self, img: &I) -> Image
+        where I: image::GenericImage<Pixel = image::Rgba<u8>>
+    {
+        let mut image = ImageBuffer::new(img.width(), img.height());
+        image.copy_from(img, 0, 0);
         if image.width() > ATLAS_SIZE_LIMIT ||
            image.height() > ATLAS_SIZE_LIMIT {
             panic!("Image with dimensions ({}, {}) is too large, maximum is ({}, {})",
