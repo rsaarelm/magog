@@ -51,7 +51,7 @@ pub struct Builder<T> {
 }
 
 impl<T> Builder<T>
-    where T: Clone + PartialEq
+    where T: Copy + Eq
 {
     pub fn new() -> Builder<T> {
         Builder {
@@ -176,7 +176,7 @@ impl<T> Builder<T>
                      let (i_w, i_h) = (self.images[i].width(),
                                        self.images[i].height());
                      ImageData {
-                         texture: atlas.clone(),
+                         texture: atlas,
                          size: Size2D::new(i_w, i_h),
                          texcoords: Rect::new(Point2D::new(p.x as f32 / w,
                                                            p.y as f32 / h),
@@ -228,7 +228,7 @@ pub struct Context<T, V> {
 }
 
 impl<T, V: Vertex> Context<T, V>
-    where T: Clone + PartialEq
+    where T: Copy + Eq
 {
     fn new(fonts: Vec<FontData<T>>,
            images: Vec<ImageData<T>>)
@@ -268,7 +268,7 @@ impl<T, V: Vertex> Context<T, V>
                      text: &str) {
         assert!(self.fonts.len() >= font.0);
         let id = font.0;
-        let t = self.fonts[id].texture.clone();
+        let t = self.fonts[id].texture;
         let h = self.fonts[id].height;
         self.start_texture(t);
 
@@ -329,14 +329,14 @@ impl<T, V: Vertex> Context<T, V>
     {
         let image = image.to_image_data(self);
 
-        self.start_texture(image.texture.clone());
+        self.start_texture(image.texture);
         let size = Size2D::new(image.size.width as f32,
                                image.size.height as f32);
         self.push_rect(Rect::new(pos, size), image.texcoords, color);
     }
 
     pub fn get_image(&self, image: Image) -> ImageData<T> {
-        self.images[image.0].clone()
+        self.images[image.0]
     }
 
     fn push_rect(&mut self,
@@ -414,7 +414,7 @@ impl<T, V: Vertex> Context<T, V>
         assert!(self.images.len() > 0);
         // Builder must always setup Context so that the first image is the
         // solid color.
-        let tex = self.images[0].texture.clone();
+        let tex = self.images[0].texture;
         self.start_texture(tex);
     }
 
@@ -608,6 +608,7 @@ pub struct Font(usize);
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Image(usize);
 
+#[derive(Clone)]
 pub struct FontData<T> {
     texture: T,
     chars: HashMap<char, CharData>,
@@ -628,14 +629,14 @@ impl<T> FontData<T> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 struct CharData {
     texcoords: Rect<f32>,
     draw_offset: Point2D<f32>,
     advance: f32,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
@@ -653,8 +654,8 @@ impl<T, V> ToImageData<T, V> for ImageData<T> {
     }
 }
 
-impl<T: Clone, V> ToImageData<T, V> for Image {
+impl<T: Copy, V> ToImageData<T, V> for Image {
     fn to_image_data(self, context: &Context<T, V>) -> ImageData<T> {
-        context.images[self.0].clone()
+        context.images[self.0]
     }
 }
