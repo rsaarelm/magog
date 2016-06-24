@@ -331,6 +331,10 @@ impl<T, V: Vertex> Context<T, V>
         self.push_rect(Rect::new(pos, size), image.texcoords, color);
     }
 
+    pub fn get_image(&self, image: Image) -> ImageData<T> {
+        self.images[image.0].clone()
+    }
+
     fn push_rect(&mut self,
                  area: Rect<f32>,
                  texcoords: Rect<f32>,
