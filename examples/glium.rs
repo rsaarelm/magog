@@ -67,48 +67,20 @@ impl Backend {
                 glutin::Event::KeyboardInput(s, _, Some(vk)) => {
                     let is_down = s == glutin::ElementState::Pressed;
                     use glium::glutin::VirtualKeyCode::*;
-                    match vk {
-                        Tab => {
-                            context.input_key_state(vitral::Keycode::Tab,
-                                                    is_down)
-                        }
-                        LShift | RShift => {
-                            context.input_key_state(vitral::Keycode::Shift,
-                                                    is_down)
-                        }
-                        LControl | RControl => {
-                            context.input_key_state(vitral::Keycode::Ctrl,
-                                                    is_down)
-                        }
-                        NumpadEnter | Return => {
-                            context.input_key_state(vitral::Keycode::Enter,
-                                                    is_down)
-                        }
-                        Back => {
-                            context.input_key_state(vitral::Keycode::Backspace,
-                                                    is_down)
-                        }
-                        Delete => {
-                            context.input_key_state(vitral::Keycode::Del,
-                                                    is_down)
-                        }
-                        Numpad8 | Up => {
-                            context.input_key_state(vitral::Keycode::Up,
-                                                    is_down)
-                        }
-                        Numpad2 | Down => {
-                            context.input_key_state(vitral::Keycode::Down,
-                                                    is_down)
-                        }
-                        Numpad4 | Left => {
-                            context.input_key_state(vitral::Keycode::Left,
-                                                    is_down)
-                        }
-                        Numpad6 | Right => {
-                            context.input_key_state(vitral::Keycode::Right,
-                                                    is_down)
-                        }
-                        _ => {}
+                    if let Some(vk) = match vk {
+                        Tab => Some(vitral::Keycode::Tab),
+                        LShift | RShift => Some(vitral::Keycode::Shift),
+                        LControl | RControl => Some(vitral::Keycode::Ctrl),
+                        NumpadEnter | Return => Some(vitral::Keycode::Enter),
+                        Back => Some(vitral::Keycode::Backspace),
+                        Delete => Some(vitral::Keycode::Del),
+                        Numpad8 | Up => Some(vitral::Keycode::Up),
+                        Numpad2 | Down => Some(vitral::Keycode::Down),
+                        Numpad4 | Left => Some(vitral::Keycode::Left),
+                        Numpad6 | Right => Some(vitral::Keycode::Right),
+                        _ => None
+                    } {
+                        context.input_key_state(vk, is_down);
                     }
                 }
                 _ => (),
