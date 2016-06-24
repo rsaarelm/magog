@@ -1,11 +1,12 @@
 extern crate euclid;
 #[macro_use]
 extern crate glium;
+extern crate image;
 
 extern crate vitral;
 
 use std::rc::Rc;
-
+use std::path::Path;
 use glium::{Surface, GlObject};
 use glium::glutin;
 use glium::index::PrimitiveType;
@@ -89,7 +90,8 @@ fn main() {
                       .unwrap();
 
     let mut context: Context<Rc<Texture>, Vertex>;
-    let builder = vitral::Builder::new();
+    let mut builder = vitral::Builder::new();
+    let image = builder.add_image(&image::open(&Path::new("julia.png")).unwrap());
     context = builder.build(|img| {
         let dim = (img.width(), img.height());
         let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), dim);
@@ -103,6 +105,10 @@ fn main() {
     // the main loop
     loop {
         context.begin_frame();
+
+        let i = context.get_image(image);
+        context.draw_image(&i, Point2D::new(100.0, 100.0), [1.0, 1.0, 1.0, 1.0]);
+
         if context.button("Hello, world") {
             println!("Click");
         }
