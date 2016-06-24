@@ -41,59 +41,9 @@ impl Backend {
         self.textures.len() - 1
     }
 
-    pub fn update(&self, context: &mut Context<usize, Vertex>) -> bool {
-        let mut target = self.display.draw();
-        target.clear_color(0.0, 0.0, 0.0, 0.0);
-        let (w, h) = target.get_dimensions();
-
-        for batch in context.end_frame() {
-            // building the uniforms
-            let uniforms = uniform! {
-                matrix: [
-                    [2.0 / w as f32, 0.0, 0.0, -1.0],
-                    [0.0, -2.0 / h as f32, 0.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0],
-                    [0.0, 0.0, 0.0, 1.0f32]
-                ],
-                tex: glium::uniforms::Sampler::new(&self.textures[batch.texture])
-                    .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
-            };
-
-            let vertex_buffer = {
-                glium::VertexBuffer::new(&self.display, &batch.vertices)
-                    .unwrap()
-            };
-
-            // building the index buffer
-            let index_buffer =
-                glium::IndexBuffer::new(&self.display,
-                                        PrimitiveType::TrianglesList,
-                                        &batch.triangle_indices)
-                    .unwrap();
-
-            let params = glium::draw_parameters::DrawParameters {
-                scissor: batch.clip.map(|clip| {
-                    glium::Rect {
-                        left: clip.origin.x as u32,
-                        bottom: h - (clip.origin.y + clip.size.height) as u32,
-                        width: clip.size.width as u32,
-                        height: clip.size.height as u32,
-                    }
-                }),
-                blend: glium::Blend::alpha_blending(),
-                ..Default::default()
-            };
-
-            target.draw(&vertex_buffer,
-                        &index_buffer,
-                        &self.program,
-                        &uniforms,
-                        &params)
-                  .unwrap();
-        }
-
-        target.finish().unwrap();
-
+    fn process_events<V>(&self, context: &mut Context<usize, V>) -> bool
+        where V: vitral::Vertex
+    {
         // polling and handling the events received by the window
         for event in self.display.poll_events() {
             match event {
@@ -166,6 +116,64 @@ impl Backend {
         }
 
         true
+    }
+
+    pub fn update<V>(&self, context: &mut Context<usize, V>) -> bool
+        where V: vitral::Vertex + glium::Vertex
+    {
+        let mut target = self.display.draw();
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+        let (w, h) = target.get_dimensions();
+
+        for batch in context.end_frame() {
+            // building the uniforms
+            let uniforms = uniform! {
+                matrix: [
+                    [2.0 / w as f32, 0.0, 0.0, -1.0],
+                    [0.0, -2.0 / h as f32, 0.0, 1.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0f32]
+                ],
+                tex: glium::uniforms::Sampler::new(&self.textures[batch.texture])
+                    .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
+            };
+
+            let vertex_buffer = {
+                glium::VertexBuffer::new(&self.display, &batch.vertices)
+                    .unwrap()
+            };
+
+            // building the index buffer
+            let index_buffer =
+                glium::IndexBuffer::new(&self.display,
+                                        PrimitiveType::TrianglesList,
+                                        &batch.triangle_indices)
+                    .unwrap();
+
+            let params = glium::draw_parameters::DrawParameters {
+                scissor: batch.clip.map(|clip| {
+                    glium::Rect {
+                        left: clip.origin.x as u32,
+                        bottom: h - (clip.origin.y + clip.size.height) as u32,
+                        width: clip.size.width as u32,
+                        height: clip.size.height as u32,
+                    }
+                }),
+                blend: glium::Blend::alpha_blending(),
+                ..Default::default()
+            };
+
+            target.draw(&vertex_buffer,
+                        &index_buffer,
+                        &self.program,
+                        &uniforms,
+                        &params)
+                  .unwrap();
+        }
+
+        target.finish().unwrap();
+
+        self.process_events(context)
     }
 }
 
