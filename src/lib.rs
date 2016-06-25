@@ -137,7 +137,7 @@ impl<T> Builder<T>
             let x = char_width * ((i - start_char) % columns);
             let y = char_height * ((i - start_char) / columns);
 
-            let texcoords = Rect::new(Point2D::new(x as f32 / width as f32,
+            let tex_coords = Rect::new(Point2D::new(x as f32 / width as f32,
                                                    y as f32 / height as f32),
                                       Size2D::new(char_width as f32 /
                                                   width as f32,
@@ -146,7 +146,7 @@ impl<T> Builder<T>
 
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
-                           texcoords: texcoords,
+                           tex_coords: tex_coords,
                            draw_offset: Point2D::new(0.0, char_height as f32),
                            advance: char_width as f32,
                        });
@@ -178,7 +178,7 @@ impl<T> Builder<T>
                      ImageData {
                          texture: atlas,
                          size: Size2D::new(i_w, i_h),
-                         texcoords: Rect::new(Point2D::new(p.x as f32 / w,
+                         tex_coords: Rect::new(Point2D::new(p.x as f32 / w,
                                                            p.y as f32 / h),
                                               Size2D::new(i_w as f32 / w,
                                                           i_h as f32 / h)),
@@ -279,7 +279,7 @@ impl<T, V: Vertex> Context<T, V>
             if let Some(f) = x {
                 self.push_rect(Rect::new(pos - f.draw_offset,
                                          Size2D::new(f.advance, h)),
-                               f.texcoords,
+                               f.tex_coords,
                                color);
                 pos.x += f.advance;
             }
@@ -332,7 +332,7 @@ impl<T, V: Vertex> Context<T, V>
         self.start_texture(image.texture);
         let size = Size2D::new(image.size.width as f32,
                                image.size.height as f32);
-        self.push_rect(Rect::new(pos, size), image.texcoords, color);
+        self.push_rect(Rect::new(pos, size), image.tex_coords, color);
     }
 
     pub fn get_image(&self, image: Image) -> ImageData<T> {
@@ -341,10 +341,10 @@ impl<T, V: Vertex> Context<T, V>
 
     fn push_rect(&mut self,
                  area: Rect<f32>,
-                 texcoords: Rect<f32>,
+                 tex_coords: Rect<f32>,
                  color: [f32; 4]) {
         let (p1, p2) = (area.origin, area.bottom_right());
-        let (t1, t2) = (texcoords.origin, texcoords.bottom_right());
+        let (t1, t2) = (tex_coords.origin, tex_coords.bottom_right());
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
@@ -366,7 +366,7 @@ impl<T, V: Vertex> Context<T, V>
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
         self.start_solid_texture();
         // Image 0 must be solid texture.
-        let tex_rect = self.images[0].texcoords;
+        let tex_rect = self.images[0].tex_coords;
         self.push_rect(area, tex_rect, color);
     }
 
@@ -510,7 +510,7 @@ pub struct DrawBatch<T, V> {
 }
 
 pub trait Vertex {
-    fn new(pos: [f32; 2], color: [f32; 4], texcoord: [f32; 2]) -> Self;
+    fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self;
 }
 
 /// Text alignment.
@@ -631,7 +631,7 @@ impl<T> FontData<T> {
 
 #[derive(Copy, Clone, Debug)]
 struct CharData {
-    texcoords: Rect<f32>,
+    tex_coords: Rect<f32>,
     draw_offset: Point2D<f32>,
     advance: f32,
 }
@@ -640,7 +640,7 @@ struct CharData {
 pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
-    pub texcoords: Rect<f32>,
+    pub tex_coords: Rect<f32>,
 }
 
 /// Shim for using both Image and ImageData types in draw_image calls.

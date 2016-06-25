@@ -32,27 +32,27 @@ impl Backend {
 
                 in vec2 pos;
                 in vec4 color;
-                in vec2 tex;
+                in vec2 tex_coord;
 
-                out vec4 vColor;
-                out vec2 vTexcoord;
+                out vec4 v_color;
+                out vec2 v_tex_coord;
 
                 void main() {
                     gl_Position = vec4(pos, 0.0, 1.0) * matrix;
-                    vColor = color;
-                    vTexcoord = tex;
+                    v_color = color;
+                    v_tex_coord = tex_coord;
                 }
             ",
 
             fragment: "
                 #version 150 core
                 uniform sampler2D tex;
-                in vec4 vColor;
-                in vec2 vTexcoord;
+                in vec4 v_color;
+                in vec2 v_tex_coord;
                 out vec4 f_color;
 
                 void main() {
-                    f_color = vColor * texture(tex, vTexcoord);
+                    f_color = v_color * texture(tex, v_tex_coord);
                 }
             "})
                           .unwrap();
@@ -189,16 +189,16 @@ impl Backend {
 pub struct Vertex {
     pub pos: [f32; 2],
     pub color: [f32; 4],
-    pub tex: [f32; 2],
+    pub tex_coord: [f32; 2],
 }
-implement_vertex!(Vertex, pos, color, tex);
+implement_vertex!(Vertex, pos, color, tex_coord);
 
 impl vitral::Vertex for Vertex {
-    fn new(pos: [f32; 2], color: [f32; 4], texcoord: [f32; 2]) -> Self {
+    fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self {
         Vertex {
             pos: pos,
             color: color,
-            tex: texcoord,
+            tex_coord: tex_coord,
         }
     }
 }
