@@ -370,6 +370,42 @@ impl<T, V: Vertex> Context<T, V>
         self.push_rect(area, tex_rect, color);
     }
 
+    pub fn draw_line(&mut self, thickness: f32, p1: Point2D<f32>, p2: Point2D<f32>, color: [f32; 4]) {
+        if p1 == p2 { return; }
+
+        self.start_solid_texture();
+        // Image 0 must be solid texture.
+        let t = self.images[0].tex_coords.origin;
+
+        // Displacements from the one-dimensional base line.
+        let mut front = p2 - p1;
+        front = front / front.dot(front).sqrt() * (thickness / 2.0);
+
+        let side = Point2D::new(-front.y, front.x);
+
+        let q1 = p1 - side - front + Point2D::new(0.5, 0.5);
+        let q2 = p1 + side - front + Point2D::new(0.5, 0.5);
+        let q3 = p2 + side + front + Point2D::new(0.5, 0.5);
+        let q4 = p2 - side + front + Point2D::new(0.5, 0.5);
+
+        let idx = self.draw_list.len() - 1;
+        let batch = &mut self.draw_list[idx];
+        let idx_offset = batch.vertices.len() as u16;
+
+        batch.vertices.push(Vertex::new([q1.x, q1.y], color, [t.x, t.y]));
+        batch.vertices.push(Vertex::new([q2.x, q2.y], color, [t.x, t.y]));
+        batch.vertices.push(Vertex::new([q3.x, q3.y], color, [t.x, t.y]));
+        batch.vertices.push(Vertex::new([q4.x, q4.y], color, [t.x, t.y]));
+
+        batch.triangle_indices.push(idx_offset);
+        batch.triangle_indices.push(idx_offset + 1);
+        batch.triangle_indices.push(idx_offset + 2);
+
+        batch.triangle_indices.push(idx_offset);
+        batch.triangle_indices.push(idx_offset + 2);
+        batch.triangle_indices.push(idx_offset + 3);
+    }
+
     pub fn text_input(&mut self,
                       font: Font,
                       pos: Point2D<f32>,
