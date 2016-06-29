@@ -1,5 +1,6 @@
 extern crate euclid;
 extern crate image;
+extern crate time;
 
 use std::mem;
 use std::collections::HashMap;
@@ -438,8 +439,7 @@ impl<T, V: Vertex> Context<T, V>
         // Nasty hack to show a blinking cursor. Will only work for cursor
         // always at the end of the input.
 
-        // TODO: Maybe want to use wall clock time instead of GUI context ticks for this?
-        if (self.tick / 30) % 3 == 0 {
+        if ((time::precise_time_s() * 3.0) % 3.0) as u32 == 0 {
             self.draw_text(font, pos, color, text_buffer);
         } else {
             self.draw_text(font, pos, color, &format!("{}_", text_buffer));
