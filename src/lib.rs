@@ -73,8 +73,7 @@ impl<T> Builder<T>
     {
         let mut image = ImageBuffer::new(img.width(), img.height());
         image.copy_from(img, 0, 0);
-        if image.width() > ATLAS_SIZE_LIMIT ||
-           image.height() > ATLAS_SIZE_LIMIT {
+        if image.width() > ATLAS_SIZE_LIMIT || image.height() > ATLAS_SIZE_LIMIT {
             panic!("Image with dimensions ({}, {}) is too large, maximum is ({}, {})",
                    image.width(),
                    image.height(),
@@ -139,11 +138,9 @@ impl<T> Builder<T>
             let y = char_height * ((i - start_char) / columns);
 
             let tex_coords = Rect::new(Point2D::new(x as f32 / width as f32,
-                                                   y as f32 / height as f32),
-                                      Size2D::new(char_width as f32 /
-                                                  width as f32,
-                                                  char_height as f32 /
-                                                  height as f32));
+                                                    y as f32 / height as f32),
+                                       Size2D::new(char_width as f32 / width as f32,
+                                                   char_height as f32 / height as f32));
 
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
@@ -164,9 +161,7 @@ impl<T> Builder<T>
         where F: FnMut(ImageBuffer) -> T
     {
         // TODO: Handle case where you need multiple atlases.
-        let (atlas, positions) = atlas::build_atlas(&self.images,
-                                                    ATLAS_SIZE_LIMIT)
-                                     .unwrap();
+        let (atlas, positions) = atlas::build_atlas(&self.images, ATLAS_SIZE_LIMIT).unwrap();
         let w = atlas.width() as f32;
         let h = atlas.height() as f32;
         let atlas = make_t(atlas);
@@ -174,15 +169,12 @@ impl<T> Builder<T>
         positions.iter()
                  .enumerate()
                  .map(|(i, p)| {
-                     let (i_w, i_h) = (self.images[i].width(),
-                                       self.images[i].height());
+                     let (i_w, i_h) = (self.images[i].width(), self.images[i].height());
                      ImageData {
                          texture: atlas,
                          size: Size2D::new(i_w, i_h),
-                         tex_coords: Rect::new(Point2D::new(p.x as f32 / w,
-                                                           p.y as f32 / h),
-                                              Size2D::new(i_w as f32 / w,
-                                                          i_h as f32 / h)),
+                         tex_coords: Rect::new(Point2D::new(p.x as f32 / w, p.y as f32 / h),
+                                               Size2D::new(i_w as f32 / w, i_h as f32 / h)),
                      }
                  })
                  .collect()
@@ -231,9 +223,7 @@ pub struct Context<T, V> {
 impl<T, V: Vertex> Context<T, V>
     where T: Copy + Eq
 {
-    fn new(fonts: Vec<FontData<T>>,
-           images: Vec<ImageData<T>>)
-           -> Context<T, V> {
+    fn new(fonts: Vec<FontData<T>>, images: Vec<ImageData<T>>) -> Context<T, V> {
         Context {
             draw_list: Vec::new(),
             // solid_texture: Image(0),
@@ -262,11 +252,7 @@ impl<T, V: Vertex> Context<T, V>
         // TODO
     }
 
-    pub fn draw_text(&mut self,
-                     font: Font,
-                     mut pos: Point2D<f32>,
-                     color: [f32; 4],
-                     text: &str) {
+    pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
         assert!(self.fonts.len() >= font.0);
         let id = font.0;
         let t = self.fonts[id].texture;
@@ -278,8 +264,7 @@ impl<T, V: Vertex> Context<T, V>
             let x = self.fonts[id].chars.get(&c).cloned();
             // TODO: Draw some sort of symbol for characters missing from font.
             if let Some(f) = x {
-                self.push_rect(Rect::new(pos - f.draw_offset,
-                                         Size2D::new(f.advance, h)),
+                self.push_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
                                f.tex_coords,
                                color);
                 pos.x += f.advance;
@@ -301,8 +286,7 @@ impl<T, V: Vertex> Context<T, V>
         self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = self.click_state.is_pressed() &&
-                    area.contains(&self.mouse_pos);
+        let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
 
         let color = if press {
             [1.0, 1.0, 0.0, 1.0]
@@ -322,17 +306,13 @@ impl<T, V: Vertex> Context<T, V>
         press && self.click_state.is_release()
     }
 
-    pub fn draw_image<I>(&mut self,
-                         image: I,
-                         pos: Point2D<f32>,
-                         color: [f32; 4])
+    pub fn draw_image<I>(&mut self, image: I, pos: Point2D<f32>, color: [f32; 4])
         where I: ToImageData<T, V>
     {
         let image = image.to_image_data(self);
 
         self.start_texture(image.texture);
-        let size = Size2D::new(image.size.width as f32,
-                               image.size.height as f32);
+        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         self.push_rect(Rect::new(pos, size), image.tex_coords, color);
     }
 
@@ -340,10 +320,7 @@ impl<T, V: Vertex> Context<T, V>
         self.images[image.0]
     }
 
-    fn push_rect(&mut self,
-                 area: Rect<f32>,
-                 tex_coords: Rect<f32>,
-                 color: [f32; 4]) {
+    fn push_rect(&mut self, area: Rect<f32>, tex_coords: Rect<f32>, color: [f32; 4]) {
         let (p1, p2) = (area.origin, area.bottom_right());
         let (t1, t2) = (tex_coords.origin, tex_coords.bottom_right());
         let idx = self.draw_list.len() - 1;
@@ -371,8 +348,14 @@ impl<T, V: Vertex> Context<T, V>
         self.push_rect(area, tex_rect, color);
     }
 
-    pub fn draw_line(&mut self, thickness: f32, p1: Point2D<f32>, p2: Point2D<f32>, color: [f32; 4]) {
-        if p1 == p2 { return; }
+    pub fn draw_line(&mut self,
+                     thickness: f32,
+                     p1: Point2D<f32>,
+                     p2: Point2D<f32>,
+                     color: [f32; 4]) {
+        if p1 == p2 {
+            return;
+        }
 
         self.start_solid_texture();
         // Image 0 must be solid texture.

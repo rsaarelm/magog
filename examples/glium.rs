@@ -65,25 +65,23 @@ impl Backend {
 
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
         let dim = (img.width(), img.height());
-        let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(),
-                                                            dim);
-        let tex = glium::texture::CompressedSrgbTexture2d::new(display,
-                                                               raw)
-                      .unwrap();
+        let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), dim);
+        let tex = glium::texture::CompressedSrgbTexture2d::new(display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
 
-    fn process_events<V>(&self, display: &glium::Display, context: &mut vitral::Context<usize, V>) -> bool
+    fn process_events<V>(&self,
+                         display: &glium::Display,
+                         context: &mut vitral::Context<usize, V>)
+                         -> bool
         where V: vitral::Vertex
     {
         // polling and handling the events received by the window
         for event in display.poll_events() {
             match event {
                 glutin::Event::Closed => return false,
-                glutin::Event::MouseMoved(x, y) => {
-                    context.input_mouse_move(x, y)
-                }
+                glutin::Event::MouseMoved(x, y) => context.input_mouse_move(x, y),
                 glutin::Event::MouseInput(state, button) => {
                     context.input_mouse_button(match button {
                                                    glutin::MouseButton::Left => {
@@ -111,7 +109,7 @@ impl Backend {
                         Numpad2 | Down => Some(vitral::Keycode::Down),
                         Numpad4 | Left => Some(vitral::Keycode::Left),
                         Numpad6 | Right => Some(vitral::Keycode::Right),
-                        _ => None
+                        _ => None,
                     } {
                         context.input_key_state(vk, is_down);
                     }
@@ -123,7 +121,10 @@ impl Backend {
         true
     }
 
-    pub fn update<V>(&self, display: &glium::Display, context: &mut vitral::Context<usize, V>) -> bool
+    pub fn update<V>(&self,
+                     display: &glium::Display,
+                     context: &mut vitral::Context<usize, V>)
+                     -> bool
         where V: vitral::Vertex + glium::Vertex
     {
         let mut target = display.draw();
@@ -144,16 +145,14 @@ impl Backend {
             };
 
             let vertex_buffer = {
-                glium::VertexBuffer::new(display, &batch.vertices)
-                    .unwrap()
+                glium::VertexBuffer::new(display, &batch.vertices).unwrap()
             };
 
             // building the index buffer
-            let index_buffer =
-                glium::IndexBuffer::new(display,
-                                        PrimitiveType::TrianglesList,
-                                        &batch.triangle_indices)
-                    .unwrap();
+            let index_buffer = glium::IndexBuffer::new(display,
+                                                       PrimitiveType::TrianglesList,
+                                                       &batch.triangle_indices)
+                                   .unwrap();
 
             let params = glium::draw_parameters::DrawParameters {
                 scissor: batch.clip.map(|clip| {
@@ -214,8 +213,7 @@ fn main() {
     // Construct Vitral context.
     let mut context: Context;
     let mut builder = vitral::Builder::new();
-    let image = builder.add_image(&image::open(&Path::new("julia.png"))
-                                       .unwrap());
+    let image = builder.add_image(&image::open(&Path::new("julia.png")).unwrap());
     context = builder.build(|img| backend.make_texture(&display, img));
 
     let font = context.default_font();
@@ -226,9 +224,7 @@ fn main() {
     loop {
         context.begin_frame();
 
-        context.draw_image(image,
-                           Point2D::new(100.0, 100.0),
-                           [1.0, 1.0, 1.0, 1.0]);
+        context.draw_image(image, Point2D::new(100.0, 100.0), [1.0, 1.0, 1.0, 1.0]);
 
         if context.button("Hello, world") {
             println!("Click");
