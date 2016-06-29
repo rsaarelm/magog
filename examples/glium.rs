@@ -11,7 +11,7 @@ use glium::glutin;
 use glium::index::PrimitiveType;
 use euclid::Point2D;
 
-use vitral::Context;
+type Context = vitral::Context<usize, Vertex>;
 
 type GliumTexture = glium::texture::CompressedSrgbTexture2d;
 
@@ -74,7 +74,7 @@ impl Backend {
         self.textures.len() - 1
     }
 
-    fn process_events<V>(&self, display: &glium::Display, context: &mut Context<usize, V>) -> bool
+    fn process_events<V>(&self, display: &glium::Display, context: &mut vitral::Context<usize, V>) -> bool
         where V: vitral::Vertex
     {
         // polling and handling the events received by the window
@@ -123,7 +123,7 @@ impl Backend {
         true
     }
 
-    pub fn update<V>(&self, display: &glium::Display, context: &mut Context<usize, V>) -> bool
+    pub fn update<V>(&self, display: &glium::Display, context: &mut vitral::Context<usize, V>) -> bool
         where V: vitral::Vertex + glium::Vertex
     {
         let mut target = display.draw();
@@ -212,7 +212,7 @@ fn main() {
     let mut backend = Backend::new(&display);
 
     // Construct Vitral context.
-    let mut context: Context<usize, Vertex>;
+    let mut context: Context;
     let mut builder = vitral::Builder::new();
     let image = builder.add_image(&image::open(&Path::new("julia.png"))
                                        .unwrap());
