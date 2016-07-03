@@ -13,44 +13,11 @@ name = "debris"
 lto = true
 
 [dependencies]
-num = "*"
-rand = "*"
-getopts = "*"
-toml = "*"
-image = "*"
-time = "*"
-cgmath = "0.7"
-rustc-serialize = "*"
+euclid = "0.7"
+image = "0.10"
+time = "0.1"
+glium = "0.14"
 
-[dependencies.calx-ecs]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-alg]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-layout]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-cache]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-grid]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-color]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-window]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-wall]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.world]
-path = "world"
-
-[dependencies.content]
-path = "content"
-
-[dependencies.render]
-path = "render"
+# TODO: Make Vitral into a proper crate eventually.
+[dependencies.vitral]
+git = "https://github.com/rsaarelm/vitral"
