@@ -4,11 +4,11 @@ use glium::index::PrimitiveType;
 use euclid::Point2D;
 use vitral;
 
-type Context = vitral::Context<usize, Vertex>;
+pub type Context = vitral::Context<usize, Vertex>;
 
-type GliumTexture = glium::texture::CompressedSrgbTexture2d;
+pub type GliumTexture = glium::texture::CompressedSrgbTexture2d;
 
-struct Backend {
+pub struct Backend {
     program: glium::Program,
     textures: Vec<GliumTexture>,
 }
