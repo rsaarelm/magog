@@ -45,7 +45,13 @@ impl Backend {
                 out vec4 f_color;
 
                 void main() {
-                    f_color = v_color * texture(tex, v_tex_coord);
+                    vec4 tex_color = texture(tex, v_tex_coord);
+
+                    // Discard fully transparent pixels to keep them from
+                    // writing into the depth buffer.
+                    if (tex_color.a == 0.0) discard;
+
+                    f_color = v_color * tex_color;
                 }
             "})
                           .unwrap();
