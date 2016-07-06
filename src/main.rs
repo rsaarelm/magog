@@ -3,9 +3,11 @@ extern crate euclid;
 extern crate glium;
 extern crate image;
 extern crate vitral;
+extern crate serde;
 
 mod backend;
 
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -42,6 +44,24 @@ impl<T: Sized, K> Deref for Resource<T, K> {
         self.handle.deref()
     }
 }
+
+impl<T> Serialize for Resource<T> {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: Serializer
+    {
+        self.key.serialize(serializer)
+    }
+}
+
+impl<T: ResourceStore> Deserialize for Resource<T> {
+    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
+        where D: Deserializer
+    {
+        let key: String = try!(Deserialize::deserialize(deserializer));
+        Ok(Self::new(key).unwrap())
+    }
+}
+
 
 impl<K, T: ResourceStore<K>> Resource<T, K> {
     pub fn new(key: K) -> Option<Self> {
