@@ -10,6 +10,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ops::Deref;
+use std::hash::Hash;
 pub use euclid::Point2D;
 pub use glium::{glutin, DisplayBuild};
 pub use backend::Backend;
@@ -22,17 +23,18 @@ type Splat = Vec<(ImageRef, Point2D<f32>, Color)>;
 
 /// Smart pointer for a static cached resource.
 #[derive(Clone)]
-struct Resource<T> {
+struct Resource<T, K = String> {
     handle: Rc<T>,
+    key: K,
 }
 
-impl<T: Sized> AsRef<T> for Resource<T> {
+impl<T: Sized, K> AsRef<T> for Resource<T, K> {
     fn as_ref(&self) -> &T {
         self.handle.as_ref()
     }
 }
 
-impl<T: Sized> Deref for Resource<T> {
+impl<T: Sized, K> Deref for Resource<T, K> {
     type Target = T;
 
     #[inline(always)]
@@ -41,10 +43,10 @@ impl<T: Sized> Deref for Resource<T> {
     }
 }
 
-impl<T: ResourceStore> Resource<T> {
-    pub fn new(path: &str) -> Option<Self> {
-        if let Some(handle) = ResourceStore::get_resource(path) {
-            Some(Resource { handle: handle })
+impl<K, T: ResourceStore<K>> Resource<T, K> {
+    pub fn new(key: K) -> Option<Self> {
+        if let Some(handle) = ResourceStore::get_resource(&key) {
+            Some(Resource { handle: handle, key: key })
         } else {
             None
         }
@@ -52,60 +54,61 @@ impl<T: ResourceStore> Resource<T> {
 }
 
 /// A value that can be aquired given a resource path.
-trait Loadable {
-    fn load(path: &str) -> Option<Self> where Self: Sized;
+trait Loadable<K = String> {
+    fn load(key: &K) -> Option<Self> where Self: Sized;
 }
 
 impl Loadable for image::DynamicImage {
-    fn load(path: &str) -> Option<Self> where Self: Sized {
-        image::open(path).ok()
+    fn load(key: &String) -> Option<Self> where Self: Sized {
+        image::open(key).ok()
     }
 }
 
 /// A cache that associates resource values with paths.
 ///
 /// Resources and paths are assumed to be immutable.
-struct ResourceCache<T> {
-    cache: HashMap<String, Rc<T>>,
+struct ResourceCache<T, K = String> {
+    cache: HashMap<K, Rc<T>>,
 }
 
-impl<T: Loadable> ResourceCache<T> {
-    pub fn new() -> ResourceCache<T> {
+impl<K: Eq + Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
+    pub fn new() -> ResourceCache<T, K> {
         ResourceCache {
             cache: HashMap::new()
         }
     }
 
-    pub fn get(&mut self, path: &str) -> Option<Rc<T>> {
-        if let Some(v) = self.cache.get(path) {
+    pub fn get(&mut self, key: &K) -> Option<Rc<T>> {
+        if let Some(v) = self.cache.get(key) {
             return Some(v.clone());
         }
 
-        if let Some(v) = T::load(path) {
+        if let Some(v) = T::load(key) {
             let v = Rc::new(v);
-            self.cache.insert(path.to_string(), v.clone());
+            self.cache.insert(key.clone(), v.clone());
             Some(v)
         } else {
             None
         }
     }
 
-    pub fn insert(&mut self, path: String, value: T) {
-        self.cache.insert(path, value);
+    pub fn insert(&mut self, key: K, value: T) {
+        self.cache.insert(key, Rc::new(value));
     }
 }
 
 /// A type that implements a singleton resource store.
-trait ResourceStore {
-    fn get_resource(path: &str) -> Option<Rc<Self>> where Self: Sized;
+trait ResourceStore<K = String> {
+    fn get_resource(key: &K) -> Option<Rc<Self>> where Self: Sized;
 }
 
 
-thread_local!(static DYNAMIC_IMAGE: RefCell<ResourceCache<image::DynamicImage>> = RefCell::new(ResourceCache::new()));
+thread_local!(static DYNAMIC_IMAGE: RefCell<ResourceCache<image::DynamicImage>> =
+              RefCell::new(ResourceCache::new()));
 
 
 impl ResourceStore for image::DynamicImage {
-    fn get_resource(path: &str) -> Option<Rc<Self>> {
+    fn get_resource(path: &String) -> Option<Rc<Self>> {
         DYNAMIC_IMAGE.with(|t| t.borrow_mut().get(path))
     }
 }
@@ -122,7 +125,7 @@ pub fn main() {
     let mut context: backend::Context;
     let mut builder = vitral::Builder::new();
 
-    let r: Resource<image::DynamicImage> = Resource::new("content/assets/blocks.png").unwrap();
+    let r: Resource<image::DynamicImage> = Resource::new("content/assets/blocks.png".to_string()).unwrap();
     let image = builder.add_image(&*r);
 
     context = builder.build(|img| backend.make_texture(&display, img));
