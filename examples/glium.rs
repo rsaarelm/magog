@@ -13,7 +13,7 @@ use euclid::Point2D;
 
 type Context = vitral::Context<usize, Vertex>;
 
-type GliumTexture = glium::texture::CompressedSrgbTexture2d;
+type GliumTexture = glium::texture::SrgbTexture2d;
 
 struct Backend {
     program: glium::Program,
@@ -66,7 +66,7 @@ impl Backend {
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
         let dim = (img.width(), img.height());
         let raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), dim);
-        let tex = glium::texture::CompressedSrgbTexture2d::new(display, raw).unwrap();
+        let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
