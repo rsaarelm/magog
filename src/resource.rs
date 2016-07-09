@@ -1,8 +1,9 @@
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use std::rc::Rc;
 use std::ops::Deref;
-use std::hash::Hash;
+use std::hash;
 use std::collections::HashMap;
+use std::fmt;
 use image;
 
 /// A type that implements a singleton resource store.
@@ -49,7 +50,31 @@ impl<T: ResourceStore> Deserialize for Resource<T> {
     }
 }
 
-// TODO: Hash, Eq, Fm on K for Resource.
+impl<T, K: hash::Hash> hash::Hash for Resource<T, K> {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.key.hash(state);
+    }
+}
+
+impl<T, K: PartialEq> PartialEq for Resource<T, K> {
+    fn eq(&self, other: &Self) -> bool {
+        self.key.eq(&other.key)
+    }
+}
+
+impl<T, K: Eq> Eq for Resource<T, K> {}
+
+impl<T, K: fmt::Display> fmt::Display for Resource<T, K> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.key.fmt(formatter)
+    }
+}
+
+impl<T, K: fmt::Debug> fmt::Debug for Resource<T, K> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.key.fmt(formatter)
+    }
+}
 
 impl<K, T: ResourceStore<K>> Resource<T, K> {
     pub fn new(key: K) -> Option<Self> {
@@ -62,7 +87,7 @@ impl<K, T: ResourceStore<K>> Resource<T, K> {
 }
 
 
-/// A value that can be aquired given a resource path.
+/// A value that can be acquired given a resource path.
 pub trait Loadable<K = String> {
     fn load(_: &K) -> Option<Self> where Self: Sized {
         // Default implementation so that types with no load semantics can be used with
@@ -84,7 +109,7 @@ pub struct ResourceCache<T, K = String> {
     cache: HashMap<K, Rc<T>>,
 }
 
-impl<K: Eq + Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
+impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     pub fn new() -> ResourceCache<T, K> {
         ResourceCache {
             cache: HashMap::new()
