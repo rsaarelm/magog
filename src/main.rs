@@ -75,7 +75,11 @@ impl<K, T: ResourceStore<K>> Resource<T, K> {
 
 /// A value that can be aquired given a resource path.
 trait Loadable<K = String> {
-    fn load(key: &K) -> Option<Self> where Self: Sized;
+    fn load(key: &K) -> Option<Self> where Self: Sized {
+        // Default implementation so that types with no load semantics can be used with
+        // ResourceCache so that all inserts must be explicit.
+        None
+    }
 }
 
 impl Loadable for image::DynamicImage {
@@ -125,7 +129,6 @@ trait ResourceStore<K = String> {
 
 thread_local!(static DYNAMIC_IMAGE: RefCell<ResourceCache<image::DynamicImage>> =
               RefCell::new(ResourceCache::new()));
-
 
 impl ResourceStore for image::DynamicImage {
     fn get_resource(path: &String) -> Option<Rc<Self>> {
