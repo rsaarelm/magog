@@ -137,6 +137,12 @@ impl ResourceStore for image::DynamicImage {
 }
 
 
+struct SubImageSpec {
+    image: Resource<image::DynamicImage>,
+    bounds: euclid::Rect<u32>,
+}
+
+
 pub fn main() {
     let display = glutin::WindowBuilder::new()
                       .build_glium()
