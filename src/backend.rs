@@ -1,7 +1,6 @@
 use glium::{self, Surface};
 use glium::glutin;
 use glium::index::PrimitiveType;
-use euclid::Point2D;
 use vitral;
 
 pub type Context = vitral::Context<usize, Vertex>;
