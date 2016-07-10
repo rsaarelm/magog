@@ -22,3 +22,6 @@ serde = "0.7"
 # TODO: Make Vitral into a proper crate eventually.
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
+
+[dependencies.calx-color]
+git = "https://github.com/rsaarelm/calx"
