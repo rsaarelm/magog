@@ -134,3 +134,19 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
         self.cache.insert(key, Rc::new(value));
     }
 }
+
+macro_rules! impl_store {
+    ($value:type, $key:type) =>
+    {
+        mod $value {
+thread_local!(static $value: ::std::cell::RefCell<::resource::ResourceCache<$value, $key>> =
+              ::std::cell::RefCell::new(::resource::ResourceCache::new()));
+
+impl ::resource::ResourceStore<$value, $key> for $value {
+    fn get_resource(key: &$key) -> Option<::std::rc::Rc<Self>> {
+        $value.with(|t| t.borrow_mut().get(key))
+    }
+}
+        }
+    }
+}

@@ -21,7 +21,16 @@ type Color = [f32; 4];
 
 type ImageRef = usize;
 
-type Splat = Vec<(ImageRef, Point2D<f32>, Color)>;
+#[derive(Copy, Clone, Debug)]
+struct Frame {
+    pub image: ImageRef,
+    pub offset: Point2D<f32>,
+    pub color: Color,
+}
+
+type Splat = Vec<Frame>;
+
+type Brush = Vec<Splat>;
 
 type FrameImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
