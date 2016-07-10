@@ -6,10 +6,9 @@ extern crate vitral;
 extern crate serde;
 
 mod backend;
+#[macro_use]
 mod resource;
 
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::hash;
 use image::GenericImage;
 pub use euclid::{Rect, Point2D, Size2D};
@@ -34,16 +33,7 @@ type Brush = Vec<Splat>;
 
 type FrameImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
-
-thread_local!(static DYNAMIC_IMAGE: RefCell<ResourceCache<image::DynamicImage>> =
-              RefCell::new(ResourceCache::new()));
-
-impl ResourceStore for image::DynamicImage {
-    fn get_resource(path: &String) -> Option<Rc<Self>> {
-        DYNAMIC_IMAGE.with(|t| t.borrow_mut().get(path))
-    }
-}
-
+impl_store!(DYNAMIC_IMAGE, String, image::DynamicImage);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 struct SubImageSpec {
@@ -63,7 +53,6 @@ impl SubImageSpec {
         }
     }
 }
-
 
 impl Loadable<SubImageSpec> for FrameImage {
     fn load(spec: &SubImageSpec) -> Option<Self> where Self: Sized {
@@ -85,16 +74,7 @@ impl hash::Hash for SubImageSpec {
     }
 }
 
-
-thread_local!(static SUB_IMAGE_SPEC: RefCell<ResourceCache<FrameImage, SubImageSpec>> =
-              RefCell::new(ResourceCache::new()));
-
-impl ResourceStore<SubImageSpec> for FrameImage {
-    fn get_resource(spec: &SubImageSpec) -> Option<Rc<Self>> {
-        SUB_IMAGE_SPEC.with(|t| t.borrow_mut().get(spec))
-    }
-}
-
+impl_store!(FRAME_IMAGE, SubImageSpec, FrameImage);
 
 
 pub fn main() {

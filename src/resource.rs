@@ -9,6 +9,8 @@ use image;
 /// A type that implements a singleton resource store.
 pub trait ResourceStore<K = String> {
     fn get_resource(key: &K) -> Option<Rc<Self>> where Self: Sized;
+
+    fn insert_resource(key: K, resource: Self);
 }
 
 /// Smart pointer for a static cached resource.
@@ -135,18 +137,19 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     }
 }
 
+#[macro_export]
 macro_rules! impl_store {
-    ($value:type, $key:type) =>
-    {
-        mod $value {
-thread_local!(static $value: ::std::cell::RefCell<::resource::ResourceCache<$value, $key>> =
-              ::std::cell::RefCell::new(::resource::ResourceCache::new()));
+    ($name:ident, $key:ty, $value:ty) => {
+    thread_local!(static $name: ::std::cell::RefCell<::resource::ResourceCache<$value, $key>> =
+                  ::std::cell::RefCell::new(::resource::ResourceCache::new()));
 
-impl ::resource::ResourceStore<$value, $key> for $value {
-    fn get_resource(key: &$key) -> Option<::std::rc::Rc<Self>> {
-        $value.with(|t| t.borrow_mut().get(key))
-    }
-}
+    impl ::resource::ResourceStore<$key> for $value {
+        fn get_resource(key: &$key) -> Option<::std::rc::Rc<Self>> {
+            $name.with(|t| t.borrow_mut().get(key))
         }
-    }
+
+        fn insert_resource(key: $key, value: $value) {
+            $name.with(|t| t.borrow_mut().insert(key, value));
+        }
+    }}
 }
