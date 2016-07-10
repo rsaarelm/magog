@@ -11,10 +11,10 @@ mod resource;
 
 use std::hash;
 use image::GenericImage;
-pub use euclid::{Rect, Point2D, Size2D};
-pub use glium::{glutin, DisplayBuild};
+pub use euclid::{Point2D, Rect, Size2D};
+pub use glium::{DisplayBuild, glutin};
 pub use backend::Backend;
-pub use resource::{Resource, ResourceStore, ResourceCache, Loadable};
+pub use resource::{Loadable, Resource, ResourceCache, ResourceStore};
 
 type Color = [f32; 4];
 
@@ -46,7 +46,7 @@ impl SubImageSpec {
         if let Some(image) = Resource::new(path) {
             Some(SubImageSpec {
                 image: image,
-                bounds: bounds
+                bounds: bounds,
             })
         } else {
             None
@@ -55,13 +55,15 @@ impl SubImageSpec {
 }
 
 impl Loadable<SubImageSpec> for FrameImage {
-    fn load(spec: &SubImageSpec) -> Option<Self> where Self: Sized {
+    fn load(spec: &SubImageSpec) -> Option<Self>
+        where Self: Sized
+    {
         // XXX: Using sub_image on spec.image would be neater, but can't use it here
         // because current image::SubImage must get a mutable access to the parent image and the
         // resource handle is immutable.
-        Some(image::ImageBuffer::from_fn(
-                spec.bounds.size.width, spec.bounds.size.height,
-                |x, y| spec.image.get_pixel(spec.bounds.origin.x + x, spec.bounds.origin.y + y)))
+        Some(image::ImageBuffer::from_fn(spec.bounds.size.width, spec.bounds.size.height, |x, y| {
+            spec.image.get_pixel(spec.bounds.origin.x + x, spec.bounds.origin.y + y)
+        }))
     }
 }
 
@@ -88,9 +90,11 @@ pub fn main() {
     let mut context: backend::Context;
     let mut builder = vitral::Builder::new();
 
-    let r: Resource<FrameImage, SubImageSpec> = Resource::new(SubImageSpec::new(
-            "content/assets/props.png".to_string(),
-            Rect::new(Point2D::new(32, 0), Size2D::new(32, 32))).unwrap()).unwrap();
+    let r: Resource<FrameImage, SubImageSpec> =
+        Resource::new(SubImageSpec::new("content/assets/props.png".to_string(),
+                                        Rect::new(Point2D::new(32, 0), Size2D::new(32, 32)))
+                          .unwrap())
+            .unwrap();
 
     let image = builder.add_image(&*r);
 
@@ -101,7 +105,10 @@ pub fn main() {
     loop {
         context.begin_frame();
 
-        context.draw_text(font, Point2D::new(4.0, 20.0), [1.0, 1.0, 1.0, 1.0], "Hello, world!");
+        context.draw_text(font,
+                          Point2D::new(4.0, 20.0),
+                          [1.0, 1.0, 1.0, 1.0],
+                          "Hello, world!");
 
         context.draw_image(image, Point2D::new(50.0, 50.0), [1.0, 1.0, 1.0, 1.0]);
 

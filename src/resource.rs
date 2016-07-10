@@ -1,4 +1,4 @@
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::rc::Rc;
 use std::ops::Deref;
 use std::hash;
@@ -81,7 +81,10 @@ impl<T, K: fmt::Debug> fmt::Debug for Resource<T, K> {
 impl<K, T: ResourceStore<K>> Resource<T, K> {
     pub fn new(key: K) -> Option<Self> {
         if let Some(handle) = ResourceStore::get_resource(&key) {
-            Some(Resource { handle: handle, key: key })
+            Some(Resource {
+                handle: handle,
+                key: key,
+            })
         } else {
             None
         }
@@ -91,7 +94,9 @@ impl<K, T: ResourceStore<K>> Resource<T, K> {
 
 /// A value that can be acquired given a resource path.
 pub trait Loadable<K = String> {
-    fn load(_: &K) -> Option<Self> where Self: Sized {
+    fn load(_: &K) -> Option<Self>
+        where Self: Sized
+    {
         // Default implementation so that types with no load semantics can be used with
         // ResourceCache so that all inserts must be explicit.
         None
@@ -99,7 +104,9 @@ pub trait Loadable<K = String> {
 }
 
 impl Loadable for image::DynamicImage {
-    fn load(key: &String) -> Option<Self> where Self: Sized {
+    fn load(key: &String) -> Option<Self>
+        where Self: Sized
+    {
         image::open(key).ok()
     }
 }
@@ -113,9 +120,7 @@ pub struct ResourceCache<T, K = String> {
 
 impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     pub fn new() -> ResourceCache<T, K> {
-        ResourceCache {
-            cache: HashMap::new()
-        }
+        ResourceCache { cache: HashMap::new() }
     }
 
     pub fn get(&mut self, key: &K) -> Option<Rc<T>> {
