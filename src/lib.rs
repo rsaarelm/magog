@@ -33,7 +33,7 @@ impl Default for Style {
         Style {
             foreground_color: Some([1.0, 1.0, 1.0, 1.0]),
             background_color: Some([0.0, 0.0, 0.0, 1.0]),
-            font: Some(Font(0)),
+            font: Some(0),
         }
     }
 }
@@ -82,7 +82,7 @@ impl<T> Builder<T>
         }
 
         self.images.push(image);
-        Image(self.images.len() - 1)
+        self.images.len() - 1
     }
 
     /// Add a font for the UI to use.
@@ -253,8 +253,8 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
-        assert!(self.fonts.len() >= font.0);
-        let id = font.0;
+        assert!(self.fonts.len() >= font);
+        let id = font;
         let t = self.fonts[id].texture;
         let h = self.fonts[id].height;
         self.start_texture(t);
@@ -273,12 +273,12 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     pub fn default_font(&self) -> Font {
-        Font(0)
+        0
     }
 
     pub fn button(&mut self, caption: &str) -> bool {
         let font = self.default_font();
-        let area = self.fonts[font.0]
+        let area = self.fonts[font]
                        .render_size(caption)
                        .inflate(4.0, 4.0)
                        .translate(&self.layout_pos);
@@ -317,7 +317,7 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     pub fn get_image(&self, image: Image) -> ImageData<T> {
-        self.images[image.0]
+        self.images[image]
     }
 
     fn push_rect(&mut self, area: Rect<f32>, tex_coords: Rect<f32>, color: [f32; 4]) {
@@ -621,11 +621,9 @@ enum KeyInput {
     Other(Keycode),
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub struct Font(usize);
+pub type Font = usize;
 
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub struct Image(usize);
+pub type Image = usize;
 
 #[derive(Clone)]
 pub struct FontData<T> {
@@ -675,6 +673,6 @@ impl<T, V> ToImageData<T, V> for ImageData<T> {
 
 impl<T: Copy, V> ToImageData<T, V> for Image {
     fn to_image_data(self, context: &Context<T, V>) -> ImageData<T> {
-        context.images[self.0]
+        context.images[self]
     }
 }
