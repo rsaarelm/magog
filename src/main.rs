@@ -160,14 +160,13 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
     /// Set the offset of the last frame.
     pub fn offset(mut self, x: i32, y: i32) -> Self {
-        // Internally offset is floats because everything is, but on the data spec level we're
-        // pretty much operating on per-pixel level.
-
+        assert!(!self.brush.is_empty());
         let i = self.brush.len() - 1;
-        assert!(i >= 0);
+        assert!(!self.brush[i].is_empty());
         let j = self.brush[i].len() - 1;
-        assert!(j >= 0);
 
+        // Internally offset is floats because all screen geometry stuff is, but on the data spec
+        // level we're pretty much operating on per-pixel level.
         self.brush[i][j].offset = Point2D::new(x as f32, y as f32);
 
         self
@@ -236,8 +235,6 @@ pub fn main() {
                           Point2D::new(4.0, 20.0),
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
-
-        let image = Brush::get_resource(&"cursor".to_string()).unwrap()[0][0].image;
 
         draw_splat(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"cursor".to_string()).unwrap()[0]);
 
