@@ -1,0 +1,10 @@
+[package]
+name = "calx-resource"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Smart pointer for static resources"
+keywords = ["gamedev"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = "0.7"
