@@ -102,6 +102,18 @@ impl<K, T: ResourceStore<K>> Resource<T, K> {
 }
 
 
+/// A value that can be implicitly constructed given a key.
+pub trait Loadable<K = String> {
+    fn load(_key: &K) -> Option<Self>
+        where Self: Sized
+    {
+        // Default implementation so that types with no load semantics can be used with
+        // ResourceCache so that all inserts must be explicit.
+        None
+    }
+}
+
+
 /// A cache that associates resource values with paths.
 ///
 /// Resources and paths are assumed to be immutable.
@@ -109,13 +121,23 @@ pub struct ResourceCache<T, K = String> {
     cache: HashMap<K, Rc<T>>,
 }
 
-impl<K: Eq + hash::Hash + Clone, T> ResourceCache<T, K> {
+impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     pub fn new() -> ResourceCache<T, K> {
         ResourceCache { cache: HashMap::new() }
     }
 
     pub fn get(&mut self, key: &K) -> Option<Rc<T>> {
-        self.cache.get(key).map(|x| x.clone())
+        if let Some(v) = self.cache.get(key) {
+            return Some(v.clone());
+        }
+
+        if let Some(v) = T::load(key) {
+            let v = Rc::new(v);
+            self.cache.insert(key.clone(), v.clone());
+            Some(v)
+        } else {
+            None
+        }
     }
 
     pub fn insert(&mut self, key: K, value: T) {
@@ -129,10 +151,13 @@ impl<K: Eq + hash::Hash + Clone, T> ResourceCache<T, K> {
 /// and the resources.
 ///
 ///     # #[macro_use] extern crate calx_resource;
-///     use calx_resource::{Resource, ResourceStore};
+///     use calx_resource::{Resource, ResourceStore, Loadable};
 ///
 ///     // A custom resource type.
 ///     struct MyResource { pub text: String }
+///
+///     // Must be present even if there's no specific implementation.
+///     impl Loadable for MyResource {}
 ///
 ///     // Generate a resource store.
 ///     impl_store!(MY_RESOURCE_STORE, String, MyResource);
