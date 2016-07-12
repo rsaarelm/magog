@@ -5,19 +5,33 @@ extern crate image;
 extern crate vitral;
 extern crate serde;
 extern crate calx_color;
+#[macro_use]
+extern crate calx_resource;
 
 mod backend;
-#[macro_use]
-mod resource;
 
 use std::hash;
 use image::GenericImage;
 use std::collections::HashMap;
+use std::ops::Deref;
 use calx_color::color::*;
 pub use euclid::{Point2D, Rect, Size2D};
 pub use glium::{DisplayBuild, glutin};
 pub use backend::Backend;
-pub use resource::{Loadable, Resource, ResourceCache, ResourceStore};
+pub use calx_resource::{Loadable, Resource, ResourceCache, ResourceStore};
+
+#[derive(Clone)]
+struct DynamicImageShim(image::DynamicImage);
+
+impl Loadable for DynamicImageShim {
+    fn load(key: &String) -> Option<Self>
+        where Self: Sized
+    {
+        image::open(key).ok().map(|x| DynamicImageShim(x))
+    }
+}
+
+impl_store!(DYNAMIC_IMAGE, String, DynamicImageShim);
 
 type Color = [f32; 4];
 
@@ -32,7 +46,17 @@ struct Frame {
 
 type Splat = Vec<Frame>;
 
-type Brush = Vec<Splat>;
+#[derive(Clone)]
+struct Brush(pub Vec<Splat>);
+
+impl Deref for Brush {
+    type Target = Vec<Splat>;
+
+    #[inline(always)]
+    fn deref(&self) -> &Vec<Splat> {
+        &self.0
+    }
+}
 
 // Brush implements Loadable so we can have a cache for it, but there's no actual implicit load
 // method, brushes must be inserted manually in code.
@@ -45,11 +69,10 @@ impl_store!(BRUSH, String, Brush);
 
 type FrameImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
-impl_store!(DYNAMIC_IMAGE, String, image::DynamicImage);
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 struct SubImageSpec {
-    image: Resource<image::DynamicImage>,
+    image: Resource<DynamicImageShim>,
     bounds: euclid::Rect<u32>,
 }
 
@@ -74,7 +97,7 @@ impl Loadable<SubImageSpec> for FrameImage {
         // because current image::SubImage must get a mutable access to the parent image and the
         // resource handle is immutable.
         Some(image::ImageBuffer::from_fn(spec.bounds.size.width, spec.bounds.size.height, |x, y| {
-            spec.image.get_pixel(spec.bounds.origin.x + x, spec.bounds.origin.y + y)
+            spec.image.0.get_pixel(spec.bounds.origin.x + x, spec.bounds.origin.y + y)
         }))
     }
 }
@@ -94,7 +117,7 @@ impl_store!(FRAME_IMAGE, SubImageSpec, FrameImage);
 struct BrushBuilder<'a, V: 'a> {
     builder: &'a mut vitral::Builder<V>,
     image_file: Option<String>,
-    brush: Brush,
+    brush: Vec<Splat>,
     frame_images: HashMap<SubImageSpec, usize>,
 }
 
@@ -191,7 +214,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         mem::swap(&mut brush, &mut self.brush);
         assert!(!brush.is_empty());
 
-        Brush::insert_resource(name, brush);
+        Brush::insert_resource(name, Brush(brush));
 
         self
     }

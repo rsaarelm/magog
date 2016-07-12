@@ -25,3 +25,6 @@ git = "https://github.com/rsaarelm/vitral"
 
 [dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-resource]
+git = "https://github.com/rsaarelm/calx"
