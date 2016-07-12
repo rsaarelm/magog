@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 use std::f32::consts::PI;
 use std::cmp::max;
 use rand::{Rand, Rng};
-use num::{Integer, Float};
+use num::Integer;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
