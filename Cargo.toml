@@ -18,9 +18,6 @@ path = "calx-color"
 [dependencies.calx-window]
 path = "calx-window"
 
-[dependencies.calx-cache]
-path = "calx-cache"
-
 [dependencies.calx-grid]
 path = "calx-grid"
 
@@ -32,6 +29,3 @@ path = "calx-resource"
 
 [dependencies.calx-system]
 path = "calx-system"
-
-[dependencies.calx-wall]
-path = "calx-wall"
