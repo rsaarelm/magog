@@ -2,9 +2,6 @@ Rust language game programming libraries:
 
 alg: Various standalone utility functions
 
-cache: Runtime resource caching, particularly for images. Includes
-an atlas generator
-
 color: Color type and constants
 
 ecs: Small complete serializable entity component system
@@ -13,10 +10,10 @@ grid: Utilities for grid maps, especially hex maps
 
 layout: 2D geometric layout, rectangle type
 
+resource: Smart pointers for immutable resources
+
 system: Various utilities that tie into the underlying operating
 system
-
-wall: 2D rendering backend using mesh batching
 
 window: Opening a game window, general graphics rendering and
 reading input
