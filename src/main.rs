@@ -39,22 +39,22 @@ pub type Color = [f32; 4];
 pub type ImageRef = usize;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Frame {
+pub struct Splat {
     pub image: ImageRef,
     pub offset: Point2D<f32>,
     pub color: Color,
 }
 
-pub type Splat = Vec<Frame>;
+pub type Frame = Vec<Splat>;
 
 #[derive(Clone)]
-pub struct Brush(pub Vec<Splat>);
+pub struct Brush(pub Vec<Frame>);
 
 impl Deref for Brush {
-    type Target = Vec<Splat>;
+    type Target = Vec<Frame>;
 
     #[inline(always)]
-    fn deref(&self) -> &Vec<Splat> {
+    fn deref(&self) -> &Vec<Frame> {
         &self.0
     }
 }
@@ -68,7 +68,7 @@ impl Loadable for Brush {}
 
 impl_store!(BRUSH, String, Brush);
 
-type FrameImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
+type SplatImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -90,7 +90,7 @@ impl SubImageSpec {
     }
 }
 
-impl Loadable<SubImageSpec> for FrameImage {
+impl Loadable<SubImageSpec> for SplatImage {
     fn load(spec: &SubImageSpec) -> Option<Self>
         where Self: Sized
     {
@@ -112,14 +112,14 @@ impl hash::Hash for SubImageSpec {
     }
 }
 
-impl_store!(FRAME_IMAGE, SubImageSpec, FrameImage);
+impl_store!(SPLAT_IMAGE, SubImageSpec, SplatImage);
 
 
 struct BrushBuilder<'a, V: 'a> {
     builder: &'a mut vitral::Builder<V>,
     image_file: Option<String>,
-    brush: Vec<Splat>,
-    frame_images: HashMap<SubImageSpec, usize>,
+    brush: Vec<Frame>,
+    splat_images: HashMap<SubImageSpec, usize>,
     color: Rgba,
 }
 
@@ -129,7 +129,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
             builder: builder,
             image_file: None,
             brush: Vec::new(),
-            frame_images: HashMap::new(),
+            splat_images: HashMap::new(),
             color: WHITE,
         }
     }
@@ -139,22 +139,22 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         self
     }
 
-    fn get_frame(&mut self, key: &SubImageSpec) -> usize {
+    fn get_splat(&mut self, key: &SubImageSpec) -> usize {
         // XXX: Crashy-crash unwrapping if you feed it bad data.
-        if let Some(ret) = self.frame_images.get(key) {
+        if let Some(ret) = self.splat_images.get(key) {
             return *ret;
         }
 
-        let image: Resource<FrameImage, SubImageSpec> = Resource::new(key.clone()).unwrap();
+        let image: Resource<SplatImage, SubImageSpec> = Resource::new(key.clone()).unwrap();
         let ret = self.builder.add_image(&*image);
 
-        self.frame_images.insert(key.clone(), ret);
+        self.splat_images.insert(key.clone(), ret);
 
         ret
     }
 
-    /// Add a new frame with the given bounding rectangle to the current splat.
-    pub fn frame(mut self, x: u32, y: u32, w: u32, h: u32) -> Self {
+    /// Add a new splat with the given bounding rectangle to the current frame.
+    pub fn splat(mut self, x: u32, y: u32, w: u32, h: u32) -> Self {
         if self.brush.is_empty() {
             self.brush.push(Vec::new());
         }
@@ -162,21 +162,21 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         let spec = SubImageSpec::new(filename,
             Rect::new(Point2D::new(x, y), Size2D::new(w, h))).unwrap();
 
-        let image = self.get_frame(&spec);
+        let image = self.get_splat(&spec);
 
         let idx = self.brush.len() - 1;
-        self.brush[idx].push(Frame { image: image, offset: Point2D::new(0.0, 0.0), color: [self.color.r, self.color.g, self.color.b, self.color.a] });
+        self.brush[idx].push(Splat { image: image, offset: Point2D::new(0.0, 0.0), color: [self.color.r, self.color.g, self.color.b, self.color.a] });
 
         self
     }
 
-    /// Set the color for the next frames.
+    /// Set the color for the next splats.
     pub fn color<C: Into<calx_color::Rgba>>(mut self, c: C) -> Self {
         self.color = c.into();
         self
     }
 
-    /// Set the offset of the last frame.
+    /// Set the offset of the last splat.
     pub fn offset(mut self, x: i32, y: i32) -> Self {
         assert!(!self.brush.is_empty());
         let i = self.brush.len() - 1;
@@ -192,7 +192,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
     /// Helper for regular tiles.
     pub fn tile(self, x: u32, y: u32) -> Self {
-        self.frame(x, y, 32, 32).offset(16, 16)
+        self.splat(x, y, 32, 32).offset(16, 16)
     }
 
     /// Helper for block chunks.
@@ -203,46 +203,46 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
     ///
     /// Block shaping is somewhat complicated and requires a large number of frames.
     pub fn block(self, vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Self {
-        self.frame(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left
-            .splat().frame(vert_x + 16, vert_y, 16, 32).offset(0, 16)   // 1: Top right
-            .splat().frame(vert_x + 32, vert_y, 16, 32).offset(16, 16)  // 2: Middle left
-            .splat().frame(vert_x + 48, vert_y, 16, 32).offset(0, 16)   // 3: Middle right
-            .splat().frame(vert_x + 64, vert_y, 16, 32).offset(16, 16)  // 4: Bottom left
-            .splat().frame(vert_x + 80, vert_y, 16, 32).offset(0, 16)   // 5: Bottom right
+        self.splat(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left
+            .frame().splat(vert_x + 16, vert_y, 16, 32).offset(0, 16)   // 1: Top right
+            .frame().splat(vert_x + 32, vert_y, 16, 32).offset(16, 16)  // 2: Middle left
+            .frame().splat(vert_x + 48, vert_y, 16, 32).offset(0, 16)   // 3: Middle right
+            .frame().splat(vert_x + 64, vert_y, 16, 32).offset(16, 16)  // 4: Bottom left
+            .frame().splat(vert_x + 80, vert_y, 16, 32).offset(0, 16)   // 5: Bottom right
 
-            .splat().frame(rear_x, rear_y, 10, 32).offset(16, 16)       // 6: Left half
+            .frame().splat(rear_x, rear_y, 10, 32).offset(16, 16)       // 6: Left half
 
-            .splat().frame(rear_x + 10, rear_y, 6, 32).offset(6, 16)    // 7: Front
-            .splat().frame(rear_x + 16, rear_y, 6, 32).offset(0, 16)    // 8
+            .frame().splat(rear_x + 10, rear_y, 6, 32).offset(6, 16)    // 7: Front
+            .frame().splat(rear_x + 16, rear_y, 6, 32).offset(0, 16)    // 8
 
-            .splat().frame(rear_x + 22, rear_y, 10, 32).offset(-6, 16)  // 9: Right half
+            .frame().splat(rear_x + 22, rear_y, 10, 32).offset(-6, 16)  // 9: Right half
 
-            .splat().frame(rear_x + 32, rear_y, 10, 32).offset(16, 16)  // 10: Y-axis slope
-            .splat().frame(rear_x + 42, rear_y, 6, 32).offset(6, 16)    // 11
-            .splat().frame(rear_x + 48, rear_y, 6, 32).offset(0, 16)    // 12
-            .splat().frame(rear_x + 54, rear_y, 10, 32).offset(-6, 16)  // 13
+            .frame().splat(rear_x + 32, rear_y, 10, 32).offset(16, 16)  // 10: Y-axis slope
+            .frame().splat(rear_x + 42, rear_y, 6, 32).offset(6, 16)    // 11
+            .frame().splat(rear_x + 48, rear_y, 6, 32).offset(0, 16)    // 12
+            .frame().splat(rear_x + 54, rear_y, 10, 32).offset(-6, 16)  // 13
 
-            .splat().frame(rear_x + 64, rear_y, 10, 32).offset(16, 16)  // 14: X-axis slope
-            .splat().frame(rear_x + 74, rear_y, 6, 32).offset(6, 16)    // 15
-            .splat().frame(rear_x + 80, rear_y, 6, 32).offset(0, 16)    // 16
-            .splat().frame(rear_x + 86, rear_y, 10, 32).offset(-6, 16)  // 17
+            .frame().splat(rear_x + 64, rear_y, 10, 32).offset(16, 16)  // 14: X-axis slope
+            .frame().splat(rear_x + 74, rear_y, 6, 32).offset(6, 16)    // 15
+            .frame().splat(rear_x + 80, rear_y, 6, 32).offset(0, 16)    // 16
+            .frame().splat(rear_x + 86, rear_y, 10, 32).offset(-6, 16)  // 17
 
-            .splat().frame(x, y, 10, 32).offset(16, 16)                 // 18 Left half
+            .frame().splat(x, y, 10, 32).offset(16, 16)                 // 18 Left half
 
-            .splat().frame(x + 10, y, 6, 32).offset(6, 16)              // 19: Front
-            .splat().frame(x + 16, y, 6, 32).offset(0, 16)              // 20
+            .frame().splat(x + 10, y, 6, 32).offset(6, 16)              // 19: Front
+            .frame().splat(x + 16, y, 6, 32).offset(0, 16)              // 20
 
-            .splat().frame(x + 22, y, 10, 32).offset(-6, 16)            // 21: Right half
+            .frame().splat(x + 22, y, 10, 32).offset(-6, 16)            // 21: Right half
 
-            .splat().frame(x + 32, y, 10, 32).offset(16, 16)            // 22: Y-axis slope
-            .splat().frame(x + 42, y, 6, 32).offset(6, 16)              // 23
-            .splat().frame(x + 48, y, 6, 32).offset(0, 16)              // 24
-            .splat().frame(x + 54, y, 10, 32).offset(-6, 16)            // 25
+            .frame().splat(x + 32, y, 10, 32).offset(16, 16)            // 22: Y-axis slope
+            .frame().splat(x + 42, y, 6, 32).offset(6, 16)              // 23
+            .frame().splat(x + 48, y, 6, 32).offset(0, 16)              // 24
+            .frame().splat(x + 54, y, 10, 32).offset(-6, 16)            // 25
 
-            .splat().frame(x + 64, y, 10, 32).offset(16, 16)            // 26: X-axis slope
-            .splat().frame(x + 74, y, 6, 32).offset(6, 16)              // 27
-            .splat().frame(x + 80, y, 6, 32).offset(0, 16)              // 28
-            .splat().frame(x + 86, y, 10, 32).offset(-6, 16)            // 29
+            .frame().splat(x + 64, y, 10, 32).offset(16, 16)            // 26: X-axis slope
+            .frame().splat(x + 74, y, 6, 32).offset(6, 16)              // 27
+            .frame().splat(x + 80, y, 6, 32).offset(0, 16)              // 28
+            .frame().splat(x + 86, y, 10, 32).offset(-6, 16)            // 29
     }
 
     /// Helper for wall tiles
@@ -250,14 +250,14 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
     /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
     /// and the other contains the two long sides wallform.
     pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Self {
-        self.frame(center_x, center_y, 16, 32).offset(16, 16)
-            .splat().frame(center_x + 16, center_y, 16, 32).offset(0, 16)
-            .splat().frame(sides_x, sides_y, 16, 32).offset(16, 16)
-            .splat().frame(sides_x + 16, sides_y, 16, 32).offset(0, 16)
+        self.splat(center_x, center_y, 16, 32).offset(16, 16)
+            .frame().splat(center_x + 16, center_y, 16, 32).offset(0, 16)
+            .frame().splat(sides_x, sides_y, 16, 32).offset(16, 16)
+            .frame().splat(sides_x + 16, sides_y, 16, 32).offset(0, 16)
     }
 
-    /// Start a new splat in the current brush.
-    pub fn splat(mut self) -> Self {
+    /// Start a new frame in the current brush.
+    pub fn frame(mut self) -> Self {
         self.brush.push(Vec::new());
         self
     }
@@ -288,7 +288,7 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
         .file("content/assets/floors.png")
 
-        .frame(0, 0, 32, 32).offset(16, 16).brush("blank_floor")
+        .splat(0, 0, 32, 32).offset(16, 16).brush("blank_floor")
 
         .color(DARKGREEN).tile(32, 0).brush("grass")
 
@@ -300,7 +300,7 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
 
         .file("content/assets/props.png")
 
-        .color(RED).frame(32, 0, 32, 32).brush("cursor")
+        .color(RED).splat(32, 0, 32, 32).brush("cursor")
 
         .color(SADDLEBROWN).tile(160, 64)
         .color(GREEN).tile(192, 64).brush("tree")
@@ -316,9 +316,9 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         ;
 }
 
-fn draw_splat(context: &mut backend::Context, offset: Point2D<f32>, splat: &Splat) {
-    for frame in splat.iter() {
-        context.draw_image(frame.image, offset + frame.offset, frame.color);
+fn draw_frame(context: &mut backend::Context, offset: Point2D<f32>, frame: &Frame) {
+    for splat in frame.iter() {
+        context.draw_image(splat.image, offset + splat.offset, splat.color);
     }
 }
 
@@ -376,7 +376,7 @@ pub fn main() {
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
 
-        draw_splat(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
+        draw_frame(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
 
         if !backend.update(&display, &mut context) {
             return;
