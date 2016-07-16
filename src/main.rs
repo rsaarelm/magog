@@ -33,21 +33,21 @@ impl Loadable for DynamicImageShim {
 
 impl_store!(DYNAMIC_IMAGE, String, DynamicImageShim);
 
-type Color = [f32; 4];
+pub type Color = [f32; 4];
 
-type ImageRef = usize;
+pub type ImageRef = usize;
 
 #[derive(Copy, Clone, Debug)]
-struct Frame {
+pub struct Frame {
     pub image: ImageRef,
     pub offset: Point2D<f32>,
     pub color: Color,
 }
 
-type Splat = Vec<Frame>;
+pub type Splat = Vec<Frame>;
 
 #[derive(Clone)]
-struct Brush(pub Vec<Splat>);
+pub struct Brush(pub Vec<Splat>);
 
 impl Deref for Brush {
     type Target = Vec<Splat>;
@@ -222,9 +222,25 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
+        .file("content/assets/floors.png")
+
+        .frame(0, 0, 32, 32).offset(16, 16).brush("blank_floor")
+
+        .frame(32, 0, 32, 32).offset(16, 16).color(DARKGREEN).brush("grass")
+
+        .frame(64, 0, 32, 32).offset(16, 16).color(DARKGREEN).brush("grass2")
+
+        .frame(32, 0, 32, 32).offset(16, 16).color(SLATEGRAY).brush("ground")
+
+        .frame(96, 0, 32, 32).offset(16, 16).color(ROYALBLUE).brush("water")
+
         .file("content/assets/props.png")
-        .frame(32, 0, 32, 32).color(RED)
-        .brush("cursor")
+
+        .frame(32, 0, 32, 32).color(RED).brush("cursor")
+
+        .frame(160, 64, 32, 32).offset(16, 16).color(SADDLEBROWN)
+        .frame(192, 64, 32, 32).offset(16, 16).color(GREEN).brush("tree")
+
         ;
 }
 
@@ -233,6 +249,31 @@ fn draw_splat(context: &mut backend::Context, offset: Point2D<f32>, splat: &Spla
         context.draw_image(frame.image, offset + frame.offset, frame.color);
     }
 }
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Kind {
+    Floor,
+    Block,
+    Water,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Form {
+    Simple,
+    Block,
+    Wall,
+}
+
+#[derive(Clone)]
+pub struct Tile {
+    pub brush: Resource<Brush>,
+    pub kind: Kind,
+    pub form: Form,
+}
+
+impl Loadable<u8> for Tile {}
+
+impl_store!(TILE, u8, Tile);
 
 pub fn main() {
     let display = glutin::WindowBuilder::new()
@@ -259,7 +300,7 @@ pub fn main() {
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
 
-        draw_splat(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"cursor".to_string()).unwrap()[0]);
+        draw_splat(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
 
         if !backend.update(&display, &mut context) {
             return;
