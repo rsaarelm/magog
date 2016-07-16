@@ -14,6 +14,7 @@ use std::hash;
 use image::GenericImage;
 use std::collections::HashMap;
 use std::ops::Deref;
+use calx_color::Rgba;
 use calx_color::color::*;
 pub use euclid::{Point2D, Rect, Size2D};
 pub use glium::{DisplayBuild, glutin};
@@ -119,6 +120,7 @@ struct BrushBuilder<'a, V: 'a> {
     image_file: Option<String>,
     brush: Vec<Splat>,
     frame_images: HashMap<SubImageSpec, usize>,
+    color: Rgba,
 }
 
 impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
@@ -128,6 +130,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
             image_file: None,
             brush: Vec::new(),
             frame_images: HashMap::new(),
+            color: WHITE,
         }
     }
 
@@ -162,22 +165,14 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         let image = self.get_frame(&spec);
 
         let idx = self.brush.len() - 1;
-        self.brush[idx].push(Frame { image: image, offset: Point2D::new(0.0, 0.0), color: [1.0, 1.0, 1.0, 1.0] });
+        self.brush[idx].push(Frame { image: image, offset: Point2D::new(0.0, 0.0), color: [self.color.r, self.color.g, self.color.b, self.color.a] });
 
         self
     }
 
-    /// Set the color of the last frame.
+    /// Set the color for the next frames.
     pub fn color<C: Into<calx_color::Rgba>>(mut self, c: C) -> Self {
-        assert!(!self.brush.is_empty());
-        let i = self.brush.len() - 1;
-        assert!(!self.brush[i].is_empty());
-        let j = self.brush[i].len() - 1;
-
-        let c: calx_color::Rgba = c.into();
-
-        self.brush[i][j].color = [c.r, c.g, c.b, c.a];
-
+        self.color = c.into();
         self
     }
 
@@ -193,6 +188,72 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         self.brush[i][j].offset = Point2D::new(x as f32, y as f32);
 
         self
+    }
+
+    /// Helper for regular tiles.
+    pub fn tile(self, x: u32, y: u32) -> Self {
+        self.frame(x, y, 32, 32).offset(16, 16)
+    }
+
+    /// Helper for block chunks.
+    ///
+    /// Blocks are built from three 96x32 strips. First one contains the vertical edges, the second
+    /// contains the rear block and the third contains the block front. The vertical and rear
+    /// frames are nondescript and will probably be reused extensively.
+    ///
+    /// Block shaping is somewhat complicated and requires a large number of frames.
+    pub fn block(self, vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Self {
+        self.frame(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left
+            .splat().frame(vert_x + 16, vert_y, 16, 32).offset(0, 16)   // 1: Top right
+            .splat().frame(vert_x + 32, vert_y, 16, 32).offset(16, 16)  // 2: Middle left
+            .splat().frame(vert_x + 48, vert_y, 16, 32).offset(0, 16)   // 3: Middle right
+            .splat().frame(vert_x + 64, vert_y, 16, 32).offset(16, 16)  // 4: Bottom left
+            .splat().frame(vert_x + 80, vert_y, 16, 32).offset(0, 16)   // 5: Bottom right
+
+            .splat().frame(rear_x, rear_y, 10, 32).offset(16, 16)       // 6: Left half
+
+            .splat().frame(rear_x + 10, rear_y, 6, 32).offset(6, 16)    // 7: Front
+            .splat().frame(rear_x + 16, rear_y, 6, 32).offset(0, 16)    // 8
+
+            .splat().frame(rear_x + 22, rear_y, 10, 32).offset(-6, 16)  // 9: Right half
+
+            .splat().frame(rear_x + 32, rear_y, 10, 32).offset(16, 16)  // 10: Y-axis slope
+            .splat().frame(rear_x + 42, rear_y, 6, 32).offset(6, 16)    // 11
+            .splat().frame(rear_x + 48, rear_y, 6, 32).offset(0, 16)    // 12
+            .splat().frame(rear_x + 54, rear_y, 10, 32).offset(-6, 16)  // 13
+
+            .splat().frame(rear_x + 64, rear_y, 10, 32).offset(16, 16)  // 14: X-axis slope
+            .splat().frame(rear_x + 74, rear_y, 6, 32).offset(6, 16)    // 15
+            .splat().frame(rear_x + 80, rear_y, 6, 32).offset(0, 16)    // 16
+            .splat().frame(rear_x + 86, rear_y, 10, 32).offset(-6, 16)  // 17
+
+            .splat().frame(x, y, 10, 32).offset(16, 16)                 // 18 Left half
+
+            .splat().frame(x + 10, y, 6, 32).offset(6, 16)              // 19: Front
+            .splat().frame(x + 16, y, 6, 32).offset(0, 16)              // 20
+
+            .splat().frame(x + 22, y, 10, 32).offset(-6, 16)            // 21: Right half
+
+            .splat().frame(x + 32, y, 10, 32).offset(16, 16)            // 22: Y-axis slope
+            .splat().frame(x + 42, y, 6, 32).offset(6, 16)              // 23
+            .splat().frame(x + 48, y, 6, 32).offset(0, 16)              // 24
+            .splat().frame(x + 54, y, 10, 32).offset(-6, 16)            // 25
+
+            .splat().frame(x + 64, y, 10, 32).offset(16, 16)            // 26: X-axis slope
+            .splat().frame(x + 74, y, 6, 32).offset(6, 16)              // 27
+            .splat().frame(x + 80, y, 6, 32).offset(0, 16)              // 28
+            .splat().frame(x + 86, y, 10, 32).offset(-6, 16)            // 29
+    }
+
+    /// Helper for wall tiles
+    ///
+    /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
+    /// and the other contains the two long sides wallform.
+    pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Self {
+        self.frame(center_x, center_y, 16, 32).offset(16, 16)
+            .splat().frame(center_x + 16, center_y, 16, 32).offset(0, 16)
+            .splat().frame(sides_x, sides_y, 16, 32).offset(16, 16)
+            .splat().frame(sides_x + 16, sides_y, 16, 32).offset(0, 16)
     }
 
     /// Start a new splat in the current brush.
@@ -216,6 +277,9 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
         Brush::insert_resource(name, Brush(brush));
 
+        // Reset color
+        self.color = WHITE;
+
         self
     }
 }
@@ -226,20 +290,28 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
 
         .frame(0, 0, 32, 32).offset(16, 16).brush("blank_floor")
 
-        .frame(32, 0, 32, 32).offset(16, 16).color(DARKGREEN).brush("grass")
+        .color(DARKGREEN).tile(32, 0).brush("grass")
 
-        .frame(64, 0, 32, 32).offset(16, 16).color(DARKGREEN).brush("grass2")
+        .color(DARKGREEN).tile(64, 0).brush("grass2")
 
-        .frame(32, 0, 32, 32).offset(16, 16).color(SLATEGRAY).brush("ground")
+        .color(SLATEGRAY).tile(32, 0).brush("ground")
 
-        .frame(96, 0, 32, 32).offset(16, 16).color(ROYALBLUE).brush("water")
+        .color(ROYALBLUE).tile(96, 0).brush("water")
 
         .file("content/assets/props.png")
 
-        .frame(32, 0, 32, 32).color(RED).brush("cursor")
+        .color(RED).frame(32, 0, 32, 32).brush("cursor")
 
-        .frame(160, 64, 32, 32).offset(16, 16).color(SADDLEBROWN)
-        .frame(192, 64, 32, 32).offset(16, 16).color(GREEN).brush("tree")
+        .color(SADDLEBROWN).tile(160, 64)
+        .color(GREEN).tile(192, 64).brush("tree")
+
+        .file("content/assets/walls.png")
+        .color(LIGHTSLATEGRAY)
+        .wall(0, 0, 32, 0).brush("wall")
+
+        .file("content/assets/blocks.png")
+        .color(DARKGOLDENROD)
+        .block(0, 0, 0, 32, 0, 64).brush("rock")
 
         ;
 }
@@ -274,6 +346,10 @@ pub struct Tile {
 impl Loadable<u8> for Tile {}
 
 impl_store!(TILE, u8, Tile);
+
+fn init_terrain() {
+    unimplemented!();
+}
 
 pub fn main() {
     let display = glutin::WindowBuilder::new()
