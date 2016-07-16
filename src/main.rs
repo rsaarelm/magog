@@ -159,13 +159,17 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
             self.brush.push(Vec::new());
         }
         let filename = self.image_file.clone().expect("Image file not set");
-        let spec = SubImageSpec::new(filename,
-            Rect::new(Point2D::new(x, y), Size2D::new(w, h))).unwrap();
+        let spec = SubImageSpec::new(filename, Rect::new(Point2D::new(x, y), Size2D::new(w, h)))
+                       .unwrap();
 
         let image = self.get_splat(&spec);
 
         let idx = self.brush.len() - 1;
-        self.brush[idx].push(Splat { image: image, offset: Point2D::new(0.0, 0.0), color: [self.color.r, self.color.g, self.color.b, self.color.a] });
+        self.brush[idx].push(Splat {
+            image: image,
+            offset: Point2D::new(0.0, 0.0),
+            color: [self.color.r, self.color.g, self.color.b, self.color.a],
+        });
 
         self
     }
@@ -324,15 +328,20 @@ fn draw_frame(context: &mut backend::Context, offset: Point2D<f32>, frame: &Fram
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Kind {
-    Floor,
+    Ground,
     Block,
     Water,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Form {
-    Simple,
+    /// Single frame on floor layer
+    Floor,
+    /// Single frame on object layer
+    Prop,
+    /// Block-form on object layer
     Block,
+    /// Wall-form on object layer
     Wall,
 }
 
@@ -343,12 +352,27 @@ pub struct Tile {
     pub form: Form,
 }
 
+impl Tile {
+    pub fn new(brush: &str, kind: Kind, form: Form) -> Tile {
+        Tile {
+            brush: Resource::new(brush.to_string()).unwrap(),
+            kind: kind,
+            form: form,
+        }
+    }
+}
+
 impl Loadable<u8> for Tile {}
 
 impl_store!(TILE, u8, Tile);
 
 fn init_terrain() {
-    unimplemented!();
+    Tile::insert_resource(0, Tile::new("ground", Kind::Ground, Form::Floor));
+    Tile::insert_resource(1, Tile::new("grass", Kind::Ground, Form::Floor));
+    Tile::insert_resource(2, Tile::new("water", Kind::Water, Form::Floor));
+    Tile::insert_resource(3, Tile::new("tree", Kind::Block, Form::Prop));
+    Tile::insert_resource(4, Tile::new("wall", Kind::Block, Form::Wall));
+    Tile::insert_resource(5, Tile::new("rock", Kind::Block, Form::Block));
 }
 
 pub fn main() {
@@ -363,6 +387,7 @@ pub fn main() {
     let mut builder = vitral::Builder::new();
 
     init_brushes(&mut builder);
+    init_terrain();
 
     context = builder.build(|img| backend.make_texture(&display, img));
 
@@ -376,7 +401,9 @@ pub fn main() {
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
 
-        draw_frame(&mut context, Point2D::new(50.0, 50.0), &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
+        draw_frame(&mut context,
+                   Point2D::new(50.0, 50.0),
+                   &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
 
         if !backend.update(&display, &mut context) {
             return;
