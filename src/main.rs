@@ -7,6 +7,7 @@ extern crate serde;
 extern crate calx_color;
 #[macro_use]
 extern crate calx_resource;
+extern crate world;
 
 mod backend;
 
