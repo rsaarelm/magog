@@ -14,7 +14,6 @@ extern crate calx_ecs;
 extern crate calx_alg;
 extern crate calx_grid;
 extern crate calx_color;
-extern crate content;
 
 pub use flags::Flags;
 pub use location::{Location, Chart, Unchart};

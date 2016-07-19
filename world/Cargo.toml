@@ -27,6 +27,3 @@ git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
-
-[dependencies.content]
-path = "../content"
