@@ -5,16 +5,17 @@ dependencies = [
  "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "euclid 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "glium 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.0.0 (git+https://github.com/rsaarelm/vitral)",
+ "world 0.0.1",
 ]
 
 [[package]]
 name = "android_glue"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -24,15 +25,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "backtrace"
-version = "0.1.8"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "backtrace-sys 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dbghelp-sys 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "debug-builders 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-demangle 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -41,8 +42,19 @@ name = "backtrace-sys"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.28 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "bincode"
+version = "0.5.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num-traits 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -61,12 +73,44 @@ version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "calx-alg"
+version = "0.1.0"
+source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+dependencies = [
+ "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "calx-color"
 version = "0.1.0"
 source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
 dependencies = [
  "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "calx-ecs"
+version = "0.0.1"
+source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+dependencies = [
+ "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "calx-grid"
+version = "0.1.0"
+source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+dependencies = [
+ "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -91,6 +135,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gleam 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "cgmath"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "num-traits 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -151,11 +205,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "debug-builders"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "deque"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -185,7 +234,7 @@ name = "enum_primitive"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "num 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -221,7 +270,7 @@ dependencies = [
 
 [[package]]
 name = "gcc"
-version = "0.3.28"
+version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -261,13 +310,13 @@ dependencies = [
 
 [[package]]
 name = "glium"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "backtrace 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "backtrace 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gl_generator 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glutin 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glutin 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "smallvec 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -278,10 +327,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "glutin"
-version = "0.5.2"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "android_glue 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "android_glue 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cgl 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "cocoa 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "core-foundation 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -421,13 +470,13 @@ name = "miniz-sys"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.28 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "num"
-version = "0.1.33"
+version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "num-bigint 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -567,6 +616,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustc-demangle"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "rustc-serialize"
 version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -686,6 +740,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "vec_map"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "vitral"
 version = "0.0.0"
 source = "git+https://github.com/rsaarelm/vitral#0c17f54957e5084bdfffbe37de0d5cf18446d644"
@@ -756,6 +815,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "world"
+version = "0.0.1"
+dependencies = [
+ "bincode 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "calx-alg 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-ecs 0.0.1 (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "cgmath 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vec_map 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vitral 0.0.0 (git+https://github.com/rsaarelm/vitral)",
+]
 
 [[package]]
 name = "x11-dl"

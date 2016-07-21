@@ -16,7 +16,7 @@ lto = true
 euclid = "0.7"
 image = "0.10"
 time = "0.1"
-glium = "0.14"
+glium = "0.15"
 serde = "0.7"
 
 # TODO: Make Vitral into a proper crate eventually.
