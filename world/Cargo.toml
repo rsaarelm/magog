@@ -15,11 +15,19 @@ serde = "*"
 serde_macros = "*"
 bincode = "*"
 cgmath = "0.7"
+image = "0.10"
+euclid = "0.7"
+
+[dependencies.vitral]
+git = "https://github.com/rsaarelm/vitral"
 
 [dependencies.calx-ecs]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-alg]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-resource]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-grid]
