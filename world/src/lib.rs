@@ -8,5 +8,6 @@ extern crate calx_ecs;
 extern crate calx_resource;
 
 mod brush;
+pub mod terrain;
 
 pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
