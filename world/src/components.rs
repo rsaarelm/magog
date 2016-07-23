@@ -11,20 +11,18 @@ use brush::Brush;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Desc {
     pub name: String,
-    pub icon: Resource<Brush>,
-    pub color: Rgba,
+    pub brush: Resource<Brush>,
 }
 
 impl Desc {
-    pub fn new<C: Into<Rgba>>(name: &str, icon: &str, color: C) -> Desc {
+    pub fn new<C: Into<Rgba>>(name: &str, brush: &str) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned
         // &str instead of a String, I just want to get away from typing
         // .to_string() everywhere with the calls that mostly use string
         // literals.
         Desc {
             name: name.to_string(),
-            icon: Resource::new(icon.to_string()).unwrap(),
-            color: color.into(),
+            brush: Resource::new(brush.to_string()).unwrap(),
         }
     }
 }
