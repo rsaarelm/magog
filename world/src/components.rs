@@ -1,28 +1,29 @@
 use std::convert::Into;
 use calx_color::Rgba;
-use content::Brush;
+use calx_resource::Resource;
 use item::ItemType;
 use ability::Ability;
 use stats::Stats;
 use location_set::LocationSet;
+use brush::Brush;
 
 /// Entity name and appearance.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Desc {
     pub name: String,
-    pub icon: Brush,
+    pub icon: Resource<Brush>,
     pub color: Rgba,
 }
 
 impl Desc {
-    pub fn new<C: Into<Rgba>>(name: &str, icon: Brush, color: C) -> Desc {
+    pub fn new<C: Into<Rgba>>(name: &str, icon: &str, color: C) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned
         // &str instead of a String, I just want to get away from typing
         // .to_string() everywhere with the calls that mostly use string
         // literals.
         Desc {
             name: name.to_string(),
-            icon: icon,
+            icon: Resource::new(icon.to_string()).unwrap(),
             color: color.into(),
         }
     }

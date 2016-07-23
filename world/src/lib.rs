@@ -17,9 +17,14 @@ extern crate calx_ecs;
 #[macro_use]
 extern crate calx_resource;
 
+mod ability;
+
 mod brush;
 pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
 
+pub mod components;
+mod field;
+mod flags;
 pub mod item;
 
 mod location;
@@ -27,5 +32,8 @@ pub use location::{Location, Chart, Unchart};
 
 mod location_set;
 mod spatial;
-
+mod stats;
 pub mod terrain;
+
+mod world;
+pub use world::World;
