@@ -21,9 +21,6 @@ path = "calx-window"
 [dependencies.calx-grid]
 path = "calx-grid"
 
-[dependencies.calx-layout]
-path = "calx-layout"
-
 [dependencies.calx-resource]
 path = "calx-resource"
 
