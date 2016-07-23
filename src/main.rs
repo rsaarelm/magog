@@ -10,13 +10,14 @@ extern crate calx_resource;
 extern crate world;
 
 mod backend;
+mod view;
 
 use calx_color::color::*;
 pub use euclid::{Point2D, Rect, Size2D};
 pub use glium::{DisplayBuild, glutin};
 pub use backend::Backend;
 pub use calx_resource::{Loadable, Resource, ResourceCache, ResourceStore};
-use world::{Frame, BrushBuilder, Brush};
+use world::{Brush, BrushBuilder, Frame};
 use world::World;
 
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
@@ -53,12 +54,12 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
 
 fn draw_frame(context: &mut backend::Context, offset: Point2D<f32>, frame: &Frame) {
     for splat in frame.iter() {
-        context.draw_image(splat.image, offset + splat.offset, splat.color);
+        context.draw_image(splat.image, offset - splat.offset, splat.color);
     }
 }
 
 fn init_terrain() {
-    use world::terrain::{Tile, Kind, Form};
+    use world::terrain::{Form, Kind, Tile};
 
     Tile::insert_resource(0, Tile::new("ground", Kind::Ground, Form::Floor));
     Tile::insert_resource(1, Tile::new("grass", Kind::Ground, Form::Floor));
@@ -94,14 +95,22 @@ pub fn main() {
     loop {
         context.begin_frame();
 
+        let rect = Rect::new(Point2D::new(80.0, 80.0), Size2D::new(320.0, 240.0));
+
+        context.fill_rect(rect, RED.into_array());
+        for c_pos in view::cells_in_view_rect(rect) {
+            let pos = view::chart_to_view(c_pos);
+
+            draw_frame(&mut context,
+                       pos,
+                       &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
+        }
+
         context.draw_text(font,
                           Point2D::new(4.0, 20.0),
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
 
-        draw_frame(&mut context,
-                   Point2D::new(50.0, 50.0),
-                   &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
 
         if !backend.update(&display, &mut context) {
             return;
