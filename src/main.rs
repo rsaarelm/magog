@@ -17,6 +17,7 @@ pub use glium::{DisplayBuild, glutin};
 pub use backend::Backend;
 pub use calx_resource::{Loadable, Resource, ResourceCache, ResourceStore};
 use world::{Frame, BrushBuilder, Brush};
+use world::World;
 
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
@@ -68,16 +69,17 @@ fn init_terrain() {
 }
 
 pub fn main() {
+    // Construct display and Vitral context.
     let display = glutin::WindowBuilder::new()
                       .build_glium()
                       .unwrap();
 
     let mut backend = Backend::new(&display);
 
-    // Construct Vitral context.
     let mut context: backend::Context;
     let mut builder = vitral::Builder::new();
 
+    // Initialize game resources.
     init_brushes(&mut builder);
     init_terrain();
 
@@ -85,6 +87,10 @@ pub fn main() {
 
     let font = context.default_font();
 
+    // Initialize worldstate
+    let world = World::new(1);
+
+    // Run game.
     loop {
         context.begin_frame();
 
