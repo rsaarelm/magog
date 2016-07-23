@@ -74,6 +74,15 @@ impl Tile {
             _ => true
         }
     }
+
+    pub fn is_door(&self) -> bool {
+        self.kind == Kind::Door
+    }
+
+    pub fn is_luminous(&self) -> bool {
+        self.kind == Kind::Magma
+    }
+
 }
 
 impl Loadable<u8> for Tile {}

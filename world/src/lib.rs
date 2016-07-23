@@ -31,9 +31,34 @@ mod location;
 pub use location::{Location, Chart, Unchart};
 
 mod location_set;
+pub mod query;
 mod spatial;
 mod stats;
 pub mod terrain;
 
 mod world;
 pub use world::World;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum FovStatus {
+    Seen,
+    Remembered,
+}
+
+/// Light level value.
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+pub struct Light {
+    lum: f32,
+}
+
+impl Light {
+    pub fn new(lum: f32) -> Light {
+        assert!(lum >= 0.0 && lum <= 2.0);
+        Light { lum: lum }
+    }
+
+    pub fn apply(&self, color: calx_color::Rgba) -> calx_color::Rgba {
+        let darkness_color = calx_color::Rgba::new(0.05, 0.10, 0.25, color.a);
+        calx_alg::lerp(color * darkness_color, color, self.lum)
+    }
+}

@@ -1,16 +1,18 @@
 //! Non-mutating world and entity state querying functions.
 
+use std::rc::Rc;
 use cgmath::Vector2;
-use calx_color::Rgba;
 use calx_grid::Dir6;
 use calx_ecs::Entity;
-use content::{Brush, TerrainType};
+use calx_resource::{Resource, ResourceStore};
 use world::World;
 use components::{BrainState, Alignment};
 use stats::{Stats, Intrinsic};
 use location::Location;
 use spatial::Place;
 use item::{ItemType, Slot};
+use brush::Brush;
+use terrain;
 use {FovStatus, Light};
 
 /// Game update control.
@@ -172,20 +174,30 @@ pub fn portal(w: &World, loc: Location) -> Option<Location> {
     w.portals.get(&loc).map(|&x| x)
 }
 
-pub fn terrain(w: &World, loc: Location) -> TerrainType {
-    let mut ret = w.terrain.get(loc);
+pub fn terrain(w: &World, loc: Location) -> Rc<terrain::Tile> {
+    let idx = w.terrain.get(loc);
+    terrain::Tile::get_resource(&idx).unwrap()
+
+    // TODO: Add open/closed door mapping to terrain data, closed door terrain should have a field
+    // that contains the terrain index of the corresponding open door tile.
+
+    // TODO: Support terrain with brush variant distributions, like the grass case below that
+    // occasionlly emits a fancier brush. The distribution needs to be embedded in the Tile struct.
+    // The sampling needs loc noise, but is probably better done at the point where terrain is
+    // being drawn than here, since we'll want to still have just one immutable terrain id
+    // corresponding to all the variants.
+/*
     // Mobs standing on doors make the doors open.
     if ret == TerrainType::Door && has_mobs(w, loc) {
         ret = TerrainType::OpenDoor;
     }
     // Grass is only occasionally fancy.
-    // TODO: Make variant tiles into a generic method.
     if ret == TerrainType::Grass {
         if loc.noise() > 0.85 {
             ret = TerrainType::Grass2;
         }
     }
-    ret
+*/
 }
 
 pub fn blocks_sight(w: &World, loc: Location) -> bool {
@@ -380,9 +392,9 @@ pub fn is_bobbing(w: &World, e: Entity) -> bool {
     is_active(w, e) && !is_player(w, e)
 }
 
-pub fn entity_brush(w: &World, e: Entity) -> Option<(Brush, Rgba)> {
+pub fn entity_brush(w: &World, e: Entity) -> Option<Resource<Brush>> {
     if w.ecs.desc.contains(e) {
-        Some((w.ecs.desc[e].icon, w.ecs.desc[e].color))
+        Some(w.ecs.desc[e].brush.clone())
     } else {
         None
     }
