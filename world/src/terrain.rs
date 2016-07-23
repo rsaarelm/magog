@@ -1,25 +1,43 @@
-use calx_resource::Resource;
+use calx_resource::{Resource, Loadable};
 use brush::Brush;
 
+/// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Kind {
+    /// Regular flat solid ground, can walk across easily.
     Ground,
+    /// An obstacle that fills the entire cell, blocks field of view.
     Block,
+    /// An obstacle that can be seen through.
+    ///
+    /// Not necessarily a literal window, thinner blocks like pillars and statues might also be
+    /// see-through.
+    Window,
+    /// A tile that blocks sight but can be walked through.
+    Door,
+    /// Bodies of water, regular units can't walk into them.
+    ///
+    /// Flying units (if we have any) can cross. Falling into water is going to involve tricky
+    /// logic since our maps aren't 3D.
     Water,
+    /// Like water, but much more fun.
+    Magma,
 }
 
+/// Visual form of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Form {
     /// Single frame on floor layer
     Floor,
     /// Single frame on object layer
     Prop,
-    /// Block-form on object layer
-    Block,
+    /// Blobbing form on object layer
+    Blob,
     /// Wall-form on object layer
     Wall,
 }
 
+/// Data for the terrain in a single map cell.
 #[derive(Clone)]
 pub struct Tile {
     pub brush: Resource<Brush>,
@@ -35,4 +53,29 @@ impl Tile {
             form: form,
         }
     }
+
+    pub fn blocks_sight(&self) -> bool {
+        match self.kind {
+            Kind::Block | Kind::Door => true,
+            _ => false
+        }
+    }
+
+    pub fn blocks_shot(&self) -> bool {
+        match self.kind {
+            Kind::Block | Kind::Window | Kind::Door => true,
+            _ => false
+        }
+    }
+
+    pub fn blocks_walk(&self) -> bool {
+        match self.kind {
+            Kind::Ground | Kind::Door => false,
+            _ => true
+        }
+    }
 }
+
+impl Loadable<u8> for Tile {}
+
+impl_store!(TILE_STORE, u8, Tile);

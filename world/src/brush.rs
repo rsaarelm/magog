@@ -190,14 +190,14 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
         self.splat(x, y, 32, 32).offset(16, 16)
     }
 
-    /// Helper for block chunks.
+    /// Helper for blob chunks.
     ///
-    /// Blocks are built from three 96x32 strips. First one contains the vertical edges, the second
-    /// contains the rear block and the third contains the block front. The vertical and rear
+    /// Blobs are built from three 96x32 strips. First one contains the vertical edges, the second
+    /// contains the rear blob and the third contains the blob front. The vertical and rear
     /// frames are nondescript and will probably be reused extensively.
     ///
-    /// Block shaping is somewhat complicated and requires a large number of frames.
-    pub fn block(self, vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Self {
+    /// Blob shaping is somewhat complicated and requires a large number of frames.
+    pub fn blob(self, vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Self {
         self.splat(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left
             .frame().splat(vert_x + 16, vert_y, 16, 32).offset(0, 16)   // 1: Top right
             .frame().splat(vert_x + 32, vert_y, 16, 32).offset(16, 16)  // 2: Middle left

@@ -18,7 +18,6 @@ pub use backend::Backend;
 pub use calx_resource::{Loadable, Resource, ResourceCache, ResourceStore};
 use world::{Frame, BrushBuilder, Brush};
 
-
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
         .file("content/assets/floors.png")
@@ -44,9 +43,9 @@ fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         .color(LIGHTSLATEGRAY)
         .wall(0, 0, 32, 0).brush("wall")
 
-        .file("content/assets/blocks.png")
+        .file("content/assets/blobs.png")
         .color(DARKGOLDENROD)
-        .block(0, 0, 0, 32, 0, 64).brush("rock")
+        .blob(0, 0, 0, 32, 0, 64).brush("rock")
 
         ;
 }
@@ -57,53 +56,15 @@ fn draw_frame(context: &mut backend::Context, offset: Point2D<f32>, frame: &Fram
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Kind {
-    Ground,
-    Block,
-    Water,
-}
-
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Form {
-    /// Single frame on floor layer
-    Floor,
-    /// Single frame on object layer
-    Prop,
-    /// Block-form on object layer
-    Block,
-    /// Wall-form on object layer
-    Wall,
-}
-
-#[derive(Clone)]
-pub struct Tile {
-    pub brush: Resource<Brush>,
-    pub kind: Kind,
-    pub form: Form,
-}
-
-impl Tile {
-    pub fn new(brush: &str, kind: Kind, form: Form) -> Tile {
-        Tile {
-            brush: Resource::new(brush.to_string()).unwrap(),
-            kind: kind,
-            form: form,
-        }
-    }
-}
-
-impl Loadable<u8> for Tile {}
-
-impl_store!(TILE, u8, Tile);
-
 fn init_terrain() {
+    use world::terrain::{Tile, Kind, Form};
+
     Tile::insert_resource(0, Tile::new("ground", Kind::Ground, Form::Floor));
     Tile::insert_resource(1, Tile::new("grass", Kind::Ground, Form::Floor));
     Tile::insert_resource(2, Tile::new("water", Kind::Water, Form::Floor));
     Tile::insert_resource(3, Tile::new("tree", Kind::Block, Form::Prop));
     Tile::insert_resource(4, Tile::new("wall", Kind::Block, Form::Wall));
-    Tile::insert_resource(5, Tile::new("rock", Kind::Block, Form::Block));
+    Tile::insert_resource(5, Tile::new("rock", Kind::Block, Form::Blob));
 }
 
 pub fn main() {
