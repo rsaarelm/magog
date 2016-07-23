@@ -39,14 +39,14 @@ pub struct World {
 }
 
 impl<'a> World {
-    pub fn new() -> World {
+    pub fn new(seed: u32) -> World {
         World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
             terrain: Field::new(0),
             portals: HashMap::new(),
             spatial: Spatial::new(),
-            flags: Flags::new(1),
+            flags: Flags::new(seed),
         }
     }
 
