@@ -7,7 +7,7 @@ extern crate serde;
 extern crate euclid;
 
 pub use search::{GridNode, Dijkstra, astar_path_with};
-pub use hex::{HexGeom, Dir6, HexFov, Dir12};
+pub use hex::{HexGeom, Dir6, Dir12};
 pub use kernel::{Kernel, KernelTerrain};
 
 mod hex;
