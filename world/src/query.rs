@@ -1,7 +1,6 @@
 //! Non-mutating world and entity state querying functions.
 
 use std::rc::Rc;
-use cgmath::Vector2;
 use calx_grid::Dir6;
 use calx_ecs::Entity;
 use calx_resource::{Resource, ResourceStore};
@@ -156,7 +155,7 @@ pub fn find_target(w: &World,
                    -> Option<Entity> {
     let origin = location(w, shooter).unwrap();
     for i in 1..(range + 1) {
-        let loc = origin + Vector2::from(dir.to_v2()) * (i as i32);
+        let loc = origin + dir.to_v2() * (i as i32);
         if terrain(w, loc).blocks_shot() {
             break;
         }

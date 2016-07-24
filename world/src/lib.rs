@@ -5,7 +5,6 @@ extern crate rand;
 extern crate bincode;
 extern crate serde;
 extern crate vec_map;
-extern crate cgmath;
 extern crate image;
 extern crate euclid;
 extern crate vitral;

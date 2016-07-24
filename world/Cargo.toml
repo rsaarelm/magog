@@ -14,7 +14,6 @@ vec_map = "*"
 serde = "*"
 serde_macros = "*"
 bincode = "*"
-cgmath = "0.10"
 image = "0.10"
 euclid = "0.7"
 
