@@ -27,7 +27,7 @@ mod flags;
 pub mod item;
 
 mod location;
-pub use location::{Location, Chart, Unchart};
+pub use location::{Chart, ChartCell, Location};
 
 mod location_set;
 pub mod query;
