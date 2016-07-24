@@ -75,7 +75,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+source = "git+https://github.com/rsaarelm/calx#f52d577d1692eb9b1103bbb1dd0b0d0ba310efc2"
 dependencies = [
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -87,7 +87,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+source = "git+https://github.com/rsaarelm/calx#f52d577d1692eb9b1103bbb1dd0b0d0ba310efc2"
 dependencies = [
  "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -98,7 +98,7 @@ dependencies = [
 [[package]]
 name = "calx-ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+source = "git+https://github.com/rsaarelm/calx#f52d577d1692eb9b1103bbb1dd0b0d0ba310efc2"
 dependencies = [
  "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_macros 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -107,7 +107,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+source = "git+https://github.com/rsaarelm/calx#f52d577d1692eb9b1103bbb1dd0b0d0ba310efc2"
 dependencies = [
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -118,7 +118,7 @@ dependencies = [
 [[package]]
 name = "calx-resource"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#bda64a3121bf81f213243e166efe9ee8bc765216"
+source = "git+https://github.com/rsaarelm/calx#f52d577d1692eb9b1103bbb1dd0b0d0ba310efc2"
 dependencies = [
  "serde 0.7.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -747,7 +747,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.0.0"
-source = "git+https://github.com/rsaarelm/vitral#0c17f54957e5084bdfffbe37de0d5cf18446d644"
+source = "git+https://github.com/rsaarelm/vitral#1c42c36a69a8687d0e870ea18846f59ca99f4319"
 dependencies = [
  "euclid 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
