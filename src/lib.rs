@@ -513,6 +513,9 @@ impl<T, V: Vertex> Context<T, V>
 
         self.current_style = style;
     }
+
+    /// Get the current mouse position
+    pub fn mouse_pos(&self) -> Point2D<f32> { self.mouse_pos }
 }
 
 /// A sequence of primitive draw operarations.
