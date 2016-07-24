@@ -1,6 +1,7 @@
 #![feature(custom_derive, plugin)]
 #![plugin(serde_macros)]
 
+extern crate num;
 extern crate rand;
 extern crate bincode;
 extern crate serde;
@@ -24,6 +25,7 @@ pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
 pub mod components;
 mod field;
 mod flags;
+mod fov;
 pub mod item;
 
 mod location;

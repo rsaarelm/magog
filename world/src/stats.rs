@@ -86,6 +86,6 @@ pub enum Intrinsic {
     Hands = 0b1000,
     /// Explodes on death
     Deathsplosion = 0b10000,
-    /// Is dead (not undead-dead, no-longer-subject-to-living-things-logic-dead)
+    /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
     Dead = 0b100000,
 }

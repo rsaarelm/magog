@@ -77,7 +77,14 @@ pub struct ChartCell {
 }
 
 /// A mapping from a 2D plane into one or several world locations.
-pub type Chart = HashMap<Point2D<i32>, ChartCell>;
+pub struct Chart(HashMap<Point2D<i32>, ChartCell>);
+
+impl Chart {
+    pub fn new(origin: Location, range: u32) -> Chart {
+        // TODO: Waiting for new, portaling HexFov.
+        unimplemented!();
+    }
+}
 
 
 impl GridNode for Location {
