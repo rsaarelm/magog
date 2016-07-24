@@ -1,5 +1,7 @@
 use std::iter::Map;
 use euclid::{Point2D, Rect};
+use backend;
+use world::{Chart, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -56,6 +58,14 @@ fn pixel_to_max_column(pixel_pos: Point2D<f32>) -> Point2D<i32> {
 fn column_to_chart(cr: Point2D<i32>) -> Point2D<i32> {
     Point2D::new(((1i32 + cr.x + 2i32 * cr.y) as f32 / 2f32).floor() as i32,
                  (-(cr.x - 1) as f32 / 2f32).floor() as i32 + cr.y)
+}
+
+/// Draw a view space described by the chart.
+pub fn draw_world<C: Chart>(context: &mut backend::Context,
+                            world: &World,
+                            chart: &C,
+                            screen_rect: &Rect<f32>,
+                            screen_offset: &Point2D<f32>) {
 }
 
 #[derive(Copy, Clone)]

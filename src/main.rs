@@ -17,39 +17,46 @@ pub use euclid::{Point2D, Rect, Size2D};
 pub use glium::{DisplayBuild, glutin};
 pub use backend::Backend;
 pub use calx_resource::{Loadable, Resource, ResourceCache, ResourceStore};
-use world::{Brush, BrushBuilder, Frame};
+use world::{BrushBuilder, Frame};
 use world::World;
+use world::query;
+use world::terrain;
 
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
         .file("content/assets/floors.png")
-
-        .splat(0, 0, 32, 32).offset(16, 16).brush("blank_floor")
-
-        .color(DARKGREEN).tile(32, 0).brush("grass")
-
-        .color(DARKGREEN).tile(64, 0).brush("grass2")
-
-        .color(SLATEGRAY).tile(32, 0).brush("ground")
-
-        .color(ROYALBLUE).tile(96, 0).brush("water")
-
+        .splat(0, 0, 32, 32)
+        .offset(16, 16)
+        .brush("blank_floor")
+        .color(DARKGREEN)
+        .tile(32, 0)
+        .brush("grass")
+        .color(DARKGREEN)
+        .tile(64, 0)
+        .brush("grass2")
+        .color(SLATEGRAY)
+        .tile(32, 0)
+        .brush("ground")
+        .color(ROYALBLUE)
+        .tile(96, 0)
+        .brush("water")
         .file("content/assets/props.png")
-
-        .color(RED).splat(32, 0, 32, 32).brush("cursor")
-
-        .color(SADDLEBROWN).tile(160, 64)
-        .color(GREEN).tile(192, 64).brush("tree")
-
+        .color(RED)
+        .splat(32, 0, 32, 32)
+        .brush("cursor")
+        .color(SADDLEBROWN)
+        .tile(160, 64)
+        .color(GREEN)
+        .tile(192, 64)
+        .brush("tree")
         .file("content/assets/walls.png")
         .color(LIGHTSLATEGRAY)
-        .wall(0, 0, 32, 0).brush("wall")
-
+        .wall(0, 0, 32, 0)
+        .brush("wall")
         .file("content/assets/blobs.png")
         .color(DARKGOLDENROD)
-        .blob(0, 0, 0, 32, 0, 64).brush("rock")
-
-        ;
+        .blob(0, 0, 0, 32, 0, 64)
+        .brush("rock");
 }
 
 fn draw_frame(context: &mut backend::Context, offset: Point2D<f32>, frame: &Frame) {
@@ -95,15 +102,19 @@ pub fn main() {
     loop {
         context.begin_frame();
 
-        let rect = Rect::new(Point2D::new(80.0, 80.0), Size2D::new(320.0, 240.0));
+        let rect = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
 
-        context.fill_rect(rect, RED.into_array());
-        for c_pos in view::cells_in_view_rect(rect) {
-            let pos = view::chart_to_view(c_pos);
+        let cursor_pos = view::view_to_chart(context.mouse_pos());
 
-            draw_frame(&mut context,
-                       pos,
-                       &Brush::get_resource(&"tree".to_string()).unwrap()[0]);
+        for chart_pos in view::cells_in_view_rect(rect) {
+            let pos = view::chart_to_view(chart_pos);
+            let mut t = query::terrain(&world, world::Location::new(pos.x as i8, pos.y as i8));
+
+            if chart_pos == cursor_pos {
+                t = terrain::Tile::get_resource(&3).unwrap();
+            }
+
+            draw_frame(&mut context, pos, &t.brush[0]);
         }
 
         context.draw_text(font,
