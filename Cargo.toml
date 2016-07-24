@@ -15,9 +15,6 @@ path = "calx-alg"
 [dependencies.calx-color]
 path = "calx-color"
 
-[dependencies.calx-window]
-path = "calx-window"
-
 [dependencies.calx-grid]
 path = "calx-grid"
 
