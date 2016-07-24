@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use vec_map::VecMap;
 use calx_ecs::Entity;
 use location::Location;
@@ -169,10 +169,7 @@ impl Spatial {
             .collect()
     }
 
-    pub fn entity_equipped(&self,
-                           parent: Entity,
-                           slot: Slot)
-                           -> Option<Entity> {
+    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
         match self.place_to_entities.get(&In(parent, Some(slot))) {
             None => None,
             Some(v) => {
@@ -229,7 +226,7 @@ impl Deserialize for Spatial {
 
 #[cfg(test)]
 mod test {
-    use super::{Spatial, Place};
+    use super::{Place, Spatial};
     use item::Slot;
     use calx_ecs::Entity;
     use location::Location;
@@ -262,7 +259,7 @@ mod test {
 
     #[test]
     fn test_serialization() {
-        use bincode::{serde, SizeLimit};
+        use bincode::{SizeLimit, serde};
 
         let mut spatial = Spatial::new();
         let p1 = Place::At(Location::new(10, 10));

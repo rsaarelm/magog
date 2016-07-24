@@ -1,4 +1,4 @@
-use rand::{Rng, XorShiftRng, SeedableRng};
+use rand::{Rng, SeedableRng, XorShiftRng};
 use location::Location;
 use calx_alg::EncodeRng;
 use calx_ecs::Entity;
@@ -30,6 +30,10 @@ impl Flags {
         }
     }
 
-    pub fn seed(&self) -> u32 { self.seed }
-    pub fn rng<'a>(&'a mut self) -> &'a mut Rng { &mut self.rng }
+    pub fn seed(&self) -> u32 {
+        self.seed
+    }
+    pub fn rng<'a>(&'a mut self) -> &'a mut Rng {
+        &mut self.rng
+    }
 }

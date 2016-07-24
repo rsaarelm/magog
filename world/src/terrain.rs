@@ -1,4 +1,4 @@
-use calx_resource::{Resource, Loadable};
+use calx_resource::{Loadable, Resource};
 use brush::Brush;
 
 /// Movement effect of a terrain tile.
@@ -57,21 +57,21 @@ impl Tile {
     pub fn blocks_sight(&self) -> bool {
         match self.kind {
             Kind::Block | Kind::Door => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn blocks_shot(&self) -> bool {
         match self.kind {
             Kind::Block | Kind::Window | Kind::Door => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn blocks_walk(&self) -> bool {
         match self.kind {
             Kind::Ground | Kind::Door => false,
-            _ => true
+            _ => true,
         }
     }
 
@@ -82,7 +82,6 @@ impl Tile {
     pub fn is_luminous(&self) -> bool {
         self.kind == Kind::Magma
     }
-
 }
 
 impl Loadable<u8> for Tile {}

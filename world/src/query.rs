@@ -5,8 +5,8 @@ use calx_grid::Dir6;
 use calx_ecs::Entity;
 use calx_resource::{Resource, ResourceStore};
 use world::World;
-use components::{BrainState, Alignment};
-use stats::{Stats, Intrinsic};
+use components::{Alignment, BrainState};
+use stats::{Intrinsic, Stats};
 use location::Location;
 use spatial::Place;
 use item::{ItemType, Slot};
@@ -148,11 +148,7 @@ pub fn location(w: &World, e: Entity) -> Option<Location> {
 }
 
 /// Look for targets to shoot in a direction.
-pub fn find_target(w: &World,
-                   shooter: Entity,
-                   dir: Dir6,
-                   range: usize)
-                   -> Option<Entity> {
+pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
     let origin = location(w, shooter).unwrap();
     for i in 1..(range + 1) {
         let loc = origin + dir.to_v2() * (i as i32);
