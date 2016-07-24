@@ -4,6 +4,7 @@
 extern crate num;
 extern crate rand;
 extern crate serde;
+extern crate euclid;
 
 pub use search::{GridNode, Dijkstra, astar_path_with};
 pub use hex::{HexGeom, Dir6, HexFov, Dir12};
