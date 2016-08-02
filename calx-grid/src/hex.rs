@@ -175,13 +175,11 @@ impl Dir12 {
             let mut cluster_end = None;
 
             for i in 0..6 {
-                if cluster_start.is_none() && neighbors[i] &&
-                   !neighbors[(i + 5) % 6] {
+                if cluster_start.is_none() && neighbors[i] && !neighbors[(i + 5) % 6] {
                     cluster_start = Some(i);
                 }
 
-                if cluster_end.is_none() && !neighbors[i] &&
-                   neighbors[(i + 5) % 6] {
+                if cluster_end.is_none() && !neighbors[i] && neighbors[(i + 5) % 6] {
                     cluster_end = Some(i);
                 }
             }
@@ -195,10 +193,7 @@ impl Dir12 {
             Some((cluster_start.unwrap(), cluster_end.unwrap()))
         }
 
-        fn is_single_cluster(neighbors: &[bool; 6],
-                             start: usize,
-                             end: usize)
-                             -> bool {
+        fn is_single_cluster(neighbors: &[bool; 6], start: usize, end: usize) -> bool {
             let mut in_cluster = true;
 
             for i in 0..6 {
@@ -292,7 +287,8 @@ impl<F, G, T> Iterator for HexFov<F, G, T>
                     });
 
                     // Branch further if we still get values there.
-                    if let Some(further_value) = (self.f)(current.begin.further().to_v2(), &current_value) {
+                    if let Some(further_value) = (self.f)(current.begin.further().to_v2(),
+                                                          &current_value) {
                         self.stack.push(Sector {
                             begin: current.begin.further(),
                             pt: current.begin.further(),
@@ -312,18 +308,21 @@ impl<F, G, T> Iterator for HexFov<F, G, T>
                         let next = current.pt.next();
                         // If the next cell is within the current span and the current cell is
                         // wallform,
-                        if next.is_below(current.end) && is_wall(current.pt.to_v2(), &current.group_value) {
+                        if next.is_below(current.end) &&
+                           is_wall(current.pt.to_v2(), &current.group_value) {
                             // and if the next cell is visible,
                             if let Some(next_value) = (self.f)(next.to_v2(), &current.group_value) {
                                 // and if the current and the next cell are in the same value group,
                                 // both the next cell and the third corner point cell are
                                 // wallforms, and the side point would not be otherwise
                                 // visible:
-                                if next_value == current.group_value && is_wall(next.to_v2(), &next_value) &&
-                                    (self.f)(side_pos, &current.group_value).is_none() && is_wall(side_pos, &current.group_value) {
-                                        // Add the side point to the side channel.
-                                        self.side_channel.push((side_pos, current.group_value.clone()));
-                                    }
+                                if next_value == current.group_value &&
+                                   is_wall(next.to_v2(), &next_value) &&
+                                   (self.f)(side_pos, &current.group_value).is_none() &&
+                                   is_wall(side_pos, &current.group_value) {
+                                    // Add the side point to the side channel.
+                                    self.side_channel.push((side_pos, current.group_value.clone()));
+                                }
                             }
                         }
                     }
@@ -336,7 +335,8 @@ impl<F, G, T> Iterator for HexFov<F, G, T>
             } else {
                 // Hit the end of the sector.
 
-                if let Some(group_value) = (self.f)(current.begin.further().to_v2(), &current.group_value) {
+                if let Some(group_value) = (self.f)(current.begin.further().to_v2(),
+                                                    &current.group_value) {
                     // Branch out further if things are still visible there.
                     self.stack.push(Sector {
                         begin: current.begin.further(),
@@ -396,8 +396,7 @@ impl PolarPoint {
             return Point2D::new(0, 0);
         }
         let index = self.winding_index();
-        let sector = index.mod_floor(&(self.radius as i32 * 6)) /
-                     self.radius as i32;
+        let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
         let offset = index.mod_floor(&(self.radius as i32));
 
         let rod = Dir6::from_int(sector).to_v2();
@@ -431,8 +430,7 @@ impl PolarPoint {
 
     /// The point corresponding to this one on the hex circle with radius +1.
     pub fn further(self) -> PolarPoint {
-        PolarPoint::new(self.pos * (self.radius + 1) as f32 /
-                        self.radius as f32,
+        PolarPoint::new(self.pos * (self.radius + 1) as f32 / self.radius as f32,
                         self.radius + 1)
     }
 
@@ -474,20 +472,22 @@ mod test {
             assert_eq!(d, Dir6::from_v2(v));
 
             // Test opposite dir vector mapping.
-            assert_eq!(Dir6::from_int(i + 3), Dir6::from_v2(Point2D::new(-v.x, -v.y)));
+            assert_eq!(Dir6::from_int(i + 3),
+                       Dir6::from_v2(Point2D::new(-v.x, -v.y)));
 
             // Test approximation of longer vectors.
             assert_eq!(d, Dir6::from_v2(Point2D::new(v.x * 3, v.y * 3)));
-            assert_eq!(d, Dir6::from_v2(Point2D::new(v.x * 3 + v1.x, v.y * 3 + v1.y)));
-            assert_eq!(d, Dir6::from_v2(Point2D::new(v.x * 3 + v2.x, v.y * 3 + v2.y)));
+            assert_eq!(d,
+                       Dir6::from_v2(Point2D::new(v.x * 3 + v1.x, v.y * 3 + v1.y)));
+            assert_eq!(d,
+                       Dir6::from_v2(Point2D::new(v.x * 3 + v2.x, v.y * 3 + v2.y)));
         }
     }
 
     #[test]
     fn test_dir12() {
         assert_eq!(None,
-                   Dir12::away_from(&[false, false, false, false, false,
-                                      false]));
+                   Dir12::away_from(&[false, false, false, false, false, false]));
         assert_eq!(None,
                    Dir12::away_from(&[true, true, true, true, true, true]));
         assert_eq!(None,
@@ -497,8 +497,7 @@ mod test {
         assert_eq!(None,
                    Dir12::away_from(&[true, false, true, false, true, false]));
         assert_eq!(Some(Dir12::South),
-                   Dir12::away_from(&[true, false, false, false, false,
-                                      false]));
+                   Dir12::away_from(&[true, false, false, false, false, false]));
         assert_eq!(Some(Dir12::East),
                    Dir12::away_from(&[true, false, false, true, true, true]));
         assert_eq!(Some(Dir12::SouthSouthWest),
