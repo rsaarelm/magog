@@ -8,12 +8,12 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "world"
 
 [dependencies]
-num = "*"
-rand = "*"
-vec_map = "*"
-serde = "*"
-serde_macros = "*"
-bincode = "*"
+num = "0.1"
+rand = "0.3"
+vec_map = "0.6"
+serde = "0.7"
+serde_macros = "0.7"
+bincode = "0.5"
 image = "0.10"
 euclid = "0.7"
 
