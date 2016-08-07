@@ -22,13 +22,14 @@ mod ability;
 mod brush;
 pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
 
+pub mod chart;
 pub mod components;
 mod field;
 mod flags;
 pub mod item;
 
 mod location;
-pub use location::{Chart, ChartCell, Location};
+pub use location::Location;
 
 mod location_set;
 pub mod query;
@@ -38,6 +39,8 @@ pub mod terrain;
 
 mod world;
 pub use world::World;
+
+pub type Chart = ::std::collections::HashMap<euclid::Point2D<i32>, chart::Cell>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {

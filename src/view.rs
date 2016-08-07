@@ -66,6 +66,7 @@ pub fn draw_world(context: &mut backend::Context,
                   chart: &Chart,
                   screen_rect: &Rect<f32>,
                   screen_offset: &Point2D<f32>) {
+    unimplemented!();
 }
 
 #[derive(Copy, Clone)]

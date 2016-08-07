@@ -1,5 +1,4 @@
-use std::ops::Add;
-use std::collections::HashMap;
+use std::ops::{Add, Sub};
 use euclid::Point2D;
 use calx_alg::noise;
 use calx_grid::{Dir6, GridNode, HexGeom};
@@ -63,29 +62,16 @@ impl Add<Point2D<i32>> for Location {
     }
 }
 
-/// Data store for a single cell in a chart.
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct ChartCell {
-    /// Is the chart cell visible in the field of view of this chart?
-    pub visible: bool,
-    /// Stack of locations from passing through the portals.
-    ///
-    /// The one at the end of the list is the current one, you'll usually be most interested in
-    /// that. The previous ones are from the linear spaces before each portal the field of view has
-    /// passed to get here.
-    pub locations: Vec<Location>,
-}
-
-/// A mapping from a 2D plane into one or several world locations.
-pub struct Chart(HashMap<Point2D<i32>, ChartCell>);
-
-impl Chart {
-    pub fn new(origin: Location, range: u32) -> Chart {
-        // TODO: Waiting for new, portaling HexFov.
-        unimplemented!();
+impl Sub<Point2D<i32>> for Location {
+    type Output = Location;
+    fn sub(self, other: Point2D<i32>) -> Location {
+        Location {
+            x: (self.x as i32 - other.x) as i8,
+            y: (self.y as i32 - other.y) as i8,
+            z: self.z,
+        }
     }
 }
-
 
 impl GridNode for Location {
     fn neighbors(&self) -> Vec<Location> {

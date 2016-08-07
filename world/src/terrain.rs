@@ -27,7 +27,7 @@ pub enum Kind {
 /// Visual form of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Form {
-    /// Nothingness
+    /// Nothingness, lets sight pass through portals
     Void,
     /// Marker pointing at adjacent nothingness
     Gate,
