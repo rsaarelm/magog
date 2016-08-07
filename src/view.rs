@@ -62,10 +62,10 @@ fn column_to_chart(cr: Point2D<i32>) -> Point2D<i32> {
 
 /// Draw a view space described by the chart.
 pub fn draw_world(context: &mut backend::Context,
-                            world: &World,
-                            chart: &Chart,
-                            screen_rect: &Rect<f32>,
-                            screen_offset: &Point2D<f32>) {
+                  world: &World,
+                  chart: &Chart,
+                  screen_rect: &Rect<f32>,
+                  screen_offset: &Point2D<f32>) {
 }
 
 #[derive(Copy, Clone)]

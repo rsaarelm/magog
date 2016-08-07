@@ -27,6 +27,10 @@ pub enum Kind {
 /// Visual form of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Form {
+    /// Nothingness
+    Void,
+    /// Marker pointing at adjacent nothingness
+    Gate,
     /// Single frame on floor layer
     Floor,
     /// Single frame on object layer
