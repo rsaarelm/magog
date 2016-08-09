@@ -14,7 +14,7 @@ pub trait HexGeom {
 
 impl HexGeom for Point2D<i32> {
     fn hex_dist(&self) -> i32 {
-        if self.x.signum() == self.x.signum() {
+        if self.x.signum() == self.y.signum() {
             max(self.x.abs(), self.y.abs())
         } else {
             self.x.abs() + self.y.abs()
