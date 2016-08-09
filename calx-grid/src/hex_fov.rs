@@ -238,3 +238,38 @@ impl PolarPoint {
         PolarPoint::new((self.pos + 0.5).floor() + 0.5, self.radius)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::collections::HashMap;
+    use std::iter::FromIterator;
+    use euclid::Point2D;
+    use super::HexFov;
+    use hex::HexGeom;
+
+    #[test]
+    fn trivial_fov() {
+        // Just draw a small circle.
+        let fov = HexFov::new(0i32, |offset, &a| if offset.hex_dist() < 2 {
+            Some(a + offset.x + offset.y)
+        } else {
+            None
+        });
+
+        let field: HashMap<Point2D<i32>, i32> = HashMap::from_iter(fov);
+
+        assert!(field.contains_key(&Point2D::new(1, 0)));
+        assert!(!field.contains_key(&Point2D::new(1, -1)));
+
+        let fov = HexFov::new(0i32, |offset, &a| if offset.hex_dist() < 2 {
+                      Some(a)
+                  } else {
+                      None
+                  })
+                      .fake_isometric(|_, _| true);
+        let field: HashMap<Point2D<i32>, i32> = HashMap::from_iter(fov);
+
+        assert!(field.contains_key(&Point2D::new(1, 0)));
+        assert!(field.contains_key(&Point2D::new(1, -1)));
+    }
+}
