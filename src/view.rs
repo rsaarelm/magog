@@ -1,7 +1,7 @@
 use std::iter::Map;
 use euclid::{Point2D, Rect};
 use backend;
-use world::{Chart, World};
+use world::{ScreenChart, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -63,7 +63,7 @@ fn column_to_chart(cr: Point2D<i32>) -> Point2D<i32> {
 /// Draw a view space described by the chart.
 pub fn draw_world(context: &mut backend::Context,
                   world: &World,
-                  chart: &Chart,
+                  chart: &ScreenChart,
                   screen_rect: &Rect<f32>,
                   screen_offset: &Point2D<f32>) {
     unimplemented!();

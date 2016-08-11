@@ -169,6 +169,16 @@ pub fn portal(w: &World, loc: Location) -> Option<Location> {
     w.portals.get(&loc).map(|&x| x)
 }
 
+/// Return a portal if it can be seen through.
+pub fn visible_portal(w: &World, loc: Location) -> Option<Location> {
+    // Only void-form is transparent to portals.
+    if terrain(w, loc).form == terrain::Form::Void {
+        portal(w, loc)
+    } else {
+        None
+    }
+}
+
 pub fn terrain(w: &World, loc: Location) -> Rc<terrain::Tile> {
     let idx = w.terrain.get(loc);
     terrain::Tile::get_resource(&idx).unwrap()
