@@ -1,7 +1,10 @@
-use std::iter::Map;
+use std::collections::HashMap;
+use std::iter::{FromIterator, Map};
 use euclid::{Point2D, Rect};
+use calx_grid::{FovValue, HexFov};
 use backend;
-use world::{ScreenChart, World};
+use world::{Location, ScreenChart, World};
+use world::query;
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -68,6 +71,61 @@ pub fn draw_world(context: &mut backend::Context,
                   screen_offset: &Point2D<f32>) {
     unimplemented!();
 }
+
+
+#[derive(Clone)]
+struct ScreenFov<'a> {
+    w: &'a World,
+    screen_area: Rect<f32>,
+    origins: Vec<Location>,
+}
+
+impl<'a> PartialEq for ScreenFov<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.w as *const World == other.w as *const World &&
+        self.screen_area == other.screen_area && self.origins == other.origins
+    }
+}
+
+impl<'a> Eq for ScreenFov<'a> {}
+
+impl<'a> FovValue for ScreenFov<'a> {
+    fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
+        if !self.screen_area.contains(&chart_to_view(offset)) {
+            return None;
+        }
+
+        let loc = self.origins[0] + offset;
+
+        let mut ret = self.clone();
+        // Go through a portal if terrain on our side of the portal is a void cell.
+        //
+        // With non-void terrain on top of the portal, just show our side and stay on the current
+        // frame as far as FOV is concerned.
+        if let Some(dest) = query::visible_portal(self.w, loc) {
+            ret.origins.insert(0, dest - offset);
+        }
+
+        Some(ret)
+    }
+}
+
+/// Return the field of view chart for drawing a screen.
+pub fn screen_fov<F>(w: &World,
+                     origin: Location,
+                     screen_area: Rect<f32>)
+                     -> HashMap<Point2D<i32>, Vec<Location>>
+    where F: Fn(Point2D<i32>) -> bool
+{
+    let init = ScreenFov {
+        w: w,
+        screen_area: screen_area,
+        origins: vec![origin],
+    };
+
+    HashMap::from_iter(HexFov::new(init).map(|(pos, a)| (pos, a.origins)))
+}
+
 
 #[derive(Copy, Clone)]
 pub struct ColumnRectIter {

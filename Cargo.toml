@@ -29,5 +29,8 @@ git = "https://github.com/rsaarelm/calx"
 [dependencies.calx-resource]
 git = "https://github.com/rsaarelm/calx"
 
+[dependencies.calx-grid]
+git = "https://github.com/rsaarelm/calx"
+
 [dependencies.world]
 path = "world"
