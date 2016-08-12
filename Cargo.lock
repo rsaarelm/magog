@@ -3,6 +3,7 @@ name = "debris"
 version = "0.1.0"
 dependencies = [
  "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "euclid 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -75,7 +76,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#de2fbba9fcb18611feec6cc61b768a05b6e17e0b"
+source = "git+https://github.com/rsaarelm/calx#7f38a8b5f561ed44dea703b021d883d04ab063f7"
 dependencies = [
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -87,7 +88,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#de2fbba9fcb18611feec6cc61b768a05b6e17e0b"
+source = "git+https://github.com/rsaarelm/calx#7f38a8b5f561ed44dea703b021d883d04ab063f7"
 dependencies = [
  "image 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -98,7 +99,7 @@ dependencies = [
 [[package]]
 name = "calx-ecs"
 version = "0.0.1"
-source = "git+https://github.com/rsaarelm/calx#de2fbba9fcb18611feec6cc61b768a05b6e17e0b"
+source = "git+https://github.com/rsaarelm/calx#7f38a8b5f561ed44dea703b021d883d04ab063f7"
 dependencies = [
  "serde 0.7.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_macros 0.7.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -107,7 +108,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#de2fbba9fcb18611feec6cc61b768a05b6e17e0b"
+source = "git+https://github.com/rsaarelm/calx#7f38a8b5f561ed44dea703b021d883d04ab063f7"
 dependencies = [
  "euclid 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -119,7 +120,7 @@ dependencies = [
 [[package]]
 name = "calx-resource"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#de2fbba9fcb18611feec6cc61b768a05b6e17e0b"
+source = "git+https://github.com/rsaarelm/calx#7f38a8b5f561ed44dea703b021d883d04ab063f7"
 dependencies = [
  "serde 0.7.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
