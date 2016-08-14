@@ -58,8 +58,8 @@ impl GameView {
         // Chart area, center in origin, inflated by tile width in every direction to get the cells
         // partially on screen included.
         let bounds = screen_area.translate(&-(center + screen_area.origin))
-                                .inflate(view::PIXEL_UNIT as f32 * 2.0,
-                                         view::PIXEL_UNIT as f32 * 2.0);
+                                .inflate(view::PIXEL_UNIT * 2.0,
+                                         view::PIXEL_UNIT * 2.0);
 
         context.set_clip_rect(Some(*screen_area));
 

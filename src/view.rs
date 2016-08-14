@@ -6,19 +6,19 @@ use world::{Location, World};
 use world::query;
 
 /// Useful general constant for cell dimension ops.
-pub static PIXEL_UNIT: i32 = 16;
+pub static PIXEL_UNIT: f32 = 16.0;
 
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
 pub fn chart_to_view(chart_pos: Point2D<i32>) -> Point2D<f32> {
-    Point2D::new((chart_pos.x * PIXEL_UNIT - chart_pos.y * PIXEL_UNIT) as f32,
-                 (chart_pos.x * PIXEL_UNIT / 2 + chart_pos.y * PIXEL_UNIT / 2) as f32)
+    Point2D::new((chart_pos.x as f32 * PIXEL_UNIT - chart_pos.y as f32 * PIXEL_UNIT),
+                 (chart_pos.x as f32 * PIXEL_UNIT / 2.0 + chart_pos.y as f32 * PIXEL_UNIT / 2.0))
 }
 
 /// Transform from view space (unit is one pixel) to chart space (unit is one
 /// map cell).
 pub fn view_to_chart(view_pos: Point2D<f32>) -> Point2D<i32> {
-    let c = PIXEL_UNIT as f32 / 2.0;
+    let c = PIXEL_UNIT / 2.0;
     let column = ((view_pos.x + c) / (c * 2.0)).floor();
     let row = ((view_pos.y - column * c) / (c * 2.0)).floor();
     Point2D::new((column + row) as i32, row as i32)
