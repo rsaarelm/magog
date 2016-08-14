@@ -111,12 +111,10 @@ impl<'a> FovValue for ScreenFov<'a> {
 }
 
 /// Return the field of view chart for drawing a screen.
-pub fn screen_fov<F>(w: &World,
-                     origin: Location,
-                     screen_area: Rect<f32>)
-                     -> HashMap<Point2D<i32>, Vec<Location>>
-    where F: Fn(Point2D<i32>) -> bool
-{
+pub fn screen_fov(w: &World,
+                  origin: Location,
+                  screen_area: Rect<f32>)
+                  -> HashMap<Point2D<i32>, Vec<Location>> {
     let init = ScreenFov {
         w: w,
         screen_area: screen_area,

@@ -11,6 +11,8 @@ extern crate calx_grid;
 extern crate world;
 
 mod backend;
+mod game_view;
+mod sprite;
 mod view;
 
 use calx_color::color::*;
@@ -22,6 +24,8 @@ use world::{BrushBuilder, Frame};
 use world::World;
 use world::query;
 use world::terrain;
+use world::Location;
+use game_view::GameView;
 
 fn init_brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
     BrushBuilder::new(builder)
@@ -142,32 +146,28 @@ pub fn main() {
     let font = context.default_font();
 
     // Initialize worldstate
-    let world = World::new(1);
+    let mut view = GameView::new(World::new(1));
+
+    view.world.terrain.set(Location::new(0, 0), 2);
+    view.world.terrain.set(Location::new(0, -1), 1);
+    view.world.terrain.set(Location::new(1, 0), 3);
+    view.world.terrain.set(Location::new(2, 0), 5);
+    view.world.terrain.set(Location::new(3, 0), 6);
+    view.world.terrain.set(Location::new(4, 0), 6);
+    view.world.terrain.set(Location::new(3, 2), 7);
+    view.world.terrain.set(Location::new(4, 2), 7);
 
     // Run game.
     loop {
         context.begin_frame();
 
-        let rect = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
-
-        let cursor_pos = view::view_to_chart(context.mouse_pos());
-
-        for chart_pos in view::cells_in_view_rect(rect) {
-            let pos = view::chart_to_view(chart_pos);
-            let mut t = query::terrain(&world, world::Location::new(pos.x as i8, pos.y as i8));
-
-            if chart_pos == cursor_pos {
-                t = terrain::Tile::get_resource(&5).unwrap();
-            }
-
-            draw_frame(&mut context, pos, &t.brush[0]);
-        }
+        let area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
+        view.draw(&mut context, &area);
 
         context.draw_text(font,
                           Point2D::new(4.0, 20.0),
                           [1.0, 1.0, 1.0, 1.0],
                           "Hello, world!");
-
 
         if !backend.update(&display, &mut context) {
             return;
