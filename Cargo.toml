@@ -8,9 +8,9 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/rsaarelm/vitral"
 
 [dependencies]
-euclid = "0.7"
+euclid = "0.9"
 image = "0.10"
 time = "0.1"
 
 [dev-dependencies]
-glium = "0.14"
+glium = "0.15"
