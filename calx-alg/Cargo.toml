@@ -7,11 +7,11 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-serde = "0.7"
-serde_macros = "0.7"
+serde = "0.8"
+serde_macros = "0.8"
 num = "0.1"
 rand = "0.3"
 time = "0.1"
 
 [dev-dependencies]
-bincode = "0.5"
+bincode = "0.6"

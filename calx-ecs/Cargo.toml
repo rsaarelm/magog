@@ -7,8 +7,8 @@ keywords = ["gamedev", "ecs"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-serde = "0.7"
-serde_macros = "0.7"
+serde = "0.8"
+serde_macros = "0.8"
 
 [dev-dependencies]
-bincode = "0.5"
+bincode = "0.6"
