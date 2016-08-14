@@ -9,9 +9,7 @@ extern crate euclid;
 pub use search::{GridNode, Dijkstra, astar_path_with};
 pub use hex::{HexGeom, Dir6, Dir12};
 pub use hex_fov::{FovValue, HexFov};
-pub use kernel::{Kernel, KernelTerrain};
 
 mod hex;
 mod hex_fov;
-mod kernel;
 mod search;
