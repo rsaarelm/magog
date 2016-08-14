@@ -3,24 +3,13 @@ use euclid::Point2D;
 use calx_resource::Resource;
 use world::Brush;
 use backend;
+use render::Layer;
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
-/// Draw layer for visual map elements.
-pub enum Layer {
-    /// Floor sprites, below other map forms.
-    Floor,
-    /// Blood splatters etc. on floor.
-    Decal,
-    /// Small items on floor,.
-    Items,
-    /// Large map objects, walls, most entities etc.
-    Object,
-    /// Transient effects shown on top of other map content.
-    Effect,
-    /// Text captions for map elements, on top of everything else. 
-    Text,
-}
-
+/// Drawable display element.
+///
+/// Sprites are basically a way to defer somewhat complex draw instructions. The reason they exist
+/// is that scene draw order is not necessarily trivially reflectable in scene data traversal, so
+/// emitting sprites and then sorting them is the simplest way to go ahead.
 #[derive(Clone, PartialEq, Eq)]
 pub struct Sprite {
     pub layer: Layer,

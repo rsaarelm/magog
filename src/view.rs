@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::iter::{FromIterator};
+use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{FovValue, HexFov};
 use world::{Location, World};
