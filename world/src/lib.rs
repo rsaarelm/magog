@@ -40,8 +40,6 @@ pub mod terrain;
 mod world;
 pub use world::World;
 
-pub type ScreenChart = ::std::collections::HashMap<euclid::Point2D<i32>, Vec<Location>>;
-
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
     Seen,

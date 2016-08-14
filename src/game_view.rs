@@ -260,7 +260,6 @@ impl GameView {
                 }
             }
         }
-        // TODO: Generate formatted terrain sprites.
         // TODO: Generate sprites for entities, with tweening state projection.
         // TODO: Generate special effect sprites grounded on this location.
     }
