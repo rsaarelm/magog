@@ -198,14 +198,14 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
     ///
     /// Blob shaping is somewhat complicated and requires a large number of frames.
     pub fn blob(self, vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Self {
-        self.splat(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left
+        self.splat(vert_x, vert_y, 16, 32).offset(16, 16)               // 0: Top left    VERTICAL SIDES
             .frame().splat(vert_x + 16, vert_y, 16, 32).offset(0, 16)   // 1: Top right
             .frame().splat(vert_x + 32, vert_y, 16, 32).offset(16, 16)  // 2: Middle left
             .frame().splat(vert_x + 48, vert_y, 16, 32).offset(0, 16)   // 3: Middle right
             .frame().splat(vert_x + 64, vert_y, 16, 32).offset(16, 16)  // 4: Bottom left
             .frame().splat(vert_x + 80, vert_y, 16, 32).offset(0, 16)   // 5: Bottom right
 
-            .frame().splat(rear_x, rear_y, 10, 32).offset(16, 16)       // 6: Left half
+            .frame().splat(rear_x, rear_y, 10, 32).offset(16, 16)       // 6: Left half       REAR PARTS
 
             .frame().splat(rear_x + 10, rear_y, 6, 32).offset(6, 16)    // 7: Front
             .frame().splat(rear_x + 16, rear_y, 6, 32).offset(0, 16)    // 8
@@ -222,7 +222,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
             .frame().splat(rear_x + 80, rear_y, 6, 32).offset(0, 16)    // 16
             .frame().splat(rear_x + 86, rear_y, 10, 32).offset(-6, 16)  // 17
 
-            .frame().splat(x, y, 10, 32).offset(16, 16)                 // 18 Left half
+            .frame().splat(x, y, 10, 32).offset(16, 16)                 // 18 Left half      FRONT PARTS
 
             .frame().splat(x + 10, y, 6, 32).offset(6, 16)              // 19: Front
             .frame().splat(x + 16, y, 6, 32).offset(0, 16)              // 20
