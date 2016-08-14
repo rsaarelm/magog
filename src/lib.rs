@@ -218,6 +218,8 @@ pub struct Context<T, V> {
 
     styles: Vec<Style>,
     current_style: Style,
+
+    clip: Option<Rect<f32>>,
 }
 
 impl<T, V: Vertex> Context<T, V>
@@ -241,6 +243,8 @@ impl<T, V: Vertex> Context<T, V>
 
             styles: Vec::new(),
             current_style: Default::default(),
+
+            clip: None,
         }
     }
 
@@ -341,6 +345,17 @@ impl<T, V: Vertex> Context<T, V>
         batch.triangle_indices.push(idx_offset + 3);
     }
 
+    /// Set or clear clip rectangle.
+    pub fn set_clip_rect(&mut self, area: Option<Rect<f32>>) {
+        self.clip = area;
+        self.check_batch(None);
+    }
+
+    /// Return current clip rectangle, if any.
+    pub fn clip_rect(&self) -> Option<Rect<f32>> {
+        self.clip
+    }
+
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
         self.start_solid_texture();
         // Image 0 must be solid texture.
@@ -439,12 +454,46 @@ impl<T, V: Vertex> Context<T, V>
 
     /// Ensure that there current draw batch has solid texture.
     fn start_texture(&mut self, texture: T) {
-        // TODO: Actually have the solid texture value stashed somewhere.
-        if self.draw_list.is_empty() ||
-           self.draw_list[self.draw_list.len() - 1].texture != texture {
+        self.check_batch(Some(texture));
+    }
+
+    fn current_batch_is_invalid(&self, texture: T) -> bool {
+        if self.draw_list.is_empty() {
+            return true;
+        }
+
+        if self.draw_list[self.draw_list.len() - 1].texture != texture {
+            return true;
+        }
+
+        if self.draw_list[self.draw_list.len() - 1].clip != self.clip {
+            return true;
+        }
+
+        // Getting too close to u16 limit for comfort.
+        if self.draw_list[self.draw_list.len() - 1].vertices.len() > (1 << 15) {
+            return true;
+        }
+
+        false
+    }
+
+    /// Start a new render batch if needed.
+    ///
+    /// Need to start a new batch if render state has changed or if the current one is growing too
+    /// large for the u16 indices.
+    fn check_batch(&mut self, texture_needed: Option<T>) {
+        if texture_needed.is_none() && self.draw_list.is_empty() {
+            // Do nothing for stuff that only affects ongoing drawing.
+            return;
+        }
+
+        let texture = texture_needed.unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture);
+
+        if self.current_batch_is_invalid(texture) {
             self.draw_list.push(DrawBatch {
                 texture: texture,
-                clip: None,
+                clip: self.clip,
                 vertices: Vec::new(),
                 triangle_indices: Vec::new(),
             });
