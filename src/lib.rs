@@ -565,6 +565,9 @@ impl<T, V: Vertex> Context<T, V>
 
     /// Get the current mouse position
     pub fn mouse_pos(&self) -> Point2D<f32> { self.mouse_pos }
+
+    /// Get whether mouse button was pressed
+    pub fn is_mouse_pressed(&self) -> bool { self.click_state.is_pressed() }
 }
 
 /// A sequence of primitive draw operarations.
