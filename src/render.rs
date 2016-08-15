@@ -50,7 +50,7 @@ pub enum Layer {
     Object,
     /// Transient effects shown on top of other map content.
     Effect,
-    /// Text captions for map elements, on top of everything else. 
+    /// Text captions for map elements, on top of everything else.
     Text,
 }
 

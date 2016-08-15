@@ -61,8 +61,11 @@ pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         .file("content/assets/props.png")
         ////
         .color(RED)
-        .splat(32, 0, 32, 32)
+        .splat(0, 0, 32, 32)
         .brush("cursor")
+        .color(RED)
+        .splat(32, 0, 32, 32)
+        .brush("cursor_top")
         ////
         .color(SADDLEBROWN)
         .tile(160, 64)

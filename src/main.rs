@@ -10,12 +10,12 @@ extern crate calx_resource;
 extern crate calx_grid;
 extern crate world;
 
-mod backend;
-mod game_view;
-mod init;
-mod render;
-mod sprite;
-mod view;
+pub mod backend;
+pub mod game_view;
+pub mod init;
+pub mod render;
+pub mod sprite;
+pub mod view;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
@@ -42,13 +42,16 @@ pub fn main() {
 
     context = builder.build(|img| backend.make_texture(&display, img));
 
-    let font = context.default_font();
-
     // Initialize worldstate
     let mut view = GameView::new(World::new(1));
 
-    view.world.terrain.set(Location::new(0, 0), 2);
-    view.world.terrain.set(Location::new(0, -1), 1);
+    for x in -10..10 {
+        for y in -10..10 {
+            view.world.terrain.set(Location::new(x, y), 2);
+        }
+    }
+
+    view.world.terrain.set(Location::new(0, -10), 1);
     view.world.terrain.set(Location::new(1, 0), 3);
     view.world.terrain.set(Location::new(2, 0), 5);
     view.world.terrain.set(Location::new(3, 0), 6);
@@ -62,11 +65,6 @@ pub fn main() {
 
         let area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
         view.draw(&mut context, &area);
-
-        context.draw_text(font,
-                          Point2D::new(4.0, 20.0),
-                          [1.0, 1.0, 1.0, 1.0],
-                          "Hello, world!");
 
         if !backend.update(&display, &mut context) {
             return;
