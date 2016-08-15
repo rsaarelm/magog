@@ -760,7 +760,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.0.0"
-source = "git+https://github.com/rsaarelm/vitral#01c5efd3db86767071e6cd126407535f5a5c4f32"
+source = "git+https://github.com/rsaarelm/vitral#c543cb58593ee8e8833d20d7edcab03b794e0886"
 dependencies = [
  "euclid 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
