@@ -1,5 +1,6 @@
 use euclid::{Point2D, Rect};
 use calx_resource::Resource;
+use scancode::Scancode;
 use world::{Location, World};
 use sprite::Sprite;
 use backend;
@@ -10,6 +11,10 @@ use render;
 pub struct GameView {
     pub world: World,
     terrain_brush: u8,
+    /// Camera and second camera (for portaling)
+    camera: (Location, Location),
+    /// Do the two cameras move together?
+    camera_lock: bool,
 }
 
 impl GameView {
@@ -17,12 +22,14 @@ impl GameView {
         GameView {
             world: world,
             terrain_brush: 7,
+            camera: (Location::new(0, 0), Location::new(0, 0)),
+            camera_lock: false,
         }
     }
 
     pub fn draw(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
         // TODO: Camera logic
-        let camera_loc = Location::new(0, 0);
+        let camera_loc = self.camera.0;
 
         let center = screen_area.origin + screen_area.size / 2.0;
 
@@ -39,7 +46,7 @@ impl GameView {
 
         let cursor_pos = view::view_to_chart(context.ui.mouse_pos() - center);
 
-        for (&chart_pos, origins) in chart.iter() {
+        for (&chart_pos, origins) in &chart {
             assert!(!origins.is_empty());
 
             let loc = origins[0] + chart_pos;
@@ -82,7 +89,7 @@ impl GameView {
 
         sprites.sort();
 
-        for i in sprites.iter() {
+        for i in &sprites {
             i.draw(&mut context.ui)
         }
 
@@ -107,5 +114,33 @@ impl GameView {
         }
 
         context.ui.set_clip_rect(None);
+
+        if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
+            use scancode::Scancode::*;
+            match scancode {
+                W => self.move_camera(Point2D::new(-1, -1)),
+                A => self.move_camera(Point2D::new(-1, 1)),
+                S => self.move_camera(Point2D::new(1, 1)),
+                D => self.move_camera(Point2D::new(1, -1)),
+                Tab => self.switch_camera(),
+                _ => {}
+            }
+        }
+    }
+
+    fn move_camera(&mut self, delta: Point2D<i32>) {
+        let second_delta = if self.camera_lock {
+            delta
+        } else {
+            Point2D::new(0, 0)
+        };
+
+        let (a, b) = self.camera;
+        self.camera = (a + delta, b + second_delta);
+    }
+
+    fn switch_camera(&mut self) {
+        let (a, b) = self.camera;
+        self.camera = (b, a);
     }
 }

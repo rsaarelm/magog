@@ -15,6 +15,8 @@ pub type GliumTexture = glium::texture::SrgbTexture2d;
 pub struct Backend {
     program: glium::Program,
     textures: Vec<GliumTexture>,
+
+    keypress: Vec<KeyEvent>,
 }
 
 impl Backend {
@@ -63,6 +65,8 @@ impl Backend {
         Backend {
             program: program,
             textures: Vec::new(),
+
+            keypress: Vec::new(),
         }
     }
 
@@ -74,12 +78,9 @@ impl Backend {
         self.textures.len() - 1
     }
 
-    fn process_events<V>(&self,
-                         display: &glium::Display,
-                         context: &mut vitral::Context<usize, V>)
-                         -> bool
-        where V: vitral::Vertex
-    {
+    fn process_events(&mut self, display: &glium::Display, context: &mut UI) -> bool {
+        self.keypress.clear();
+
         // polling and handling the events received by the window
         for event in display.poll_events() {
             match event {
@@ -98,8 +99,16 @@ impl Backend {
                                                state == glutin::ElementState::Pressed)
                 }
                 glutin::Event::ReceivedCharacter(c) => context.input_char(c),
-                glutin::Event::KeyboardInput(s, _, Some(vk)) => {
+                glutin::Event::KeyboardInput(s, scancode, Some(vk)) => {
                     let is_down = s == glutin::ElementState::Pressed;
+
+                    if is_down {
+                        self.keypress.push(KeyEvent {
+                            key_code: vk,
+                            scancode: scancode,
+                        });
+                    }
+
                     use glium::glutin::VirtualKeyCode::*;
                     if let Some(vk) = match vk {
                         Tab => Some(vitral::Keycode::Tab),
@@ -124,12 +133,11 @@ impl Backend {
         true
     }
 
-    pub fn update<V>(&self,
-                     display: &glium::Display,
-                     context: &mut vitral::Context<usize, V>)
-                     -> bool
-        where V: vitral::Vertex + glium::Vertex
-    {
+    pub fn poll_key(&mut self) -> Option<KeyEvent> {
+        self.keypress.pop()
+    }
+
+    pub fn update(&mut self, display: &glium::Display, context: &mut UI) -> bool {
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
@@ -182,6 +190,12 @@ impl Backend {
 
         self.process_events(display, context)
     }
+}
+
+
+pub struct KeyEvent {
+    pub key_code: glutin::VirtualKeyCode,
+    pub scancode: u8,
 }
 
 
