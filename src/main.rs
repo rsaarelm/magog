@@ -1,9 +1,10 @@
 extern crate euclid;
 #[macro_use]
 extern crate glium;
+extern crate serde;
 extern crate image;
 extern crate vitral;
-extern crate serde;
+extern crate scancode;
 extern crate calx_color;
 #[macro_use]
 extern crate calx_resource;

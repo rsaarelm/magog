@@ -23,6 +23,9 @@ serde = "0.8"
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
 
+[dependencies.scancode]
+git = "https://github.com/rsaarelm/scancode-rs"
+
 [dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
 
