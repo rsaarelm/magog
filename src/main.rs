@@ -24,7 +24,6 @@ use world::World;
 use world::Location;
 use game_view::GameView;
 
-
 pub fn main() {
     // Construct display and Vitral context.
     let display = glutin::WindowBuilder::new()
@@ -33,14 +32,16 @@ pub fn main() {
 
     let mut backend = Backend::new(&display);
 
-    let mut context: backend::Context;
     let mut builder = vitral::Builder::new();
 
     // Initialize game resources.
     init::brushes(&mut builder);
     init::terrain();
 
-    context = builder.build(|img| backend.make_texture(&display, img));
+    let mut context = backend::Context {
+        ui: builder.build(|img| backend.make_texture(&display, img)),
+        backend: backend,
+    };
 
     // Initialize worldstate
     let mut view = GameView::new(World::new(1));
@@ -61,12 +62,12 @@ pub fn main() {
 
     // Run game.
     loop {
-        context.begin_frame();
+        context.ui.begin_frame();
 
         let area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
         view.draw(&mut context, &area);
 
-        if !backend.update(&display, &mut context) {
+        if !context.backend.update(&display, &mut context.ui) {
             return;
         }
     }

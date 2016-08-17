@@ -31,13 +31,13 @@ impl GameView {
         let bounds = screen_area.translate(&-(center + screen_area.origin))
                                 .inflate(view::PIXEL_UNIT * 2.0, view::PIXEL_UNIT * 2.0);
 
-        context.set_clip_rect(Some(*screen_area));
+        context.ui.set_clip_rect(Some(*screen_area));
 
         let chart = view::screen_fov(&self.world, camera_loc, bounds);
 
         let mut sprites = Vec::new();
 
-        let cursor_pos = view::view_to_chart(context.mouse_pos() - center);
+        let cursor_pos = view::view_to_chart(context.ui.mouse_pos() - center);
 
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
@@ -75,7 +75,7 @@ impl GameView {
                 frame_idx: 0,
             });
 
-            if context.is_mouse_pressed() {
+            if context.ui.is_mouse_pressed() {
                 self.world.terrain.set(loc, self.terrain_brush);
             }
         }
@@ -83,29 +83,29 @@ impl GameView {
         sprites.sort();
 
         for i in sprites.iter() {
-            i.draw(context)
+            i.draw(&mut context.ui)
         }
 
-        if context.button("draw void") {
+        if context.ui.button("draw void") {
             self.terrain_brush = 0;
         }
 
-        if context.button("draw gate") {
+        if context.ui.button("draw gate") {
             self.terrain_brush = 1;
         }
 
-        if context.button("draw ground") {
+        if context.ui.button("draw ground") {
             self.terrain_brush = 2;
         }
 
-        if context.button("draw wall") {
+        if context.ui.button("draw wall") {
             self.terrain_brush = 6;
         }
 
-        if context.button("draw rock") {
+        if context.ui.button("draw rock") {
             self.terrain_brush = 7;
         }
 
-        context.set_clip_rect(None);
+        context.ui.set_clip_rect(None);
     }
 }

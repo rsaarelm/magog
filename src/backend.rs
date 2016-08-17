@@ -3,7 +3,12 @@ use glium::glutin;
 use glium::index::PrimitiveType;
 use vitral;
 
-pub type Context = vitral::Context<usize, Vertex>;
+pub type UI = vitral::Context<usize, Vertex>;
+
+pub struct Context {
+    pub ui: UI,
+    pub backend: Backend,
+}
 
 pub type GliumTexture = glium::texture::SrgbTexture2d;
 
