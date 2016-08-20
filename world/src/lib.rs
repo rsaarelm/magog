@@ -29,7 +29,7 @@ mod fov;
 pub mod item;
 
 mod location;
-pub use location::Location;
+pub use location::{Location, Portal};
 
 mod location_set;
 pub mod query;

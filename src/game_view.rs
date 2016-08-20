@@ -1,7 +1,7 @@
 use euclid::{Point2D, Rect};
 use calx_resource::Resource;
 use scancode::Scancode;
-use world::{Location, World};
+use world::{Location, Portal, World};
 use sprite::Sprite;
 use vitral;
 use backend;
@@ -110,7 +110,7 @@ impl GameView {
                 PaintMode::Portal => {
                     let (a, b) = self.camera;
                     if a != b && context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        self.world.portals.insert(loc, b);
+                        self.world.portals.insert(loc, Portal::new(a, b));
                     }
                     if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
                         self.world.portals.remove(&loc);

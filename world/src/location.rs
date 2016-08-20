@@ -1,4 +1,5 @@
 use std::ops::{Add, Sub};
+use std::num::Wrapping;
 use euclid::Point2D;
 use calx_alg::noise;
 use calx_grid::{Dir6, GridNode, HexGeom};
@@ -62,6 +63,17 @@ impl Add<Point2D<i32>> for Location {
     }
 }
 
+impl Add<Portal> for Location {
+    type Output = Location;
+    fn add(self, other: Portal) -> Location {
+        Location {
+            x: (Wrapping(self.x) + Wrapping(other.dx)).0,
+            y: (Wrapping(self.y) + Wrapping(other.dy)).0,
+            z: other.z,
+        }
+    }
+}
+
 impl Sub<Point2D<i32>> for Location {
     type Output = Location;
     fn sub(self, other: Point2D<i32>) -> Location {
@@ -76,6 +88,23 @@ impl Sub<Point2D<i32>> for Location {
 impl GridNode for Location {
     fn neighbors(&self) -> Vec<Location> {
         Dir6::iter().map(|d| *self + d.to_v2()).collect()
+    }
+}
+
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+pub struct Portal {
+    pub dx: i8,
+    pub dy: i8,
+    pub z: i8,
+}
+
+impl Portal {
+    pub fn new(from: Location, to: Location) -> Portal {
+        Portal {
+            dx: (Wrapping(to.x) - Wrapping(from.x)).0,
+            dy: (Wrapping(to.y) - Wrapping(from.y)).0,
+            z: to.z,
+        }
     }
 }
 

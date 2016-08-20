@@ -166,7 +166,7 @@ pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Optio
 
 /// If location contains a portal, return the destination of the portal.
 pub fn portal(w: &World, loc: Location) -> Option<Location> {
-    w.portals.get(&loc).map(|&x| x)
+    w.portals.get(&loc).map(|&p| loc + p)
 }
 
 /// Return a portal if it can be seen through.

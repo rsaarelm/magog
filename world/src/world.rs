@@ -4,7 +4,7 @@ use bincode::{self, serde};
 use field::Field;
 use spatial::Spatial;
 use flags::Flags;
-use location::Location;
+use location::{Location, Portal};
 use components;
 use stats;
 
@@ -31,7 +31,7 @@ pub struct World {
     /// Terrain data.
     pub terrain: Field<u8>,
     /// Optional portals between map zones.
-    pub portals: HashMap<Location, Location>,
+    pub portals: HashMap<Location, Portal>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
