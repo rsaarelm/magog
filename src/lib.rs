@@ -207,7 +207,7 @@ pub struct Context<T, V> {
     layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
-    click_state: ClickState,
+    click_state: [ClickState; 3],
 
     fonts: Vec<FontData<T>>,
     images: Vec<ImageData<T>>,
@@ -232,7 +232,7 @@ impl<T, V: Vertex> Context<T, V>
             layout_pos: Point2D::new(0.0, 0.0),
 
             mouse_pos: Point2D::new(0.0, 0.0),
-            click_state: ClickState::Unpressed,
+            click_state: [ClickState::Unpressed, ClickState::Unpressed, ClickState::Unpressed],
 
             fonts: fonts,
             images: images,
@@ -290,7 +290,7 @@ impl<T, V: Vertex> Context<T, V>
         self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = self.click_state.is_pressed() && area.contains(&self.mouse_pos);
+        let press = self.click_state[MouseButton::Left as usize].is_pressed() && area.contains(&self.mouse_pos);
 
         let color = if press {
             [1.0, 1.0, 0.0, 1.0]
@@ -307,7 +307,7 @@ impl<T, V: Vertex> Context<T, V>
                        color,
                        caption);
 
-        press && self.click_state.is_release()
+        press && self.click_state[MouseButton::Left as usize].is_release()
     }
 
     pub fn draw_image<I>(&mut self, image: I, pos: Point2D<f32>, color: [f32; 4])
@@ -502,7 +502,9 @@ impl<T, V: Vertex> Context<T, V>
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T, V>> {
         // Clean up transient mouse click info.
-        self.click_state = self.click_state.tick();
+        for i in 0..3 {
+            self.click_state[i] = self.click_state[i].tick();
+        }
 
         // Clean up text buffer
         self.text_input.clear();
@@ -514,15 +516,12 @@ impl<T, V: Vertex> Context<T, V>
 
     /// Register mouse button state.
     pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
-        if id == MouseButton::Left {
-            if is_down {
-                self.click_state = self.click_state.input_press(self.mouse_pos);
-            } else {
-                self.click_state = self.click_state
-                                       .input_release(self.mouse_pos);
-            }
+        if is_down {
+            self.click_state[id as usize] = self.click_state[id as usize].input_press(self.mouse_pos);
+        } else {
+            self.click_state[id as usize] = self.click_state[id as usize]
+                .input_release(self.mouse_pos);
         }
-        // TODO handle other buttons
     }
 
     /// Register mouse motion.
@@ -567,7 +566,9 @@ impl<T, V: Vertex> Context<T, V>
     pub fn mouse_pos(&self) -> Point2D<f32> { self.mouse_pos }
 
     /// Get whether mouse button was pressed
-    pub fn is_mouse_pressed(&self) -> bool { self.click_state.is_pressed() }
+    pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
+        self.click_state[button as usize].is_pressed()
+    }
 }
 
 /// A sequence of primitive draw operarations.
