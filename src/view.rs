@@ -75,3 +75,49 @@ pub fn screen_fov(w: &World,
 
     HashMap::from_iter(HexFov::new(init).map(|(pos, a)| (pos, a.origins)))
 }
+
+#[cfg(test)]
+mod test {
+    use euclid::{Point2D, Rect, Size2D};
+    use world::{Location, Portal, World};
+    use super::screen_fov;
+
+    fn test_world() -> World {
+        use world::terrain::{Form, Kind, Tile};
+        use calx_resource::ResourceStore;
+        use world::Brush;
+
+        Brush::insert_resource("dummy".to_string(), Brush(vec![]));
+
+        Tile::insert_resource(0, Tile::new("dummy", Kind::Block, Form::Void));
+        Tile::insert_resource(1, Tile::new("dummy", Kind::Ground, Form::Gate));
+        Tile::insert_resource(2, Tile::new("dummy", Kind::Ground, Form::Floor));
+        Tile::insert_resource(3, Tile::new("dummy", Kind::Ground, Form::Floor));
+
+        let mut ret = World::new(1);
+
+        ret.terrain.set(Location::new(10, 10, 0), 2);
+        ret.terrain.set(Location::new(11, 10, 0), 2);
+        ret.portals.insert(Location::new(12, 10, 0),
+                           Portal::new(Location::new(12, 10, 0), Location::new(32, 10, 0)));
+        ret.terrain.set(Location::new(32, 10, 0), 3);
+
+        ret
+    }
+
+    #[test]
+    fn test_portaling_fov() {
+        let world = test_world();
+        let fov = screen_fov(&world,
+                             Location::new(10, 10, 0),
+                             Rect::new(Point2D::new(-48.0, -48.0), Size2D::new(96.0, 96.0)));
+        assert_eq!(fov.get(&Point2D::new(0, 0)),
+                   Some(&vec![Location::new(10, 10, 0)]));
+
+        assert_eq!(fov.get(&Point2D::new(1, 0)),
+                   Some(&vec![Location::new(10, 10, 0)]));
+
+        assert_eq!(fov.get(&Point2D::new(2, 0)),
+                   Some(&vec![Location::new(30, 10, 0), Location::new(10, 10, 0)]));
+    }
+}
