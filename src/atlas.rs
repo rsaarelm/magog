@@ -42,9 +42,7 @@ pub fn build_atlas(input: &[ImageBuffer],
 
 /// Try to pack several small rectangles into one large rectangle. Return
 /// offsets for the subrectangles within the container if a packing was found.
-fn pack_rectangles(container_dim: Size2D<u32>,
-                   dims: &Vec<Size2D<u32>>)
-                   -> Option<Vec<Point2D<u32>>> {
+fn pack_rectangles(container_dim: Size2D<u32>, dims: &[Size2D<u32>]) -> Option<Vec<Point2D<u32>>> {
     let total_area = dims.iter()
                          .map(|dim| dim.width * dim.height)
                          .fold(0, |a, b| a + b);
@@ -67,8 +65,7 @@ fn pack_rectangles(container_dim: Size2D<u32>,
                                          .take(dims.len())
                                          .collect();
 
-    for i in 0..(largest_first.len()) {
-        let (idx, &dim) = largest_first[i];
+    for &(idx, &dim) in &largest_first {
         match place(dim, &mut slots) {
             Some(pos) => {
                 ret[idx] = pos;

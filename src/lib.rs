@@ -290,7 +290,8 @@ impl<T, V: Vertex> Context<T, V>
         self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = self.click_state[MouseButton::Left as usize].is_pressed() && area.contains(&self.mouse_pos);
+        let press = self.click_state[MouseButton::Left as usize].is_pressed() &&
+                    area.contains(&self.mouse_pos);
 
         let color = if press {
             [1.0, 1.0, 0.0, 1.0]
@@ -412,7 +413,7 @@ impl<T, V: Vertex> Context<T, V>
                       text_buffer: &mut String) {
         // TODO: Focus system. Only accept input if current input widget is focused.
         // (Also needs widget identifiers to know which is which.)
-        for c in self.text_input.iter() {
+        for c in &self.text_input {
             match *c {
                 KeyInput::Printable(c) => {
                     if c >= ' ' {
@@ -488,7 +489,9 @@ impl<T, V: Vertex> Context<T, V>
             return;
         }
 
-        let texture = texture_needed.unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture);
+        let texture = texture_needed.unwrap_or_else(|| {
+            self.draw_list[self.draw_list.len() - 1].texture
+        });
 
         if self.current_batch_is_invalid(texture) {
             self.draw_list.push(DrawBatch {
@@ -517,10 +520,11 @@ impl<T, V: Vertex> Context<T, V>
     /// Register mouse button state.
     pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
         if is_down {
-            self.click_state[id as usize] = self.click_state[id as usize].input_press(self.mouse_pos);
+            self.click_state[id as usize] = self.click_state[id as usize]
+                                                .input_press(self.mouse_pos);
         } else {
             self.click_state[id as usize] = self.click_state[id as usize]
-                .input_release(self.mouse_pos);
+                                                .input_release(self.mouse_pos);
         }
     }
 
@@ -555,7 +559,7 @@ impl<T, V: Vertex> Context<T, V>
 
     fn recompute_style(&mut self) {
         let mut style = Style::default();
-        for i in self.styles.iter() {
+        for i in &self.styles {
             style = style + i.clone();
         }
 
@@ -563,7 +567,9 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     /// Get the current mouse position
-    pub fn mouse_pos(&self) -> Point2D<f32> { self.mouse_pos }
+    pub fn mouse_pos(&self) -> Point2D<f32> {
+        self.mouse_pos
+    }
 
     /// Get whether mouse button was pressed
     pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
@@ -614,27 +620,27 @@ enum ClickState {
 impl ClickState {
     fn tick(self) -> ClickState {
         match self {
-            ClickState::Unpressed => ClickState::Unpressed,
-            ClickState::Press(p) => ClickState::Drag(p),
-            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Unpressed |
             ClickState::Release(_, _) => ClickState::Unpressed,
+            ClickState::Press(p) |
+            ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
     fn input_press(self, pos: Point2D<f32>) -> ClickState {
         match self {
-            ClickState::Unpressed => ClickState::Press(pos),
-            ClickState::Press(p) => ClickState::Drag(p),
-            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Unpressed |
             ClickState::Release(_, _) => ClickState::Press(pos),
+            ClickState::Press(p) |
+            ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
     fn input_release(self, pos: Point2D<f32>) -> ClickState {
         match self {
             ClickState::Unpressed => ClickState::Unpressed,
-            ClickState::Press(p) => ClickState::Release(p, pos),
-            ClickState::Drag(p) => ClickState::Release(p, pos),
+            ClickState::Press(p) |
+            ClickState::Drag(p) |
             ClickState::Release(p, _) => ClickState::Release(p, pos),
         }
     }
@@ -716,7 +722,7 @@ pub struct ImageData<T> {
     pub tex_coords: Rect<f32>,
 }
 
-/// Shim for using both Image and ImageData types in draw_image calls.
+/// Shim for using both `Image` and `ImageData` types in `draw_image` calls.
 pub trait ToImageData<T, V> {
     fn to_image_data(self, context: &Context<T, V>) -> ImageData<T>;
 }
