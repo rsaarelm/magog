@@ -28,7 +28,7 @@ impl GameView {
         GameView {
             world: world,
             mode: PaintMode::Terrain(7, 3),
-            camera: (Location::new(0, 0), Location::new(0, 0)),
+            camera: (Location::new(0, 0, 0), Location::new(0, 0, 0)),
             camera_lock: false,
         }
     }

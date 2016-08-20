@@ -19,7 +19,7 @@ pub struct Flags {
 impl Flags {
     pub fn new(seed: u32) -> Flags {
         Flags {
-            camera: Location::new(0, 0),
+            camera: Location::new(0, 0, 0),
             tick: 0,
             player_acted: false,
             player: None,

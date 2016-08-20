@@ -12,8 +12,8 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn new(x: i8, y: i8) -> Location {
-        Location { x: x, y: y, z: 0 }
+    pub fn new(x: i8, y: i8, z: i8) -> Location {
+        Location { x: x, y: y, z: z }
     }
 
     /// Vector pointing from this location into the other one if the locations

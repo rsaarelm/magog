@@ -49,17 +49,17 @@ pub fn main() {
 
     for x in -10..10 {
         for y in -10..10 {
-            view.world.terrain.set(Location::new(x, y), 2);
+            view.world.terrain.set(Location::new(x, y, 0), 2);
         }
     }
 
-    view.world.terrain.set(Location::new(0, -10), 1);
-    view.world.terrain.set(Location::new(1, 0), 3);
-    view.world.terrain.set(Location::new(2, 0), 5);
-    view.world.terrain.set(Location::new(3, 0), 6);
-    view.world.terrain.set(Location::new(4, 0), 6);
-    view.world.terrain.set(Location::new(3, 2), 7);
-    view.world.terrain.set(Location::new(4, 2), 7);
+    view.world.terrain.set(Location::new(0, -10, 0), 1);
+    view.world.terrain.set(Location::new(1, 0, 0), 3);
+    view.world.terrain.set(Location::new(2, 0, 0), 5);
+    view.world.terrain.set(Location::new(3, 0, 0), 6);
+    view.world.terrain.set(Location::new(4, 0, 0), 6);
+    view.world.terrain.set(Location::new(3, 2, 0), 7);
+    view.world.terrain.set(Location::new(4, 2, 0), 7);
 
     // Run game.
     loop {
