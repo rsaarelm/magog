@@ -15,7 +15,7 @@ serde = "0.8"
 serde_macros = "0.8"
 bincode = "0.6"
 image = "0.10"
-euclid = "0.9"
+euclid = "0.10"
 
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"

@@ -3,6 +3,7 @@ use calx_resource::Resource;
 use scancode::Scancode;
 use world::{Location, World};
 use sprite::Sprite;
+use vitral;
 use backend;
 use view;
 use render;
@@ -11,6 +12,7 @@ use render;
 pub struct GameView {
     pub world: World,
     terrain_brush: u8,
+    terrain_erase: u8,
     /// Camera and second camera (for portaling)
     camera: (Location, Location),
     /// Do the two cameras move together?
@@ -22,6 +24,7 @@ impl GameView {
         GameView {
             world: world,
             terrain_brush: 7,
+            terrain_erase: 3,
             camera: (Location::new(0, 0), Location::new(0, 0)),
             camera_lock: false,
         }
@@ -82,8 +85,12 @@ impl GameView {
                 frame_idx: 0,
             });
 
-            if context.ui.is_mouse_pressed() {
+            if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
                 self.world.terrain.set(loc, self.terrain_brush);
+            }
+
+            if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
+                self.world.terrain.set(loc, self.terrain_erase);
             }
         }
 

@@ -13,7 +13,7 @@ name = "debris"
 lto = true
 
 [dependencies]
-euclid = "0.9"
+euclid = "0.10"
 image = "0.10"
 time = "0.1"
 glium = "0.15"
