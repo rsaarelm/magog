@@ -8,11 +8,15 @@ use backend;
 use view;
 use render;
 
+enum PaintMode {
+    Terrain(u8, u8),
+    Portal,
+}
+
 /// Top-level application state for gameplay.
 pub struct GameView {
     pub world: World,
-    terrain_brush: u8,
-    terrain_erase: u8,
+    mode: PaintMode,
     /// Camera and second camera (for portaling)
     camera: (Location, Location),
     /// Do the two cameras move together?
@@ -23,8 +27,7 @@ impl GameView {
     pub fn new(world: World) -> GameView {
         GameView {
             world: world,
-            terrain_brush: 7,
-            terrain_erase: 3,
+            mode: PaintMode::Terrain(7, 3),
             camera: (Location::new(0, 0), Location::new(0, 0)),
             camera_lock: false,
         }
@@ -65,6 +68,14 @@ impl GameView {
                     frame_idx: frame_idx,
                 })
             });
+            if self.world.portals.get(&loc).is_some() {
+                sprites.push(Sprite {
+                    layer: render::Layer::Decal,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: Resource::new("portal".to_string()).unwrap(),
+                    frame_idx: 0,
+                });
+            }
         }
 
         if let Some(origins) = chart.get(&cursor_pos) {
@@ -85,13 +96,28 @@ impl GameView {
                 frame_idx: 0,
             });
 
-            if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                self.world.terrain.set(loc, self.terrain_brush);
+            match self.mode {
+                PaintMode::Terrain(draw, erase) => {
+                    if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
+                        self.world.terrain.set(loc, draw);
+                    }
+
+                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
+                        self.world.terrain.set(loc, erase);
+                    }
+                }
+
+                PaintMode::Portal => {
+                    let (a, b) = self.camera;
+                    if a != b && context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
+                        self.world.portals.insert(loc, b);
+                    }
+                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
+                        self.world.portals.remove(&loc);
+                    }
+                }
             }
 
-            if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                self.world.terrain.set(loc, self.terrain_erase);
-            }
         }
 
         sprites.sort();
@@ -101,23 +127,23 @@ impl GameView {
         }
 
         if context.ui.button("draw void") {
-            self.terrain_brush = 0;
+            self.mode = PaintMode::Terrain(0, 3);
         }
 
         if context.ui.button("draw gate") {
-            self.terrain_brush = 1;
-        }
-
-        if context.ui.button("draw ground") {
-            self.terrain_brush = 2;
+            self.mode = PaintMode::Terrain(1, 3);
         }
 
         if context.ui.button("draw wall") {
-            self.terrain_brush = 6;
+            self.mode = PaintMode::Terrain(6, 3);
         }
 
         if context.ui.button("draw rock") {
-            self.terrain_brush = 7;
+            self.mode = PaintMode::Terrain(7, 3);
+        }
+
+        if context.ui.button("PORTALS!") {
+            self.mode = PaintMode::Portal;
         }
 
         context.ui.set_clip_rect(None);

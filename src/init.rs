@@ -66,6 +66,9 @@ pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         .color(RED)
         .splat(32, 0, 32, 32)
         .brush("cursor_top")
+        .color(ORANGE)
+        .splat(0, 0, 32, 32)
+        .brush("portal")
         ////
         .color(SADDLEBROWN)
         .tile(160, 64)
