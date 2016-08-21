@@ -6,7 +6,7 @@ use num::{Zero, One};
 use num::traits::Num;
 
 /// A node in a graph with a regular grid.
-pub trait GridNode: PartialEq+Eq+Clone+Hash+PartialOrd+Ord {
+pub trait GridNode: PartialEq + Eq + Clone + Hash + PartialOrd + Ord {
     /// List the neighbor nodes of this graph node.
     fn neighbors(&self) -> Vec<Self>;
 }
@@ -24,10 +24,7 @@ pub struct Dijkstra<N> {
 impl<N: GridNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
-    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>,
-                                  is_valid: F,
-                                  limit: u32)
-                                  -> Dijkstra<N> {
+    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {
         assert!(goals.len() > 0);
 
         let mut weights = HashMap::new();
@@ -38,12 +35,12 @@ impl<N: GridNode> Dijkstra<N> {
         }
 
         for dist in 0..(limit) {
-            for n in edge.iter() {
+            for n in &edge {
                 weights.insert(n.clone(), dist);
             }
 
             let mut new_edge = HashSet::new();
-            for n in edge.iter() {
+            for n in &edge {
                 for m in n.neighbors().into_iter() {
                     if is_valid(&m) && !weights.contains_key(&m) {
                         new_edge.insert(m);
@@ -65,7 +62,7 @@ impl<N: GridNode> Dijkstra<N> {
     /// uphill.
     pub fn sorted_neighbors(&self, node: &N) -> Vec<N> {
         let mut ret = Vec::new();
-        for n in node.neighbors().iter() {
+        for n in &node.neighbors() {
             if let Some(w) = self.weights.get(n) {
                 ret.push((w, n.clone()));
             }
@@ -76,11 +73,7 @@ impl<N: GridNode> Dijkstra<N> {
 }
 
 /// Find a path between two points using the A* algorithm.
-pub fn astar_path_with<N, F, T>(metric: F,
-                                from: N,
-                                to: N,
-                                mut limit: u32)
-                                -> Option<Vec<N>>
+pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
     where N: GridNode,
           F: Fn(&N, &N) -> T,
           T: Num + Ord + Copy
@@ -117,8 +110,7 @@ pub fn astar_path_with<N, F, T>(metric: F,
                                    match a {
                                        None => Some((x.clone(), pathlen_x)),
                                        Some((y, pathlen_y)) => {
-                                           let y_cost = pathlen_y +
-                                                        metric(&y, &to);
+                                           let y_cost = pathlen_y + metric(&y, &to);
                                            if x_cost < y_cost {
                                                Some((x.clone(), pathlen_x))
                                            } else {
@@ -155,7 +147,7 @@ pub fn astar_path_with<N, F, T>(metric: F,
         limit -= 1;
     }
 
-    return None;
+    None
 }
 
 #[cfg(test)]
@@ -178,10 +170,7 @@ mod test {
             }
         }
 
-        let path = astar_path_with(|a, b| {
-                                       (a.0[0] - b.0[0]).abs() +
-                                       (a.0[1] - b.0[1]).abs()
-                                   },
+        let path = astar_path_with(|a, b| (a.0[0] - b.0[0]).abs() + (a.0[1] - b.0[1]).abs(),
                                    V([1, 1]),
                                    V([10, 10]),
                                    10000)
