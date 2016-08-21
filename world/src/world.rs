@@ -31,7 +31,7 @@ pub struct World {
     /// Terrain data.
     pub terrain: Field<u8>,
     /// Optional portals between map zones.
-    pub portals: HashMap<Location, Portal>,
+    portals: HashMap<Location, Portal>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
@@ -67,4 +67,33 @@ impl<'a> World {
     pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
         serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
     }
+
+    /// Set a portal on map.
+    ///
+    /// If the portal points to a location with an existing portal, the portal value will be
+    /// modified to point to that portal's destination.
+    ///
+    /// If the portal does not involve any translation, it will not be added.
+    pub fn set_portal(&mut self, loc: Location, mut portal: Portal) {
+        let target_loc = loc + portal;
+        // Don't create portal chains, if the target cell has another portal, just direct to its
+        // destination.
+        //
+        // XXX: This
+        if let Some(&p) = self.portals.get(&target_loc) {
+            portal = portal + p;
+        }
+
+        if portal.dx == 0 && portal.dy == 0 && portal.z == loc.z {
+            self.portals.remove(&loc);
+        } else {
+            self.portals.insert(loc, portal);
+        }
+    }
+
+    pub fn remove_portal(&mut self, loc: Location) {
+        self.portals.remove(&loc);
+    }
+
+    pub fn portal(&self, loc: Location) -> Option<Portal> { self.portals.get(&loc).cloned() }
 }

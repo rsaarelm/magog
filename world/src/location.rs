@@ -108,6 +108,17 @@ impl Portal {
     }
 }
 
+impl Add<Portal> for Portal {
+    type Output = Portal;
+    fn add(self, other: Portal) -> Portal {
+        Portal {
+            dx: (Wrapping(self.dx) + Wrapping(other.dx)).0,
+            dy: (Wrapping(self.dy) + Wrapping(other.dy)).0,
+            z: other.z,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::Location;

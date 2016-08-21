@@ -97,10 +97,17 @@ mod test {
         let mut ret = World::new(1);
 
         ret.terrain.set(Location::new(10, 10, 0), 2);
-        ret.terrain.set(Location::new(11, 10, 0), 2);
-        ret.portals.insert(Location::new(12, 10, 0),
-                           Portal::new(Location::new(12, 10, 0), Location::new(32, 10, 0)));
-        ret.terrain.set(Location::new(32, 10, 0), 3);
+        ret.terrain.set(Location::new(11, 11, 0), 2);
+        ret.terrain.set(Location::new(9, 9, 0), 2);
+        ret.terrain.set(Location::new(10, 11, 0), 2);
+        ret.terrain.set(Location::new(9, 10, 0), 2);
+        ret.terrain.set(Location::new(10, 9, 0), 2);
+
+        // Void for the see-through portal.
+        ret.terrain.set(Location::new(11, 10, 0), 0);
+        ret.set_portal(Location::new(11, 10, 0),
+                       Portal::new(Location::new(11, 10, 0), Location::new(31, 10, 0)));
+        ret.terrain.set(Location::new(31, 10, 0), 3);
 
         ret
     }
@@ -114,10 +121,16 @@ mod test {
         assert_eq!(fov.get(&Point2D::new(0, 0)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(1, 0)),
+        assert_eq!(fov.get(&Point2D::new(0, 1)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(2, 0)),
+        assert_eq!(fov.get(&Point2D::new(1, 1)),
+                   Some(&vec![Location::new(10, 10, 0)]));
+
+        assert_eq!(fov.get(&Point2D::new(-1, -1)),
+                   Some(&vec![Location::new(10, 10, 0)]));
+
+        assert_eq!(fov.get(&Point2D::new(1, 0)),
                    Some(&vec![Location::new(30, 10, 0), Location::new(10, 10, 0)]));
     }
 }

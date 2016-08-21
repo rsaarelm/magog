@@ -27,8 +27,8 @@ impl GameView {
     pub fn new(world: World) -> GameView {
         GameView {
             world: world,
-            mode: PaintMode::Terrain(7, 3),
-            camera: (Location::new(0, 0, 0), Location::new(0, 0, 0)),
+            mode: PaintMode::Terrain(7, 2),
+            camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
             camera_lock: false,
         }
     }
@@ -68,7 +68,9 @@ impl GameView {
                     frame_idx: frame_idx,
                 })
             });
-            if self.world.portals.get(&loc).is_some() {
+            if self.world.portal(loc).is_some() {
+                let screen_pos = screen_pos -
+                                 Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
                 sprites.push(Sprite {
                     layer: render::Layer::Decal,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
@@ -81,6 +83,9 @@ impl GameView {
         if let Some(origins) = chart.get(&cursor_pos) {
             let screen_pos = view::chart_to_view(cursor_pos) + center -
                              Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
+            // Always portal in root coordinates.
+            // TODO: It's currently not obvious from UI what the root coordinates are.
+            let portal_loc = origins[origins.len() - 1] + cursor_pos;
             let loc = origins[0] + cursor_pos;
 
             sprites.push(Sprite {
@@ -110,10 +115,10 @@ impl GameView {
                 PaintMode::Portal => {
                     let (a, b) = self.camera;
                     if a != b && context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        self.world.portals.insert(loc, Portal::new(a, b));
+                        self.world.set_portal(portal_loc, Portal::new(a, b));
                     }
                     if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                        self.world.portals.remove(&loc);
+                        self.world.remove_portal(portal_loc);
                     }
                 }
             }
@@ -127,23 +132,30 @@ impl GameView {
         }
 
         if context.ui.button("draw void") {
-            self.mode = PaintMode::Terrain(0, 3);
+            self.mode = PaintMode::Terrain(0, 2);
         }
 
         if context.ui.button("draw gate") {
-            self.mode = PaintMode::Terrain(1, 3);
+            self.mode = PaintMode::Terrain(1, 2);
         }
 
         if context.ui.button("draw wall") {
-            self.mode = PaintMode::Terrain(6, 3);
+            self.mode = PaintMode::Terrain(6, 2);
         }
 
         if context.ui.button("draw rock") {
-            self.mode = PaintMode::Terrain(7, 3);
+            self.mode = PaintMode::Terrain(7, 2);
         }
 
         if context.ui.button("PORTALS!") {
             self.mode = PaintMode::Portal;
+        }
+
+        for (y, origin) in chart.get(&cursor_pos).unwrap_or(&Vec::new()).iter().enumerate() {
+            let font = context.ui.default_font();
+            let loc = *origin + cursor_pos;
+            context.ui.draw_text(font, Point2D::new(400.0, y as f32 * 20.0 + 20.0), [1.0, 1.0, 1.0, 1.0],
+                &format!("{:?}", loc));
         }
 
         context.ui.set_clip_rect(None);
@@ -151,10 +163,12 @@ impl GameView {
         if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             use scancode::Scancode::*;
             match scancode {
+                Q => self.move_camera(Point2D::new(-1, 0)),
                 W => self.move_camera(Point2D::new(-1, -1)),
-                A => self.move_camera(Point2D::new(-1, 1)),
+                E => self.move_camera(Point2D::new(0, -1)),
+                A => self.move_camera(Point2D::new(0, 1)),
                 S => self.move_camera(Point2D::new(1, 1)),
-                D => self.move_camera(Point2D::new(1, -1)),
+                D => self.move_camera(Point2D::new(1, 0)),
                 Tab => self.switch_camera(),
                 _ => {}
             }

@@ -47,9 +47,9 @@ pub fn main() {
     // Initialize worldstate
     let mut view = GameView::new(World::new(1));
 
-    for x in -10..10 {
-        for y in -10..10 {
-            view.world.terrain.set(Location::new(x, y, 0), 2);
+    for x in -0..8 {
+        for y in 0..8 {
+            view.world.terrain.set(Location::new(x, y, 0), 3);
         }
     }
 
