@@ -32,7 +32,8 @@ impl<T: FovValue> HexFov<T> {
                             begin: PolarPoint::new(0.0, 1),
                             pt: PolarPoint::new(0.0, 1),
                             end: PolarPoint::new(6.0, 1),
-                            group_value: init.clone(),
+                            prev_value: init.clone(),
+                            group_value: None,
                         }],
             // The FOV algorithm will not generate the origin point, so we use
             // the side channel to explicitly add it in the beginning.
@@ -49,44 +50,44 @@ impl<T: FovValue> Iterator for HexFov<T> {
         }
 
         if let Some(mut current) = self.stack.pop() {
-            let current_value = current.group_value.advance(current.pt.to_v2());
+            let current_value = current.prev_value.advance(current.pt.to_v2());
 
             if current.pt.is_below(current.end) && current_value.is_some() {
                 let pos = current.pt.to_v2();
                 let current_value = current_value.unwrap();
 
-                if current_value != current.group_value {
-                    if current.pt == current.begin {
-                        // Oops, we've got a value mismatch on the very first item, so the entire
-                        // sector was mistagged. This happens in the initial cycle when we
-                        // guesstimate the value. Let's just quickly fix this before anyone
-                        // notices.
-                        current.group_value = current_value.clone();
-                    } else {
-                        // Terrain value changed, branch out.
+                match current.group_value {
+                    None => {
+                        // Beginning of group, value isn't set.
+                        current.group_value = Some(current_value.clone());
+                    }
+                    Some(ref g) if g.clone() != current_value => {
+                        // Value changed, branch out.
 
-                        // Add the rest of this sector with the new terrain value.
+                        // Add the rest of this sector with the new value.
                         self.stack.push(Sector {
                             begin: current.pt,
                             pt: current.pt,
                             end: current.end,
-                            group_value: current_value.clone(),
+                            prev_value: current.prev_value,
+                            group_value: Some(current_value.clone()),
                         });
 
-                        // Branch further if we still get values there.
-                        if let Some(further_value) = current_value.advance(current.begin
-                                                                                  .further()
-                                                                                  .to_v2()) {
-                            self.stack.push(Sector {
-                                begin: current.begin.further(),
-                                pt: current.begin.further(),
-                                end: current.pt.further(),
-                                group_value: further_value.clone(),
-                            });
-                        }
+                        // Branch further on the arc processed so far.
+                        self.stack.push(Sector {
+                            begin: current.begin.further(),
+                            pt: current.begin.further(),
+                            end: current.pt.further(),
+                            prev_value: g.clone(),
+                            group_value: None,
+                        });
                         return self.next();
                     }
+                    _ => {}
                 }
+
+                // Current value and group value are assumed to be the same from here on.
+                assert!(current.group_value == Some(current_value.clone()));
 
                 // Hack for making acute corner tiles of fake-isometric rooms visible.
 
@@ -98,19 +99,19 @@ impl<T: FovValue> Iterator for HexFov<T> {
                     // If the next cell is within the current span and the current cell is
                     // wallform,
                     if next.is_below(current.end) &&
-                       current.group_value.is_fake_isometric_wall(current.pt.to_v2()) {
+                       current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) {
                         // and if the next cell is visible,
-                        if let Some(next_value) = current.group_value.advance(next.to_v2()) {
+                        if let Some(next_value) = current.prev_value.advance(next.to_v2()) {
                             // and if the current and the next cell are in the same value group,
                             // both the next cell and the third corner point cell are
                             // wallforms, and the side point would not be otherwise
                             // visible:
-                            if next_value == current.group_value &&
+                            if next_value == current.prev_value &&
                                next_value.is_fake_isometric_wall(next.to_v2()) &&
-                               current.group_value.advance(side_pos).is_none() &&
-                               current.group_value.is_fake_isometric_wall(side_pos) {
+                               current.prev_value.advance(side_pos).is_none() &&
+                               current.prev_value.is_fake_isometric_wall(side_pos) {
                                 // Add the side point to the side channel.
-                                self.side_channel.push((side_pos, current.group_value.clone()));
+                                self.side_channel.push((side_pos, current.prev_value.clone()));
                             }
                         }
                     }
@@ -121,16 +122,14 @@ impl<T: FovValue> Iterator for HexFov<T> {
                 self.stack.push(current);
                 return Some((pos, current_value));
             } else {
-                // Hit the end of the sector.
-
-                if let Some(group_value) = current.group_value
-                                                  .advance(current.begin.further().to_v2()) {
-                    // Branch out further if things are still visible there.
+                // Hit the end of the sector, branch ahead.
+                if let Some(value) = current.group_value {
                     self.stack.push(Sector {
                         begin: current.begin.further(),
                         pt: current.begin.further(),
                         end: current.end.further(),
-                        group_value: group_value,
+                        prev_value: value,
+                        group_value: None,
                     });
                 }
 
@@ -149,8 +148,10 @@ struct Sector<T> {
     pt: PolarPoint,
     /// End point of current sector.
     end: PolarPoint,
+    /// The user value from previous iteration.
+    prev_value: T,
     /// The user value for this group.
-    group_value: T,
+    group_value: Option<T>,
 }
 
 /// Points on a hex circle expressed in polar coordinates.
