@@ -1,3 +1,4 @@
+use std::num::Wrapping;
 use euclid::{Point2D, Rect};
 use calx_resource::Resource;
 use scancode::Scancode;
@@ -68,15 +69,19 @@ impl GameView {
                     frame_idx: frame_idx,
                 })
             });
-            if self.world.portal(loc).is_some() {
-                let screen_pos = screen_pos -
-                                 Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
-                sprites.push(Sprite {
-                    layer: render::Layer::Decal,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: Resource::new("portal".to_string()).unwrap(),
-                    frame_idx: 0,
-                });
+
+            for &origin in origins {
+                if self.world.portal(origin + chart_pos).is_some() {
+                    let screen_pos = screen_pos -
+                                     Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
+                    sprites.push(Sprite {
+                        layer: render::Layer::Decal,
+                        offset: [screen_pos.x as i32, screen_pos.y as i32],
+                        brush: Resource::new("portal".to_string()).unwrap(),
+                        frame_idx: 0,
+                    });
+                    break;
+                }
             }
         }
 
@@ -163,19 +168,21 @@ impl GameView {
         if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             use scancode::Scancode::*;
             match scancode {
-                Q => self.move_camera(Point2D::new(-1, 0)),
-                W => self.move_camera(Point2D::new(-1, -1)),
-                E => self.move_camera(Point2D::new(0, -1)),
-                A => self.move_camera(Point2D::new(0, 1)),
-                S => self.move_camera(Point2D::new(1, 1)),
-                D => self.move_camera(Point2D::new(1, 0)),
+                Q => self.move_camera(Point2D::new(-1, 0), 0),
+                W => self.move_camera(Point2D::new(-1, -1), 0),
+                E => self.move_camera(Point2D::new(0, -1), 0),
+                A => self.move_camera(Point2D::new(0, 1), 0),
+                S => self.move_camera(Point2D::new(1, 1), 0),
+                D => self.move_camera(Point2D::new(1, 0), 0),
                 Tab => self.switch_camera(),
+                RightBracket => self.move_camera(Point2D::new(0, 0), 1),
+                LeftBracket => self.move_camera(Point2D::new(0, 0), -1),
                 _ => {}
             }
         }
     }
 
-    fn move_camera(&mut self, delta: Point2D<i32>) {
+    fn move_camera(&mut self, delta: Point2D<i32>, dz: i8) {
         let second_delta = if self.camera_lock {
             delta
         } else {
@@ -184,6 +191,12 @@ impl GameView {
 
         let (a, b) = self.camera;
         self.camera = (a + delta, b + second_delta);
+
+        let z0 = Wrapping(self.camera.0.z) + Wrapping(dz);
+        let z1 = Wrapping(self.camera.1.z) + Wrapping(if self.camera_lock { dz } else { 0 });
+
+        self.camera.0.z = z0.0;
+        self.camera.1.z = z1.0;
     }
 
     fn switch_camera(&mut self) {
