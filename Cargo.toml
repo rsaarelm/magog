@@ -1,6 +1,6 @@
 [package]
 name = "calx"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Rust game development helper library collection"
 keywords = ["gamedev"]
