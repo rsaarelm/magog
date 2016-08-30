@@ -14,6 +14,7 @@ extern crate world;
 // Make all mods public at the top app level just to make them show up in the rustdoc.
 
 pub mod backend;
+pub mod canvas;
 pub mod canvas_zoom;
 pub mod game_view;
 pub mod init;
