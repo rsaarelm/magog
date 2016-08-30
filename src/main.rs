@@ -11,7 +11,10 @@ extern crate calx_resource;
 extern crate calx_grid;
 extern crate world;
 
+// Make all mods public at the top app level just to make them show up in the rustdoc.
+
 pub mod backend;
+pub mod canvas_zoom;
 pub mod game_view;
 pub mod init;
 pub mod render;
