@@ -35,7 +35,7 @@ pub fn main() {
                       .build_glium()
                       .unwrap();
 
-    let mut backend = Backend::new(&display);
+    let mut backend = Backend::new(&display, 640, 360);
 
     let mut builder = vitral::Builder::new();
 

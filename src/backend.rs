@@ -1,7 +1,10 @@
 use glium::{self, Surface};
 use glium::glutin;
 use glium::index::PrimitiveType;
+use euclid::{Point2D, Size2D};
 use vitral;
+use canvas::Canvas;
+use canvas_zoom::CanvasZoom;
 
 pub type UI = vitral::Context<usize, Vertex>;
 
@@ -17,10 +20,14 @@ pub struct Backend {
     textures: Vec<GliumTexture>,
 
     keypress: Vec<KeyEvent>,
+
+    canvas: Canvas,
+    zoom: CanvasZoom,
+    window_size: Size2D<u32>,
 }
 
 impl Backend {
-    pub fn new(display: &glium::Display) -> Backend {
+    pub fn new(display: &glium::Display, width: u32, height: u32) -> Backend {
         let program = program!(
             display,
             150 => {
@@ -62,11 +69,16 @@ impl Backend {
             "})
                           .unwrap();
 
+        let (w, h) = display.get_framebuffer_dimensions();
+
         Backend {
             program: program,
             textures: Vec::new(),
 
             keypress: Vec::new(),
+            canvas: Canvas::new(display, width, height),
+            zoom: CanvasZoom::PixelPerfect,
+            window_size: Size2D::new(w, h),
         }
     }
 
@@ -85,7 +97,12 @@ impl Backend {
         for event in display.poll_events() {
             match event {
                 glutin::Event::Closed => return false,
-                glutin::Event::MouseMoved(x, y) => context.input_mouse_move(x, y),
+                glutin::Event::MouseMoved(x, y) => {
+                    let pos = self.zoom.screen_to_canvas(self.window_size,
+                                                         self.canvas.size(),
+                                                         Point2D::new(x as f32, y as f32));
+                    context.input_mouse_move(pos.x as i32, pos.y as i32);
+                }
                 glutin::Event::MouseInput(state, button) => {
                     context.input_mouse_button(match button {
                                                    glutin::MouseButton::Left => {
@@ -137,8 +154,8 @@ impl Backend {
         self.keypress.pop()
     }
 
-    pub fn update(&mut self, display: &glium::Display, context: &mut UI) -> bool {
-        let mut target = display.draw();
+    pub fn render(&mut self, display: &glium::Display, context: &mut UI) {
+        let mut target = self.canvas.get_framebuffer_target(display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
@@ -185,9 +202,17 @@ impl Backend {
                         &params)
                   .unwrap();
         }
+    }
 
-        target.finish().unwrap();
+    fn update_window_size(&mut self, display: &glium::Display) {
+        let (w, h) = display.get_framebuffer_dimensions();
+        self.window_size = Size2D::new(w, h);
+    }
 
+    pub fn update(&mut self, display: &glium::Display, context: &mut UI) -> bool {
+        self.update_window_size(display);
+        self.render(display, context);
+        self.canvas.draw(display, self.zoom);
         self.process_events(display, context)
     }
 }

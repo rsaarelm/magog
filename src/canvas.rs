@@ -141,4 +141,6 @@ impl Canvas {
               .unwrap();
         target.finish().unwrap();
     }
+
+    pub fn size(&self) -> Size2D<u32> { self.size }
 }
