@@ -52,7 +52,7 @@ pub struct Builder<T> {
 }
 
 impl<T> Builder<T>
-    where T: Copy + Eq
+    where T: Clone + Eq
 {
     pub fn new() -> Builder<T> {
         Builder {
@@ -171,7 +171,7 @@ impl<T> Builder<T>
                  .map(|(i, p)| {
                      let (i_w, i_h) = (self.images[i].width(), self.images[i].height());
                      ImageData {
-                         texture: atlas,
+                         texture: atlas.clone(),
                          size: Size2D::new(i_w, i_h),
                          tex_coords: Rect::new(Point2D::new(p.x as f32 / w, p.y as f32 / h),
                                                Size2D::new(i_w as f32 / w, i_h as f32 / h)),
@@ -223,7 +223,7 @@ pub struct Context<T, V> {
 }
 
 impl<T, V: Vertex> Context<T, V>
-    where T: Copy + Eq
+    where T: Clone + Eq
 {
     fn new(fonts: Vec<FontData<T>>, images: Vec<ImageData<T>>) -> Context<T, V> {
         Context {
@@ -259,7 +259,7 @@ impl<T, V: Vertex> Context<T, V>
     pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
         assert!(self.fonts.len() >= font);
         let id = font;
-        let t = self.fonts[id].texture;
+        let t = self.fonts[id].texture.clone();
         let h = self.fonts[id].height;
         self.start_texture(t);
 
@@ -322,7 +322,7 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     pub fn get_image(&self, image: Image) -> ImageData<T> {
-        self.images[image]
+        self.images[image].clone()
     }
 
     fn push_rect(&mut self, area: Rect<f32>, tex_coords: Rect<f32>, color: [f32; 4]) {
@@ -449,7 +449,7 @@ impl<T, V: Vertex> Context<T, V>
         assert!(self.images.len() > 0);
         // Builder must always setup Context so that the first image is the
         // solid color.
-        let tex = self.images[0].texture;
+        let tex = self.images[0].texture.clone();
         self.start_texture(tex);
     }
 
@@ -490,10 +490,10 @@ impl<T, V: Vertex> Context<T, V>
         }
 
         let texture = texture_needed.unwrap_or_else(|| {
-            self.draw_list[self.draw_list.len() - 1].texture
+            self.draw_list[self.draw_list.len() - 1].texture.clone()
         });
 
-        if self.current_batch_is_invalid(texture) {
+        if self.current_batch_is_invalid(texture.clone()) {
             self.draw_list.push(DrawBatch {
                 texture: texture,
                 clip: self.clip,
@@ -715,7 +715,7 @@ struct CharData {
     advance: f32,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
@@ -733,8 +733,8 @@ impl<T, V> ToImageData<T, V> for ImageData<T> {
     }
 }
 
-impl<T: Copy, V> ToImageData<T, V> for Image {
+impl<T: Clone, V> ToImageData<T, V> for Image {
     fn to_image_data(self, context: &Context<T, V>) -> ImageData<T> {
-        context.images[self]
+        context.images[self].clone()
     }
 }
