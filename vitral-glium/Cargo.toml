@@ -1,0 +1,15 @@
+[package]
+name = "vitral-glium"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Glium library rendering backend for the Vitral GUI"
+keywords = ["gui", "opengl"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rsaarelm/vitral-glium"
+
+[dependencies]
+glium = "0.15"
+euclid = "0.10"
+
+[dependencies.vitral]
+path = "../"

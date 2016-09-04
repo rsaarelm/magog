@@ -11,3 +11,9 @@ repository = "https://github.com/rsaarelm/vitral"
 euclid = "0.10"
 image = "0.10"
 time = "0.1"
+
+[dev-dependencies]
+glium = "0.15"
+
+[dev-dependencies.vitral-glium]
+path = "vitral-glium"
