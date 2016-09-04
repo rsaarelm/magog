@@ -10,8 +10,10 @@ extern crate vitral;
 mod canvas;
 mod canvas_zoom;
 
+use euclid::{Point2D, Size2D};
 use glium::{Surface, glutin};
 use glium::index::PrimitiveType;
+use canvas::Canvas;
 pub use canvas_zoom::CanvasZoom;
 
 /// Default texture type used by the backend.
@@ -24,7 +26,9 @@ pub struct Backend<V> {
 
     keypress: Vec<KeyEvent>,
 
-    zoom: Option<CanvasZoom>,
+    canvas: Canvas,
+    zoom: CanvasZoom,
+    window_size: Size2D<u32>,
 
     phantom: ::std::marker::PhantomData<V>,
 }
@@ -34,14 +38,18 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
     /// to render data of that type as argument to the constructor.
-    pub fn new(program: glium::Program) -> Backend<V> {
+    pub fn new(display: &glium::Display, program: glium::Program, width: u32, height: u32) -> Backend<V> {
+        let (w, h) = display.get_framebuffer_dimensions();
+
         Backend {
             program: program,
             textures: Vec::new(),
 
             keypress: Vec::new(),
 
-            zoom: None,
+            canvas: Canvas::new(display, width, height),
+            zoom: CanvasZoom::PixelPerfect,
+            window_size: Size2D::new(w, h),
 
             phantom: ::std::marker::PhantomData,
         }
@@ -66,7 +74,12 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
         for event in display.poll_events() {
             match event {
                 glutin::Event::Closed => return false,
-                glutin::Event::MouseMoved(x, y) => context.input_mouse_move(x, y),
+                glutin::Event::MouseMoved(x, y) => {
+                    let pos = self.zoom.screen_to_canvas(self.window_size,
+                                                         self.canvas.size(),
+                                                         Point2D::new(x as f32, y as f32));
+                    context.input_mouse_move(pos.x as i32, pos.y as i32);
+                }
                 glutin::Event::MouseInput(state, button) => {
                     context.input_mouse_button(match button {
                                                    glutin::MouseButton::Left => {
@@ -118,12 +131,8 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
         self.keypress.pop()
     }
 
-    /// Render the draw instructions from the Vitral context and read input.
-    pub fn update(&mut self,
-                  display: &glium::Display,
-                  context: &mut vitral::Context<usize, V>)
-                  -> bool {
-        let mut target = display.draw();
+    fn render(&mut self, display: &glium::Display, context: &mut vitral::Context<usize, V>) {
+        let mut target = self.canvas.get_framebuffer_target(display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
@@ -170,9 +179,21 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
                         &params)
                   .unwrap();
         }
+    }
 
-        target.finish().unwrap();
+    fn update_window_size(&mut self, display: &glium::Display) {
+        let (w, h) = display.get_framebuffer_dimensions();
+        self.window_size = Size2D::new(w, h);
+    }
 
+    /// Display the backend and read input events.
+    pub fn update(&mut self,
+                  display: &glium::Display,
+                  context: &mut vitral::Context<usize, V>)
+                  -> bool {
+        self.update_window_size(display);
+        self.render(display, context);
+        self.canvas.draw(display, self.zoom);
         self.process_events(display, context)
     }
 }

@@ -16,7 +16,7 @@ fn main() {
                       .build_glium()
                       .unwrap();
 
-    let mut backend = Backend::new(vitral_glium::default_program(&display).unwrap());
+    let mut backend = Backend::new(&display, vitral_glium::default_program(&display).unwrap(), 640, 360);
 
     // Construct Vitral context.
     let mut context: vitral::Context<usize, DefaultVertex>;

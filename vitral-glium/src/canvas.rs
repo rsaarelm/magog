@@ -70,6 +70,7 @@ impl Canvas {
 
     pub fn draw(&mut self, display: &glium::Display, zoom: CanvasZoom) {
         let mut target = display.draw();
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
 
         let (w, h) = display.get_framebuffer_dimensions();
 
@@ -142,5 +143,7 @@ impl Canvas {
         target.finish().unwrap();
     }
 
-    pub fn size(&self) -> Size2D<u32> { self.size }
+    pub fn size(&self) -> Size2D<u32> {
+        self.size
+    }
 }
