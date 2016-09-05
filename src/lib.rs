@@ -1,122 +1,60 @@
 extern crate euclid;
-extern crate image;
 extern crate time;
 
 use std::mem;
 use std::collections::HashMap;
-use std::ops::Add;
-use image::{GenericImage, Pixel};
+use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
 
-pub type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
-mod atlas;
-
-// Assuming this is the texture size maximum for low-end GPUs.
-static ATLAS_SIZE_LIMIT: u32 = 2048;
-
-/// Configuration for rendering style.
-#[derive(Clone, PartialEq)]
-pub struct Style {
-    pub foreground_color: Option<[f32; 4]>,
-    pub background_color: Option<[f32; 4]>,
-    pub font: Option<Font>,
+/// Image buffer.
+pub struct ImageBuffer {
+    /// Image width.
+    pub width: u32,
+    /// Image height.
+    pub height: u32,
+    /// RGBA pixels, in rows from top left down, len must be width * height.
+    pub pixels: Vec<u32>,
 }
 
-// TODO: Should there be a separate field that gets added to the core style
-// with non-optional fields that has optional fields? The current scheme with
-// Option-only doesn't encode "cached style *must* have non-option value for
-// everything".
+impl ImageBuffer {
+    pub fn blank() -> ImageBuffer {
+        ImageBuffer {
+            width: 1,
+            height: 1,
+            pixels: vec![0xffffffff],
+        }
+    }
 
-impl Default for Style {
-    fn default() -> Self {
-        Style {
-            foreground_color: Some([1.0, 1.0, 1.0, 1.0]),
-            background_color: Some([0.0, 0.0, 0.0, 1.0]),
-            font: Some(0),
+    pub fn from_fn<F>(width: u32, height: u32, f: F) -> ImageBuffer
+        where F: Fn(u32, u32) -> u32
+    {
+        let pixels = (0..)
+                         .take((width * height) as usize)
+                         .map(|i| f(i % width, i / width))
+                         .collect();
+        ImageBuffer {
+            width: width,
+            height: height,
+            pixels: pixels,
         }
     }
 }
 
-impl Add<Style> for Style {
-    type Output = Style;
-    fn add(self, other: Style) -> Style {
-        unimplemented!();
-    }
-}
-
-
 pub struct Builder<T> {
-    fonts: Vec<FontData<T>>,
-    images: Vec<ImageBuffer>,
+    phantom: ::std::marker::PhantomData<T>,
 }
 
 impl<T> Builder<T>
     where T: Clone + Eq
 {
     pub fn new() -> Builder<T> {
-        Builder {
-            fonts: Vec::new(),
-            images: vec![
-                image::ImageBuffer::from_pixel(
-                    1, 1, image::Rgba::from_channels(255, 255, 255, 255)),
-            ],
-        }
+        Builder { phantom: ::std::marker::PhantomData }
     }
 
-    /// Add an image for the UI to use.
-    ///
-    /// The return value is a handle that can be used to request the images to
-    /// be drawn later.
-    pub fn add_image<I>(&mut self, img: &I) -> Image
-        where I: image::GenericImage<Pixel = image::Rgba<u8>>
-    {
-        let mut image = ImageBuffer::new(img.width(), img.height());
-        image.copy_from(img, 0, 0);
-        if image.width() > ATLAS_SIZE_LIMIT || image.height() > ATLAS_SIZE_LIMIT {
-            panic!("Image with dimensions ({}, {}) is too large, maximum is ({}, {})",
-                   image.width(),
-                   image.height(),
-                   ATLAS_SIZE_LIMIT,
-                   ATLAS_SIZE_LIMIT);
-        }
-
-        self.images.push(image);
-        self.images.len() - 1
-    }
-
-    /// Add a font for the UI to use.
-    ///
-    /// The return value is a font handle or an error if the data was invalid.
-    pub fn add_font<F, R>(&mut self,
-                          mut make_t: F,
-                          ttf_data: &[u8],
-                          font_range: R)
-                          -> Result<Font, ()>
-        where F: FnMut(ImageBuffer) -> T,
-              R: IntoIterator<Item = char>
-    {
-        // Ensure that the first font is always the baked-in default one.
-        if self.fonts.is_empty() {
-            self.add_default_font(&mut make_t);
-        }
-
-        // TODO: A FontSource type that embody a TTF font or a bitmap font.
-
-        // TODO: Parse TTF data using appropriate crate, return error if data
-        // isn't valid TTF.
-
-        // TODO: Rasterize fonts with codepoints in font_range into images.
-
-        // TODO: Build atlas image from font and register it in the Builder.
-        unimplemented!();
-    }
-
-    fn add_default_font<F>(&mut self, make_t: &mut F)
+    fn build_default_font<F>(&self, make_t: &mut F) -> FontData<T>
         where F: FnMut(ImageBuffer) -> T
     {
-        assert!(self.fonts.is_empty());
-
         static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
         let (width, height) = (256, 112);
         let start_char = 32;
@@ -124,9 +62,9 @@ impl<T> Builder<T>
         let (char_width, char_height) = (8, 16);
         let columns = width / char_width;
 
-        let img = image::ImageBuffer::from_fn(width, height, |x, y| {
-            let a = DEFAULT_FONT[(x + y * width) as usize];
-            image::Rgba::from_channels(a, a, a, a)
+        let img = ImageBuffer::from_fn(width, height, |x, y| {
+            let a = DEFAULT_FONT[(x + y * width) as usize] as u32;
+            (a << 24) | (a << 16) | (a << 8) | a
         });
 
         let t = make_t(img);
@@ -144,54 +82,31 @@ impl<T> Builder<T>
 
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
-                           tex_coords: tex_coords,
+                           image: ImageData {
+                               texture: t.clone(),
+                               size: Size2D::new(char_width, char_height),
+                               tex_coords: tex_coords,
+                           },
                            draw_offset: Point2D::new(0.0, char_height as f32),
                            advance: char_width as f32,
                        });
         }
 
-        self.fonts.push(FontData {
-            texture: t,
+        FontData {
             chars: map,
             height: char_height as f32,
-        });
-    }
-
-    fn construct_atlas<F>(&self, make_t: &mut F) -> Vec<ImageData<T>>
-        where F: FnMut(ImageBuffer) -> T
-    {
-        // TODO: Handle case where you need multiple atlases.
-        let (atlas, positions) = atlas::build_atlas(&self.images, ATLAS_SIZE_LIMIT).unwrap();
-        let w = atlas.width() as f32;
-        let h = atlas.height() as f32;
-        let atlas = make_t(atlas);
-
-        positions.iter()
-                 .enumerate()
-                 .map(|(i, p)| {
-                     let (i_w, i_h) = (self.images[i].width(), self.images[i].height());
-                     ImageData {
-                         texture: atlas.clone(),
-                         size: Size2D::new(i_w, i_h),
-                         tex_coords: Rect::new(Point2D::new(p.x as f32 / w, p.y as f32 / h),
-                                               Size2D::new(i_w as f32 / w, i_h as f32 / h)),
-                     }
-                 })
-                 .collect()
+        }
     }
 
     /// Construct an interface context instance.
-    pub fn build<F, V>(mut self, mut make_t: F) -> Context<T, V>
+    pub fn build<F, V>(self, mut make_t: F) -> Context<T, V>
         where F: FnMut(ImageBuffer) -> T,
               V: Vertex
     {
-        if self.fonts.is_empty() {
-            self.add_default_font(&mut make_t);
-        }
+        let default_font = self.build_default_font(&mut make_t);
+        let solid = make_t(ImageBuffer::blank());
 
-        let images = self.construct_atlas(&mut make_t);
-
-        Context::new(self.fonts, images)
+        Context::new(default_font, solid)
     }
 }
 
@@ -209,15 +124,14 @@ pub struct Context<T, V> {
     mouse_pos: Point2D<f32>,
     click_state: [ClickState; 3],
 
-    fonts: Vec<FontData<T>>,
-    images: Vec<ImageData<T>>,
+    // Make this Rc so it can be passed outside without copying and used as a reference in a
+    // mutable op.
+    default_font: Rc<FontData<T>>,
+    solid_texture: T,
 
     text_input: Vec<KeyInput>,
 
     tick: u64,
-
-    styles: Vec<Style>,
-    current_style: Style,
 
     clip: Option<Rect<f32>>,
 }
@@ -225,7 +139,7 @@ pub struct Context<T, V> {
 impl<T, V: Vertex> Context<T, V>
     where T: Clone + Eq
 {
-    fn new(fonts: Vec<FontData<T>>, images: Vec<ImageData<T>>) -> Context<T, V> {
+    fn new(default_font: FontData<T>, solid_texture: T) -> Context<T, V> {
         Context {
             draw_list: Vec::new(),
             // solid_texture: Image(0),
@@ -234,15 +148,12 @@ impl<T, V: Vertex> Context<T, V>
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: [ClickState::Unpressed, ClickState::Unpressed, ClickState::Unpressed],
 
-            fonts: fonts,
-            images: images,
+            default_font: Rc::new(default_font),
+            solid_texture: solid_texture,
 
             text_input: Vec::new(),
 
             tick: 0,
-
-            styles: Vec::new(),
-            current_style: Default::default(),
 
             clip: None,
         }
@@ -256,34 +167,29 @@ impl<T, V: Vertex> Context<T, V>
         // TODO
     }
 
-    pub fn draw_text(&mut self, font: Font, mut pos: Point2D<f32>, color: [f32; 4], text: &str) {
-        assert!(self.fonts.len() >= font);
-        let id = font;
-        let t = self.fonts[id].texture.clone();
-        let h = self.fonts[id].height;
-        self.start_texture(t);
-
+    pub fn draw_text(&mut self,
+                     font: &FontData<T>,
+                     mut pos: Point2D<f32>,
+                     color: [f32; 4],
+                     text: &str) {
         for c in text.chars() {
             // FIXME: Gratuitous cloning because of borrow checker.
-            let x = self.fonts[id].chars.get(&c).cloned();
+            let x = font.chars.get(&c).cloned();
             // TODO: Draw some sort of symbol for characters missing from font.
             if let Some(f) = x {
-                self.push_rect(Rect::new(pos - f.draw_offset, Size2D::new(f.advance, h)),
-                               f.tex_coords,
-                               color);
+                self.draw_image(&f.image, pos - f.draw_offset, color);
                 pos.x += f.advance;
             }
         }
     }
 
-    pub fn default_font(&self) -> Font {
-        0
+    pub fn default_font<'a>(&self) -> Rc<FontData<T>> {
+        self.default_font.clone()
     }
 
     pub fn button(&mut self, caption: &str) -> bool {
-        let font = self.default_font();
-        let area = self.fonts[font]
-                       .render_size(caption)
+        let font = self.default_font.clone();
+        let area = font.render_size(caption)
                        .inflate(4.0, 4.0)
                        .translate(&self.layout_pos);
 
@@ -303,7 +209,7 @@ impl<T, V: Vertex> Context<T, V>
 
         self.fill_rect(area, color);
         self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
-        self.draw_text(font,
+        self.draw_text(&*font,
                        area.origin + Point2D::new(4.0, area.size.height - 4.0),
                        color,
                        caption);
@@ -311,18 +217,10 @@ impl<T, V: Vertex> Context<T, V>
         press && self.click_state[MouseButton::Left as usize].is_release()
     }
 
-    pub fn draw_image<I>(&mut self, image: I, pos: Point2D<f32>, color: [f32; 4])
-        where I: ToImageData<T, V>
-    {
-        let image = image.to_image_data(self);
-
-        self.start_texture(image.texture);
+    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
+        self.start_texture(image.texture.clone());
         let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         self.push_rect(Rect::new(pos, size), image.tex_coords, color);
-    }
-
-    pub fn get_image(&self, image: Image) -> ImageData<T> {
-        self.images[image].clone()
     }
 
     fn push_rect(&mut self, area: Rect<f32>, tex_coords: Rect<f32>, color: [f32; 4]) {
@@ -359,9 +257,9 @@ impl<T, V: Vertex> Context<T, V>
 
     pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
         self.start_solid_texture();
-        // Image 0 must be solid texture.
-        let tex_rect = self.images[0].tex_coords;
-        self.push_rect(area, tex_rect, color);
+        self.push_rect(area,
+                       Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
+                       color);
     }
 
     pub fn draw_line(&mut self,
@@ -374,8 +272,7 @@ impl<T, V: Vertex> Context<T, V>
         }
 
         self.start_solid_texture();
-        // Image 0 must be solid texture.
-        let t = self.images[0].tex_coords.origin;
+        let t = Point2D::new(0.0, 0.0);
 
         // Displacements from the one-dimensional base line.
         let mut front = p2 - p1;
@@ -407,7 +304,7 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     pub fn text_input(&mut self,
-                      font: Font,
+                      font: &FontData<T>,
                       pos: Point2D<f32>,
                       color: [f32; 4],
                       text_buffer: &mut String) {
@@ -446,11 +343,8 @@ impl<T, V: Vertex> Context<T, V>
     }
 
     fn start_solid_texture(&mut self) {
-        assert!(self.images.len() > 0);
-        // Builder must always setup Context so that the first image is the
-        // solid color.
-        let tex = self.images[0].texture.clone();
-        self.start_texture(tex);
+        let t = self.solid_texture.clone();
+        self.start_texture(t);
     }
 
     /// Ensure that there current draw batch has solid texture.
@@ -543,27 +437,6 @@ impl<T, V: Vertex> Context<T, V>
         if is_down {
             self.text_input.push(KeyInput::Other(k));
         }
-    }
-
-    /// Add a style, any set values will override existing styles.
-    pub fn push_style(&mut self, style: Style) {
-        self.styles.push(style);
-        self.recompute_style();
-    }
-
-    /// Remove the latest pushed style and revert to the previous one.
-    pub fn pop_style(&mut self) {
-        self.styles.pop();
-        self.recompute_style();
-    }
-
-    fn recompute_style(&mut self) {
-        let mut style = Style::default();
-        for i in &self.styles {
-            style = style + i.clone();
-        }
-
-        self.current_style = style;
     }
 
     /// Get the current mouse position
@@ -683,18 +556,17 @@ enum KeyInput {
     Other(Keycode),
 }
 
-pub type Font = usize;
-
-pub type Image = usize;
-
+/// Font data for Vitral.
 #[derive(Clone)]
 pub struct FontData<T> {
-    texture: T,
-    chars: HashMap<char, CharData>,
-    height: f32,
+    /// Map from chars to glyph images.
+    pub chars: HashMap<char, CharData<T>>,
+    /// Line height for this font.
+    pub height: f32,
 }
 
 impl<T> FontData<T> {
+    /// Return the size of a string of text in this font.
     pub fn render_size(&self, text: &str) -> Rect<f32> {
         let mut w = 0.0;
 
@@ -708,33 +580,18 @@ impl<T> FontData<T> {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-struct CharData {
-    tex_coords: Rect<f32>,
-    draw_offset: Point2D<f32>,
-    advance: f32,
+/// Drawable image data for Vitral.
+#[derive(Clone, PartialEq)]
+pub struct CharData<T> {
+    pub image: ImageData<T>,
+    pub draw_offset: Point2D<f32>,
+    pub advance: f32,
 }
 
+/// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
 pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
     pub tex_coords: Rect<f32>,
-}
-
-/// Shim for using both `Image` and `ImageData` types in `draw_image` calls.
-pub trait ToImageData<T, V> {
-    fn to_image_data(self, context: &Context<T, V>) -> ImageData<T>;
-}
-
-impl<T, V> ToImageData<T, V> for ImageData<T> {
-    fn to_image_data(self, _: &Context<T, V>) -> ImageData<T> {
-        self
-    }
-}
-
-impl<T: Clone, V> ToImageData<T, V> for Image {
-    fn to_image_data(self, context: &Context<T, V>) -> ImageData<T> {
-        context.images[self].clone()
-    }
 }
