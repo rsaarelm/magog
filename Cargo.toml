@@ -1,19 +1,19 @@
 [package]
 name = "vitral"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Platform-agnostic immediate mode GUI"
-keywords = ["gui"]
+keywords = ["gui", "vitral"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rsaarelm/vitral"
 
 [dependencies]
 euclid = "0.10"
-image = "0.10"
 time = "0.1"
 
 [dev-dependencies]
 glium = "0.15"
+image = "0.10"
 
 [dev-dependencies.vitral-glium]
 path = "vitral-glium"
