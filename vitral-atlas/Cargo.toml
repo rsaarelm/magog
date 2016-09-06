@@ -1,0 +1,14 @@
+[package]
+name = "vitral-atlas"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Image atlas construction for Vitral GUI"
+keywords = ["gui", "vitral"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rsaarelm/vitral-atlas"
+
+[dependencies]
+euclid = "0.10"
+
+[dependencies.vitral]
+path = "../"

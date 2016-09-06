@@ -2,10 +2,10 @@ extern crate euclid;
 extern crate time;
 
 use std::mem;
+use std::iter;
 use std::collections::HashMap;
 use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
-
 
 /// Image buffer.
 pub struct ImageBuffer {
@@ -18,7 +18,17 @@ pub struct ImageBuffer {
 }
 
 impl ImageBuffer {
-    pub fn blank() -> ImageBuffer {
+    /// Build an empty buffer.
+    pub fn new(width: u32, height: u32) -> ImageBuffer {
+        ImageBuffer {
+            width: width,
+            height: height,
+            pixels: iter::repeat(0u32).take((width * height) as usize).collect(),
+        }
+
+    }
+
+    fn blank() -> ImageBuffer {
         ImageBuffer {
             width: 1,
             height: 1,
@@ -26,6 +36,7 @@ impl ImageBuffer {
         }
     }
 
+    /// Build the buffer from a function.
     pub fn from_fn<F>(width: u32, height: u32, f: F) -> ImageBuffer
         where F: Fn(u32, u32) -> u32
     {
@@ -37,6 +48,22 @@ impl ImageBuffer {
             width: width,
             height: height,
             pixels: pixels,
+        }
+    }
+
+    /// Copy pixels from source buffer to self starting from given coordinates.
+    pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
+        let self_rect = Rect::new(Point2D::new(0, 0), Size2D::new(self.width, self.height));
+        let source_rect = Rect::new(Point2D::new(x, y), Size2D::new(source.width, source.height));
+
+        if let Some(blit_rect) = self_rect.intersection(&source_rect) {
+            for y2 in blit_rect.min_y()..blit_rect.max_y() {
+                for x2 in blit_rect.min_x()..blit_rect.max_x() {
+                    let self_idx = (x2 + y2 * self.width) as usize;
+                    let source_idx = ((x2 - x) + (y2 - y) * source.width) as usize;
+                    self.pixels[self_idx] = source.pixels[source_idx];
+                }
+            }
         }
     }
 }

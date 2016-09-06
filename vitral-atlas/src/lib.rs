@@ -1,15 +1,17 @@
+extern crate euclid;
+extern crate vitral;
+
 use std::iter;
 use std::cmp::max;
-use image::GenericImage;
 use euclid::{Point2D, Rect, Size2D};
-use ImageBuffer;
+use vitral::ImageBuffer;
 
 pub fn build_atlas(input: &[ImageBuffer],
                    mut max_size: u32)
                    -> Option<(ImageBuffer, Vec<Point2D<u32>>)> {
     assert!(input.len() > 0);
     let dims: Vec<Size2D<u32>> = input.iter()
-                                      .map(|i| Size2D::new(i.width(), i.height()))
+                                      .map(|i| Size2D::new(i.width, i.height))
                                       .collect();
 
     let mut packing = None;
