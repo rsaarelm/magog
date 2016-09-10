@@ -6,12 +6,45 @@ use std::cmp::max;
 use euclid::{Point2D, Rect, Size2D};
 use vitral::ImageBuffer;
 
-pub fn build_atlas(input: &[ImageBuffer],
-                   mut max_size: u32)
-                   -> Option<(ImageBuffer, Vec<Point2D<u32>>)> {
+/// Try to pack input images in a single new texture.
+///
+/// Will create at most `max_size` * `max_size` texture, will fail if the input images cannot be
+/// fit in the maximum image.
+pub fn build_atlas<F, T: Clone>(input: &[ImageBuffer],
+                                max_size: u32,
+                                mut f: F)
+                                -> Result<Vec<vitral::ImageData<T>>, ()>
+    where F: FnMut(ImageBuffer) -> T
+{
+    let (buf, posns) = try!(build_atlas_buffer(input, max_size));
+    let x_scale = 1.0 / buf.size.width as f32;
+    let y_scale = 1.0 / buf.size.height as f32;
+
+    let t = f(buf);
+
+    Ok(input.iter()
+            .zip(posns)
+            .map(|(buf, pos)| {
+                let size = buf.size;
+                // Texture coordinates in [0, 1] range
+                let tex_pos = Point2D::new(pos.x as f32 * x_scale, pos.y as f32 * y_scale);
+                let tex_size = Size2D::new(size.width as f32 * x_scale,
+                                           size.height as f32 * y_scale);
+                vitral::ImageData {
+                    texture: t.clone(),
+                    size: size,
+                    tex_coords: Rect::new(tex_pos, tex_size),
+                }
+            })
+            .collect())
+}
+
+fn build_atlas_buffer(input: &[ImageBuffer],
+                      mut max_size: u32)
+                      -> Result<(ImageBuffer, Vec<Point2D<u32>>), ()> {
     assert!(input.len() > 0);
     let dims: Vec<Size2D<u32>> = input.iter()
-                                      .map(|i| Size2D::new(i.width, i.height))
+                                      .map(|i| i.size)
                                       .collect();
 
     let mut packing = None;
@@ -34,10 +67,10 @@ pub fn build_atlas(input: &[ImageBuffer],
             atlas.copy_from(&input[i], pos.x, pos.y);
         }
 
-        Some((atlas, packing))
+        Ok((atlas, packing))
     } else {
         // Didn't get a packing even at the largest size, bail out.
-        None
+        Err(())
     }
 
 }

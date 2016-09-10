@@ -57,7 +57,7 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
 
     /// Create a new texture using Vitral's input.
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
-        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels, (img.width, img.height));
+        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels, (img.size.width, img.size.height));
         let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1

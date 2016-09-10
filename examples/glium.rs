@@ -23,8 +23,7 @@ fn load_image<V>(display: &glium::Display,
                       .map(|(_, _, p)| unsafe { ::std::mem::transmute::<image::Rgba<u8>, u32>(p) })
                       .collect();
     let image = vitral::ImageBuffer {
-        width: w,
-        height: h,
+        size: Size2D::new(w, h),
         pixels: pixels,
     };
 

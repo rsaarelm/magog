@@ -9,10 +9,8 @@ use euclid::{Point2D, Rect, Size2D};
 
 /// Image buffer.
 pub struct ImageBuffer {
-    /// Image width.
-    pub width: u32,
-    /// Image height.
-    pub height: u32,
+    /// Image size.
+    pub size: Size2D<u32>,
     /// RGBA pixels, in rows from top left down, len must be width * height.
     pub pixels: Vec<u32>,
 }
@@ -21,8 +19,7 @@ impl ImageBuffer {
     /// Build an empty buffer.
     pub fn new(width: u32, height: u32) -> ImageBuffer {
         ImageBuffer {
-            width: width,
-            height: height,
+            size: Size2D::new(width, height),
             pixels: iter::repeat(0u32).take((width * height) as usize).collect(),
         }
 
@@ -30,8 +27,7 @@ impl ImageBuffer {
 
     fn blank() -> ImageBuffer {
         ImageBuffer {
-            width: 1,
-            height: 1,
+            size: Size2D::new(1, 1),
             pixels: vec![0xffffffff],
         }
     }
@@ -45,22 +41,21 @@ impl ImageBuffer {
                          .map(|i| f(i % width, i / width))
                          .collect();
         ImageBuffer {
-            width: width,
-            height: height,
+            size: Size2D::new(width, height),
             pixels: pixels,
         }
     }
 
     /// Copy pixels from source buffer to self starting from given coordinates.
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
-        let self_rect = Rect::new(Point2D::new(0, 0), Size2D::new(self.width, self.height));
-        let source_rect = Rect::new(Point2D::new(x, y), Size2D::new(source.width, source.height));
+        let self_rect = Rect::new(Point2D::new(0, 0), self.size);
+        let source_rect = Rect::new(Point2D::new(x, y), source.size);
 
         if let Some(blit_rect) = self_rect.intersection(&source_rect) {
             for y2 in blit_rect.min_y()..blit_rect.max_y() {
                 for x2 in blit_rect.min_x()..blit_rect.max_x() {
-                    let self_idx = (x2 + y2 * self.width) as usize;
-                    let source_idx = ((x2 - x) + (y2 - y) * source.width) as usize;
+                    let self_idx = (x2 + y2 * self.size.width) as usize;
+                    let source_idx = ((x2 - x) + (y2 - y) * source.size.width) as usize;
                     self.pixels[self_idx] = source.pixels[source_idx];
                 }
             }
