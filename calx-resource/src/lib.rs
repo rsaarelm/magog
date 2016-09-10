@@ -3,12 +3,15 @@
 //
 
 extern crate serde;
+extern crate stable_bst;
+extern crate compare;
 
 use std::rc::Rc;
 use std::ops::Deref;
-use std::hash;
-use std::collections::HashMap;
+use stable_bst::{TreeMap, Bound};
 use std::fmt;
+use std::cmp;
+use std::marker::PhantomData;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// A type that implements a singleton resource store.
@@ -16,6 +19,21 @@ pub trait ResourceStore<K = String> {
     fn get_resource(key: &K) -> Option<Rc<Self>> where Self: Sized;
 
     fn insert_resource(key: K, resource: Self);
+
+    /// Return next key in the cache in some arbitrary stable iteration order.
+    ///
+    /// Mostly for internal use.
+    fn next_resource_key(prev_key: Option<K>) -> Option<K>;
+
+    /// Return an iterator for all the cached resources.
+    fn resource_iter() -> ResourceIter<Self, K>
+        where Self: Sized
+    {
+        ResourceIter {
+            next_key: Self::next_resource_key(None),
+            phantom: PhantomData,
+        }
+    }
 }
 
 /// Smart pointer for an immutable cached resource.
@@ -62,9 +80,15 @@ impl<T: ResourceStore> Deserialize for Resource<T> {
     }
 }
 
-impl<T, K: hash::Hash> hash::Hash for Resource<T, K> {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.key.hash(state);
+impl<T, K: cmp::Ord> cmp::Ord for Resource<T, K> {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        self.key.cmp(&other.key)
+    }
+}
+
+impl<T, K: cmp::PartialOrd> cmp::PartialOrd for Resource<T, K> {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        self.key.partial_cmp(&other.key)
     }
 }
 
@@ -99,6 +123,10 @@ impl<K, T: ResourceStore<K>> Resource<T, K> {
             None
         }
     }
+
+    pub fn key<'a>(&'a mut self) -> &'a K {
+        &self.key
+    }
 }
 
 
@@ -117,13 +145,13 @@ pub trait Loadable<K = String> {
 /// A cache that associates resource values with paths.
 ///
 /// Resources and paths are assumed to be immutable.
-pub struct ResourceCache<T, K = String> {
-    cache: HashMap<K, Rc<T>>,
+pub struct ResourceCache<T, K: cmp::Ord> {
+    cache: TreeMap<K, Rc<T>>,
 }
 
-impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
+impl<K: Eq + cmp::Ord + Clone, T: Loadable<K>> ResourceCache<T, K> {
     pub fn new() -> ResourceCache<T, K> {
-        ResourceCache { cache: HashMap::new() }
+        ResourceCache { cache: TreeMap::new() }
     }
 
     pub fn get(&mut self, key: &K) -> Option<Rc<T>> {
@@ -143,6 +171,23 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     pub fn insert(&mut self, key: K, value: T) {
         self.cache.insert(key, Rc::new(value));
     }
+
+    /// Return next key in the cache in some arbitrary stable iteration order.
+    ///
+    /// If `prev_key` is `None`, returns first key. Returns `None` if there are no further keys.
+    pub fn next_key(&self, prev_key: Option<K>) -> Option<K> {
+        if let Some(x) = prev_key {
+            self.cache
+                .range(Bound::Excluded(&x), Bound::Unbounded)
+                .map(|(k, _)| k.clone())
+                .next()
+        } else {
+            self.cache
+                .range(Bound::Unbounded, Bound::Unbounded)
+                .map(|(k, _)| k.clone())
+                .next()
+        }
+    }
 }
 
 /// Implement a thread-local store for a given resource type.
@@ -154,24 +199,26 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
 ///     use calx_resource::{Resource, ResourceStore, Loadable};
 ///
 ///     // A custom resource type.
-///     struct MyResource { pub text: String }
+///     struct MyAsset { pub text: String }
 ///
 ///     // Must be present even if there's no specific implementation.
-///     impl Loadable for MyResource {}
+///     impl Loadable for MyAsset {}
 ///
 ///     // Generate a resource store.
-///     impl_store!(MY_RESOURCE_STORE, String, MyResource);
+///     impl_store!(MY_ASSET_STORE, String, MyAsset);
 ///
 ///     fn main() {
 ///         // Save a resource in the store using a key.
-///         MyResource::insert_resource(
+///         MyAsset::insert_resource(
 ///             "test_resource".to_string(),
-///             MyResource { text: "Hello, world!".to_string() });
+///             MyAsset { text: "Hello, world!".to_string() });
 ///
 ///         // Fetch a resource handle from the store using our key.
-///         let handle: Resource<MyResource> =
+///         let handle: Resource<MyAsset> =
 ///             Resource::new("test_resource".to_string()).unwrap();
 ///         assert!(&handle.text == "Hello, world!");
+///
+///         assert!(MyAsset::resource_iter().next() == Some(handle));
 ///     }
 #[macro_export]
 macro_rules! impl_store {
@@ -187,5 +234,32 @@ macro_rules! impl_store {
         fn insert_resource(key: $key, value: $value) {
             $name.with(|t| t.borrow_mut().insert(key, value));
         }
+
+        fn next_resource_key(prev_key: Option<$key>) -> Option<$key> {
+            $name.with(|t| t.borrow_mut().next_key(prev_key))
+        }
     }}
+}
+
+pub struct ResourceIter<T, K> {
+    next_key: Option<K>,
+    phantom: PhantomData<T>,
+}
+
+impl<T, K> Iterator for ResourceIter<T, K>
+    where T: ResourceStore<K>,
+          K: Clone
+{
+    type Item = Resource<T, K>;
+
+    fn next(&mut self) -> Option<Resource<T, K>> {
+        let ret;
+        if let Some(ref k) = self.next_key {
+            ret = Some(Resource::new(k.clone()).unwrap());
+        } else {
+            return None;
+        }
+        self.next_key = T::next_resource_key(self.next_key.clone());
+        ret
+    }
 }

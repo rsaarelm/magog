@@ -8,3 +8,6 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = "0.8"
+# TODO: Switch to stdlib BTreeMap once range API is stable.
+stable_bst = "0.2"
+compare = "0.0"
