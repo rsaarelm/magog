@@ -39,7 +39,7 @@ impl Sprite {
     pub fn draw(&self, ui: &mut backend::UI) {
         let pos = Point2D::new(self.offset[0] as f32, self.offset[1] as f32);
         for splat in &self.brush[self.frame_idx] {
-            ui.draw_image(splat.image, pos - splat.offset, splat.color);
+            ui.draw_image(&splat.image, pos - splat.offset, splat.color);
         }
     }
 }

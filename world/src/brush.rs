@@ -29,33 +29,72 @@ pub type Color = [f32; 4];
 
 pub type ImageRef = usize;
 
-#[derive(Copy, Clone, Debug)]
-pub struct Splat {
-    pub image: ImageRef,
-    pub offset: Point2D<f32>,
-    pub color: Color,
-}
+/// Brush element types parametrized on image type.
+pub mod generic {
+    use std::ops::Deref;
+    use euclid::Point2D;
+    use Color;
 
-pub type Frame = Vec<Splat>;
+    #[derive(Clone)]
+    pub struct Splat<T: Clone> {
+        pub image: T,
+        pub offset: Point2D<f32>,
+        pub color: Color,
+    }
 
-#[derive(Clone)]
-pub struct Brush(pub Vec<Frame>);
+    pub type Frame<T> = Vec<Splat<T>>;
 
-impl Deref for Brush {
-    type Target = Vec<Frame>;
+    #[derive(Clone)]
+    pub struct Brush<T: Clone>(pub Vec<Frame<T>>);
 
-    #[inline(always)]
-    fn deref(&self) -> &Vec<Frame> {
-        &self.0
+    impl<T: Clone> Brush<T> {
+        /// Convert the image type using the given function.
+        fn map<F, U>(self, f: F) -> Brush<U>
+            where F: Fn(T) -> U,
+                  U: Clone
+        {
+            Brush(self.0
+                      .into_iter()
+                      .map(|a| {
+                          a.into_iter()
+                           .map(|b| {
+                               Splat {
+                                   image: f(b.image),
+                                   offset: b.offset,
+                                   color: b.color,
+                               }
+                           })
+                           .collect()
+                      })
+                      .collect())
+        }
+    }
+
+    impl<T: Clone> Deref for Brush<T> {
+        type Target = Vec<Frame<T>>;
+
+        #[inline(always)]
+        fn deref(&self) -> &Vec<Frame<T>> {
+            &self.0
+        }
     }
 }
+
+// XXX: Hardcoded assumption here that the Vitral backend uses `usize` as the texture handle type.
+
+pub type Splat = generic::Splat<vitral::ImageData<usize>>;
+
+pub type Frame = generic::Frame<vitral::ImageData<usize>>;
+
+pub type Brush = generic::Brush<vitral::ImageData<usize>>;
+
 
 // Brush implements Loadable so we can have a cache for it, but there's no actual implicit load
 // method, brushes must be inserted manually in code.
 //
 // (We *could* make a load method later and have it read configuration files or something that
 // specify te brush.)
-impl Loadable for Brush {}
+impl<T: Clone> Loadable for generic::Brush<T> {}
 
 impl_store!(BRUSH, String, Brush);
 
@@ -106,22 +145,22 @@ impl hash::Hash for SubImageSpec {
 impl_store!(SPLAT_IMAGE, SubImageSpec, SplatImage);
 
 
-pub struct BrushBuilder<'a, V: 'a> {
-    builder: &'a mut vitral::Builder<V>,
+pub struct BrushBuilder {
     image_file: Option<String>,
-    brush: Vec<Frame>,
+    current_brush: Vec<generic::Frame<usize>>,
     splat_images: HashMap<SubImageSpec, usize>,
     color: Rgba,
+    brushes: HashMap<String, generic::Brush<usize>>,
 }
 
-impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
-    pub fn new(builder: &'a mut vitral::Builder<V>) -> BrushBuilder<'a, V> {
+impl BrushBuilder {
+    pub fn new() -> BrushBuilder {
         BrushBuilder {
-            builder: builder,
             image_file: None,
-            brush: Vec::new(),
+            current_brush: Vec::new(),
             splat_images: HashMap::new(),
             color: WHITE,
+            brushes: HashMap::new(),
         }
     }
 
@@ -131,23 +170,22 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
     }
 
     fn get_splat(&mut self, key: &SubImageSpec) -> usize {
-        // XXX: Crashy-crash unwrapping if you feed it bad data.
+        // Are we reusing an existing image? Then just return the index.
         if let Some(ret) = self.splat_images.get(key) {
             return *ret;
         }
 
-        let image: Resource<SplatImage, SubImageSpec> = Resource::new(key.clone()).unwrap();
-        let ret = self.builder.add_image(&*image);
-
+        // A new image spec was encountered. This needs to be a new item in the atlas, so add it to
+        // the end of the queue.
+        let ret = self.splat_images.len();
         self.splat_images.insert(key.clone(), ret);
-
         ret
     }
 
     /// Add a new splat with the given bounding rectangle to the current frame.
     pub fn splat(mut self, x: u32, y: u32, w: u32, h: u32) -> Self {
-        if self.brush.is_empty() {
-            self.brush.push(Vec::new());
+        if self.current_brush.is_empty() {
+            self.current_brush.push(Vec::new());
         }
         let filename = self.image_file.clone().expect("Image file not set");
         let spec = SubImageSpec::new(filename, Rect::new(Point2D::new(x, y), Size2D::new(w, h)))
@@ -155,8 +193,8 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
         let image = self.get_splat(&spec);
 
-        let idx = self.brush.len() - 1;
-        self.brush[idx].push(Splat {
+        let idx = self.current_brush.len() - 1;
+        self.current_brush[idx].push(generic::Splat {
             image: image,
             offset: Point2D::new(0.0, 0.0),
             color: [self.color.r, self.color.g, self.color.b, self.color.a],
@@ -173,14 +211,14 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
     /// Set the offset of the last splat.
     pub fn offset(mut self, x: i32, y: i32) -> Self {
-        assert!(!self.brush.is_empty());
-        let i = self.brush.len() - 1;
-        assert!(!self.brush[i].is_empty());
-        let j = self.brush[i].len() - 1;
+        assert!(!self.current_brush.is_empty());
+        let i = self.current_brush.len() - 1;
+        assert!(!self.current_brush[i].is_empty());
+        let j = self.current_brush[i].len() - 1;
 
         // Internally offset is floats because all screen geometry stuff is, but on the data spec
         // level we're pretty much operating on per-pixel level.
-        self.brush[i][j].offset = Point2D::new(x as f32, y as f32);
+        self.current_brush[i][j].offset = Point2D::new(x as f32, y as f32);
 
         self
     }
@@ -245,15 +283,15 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
     /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
     /// and the other contains the two long sides wallform.
     pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Self {
-        self.splat(center_x, center_y, 16, 32).offset(16, 16)
-            .frame().splat(center_x + 16, center_y, 16, 32).offset(0, 16)
-            .frame().splat(sides_x, sides_y, 16, 32).offset(16, 16)
-            .frame().splat(sides_x + 16, sides_y, 16, 32).offset(0, 16)
+        self.splat(center_x, center_y, 16, 32) .offset(16, 16)              // 0
+            .frame().splat(center_x + 16, center_y, 16, 32).offset(0, 16)   // 1
+            .frame().splat(sides_x, sides_y, 16, 32).offset(16, 16)         // 2
+            .frame().splat(sides_x + 16, sides_y, 16, 32).offset(0, 16)     // 3
     }
 
     /// Start a new frame in the current brush.
     pub fn frame(mut self) -> Self {
-        self.brush.push(Vec::new());
+        self.current_brush.push(Vec::new());
         self
     }
 
@@ -267,14 +305,17 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
 
         // Zero cached brush and copy the old value here so we can insert it.
         let mut brush = Vec::new();
-        mem::swap(&mut brush, &mut self.brush);
+        mem::swap(&mut brush, &mut self.current_brush);
         assert!(!brush.is_empty());
 
-        Brush::insert_resource(name, Brush(brush));
+        self.brushes.insert(name, generic::Brush(brush));
 
         // Reset color
         self.color = WHITE;
 
         self
     }
+
+    // TODO TODO TODO
+    // Atlas-baking function here.
 }

@@ -6,7 +6,7 @@ use calx_resource::ResourceStore;
 use world::BrushBuilder;
 
 pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
-    BrushBuilder::new(builder)
+    BrushBuilder::new()
         .file("content/assets/floors.png")
         ////
         .tile(0, 0)
@@ -87,6 +87,8 @@ pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         .color(DARKGOLDENROD)
         .blob(0, 0, 0, 32, 0, 64)
         .brush("rock");
+
+    // TODO: Finish step.
 }
 
 pub fn terrain() {

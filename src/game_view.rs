@@ -159,7 +159,7 @@ impl GameView {
         for (y, origin) in chart.get(&cursor_pos).unwrap_or(&Vec::new()).iter().enumerate() {
             let font = context.ui.default_font();
             let loc = *origin + cursor_pos;
-            context.ui.draw_text(font, Point2D::new(400.0, y as f32 * 20.0 + 20.0), [1.0, 1.0, 1.0, 1.0],
+            context.ui.draw_text(&*font, Point2D::new(400.0, y as f32 * 20.0 + 20.0), [1.0, 1.0, 1.0, 1.0],
                 &format!("{:?}", loc));
         }
 
