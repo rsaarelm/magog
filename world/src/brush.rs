@@ -1,5 +1,5 @@
-use std::hash;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
+use std::cmp;
 use std::ops::Deref;
 use image::{self, GenericImage};
 use euclid::{Point2D, Rect, Size2D};
@@ -95,11 +95,24 @@ impl Loadable<SubImageSpec> for SplatImage {
 }
 
 
-impl hash::Hash for SubImageSpec {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.image.hash(state);
-        self.bounds.origin.hash(state);
-        self.bounds.size.hash(state);
+impl cmp::Ord for SubImageSpec {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        (&self.image,
+         &self.bounds.origin.x,
+         &self.bounds.origin.y,
+         &self.bounds.size.width,
+         &self.bounds.size.height)
+            .cmp(&(&other.image,
+                   &other.bounds.origin.x,
+                   &other.bounds.origin.y,
+                   &other.bounds.size.width,
+                   &other.bounds.size.height))
+    }
+}
+
+impl cmp::PartialOrd for SubImageSpec {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -110,7 +123,7 @@ pub struct BrushBuilder<'a, V: 'a> {
     builder: &'a mut vitral::Builder<V>,
     image_file: Option<String>,
     brush: Vec<Frame>,
-    splat_images: HashMap<SubImageSpec, usize>,
+    splat_images: BTreeMap<SubImageSpec, usize>,
     color: Rgba,
 }
 
@@ -120,7 +133,7 @@ impl<'a, V: Copy + Eq + 'a> BrushBuilder<'a, V> {
             builder: builder,
             image_file: None,
             brush: Vec::new(),
-            splat_images: HashMap::new(),
+            splat_images: BTreeMap::new(),
             color: WHITE,
         }
     }
