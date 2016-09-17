@@ -8,6 +8,7 @@ use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
 
 /// Image buffer.
+#[derive(Clone)]
 pub struct ImageBuffer {
     /// Image size.
     pub size: Size2D<u32>,
