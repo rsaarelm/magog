@@ -10,10 +10,10 @@ use vitral::ImageBuffer;
 ///
 /// Will create at most `max_size` * `max_size` texture, will fail if the input images cannot be
 /// fit in the maximum image.
-pub fn build_atlas<F, T: Clone>(input: &[ImageBuffer],
-                                max_size: u32,
-                                mut f: F)
-                                -> Result<Vec<vitral::ImageData<T>>, ()>
+pub fn build<F, T: Clone>(input: &[ImageBuffer],
+                          max_size: u32,
+                          mut f: F)
+                          -> Result<Vec<vitral::ImageData<T>>, ()>
     where F: FnMut(ImageBuffer) -> T
 {
     let (buf, posns) = try!(build_atlas_buffer(input, max_size));
