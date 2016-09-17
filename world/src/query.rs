@@ -22,9 +22,7 @@ pub enum ControlState {
 }
 
 /// Return whether the entity is dead and should be removed from the world.
-pub fn is_alive(w: &World, e: Entity) -> bool {
-    location(w, e).is_some()
-}
+pub fn is_alive(w: &World, e: Entity) -> bool { location(w, e).is_some() }
 
 /// Return the player entity if one exists.
 pub fn player(w: &World) -> Option<Entity> {
@@ -39,9 +37,7 @@ pub fn player(w: &World) -> Option<Entity> {
 
 /// Return true if the game has ended and the player can make no further
 /// actions.
-pub fn game_over(w: &World) -> bool {
-    player(w).is_none()
-}
+pub fn game_over(w: &World) -> bool { player(w).is_none() }
 
 /// Get the current control state.
 pub fn control_state(w: &World) -> ControlState {
@@ -114,26 +110,16 @@ pub fn has_intrinsic(w: &World, e: Entity, intrinsic: Intrinsic) -> bool {
 
 /// Return the (composite) stats for an entity.
 pub fn stats(w: &World, e: Entity) -> Stats {
-    if w.ecs.composite_stats.contains(e) {
-        w.ecs.composite_stats[e].0
-    } else {
-        base_stats(w, e)
-    }
+    if w.ecs.composite_stats.contains(e) { w.ecs.composite_stats[e].0 } else { base_stats(w, e) }
 }
 
 /// Return the base stats of the entity. Does not include any added effects.
 /// You almost always want to use the stats function instead of this one.
 pub fn base_stats(w: &World, e: Entity) -> Stats {
-    if w.ecs.stats.contains(e) {
-        w.ecs.stats[e]
-    } else {
-        Default::default()
-    }
+    if w.ecs.stats.contains(e) { w.ecs.stats[e] } else { Default::default() }
 }
 
-pub fn is_mob(w: &World, e: Entity) -> bool {
-    w.ecs.brain.contains(e)
-}
+pub fn is_mob(w: &World, e: Entity) -> bool { w.ecs.brain.contains(e) }
 
 /// Return the location of an entity.
 ///
@@ -165,18 +151,12 @@ pub fn find_target(w: &World, shooter: Entity, dir: Dir6, range: usize) -> Optio
 }
 
 /// If location contains a portal, return the destination of the portal.
-pub fn portal(w: &World, loc: Location) -> Option<Location> {
-    w.portal(loc).map(|p| loc + p)
-}
+pub fn portal(w: &World, loc: Location) -> Option<Location> { w.portal(loc).map(|p| loc + p) }
 
 /// Return a portal if it can be seen through.
 pub fn visible_portal(w: &World, loc: Location) -> Option<Location> {
     // Only void-form is transparent to portals.
-    if terrain(w, loc).form == terrain::Form::Void {
-        portal(w, loc)
-    } else {
-        None
-    }
+    if terrain(w, loc).form == terrain::Form::Void { portal(w, loc) } else { None }
 }
 
 pub fn terrain(w: &World, loc: Location) -> Rc<terrain::Tile> {
@@ -191,23 +171,20 @@ pub fn terrain(w: &World, loc: Location) -> Rc<terrain::Tile> {
     // The sampling needs loc noise, but is probably better done at the point where terrain is
     // being drawn than here, since we'll want to still have just one immutable terrain id
     // corresponding to all the variants.
-/*
     // Mobs standing on doors make the doors open.
-    if ret == TerrainType::Door && has_mobs(w, loc) {
-        ret = TerrainType::OpenDoor;
-    }
-    // Grass is only occasionally fancy.
-    if ret == TerrainType::Grass {
-        if loc.noise() > 0.85 {
-            ret = TerrainType::Grass2;
-        }
-    }
-*/
+
+    // if ret == TerrainType::Door && has_mobs(w, loc) {
+    //     ret = TerrainType::OpenDoor;
+    // }
+    // // Grass is only occasionally fancy.
+    // if ret == TerrainType::Grass {
+    //     if loc.noise() > 0.85 {
+    //         ret = TerrainType::Grass2;
+    //     }
+    // }
 }
 
-pub fn blocks_sight(w: &World, loc: Location) -> bool {
-    terrain(w, loc).blocks_sight()
-}
+pub fn blocks_sight(w: &World, loc: Location) -> bool { terrain(w, loc).blocks_sight() }
 
 /// Return whether the location obstructs entity movement.
 pub fn blocks_walk(w: &World, loc: Location) -> bool {
@@ -224,13 +201,9 @@ pub fn blocks_walk(w: &World, loc: Location) -> bool {
 }
 
 /// Return whether the entity blocks movement of other entities.
-pub fn is_blocking_entity(w: &World, e: Entity) -> bool {
-    is_mob(w, e)
-}
+pub fn is_blocking_entity(w: &World, e: Entity) -> bool { is_mob(w, e) }
 
-pub fn has_mobs(w: &World, loc: Location) -> bool {
-    mob_at(w, loc).is_some()
-}
+pub fn has_mobs(w: &World, loc: Location) -> bool { mob_at(w, loc).is_some() }
 
 pub fn mob_at(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| is_mob(w, e))
@@ -247,11 +220,7 @@ pub fn is_hostile_to(w: &World, e: Entity, other: Entity) -> bool {
 }
 
 pub fn alignment(w: &World, e: Entity) -> Option<Alignment> {
-    if w.ecs.brain.contains(e) {
-        Some(w.ecs.brain[e].alignment)
-    } else {
-        None
-    }
+    if w.ecs.brain.contains(e) { Some(w.ecs.brain[e].alignment) } else { None }
 }
 
 /// Return whether the entity can occupy a location.
@@ -311,11 +280,7 @@ pub fn equipped(w: &World, e: Entity, slot: Slot) -> Option<Entity> {
 }
 
 pub fn can_be_picked_up(w: &World, e: Entity) -> bool {
-    if w.ecs.item.contains(e) {
-        w.ecs.item[e].item_type != ItemType::Instant
-    } else {
-        false
-    }
+    if w.ecs.item.contains(e) { w.ecs.item[e].item_type != ItemType::Instant } else { false }
 }
 
 /// Return an item at the location that can be interacted with.
@@ -323,9 +288,7 @@ pub fn top_item(w: &World, loc: Location) -> Option<Entity> {
     w.spatial.entities_at(loc).into_iter().find(|&e| can_be_picked_up(w, e))
 }
 
-pub fn is_item(w: &World, e: Entity) -> bool {
-    w.ecs.item.contains(e)
-}
+pub fn is_item(w: &World, e: Entity) -> bool { w.ecs.item.contains(e) }
 
 pub fn area_name(w: &World, _loc: Location) -> String {
     match current_depth(w) {
@@ -337,22 +300,13 @@ pub fn area_name(w: &World, _loc: Location) -> String {
 
 /// Return the current floor depth. Greater depths mean more powerful monsters
 /// and stranger terrain.
-pub fn current_depth(w: &World) -> i32 {
-    w.flags.depth
-}
+pub fn current_depth(w: &World) -> i32 { w.flags.depth }
 
 pub fn hp(w: &World, e: Entity) -> i32 {
-    max_hp(w, e) -
-    if w.ecs.health.contains(e) {
-        w.ecs.health[e].wounds
-    } else {
-        0
-    }
+    max_hp(w, e) - if w.ecs.health.contains(e) { w.ecs.health[e].wounds } else { 0 }
 }
 
-pub fn max_hp(w: &World, e: Entity) -> i32 {
-    stats(w, e).power
-}
+pub fn max_hp(w: &World, e: Entity) -> i32 { stats(w, e).power }
 
 pub fn fov_status(w: &World, loc: Location) -> Option<FovStatus> {
     if let Some(p) = player(w) {
@@ -382,33 +336,21 @@ pub fn light_at(w: &World, loc: Location) -> Light {
 
     if let Some(d) = loc.distance_from(w.flags.camera) {
         let lum = 0.8 - d as f32 / 10.0;
-        return Light::new(if lum >= 0.0 {
-            lum
-        } else {
-            0.0
-        });
+        return Light::new(if lum >= 0.0 { lum } else { 0.0 });
     }
     return Light::new(1.0);
 }
 
 /// Return whether the entity is an awake non-player mob and should be
 /// animated with a bob.
-pub fn is_bobbing(w: &World, e: Entity) -> bool {
-    is_active(w, e) && !is_player(w, e)
-}
+pub fn is_bobbing(w: &World, e: Entity) -> bool { is_active(w, e) && !is_player(w, e) }
 
 pub fn entity_brush(w: &World, e: Entity) -> Option<Resource<Brush>> {
-    if w.ecs.desc.contains(e) {
-        Some(w.ecs.desc[e].brush.clone())
-    } else {
-        None
-    }
+    if w.ecs.desc.contains(e) { Some(w.ecs.desc[e].brush.clone()) } else { None }
 }
 
 pub fn is_instant_item(w: &World, e: Entity) -> bool {
     w.ecs.item.get(e).map_or(false, |item| item.item_type == ItemType::Instant)
 }
 
-pub fn can_enter_portals(w: &World, e: Entity) -> bool {
-    is_player(w, e)
-}
+pub fn can_enter_portals(w: &World, e: Entity) -> bool { is_player(w, e) }

@@ -37,15 +37,9 @@ impl Stats {
         }
     }
 
-    pub fn mana(self, mana: i32) -> Stats {
-        Stats { mana: mana, ..self }
-    }
-    pub fn protection(self, protection: i32) -> Stats {
-        Stats { protection: protection, ..self }
-    }
-    pub fn attack(self, attack: i32) -> Stats {
-        Stats { attack: attack, ..self }
-    }
+    pub fn mana(self, mana: i32) -> Stats { Stats { mana: mana, ..self } }
+    pub fn protection(self, protection: i32) -> Stats { Stats { protection: protection, ..self } }
+    pub fn attack(self, attack: i32) -> Stats { Stats { attack: attack, ..self } }
     pub fn ranged_range(self, ranged_range: u32) -> Stats {
         Stats { ranged_range: ranged_range, ..self }
     }

@@ -13,9 +13,7 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn new(x: i8, y: i8, z: i8) -> Location {
-        Location { x: x, y: y, z: z }
-    }
+    pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x: x, y: y, z: z } }
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
@@ -29,27 +27,17 @@ impl Location {
 
     /// Hex distance from this location to the other one, if applicable.
     pub fn distance_from(&self, other: Location) -> Option<i32> {
-        if let Some(v) = self.v2_at(other) {
-            Some(v.hex_dist())
-        } else {
-            None
-        }
+        if let Some(v) = self.v2_at(other) { Some(v.hex_dist()) } else { None }
     }
 
     pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
-        if let Some(v) = self.v2_at(other) {
-            Some(Dir6::from_v2(v))
-        } else {
-            None
-        }
+        if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
     }
 
     /// A pseudorandom value corresponding to this specific location.
     ///
     /// Is always the same for the same location value.
-    pub fn noise(&self) -> f32 {
-        noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919)
-    }
+    pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
 }
 
 impl Add<Point2D<i32>> for Location {
@@ -86,9 +74,7 @@ impl Sub<Point2D<i32>> for Location {
 }
 
 impl GridNode for Location {
-    fn neighbors(&self) -> Vec<Location> {
-        Dir6::iter().map(|d| *self + d.to_v2()).collect()
-    }
+    fn neighbors(&self) -> Vec<Location> { Dir6::iter().map(|d| *self + d.to_v2()).collect() }
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]

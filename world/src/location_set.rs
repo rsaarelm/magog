@@ -13,9 +13,7 @@ pub struct LocationSet {
 }
 
 impl LocationSet {
-    pub fn new() -> LocationSet {
-        LocationSet { chunks: HashMap::new() }
-    }
+    pub fn new() -> LocationSet { LocationSet { chunks: HashMap::new() } }
 
     /// Return the chunk index and the bit offset for a location.
     #[inline]
@@ -37,9 +35,7 @@ impl LocationSet {
         }
     }
 
-    pub fn clear(&mut self) {
-        self.chunks.clear();
-    }
+    pub fn clear(&mut self) { self.chunks.clear(); }
 
     pub fn insert(&mut self, loc: Location) {
         let (index, bit) = LocationSet::chunk(&loc);

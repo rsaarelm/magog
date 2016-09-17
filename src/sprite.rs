@@ -30,9 +30,7 @@ impl Ord for Sprite {
 }
 
 impl PartialOrd for Sprite {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
 }
 
 impl Sprite {

@@ -91,9 +91,7 @@ impl<'a> World {
         }
     }
 
-    pub fn remove_portal(&mut self, loc: Location) {
-        self.portals.remove(&loc);
-    }
+    pub fn remove_portal(&mut self, loc: Location) { self.portals.remove(&loc); }
 
     pub fn portal(&self, loc: Location) -> Option<Portal> { self.portals.get(&loc).cloned() }
 }

@@ -79,25 +79,15 @@ impl Tile {
         }
     }
 
-    pub fn is_door(&self) -> bool {
-        self.kind == Kind::Door
-    }
+    pub fn is_door(&self) -> bool { self.kind == Kind::Door }
 
-    pub fn is_luminous(&self) -> bool {
-        self.kind == Kind::Magma
-    }
+    pub fn is_luminous(&self) -> bool { self.kind == Kind::Magma }
 
-    pub fn is_wall(&self) -> bool {
-        self.form == Form::Wall
-    }
+    pub fn is_wall(&self) -> bool { self.form == Form::Wall }
 
-    pub fn is_hull(&self) -> bool {
-        self.form == Form::Wall || self.form == Form::Blob
-    }
+    pub fn is_hull(&self) -> bool { self.form == Form::Wall || self.form == Form::Blob }
 
-    pub fn is_block(&self) -> bool {
-        self.is_hull() || self.form == Form::Prop
-    }
+    pub fn is_block(&self) -> bool { self.is_hull() || self.form == Form::Prop }
 }
 
 impl Loadable<u8> for Tile {}

@@ -72,8 +72,7 @@ impl GameView {
 
             for &origin in origins {
                 if self.world.portal(origin + chart_pos).is_some() {
-                    let screen_pos = screen_pos -
-                                     Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
+                    let screen_pos = screen_pos - Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
                     sprites.push(Sprite {
                         layer: render::Layer::Decal,
                         offset: [screen_pos.x as i32, screen_pos.y as i32],
@@ -159,8 +158,10 @@ impl GameView {
         for (y, origin) in chart.get(&cursor_pos).unwrap_or(&Vec::new()).iter().enumerate() {
             let font = context.ui.default_font();
             let loc = *origin + cursor_pos;
-            context.ui.draw_text(&*font, Point2D::new(400.0, y as f32 * 20.0 + 20.0), [1.0, 1.0, 1.0, 1.0],
-                &format!("{:?}", loc));
+            context.ui.draw_text(&*font,
+                                 Point2D::new(400.0, y as f32 * 20.0 + 20.0),
+                                 [1.0, 1.0, 1.0, 1.0],
+                                 &format!("{:?}", loc));
         }
 
         context.ui.set_clip_rect(None);
@@ -183,11 +184,7 @@ impl GameView {
     }
 
     fn move_camera(&mut self, delta: Point2D<i32>, dz: i8) {
-        let second_delta = if self.camera_lock {
-            delta
-        } else {
-            Point2D::new(0, 0)
-        };
+        let second_delta = if self.camera_lock { delta } else { Point2D::new(0, 0) };
 
         let (a, b) = self.camera;
         self.camera = (a + delta, b + second_delta);

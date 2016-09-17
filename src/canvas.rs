@@ -61,9 +61,10 @@ impl Canvas {
     }
 
     /// Get the render target to the pixel-perfect framebuffer.
-    pub fn get_framebuffer_target(&mut self,
-                                  display: &glium::Display)
-                                  -> glium::framebuffer::SimpleFrameBuffer {
+    pub fn get_framebuffer_target(
+        &mut self,
+        display: &glium::Display
+    ) -> glium::framebuffer::SimpleFrameBuffer {
         framebuffer::SimpleFrameBuffer::with_depth_buffer(display, &self.buffer, &self.depth_buffer)
             .unwrap()
     }

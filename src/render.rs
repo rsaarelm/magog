@@ -251,9 +251,7 @@ impl Kernel {
     }
 
     /// Bool is true if left/right half of wall should be extended.
-    pub fn wall_extends(&self) -> [bool; 2] {
-        [self.nw.is_wall(), self.ne.is_wall()]
-    }
+    pub fn wall_extends(&self) -> [bool; 2] { [self.nw.is_wall(), self.ne.is_wall()] }
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn block_faces(&self) -> [bool; 6] {

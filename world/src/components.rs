@@ -107,9 +107,7 @@ pub struct Health {
 }
 
 impl Health {
-    pub fn new() -> Health {
-        Default::default()
-    }
+    pub fn new() -> Health { Default::default() }
 }
 
 

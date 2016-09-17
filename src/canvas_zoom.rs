@@ -20,11 +20,12 @@ impl CanvasZoom {
         }
     }
 
-    fn with_scale(self,
-                  scale: f32,
-                  window_size: Size2D<u32>,
-                  canvas_size: Size2D<u32>)
-                  -> Rect<f32> {
+    fn with_scale(
+        self,
+        scale: f32,
+        window_size: Size2D<u32>,
+        canvas_size: Size2D<u32>
+    ) -> Rect<f32> {
         let dim = Size2D::new((scale * canvas_size.width as f32) * 2.0 / window_size.width as f32,
                               (scale * canvas_size.height as f32) * 2.0 /
                               window_size.height as f32);
@@ -57,11 +58,12 @@ impl CanvasZoom {
         self.with_scale(scale, window_size, canvas_size)
     }
 
-    pub fn screen_to_canvas(self,
-                        mut window_size: Size2D<u32>,
-                        canvas_size: Size2D<u32>,
-                        screen_pos: Point2D<f32>)
-                        -> Point2D<f32> {
+    pub fn screen_to_canvas(
+        self,
+        mut window_size: Size2D<u32>,
+        canvas_size: Size2D<u32>,
+        screen_pos: Point2D<f32>
+    ) -> Point2D<f32> {
         // let Rect { origin: rp, size: rs } = self.screen_rect();
         let rect = self.fit_canvas(window_size, canvas_size);
         let rp = rect.origin.to_untyped();

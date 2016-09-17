@@ -83,7 +83,8 @@ impl Backend {
     }
 
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
-        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels, (img.size.width, img.size.height));
+        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels,
+                                                            (img.size.width, img.size.height));
         let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
@@ -149,9 +150,7 @@ impl Backend {
         true
     }
 
-    pub fn poll_key(&mut self) -> Option<KeyEvent> {
-        self.keypress.pop()
-    }
+    pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
     pub fn render(&mut self, display: &glium::Display, context: &mut UI) {
         let mut target = self.canvas.get_framebuffer_target(display);

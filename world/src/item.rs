@@ -38,12 +38,8 @@ pub enum Slot {
 }
 
 impl Slot {
-    pub fn is_gear_slot(self) -> bool {
-        (self as u32) <= (Slot::TrinketI as u32)
-    }
-    pub fn is_bag_slot(self) -> bool {
-        (self as u32) >= (Slot::InventoryJ as u32)
-    }
+    pub fn is_gear_slot(self) -> bool { (self as u32) <= (Slot::TrinketI as u32) }
+    pub fn is_bag_slot(self) -> bool { (self as u32) >= (Slot::InventoryJ as u32) }
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]

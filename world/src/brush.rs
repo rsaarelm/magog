@@ -74,9 +74,7 @@ pub mod generic {
         type Target = Vec<Frame<T>>;
 
         #[inline(always)]
-        fn deref(&self) -> &Vec<Frame<T>> {
-            &self.0
-        }
+        fn deref(&self) -> &Vec<Frame<T>> { &self.0 }
     }
 }
 
@@ -224,9 +222,7 @@ impl BrushBuilder {
     }
 
     /// Helper for regular tiles.
-    pub fn tile(self, x: u32, y: u32) -> Self {
-        self.splat(x, y, 32, 32).offset(16, 16)
-    }
+    pub fn tile(self, x: u32, y: u32) -> Self { self.splat(x, y, 32, 32).offset(16, 16) }
 
     /// Helper for blob chunks.
     ///

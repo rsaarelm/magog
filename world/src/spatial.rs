@@ -54,9 +54,7 @@ impl Spatial {
     }
 
     /// Insert an entity into space.
-    pub fn insert_at(&mut self, e: Entity, loc: Location) {
-        self.insert(e, At(loc));
-    }
+    pub fn insert_at(&mut self, e: Entity, loc: Location) { self.insert(e, At(loc)); }
 
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
@@ -135,9 +133,7 @@ impl Spatial {
     }
 
     /// List entities at a location.
-    pub fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        self.entities(At(loc))
-    }
+    pub fn entities_at(&self, loc: Location) -> Vec<Entity> { self.entities(At(loc)) }
 
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
@@ -147,23 +143,15 @@ impl Spatial {
         // be typed in the return signature.
 
         // TODO: Get range iteration for BTreeMaps working in stable Rust.
-        /*
-        self.place_to_entities.range(Included(&In(parent, None)), Unbounded)
-            // Consume the contingent elements for the parent container.
-            .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
-         */
+        // self.place_to_entities.range(Included(&In(parent, None)), Unbounded)
+        //     // Consume the contingent elements for the parent container.
+        //     .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
 
         // XXX: This replacement thing is quite nasty, it iterates over the
         // whole collection for every query.
         self.place_to_entities
             .iter()
-            .filter(|&(ref k, _)| {
-                if let &&In(ref p, _) = k {
-                    *p == parent
-                } else {
-                    false
-                }
-            })
+            .filter(|&(ref k, _)| { if let &&In(ref p, _) = k { *p == parent } else { false } })
             .flat_map(|(_, ref v)| v.iter())
             .map(|&x| x)
             .collect()

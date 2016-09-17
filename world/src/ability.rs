@@ -25,25 +25,23 @@ impl Ability {
         }
 
         unimplemented!();
-        /*
 
-        // Target entity.
-        let te = match target {
-            Place::In(e, _) => Some(e),
-            Place::At(loc) => loc.main_entity()
-        };
-
-        match (self, te) {
-            (&Damage(n), Some(e)) => { e.damage(n) }
-            (&Heal(n), Some(e))  => { e.heal(n) }
-            (&HealInstant(n), Some(e)) => {
-                if e.is_wounded() {
-                    e.heal(n);
-                    if let Some(a) = agent { a.delete() }
-                }
-            }
-            _ => ()
-        }
-        */
+        // // Target entity.
+        // let te = match target {
+        //     Place::In(e, _) => Some(e),
+        //     Place::At(loc) => loc.main_entity()
+        // };
+        //
+        // match (self, te) {
+        //     (&Damage(n), Some(e)) => { e.damage(n) }
+        //     (&Heal(n), Some(e))  => { e.heal(n) }
+        //     (&HealInstant(n), Some(e)) => {
+        //         if e.is_wounded() {
+        //             e.heal(n);
+        //             if let Some(a) = agent { a.delete() }
+        //         }
+        //     }
+        //     _ => ()
+        // }
     }
 }
