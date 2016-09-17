@@ -1,11 +1,13 @@
 //! Set up resource content for game.
 
+use glium;
 use vitral;
 use calx_color::color::*;
 use calx_resource::ResourceStore;
 use world::BrushBuilder;
+use backend::Backend;
 
-pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
+pub fn brushes(display: &glium::Display, backend: &mut Backend) {
     BrushBuilder::new()
         .file("content/assets/floors.png")
         ////
@@ -86,9 +88,8 @@ pub fn brushes<V: Copy + Eq>(builder: &mut vitral::Builder<V>) {
         ////
         .color(DARKGOLDENROD)
         .blob(0, 0, 0, 32, 0, 64)
-        .brush("rock");
-
-    // TODO: Finish step.
+        .brush("rock")
+        .finish(|img| backend.make_texture(&display, img));
 }
 
 pub fn terrain() {

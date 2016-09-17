@@ -1,9 +1,9 @@
 use std::hash;
 use std::collections::HashMap;
-use std::ops::Deref;
 use image::{self, GenericImage};
 use euclid::{Point2D, Rect, Size2D};
-use vitral;
+use vitral::{ImageBuffer, ImageData};
+use vitral_atlas;
 use calx_resource::{Loadable, Resource, ResourceStore};
 use calx_color::Rgba;
 use calx_color::color::*;
@@ -49,7 +49,7 @@ pub mod generic {
 
     impl<T: Clone> Brush<T> {
         /// Convert the image type using the given function.
-        fn map<F, U>(self, f: F) -> Brush<U>
+        pub fn map<F, U>(self, f: F) -> Brush<U>
             where F: Fn(T) -> U,
                   U: Clone
         {
@@ -80,11 +80,11 @@ pub mod generic {
 
 // XXX: Hardcoded assumption here that the Vitral backend uses `usize` as the texture handle type.
 
-pub type Splat = generic::Splat<vitral::ImageData<usize>>;
+pub type Splat = generic::Splat<ImageData<usize>>;
 
-pub type Frame = generic::Frame<vitral::ImageData<usize>>;
+pub type Frame = generic::Frame<ImageData<usize>>;
 
-pub type Brush = generic::Brush<vitral::ImageData<usize>>;
+pub type Brush = generic::Brush<ImageData<usize>>;
 
 
 // Brush implements Loadable so we can have a cache for it, but there's no actual implicit load
@@ -95,8 +95,6 @@ pub type Brush = generic::Brush<vitral::ImageData<usize>>;
 impl<T: Clone> Loadable for generic::Brush<T> {}
 
 impl_store!(BRUSH, String, Brush);
-
-type SplatImage = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
 
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -118,16 +116,21 @@ impl SubImageSpec {
     }
 }
 
-impl Loadable<SubImageSpec> for SplatImage {
+impl Loadable<SubImageSpec> for ImageBuffer {
     fn load(spec: &SubImageSpec) -> Option<Self>
         where Self: Sized
     {
-        // XXX: Using sub_image on spec.image would be neater, but can't use it here
-        // because current image::SubImage must get a mutable access to the parent image and the
-        // resource handle is immutable.
-        Some(image::ImageBuffer::from_fn(spec.bounds.size.width, spec.bounds.size.height, |x, y| {
-            spec.image.0.get_pixel(spec.bounds.origin.x + x, spec.bounds.origin.y + y)
-        }))
+        let build_fn = |x, y| {
+            // TODO: Figure out a non-unsafe API for converting image Rgba to vitral::ImageBuffer
+            // u32.
+            unsafe {
+                use std::mem::transmute;
+                transmute::<image::Rgba<u8>, u32>(spec.image.0.get_pixel(spec.bounds.origin.x + x,
+                                                                         spec.bounds.origin.y + y))
+            }
+        };
+
+        Some(ImageBuffer::from_fn(spec.bounds.size.width, spec.bounds.size.height, build_fn))
     }
 }
 
@@ -140,7 +143,7 @@ impl hash::Hash for SubImageSpec {
     }
 }
 
-impl_store!(SPLAT_IMAGE, SubImageSpec, SplatImage);
+impl_store!(SPLAT_IMAGE, SubImageSpec, ImageBuffer);
 
 
 pub struct BrushBuilder {
@@ -312,6 +315,36 @@ impl BrushBuilder {
         self
     }
 
-    // TODO TODO TODO
-    // Atlas-baking function here.
+    /// Construct the actual brush resources.
+    ///
+    /// Build an atlas using the resource construction context.
+    ///
+    /// Currently has the hardcoded assumption from Glium backend that the underlying texture data
+    /// handle is `uint`.
+    pub fn finish<F>(self, build_texture: F)
+        where F: FnMut(ImageBuffer) -> usize
+    {
+        let mut specs: Vec<(SubImageSpec, usize)> = self.splat_images.into_iter().collect();
+        specs.sort_by_key(|x| x.1);
+        let specs: Vec<SubImageSpec> = specs.into_iter().map(|x| x.0).collect();
+        // XXX: Really inefficient clone spam here to get the ImageBuffer set into the correct type
+        // for atlas builder.
+        //
+        // Not terribly bad since this is only run once when initializing the resources.
+        let imgs: Vec<ImageBuffer> = specs.iter()
+                                          .map(|key| {
+                                              let x: Resource<ImageBuffer, SubImageSpec> =
+                                                  Resource::new(key.clone()).unwrap();
+                                              (*x).clone()
+                                          })
+                                          .collect();
+        let items = vitral_atlas::build(&imgs, 2048, build_texture).unwrap();
+
+        // Now that we finally have the atlas data, use them to map our temporary brushes into the
+        // final resources that will be used at runtime.
+        for (name, brush) in self.brushes.iter() {
+            let resource_brush: Brush = brush.clone().map(|idx| items[idx].clone());
+            Brush::insert_resource(name.clone(), resource_brush);
+        }
+    }
 }

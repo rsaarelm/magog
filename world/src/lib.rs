@@ -9,6 +9,7 @@ extern crate vec_map;
 extern crate image;
 extern crate euclid;
 extern crate vitral;
+extern crate vitral_atlas;
 extern crate calx_alg;
 extern crate calx_grid;
 extern crate calx_color;

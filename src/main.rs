@@ -40,7 +40,7 @@ pub fn main() {
     let mut builder = vitral::Builder::new();
 
     // Initialize game resources.
-    init::brushes(&mut builder);
+    init::brushes(&display, &mut backend);
     init::terrain();
 
     let mut context = backend::Context {
