@@ -1,0 +1,5 @@
+format_strings = false
+reorder_imports = true
+fn_single_line = true
+single_line_if_else = true
+fn_args_layout = "Block"
