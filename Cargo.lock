@@ -77,7 +77,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#79c589efcaa157e133dee7706e1d0ba3b1f1b63c"
+source = "git+https://github.com/rsaarelm/calx#201dfc8289112c834fab7d08e85f4378122c9521"
 dependencies = [
  "num 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -89,7 +89,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#79c589efcaa157e133dee7706e1d0ba3b1f1b63c"
+source = "git+https://github.com/rsaarelm/calx#201dfc8289112c834fab7d08e85f4378122c9521"
 dependencies = [
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -100,7 +100,7 @@ dependencies = [
 [[package]]
 name = "calx-ecs"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#79c589efcaa157e133dee7706e1d0ba3b1f1b63c"
+source = "git+https://github.com/rsaarelm/calx#201dfc8289112c834fab7d08e85f4378122c9521"
 dependencies = [
  "serde 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_macros 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -109,7 +109,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#79c589efcaa157e133dee7706e1d0ba3b1f1b63c"
+source = "git+https://github.com/rsaarelm/calx#201dfc8289112c834fab7d08e85f4378122c9521"
 dependencies = [
  "euclid 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -121,7 +121,7 @@ dependencies = [
 [[package]]
 name = "calx-resource"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#79c589efcaa157e133dee7706e1d0ba3b1f1b63c"
+source = "git+https://github.com/rsaarelm/calx#201dfc8289112c834fab7d08e85f4378122c9521"
 dependencies = [
  "serde 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
