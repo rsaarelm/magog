@@ -81,7 +81,7 @@ pub fn screen_fov(
 mod test {
     use euclid::{Point2D, Rect, Size2D};
     use world::{Location, Portal, World};
-    use super::screen_fov;
+    use super::{view_to_chart, screen_fov};
 
     fn test_world() -> World {
         use world::terrain::{Form, Kind, Tile};
@@ -133,5 +133,15 @@ mod test {
 
         assert_eq!(fov.get(&Point2D::new(1, 0)),
                    Some(&vec![Location::new(30, 10, 0), Location::new(10, 10, 0)]));
+    }
+
+    #[test]
+    fn test_corner_visibility() {
+        let world = test_world();
+        let fov = screen_fov(&world,
+                             Location::new(10, 10, 0),
+                             Rect::new(Point2D::new(-200.0, -200.0), Size2D::new(400.0, 400.0)));
+        let upper_left_chart = view_to_chart(Point2D::new(-180.0, -180.0));
+        assert!(fov.get(&upper_left_chart).is_some());
     }
 }
