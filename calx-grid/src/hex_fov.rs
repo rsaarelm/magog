@@ -45,13 +45,18 @@ impl<T: FovValue> HexFov<T> {
 impl<T: FovValue> Iterator for HexFov<T> {
     type Item = (Point2D<i32>, T);
     fn next(&mut self) -> Option<(Point2D<i32>, T)> {
+        // Empty the side channel before proceeding to the algorithm proper.
         if let Some(ret) = self.side_channel.pop() {
             return Some(ret);
         }
 
+        // Start processing the next sector in the stack.
         if let Some(mut current) = self.stack.pop() {
+            // Generate the user value from the previous value in the stack item and the working
+            // position in the current sector.
             let current_value = current.prev_value.advance(current.pt.to_v2());
 
+            // Proceed along the sector if we're not at its end yet and the user value exists.
             if current.pt.is_below(current.end) && current_value.is_some() {
                 let pos = current.pt.to_v2();
                 let current_value = current_value.unwrap();
@@ -61,7 +66,7 @@ impl<T: FovValue> Iterator for HexFov<T> {
                         // Beginning of group, value isn't set.
                         current.group_value = Some(current_value.clone());
                     }
-                    Some(ref g) if g.clone() != current_value => {
+                    Some(ref g) if g != &current_value => {
                         // Value changed, branch out.
 
                         // Add the rest of this sector with the new value.
