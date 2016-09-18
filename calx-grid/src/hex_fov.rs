@@ -54,19 +54,18 @@ impl<T: FovValue> Iterator for HexFov<T> {
         if let Some(mut current) = self.stack.pop() {
             // Generate the user value from the previous value in the stack item and the working
             // position in the current sector.
-            let current_value = current.prev_value.advance(current.pt.to_v2());
+            let next_value = current.prev_value.advance(current.pt.to_v2());
 
-            // Proceed along the sector if we're not at its end yet and the user value exists.
-            if current.pt.is_below(current.end) && current_value.is_some() {
+            // Proceed along the sector if we're not at its end yet.
+            if current.pt.is_below(current.end) {
                 let pos = current.pt.to_v2();
-                let current_value = current_value.unwrap();
 
                 match current.group_value {
                     None => {
                         // Beginning of group, value isn't set.
-                        current.group_value = Some(current_value.clone());
+                        current.group_value = next_value.clone();
                     }
-                    Some(ref g) if g != &current_value => {
+                    ref old_value if old_value != &next_value => {
                         // Value changed, branch out.
 
                         // Add the rest of this sector with the new value.
@@ -75,24 +74,27 @@ impl<T: FovValue> Iterator for HexFov<T> {
                             pt: current.pt,
                             end: current.end,
                             prev_value: current.prev_value,
-                            group_value: Some(current_value.clone()),
+                            group_value: next_value.clone(),
                         });
 
                         // Branch further on the arc processed so far.
-                        self.stack.push(Sector {
-                            begin: current.begin.further(),
-                            pt: current.begin.further(),
-                            end: current.pt.further(),
-                            prev_value: g.clone(),
-                            group_value: None,
-                        });
+                        if let &Some(ref old_value) = old_value {
+                            self.stack.push(Sector {
+                                begin: current.begin.further(),
+                                pt: current.begin.further(),
+                                end: current.pt.further(),
+                                prev_value: old_value.clone(),
+                                group_value: None,
+                            });
+                        }
                         return self.next();
                     }
+                    // Otherwise don't modify the stack.
                     _ => {}
                 }
 
                 // Current value and group value are assumed to be the same from here on.
-                assert!(current.group_value == Some(current_value.clone()));
+                assert!(current.group_value == next_value);
 
                 // Hack for making acute corner tiles of fake-isometric rooms visible.
 
@@ -125,7 +127,11 @@ impl<T: FovValue> Iterator for HexFov<T> {
                 // Proceed along the current sector.
                 current.pt = current.pt.next();
                 self.stack.push(current);
-                return Some((pos, current_value));
+                if let Some(next_value) = next_value {
+                    return Some((pos, next_value));
+                } else {
+                    return self.next();
+                }
             } else {
                 // Hit the end of the sector, branch ahead.
                 if let Some(value) = current.group_value {
