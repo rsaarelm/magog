@@ -2,7 +2,7 @@ use std::hash::Hash;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::BTreeMap;
-use num::{Zero, One};
+use num::{One, Zero};
 use num::traits::Num;
 
 /// A node in a graph with a regular grid.

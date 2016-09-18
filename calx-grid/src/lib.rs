@@ -6,8 +6,8 @@ extern crate rand;
 extern crate serde;
 extern crate euclid;
 
-pub use search::{GridNode, Dijkstra, astar_path_with};
-pub use hex::{HexGeom, Dir6, Dir12};
+pub use search::{Dijkstra, GridNode, astar_path_with};
+pub use hex::{Dir12, Dir6, HexGeom};
 pub use hex_fov::{FovValue, HexFov};
 
 mod hex;

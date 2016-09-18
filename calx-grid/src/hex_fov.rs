@@ -169,17 +169,11 @@ impl PolarPoint {
         }
     }
     /// Index of the discrete hex cell along the circle that corresponds to this point.
-    fn winding_index(self) -> i32 {
-        (self.pos + 0.5).floor() as i32
-    }
+    fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
 
-    pub fn is_below(self, other: PolarPoint) -> bool {
-        self.winding_index() < other.end_index()
-    }
+    pub fn is_below(self, other: PolarPoint) -> bool { self.winding_index() < other.end_index() }
 
-    fn end_index(self) -> i32 {
-        (self.pos + 0.5).ceil() as i32
-    }
+    fn end_index(self) -> i32 { (self.pos + 0.5).ceil() as i32 }
 
     pub fn to_v2(self) -> Point2D<i32> {
         if self.radius == 0 {
@@ -224,9 +218,7 @@ impl PolarPoint {
     }
 
     /// The point next to this one along the hex circle.
-    pub fn next(self) -> PolarPoint {
-        PolarPoint::new((self.pos + 0.5).floor() + 0.5, self.radius)
-    }
+    pub fn next(self) -> PolarPoint { PolarPoint::new((self.pos + 0.5).floor() + 0.5, self.radius) }
 }
 
 #[cfg(test)]
@@ -244,11 +236,7 @@ mod test {
 
     impl FovValue for Cell1 {
         fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
-            if offset.hex_dist() < self.range {
-                Some(self.clone())
-            } else {
-                None
-            }
+            if offset.hex_dist() < self.range { Some(self.clone()) } else { None }
         }
     }
 
@@ -259,11 +247,7 @@ mod test {
 
     impl FovValue for Cell2 {
         fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
-            if offset.hex_dist() < self.range {
-                Some(self.clone())
-            } else {
-                None
-            }
+            if offset.hex_dist() < self.range { Some(self.clone()) } else { None }
         }
 
         fn is_fake_isometric_wall(&self, offset: Point2D<i32>) -> bool {

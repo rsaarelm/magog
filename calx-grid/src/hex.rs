@@ -78,9 +78,7 @@ impl Dir6 {
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
-    pub fn from_int(i: i32) -> Dir6 {
-        DIRS[i.mod_floor(&6) as usize]
-    }
+    pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(&self) -> Point2D<i32> {
@@ -89,29 +87,21 @@ impl Dir6 {
     }
 
     /// Iterate through the six hex dirs in the standard order.
-    pub fn iter() -> slice::Iter<'static, Dir6> {
-        DIRS.iter()
-    }
+    pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
 }
 
 impl Add<i32> for Dir6 {
     type Output = Dir6;
-    fn add(self, other: i32) -> Dir6 {
-        Dir6::from_int(self as i32 + other)
-    }
+    fn add(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 + other) }
 }
 
 impl Sub<i32> for Dir6 {
     type Output = Dir6;
-    fn sub(self, other: i32) -> Dir6 {
-        Dir6::from_int(self as i32 - other)
-    }
+    fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
 }
 
 impl Rand for Dir6 {
-    fn rand<R: Rng>(rng: &mut R) -> Dir6 {
-        Dir6::from_int(rng.gen_range(0, 6))
-    }
+    fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
 static DIRS: [Dir6; 6] = [Dir6::North,
@@ -153,11 +143,7 @@ impl Dir12 {
             return None;
         }
 
-        let cluster_size = if end < begin {
-            end + 6 - begin
-        } else {
-            end - begin
-        };
+        let cluster_size = if end < begin { end + 6 - begin } else { end - begin };
         assert!(cluster_size > 0);
 
         // Dir12 in use from here on.
