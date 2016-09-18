@@ -88,7 +88,7 @@ mod test {
         use calx_resource::ResourceStore;
         use world::Brush;
 
-        Brush::insert_resource("dummy".to_string(), Brush(vec![]));
+        Brush::insert_resource("dummy".to_string(), Brush::new(Vec::new()));
 
         Tile::insert_resource(0, Tile::new("dummy", Kind::Block, Form::Void));
         Tile::insert_resource(1, Tile::new("dummy", Kind::Ground, Form::Gate));

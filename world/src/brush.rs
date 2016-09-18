@@ -48,6 +48,10 @@ pub mod generic {
     pub struct Brush<T: Clone>(pub Vec<Frame<T>>);
 
     impl<T: Clone> Brush<T> {
+        pub fn new(data: Vec<Frame<T>>) -> Brush<T> {
+            Brush(data)
+        }
+
         /// Convert the image type using the given function.
         pub fn map<F, U>(self, f: F) -> Brush<U>
             where F: Fn(T) -> U,
