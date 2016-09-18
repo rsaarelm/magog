@@ -1,7 +1,6 @@
 //! Set up resource content for game.
 
 use glium;
-use vitral;
 use calx_color::color::*;
 use calx_resource::ResourceStore;
 use world::BrushBuilder;

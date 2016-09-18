@@ -37,14 +37,12 @@ pub fn main() {
 
     let mut backend = Backend::new(&display, 640, 360);
 
-    let mut builder = vitral::Builder::new();
-
     // Initialize game resources.
     init::brushes(&display, &mut backend);
     init::terrain();
 
     let mut context = backend::Context {
-        ui: builder.build(|img| backend.make_texture(&display, img)),
+        ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),
         backend: backend,
     };
 
