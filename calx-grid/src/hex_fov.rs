@@ -40,6 +40,34 @@ impl<T: FovValue> HexFov<T> {
             side_channel: vec![(Point2D::new(0, 0), init)],
         }
     }
+
+    /// Add visible horizontal corners to fake-isometric rooms.
+    fn make_corners_visible(&mut self, current: &Sector<T>) {
+        // We're moving along a vertical line on the hex circle, so there are side
+        // points to check.
+        if let Some(side_pos) = current.pt.side_point() {
+            let next = current.pt.next();
+            // If the next cell is within the current span and the current cell is
+            // wallform,
+            if next.is_below(current.end) &&
+               current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) {
+                // and if the next cell is visible,
+                if let Some(next_value) = current.prev_value.advance(next.to_v2()) {
+                    // and if the current and the next cell are in the same value group,
+                    // both the next cell and the third corner point cell are
+                    // wallforms, and the side point would not be otherwise
+                    // visible:
+                    if next_value == current.prev_value &&
+                       next_value.is_fake_isometric_wall(next.to_v2()) &&
+                       current.prev_value.advance(side_pos).is_none() &&
+                       current.prev_value.is_fake_isometric_wall(side_pos) {
+                        // Add the side point to the side channel.
+                        self.side_channel.push((side_pos, current.prev_value.clone()));
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl<T: FovValue> Iterator for HexFov<T> {
@@ -96,33 +124,7 @@ impl<T: FovValue> Iterator for HexFov<T> {
                 // Current value and group value are assumed to be the same from here on.
                 assert!(current.group_value == next_value);
 
-                // Hack for making acute corner tiles of fake-isometric rooms visible.
-
-                // We're moving along a vertical line on the hex circle, so there are side
-                // points to check.
-                if let Some(side_pos) = current.pt.side_point() {
-
-                    let next = current.pt.next();
-                    // If the next cell is within the current span and the current cell is
-                    // wallform,
-                    if next.is_below(current.end) &&
-                       current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) {
-                        // and if the next cell is visible,
-                        if let Some(next_value) = current.prev_value.advance(next.to_v2()) {
-                            // and if the current and the next cell are in the same value group,
-                            // both the next cell and the third corner point cell are
-                            // wallforms, and the side point would not be otherwise
-                            // visible:
-                            if next_value == current.prev_value &&
-                               next_value.is_fake_isometric_wall(next.to_v2()) &&
-                               current.prev_value.advance(side_pos).is_none() &&
-                               current.prev_value.is_fake_isometric_wall(side_pos) {
-                                // Add the side point to the side channel.
-                                self.side_channel.push((side_pos, current.prev_value.clone()));
-                            }
-                        }
-                    }
-                }
+                self.make_corners_visible(&current);
 
                 // Proceed along the current sector.
                 current.pt = current.pt.next();
