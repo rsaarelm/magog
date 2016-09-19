@@ -81,7 +81,7 @@ pub fn screen_fov(
 mod test {
     use euclid::{Point2D, Rect, Size2D};
     use world::{Location, Portal, World};
-    use super::{view_to_chart, screen_fov};
+    use super::{screen_fov, view_to_chart};
 
     fn test_world() -> World {
         use world::terrain::{Form, Kind, Tile};
@@ -138,10 +138,21 @@ mod test {
     #[test]
     fn test_corner_visibility() {
         let world = test_world();
-        let fov = screen_fov(&world,
-                             Location::new(10, 10, 0),
-                             Rect::new(Point2D::new(-200.0, -200.0), Size2D::new(400.0, 400.0)));
-        let upper_left_chart = view_to_chart(Point2D::new(-180.0, -180.0));
-        assert!(fov.get(&upper_left_chart).is_some());
+        let screen_rect = Rect::new(Point2D::new(-200.0, -200.0), Size2D::new(400.0, 400.0));
+        let fov = screen_fov(&world, Location::new(10, 10, 0), screen_rect);
+
+        // Check that the fov is bounded close to the given rectangle.
+
+        let inside_screen = screen_rect.inflate(-40.0, -40.0);
+        assert!(fov.get(&view_to_chart(inside_screen.origin)).is_some());
+        assert!(fov.get(&view_to_chart(inside_screen.bottom_left())).is_some());
+        assert!(fov.get(&view_to_chart(inside_screen.top_right())).is_some());
+        assert!(fov.get(&view_to_chart(inside_screen.bottom_right())).is_some());
+
+        let outside_screen = screen_rect.inflate(40.0, 40.0);
+        assert!(fov.get(&view_to_chart(outside_screen.origin)).is_none());
+        assert!(fov.get(&view_to_chart(outside_screen.bottom_left())).is_none());
+        assert!(fov.get(&view_to_chart(outside_screen.top_right())).is_none());
+        assert!(fov.get(&view_to_chart(outside_screen.bottom_right())).is_none());
     }
 }
