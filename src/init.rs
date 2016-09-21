@@ -4,7 +4,7 @@ use glium;
 use calx_color::color::*;
 use calx_resource::ResourceStore;
 use world::BrushBuilder;
-use backend::Backend;
+use display::Backend;
 
 pub fn brushes(display: &glium::Display, backend: &mut Backend) {
     BrushBuilder::new()

@@ -3,11 +3,8 @@ use euclid::{Point2D, Rect};
 use calx_resource::Resource;
 use scancode::Scancode;
 use world::{Location, Portal, World};
-use sprite::Sprite;
+use display;
 use vitral;
-use backend;
-use view;
-use render;
 
 enum PaintMode {
     Terrain(u8, u8),
@@ -34,7 +31,7 @@ impl GameView {
         }
     }
 
-    pub fn draw(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
+    pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
         // TODO: Camera logic
         let camera_loc = self.camera.0;
 
@@ -43,26 +40,26 @@ impl GameView {
         // Chart area, center in origin, inflated by tile width in every direction to get the cells
         // partially on screen included.
         let bounds = screen_area.translate(&-(center + screen_area.origin))
-                                .inflate(view::PIXEL_UNIT * 2.0, view::PIXEL_UNIT * 2.0);
+                                .inflate(display::PIXEL_UNIT * 2.0, display::PIXEL_UNIT * 2.0);
 
         context.ui.set_clip_rect(Some(*screen_area));
 
-        let chart = view::screen_fov(&self.world, camera_loc, bounds);
+        let chart = display::screen_fov(&self.world, camera_loc, bounds);
 
         let mut sprites = Vec::new();
 
-        let cursor_pos = view::view_to_chart(context.ui.mouse_pos() - center);
+        let cursor_pos = display::view_to_chart(context.ui.mouse_pos() - center);
 
         for (&chart_pos, origins) in &chart {
             assert!(!origins.is_empty());
 
             let loc = origins[0] + chart_pos;
 
-            let screen_pos = view::chart_to_view(chart_pos) + center;
+            let screen_pos = display::chart_to_view(chart_pos) + center;
 
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
-            render::draw_terrain_sprites(&self.world, loc, |layer, _angle, brush, frame_idx| {
-                sprites.push(Sprite {
+            display::draw_terrain_sprites(&self.world, loc, |layer, _angle, brush, frame_idx| {
+                sprites.push(display::Sprite {
                     layer: layer,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
                     brush: brush.clone(),
@@ -72,9 +69,9 @@ impl GameView {
 
             for &origin in origins {
                 if self.world.portal(origin + chart_pos).is_some() {
-                    let screen_pos = screen_pos - Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
-                    sprites.push(Sprite {
-                        layer: render::Layer::Decal,
+                    let screen_pos = screen_pos - Point2D::new(display::PIXEL_UNIT, display::PIXEL_UNIT);
+                    sprites.push(display::Sprite {
+                        layer: display::Layer::Decal,
                         offset: [screen_pos.x as i32, screen_pos.y as i32],
                         brush: Resource::new("portal".to_string()).unwrap(),
                         frame_idx: 0,
@@ -85,21 +82,21 @@ impl GameView {
         }
 
         if let Some(origins) = chart.get(&cursor_pos) {
-            let screen_pos = view::chart_to_view(cursor_pos) + center -
-                             Point2D::new(view::PIXEL_UNIT, view::PIXEL_UNIT);
+            let screen_pos = display::chart_to_view(cursor_pos) + center -
+                             Point2D::new(display::PIXEL_UNIT, display::PIXEL_UNIT);
             // Always portal in root coordinates.
             // TODO: It's currently not obvious from UI what the root coordinates are.
             let portal_loc = origins[origins.len() - 1] + cursor_pos;
             let loc = origins[0] + cursor_pos;
 
-            sprites.push(Sprite {
-                layer: render::Layer::Decal,
+            sprites.push(display::Sprite {
+                layer: display::Layer::Decal,
                 offset: [screen_pos.x as i32, screen_pos.y as i32],
                 brush: Resource::new("cursor".to_string()).unwrap(),
                 frame_idx: 0,
             });
-            sprites.push(Sprite {
-                layer: render::Layer::Effect,
+            sprites.push(display::Sprite {
+                layer: display::Layer::Effect,
                 offset: [screen_pos.x as i32, screen_pos.y as i32],
                 brush: Resource::new("cursor_top".to_string()).unwrap(),
                 frame_idx: 0,

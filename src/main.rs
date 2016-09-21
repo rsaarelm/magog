@@ -10,21 +10,15 @@ extern crate calx_color;
 extern crate calx_resource;
 extern crate calx_grid;
 extern crate world;
+extern crate display;
 
 // Make all mods public at the top app level just to make them show up in the rustdoc.
 
-pub mod backend;
-pub mod canvas;
-pub mod canvas_zoom;
 pub mod game_view;
 pub mod init;
-pub mod render;
-pub mod sprite;
-pub mod view;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use backend::Backend;
 use world::World;
 use world::Location;
 use game_view::GameView;
@@ -35,13 +29,13 @@ pub fn main() {
                       .build_glium()
                       .unwrap();
 
-    let mut backend = Backend::new(&display, 640, 360);
+    let mut backend = display::Backend::new(&display, 640, 360);
 
     // Initialize game resources.
     init::brushes(&display, &mut backend);
     init::terrain();
 
-    let mut context = backend::Context {
+    let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),
         backend: backend,
     };
