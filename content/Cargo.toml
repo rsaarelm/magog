@@ -1,27 +1,23 @@
 [package]
 
 name = "content"
-version = "0.0.1"
+version = "0.1.0"
 authors = [ "risto.saarelma@iki.fi" ]
 
 [lib]
 name = "content"
 
 [dependencies]
-rand = "*"
-num = "*"
-image = "*"
-serde = "*"
-serde_macros = "*"
+glium = "0.15"
 
-[dependencies.calx-alg]
+[dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
 
-[dependencies.calx-layout]
+[dependencies.calx-resource]
 git = "https://github.com/rsaarelm/calx"
 
-[dependencies.calx-grid]
-git = "https://github.com/rsaarelm/calx"
+[dependencies.world]
+path = "../world"
 
-[dependencies.calx-cache]
-git = "https://github.com/rsaarelm/calx"
+[dependencies.display]
+path = "../display"

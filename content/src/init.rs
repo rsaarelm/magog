@@ -6,7 +6,7 @@ use calx_resource::ResourceStore;
 use world::BrushBuilder;
 use display::Backend;
 
-pub fn brushes(display: &glium::Display, backend: &mut Backend) {
+pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
     BrushBuilder::new()
         .file("content/assets/floors.png")
         ////
@@ -91,7 +91,7 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .finish(|img| backend.make_texture(&display, img));
 }
 
-pub fn terrain() {
+pub fn init_terrain() {
     use world::terrain::{Form, Kind, Tile};
 
     // Void, terrain 0 is special.

@@ -2,7 +2,6 @@ extern crate euclid;
 #[macro_use]
 extern crate glium;
 extern crate serde;
-extern crate image;
 extern crate vitral;
 extern crate scancode;
 extern crate calx_color;
@@ -11,11 +10,11 @@ extern crate calx_resource;
 extern crate calx_grid;
 extern crate world;
 extern crate display;
+extern crate content;
 
 // Make all mods public at the top app level just to make them show up in the rustdoc.
 
 pub mod game_view;
-pub mod init;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
@@ -32,8 +31,8 @@ pub fn main() {
     let mut backend = display::Backend::new(&display, 640, 360);
 
     // Initialize game resources.
-    init::brushes(&display, &mut backend);
-    init::terrain();
+    content::init_brushes(&display, &mut backend);
+    content::init_terrain();
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),

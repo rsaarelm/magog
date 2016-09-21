@@ -5,10 +5,10 @@ dependencies = [
  "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "content 0.1.0",
  "display 0.1.0",
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "scancode 0.1.0 (git+https://github.com/rsaarelm/scancode-rs)",
  "serde 0.8.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -156,6 +156,17 @@ dependencies = [
 name = "color_quant"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "content"
+version = "0.1.0"
+dependencies = [
+ "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "display 0.1.0",
+ "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "world 0.1.0",
+]
 
 [[package]]
 name = "core-foundation"
