@@ -12,7 +12,7 @@ enum PaintMode {
 }
 
 /// Top-level application state for gameplay.
-pub struct GameView {
+pub struct View {
     pub world: World,
     mode: PaintMode,
     /// Camera and second camera (for portaling)
@@ -21,9 +21,9 @@ pub struct GameView {
     camera_lock: bool,
 }
 
-impl GameView {
-    pub fn new(world: World) -> GameView {
-        GameView {
+impl View {
+    pub fn new(world: World) -> View {
+        View {
             world: world,
             mode: PaintMode::Terrain(7, 2),
             camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
