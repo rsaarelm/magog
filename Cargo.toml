@@ -6,9 +6,6 @@ description = "Shooter game"
 keywords = ["gamedev"]
 license = "GPL3"
 
-[[bin]]
-name = "debris"
-
 [profile.release]
 lto = true
 
