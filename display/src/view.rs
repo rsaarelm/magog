@@ -63,6 +63,10 @@ impl<'a> FovValue for ScreenFov<'a> {
 }
 
 /// Return the field of view chart for drawing a screen.
+///
+/// The stack of locations in the return value lists origins for coordinate frames that have been
+/// passed through when traversing portals, in reverse order. The first value is the origin of the
+/// coordinate space you probably want to show for that point.
 pub fn screen_fov(
     w: &World,
     origin: Location,
