@@ -93,3 +93,14 @@ impl Tile {
 impl Loadable<u8> for Tile {}
 
 impl_store!(TILE_STORE, u8, Tile);
+
+pub enum Id {
+    Empty = 0,
+    Gate = 1,
+    Ground = 2,
+    Grass = 3,
+    Water = 4,
+    Tree = 5,
+    Wall = 6,
+    Rock = 7,
+}
