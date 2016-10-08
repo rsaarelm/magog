@@ -160,7 +160,19 @@ pub fn visible_portal(w: &World, loc: Location) -> Option<Location> {
 }
 
 pub fn terrain(w: &World, loc: Location) -> Rc<terrain::Tile> {
-    let idx = w.terrain.get(loc);
+    let mut idx = w.terrain.get(loc);
+
+    if idx == 0 {
+        use terrain::Id;
+        // Empty terrain, inject custom stuff.
+        match loc.noise() {
+            x if x < 0.5 => idx = Id::Ground as u8,
+            x if x < 0.75 => idx = Id::Grass as u8,
+            x if x < 0.95 => idx = Id::Water as u8,
+            _ => idx = Id::Tree as u8
+        }
+    }
+
     terrain::Tile::get_resource(&idx).unwrap()
 
     // TODO: Add open/closed door mapping to terrain data, closed door terrain should have a field
