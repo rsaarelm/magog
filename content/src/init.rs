@@ -69,8 +69,8 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .splat(32, 0, 32, 32)
         .brush("cursor_top")
         .color(ORANGE)
-        .splat(0, 0, 32, 32)
-        .brush("portal")
+        .tile(0, 0)
+        .brush("portal") // TODO: This thing is a temporary display helper for mapedit, maybe remove when can?
         ////
         .color(SADDLEBROWN)
         .tile(160, 64)
