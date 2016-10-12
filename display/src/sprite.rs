@@ -24,8 +24,8 @@ pub struct Sprite {
 
 impl Ord for Sprite {
     fn cmp(&self, other: &Self) -> Ordering {
-        (self.layer, self.offset[1], self.offset[0])
-            .cmp(&(other.layer, other.offset[1], other.offset[0]))
+        (self.layer, self.offset[1])
+            .cmp(&(other.layer, other.offset[1]))
     }
 }
 
