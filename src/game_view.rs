@@ -7,6 +7,16 @@ pub struct View {
     pub world: World,
 }
 
+fn on_screen(chart_pos: Point2D<i32>, screen_area: &Rect<f32>) -> Option<i32> {
+    let screen_pos = display::chart_to_view(chart_pos) + Point2D::new(320.0, 180.0);
+    let bounds = screen_area.inflate(-8.0, -8.0).translate(&Point2D::new(0.0, -4.0));
+    if bounds.contains(&screen_pos) {
+        Some(-chart_pos.y)
+    } else {
+        None
+    }
+}
+
 impl View {
     pub fn new(world: World) -> View { View { world: world } }
 
@@ -42,12 +52,21 @@ impl View {
                     frame_idx: frame_idx,
                 })
             });
+
+            // TODO: Visualization for the on-screen function, remove me.
+            if on_screen(chart_pos, screen_area).is_some() {
+                sprites.push(display::Sprite {
+                    layer: display::Layer::Decal,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: Resource::new("portal".to_string()).unwrap(),
+                    frame_idx: 0,
+                })
+            }
         }
 
         // Draw cursor.
         if let Some(origins) = chart.get(&cursor_pos) {
-            let screen_pos = display::chart_to_view(cursor_pos) + center -
-                             Point2D::new(display::PIXEL_UNIT, display::PIXEL_UNIT);
+            let screen_pos = display::chart_to_view(cursor_pos) + center;
             let loc = origins[0] + cursor_pos;
 
             // TODO: Need a LOT less verbose API to add stuff to the sprite set.
@@ -70,5 +89,12 @@ impl View {
         for i in &sprites {
             i.draw(&mut context.ui)
         }
+
+
+        let font = context.ui.default_font();
+        context.ui.draw_text(&*font,
+                             Point2D::new(0.0, 16.0),
+                             [1.0, 1.0, 1.0, 1.0],
+                             &format!("Mouse pos {:?}", cursor_pos));
     }
 }

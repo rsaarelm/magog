@@ -63,10 +63,10 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .file("content/assets/props.png")
         ////
         .color(RED)
-        .splat(0, 0, 32, 32)
+        .tile(0, 0)
         .brush("cursor")
         .color(RED)
-        .splat(32, 0, 32, 32)
+        .tile(32, 0)
         .brush("cursor_top")
         .color(ORANGE)
         .tile(0, 0)
