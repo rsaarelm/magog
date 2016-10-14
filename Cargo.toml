@@ -14,13 +14,11 @@ euclid = "0.10"
 time = "0.1"
 glium = "0.15"
 serde = "0.8"
+scancode = "0.1"
 
 # TODO: Make Vitral into a proper crate eventually.
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
-
-[dependencies.scancode]
-git = "https://github.com/rsaarelm/scancode-rs"
 
 [dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
