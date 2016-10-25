@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{FovValue, HexFov};
-use world::{Location, World};
-use world::query;
+use world::{Location, World, Query};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
@@ -54,7 +53,7 @@ impl<'a> FovValue for ScreenFov<'a> {
         //
         // With non-void terrain on top of the portal, just show our side and stay on the current
         // frame as far as FOV is concerned.
-        if let Some(dest) = query::visible_portal(self.w, loc) {
+        if let Some(dest) = self.w.visible_portal(loc) {
             ret.origins.insert(0, dest - offset);
         }
 

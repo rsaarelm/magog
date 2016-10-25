@@ -33,7 +33,10 @@ mod location;
 pub use location::{Location, Portal};
 
 mod location_set;
-pub mod query;
+
+mod query;
+pub use query::Query;
+
 mod spatial;
 mod stats;
 pub mod terrain;

@@ -1,18 +1,27 @@
-use std::collections::HashSet;
 use euclid::Point2D;
-use std::iter::FromIterator;
-use calx_grid::{FovValue, HexFov, HexGeom};
+use calx_grid::{FovValue, HexGeom};
 use world::World;
-use query;
 use location::Location;
+use query::Query;
 use terrain;
 
 #[derive(Clone)]
-struct SightFov<'a> {
+pub struct SightFov<'a> {
     w: &'a World,
     range: u32,
-    origin: Location,
+    pub origin: Location,
     prev_offset: Point2D<i32>,
+}
+
+impl<'a> SightFov<'a> {
+    pub fn new(w: &'a World, range: u32, origin: Location) -> SightFov<'a> {
+        SightFov {
+            w: w,
+            range: range,
+            origin: origin,
+            prev_offset: Point2D::new(0, 0),
+        }
+    }
 }
 
 impl<'a> PartialEq for SightFov<'a> {
@@ -30,13 +39,13 @@ impl<'a> FovValue for SightFov<'a> {
             return None;
         }
 
-        if query::terrain(self.w, self.origin + self.prev_offset).blocks_sight() {
+        if self.w.terrain(self.origin + self.prev_offset).blocks_sight() {
             return None;
         }
 
         let mut ret = self.clone();
         ret.prev_offset = offset;
-        if let Some(dest) = query::visible_portal(self.w, self.origin + offset) {
+        if let Some(dest) = self.w.visible_portal(self.origin + offset) {
             ret.origin = dest - offset;
         }
 
@@ -44,18 +53,7 @@ impl<'a> FovValue for SightFov<'a> {
     }
 
     fn is_fake_isometric_wall(&self, offset: Point2D<i32>) -> bool {
-        query::terrain(self.w, self.origin + offset).form == terrain::Form::Wall
+        self.w.terrain(self.origin + offset).form == terrain::Form::Wall
     }
 }
 
-/// Return the field of view chart for visible tiles.
-pub fn sight_fov(w: &World, origin: Location, range: u32) -> HashSet<Location> {
-    let init = SightFov {
-        w: w,
-        range: range,
-        origin: origin,
-        prev_offset: Point2D::new(0, 0),
-    };
-
-    HashSet::from_iter(HexFov::new(init).map(|(pos, a)| a.origin + pos))
-}

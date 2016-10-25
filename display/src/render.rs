@@ -4,7 +4,7 @@ use std::rc::Rc;
 use calx_resource::Resource;
 use calx_grid::{Dir12, Dir6};
 use world::{Brush, Location, World};
-use world::{query, terrain};
+use world::{Query, terrain};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
@@ -59,7 +59,7 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 {
     use self::Angle::*;
 
-    let terrain = query::terrain(w, loc);
+    let terrain = w.terrain(loc);
     let kernel = Kernel::new(w, loc);
 
     match terrain.form {
@@ -233,8 +233,8 @@ pub struct Kernel {
 }
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Rc<terrain::Tile> {
-    let loc = query::visible_portal(w, loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
-    query::terrain(w, loc)
+    let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
+    w.terrain(loc)
 }
 
 impl Kernel {
@@ -243,7 +243,7 @@ impl Kernel {
             n: neighbor(w, loc, Dir6::North),
             ne: neighbor(w, loc, Dir6::NorthEast),
             nw: neighbor(w, loc, Dir6::NorthWest),
-            center: query::terrain(w, loc),
+            center: w.terrain(loc),
             se: neighbor(w, loc, Dir6::SouthEast),
             sw: neighbor(w, loc, Dir6::SouthWest),
             s: neighbor(w, loc, Dir6::South),
