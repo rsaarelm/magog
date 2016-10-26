@@ -295,7 +295,7 @@ impl Query for World {
     }
 
     fn portal(&self, loc: Location) -> Option<Location> {
-        self.portal(loc).map(|p| loc + p)
+        self.portals.get(&loc).map(|&p| loc + p)
     }
 
     fn hp(&self, e: Entity) -> i32 {

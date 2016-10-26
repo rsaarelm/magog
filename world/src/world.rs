@@ -31,7 +31,7 @@ pub struct World {
     /// Terrain data.
     pub terrain: Field<u8>,
     /// Optional portals between map zones.
-    portals: HashMap<Location, Portal>,
+    pub portals: HashMap<Location, Portal>,
     /// Spatial index for game entities.
     pub spatial: Spatial,
     /// Global gamestate flags.
@@ -74,7 +74,7 @@ impl<'a> World {
     /// modified to point to that portal's destination.
     ///
     /// If the portal does not involve any translation, it will not be added.
-    pub fn set_portal(&mut self, loc: Location, mut portal: Portal) {
+    fn set_portal(&mut self, loc: Location, mut portal: Portal) {
         let target_loc = loc + portal;
         // Don't create portal chains, if the target cell has another portal, just direct to its
         // destination.
@@ -91,7 +91,5 @@ impl<'a> World {
         }
     }
 
-    pub fn remove_portal(&mut self, loc: Location) { self.portals.remove(&loc); }
-
-    pub fn portal(&self, loc: Location) -> Option<Portal> { self.portals.get(&loc).cloned() }
+    fn remove_portal(&mut self, loc: Location) { self.portals.remove(&loc); }
 }
