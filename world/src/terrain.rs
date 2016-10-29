@@ -87,6 +87,8 @@ impl Tile {
 
     pub fn is_hull(&self) -> bool { self.form == Form::Wall || self.form == Form::Blob }
 
+    pub fn is_blob(&self) -> bool { self.form == Form::Blob }
+
     pub fn is_block(&self) -> bool { self.is_hull() || self.form == Form::Prop }
 }
 

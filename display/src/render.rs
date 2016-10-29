@@ -78,14 +78,14 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
         }
         terrain::Form::Blob => {
             // This part gets a little tricky. Basic idea is that there's an inner pointy-top
-            // hex core and the block hull will snap to that instead of the outer flat-top hex
+            // hex core and the blob hull will snap to that instead of the outer flat-top hex
             // edge if neither adjacent face to the outer hex vertex is connected to another
-            // block.
+            // blob.
             //
             // Based on how the sprites split up, the processing is done in four vertical
             // segments.
 
-            let faces = kernel.block_faces();
+            let faces = kernel.blob_faces();
 
             // Do we snap to the outer vertices?
             let ne_vertex = !faces[0] || !faces[1];
@@ -254,15 +254,15 @@ impl Kernel {
     pub fn wall_extends(&self) -> [bool; 2] { [self.nw.is_wall(), self.ne.is_wall()] }
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
-    pub fn block_faces(&self) -> [bool; 6] {
+    pub fn blob_faces(&self) -> [bool; 6] {
         // Because they work a bit differently visually, back-side faces
         // are not drawn if there is any hull touching, front is only
-        // not drawn if there's another block.
+        // not drawn if there's another blob.
         [!self.n.is_hull(),
          !self.ne.is_hull(),
-         !self.se.is_block(),
-         !self.s.is_block(),
-         !self.sw.is_block(),
+         !self.se.is_blob(),
+         !self.s.is_blob(),
+         !self.sw.is_blob(),
          !self.nw.is_hull()]
     }
 
