@@ -18,8 +18,7 @@ pub mod mapedit_view;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::World;
-use world::Location;
+use world::{Location, Terraform, World};
 use mapedit_view::View;
 
 pub fn main() {
@@ -44,17 +43,17 @@ pub fn main() {
 
     for x in -0..8 {
         for y in 0..8 {
-            view.world.terrain.set(Location::new(x, y, 0), 3);
+            view.world.set_terrain(Location::new(x, y, 0), 3);
         }
     }
 
-    view.world.terrain.set(Location::new(0, -10, 0), 1);
-    view.world.terrain.set(Location::new(1, 0, 0), 3);
-    view.world.terrain.set(Location::new(2, 0, 0), 5);
-    view.world.terrain.set(Location::new(3, 0, 0), 6);
-    view.world.terrain.set(Location::new(4, 0, 0), 6);
-    view.world.terrain.set(Location::new(3, 2, 0), 7);
-    view.world.terrain.set(Location::new(4, 2, 0), 7);
+    view.world.set_terrain(Location::new(0, -10, 0), 1);
+    view.world.set_terrain(Location::new(1, 0, 0), 3);
+    view.world.set_terrain(Location::new(2, 0, 0), 5);
+    view.world.set_terrain(Location::new(3, 0, 0), 6);
+    view.world.set_terrain(Location::new(4, 0, 0), 6);
+    view.world.set_terrain(Location::new(3, 2, 0), 7);
+    view.world.set_terrain(Location::new(4, 2, 0), 7);
 
     // Run game.
     loop {

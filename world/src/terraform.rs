@@ -13,7 +13,8 @@ pub trait Terraform {
     /// modified to point to that portal's destination.
     ///
     /// If the portal does not involve any translation, it will not be added.
-    ///
-    /// A `None` value for portal will remove the any portals from the location.
-    fn set_portal(&mut self, loc: Location, portal: Option<Portal>);
+    fn set_portal(&mut self, loc: Location, portal: Portal);
+
+    /// Remove any portals from given location.
+    fn remove_portal(&mut self, loc: Location);
 }

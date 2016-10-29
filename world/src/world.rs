@@ -221,24 +221,20 @@ impl Command for World {
 impl Terraform for World {
     fn set_terrain(&mut self, loc: Location, terrain: u8) { self.terrain.set(loc, terrain); }
 
-    fn set_portal(&mut self, loc: Location, portal: Option<Portal>) {
-        if let Some(mut portal) = portal {
-            let target_loc = loc + portal;
-            // Don't create portal chains, if the target cell has another portal, just direct to its
-            // destination.
-            //
-            // XXX: This
-            if let Some(&p) = self.portals.get(&target_loc) {
-                portal = portal + p;
-            }
+    fn set_portal(&mut self, loc: Location, mut portal: Portal) {
+        let target_loc = loc + portal;
+        // Don't create portal chains, if the target cell has another portal, just direct to its
+        // destination.
+        if let Some(&p) = self.portals.get(&target_loc) {
+            portal = portal + p;
+        }
 
-            if portal.dx == 0 && portal.dy == 0 && portal.z == loc.z {
-                self.portals.remove(&loc);
-            } else {
-                self.portals.insert(loc, portal);
-            }
-        } else {
+        if portal.dx == 0 && portal.dy == 0 && portal.z == loc.z {
             self.portals.remove(&loc);
+        } else {
+            self.portals.insert(loc, portal);
         }
     }
+
+    fn remove_portal(&mut self, loc: Location) { self.portals.remove(&loc); }
 }
