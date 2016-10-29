@@ -2,10 +2,121 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{FovValue, HexFov};
-use world::{Location, World, Query};
+use calx_resource::Resource;
+use world::{Location, Query, World};
+use sprite::Sprite;
+use render::{self, Layer};
+use backend;
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
+
+pub struct WorldView {
+    pub cursor_loc: Option<Location>,
+    pub show_cursor: bool,
+    camera_loc: Location,
+    screen_area: Rect<f32>,
+    fov: Option<HashMap<Point2D<i32>, Vec<Location>>>,
+}
+
+impl WorldView {
+    pub fn new(camera_loc: Location, screen_area: Rect<f32>) -> WorldView {
+        WorldView {
+            cursor_loc: None,
+            show_cursor: false,
+            camera_loc: camera_loc,
+            screen_area: screen_area,
+            fov: None,
+        }
+    }
+
+    /// Return whether the given chart point is on the currently visible screen.
+    pub fn on_screen(&self, chart_pos: Point2D<i32>) -> bool {
+        let center = self.screen_area.origin + self.screen_area.size / 2.0;
+        let screen_pos = chart_to_view(chart_pos) + center;
+        let bounds = self.screen_area.inflate(-8.0, -8.0).translate(&Point2D::new(0.0, -4.0));
+        bounds.contains(&screen_pos)
+    }
+
+    pub fn set_camera(&mut self, loc: Location) {
+        if loc != self.camera_loc {
+            self.camera_loc = loc;
+            self.fov = None;
+        }
+    }
+
+    /// Recompute the cached screen view if the cache has been invalidated.
+    fn ensure_fov(&mut self, world: &World) {
+        if self.fov.is_none() {
+            // Chart area, center in origin, inflated by tile width in every direction to get the cells
+            // partially on screen included.
+            let center = self.screen_area.origin + self.screen_area.size / 2.0;
+            let bounds = self.screen_area
+                             .translate(&-(center + self.screen_area.origin))
+                             .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
+
+            self.fov = Some(screen_fov(world, self.camera_loc, bounds));
+        }
+    }
+
+    pub fn draw(&mut self, world: &World, context: &mut backend::Context) {
+        self.ensure_fov(world);
+
+        let center = self.screen_area.origin + self.screen_area.size / 2.0;
+        let chart = self.fov.as_ref().unwrap();
+        let mut sprites = Vec::new();
+        let cursor_pos = view_to_chart(context.ui.mouse_pos() - center);
+
+        for (&chart_pos, origins) in chart.iter() {
+            assert!(!origins.is_empty());
+
+            let loc = origins[0] + chart_pos;
+
+            let screen_pos = chart_to_view(chart_pos) + center;
+
+            // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
+            render::draw_terrain_sprites(&world, loc, |layer, _angle, brush, frame_idx| {
+                sprites.push(Sprite {
+                    layer: layer,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: brush.clone(),
+                    frame_idx: frame_idx,
+                })
+            });
+        }
+
+        // Draw cursor.
+        if let Some(origins) = chart.get(&cursor_pos) {
+            let screen_pos = chart_to_view(cursor_pos) + center;
+            let loc = origins[0] + cursor_pos;
+            self.cursor_loc = Some(loc);
+
+            if self.show_cursor {
+                // TODO: Need a LOT less verbose API to add stuff to the sprite set.
+                sprites.push(Sprite {
+                    layer: Layer::Decal,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: Resource::new("cursor".to_string()).unwrap(),
+                    frame_idx: 0,
+                });
+                sprites.push(Sprite {
+                    layer: Layer::Effect,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: Resource::new("cursor_top".to_string()).unwrap(),
+                    frame_idx: 0,
+                });
+            }
+        } else {
+            self.cursor_loc = None;
+        }
+
+        sprites.sort();
+
+        for i in &sprites {
+            i.draw(&mut context.ui)
+        }
+    }
+}
 
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
