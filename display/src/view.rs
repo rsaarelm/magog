@@ -30,14 +30,6 @@ impl WorldView {
         }
     }
 
-    /// Return whether the given chart point is on the currently visible screen.
-    pub fn on_screen(&self, chart_pos: Point2D<i32>) -> bool {
-        let center = self.screen_area.origin + self.screen_area.size / 2.0;
-        let screen_pos = chart_to_view(chart_pos) + center;
-        let bounds = self.screen_area.inflate(-8.0, -8.0).translate(&Point2D::new(0.0, -4.0));
-        bounds.contains(&screen_pos)
-    }
-
     pub fn set_camera(&mut self, loc: Location) {
         if loc != self.camera_loc {
             self.camera_loc = loc;
