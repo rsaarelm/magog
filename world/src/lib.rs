@@ -25,6 +25,9 @@ mod ability;
 mod brush;
 pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
 
+mod command;
+pub use command::Command;
+
 pub mod components;
 mod field;
 mod flags;
@@ -35,6 +38,7 @@ mod location;
 pub use location::{Location, Portal};
 
 mod location_set;
+mod mutate;
 
 mod query;
 pub use query::Query;
