@@ -4,8 +4,9 @@ use std::collections::HashMap;
 use bincode::{self, serde};
 use calx_resource::{Resource, ResourceStore};
 use calx_ecs::Entity;
+use calx_grid::Dir6;
 use field::Field;
-use spatial::{Spatial, Place};
+use spatial::{Place, Spatial};
 use flags::Flags;
 use location::{Location, Portal};
 use brush::Brush;
@@ -14,6 +15,9 @@ use stats;
 use terrain;
 use FovStatus;
 use query::Query;
+use command::{Command, CommandResult};
+use mutate::Mutate;
+use terraform::Terraform;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -74,31 +78,6 @@ impl<'a> World {
     pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
         serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
     }
-
-    /// Set a portal on map.
-    ///
-    /// If the portal points to a location with an existing portal, the portal value will be
-    /// modified to point to that portal's destination.
-    ///
-    /// If the portal does not involve any translation, it will not be added.
-    fn set_portal(&mut self, loc: Location, mut portal: Portal) {
-        let target_loc = loc + portal;
-        // Don't create portal chains, if the target cell has another portal, just direct to its
-        // destination.
-        //
-        // XXX: This
-        if let Some(&p) = self.portals.get(&target_loc) {
-            portal = portal + p;
-        }
-
-        if portal.dx == 0 && portal.dy == 0 && portal.z == loc.z {
-            self.portals.remove(&loc);
-        } else {
-            self.portals.insert(loc, portal);
-        }
-    }
-
-    fn remove_portal(&mut self, loc: Location) { self.portals.remove(&loc); }
 }
 
 impl Query for World {
@@ -124,13 +103,9 @@ impl Query for World {
         self.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
     }
 
-    fn tick(&self) -> u64 {
-        self.flags.tick
-    }
+    fn tick(&self) -> u64 { self.flags.tick }
 
-    fn is_mob(&self, e: Entity) -> bool {
-        self.ecs.brain.contains(e)
-    }
+    fn is_mob(&self, e: Entity) -> bool { self.ecs.brain.contains(e) }
 
     fn alignment(&self, e: Entity) -> Option<Alignment> {
         self.ecs.brain.get(e).map(|b| b.alignment)
@@ -146,7 +121,7 @@ impl Query for World {
                 x if x < 0.5 => idx = Id::Ground as u8,
                 x if x < 0.75 => idx = Id::Grass as u8,
                 x if x < 0.95 => idx = Id::Water as u8,
-                _ => idx = Id::Tree as u8
+                _ => idx = Id::Tree as u8,
             }
         }
 
@@ -173,9 +148,7 @@ impl Query for World {
         // }
     }
 
-    fn portal(&self, loc: Location) -> Option<Location> {
-        self.portals.get(&loc).map(|&p| loc + p)
-    }
+    fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }
 
     fn hp(&self, e: Entity) -> i32 {
         self.max_hp(e) - if self.ecs.health.contains(e) { self.ecs.health[e].wounds } else { 0 }
@@ -209,7 +182,69 @@ impl Query for World {
         self.ecs.stats.get(e).cloned().unwrap_or_default()
     }
 
-    fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        self.spatial.entities_at(loc)
+    fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
+}
+
+impl Mutate for World {
+    fn next_tick(&mut self) -> CommandResult {
+        // TODO: Run AI
+        // TODO: Clean dead
+        self.flags.tick += 1;
+        Ok(())
+    }
+
+    fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
+}
+
+impl Command for World {
+    fn step(&mut self, dir: Dir6) -> CommandResult {
+        if let Some(e) = self.player() {
+            try!(self.entity_step(e, dir));
+            self.next_tick()
+        } else {
+            Err(())
+        }
+    }
+
+    fn melee(&mut self, dir: Dir6) -> CommandResult {
+        if let Some(e) = self.player() {
+            try!(self.entity_melee(e, dir));
+            self.next_tick()
+        } else {
+            Err(())
+        }
+    }
+
+    fn pass(&mut self) -> CommandResult { self.next_tick() }
+}
+
+impl Terraform for World {
+    fn set_terrain(&mut self, loc: Location, terrain: u8) {
+        if terrain != 0 {
+            self.terrain.set(loc, terrain);
+        } else {
+            self.terrain.clear(loc);
+        }
+    }
+
+    fn set_portal(&mut self, loc: Location, portal: Option<Portal>) {
+        if let Some(mut portal) = portal {
+            let target_loc = loc + portal;
+            // Don't create portal chains, if the target cell has another portal, just direct to its
+            // destination.
+            //
+            // XXX: This
+            if let Some(&p) = self.portals.get(&target_loc) {
+                portal = portal + p;
+            }
+
+            if portal.dx == 0 && portal.dy == 0 && portal.z == loc.z {
+                self.portals.remove(&loc);
+            } else {
+                self.portals.insert(loc, portal);
+            }
+        } else {
+            self.portals.remove(&loc);
+        }
     }
 }

@@ -28,11 +28,11 @@ pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
 mod command;
 pub use command::Command;
 
-pub mod components;
+mod components;
 mod field;
 mod flags;
 mod fov;
-pub mod item;
+mod item;
 
 mod location;
 pub use location::{Location, Portal};
@@ -45,6 +45,10 @@ pub use query::Query;
 
 mod spatial;
 mod stats;
+
+mod terraform;
+pub use terraform::Terraform;
+
 pub mod terrain;
 
 mod world;

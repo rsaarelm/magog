@@ -1,6 +1,6 @@
 use calx_grid::Dir6;
 
-type CommandResult = Result<(), ()>;
+pub type CommandResult = Result<(), ()>;
 
 /// Player actions.
 pub trait Command {
