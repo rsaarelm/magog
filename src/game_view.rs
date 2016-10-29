@@ -12,6 +12,7 @@ impl View {
     pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
         let mut view = display::WorldView::new(camera_loc, *screen_area);
+        view.show_cursor = true;
 
         view.draw(&self.world, context);
 

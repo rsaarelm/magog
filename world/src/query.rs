@@ -3,12 +3,11 @@ use std::iter::FromIterator;
 use std::rc::Rc;
 use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
-use calx_resource::{Resource, ResourceStore};
+use calx_resource::Resource;
 use world::World;
 use components::{Alignment, BrainState};
 use stats::{Intrinsic, Stats};
 use location::Location;
-use spatial::Place;
 use brush::Brush;
 use terrain;
 use FovStatus;
@@ -52,9 +51,7 @@ pub trait Query {
     fn hp(&self, e: Entity) -> i32;
 
     /// Return maximum health of an entity.
-    fn max_hp(&self, e: Entity) -> i32 {
-        self.stats(e).power
-    }
+    fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
 
     /// Return field of view for a location.
     fn fov_status(&self, loc: Location) -> Option<FovStatus>;
@@ -108,10 +105,10 @@ pub trait Query {
             return true;
         }
         if self.entities_at(loc)
-                .into_iter()
-                .any(|e| self.is_blocking_entity(e)) {
-                    return true;
-                }
+               .into_iter()
+               .any(|e| self.is_blocking_entity(e)) {
+            return true;
+        }
         false
     }
 
@@ -217,6 +214,7 @@ pub trait Query {
 
     /// Return the field of view chart for visible tiles.
     fn sight_fov(w: &World, origin: Location, range: u32) -> HashSet<Location> {
-        HashSet::from_iter(HexFov::new(SightFov::new(w, range, origin)).map(|(pos, a)| a.origin + pos))
+        HashSet::from_iter(HexFov::new(SightFov::new(w, range, origin))
+                               .map(|(pos, a)| a.origin + pos))
     }
 }

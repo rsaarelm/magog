@@ -112,6 +112,8 @@ impl Query for World {
     }
 
     fn terrain(&self, loc: Location) -> Rc<terrain::Tile> {
+        use euclid::Point2D;
+
         let mut idx = self.terrain.get(loc);
 
         if idx == 0 {
@@ -123,6 +125,11 @@ impl Query for World {
                 x if x < 0.95 => idx = Id::Water as u8,
                 _ => idx = Id::Tree as u8,
             }
+        }
+
+        if !::on_screen(Point2D::new(loc.x as i32, loc.y as i32)) {
+            use terrain::Id;
+            idx = Id::Rock as u8;
         }
 
         terrain::Tile::get_resource(&idx).unwrap()
