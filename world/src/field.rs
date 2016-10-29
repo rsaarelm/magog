@@ -19,7 +19,11 @@ impl<T: Copy + PartialEq> Field<T> {
         self.patch.get(&pos).map(|&x| x).unwrap_or(self.default)
     }
 
-    pub fn set(&mut self, pos: Location, val: T) { self.patch.insert(pos, val); }
-
-    pub fn clear(&mut self, pos: Location) { self.patch.remove(&pos); }
+    pub fn set(&mut self, pos: Location, val: T) {
+        if val == self.default {
+            self.patch.remove(&pos);
+        } else {
+            self.patch.insert(pos, val);
+        }
+    }
 }

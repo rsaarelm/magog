@@ -219,13 +219,7 @@ impl Command for World {
 }
 
 impl Terraform for World {
-    fn set_terrain(&mut self, loc: Location, terrain: u8) {
-        if terrain != 0 {
-            self.terrain.set(loc, terrain);
-        } else {
-            self.terrain.clear(loc);
-        }
-    }
+    fn set_terrain(&mut self, loc: Location, terrain: u8) { self.terrain.set(loc, terrain); }
 
     fn set_portal(&mut self, loc: Location, portal: Option<Portal>) {
         if let Some(mut portal) = portal {
