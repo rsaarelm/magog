@@ -212,8 +212,7 @@ pub trait Query {
         }
     }
 
-    /// Return whether the entity is an awake non-player mob and should be
-    /// animated with a bob.
+    /// Return whether the entity should have an idle animation.
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     /// Return the field of view chart for visible tiles.
