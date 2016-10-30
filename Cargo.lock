@@ -1,19 +1,23 @@
 [root]
-name = "magog"
+name = "world"
 version = "0.1.0"
 dependencies = [
+ "bincode 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "calx-alg 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-ecs 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "content 0.1.0",
- "display 0.1.0",
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "scancode 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_macros 0.8.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vec_map 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
- "world 0.1.0",
+ "vitral-atlas 0.1.0 (git+https://github.com/rsaarelm/vitral)",
 ]
 
 [[package]]
@@ -472,6 +476,24 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "magog"
+version = "0.1.0"
+dependencies = [
+ "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "content 0.1.0",
+ "display 0.1.0",
+ "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scancode 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
+ "world 0.1.0",
+]
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -902,28 +924,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "world"
-version = "0.1.0"
-dependencies = [
- "bincode 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "calx-alg 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-ecs 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_macros 0.8.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "vec_map 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
- "vitral-atlas 0.1.0 (git+https://github.com/rsaarelm/vitral)",
-]
 
 [[package]]
 name = "x11-dl"

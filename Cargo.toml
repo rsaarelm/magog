@@ -6,6 +6,9 @@ description = "Roguelike game"
 keywords = ["gamedev"]
 license = "GPL3"
 
+[workspace]
+members = ["world", "content", "display"]
+
 [profile.release]
 lto = true
 
