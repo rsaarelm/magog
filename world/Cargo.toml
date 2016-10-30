@@ -16,6 +16,7 @@ serde_macros = "0.8"
 bincode = "0.6"
 image = "0.10"
 euclid = "0.10"
+lazy_static = "0.2"
 
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"

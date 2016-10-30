@@ -8,6 +8,8 @@ extern crate serde;
 extern crate vec_map;
 extern crate image;
 extern crate euclid;
+#[macro_use]
+extern crate lazy_static;
 extern crate vitral;
 extern crate vitral_atlas;
 extern crate calx_alg;
@@ -18,6 +20,7 @@ extern crate calx_ecs;
 #[macro_use]
 extern crate calx_resource;
 
+use std::collections::HashSet;
 use euclid::{Rect, Point2D, Size2D};
 
 mod ability;
@@ -74,5 +77,26 @@ pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
     x <= y + (W - 1) / 2 &&
     x >= y - (W - 1) / 2 &&
     x >= -H - y &&
-    x <= H - 2 - y
+    x <= H - 1 - y
+}
+
+pub fn onscreen_locations() -> &'static HashSet<Point2D<i32>> {
+    lazy_static! {
+        static ref ONSCREEN_LOCATIONS: HashSet<Point2D<i32>> = {
+            let mut m = HashSet::new();
+
+            // XXX: Hardcoded limits, tied to W and H in on-screen but expressed differently here.
+            for y in -20..21 {
+                for x in -20..21 {
+                    let point = Point2D::new(x, y);
+                    if on_screen(point) {
+                        m.insert(point);
+                    }
+                }
+            }
+            m
+        };
+    }
+
+    &*ONSCREEN_LOCATIONS
 }
