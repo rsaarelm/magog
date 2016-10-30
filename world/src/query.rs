@@ -30,6 +30,9 @@ pub trait Query {
     /// Return current time of the world logic clock.
     fn tick(&self) -> u64;
 
+    /// Return world RNG seed
+    fn rng_seed(&self) -> u32;
+
     /// Return whether the entity is a mobile object (eg. active creature).
     fn is_mob(&self, e: Entity) -> bool;
 

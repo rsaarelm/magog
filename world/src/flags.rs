@@ -12,7 +12,7 @@ pub struct Flags {
     pub player: Option<Entity>,
     pub depth: i32,
 
-    seed: u32,
+    pub seed: u32,
     rng: EncodeRng<XorShiftRng>,
 }
 

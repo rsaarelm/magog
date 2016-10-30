@@ -105,6 +105,8 @@ impl Query for World {
 
     fn tick(&self) -> u64 { self.flags.tick }
 
+    fn rng_seed(&self) -> u32 { self.flags.seed }
+
     fn is_mob(&self, e: Entity) -> bool { self.ecs.brain.contains(e) }
 
     fn alignment(&self, e: Entity) -> Option<Alignment> {

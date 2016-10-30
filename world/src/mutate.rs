@@ -33,10 +33,9 @@ pub trait Mutate: Query {
     }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> CommandResult {
-        if let Some(loc) = self.location(e) {
-            if self.can_enter(e, loc) {
-                self.place_entity(e, loc);
-            }
+        let loc = try!(self.location(e).ok_or(()));
+        if self.can_enter(e, loc) {
+            self.place_entity(e, loc);
         }
 
         Err(())
