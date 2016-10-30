@@ -6,10 +6,7 @@
 /// Place the split before a whitespace or after a hyphen if possible. Any
 /// whitespace between the two segments is trimmed. Newlines will cause a
 /// segment split when encountered.
-pub fn split_line<'a, F>(text: &'a str,
-                         char_width: &F,
-                         max_len: f32)
-                         -> (&'a str, &'a str)
+pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a str, &'a str)
     where F: Fn(char) -> f32
 {
     assert!(max_len >= 0.0);

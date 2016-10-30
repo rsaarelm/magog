@@ -14,12 +14,11 @@ use calx_alg::WeightedChoice;
 #[test]
 fn test_serialize_rng() {
     use calx_alg::EncodeRng;
-    use bincode::{serde, SizeLimit};
+    use bincode::{SizeLimit, serde};
 
     let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
-    let saved = serde::serialize(&rng, SizeLimit::Infinite)
-                    .expect("Serialization failed");
+    let saved = serde::serialize(&rng, SizeLimit::Infinite).expect("Serialization failed");
     let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved)
                        .expect("Deserialization failed");
 
@@ -37,7 +36,7 @@ fn test_noise() {
 
 #[test]
 fn test_log_odds() {
-    use calx_alg::{to_log_odds, from_log_odds};
+    use calx_alg::{from_log_odds, to_log_odds};
     assert_eq!(from_log_odds(0.0), 0.5);
     assert_eq!(to_log_odds(0.5), 0.0);
 

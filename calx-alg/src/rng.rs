@@ -25,25 +25,15 @@ pub trait RngExt {
 }
 
 impl<T: Rng> RngExt for T {
-    fn coinflip(&mut self) -> bool {
-        self.gen_weighted_bool(2)
-    }
+    fn coinflip(&mut self) -> bool { self.gen_weighted_bool(2) }
 
-    fn one_chance_in(&mut self, n: u32) -> bool {
-        self.gen_weighted_bool(n)
-    }
+    fn one_chance_in(&mut self, n: u32) -> bool { self.gen_weighted_bool(n) }
 
-    fn with_chance(&mut self, p: f32) -> bool {
-        self.gen_range(0.0, 1.0) < p
-    }
+    fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0, 1.0) < p }
 
-    fn log_odds(&mut self) -> f32 {
-        to_log_odds(self.gen_range(0.0, 1.0))
-    }
+    fn log_odds(&mut self) -> f32 { to_log_odds(self.gen_range(0.0, 1.0)) }
 
-    fn with_log_odds(&mut self, db: f32) -> bool {
-        db > self.log_odds()
-    }
+    fn with_log_odds(&mut self, db: f32) -> bool { db > self.log_odds() }
 }
 
 /// A wrapper that makes a Rng implementation encodable.
@@ -56,25 +46,17 @@ pub struct EncodeRng<T> {
 }
 
 impl<T: Rng + 'static> EncodeRng<T> {
-    pub fn new(inner: T) -> EncodeRng<T> {
-        EncodeRng { inner: inner }
-    }
+    pub fn new(inner: T) -> EncodeRng<T> { EncodeRng { inner: inner } }
 }
 
 impl<T: SeedableRng<S> + Rng + 'static, S> SeedableRng<S> for EncodeRng<T> {
-    fn reseed(&mut self, seed: S) {
-        self.inner.reseed(seed);
-    }
+    fn reseed(&mut self, seed: S) { self.inner.reseed(seed); }
 
-    fn from_seed(seed: S) -> EncodeRng<T> {
-        EncodeRng::new(SeedableRng::from_seed(seed))
-    }
+    fn from_seed(seed: S) -> EncodeRng<T> { EncodeRng::new(SeedableRng::from_seed(seed)) }
 }
 
 impl<T: Rng> Rng for EncodeRng<T> {
-    fn next_u32(&mut self) -> u32 {
-        self.inner.next_u32()
-    }
+    fn next_u32(&mut self) -> u32 { self.inner.next_u32() }
 }
 
 impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {

@@ -14,14 +14,9 @@ pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {
 }
 
 /// Time-plot that spikes at given intervals for the given time.
-pub fn spike(down_s: f64, up_s: f64) -> bool {
-    time::precise_time_s() % (down_s + up_s) > down_s
-}
+pub fn spike(down_s: f64, up_s: f64) -> bool { time::precise_time_s() % (down_s + up_s) > down_s }
 
-pub fn single_anim<'a, T>(start_s: f64,
-                          period_s: f64,
-                          frames: &'a [T])
-                          -> &'a T {
+pub fn single_anim<'a, T>(start_s: f64, period_s: f64, frames: &'a [T]) -> &'a T {
     assert!(period_s > 0.0);
     assert!(frames.len() > 0);
     let mut idx = ((time::precise_time_s() - start_s) / period_s) as i32;
@@ -64,9 +59,7 @@ impl Ticker {
         }
     }
 
-    pub fn get(&mut self) -> bool {
-        self.time_remaining().is_none()
-    }
+    pub fn get(&mut self) -> bool { self.time_remaining().is_none() }
 
     pub fn wait_for_tick(&mut self) {
         match self.time_remaining() {
@@ -98,14 +91,11 @@ impl TimePerFrame {
         }
     }
 
-    pub fn begin(&mut self) {
-        self.start_t = time::precise_time_s();
-    }
+    pub fn begin(&mut self) { self.start_t = time::precise_time_s(); }
 
     pub fn end(&mut self) {
         self.last = time::precise_time_s() - self.start_t;
-        self.average = self.update_weight * self.last +
-                       (1.0 - self.update_weight) * self.average;
+        self.average = self.update_weight * self.last + (1.0 - self.update_weight) * self.average;
     }
 }
 
@@ -132,8 +122,7 @@ impl AverageDuration {
 
     pub fn tick(&mut self) {
         let t = time::precise_time_s();
-        self.value = self.weight * (t - self.last_time) +
-                     (1.0 - self.weight) * self.value;
+        self.value = self.weight * (t - self.last_time) + (1.0 - self.weight) * self.value;
         self.last_time = t;
     }
 }
