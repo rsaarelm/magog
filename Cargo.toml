@@ -1,29 +1,3 @@
-[package]
-name = "calx"
-version = "0.1.0"
-authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
-description = "Rust game development helper library collection"
-keywords = ["gamedev"]
-license = "MIT OR Apache-2.0"
-
-[dependencies.calx-ecs]
-path = "calx-ecs"
-
-[dependencies.calx-alg]
-path = "calx-alg"
-
-[dependencies.calx-color]
-path = "calx-color"
-
-[dependencies.calx-grid]
-path = "calx-grid"
-
-[dependencies.calx-resource]
-path = "calx-resource"
-
-[dependencies.calx-system]
-path = "calx-system"
-
 [workspace]
 members = [
     "calx-alg",

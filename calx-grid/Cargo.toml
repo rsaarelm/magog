@@ -1,6 +1,6 @@
 [package]
 name = "calx-grid"
-version = "0.1.0"
+version = "0.3.0-alpha"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Grid map utilities for games"
 keywords = ["gamedev"]
