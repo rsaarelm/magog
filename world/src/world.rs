@@ -205,21 +205,15 @@ impl Mutate for World {
 
 impl Command for World {
     fn step(&mut self, dir: Dir6) -> CommandResult {
-        if let Some(e) = self.player() {
-            try!(self.entity_step(e, dir));
-            self.next_tick()
-        } else {
-            Err(())
-        }
+        let player = try!(self.player().ok_or(()));
+        try!(self.entity_step(player, dir));
+        self.next_tick()
     }
 
     fn melee(&mut self, dir: Dir6) -> CommandResult {
-        if let Some(e) = self.player() {
-            try!(self.entity_melee(e, dir));
-            self.next_tick()
-        } else {
-            Err(())
-        }
+        let player = try!(self.player().ok_or(()));
+        try!(self.entity_melee(player, dir));
+        self.next_tick()
     }
 
     fn pass(&mut self) -> CommandResult { self.next_tick() }
