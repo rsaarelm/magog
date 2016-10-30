@@ -6,7 +6,10 @@ extern crate bincode;
 extern crate calx_alg;
 extern crate rand;
 
-use rand::{Rng, XorShiftRng, SeedableRng};
+use std::collections::HashMap;
+use rand::{Rng, SeedableRng, XorShiftRng};
+
+use calx_alg::WeightedChoice;
 
 #[test]
 fn test_serialize_rng() {
@@ -60,4 +63,30 @@ fn test_split_line() {
     assert_eq!(("a", "bc"), split_line("abc", &|_| 1.0, 0.01));
     assert_eq!(("dead", "beef"), split_line("deadbeef", &|_| 1.0, 4.0));
     assert_eq!(("the-", "cat"), split_line("the-cat", &|_| 1.0, 5.0));
+}
+
+#[test]
+fn test_weighted_choice() {
+    let mut histogram: HashMap<u32, f32> = HashMap::new();
+    let mut rng: XorShiftRng = SeedableRng::from_seed([1, 2, 3, 4]);
+    let items = vec![1u32, 2, 3, 4];
+    let n = 1000;
+
+    for _ in 0..n {
+        let choice = *items.iter().weighted_choice(&mut rng, |&&x| x as f32).unwrap();
+        *histogram.entry(choice).or_insert(0.0) += 1.0;
+    }
+
+    let measurement = vec![histogram.get(&1).unwrap() / n as f32,
+                           histogram.get(&2).unwrap() / n as f32,
+                           histogram.get(&3).unwrap() / n as f32,
+                           histogram.get(&4).unwrap() / n as f32];
+
+    // The weights match the values because 1+2+3+4 = 10.
+    let ideal = vec![0.1, 0.2, 0.3, 0.4];
+
+    let err = measurement.iter().zip(ideal).map(|(x, y)| (x - y) * (x - y)).sum::<f32>() /
+              measurement.len() as f32;
+    println!("Mean square error from expected: {}", err);
+    assert!(err < 0.0001);
 }

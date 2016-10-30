@@ -5,6 +5,7 @@ extern crate num;
 extern crate rand;
 extern crate time;
 
+use rand::Rng;
 use std::ops::{Add, Sub, Mul};
 use num::Float;
 
@@ -83,4 +84,30 @@ macro_rules! count_exprs {
     () => { 0 };
     ($e:expr) => { 1 };
     ($e:expr, $($es:expr),+) => { 1 + count_exprs!($($es),*) };
+}
+
+/// Single-pass weighted sample for iterations.
+pub trait WeightedChoice {
+    type Item;
+
+    /// Choose an item from the iteration with probability weighted by item weight.
+    fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+        where F: Fn(&Self::Item) -> f32;
+}
+
+impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
+    type Item = T;
+
+    fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+        where F: Fn(&Self::Item) -> f32
+    {
+        self.fold((0.0, None), |(weight_sum, prev_item), item| {
+                let item_weight = weight_fn(&item);
+                assert!(item_weight >= 0.0);
+                let p = item_weight / (weight_sum + item_weight);
+                let next_item = if rng.next_f32() < p { Some(item) } else { prev_item };
+                (weight_sum + item_weight, next_item)
+            })
+            .1
+    }
 }
