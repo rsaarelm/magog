@@ -42,7 +42,7 @@ impl WorldView {
         if self.fov.is_none() {
             // Chart area, center in origin, inflated by tile width in every direction to get the cells
             // partially on screen included.
-            let center = self.screen_area.origin + self.screen_area.size / 2.0;
+            let center = self.screen_area.origin + self.screen_area.size / 2.0 - Point2D::new(PIXEL_UNIT / 2.0, 0.0);
             let bounds = self.screen_area
                              .translate(&-(center + self.screen_area.origin))
                              .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
@@ -54,7 +54,7 @@ impl WorldView {
     pub fn draw(&mut self, world: &World, context: &mut backend::Context) {
         self.ensure_fov(world);
 
-        let center = self.screen_area.origin + self.screen_area.size / 2.0;
+        let center = self.screen_area.origin + self.screen_area.size / 2.0 - Point2D::new(PIXEL_UNIT / 2.0, 0.0);
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(context.ui.mouse_pos() - center);

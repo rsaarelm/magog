@@ -74,10 +74,10 @@ pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
     const H: i32 = 22;
     let (x, y) = (chart_pos.x, chart_pos.y);
 
-    x <= y + (W - 1) / 2 &&
-    x >= y - (W - 1) / 2 &&
-    x >= -H - y &&
-    x <= H - 1 - y
+    x <= y + (W + 1) / 2 // east
+        && x >= y - (W - 1) / 2 // west
+        && x >= -H - y // north
+        && x <= H - 1 - y // south
 }
 
 pub fn onscreen_locations() -> &'static HashSet<Point2D<i32>> {
