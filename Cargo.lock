@@ -3,11 +3,11 @@ name = "world"
 version = "0.1.0"
 dependencies = [
  "bincode 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "calx-alg 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-ecs 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-ecs 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -81,8 +81,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "calx-alg"
-version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#608385eda9c28ce9e8e4ea7885a40c896040cadb"
+version = "0.3.0-alpha"
+source = "git+https://github.com/rsaarelm/calx#f9d572b011a6fe6b0f7e762b9ab012d4274e01f1"
 dependencies = [
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -93,8 +93,8 @@ dependencies = [
 
 [[package]]
 name = "calx-color"
-version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#608385eda9c28ce9e8e4ea7885a40c896040cadb"
+version = "0.3.0-alpha"
+source = "git+https://github.com/rsaarelm/calx#f9d572b011a6fe6b0f7e762b9ab012d4274e01f1"
 dependencies = [
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -104,8 +104,8 @@ dependencies = [
 
 [[package]]
 name = "calx-ecs"
-version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#608385eda9c28ce9e8e4ea7885a40c896040cadb"
+version = "0.3.0-alpha"
+source = "git+https://github.com/rsaarelm/calx#f9d572b011a6fe6b0f7e762b9ab012d4274e01f1"
 dependencies = [
  "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_macros 0.8.9 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -113,8 +113,8 @@ dependencies = [
 
 [[package]]
 name = "calx-grid"
-version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#608385eda9c28ce9e8e4ea7885a40c896040cadb"
+version = "0.3.0-alpha"
+source = "git+https://github.com/rsaarelm/calx#f9d572b011a6fe6b0f7e762b9ab012d4274e01f1"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -125,8 +125,8 @@ dependencies = [
 
 [[package]]
 name = "calx-resource"
-version = "0.1.0"
-source = "git+https://github.com/rsaarelm/calx#608385eda9c28ce9e8e4ea7885a40c896040cadb"
+version = "0.3.0-alpha"
+source = "git+https://github.com/rsaarelm/calx#f9d572b011a6fe6b0f7e762b9ab012d4274e01f1"
 dependencies = [
  "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -153,7 +153,7 @@ dependencies = [
  "bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "core-graphics 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "objc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "objc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -165,8 +165,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "content"
 version = "0.1.0"
 dependencies = [
- "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "display 0.1.0",
  "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "world 0.1.0",
@@ -225,8 +225,8 @@ dependencies = [
 name = "display"
 version = "0.1.0"
 dependencies = [
- "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -369,7 +369,7 @@ dependencies = [
  "kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "objc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "objc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "shared_library 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "shell32-sys 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -479,9 +479,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "magog"
 version = "0.1.0"
 dependencies = [
- "calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)",
- "calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)",
+ "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "content 0.1.0",
  "display 0.1.0",
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "objc"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "malloc_buf 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -952,11 +952,11 @@ dependencies = [
 "checksum bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "32866f4d103c4e438b1db1158aa1b1a80ee078e5d77a59a2f906fd62a577389c"
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 "checksum byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
-"checksum calx-alg 0.1.0 (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-color 0.1.0 (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-ecs 0.1.0 (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-grid 0.1.0 (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-resource 0.1.0 (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx-ecs 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
 "checksum cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de1e760d7b6535af4241fca8bd8adf68e2e7edacc6b29f5d399050c5e48cf88c"
 "checksum cgl 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "8bdd78cca65a739cb5475dbf6b6bbb49373e327f4a6f2b499c0f98632df38c10"
 "checksum cocoa 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3afe4613f57a171039a98db1773f5840b5743cf85aaf03afb65ddfade4f4a9db"
@@ -1006,7 +1006,7 @@ dependencies = [
 "checksum num-rational 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "54ff603b8334a72fbb27fe66948aac0abaaa40231b3cecd189e76162f6f38aaf"
 "checksum num-traits 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)" = "a16a42856a256b39c6d3484f097f6713e14feacd9bfb02290917904fae46c81c"
 "checksum num_cpus 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8890e6084723d57d0df8d2720b0d60c6ee67d6c93e7169630e4371e88765dcad"
-"checksum objc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7c9311aa5acd7bee14476afa0f0557f564e9d0d61218a8b833d9b1f871fa5fba"
+"checksum objc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "877f30f37acef6749b1841cceab289707f211aecfc756553cd63976190e6cc2e"
 "checksum osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "88cfece6e95d2e717e0872a7f53a8684712ad13822a7979bc760b9c77ec0013b"
 "checksum phf 0.7.18 (registry+https://github.com/rust-lang/crates.io-index)" = "971dd94df0728890a6fd7cf01b61e3f1fc84acb308175d196a9ceb2aa0e04b90"
 "checksum phf_codegen 0.7.18 (registry+https://github.com/rust-lang/crates.io-index)" = "29fa7fa119b1dd493cc17d69052281ad38767c6e5f6f29263bbd57027aee7f71"
