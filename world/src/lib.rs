@@ -21,7 +21,7 @@ extern crate calx_ecs;
 extern crate calx_resource;
 
 use std::collections::HashSet;
-use euclid::{Rect, Point2D, Size2D};
+use euclid::{Point2D, Rect, Size2D};
 
 mod ability;
 

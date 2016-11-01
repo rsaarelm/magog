@@ -56,4 +56,3 @@ impl<'a> FovValue for SightFov<'a> {
         self.w.terrain(self.origin + offset).form == terrain::Form::Wall
     }
 }
-
