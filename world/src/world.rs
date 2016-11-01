@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use std::io::{Read, Write};
 use std::collections::HashMap;
 use bincode::{self, serde};
@@ -113,7 +113,7 @@ impl Query for World {
         self.ecs.brain.get(e).map(|b| b.alignment)
     }
 
-    fn terrain(&self, loc: Location) -> Rc<terrain::Tile> {
+    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
         use euclid::Point2D;
 
         let mut idx = self.terrain.get(loc);

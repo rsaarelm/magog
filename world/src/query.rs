@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use std::rc::Rc;
+use std::sync::Arc;
 use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
 use calx_resource::Resource;
@@ -40,7 +40,7 @@ pub trait Query {
     fn alignment(&self, e: Entity) -> Option<Alignment>;
 
     /// Return terrain at location.
-    fn terrain(&self, loc: Location) -> Rc<terrain::Tile>;
+    fn terrain(&self, loc: Location) -> Arc<terrain::Tile>;
 
     /// If location contains a portal, return the destination of the portal.
     fn portal(&self, loc: Location) -> Option<Location>;

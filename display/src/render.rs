@@ -1,6 +1,6 @@
 //! Game world display utilities.
 
-use std::rc::Rc;
+use std::sync::Arc;
 use calx_resource::Resource;
 use calx_grid::{Dir12, Dir6};
 use world::{Brush, Location, World};
@@ -223,16 +223,16 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 
 #[derive(Clone)]
 pub struct Kernel {
-    pub n: Rc<terrain::Tile>,
-    pub ne: Rc<terrain::Tile>,
-    pub nw: Rc<terrain::Tile>,
-    pub center: Rc<terrain::Tile>,
-    pub se: Rc<terrain::Tile>,
-    pub sw: Rc<terrain::Tile>,
-    pub s: Rc<terrain::Tile>,
+    pub n: Arc<terrain::Tile>,
+    pub ne: Arc<terrain::Tile>,
+    pub nw: Arc<terrain::Tile>,
+    pub center: Arc<terrain::Tile>,
+    pub se: Arc<terrain::Tile>,
+    pub sw: Arc<terrain::Tile>,
+    pub s: Arc<terrain::Tile>,
 }
 
-fn neighbor(w: &World, loc: Location, dir: Dir6) -> Rc<terrain::Tile> {
+fn neighbor(w: &World, loc: Location, dir: Dir6) -> Arc<terrain::Tile> {
     let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
     w.terrain(loc)
 }
