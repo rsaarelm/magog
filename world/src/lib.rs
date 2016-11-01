@@ -34,6 +34,7 @@ pub use command::Command;
 mod components;
 mod field;
 mod flags;
+mod form;
 mod fov;
 mod item;
 

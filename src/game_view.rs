@@ -1,5 +1,5 @@
 use euclid::{Point2D, Rect};
-use world::{Location, World};
+use world::{self, Location, World};
 use display;
 
 pub struct View {

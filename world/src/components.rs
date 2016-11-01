@@ -15,14 +15,15 @@ pub struct Desc {
 }
 
 impl Desc {
-    pub fn new<C: Into<Rgba>>(name: &str, brush: &str) -> Desc {
+    pub fn new(name: &str, brush: &str) -> Desc {
+        let brush = Resource::new(brush.to_string()).expect(&format!("Brush '{}' not found", brush));
         // XXX: Not idiomatic to set this to be called with a non-owned
         // &str instead of a String, I just want to get away from typing
         // .to_string() everywhere with the calls that mostly use string
         // literals.
         Desc {
             name: name.to_string(),
-            brush: Resource::new(brush.to_string()).unwrap(),
+            brush: brush,
         }
     }
 }

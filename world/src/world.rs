@@ -203,6 +203,10 @@ impl Mutate for World {
     }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
+
+    fn spawn(&mut self, loadout: &Loadout) -> Entity {
+        loadout.make(&mut self.ecs)
+    }
 }
 
 impl Command for World {

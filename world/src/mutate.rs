@@ -3,9 +3,11 @@ use calx_grid::Dir6;
 use location::Location;
 use query::Query;
 use command::CommandResult;
+use terraform::Terraform;
+use world::Loadout;
 
 /// World-mutating methods that are not exposed outside the crate.
-pub trait Mutate: Query {
+pub trait Mutate: Query + Terraform {
     /// Advance world state after player input has been received.
     ///
     /// Returns CommandResult Ok(()) so can used to end result-returning methods.
@@ -48,4 +50,15 @@ pub trait Mutate: Query {
     fn do_fov(&mut self, e: Entity) {
         unimplemented!();
     }
+
+    fn init_level(&mut self, depth: u32) {
+        if let None = self.player() {
+            // TODO Player entity created here.
+            unimplemented!();
+        }
+
+        // TODO:
+    }
+
+    fn spawn(&mut self, loadout: &Loadout) -> Entity;
 }
