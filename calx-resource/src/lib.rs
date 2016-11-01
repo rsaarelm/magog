@@ -4,7 +4,7 @@
 
 extern crate serde;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use std::ops::Deref;
 use std::hash;
 use std::collections::HashMap;
@@ -13,20 +13,20 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// A type that implements a singleton resource store.
 pub trait ResourceStore<K = String> {
-    fn get_resource(key: &K) -> Option<Rc<Self>> where Self: Sized;
+    fn get_resource(key: &K) -> Option<Arc<Self>> where Self: Sized;
 
     fn insert_resource(key: K, resource: Self);
 }
 
 /// Smart pointer for an immutable cached resource.
 ///
-/// The semantics are similar to Rc pointers.
+/// The semantics are similar to Arc pointers.
 ///
 /// Resource values will serialize as their key values, so they can be attached to structures that
 /// require compact serialization.
 #[derive(Clone)]
 pub struct Resource<T, K = String> {
-    handle: Rc<T>,
+    handle: Arc<T>,
     key: K,
 }
 
@@ -118,7 +118,7 @@ pub trait Loadable<K = String> {
 ///
 /// Resources and paths are assumed to be immutable.
 pub struct ResourceCache<T, K = String> {
-    cache: HashMap<K, Rc<T>>,
+    cache: HashMap<K, Arc<T>>,
 }
 
 impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
@@ -126,13 +126,13 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
         ResourceCache { cache: HashMap::new() }
     }
 
-    pub fn get(&mut self, key: &K) -> Option<Rc<T>> {
+    pub fn get(&mut self, key: &K) -> Option<Arc<T>> {
         if let Some(v) = self.cache.get(key) {
             return Some(v.clone());
         }
 
         if let Some(v) = T::load(key) {
-            let v = Rc::new(v);
+            let v = Arc::new(v);
             self.cache.insert(key.clone(), v.clone());
             Some(v)
         } else {
@@ -141,7 +141,7 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
     }
 
     pub fn insert(&mut self, key: K, value: T) {
-        self.cache.insert(key, Rc::new(value));
+        self.cache.insert(key, Arc::new(value));
     }
 }
 
@@ -180,7 +180,7 @@ macro_rules! impl_store {
                   ::std::cell::RefCell::new($crate::ResourceCache::new()));
 
     impl $crate::ResourceStore<$key> for $value {
-        fn get_resource(key: &$key) -> Option<::std::rc::Rc<Self>> {
+        fn get_resource(key: &$key) -> Option<::std::sync::Arc<Self>> {
             $name.with(|t| t.borrow_mut().get(key))
         }
 
