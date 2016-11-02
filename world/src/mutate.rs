@@ -16,6 +16,8 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn set_entity_location(&mut self, e: Entity, loc: Location);
 
+    fn set_player(&mut self, player: Entity);
+
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
         unimplemented!();
@@ -58,6 +60,7 @@ pub trait Mutate: Query + Terraform + Sized {
             // TODO: A spawn named method instead.
             let player = form::FORMS[0].build(self);
             self.place_entity(player, Location::new(0, 0, 0));
+            self.set_player(player);
         }
 
         // TODO: Map init.
