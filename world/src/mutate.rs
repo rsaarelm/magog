@@ -5,9 +5,10 @@ use query::Query;
 use command::CommandResult;
 use terraform::Terraform;
 use world::Loadout;
+use form;
 
 /// World-mutating methods that are not exposed outside the crate.
-pub trait Mutate: Query + Terraform {
+pub trait Mutate: Query + Terraform + Sized {
     /// Advance world state after player input has been received.
     ///
     /// Returns CommandResult Ok(()) so can used to end result-returning methods.
@@ -53,11 +54,13 @@ pub trait Mutate: Query + Terraform {
 
     fn init_level(&mut self, depth: u32) {
         if let None = self.player() {
-            // TODO Player entity created here.
-            unimplemented!();
+            // XXX: Assuming player is the first element
+            // TODO: A spawn named method instead.
+            let player = form::FORMS[0].build(self);
+            self.place_entity(player, Location::new(0, 0, 0));
         }
 
-        // TODO:
+        // TODO: Map init.
     }
 
     fn spawn(&mut self, loadout: &Loadout) -> Entity;

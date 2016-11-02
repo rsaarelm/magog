@@ -68,14 +68,13 @@ impl Form {
     }
 
     /// Build a new entity with this form.
-    pub fn build(&self, w: &mut World) -> Entity {
+    pub fn build<W: Mutate + Sized>(&self, w: &mut W) -> Entity {
         w.spawn(&self.loadout)
     }
 }
 
 lazy_static! {
-    static ref FORMS: Vec<Form> =
-        // AZURE, OLIVE, GREEN (brush colors)
+    pub static ref FORMS: Vec<Form> =
         vec![
         Form::mob("player",     "player",     10, &[Hands]).rarity(0.0).player(),
         Form::mob("dreg",       "dreg",       1,  &[Hands]),

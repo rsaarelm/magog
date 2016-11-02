@@ -51,14 +51,18 @@ pub struct World {
 
 impl<'a> World {
     pub fn new(seed: u32) -> World {
-        World {
+        let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
             terrain: Field::new(0),
             portals: HashMap::new(),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
-        }
+        };
+
+        ret.init_level(1);
+
+        ret
     }
 
     pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
