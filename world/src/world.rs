@@ -196,6 +196,8 @@ impl Query for World {
     }
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
+
+    fn ecs<'a>(&'a self) -> &'a Ecs { &self.ecs }
 }
 
 impl Mutate for World {

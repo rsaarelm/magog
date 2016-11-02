@@ -68,7 +68,7 @@ impl Form {
     }
 
     /// Build a new entity with this form.
-    pub fn build<W: Mutate + Sized>(&self, w: &mut W) -> Entity {
+    pub fn build<W: Mutate>(&self, w: &mut W) -> Entity {
         w.spawn(&self.loadout)
     }
 }

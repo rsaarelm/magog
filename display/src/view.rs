@@ -75,6 +75,19 @@ impl WorldView {
                     frame_idx: frame_idx,
                 })
             });
+
+            for &i in &world.entities_at(loc) {
+                if let Some(desc) = world.ecs().desc.get(i) {
+                    let layer = if world.is_mob(i) { Layer::Object } else { Layer::Items };
+                    let frame_idx = if world.is_bobbing(i) { 1 } else { 0 };
+                    sprites.push(Sprite {
+                        layer: layer,
+                        offset: [screen_pos.x as i32, screen_pos.y as i32],
+                        brush: desc.brush.clone(),
+                        frame_idx: frame_idx,
+                    });
+                }
+            }
         }
 
         // Draw cursor.

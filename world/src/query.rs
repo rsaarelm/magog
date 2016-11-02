@@ -12,6 +12,7 @@ use brush::Brush;
 use terrain;
 use FovStatus;
 use fov::SightFov;
+use world::Ecs;
 
 /// Immutable querying of game world state.
 pub trait Query {
@@ -67,6 +68,9 @@ pub trait Query {
 
     /// Return an iterator to entities at the given location.
     fn entities_at(&self, loc: Location) -> Vec<Entity>;
+
+    /// Return reference to the world entity component system.
+    fn ecs<'a>(&'a self) -> &'a Ecs;
 
     /// Return whether location blocks line of sight.
     fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
