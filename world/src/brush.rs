@@ -226,6 +226,18 @@ impl BrushBuilder {
         self
     }
 
+    /// Add bobbing idle animation using the last frame.
+    pub fn bob(mut self) -> Self {
+        assert!(!self.current_brush.is_empty());
+        let mut next_frame = self.current_brush[self.current_brush.len() - 1].clone();
+        self = self.frame();
+        for i in next_frame.iter_mut() {
+            i.offset = i.offset + Point2D::new(0.0, -1.0);
+        }
+        self.current_brush.push(next_frame);
+        self
+    }
+
     /// Helper for regular tiles.
     pub fn tile(self, x: u32, y: u32) -> Self { self.splat(x, y, 32, 32).offset(16, 16) }
 

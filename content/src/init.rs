@@ -89,6 +89,21 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .color(DARKGOLDENROD)
         .blob(0, 0, 0, 32, 0, 64)
         .brush("rock")
+        ////
+        .file("content/assets/mobs.png")
+        .color(AZURE)
+        .tile(0, 0)
+        .bob()
+        .brush("player")
+        .color(GREEN)
+        .tile(32, 0)
+        .bob()
+        .brush("snake")
+        .color(OLIVE)
+        .tile(64, 0)
+        .bob()
+        .brush("dreg")
+        ////
         .finish(|img| backend.make_texture(&display, img));
 }
 
