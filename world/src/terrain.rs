@@ -2,7 +2,7 @@ use calx_resource::{Loadable, Resource};
 use brush::Brush;
 
 /// Movement effect of a terrain tile.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Kind {
     /// Regular flat solid ground, can walk across easily.
     Ground,
@@ -25,7 +25,7 @@ pub enum Kind {
 }
 
 /// Visual form of a terrain tile.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Form {
     /// Nothingness, lets sight pass through portals
     Void,
@@ -42,7 +42,7 @@ pub enum Form {
 }
 
 /// Data for the terrain in a single map cell.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Tile {
     pub brush: Resource<Brush>,
     pub kind: Kind,
