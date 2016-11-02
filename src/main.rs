@@ -1,6 +1,8 @@
 extern crate euclid;
 extern crate glium;
+extern crate scancode;
 extern crate vitral;
+extern crate calx_grid;
 extern crate calx_resource;
 extern crate world;
 extern crate display;

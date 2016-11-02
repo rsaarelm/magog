@@ -1,5 +1,7 @@
 use euclid::{Point2D, Rect};
-use world::{self, Location, World};
+use calx_grid::Dir6;
+use scancode::Scancode;
+use world::{self, Location, World, Command};
 use display;
 
 pub struct View {
@@ -28,6 +30,19 @@ impl View {
                                  Point2D::new(0.0, 16.0),
                                  color,
                                  &format!("Mouse pos {:?}", loc));
+        }
+
+        if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
+            use scancode::Scancode::*;
+            match scancode {
+                Q => self.world.step(Dir6::Northwest),
+                W => self.world.step(Dir6::North),
+                E => self.world.step(Dir6::Northeast),
+                A => self.world.step(Dir6::Southwest),
+                S => self.world.step(Dir6::South),
+                D => self.world.step(Dir6::Southeast),
+                _ => Ok(())
+            };
         }
     }
 }
