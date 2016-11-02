@@ -83,10 +83,6 @@ pub trait Query {
 
     /// Return whether the entity can occupy a location.
     fn can_enter(&self, e: Entity, loc: Location) -> bool {
-        if self.is_mob(e) && self.has_mobs(loc) {
-            // Can only have one mob per cell.
-            return false;
-        }
         if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
