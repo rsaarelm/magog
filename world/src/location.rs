@@ -51,6 +51,11 @@ impl Add<Point2D<i32>> for Location {
     }
 }
 
+impl Add<Dir6> for Location {
+    type Output = Location;
+    fn add(self, other: Dir6) -> Location { self + other.to_v2() }
+}
+
 impl Add<Portal> for Location {
     type Output = Location;
     fn add(self, other: Portal) -> Location {

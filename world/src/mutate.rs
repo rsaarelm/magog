@@ -38,7 +38,7 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> CommandResult {
-        let loc = try!(self.location(e).ok_or(()));
+        let loc = try!(self.location(e).ok_or(())) + dir;
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
         }
