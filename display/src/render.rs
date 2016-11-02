@@ -241,11 +241,11 @@ impl Kernel {
     pub fn new(w: &World, loc: Location) -> Kernel {
         Kernel {
             n: neighbor(w, loc, Dir6::North),
-            ne: neighbor(w, loc, Dir6::NorthEast),
-            nw: neighbor(w, loc, Dir6::NorthWest),
+            ne: neighbor(w, loc, Dir6::Northeast),
+            nw: neighbor(w, loc, Dir6::Northwest),
             center: w.terrain(loc),
-            se: neighbor(w, loc, Dir6::SouthEast),
-            sw: neighbor(w, loc, Dir6::SouthWest),
+            se: neighbor(w, loc, Dir6::Southeast),
+            sw: neighbor(w, loc, Dir6::Southwest),
             s: neighbor(w, loc, Dir6::South),
         }
     }
