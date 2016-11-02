@@ -26,11 +26,11 @@ impl HexGeom for Point2D<i32> {
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Dir6 {
     North = 0,
-    NorthEast,
-    SouthEast,
+    Northeast,
+    Southeast,
     South,
-    SouthWest,
-    NorthWest,
+    Southwest,
+    Northwest,
 }
 
 impl Dir6 {
@@ -105,27 +105,27 @@ impl Rand for Dir6 {
 }
 
 static DIRS: [Dir6; 6] = [Dir6::North,
-                          Dir6::NorthEast,
-                          Dir6::SouthEast,
+                          Dir6::Northeast,
+                          Dir6::Southeast,
                           Dir6::South,
-                          Dir6::SouthWest,
-                          Dir6::NorthWest];
+                          Dir6::Southwest,
+                          Dir6::Northwest];
 
 /// Hex grid directions with transitional directions.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Dir12 {
     North = 0,
-    NorthNorthEast,
-    NorthEast,
+    NorthNortheast,
+    Northeast,
     East,
-    SouthEast,
-    SouthSouthEast,
+    Southeast,
+    SouthSoutheast,
     South,
-    SouthSouthWest,
-    SouthWest,
+    SouthSouthwest,
+    Southwest,
     West,
-    NorthWest,
-    NorthNorthWest,
+    Northwest,
+    NorthNorthwest,
 }
 
 impl Dir12 {
@@ -208,12 +208,12 @@ mod test {
     #[test]
     fn test_dir6() {
         assert_eq!(North, Dir6::from_int(0));
-        assert_eq!(NorthWest, Dir6::from_int(-1));
-        assert_eq!(NorthWest, Dir6::from_int(5));
-        assert_eq!(NorthEast, Dir6::from_int(1));
+        assert_eq!(Northwest, Dir6::from_int(-1));
+        assert_eq!(Northwest, Dir6::from_int(5));
+        assert_eq!(Northeast, Dir6::from_int(1));
 
-        assert_eq!(NorthEast, Dir6::from_v2(Point2D::new(20i32, -21i32)));
-        assert_eq!(SouthEast, Dir6::from_v2(Point2D::new(20, -10)));
+        assert_eq!(Northeast, Dir6::from_v2(Point2D::new(20i32, -21i32)));
+        assert_eq!(Southeast, Dir6::from_v2(Point2D::new(20, -10)));
         assert_eq!(North, Dir6::from_v2(Point2D::new(-10, -10)));
         assert_eq!(South, Dir6::from_v2(Point2D::new(1, 1)));
 
@@ -258,11 +258,11 @@ mod test {
                    Dir12::away_from(&[true, false, false, false, false, false]));
         assert_eq!(Some(Dir12::East),
                    Dir12::away_from(&[true, false, false, true, true, true]));
-        assert_eq!(Some(Dir12::SouthSouthWest),
+        assert_eq!(Some(Dir12::SouthSouthwest),
                    Dir12::away_from(&[true, true, false, false, false, false]));
-        assert_eq!(Some(Dir12::SouthWest),
+        assert_eq!(Some(Dir12::Southwest),
                    Dir12::away_from(&[true, true, true, false, false, false]));
-        assert_eq!(Some(Dir12::SouthSouthEast),
+        assert_eq!(Some(Dir12::SouthSoutheast),
                    Dir12::away_from(&[true, true, false, false, true, true]));
     }
 }
