@@ -94,19 +94,7 @@ impl TerrainQuery for World {
         let mut idx = self.terrain.get(loc);
 
         if idx == 0 {
-            use terrain::Id;
-            // Empty terrain, inject custom stuff.
-            match loc.noise() {
-                x if x < 0.5 => idx = Id::Ground as u8,
-                x if x < 0.75 => idx = Id::Grass as u8,
-                x if x < 0.95 => idx = Id::Water as u8,
-                _ => idx = Id::Tree as u8,
-            }
-        }
-
-        if !self.is_valid_location(loc) {
-            use terrain::Id;
-            idx = Id::Rock as u8;
+            idx = terrain::Id::Rock as u8;
         }
 
         terrain::Tile::get_resource(&idx).unwrap()

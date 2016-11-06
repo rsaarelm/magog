@@ -1,3 +1,4 @@
+extern crate rand;
 extern crate euclid;
 extern crate glium;
 extern crate scancode;
@@ -10,10 +11,12 @@ extern crate content;
 
 pub mod game_view;
 
+use rand::{XorShiftRng, SeedableRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
 use world::World;
 use game_view::View;
+use content::mapgen;
 
 pub fn main() {
     // Construct display and Vitral context.
@@ -35,7 +38,12 @@ pub fn main() {
         backend: backend,
     };
 
-    let mut view = View::new(World::new(1));
+    let seed = 1;
+
+    let mut world = World::new(seed);
+    mapgen::caves(&mut world, &mut XorShiftRng::from_seed([seed, 1, 1, 1]));
+
+    let mut view = View::new(world);
 
     loop {
         context.ui.begin_frame();

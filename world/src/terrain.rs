@@ -79,6 +79,8 @@ impl Tile {
         }
     }
 
+    pub fn is_open(&self) -> bool { self.kind == Kind::Ground }
+
     pub fn is_door(&self) -> bool { self.kind == Kind::Door }
 
     pub fn is_luminous(&self) -> bool { self.kind == Kind::Magma }

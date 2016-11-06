@@ -13,6 +13,7 @@ members = ["world", "content", "display"]
 lto = true
 
 [dependencies]
+rand = "0.3"
 euclid = "0.10"
 time = "0.1"
 glium = "0.15"

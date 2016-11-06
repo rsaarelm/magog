@@ -9,11 +9,15 @@ name = "content"
 
 [dependencies]
 glium = "0.15"
+rand = "0.3"
 
 [dependencies.calx-color]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-resource]
+git = "https://github.com/rsaarelm/calx"
+
+[dependencies.calx-grid]
 git = "https://github.com/rsaarelm/calx"
 
 [dependencies.world]
