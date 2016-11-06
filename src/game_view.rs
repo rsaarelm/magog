@@ -1,7 +1,7 @@
 use euclid::{Point2D, Rect};
 use calx_grid::Dir6;
 use scancode::Scancode;
-use world::{self, Location, World, Command};
+use world::{self, Location, World, TerrainQuery, Command};
 use display;
 
 pub struct View {
@@ -21,7 +21,7 @@ impl View {
         let font = context.ui.default_font();
         if let Some(loc) = view.cursor_loc {
             let color =
-            if world::on_screen(Point2D::new(loc.x as i32, loc.y as i32)) {
+            if self.world.is_valid_location(loc) {
                 [1.0, 1.0, 1.0, 1.0]
             } else {
                 [1.0, 0.5, 0.5, 1.0]

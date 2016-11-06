@@ -71,7 +71,7 @@ pub enum FovStatus {
 ///
 /// Since various bits of game logic are tied to the screen boundaries, the screen size is fixed as
 /// a constant.
-pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
+fn on_screen(chart_pos: Point2D<i32>) -> bool {
     const W: i32 = 39;
     const H: i32 = 22;
     let (x, y) = (chart_pos.x, chart_pos.y);

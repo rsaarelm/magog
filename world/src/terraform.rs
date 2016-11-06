@@ -4,6 +4,9 @@ use terrain;
 
 /// Immutable terrain field query.
 pub trait TerrainQuery {
+    /// Return whether location is contained in the current play area.
+    fn is_valid_location(&self, loc: Location) -> bool;
+
     /// Return terrain at location.
     fn terrain(&self, loc: Location) -> Arc<terrain::Tile>;
 

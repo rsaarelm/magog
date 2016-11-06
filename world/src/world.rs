@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::io::{Read, Write};
 use std::collections::HashMap;
 use bincode::{self, serde};
+use euclid::Point2D;
 use calx_resource::{Resource, ResourceStore};
 use calx_ecs::Entity;
 use calx_grid::Dir6;
@@ -85,9 +86,11 @@ impl<'a> World {
 }
 
 impl TerrainQuery for World {
-    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
-        use euclid::Point2D;
+    fn is_valid_location(&self, loc: Location) -> bool {
+        ::on_screen(Point2D::new(loc.x as i32, loc.y as i32))
+    }
 
+    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
         let mut idx = self.terrain.get(loc);
 
         if idx == 0 {
@@ -101,7 +104,7 @@ impl TerrainQuery for World {
             }
         }
 
-        if !::on_screen(Point2D::new(loc.x as i32, loc.y as i32)) {
+        if !self.is_valid_location(loc) {
             use terrain::Id;
             idx = Id::Rock as u8;
         }
