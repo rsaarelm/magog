@@ -3,7 +3,7 @@ use euclid::Point2D;
 use hex::Dir6;
 
 /// User data for field of view cells.
-pub trait FovValue: Eq + Clone {
+pub trait FovValue: PartialEq + Clone {
     /// Construct a new FovValue for a position based on the previous one along the line of sight.
     fn advance(&self, offset: Point2D<i32>) -> Option<Self>;
 
