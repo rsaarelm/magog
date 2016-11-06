@@ -1,4 +1,21 @@
+use std::sync::Arc;
 use location::{Location, Portal};
+use terrain;
+
+/// Immutable terrain field query.
+pub trait TerrainQuery {
+    /// Return terrain at location.
+    fn terrain(&self, loc: Location) -> Arc<terrain::Tile>;
+
+    /// If location contains a portal, return the destination of the portal.
+    fn portal(&self, loc: Location) -> Option<Location>;
+
+    /// Return a portal if it can be seen through.
+    fn visible_portal(&self, loc: Location) -> Option<Location> {
+        // Only void-form is transparent to portals.
+        if self.terrain(loc).form == terrain::Form::Void { self.portal(loc) } else { None }
+    }
+}
 
 /// Methods to modify world terrain.
 pub trait Terraform {

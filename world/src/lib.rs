@@ -52,6 +52,7 @@ mod stats;
 
 mod terraform;
 pub use terraform::Terraform;
+pub use terraform::TerrainQuery;
 
 pub mod terrain;
 

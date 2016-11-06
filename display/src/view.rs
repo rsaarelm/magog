@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{FovValue, HexFov};
 use calx_resource::Resource;
-use world::{Location, Query, World};
+use world::{Location, Query, TerrainQuery, World};
 use sprite::Sprite;
 use render::{self, Layer};
 use backend;

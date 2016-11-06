@@ -17,7 +17,7 @@ use FovStatus;
 use query::Query;
 use command::{Command, CommandResult};
 use mutate::Mutate;
-use terraform::Terraform;
+use terraform::{Terraform, TerrainQuery};
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -84,39 +84,7 @@ impl<'a> World {
     }
 }
 
-impl Query for World {
-    fn location(&self, e: Entity) -> Option<Location> {
-        match self.spatial.get(e) {
-            Some(Place::At(loc)) => Some(loc),
-            Some(Place::In(container, _)) => self.location(container),
-            _ => None,
-        }
-    }
-
-    fn player(&self) -> Option<Entity> {
-        if let Some(p) = self.flags.player {
-            if self.is_alive(p) {
-                return Some(p);
-            }
-        }
-
-        None
-    }
-
-    fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
-    }
-
-    fn tick(&self) -> u64 { self.flags.tick }
-
-    fn rng_seed(&self) -> u32 { self.flags.seed }
-
-    fn is_mob(&self, e: Entity) -> bool { self.ecs.brain.contains(e) }
-
-    fn alignment(&self, e: Entity) -> Option<Alignment> {
-        self.ecs.brain.get(e).map(|b| b.alignment)
-    }
-
+impl TerrainQuery for World {
     fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
         use euclid::Point2D;
 
@@ -162,6 +130,40 @@ impl Query for World {
     }
 
     fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }
+}
+
+impl Query for World {
+    fn location(&self, e: Entity) -> Option<Location> {
+        match self.spatial.get(e) {
+            Some(Place::At(loc)) => Some(loc),
+            Some(Place::In(container, _)) => self.location(container),
+            _ => None,
+        }
+    }
+
+    fn player(&self) -> Option<Entity> {
+        if let Some(p) = self.flags.player {
+            if self.is_alive(p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
+
+    fn brain_state(&self, e: Entity) -> Option<BrainState> {
+        self.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
+    }
+
+    fn tick(&self) -> u64 { self.flags.tick }
+
+    fn rng_seed(&self) -> u32 { self.flags.seed }
+
+    fn is_mob(&self, e: Entity) -> bool { self.ecs.brain.contains(e) }
+
+    fn alignment(&self, e: Entity) -> Option<Alignment> {
+        self.ecs.brain.get(e).map(|b| b.alignment)
+    }
 
     fn hp(&self, e: Entity) -> i32 {
         self.max_hp(e) - if self.ecs.health.contains(e) { self.ecs.health[e].wounds } else { 0 }

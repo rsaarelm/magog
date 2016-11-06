@@ -12,10 +12,11 @@ use brush::Brush;
 use terrain;
 use FovStatus;
 use fov::SightFov;
+use terraform::TerrainQuery;
 use world::Ecs;
 
 /// Immutable querying of game world state.
-pub trait Query {
+pub trait Query: TerrainQuery {
     /// Return the location of an entity.
     ///
     /// Returns the location of the containing entity for entities inside
@@ -39,12 +40,6 @@ pub trait Query {
 
     /// Return the value for how a mob will react to other mobs.
     fn alignment(&self, e: Entity) -> Option<Alignment>;
-
-    /// Return terrain at location.
-    fn terrain(&self, loc: Location) -> Arc<terrain::Tile>;
-
-    /// If location contains a portal, return the destination of the portal.
-    fn portal(&self, loc: Location) -> Option<Location>;
 
     /// Return whether the entity can move in a direction.
     fn can_step(&self, e: Entity, dir: Dir6) -> bool {
@@ -74,12 +69,6 @@ pub trait Query {
 
     /// Return whether location blocks line of sight.
     fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
-
-    /// Return a portal if it can be seen through.
-    fn visible_portal(&self, loc: Location) -> Option<Location> {
-        // Only void-form is transparent to portals.
-        if self.terrain(loc).form == terrain::Form::Void { self.portal(loc) } else { None }
-    }
 
     /// Return whether the entity can occupy a location.
     fn can_enter(&self, e: Entity, loc: Location) -> bool {
