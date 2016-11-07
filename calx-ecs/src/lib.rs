@@ -2,10 +2,11 @@
 // Entity component system
 //
 
-#![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
+#![feature(proc_macro)]
 
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};

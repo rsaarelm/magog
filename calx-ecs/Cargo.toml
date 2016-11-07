@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 serde = "0.8"
-serde_macros = "0.8"
+serde_derive = "0.8"
 
 [dev-dependencies]
 bincode = "0.6"

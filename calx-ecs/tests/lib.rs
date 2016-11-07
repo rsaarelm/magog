@@ -1,7 +1,8 @@
-#![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
+#![feature(proc_macro)]
 
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate bincode;
 #[macro_use]
 extern crate calx_ecs;

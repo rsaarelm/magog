@@ -1,9 +1,11 @@
-#![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
-extern crate serde;
+#![feature(proc_macro)]
+
 extern crate num;
 extern crate rand;
 extern crate time;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 use rand::Rng;
 use std::ops::{Add, Mul, Sub};

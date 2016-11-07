@@ -1,9 +1,10 @@
-#![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
+#![feature(proc_macro)]
 
 extern crate num;
 extern crate rand;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate euclid;
 
 pub use search::{Dijkstra, GridNode, astar_path_with};

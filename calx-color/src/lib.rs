@@ -1,9 +1,10 @@
-#![feature(custom_derive, plugin)]
-#![plugin(serde_macros)]
+#![feature(proc_macro)]
 
 extern crate num;
 extern crate image;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 use std::str::FromStr;
 use std::ascii::AsciiExt;
