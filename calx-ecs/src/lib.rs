@@ -174,7 +174,7 @@ macro_rules! Ecs {
 
         pub use self::_ecs_inner::ComponentNum;
 
-#[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize)]
         pub struct _ComponentStore {
             $(pub $compname: $crate::ComponentData<$comptype>),+
         }
@@ -195,7 +195,7 @@ macro_rules! Ecs {
             }
         }
 
-#[allow(dead_code)]
+        #[allow(dead_code)]
         pub fn matches_mask(ecs: &$crate::Ecs<_ComponentStore>, e: $crate::Entity, mask: u64) -> bool {
             $(if mask & (1 << ComponentNum::$compname as u8) != 0 && !ecs.$compname.contains(e) {
                 return false;
@@ -242,7 +242,7 @@ macro_rules! Ecs {
             }
         }
 
-#[allow(dead_code)]
+        #[allow(dead_code)]
         impl Loadout {
             /// Create a new blank loadout.
             pub fn new() -> Loadout { Default::default() }
