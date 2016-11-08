@@ -5,14 +5,13 @@ use calx_grid::{Dir6};
 use world::{Location, TerrainQuery, Terraform};
 use world::terrain::Id;
 
-pub fn caves<T, R>(world: &mut T, rng: &mut R)
+pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
     where T: TerrainQuery + Terraform,
           R: Rng {
-    // Indicates total tiles that will be dug.
-    let mut dig_counter = 300;
+    if cells_to_dig == 0 { return; }
 
     let mut edge = BTreeSet::new();
-    dig(world, &mut edge, Location::new(0, 0, 0));
+    dig(world, &mut edge, start_at);
 
     // Arbitrary long iteration, should break after digging a sufficient number of cells before
     // this.
@@ -29,8 +28,8 @@ pub fn caves<T, R>(world: &mut T, rng: &mut R)
         }
 
         dig(world, &mut edge, dig_loc);
-        dig_counter -= 1;
-        if dig_counter == 0 {
+        cells_to_dig -= 1;
+        if cells_to_dig == 0 {
             break;
         }
     }

@@ -14,7 +14,7 @@ pub mod game_view;
 use rand::{XorShiftRng, SeedableRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::World;
+use world::{World, Location};
 use game_view::View;
 use content::mapgen;
 
@@ -41,7 +41,7 @@ pub fn main() {
     let seed = 1;
 
     let mut world = World::new(seed);
-    mapgen::caves(&mut world, &mut XorShiftRng::from_seed([seed, 1, 1, 1]));
+    mapgen::caves(&mut world, &mut XorShiftRng::from_seed([seed, 1, 1, 1]), Location::new(0, 0, 0), 300);
 
     let mut view = View::new(world);
 
