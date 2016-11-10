@@ -17,7 +17,6 @@ rand = "0.3"
 euclid = "0.10"
 time = "0.1"
 glium = "0.15"
-serde = "0.8"
 scancode = "0.1"
 
 # TODO: Make Vitral into a proper crate eventually.
