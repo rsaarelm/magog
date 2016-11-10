@@ -4,7 +4,7 @@ use std::sync::Arc;
 use calx_resource::Resource;
 use calx_grid::{Dir12, Dir6};
 use world::{Brush, Location, World};
-use world::{Query, terrain, TerrainQuery};
+use world::{terrain, TerrainQuery};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
