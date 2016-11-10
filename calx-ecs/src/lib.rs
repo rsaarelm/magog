@@ -174,9 +174,25 @@ macro_rules! Ecs {
 
         pub use self::_ecs_inner::ComponentNum;
 
-        #[derive(Serialize, Deserialize)]
         pub struct _ComponentStore {
             $(pub $compname: $crate::ComponentData<$comptype>),+
+        }
+
+        impl ::serde::Serialize for _ComponentStore {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+                where S: ::serde::Serializer {
+                $(try!(self.$compname.serialize(serializer));)+
+                Ok(())
+            }
+        }
+
+        impl ::serde::Deserialize for _ComponentStore {
+            fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
+                where D: ::serde::Deserializer {
+                Ok(_ComponentStore {
+                    $($compname: try!($crate::ComponentData::deserialize(deserializer))),+
+                })
+            }
         }
 
         impl ::std::default::Default for _ComponentStore {
