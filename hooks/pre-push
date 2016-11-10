@@ -1,7 +1,6 @@
 # Main program unit tests
-cargo test -p calx
-cargo test -p calx_ecs
+set -e
 cargo test -p content
 cargo test -p world
-cargo test -p render
+cargo test -p display
 cargo test
