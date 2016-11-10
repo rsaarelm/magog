@@ -117,7 +117,7 @@ mod test {
 
     #[test]
     fn test_wraparound() {
-        let l1 = Location::new(0, 0);
+        let l1 = Location::new(0, 0, 0);
         let l2 = l1 + Point2D::new(300, 300);
         assert_eq!((44, 44), (l2.x, l2.y));
     }

@@ -250,7 +250,7 @@ mod test {
         use bincode::{SizeLimit, serde};
 
         let mut spatial = Spatial::new();
-        let p1 = Place::At(Location::new(10, 10));
+        let p1 = Place::At(Location::new(10, 10, 0));
         let p2 = Place::In(Entity(1), None);
         spatial.insert(Entity(1), p1);
         spatial.insert(Entity(2), p2);
