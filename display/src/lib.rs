@@ -14,6 +14,7 @@ mod canvas_zoom;
 pub mod init;
 mod render;
 mod sprite;
+mod tilesheet;
 mod view;
 
 pub use backend::{Backend, Context};
