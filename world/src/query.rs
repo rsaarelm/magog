@@ -1,15 +1,14 @@
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use std::sync::Arc;
 use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
 use calx_resource::Resource;
 use world::World;
 use components::{Alignment, BrainState};
-use stats::{Intrinsic, Stats};
+use stats::Intrinsic;
 use location::Location;
 use brush::Brush;
-use terrain;
+use stats;
 use FovStatus;
 use fov::SightFov;
 use terraform::TerrainQuery;
@@ -26,37 +25,14 @@ pub trait Query: TerrainQuery {
     /// Return the player entity if one exists.
     fn player(&self) -> Option<Entity>;
 
-    /// Return the AI state of an entity.
-    fn brain_state(&self, e: Entity) -> Option<BrainState>;
-
     /// Return current time of the world logic clock.
     fn tick(&self) -> u64;
 
     /// Return world RNG seed
     fn rng_seed(&self) -> u32;
 
-    /// Return whether the entity is a mobile object (eg. active creature).
-    fn is_mob(&self, e: Entity) -> bool;
-
-    /// Return the value for how a mob will react to other mobs.
-    fn alignment(&self, e: Entity) -> Option<Alignment>;
-
-    /// Return whether the entity can move in a direction.
-    fn can_step(&self, e: Entity, dir: Dir6) -> bool {
-        self.location(e).map_or(false, |loc| self.can_enter(e, loc + dir.to_v2()))
-    }
-
-    /// Return current health of an entity.
-    fn hp(&self, e: Entity) -> i32;
-
     /// Return maximum health of an entity.
     fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
-
-    /// Return field of view for a location.
-    fn fov_status(&self, loc: Location) -> Option<FovStatus>;
-
-    /// Return visual brush for an entity.
-    fn entity_brush(&self, e: Entity) -> Option<Resource<Brush>>;
 
     // XXX: Would be nicer if entities_at returned an iterator. Probably want to wait for impl
     // Trait return types before jumping to this.
@@ -66,6 +42,66 @@ pub trait Query: TerrainQuery {
 
     /// Return reference to the world entity component system.
     fn ecs<'a>(&'a self) -> &'a Ecs;
+
+    /// Return the AI state of an entity.
+    fn brain_state(&self, e: Entity) -> Option<BrainState> {
+        self.ecs().brain.get(e).map_or(None, |brain| Some(brain.state))
+    }
+
+    /// Return whether the entity is a mobile object (eg. active creature).
+    fn is_mob(&self, e: Entity) -> bool { self.ecs().brain.contains(e) }
+
+    /// Return the value for how a mob will react to other mobs.
+    fn alignment(&self, e: Entity) -> Option<Alignment> {
+        self.ecs().brain.get(e).map(|b| b.alignment)
+    }
+
+    /// Return current health of an entity.
+    fn hp(&self, e: Entity) -> i32 {
+        self.max_hp(e) - if self.ecs().health.contains(e) { self.ecs().health[e].wounds } else { 0 }
+    }
+
+    /// Return field of view for a location.
+    fn fov_status(&self, loc: Location) -> Option<FovStatus> {
+        if let Some(p) = self.player() {
+            if self.ecs().map_memory.contains(p) {
+                if self.ecs().map_memory[p].seen.contains(&loc) {
+                    return Some(FovStatus::Seen);
+                }
+                if self.ecs().map_memory[p].remembered.contains(&loc) {
+                    return Some(FovStatus::Remembered);
+                }
+                return None;
+            }
+        }
+        // Just show everything by default.
+        Some(FovStatus::Seen)
+    }
+
+    /// Return visual brush for an entity.
+    fn entity_brush(&self, e: Entity) -> Option<Resource<Brush>> {
+        self.ecs().desc.get(e).map(|x| x.brush.clone())
+    }
+
+    /// Return the (composite) stats for an entity.
+    ///
+    /// Will return the default value for the Stats type (additive identity in the stat algebra)
+    /// for entities that have no stats component defined.
+    fn stats(&self, e: Entity) -> stats::Stats {
+        self.ecs().composite_stats.get(e).map_or_else(|| self.base_stats(e), |x| x.0)
+    }
+
+    /// Return the base stats of the entity. Does not include any added effects.
+    ///
+    /// You usually want to use the `stats` method instead of this one.
+    fn base_stats(&self, e: Entity) -> stats::Stats {
+        self.ecs().stats.get(e).cloned().unwrap_or_default()
+    }
+
+    /// Return whether the entity can move in a direction.
+    fn can_step(&self, e: Entity, dir: Dir6) -> bool {
+        self.location(e).map_or(false, |loc| self.can_enter(e, loc + dir.to_v2()))
+    }
 
     /// Return whether location blocks line of sight.
     fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
@@ -81,12 +117,6 @@ pub trait Query: TerrainQuery {
         }
         true
     }
-
-    /// Return the (composite) stats for an entity.
-    ///
-    /// Will return the default value for the Stats type (additive identity in the stat algebra)
-    /// for entities that have no stats component defined.
-    fn stats(&self, e: Entity) -> Stats;
 
     /// Return whether the entity blocks movement of other entities.
     fn is_blocking_entity(&self, e: Entity) -> bool { self.is_mob(e) }
@@ -111,11 +141,6 @@ pub trait Query: TerrainQuery {
     fn mob_at(&self, loc: Location) -> Option<Entity> {
         self.entities_at(loc).into_iter().find(|&e| self.is_mob(e))
     }
-
-    /// Return the base stats of the entity. Does not include any added effects.
-    ///
-    /// You usually want to use the `stats` method instead of this one.
-    fn base_stats(&self, e: Entity) -> Stats;
 
     /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
     fn has_intrinsic(&self, e: Entity, intrinsic: Intrinsic) -> bool {

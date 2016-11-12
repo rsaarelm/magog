@@ -3,18 +3,16 @@ use std::io::{Read, Write};
 use std::collections::HashMap;
 use bincode::{self, serde};
 use euclid::Point2D;
-use calx_resource::{Resource, ResourceStore};
+use calx_resource::ResourceStore;
 use calx_ecs::Entity;
 use calx_grid::Dir6;
 use field::Field;
 use spatial::{Place, Spatial};
 use flags::Flags;
 use location::{Location, Portal};
-use brush::Brush;
-use components::{self, Alignment, BrainState};
+use components;
 use stats;
 use terrain;
-use FovStatus;
 use query::Query;
 use command::{Command, CommandResult};
 use mutate::Mutate;
@@ -142,51 +140,9 @@ impl Query for World {
         None
     }
 
-    fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs.brain.get(e).map_or(None, |brain| Some(brain.state))
-    }
-
     fn tick(&self) -> u64 { self.flags.tick }
 
     fn rng_seed(&self) -> u32 { self.flags.seed }
-
-    fn is_mob(&self, e: Entity) -> bool { self.ecs.brain.contains(e) }
-
-    fn alignment(&self, e: Entity) -> Option<Alignment> {
-        self.ecs.brain.get(e).map(|b| b.alignment)
-    }
-
-    fn hp(&self, e: Entity) -> i32 {
-        self.max_hp(e) - if self.ecs.health.contains(e) { self.ecs.health[e].wounds } else { 0 }
-    }
-
-    fn fov_status(&self, loc: Location) -> Option<FovStatus> {
-        if let Some(p) = self.player() {
-            if self.ecs.map_memory.contains(p) {
-                if self.ecs.map_memory[p].seen.contains(&loc) {
-                    return Some(FovStatus::Seen);
-                }
-                if self.ecs.map_memory[p].remembered.contains(&loc) {
-                    return Some(FovStatus::Remembered);
-                }
-                return None;
-            }
-        }
-        // Just show everything by default.
-        Some(FovStatus::Seen)
-    }
-
-    fn entity_brush(&self, e: Entity) -> Option<Resource<Brush>> {
-        self.ecs.desc.get(e).map(|x| x.brush.clone())
-    }
-
-    fn stats(&self, e: Entity) -> stats::Stats {
-        self.ecs.composite_stats.get(e).map_or_else(|| self.base_stats(e), |x| x.0)
-    }
-
-    fn base_stats(&self, e: Entity) -> stats::Stats {
-        self.ecs.stats.get(e).cloned().unwrap_or_default()
-    }
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
@@ -203,13 +159,9 @@ impl Mutate for World {
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
 
-    fn set_player(&mut self, player: Entity) {
-        self.flags.player = Some(player);
-    }
+    fn set_player(&mut self, player: Entity) { self.flags.player = Some(player); }
 
-    fn spawn(&mut self, loadout: &Loadout) -> Entity {
-        loadout.make(&mut self.ecs)
-    }
+    fn spawn(&mut self, loadout: &Loadout) -> Entity { loadout.make(&mut self.ecs) }
 }
 
 impl Command for World {
