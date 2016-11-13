@@ -1,5 +1,6 @@
 use euclid::{Point2D, Rect};
 use calx_grid::Dir6;
+use calx_resource::Resource;
 use scancode::Scancode;
 use world::{Location, World, TerrainQuery, Command};
 use display;
@@ -18,7 +19,8 @@ impl View {
 
         view.draw(&self.world, context);
 
-        let font = context.ui.default_font();
+        let font: Resource<display::Font> = Resource::new("default".to_string()).unwrap();
+
         if let Some(loc) = view.cursor_loc {
             let color =
             if self.world.is_valid_location(loc) {
@@ -26,7 +28,7 @@ impl View {
             } else {
                 [1.0, 0.5, 0.5, 1.0]
             };
-            context.ui.draw_text(&*font,
+            context.ui.draw_text(&font.0,
                                  Point2D::new(0.0, 16.0),
                                  color,
                                  &format!("Mouse pos {:?}", loc));

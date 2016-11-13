@@ -1,4 +1,4 @@
-use image::{GenericImage, ImageBuffer, Pixel, Rgba, SubImage};
+use image::GenericImage;
 use euclid::{Point2D, Rect, Size2D};
 
 /// Return the tiles on a tile sheet image.

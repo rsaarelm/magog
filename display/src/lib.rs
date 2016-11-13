@@ -3,7 +3,9 @@ extern crate euclid;
 extern crate glium;
 extern crate image;
 extern crate vitral;
+extern crate vitral_atlas;
 extern crate world;
+#[macro_use]
 extern crate calx_resource;
 extern crate calx_grid;
 extern crate calx_color;
@@ -17,6 +19,6 @@ mod sprite;
 mod tilesheet;
 mod view;
 
-pub use backend::{Backend, Context};
+pub use backend::{Backend, Context, Font};
 pub use canvas_zoom::CanvasZoom;
 pub use view::WorldView;

@@ -15,6 +15,9 @@ glium = "0.15"
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
 
+[dependencies.vitral-atlas]
+git = "https://github.com/rsaarelm/vitral"
+
 [dependencies.calx-resource]
 git = "https://github.com/rsaarelm/calx"
 

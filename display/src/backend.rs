@@ -3,6 +3,7 @@ use glium::glutin;
 use glium::index::PrimitiveType;
 use euclid::{Point2D, Size2D};
 use vitral;
+use calx_resource::Loadable;
 use canvas::Canvas;
 use canvas_zoom::CanvasZoom;
 
@@ -12,6 +13,10 @@ pub struct Context {
     pub ui: UI,
     pub backend: Backend,
 }
+
+pub struct Font(pub vitral::FontData<usize>);
+
+impl Loadable for Font {}
 
 pub type GliumTexture = glium::texture::SrgbTexture2d;
 
