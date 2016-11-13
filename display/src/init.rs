@@ -4,12 +4,12 @@ use glium;
 use calx_color::color::*;
 use calx_resource::ResourceStore;
 use world::BrushBuilder;
-use world::terrain::Id;
-use display::Backend;
+use backend::Backend;
 
-pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
+/// Init the static brush assets.
+pub fn brushes(display: &glium::Display, backend: &mut Backend) {
     BrushBuilder::new()
-        .file("content/assets/floors.png")
+        .file("display/assets/floors.png")
         ////
         .tile(0, 0)
         .brush("blank_floor")
@@ -30,7 +30,7 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(96, 0)
         .brush("water")
         ////
-        .file("content/assets/portals.png")
+        .file("display/assets/portals.png")
         ////
         .color(LIGHTCYAN)
         .tile(0, 0)
@@ -60,7 +60,7 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(384, 0)
         .brush("gate")
         ////
-        .file("content/assets/props.png")
+        .file("display/assets/props.png")
         ////
         .color(RED)
         .tile(0, 0)
@@ -78,19 +78,19 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(192, 64)
         .brush("tree")
         ////
-        .file("content/assets/walls.png")
+        .file("display/assets/walls.png")
         ////
         .color(LIGHTSLATEGRAY)
         .wall(0, 0, 32, 0)
         .brush("wall")
         ////
-        .file("content/assets/blobs.png")
+        .file("display/assets/blobs.png")
         ////
         .color(DARKGOLDENROD)
         .blob(0, 0, 0, 32, 0, 64)
         .brush("rock")
         ////
-        .file("content/assets/mobs.png")
+        .file("display/assets/mobs.png")
         .color(AZURE)
         .tile(0, 0)
         .bob()
@@ -105,19 +105,4 @@ pub fn init_brushes(display: &glium::Display, backend: &mut Backend) {
         .brush("dreg")
         ////
         .finish(|img| backend.make_texture(&display, img));
-}
-
-pub fn init_terrain() {
-    use world::terrain::{Form, Kind, Tile};
-
-    // Void, terrain 0 is special.
-    Tile::insert_resource(Id::Empty as u8, Tile::new("blank_floor", Kind::Block, Form::Void));
-    // "Level exit", a visible portal tile.
-    Tile::insert_resource(Id::Gate as u8, Tile::new("gate", Kind::Ground, Form::Gate));
-    Tile::insert_resource(Id::Ground as u8, Tile::new("ground", Kind::Ground, Form::Floor));
-    Tile::insert_resource(Id::Grass as u8, Tile::new("grass", Kind::Ground, Form::Floor));
-    Tile::insert_resource(Id::Water as u8, Tile::new("water", Kind::Water, Form::Floor));
-    Tile::insert_resource(Id::Tree as u8, Tile::new("tree", Kind::Block, Form::Prop));
-    Tile::insert_resource(Id::Wall as u8, Tile::new("wall", Kind::Block, Form::Wall));
-    Tile::insert_resource(Id::Rock as u8, Tile::new("rock", Kind::Block, Form::Blob));
 }

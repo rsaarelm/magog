@@ -6,10 +6,12 @@ extern crate vitral;
 extern crate world;
 extern crate calx_resource;
 extern crate calx_grid;
+extern crate calx_color;
 
 mod backend;
 mod canvas;
 mod canvas_zoom;
+pub mod init;
 mod render;
 mod sprite;
 mod view;

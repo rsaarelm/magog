@@ -1,7 +1,7 @@
 use euclid::{Point2D, Rect};
 use calx_grid::Dir6;
 use scancode::Scancode;
-use world::{self, Location, World, TerrainQuery, Command};
+use world::{Location, World, TerrainQuery, Command};
 use display;
 
 pub struct View {

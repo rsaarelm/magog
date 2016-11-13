@@ -7,7 +7,7 @@ keywords = ["gamedev"]
 license = "GPL3"
 
 [workspace]
-members = ["world", "content", "display"]
+members = ["world", "display"]
 
 [profile.release]
 lto = true
@@ -32,9 +32,6 @@ git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-grid]
 git = "https://github.com/rsaarelm/calx"
-
-[dependencies.content]
-path = "content"
 
 [dependencies.world]
 path = "world"

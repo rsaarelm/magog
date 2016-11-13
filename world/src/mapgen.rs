@@ -2,8 +2,9 @@ use std::collections::BTreeSet;
 use std::cmp::max;
 use rand::{Rng, sample};
 use calx_grid::{Dir6};
-use world::{Location, TerrainQuery, Terraform};
-use world::terrain::Id;
+use location::Location;
+use terraform::{TerrainQuery, Terraform};
+use terrain::Id;
 
 pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
     where T: TerrainQuery + Terraform,

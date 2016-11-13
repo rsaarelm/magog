@@ -37,12 +37,15 @@ mod field;
 mod flags;
 mod form;
 mod fov;
+pub mod init;
 mod item;
 
 mod location;
 pub use location::{Location, Portal};
 
 mod location_set;
+// TODO: Make private, trigger mapgen internally using higher-level API
+pub mod mapgen;
 mod mutate;
 
 mod query;

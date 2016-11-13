@@ -1,6 +1,5 @@
 # Main program unit tests
 set -e
-cargo test -p content
 cargo test -p world
 cargo test -p display
 cargo test

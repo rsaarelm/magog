@@ -7,16 +7,14 @@ extern crate calx_grid;
 extern crate calx_resource;
 extern crate world;
 extern crate display;
-extern crate content;
 
 pub mod game_view;
 
 use rand::{XorShiftRng, SeedableRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::{World, Location};
+use world::{World, Location, mapgen};
 use game_view::View;
-use content::mapgen;
 
 pub fn main() {
     // Construct display and Vitral context.
@@ -30,8 +28,8 @@ pub fn main() {
                                             screen_area.size.height as u32);
 
     // Initialize game resources.
-    content::init_brushes(&glium, &mut backend);
-    content::init_terrain();
+    ::display::init::brushes(&glium, &mut backend);
+    ::world::init::terrain();
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&glium, img)),
