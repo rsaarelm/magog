@@ -47,6 +47,16 @@ impl ImageBuffer {
         }
     }
 
+    /// Build the buffer from RGBA pixel iterator.
+    pub fn from_iter<I>(width: u32, height: u32, pixels: &mut I) -> ImageBuffer
+        where I: Iterator<Item = u32>
+    {
+        ImageBuffer {
+            size: Size2D::new(width, height),
+            pixels: pixels.take((width * height) as usize).collect(),
+        }
+    }
+
     /// Copy pixels from source buffer to self starting from given coordinates.
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
         let self_rect = Rect::new(Point2D::new(0, 0), self.size);
