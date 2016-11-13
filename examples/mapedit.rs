@@ -10,7 +10,6 @@ extern crate calx_resource;
 extern crate calx_grid;
 extern crate world;
 extern crate display;
-extern crate content;
 
 // Make all mods public at the top app level just to make them show up in the rustdoc.
 
@@ -30,8 +29,8 @@ pub fn main() {
     let mut backend = display::Backend::new(&display, 640, 360);
 
     // Initialize game resources.
-    content::init_brushes(&display, &mut backend);
-    content::init_terrain();
+    ::display::init::brushes(&display, &mut backend);
+    ::world::init::terrain();
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),
