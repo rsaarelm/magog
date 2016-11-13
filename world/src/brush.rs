@@ -192,7 +192,7 @@ impl BrushBuilder {
         }
         let filename = self.image_file.clone().expect("Image file not set");
         let spec = SubImageSpec::new(filename, Rect::new(Point2D::new(x, y), Size2D::new(w, h)))
-                       .unwrap();
+                       .expect(&format!("Failed to load image {:?}", &self.image_file));
 
         let image = self.get_splat(&spec);
 
