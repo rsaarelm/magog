@@ -1,16 +1,23 @@
+use std::io::Write;
 use euclid::{Point2D, Rect};
 use calx_grid::Dir6;
 use calx_resource::Resource;
 use scancode::Scancode;
-use world::{Location, World, TerrainQuery, Command};
+use world::{Command, Location, TerrainQuery, World};
 use display;
 
 pub struct View {
     pub world: World,
+    pub console: display::Console,
 }
 
 impl View {
-    pub fn new(world: World) -> View { View { world: world } }
+    pub fn new(world: World) -> View {
+        View {
+            world: world,
+            console: display::Console::new(),
+        }
+    }
 
     pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
@@ -19,20 +26,8 @@ impl View {
 
         view.draw(&self.world, context);
 
-        let font: Resource<display::Font> = Resource::new("default".to_string()).unwrap();
-
-        if let Some(loc) = view.cursor_loc {
-            let color =
-            if self.world.is_valid_location(loc) {
-                [1.0, 1.0, 1.0, 1.0]
-            } else {
-                [1.0, 0.5, 0.5, 1.0]
-            };
-            context.ui.draw_text(&font.0,
-                                 Point2D::new(0.0, 16.0),
-                                 color,
-                                 &format!("Mouse pos {:?}", loc));
-        }
+        // TODO: State toggle to use big console.
+        self.console.draw_small(context, screen_area);
 
         if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             use scancode::Scancode::*;
@@ -43,7 +38,9 @@ impl View {
                 A => self.world.step(Dir6::Southwest),
                 S => self.world.step(Dir6::South),
                 D => self.world.step(Dir6::Southeast),
-                _ => Ok(())
+                Num1 => { writeln!(&mut self.console, "PRINTAN!").unwrap(); Ok(()) }
+                Num2 => { writeln!(&mut self.console, "The quick brown fox jumps over the lazy dog.").unwrap(); Ok(()) }
+                _ => Ok(()),
             };
         }
     }
