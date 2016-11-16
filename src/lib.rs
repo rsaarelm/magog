@@ -611,6 +611,11 @@ impl<T> FontData<T> {
 
         Rect::new(Point2D::new(0.0, 0.0), Size2D::new(w, self.height))
     }
+
+    /// Return the width of a char in the font.
+    pub fn char_width(&self, c: char) -> Option<f32> {
+        self.chars.get(&c).map(|c| c.advance)
+    }
 }
 
 /// Drawable image data for Vitral.
