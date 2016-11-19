@@ -4,13 +4,15 @@
 
 #![feature(proc_macro)]
 
+extern crate fnv;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{hash_map, HashMap, hash_set, HashSet};
+use std::collections::{hash_map, hash_set};
+use fnv::{FnvHashMap, FnvHashSet};
 
 /// Handle for an entity in the entity component system.
 ///
@@ -30,12 +32,12 @@ pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
-    data: HashMap<Entity, C>,
+    data: FnvHashMap<Entity, C>,
 }
 
 impl<C> ComponentData<C> {
     pub fn new() -> ComponentData<C> {
-        ComponentData { data: HashMap::new() }
+        ComponentData { data: FnvHashMap::default() }
     }
 
     /// Insert a component to an entity.
@@ -98,7 +100,7 @@ pub trait Store {
 #[derive(Serialize, Deserialize)]
 pub struct Ecs<ST> {
     next_uid: usize,
-    active: HashSet<Entity>,
+    active: FnvHashSet<Entity>,
     store: ST,
 }
 
@@ -106,7 +108,7 @@ impl<ST: Default + Store> Ecs<ST> {
     pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
-            active: HashSet::new(),
+            active: FnvHashSet::default(),
             store: Default::default(),
         }
     }
