@@ -1,6 +1,6 @@
-// !
-// Entity component system
-//
+//! Entity component system
+
+#![deny(missing_docs)]
 
 extern crate fnv;
 extern crate rustc_serialize;
@@ -16,6 +16,7 @@ use std::collections::{HashMap, hash_map, HashSet, hash_set};
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub struct Entity(pub usize);
 
+/// Operations all components must support.
 pub trait AnyComponent {
     /// Remove an entity's component.
     fn remove(&mut self, e: Entity);
@@ -31,6 +32,7 @@ pub struct ComponentData<C> {
 }
 
 impl<C> ComponentData<C> {
+    /// Construct new empty `ComponentData` instance.
     pub fn new() -> ComponentData<C> {
         ComponentData { data: HashMap::default() }
     }
@@ -86,6 +88,7 @@ impl<C> AnyComponent for ComponentData<C> {
     }
 }
 
+/// Operations for the internal component store object.
 pub trait Store {
     /// Perform an operation for each component container.
     fn for_each_component<F>(&mut self, f: F) where F: FnMut(&mut AnyComponent);
@@ -103,6 +106,7 @@ pub struct Ecs<ST> {
 }
 
 impl<ST: Default + Store> Ecs<ST> {
+    /// Construct a new entity component system.
     pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
@@ -131,6 +135,7 @@ impl<ST: Default + Store> Ecs<ST> {
         self.active.contains(&e)
     }
 
+    /// Iterate through all the active entities.
     pub fn iter(&self) -> hash_set::Iter<Entity> {
         self.active.iter()
     }
