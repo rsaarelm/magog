@@ -8,6 +8,8 @@ extern crate rustc_serialize;
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
 use std::collections::{HashMap, hash_map, HashSet, hash_set};
+use std::iter::FromIterator;
+use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
 
 /// Handle for an entity in the entity component system.
 ///
@@ -23,18 +25,34 @@ pub trait AnyComponent {
 }
 
 /// Storage for a single component type.
-#[derive(RustcEncodable, RustcDecodable)]
 pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
-    data: HashMap<Entity, C>,
+    data: fnv::FnvHashMap<Entity, C>,
+}
+
+// XXX: rustc-serialize doesn't support custom hashers, need to jump through hoops here.
+impl<C: Encodable+Clone> Encodable for ComponentData<C> {
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
+        let data: HashMap<Entity, C> = HashMap::from_iter(self.data.clone().into_iter());
+        data.encode(s)
+    }
+}
+
+impl<C: Decodable> Decodable for ComponentData<C> {
+    fn decode<D: Decoder>(d: &mut D) -> Result<ComponentData<C>, D::Error> {
+        let data: HashMap<Entity, C> = HashMap::decode(d)?;
+        Ok(ComponentData {
+            data: fnv::FnvHashMap::from_iter(data.into_iter())
+        })
+    }
 }
 
 impl<C> ComponentData<C> {
     /// Construct new empty `ComponentData` instance.
     pub fn new() -> ComponentData<C> {
-        ComponentData { data: HashMap::default() }
+        ComponentData { data: fnv::FnvHashMap::default() }
     }
 
     /// Insert a component to an entity.
