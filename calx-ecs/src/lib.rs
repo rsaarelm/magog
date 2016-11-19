@@ -10,8 +10,7 @@ extern crate serde_derive;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{hash_map, HashMap, HashSet};
-use std::collections::hash_set;
+use std::collections::{hash_map, HashMap, hash_set, HashSet};
 
 /// Handle for an entity in the entity component system.
 ///
