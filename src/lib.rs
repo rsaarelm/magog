@@ -91,7 +91,10 @@ pub trait Store {
     fn for_each_component<F>(&mut self, f: F) where F: FnMut(&mut AnyComponent);
 }
 
-
+/// Generic entity component system container
+///
+/// Needs to be specified with the parametrized `Store` type that has struct fields for the actual
+/// components. This can be done with the `Ecs!` macro.
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Ecs<ST> {
     next_uid: usize,
