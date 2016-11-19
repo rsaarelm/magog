@@ -1,6 +1,4 @@
-#![feature(proc_macro)]
-#[macro_use]
-extern crate serde_derive;
+extern crate rustc_serialize;
 extern crate bincode;
 extern crate calx_alg;
 extern crate rand;
@@ -13,12 +11,12 @@ use calx_alg::WeightedChoice;
 #[test]
 fn test_serialize_rng() {
     use calx_alg::EncodeRng;
-    use bincode::{SizeLimit, serde};
+    use bincode::{SizeLimit, rustc_serialize};
 
     let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
-    let saved = serde::serialize(&rng, SizeLimit::Infinite).expect("Serialization failed");
-    let mut rng2 = serde::deserialize::<EncodeRng<XorShiftRng>>(&saved)
+    let saved = rustc_serialize::encode(&rng, SizeLimit::Infinite).expect("Serialization failed");
+    let mut rng2 = rustc_serialize::decode::<EncodeRng<XorShiftRng>>(&saved)
                        .expect("Deserialization failed");
 
     assert!(rng.next_u32() == rng2.next_u32());

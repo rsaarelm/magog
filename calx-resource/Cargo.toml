@@ -7,4 +7,4 @@ keywords = ["gamedev"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-serde = "0.8"
+rustc-serialize = "0.3"

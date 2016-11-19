@@ -23,7 +23,7 @@ impl HexGeom for Point2D<i32> {
 }
 
 /// Hex grid directions.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Dir6 {
     North = 0,
     Northeast,
@@ -112,7 +112,7 @@ static DIRS: [Dir6; 6] = [Dir6::North,
                           Dir6::Northwest];
 
 /// Hex grid directions with transitional directions.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Dir12 {
     North = 0,
     NorthNortheast,

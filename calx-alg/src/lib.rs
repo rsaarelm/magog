@@ -1,11 +1,7 @@
-#![feature(proc_macro)]
-
 extern crate num;
 extern crate rand;
 extern crate time;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+extern crate rustc_serialize;
 
 use rand::Rng;
 use std::ops::{Add, Mul, Sub};

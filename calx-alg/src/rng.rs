@@ -1,6 +1,6 @@
 use std::mem;
 use rand::{Rng, SeedableRng};
-use serde;
+use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use to_log_odds;
 
 /// Additional methods for random number generators.
@@ -59,10 +59,8 @@ impl<T: Rng> Rng for EncodeRng<T> {
     fn next_u32(&mut self) -> u32 { self.inner.next_u32() }
 }
 
-impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
+impl<T: Rng + 'static> Encodable for EncodeRng<T> {
+    fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
         let mut vec = Vec::new();
         unsafe {
             let view = self as *const _ as *const u8;
@@ -70,20 +68,18 @@ impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {
                 vec.push(*view.offset(i as isize));
             }
         }
-        vec.serialize(serializer)
+        vec.encode(e)
     }
 }
 
-impl<T: Rng + 'static> serde::Deserialize for EncodeRng<T> {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: serde::Deserializer
-    {
-        let blob: Vec<u8> = try!(serde::Deserialize::deserialize(deserializer));
+impl<T: Rng + 'static> Decodable for EncodeRng<T> {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        let blob: Vec<u8> = Decodable::decode(d)?;;
         unsafe {
             if blob.len() == mem::size_of::<T>() {
                 Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
             } else {
-                Err(serde::Error::invalid_length(blob.len()))
+                Err(d.error(&format!("Invalid length {}", blob.len())))
             }
         }
     }

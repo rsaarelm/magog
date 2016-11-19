@@ -1,15 +1,13 @@
-// !
-// Resource caching smart pointer
-//
+//! Resource caching smart pointer
 
-extern crate serde;
+extern crate rustc_serialize;
 
 use std::sync::Arc;
 use std::ops::Deref;
 use std::hash;
 use std::collections::HashMap;
 use std::fmt;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 
 /// A type that implements a singleton resource store.
 pub trait ResourceStore<K = String> {
@@ -45,19 +43,13 @@ impl<T: Sized, K> Deref for Resource<T, K> {
     }
 }
 
-impl<T> Serialize for Resource<T> {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: Serializer
-    {
-        self.key.serialize(serializer)
-    }
+impl<T> Encodable for Resource<T> {
+    fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> { self.key.encode(e) }
 }
 
-impl<T: ResourceStore> Deserialize for Resource<T> {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: Deserializer
-    {
-        let key: String = try!(Deserialize::deserialize(deserializer));
+impl<T: ResourceStore> Decodable for Resource<T> {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        let key: String = Decodable::decode(d)?;;;
         Ok(Self::new(key).unwrap())
     }
 }
