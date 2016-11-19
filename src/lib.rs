@@ -7,8 +7,7 @@ extern crate rustc_serialize;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{hash_map, hash_set};
-use fnv::{FnvHashMap, FnvHashSet};
+use std::collections::{HashMap, hash_map, HashSet, hash_set};
 
 /// Handle for an entity in the entity component system.
 ///
@@ -28,12 +27,12 @@ pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
-    data: FnvHashMap<Entity, C>,
+    data: HashMap<Entity, C>,
 }
 
 impl<C> ComponentData<C> {
     pub fn new() -> ComponentData<C> {
-        ComponentData { data: FnvHashMap::default() }
+        ComponentData { data: HashMap::default() }
     }
 
     /// Insert a component to an entity.
@@ -96,7 +95,7 @@ pub trait Store {
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Ecs<ST> {
     next_uid: usize,
-    active: FnvHashSet<Entity>,
+    active: HashSet<Entity>,
     store: ST,
 }
 
@@ -104,7 +103,7 @@ impl<ST: Default + Store> Ecs<ST> {
     pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
-            active: FnvHashSet::default(),
+            active: HashSet::default(),
             store: Default::default(),
         }
     }

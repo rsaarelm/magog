@@ -1,5 +1,3 @@
-#![feature(proc_macro)]
-
 extern crate rustc_serialize;
 extern crate bincode;
 #[macro_use]
@@ -60,7 +58,7 @@ fn test_ecs() {
     assert!(ecs.desc[e3].icon == 10);
 
     // Check that serialization works.
-    let saved = rustc_serialize::serialize(&ecs, SizeLimit::Infinite).expect("ECS serialization failed");
-    let ecs2 = rustc_serialize::deserialize::<Ecs>(&saved).expect("ECS deserialization failed");
+    let saved = rustc_serialize::encode(&ecs, SizeLimit::Infinite).expect("ECS serialization failed");
+    let ecs2 = rustc_serialize::decode::<Ecs>(&saved).expect("ECS deserialization failed");
     assert!(ecs2.desc[e3].icon == 10);
 }
