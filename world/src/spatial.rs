@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
 use vec_map::VecMap;
 use calx_ecs::Entity;
 use location::Location;
@@ -8,7 +8,7 @@ use self::Place::*;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub enum Place {
     At(Location),
     In(Entity, Option<Slot>),
@@ -192,22 +192,18 @@ impl Spatial {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, RustcEncodable, RustcDecodable)]
 struct Elt(Entity, Place);
 
-impl Serialize for Spatial {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: Serializer
-    {
-        self.dump().serialize(serializer)
+impl Encodable for Spatial {
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
+        self.dump().encode(s)
     }
 }
 
-impl Deserialize for Spatial {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
-        where D: Deserializer
-    {
-        Ok(Spatial::slurp(try!(Deserialize::deserialize(deserializer))))
+impl Decodable for Spatial {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Spatial, D::Error> {
+        Ok(Spatial::slurp(Decodable::decode(d)?))
     }
 }
 
@@ -247,7 +243,7 @@ mod test {
 
     #[test]
     fn test_serialization() {
-        use bincode::{SizeLimit, serde};
+        use bincode::{SizeLimit, rustc_serialize};
 
         let mut spatial = Spatial::new();
         let p1 = Place::At(Location::new(10, 10, 0));
@@ -255,9 +251,9 @@ mod test {
         spatial.insert(Entity(1), p1);
         spatial.insert(Entity(2), p2);
 
-        let saved = serde::serialize(&spatial, SizeLimit::Infinite)
+        let saved = rustc_serialize::encode(&spatial, SizeLimit::Infinite)
                         .expect("Spatial serialization failed");
-        let spatial2 = serde::deserialize::<Spatial>(&saved)
+        let spatial2 = rustc_serialize::decode::<Spatial>(&saved)
                            .expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(Entity(1)), Some(p1));

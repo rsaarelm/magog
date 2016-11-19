@@ -5,7 +5,7 @@ use calx_alg::noise;
 use calx_grid::{Dir6, GridNode, HexGeom};
 
 /// Unambiguous location in the game world.
-#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub struct Location {
     pub x: i8,
     pub y: i8,
@@ -82,7 +82,7 @@ impl GridNode for Location {
     fn neighbors(&self) -> Vec<Location> { Dir6::iter().map(|d| *self + d.to_v2()).collect() }
 }
 
-#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
 pub struct Portal {
     pub dx: i8,
     pub dy: i8,

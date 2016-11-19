@@ -1,7 +1,6 @@
 extern crate euclid;
 #[macro_use]
 extern crate glium;
-extern crate serde;
 extern crate vitral;
 extern crate scancode;
 extern crate calx_color;

@@ -15,7 +15,7 @@ use query::{self, ControlState};
 use msg;
 
 /// Player input action.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub enum Input {
     /// Take a step in the given direction.
     Step(Dir6),

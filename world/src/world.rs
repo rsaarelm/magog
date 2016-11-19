@@ -31,7 +31,7 @@ Ecs! {
 }
 
 /// Toplevel game state object.
-#[derive(Serialize, Deserialize)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct World {
     /// Game version. Not mutable in the slightest, but the simplest way to
     /// get versioned save files is to just drop it here.
@@ -64,6 +64,8 @@ impl<'a> World {
         ret
     }
 
+    /* TODO: Reactivate for rustc-serialize
+
     pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
         let ret: serde::DeserializeResult<World> =
             serde::deserialize_from(reader, bincode::SizeLimit::Infinite);
@@ -81,6 +83,7 @@ impl<'a> World {
     pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
         serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
     }
+    */
 }
 
 impl TerrainQuery for World {

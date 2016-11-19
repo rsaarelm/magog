@@ -11,12 +11,11 @@ name = "world"
 num = "0.1"
 rand = "0.3"
 vec_map = "0.6"
-serde = "0.8"
-serde_derive = "0.8"
 bincode = "0.6"
 image = "0.10"
 euclid = "0.10"
 lazy_static = "0.2"
+rustc-serialize = "0.3"
 
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
