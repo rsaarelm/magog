@@ -2,7 +2,6 @@
 members = [
     "calx-alg",
     "calx-color",
-    "calx-ecs",
     "calx-grid",
     "calx-resource",
     "calx-system",
