@@ -8,8 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 fnv = "1.0"
-serde = "0.8"
-serde_derive = "0.8"
+rustc-serialize = "0.3"
 
 [dev-dependencies]
 bincode = "0.6"
