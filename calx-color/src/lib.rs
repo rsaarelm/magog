@@ -1,10 +1,6 @@
-#![feature(proc_macro)]
-
 extern crate num;
 extern crate image;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+extern crate rustc_serialize;
 
 use std::str::FromStr;
 use std::ascii::AsciiExt;
@@ -24,7 +20,7 @@ use num::Num;
 /// alpha channel and with 4 or 8 bits per channel). "RED", "red",
 /// "#F00", "#F00F", "#FF0000" and "#FF0000FF" all correspond to the
 /// same opaque pure red color.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
 pub struct SRgba {
     /// sRGB red component
     pub r: u8,
@@ -160,7 +156,7 @@ impl FromStr for SRgba {
 ///
 /// This is the canonical color representation that the rendering engine
 /// expects to get.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, RustcEncodable, RustcDecodable)]
 pub struct Rgba {
     /// Linear red component
     pub r: f32,
