@@ -16,15 +16,13 @@ image = "0.10"
 euclid = "0.10"
 lazy_static = "0.2"
 rustc-serialize = "0.3"
+calx-ecs = "0.3"
 
 [dependencies.vitral]
 git = "https://github.com/rsaarelm/vitral"
 
 [dependencies.vitral-atlas]
 git = "https://github.com/rsaarelm/vitral"
-
-[dependencies.calx-ecs]
-git = "https://github.com/rsaarelm/calx"
 
 [dependencies.calx-alg]
 git = "https://github.com/rsaarelm/calx"
