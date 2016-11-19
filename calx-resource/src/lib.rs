@@ -29,18 +29,14 @@ pub struct Resource<T, K = String> {
 }
 
 impl<T: Sized, K> AsRef<T> for Resource<T, K> {
-    fn as_ref(&self) -> &T {
-        self.handle.as_ref()
-    }
+    fn as_ref(&self) -> &T { self.handle.as_ref() }
 }
 
 impl<T: Sized, K> Deref for Resource<T, K> {
     type Target = T;
 
     #[inline(always)]
-    fn deref(&self) -> &T {
-        self.handle.deref()
-    }
+    fn deref(&self) -> &T { self.handle.deref() }
 }
 
 impl<T> Encodable for Resource<T> {
@@ -55,29 +51,21 @@ impl<T: ResourceStore> Decodable for Resource<T> {
 }
 
 impl<T, K: hash::Hash> hash::Hash for Resource<T, K> {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.key.hash(state);
-    }
+    fn hash<H: hash::Hasher>(&self, state: &mut H) { self.key.hash(state); }
 }
 
 impl<T, K: PartialEq> PartialEq for Resource<T, K> {
-    fn eq(&self, other: &Self) -> bool {
-        self.key.eq(&other.key)
-    }
+    fn eq(&self, other: &Self) -> bool { self.key.eq(&other.key) }
 }
 
 impl<T, K: Eq> Eq for Resource<T, K> {}
 
 impl<T, K: fmt::Display> fmt::Display for Resource<T, K> {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        self.key.fmt(formatter)
-    }
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result { self.key.fmt(formatter) }
 }
 
 impl<T, K: fmt::Debug> fmt::Debug for Resource<T, K> {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        self.key.fmt(formatter)
-    }
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result { self.key.fmt(formatter) }
 }
 
 impl<K, T: ResourceStore<K>> Resource<T, K> {
@@ -114,9 +102,7 @@ pub struct ResourceCache<T, K = String> {
 }
 
 impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
-    pub fn new() -> ResourceCache<T, K> {
-        ResourceCache { cache: HashMap::new() }
-    }
+    pub fn new() -> ResourceCache<T, K> { ResourceCache { cache: HashMap::new() } }
 
     pub fn get(&mut self, key: &K) -> Option<Arc<T>> {
         if let Some(v) = self.cache.get(key) {
@@ -132,9 +118,7 @@ impl<K: Eq + hash::Hash + Clone, T: Loadable<K>> ResourceCache<T, K> {
         }
     }
 
-    pub fn insert(&mut self, key: K, value: T) {
-        self.cache.insert(key, Arc::new(value));
-    }
+    pub fn insert(&mut self, key: K, value: T) { self.cache.insert(key, Arc::new(value)); }
 }
 
 /// Implement a thread-local store for a given resource type.
