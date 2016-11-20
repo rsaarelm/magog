@@ -31,24 +31,29 @@ fn test_noise() {
     }
 }
 
-#[test]
-fn test_split_line() {
+fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx_alg::split_line;
 
-    assert_eq!(("", ""), split_line("", &|_| 1.0, 12.0));
-    assert_eq!(("a", ""), split_line("a", &|_| 1.0, 5.0));
-    assert_eq!(("the", "cat"), split_line("the cat", &|_| 1.0, 5.0));
-    assert_eq!(("the", "cat"), split_line("the     cat", &|_| 1.0, 5.0));
-    assert_eq!(("the", "cat"), split_line("the  \t cat", &|_| 1.0, 5.0));
-    assert_eq!(("the", "cat"), split_line("the \ncat", &|_| 1.0, 32.0));
-    assert_eq!(("the", "   cat"),
-               split_line("the \n   cat", &|_| 1.0, 32.0));
-    assert_eq!(("the  cat", ""), split_line("the  cat", &|_| 1.0, 32.0));
-    assert_eq!(("the", "cat sat"), split_line("the cat sat", &|_| 1.0, 6.0));
-    assert_eq!(("the cat", "sat"), split_line("the cat sat", &|_| 1.0, 7.0));
-    assert_eq!(("a", "bc"), split_line("abc", &|_| 1.0, 0.01));
-    assert_eq!(("dead", "beef"), split_line("deadbeef", &|_| 1.0, 4.0));
-    assert_eq!(("the-", "cat"), split_line("the-cat", &|_| 1.0, 5.0));
+    split_line(line, |_| 1.0, space as f32)
+        .zip(parts)
+        .all(|(actual, &expected)| { assert_eq!(expected, actual); true });
+
+    assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
+}
+
+#[test]
+fn test_split_line() {
+    splits_into(10, "", &[""]);
+    splits_into(0, "", &[""]);
+    splits_into(0, "abc", &["a", "b", "c"]);
+    splits_into(10, "abc", &["abc"]);
+    splits_into(6, "the cat", &["the", "cat"]);
+    splits_into(7, "the cat", &["the cat"]);
+    splits_into(10, "the   cat", &["the   cat"]);
+    splits_into(5, "the     cat", &["the", "cat"]);
+    splits_into(5, "the \t cat", &["the", "cat"]);
+    splits_into(4, "deadbeef", &["dead", "beef"]);
+    splits_into(5, "the \t cat", &["the", "cat"]);
 }
 
 #[test]

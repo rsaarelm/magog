@@ -1,118 +1,108 @@
 //! String processing utilities
 
-/// Divide a string into the longest slice that fits within maximum line
-/// length and the rest of the string.
+/// Split a long line into multiple lines that fit a given width.
 ///
-/// Place the split before a whitespace or after a hyphen if possible. Any
-/// whitespace between the two segments is trimmed. Newlines will cause a
-/// segment split when encountered.
-pub fn split_line<'a, F>(text: &'a str, char_width: &F, max_len: f32) -> (&'a str, &'a str)
+/// Will treat newlines in the input as regular whitespace, you probably want to split your input
+/// at newlines before using `split_line` on the individual lines.
+pub fn split_line<'a, F>(text: &'a str, char_width: F, max_width: f32) -> LineSplit<'a, F>
     where F: Fn(char) -> f32
 {
-    assert!(max_len >= 0.0);
-
-    if text.len() == 0 {
-        return (text, text);
+    LineSplit {
+        remain: text,
+        char_width: char_width,
+        max_width: max_width,
+        finished: false,
     }
+}
 
-    // Init the split position to 1 because we always want to return at least
-    // 1 character in the head partition.
-    let mut head_end = 1;
-    let mut tail_start = 1;
-    // Is the iteration currently consuming whitespace inside a possible
-    // break.
-    let mut eat_whitespace = false;
-    let mut length = 0.0;
+pub struct LineSplit<'a, F> {
+    remain: &'a str,
+    char_width: F,
+    max_width: f32,
+    finished: bool,
+}
 
-    for (i, c) in text.chars().enumerate() {
-        length = length + char_width(c);
+impl<'a, F> Iterator for LineSplit<'a, F>
+    where F: Fn(char) -> f32
+{
+    type Item = &'a str;
 
-        // Invariant: head_end and tail_start describe a valid, but possibly
-        // suboptimal return value at this point.
-        assert!(text[..head_end].len() > 0);
-        assert!(head_end <= tail_start);
+    fn next(&mut self) -> Option<&'a str> {
+        if self.finished {
+            return None;
+        }
 
-        if eat_whitespace {
-            if c.is_whitespace() {
-                tail_start = i + 1;
-                if c == '\n' {
-                    return (&text[..head_end], &text[tail_start..]);
+        #[derive(Copy, Clone)]
+        struct State {
+            total_width: f32,
+            clip_pos: usize,
+            last_word_break: Option<(usize, f32)>,
+            prev: char,
+        }
+
+        impl State {
+            fn new() -> State {
+                State {
+                    total_width: 0.0,
+                    clip_pos: 0,
+                    last_word_break: None,
+                    prev: 'A',
                 }
-                continue;
-            } else {
-                eat_whitespace = false;
+            }
+
+            fn update<F: Fn(char) -> f32>(&mut self, char_width: &F, c: char) {
+                if c.is_whitespace() && !self.prev.is_whitespace() {
+                    self.last_word_break = Some((self.clip_pos, self.total_width));
+                }
+                self.clip_pos += c.len_utf8();
+                self.total_width += char_width(c);
+                self.prev = c;
+            }
+
+            fn best_pos(&self) -> (usize, f32) {
+                // Return the cut in the current word if there is no last_word_break set yet.
+                if let Some(x) = self.last_word_break {
+                    x
+                } else {
+                    (self.clip_pos, self.total_width)
+                }
             }
         }
 
-        // We're either just encountering the first whitespace after a block
-        // of text, or over non-whitespace text.
-        assert!(!eat_whitespace);
+        let end_pos = {
+            self.remain
+                .chars()
+                .chain(Some(' ')) // Makes the ending of the last word in line show up.
+                .scan(State::new(), |s, c| {
+                    s.update(&self.char_width, c);
+                    Some(*s)
+                })
+                // Guarantee at least one item is taken if there are any items by
+                // recognizing the first item from len_utf8 and always taking it.
+                .take_while(|s| s.clip_pos == s.prev.len_utf8() || s.best_pos().1 <= self.max_width)
+                .map(|s| s.best_pos().0)
+                .last()
+                .unwrap_or(0)
+        };
 
-        // Invariant: The length of the string processed up to this point is
-        // still short enough to return.
+        let ret = &self.remain[..end_pos];
 
-        // Encounter the first whitespace, set head_end marker.
-        if c.is_whitespace() {
-            head_end = i;
-            tail_start = i + 1;
-            if c == '\n' {
-                return (&text[..head_end], &text[tail_start..]);
-            }
-            eat_whitespace = true;
-            continue;
+        self.remain = &self.remain[end_pos..];
+        // Strip whitespace between this line and the next.
+        let start_pos = self.remain
+                            .chars()
+                            .take_while(|&c| c.is_whitespace())
+                            .map(|c| c.len_utf8())
+                            .sum();
+        self.remain = &self.remain[start_pos..];
+        if self.remain.is_empty() {
+            self.finished = true;
         }
 
-        assert!(!c.is_whitespace());
-
-        // Went over the allowed length.
-        if length > max_len {
-            if i > 1 && head_end == 1 && tail_start == 1 {
-                // Didn't encounter any better cut points, so just place cut
-                // in the middle of the word where we're at.
-                head_end = i;
-                tail_start = i;
-            }
-
-            // Use the last good result.
-            return (&text[..head_end], &text[tail_start..]);
-        }
-
-        // Hyphens are a possible cut point.
-        if c == '-' {
-            head_end = i + 1;
-            tail_start = i + 1;
-        }
+        Some(ret)
     }
-
-    (&text, &""[..])
 }
 
-/// Wrap a text into multiple lines separated by newlines.
-pub fn wrap_lines<F>(mut text: &str, char_width: &F, max_len: f32) -> String
-    where F: Fn(char) -> f32
-{
-    let mut result = String::new();
-    loop {
-        let (head, tail) = split_line(text, char_width, max_len);
-        if head.len() == 0 && tail.len() == 0 {
-            break;
-        }
-        assert!(head.len() > 0, "Line splitter caught in infinite loop");
-        assert!(tail.len() < text.len(),
-                "Line splitter not shrinking string");
-        result = result + head;
-        // Must preserve a hard newline at the end if the input string had
-        // one. The else branch checks for the very last char being a newline,
-        // this would be clipped off otherwise.
-        if tail.len() != 0 {
-            result = result + "\n";
-        } else if text.chars().last() == Some('\n') {
-            result = result + "\n";
-        }
-        text = tail;
-    }
-    result
-}
 
 pub struct Map2DIterator<T> {
     /// Input iterator

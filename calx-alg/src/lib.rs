@@ -8,7 +8,7 @@ use std::ops::{Add, Mul, Sub};
 use num::Float;
 
 pub use rng::{EncodeRng, RngExt};
-pub use text::{Map2DIterator, Map2DUtil, split_line, wrap_lines};
+pub use text::{Map2DIterator, Map2DUtil, split_line, LineSplit};
 
 mod rng;
 mod text;
