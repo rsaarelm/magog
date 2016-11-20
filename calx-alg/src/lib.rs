@@ -44,9 +44,25 @@ pub fn noise(n: i32) -> f32 {
 /// Log odds correspond to the Bayesian probability for a hypothesis that
 /// has decibans * 1/10 log_2(10) bits of evidence in favor of it. They're
 /// a bit like rolling a d20 but better.
+///
+/// # Examples
+///
+/// ```
+/// use calx_alg::to_log_odds;
+/// assert_eq!(0.0, to_log_odds(0.5));
+/// assert_eq!(10, to_log_odds(0.909091) as i32);
+/// ```
 pub fn to_log_odds(p: f32) -> f32 { 10.0 * (p / (1.0 - p)).log(10.0) }
 
 /// Convert a log odds deciban value to the corresponding probability.
+///
+/// # Examples
+///
+/// ```
+/// use calx_alg::from_log_odds;
+/// assert_eq!(0.5, from_log_odds(0.0));
+/// assert_eq!(24, (from_log_odds(-5.0) * 100.0) as i32);
+/// ```
 pub fn from_log_odds(db: f32) -> f32 { (1.0 - 1.0 / (1.0 + 10.0.powf(db / 10.0))) }
 
 /// Interpolate linearly between two values.

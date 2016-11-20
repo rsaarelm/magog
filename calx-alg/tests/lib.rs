@@ -32,16 +32,6 @@ fn test_noise() {
 }
 
 #[test]
-fn test_log_odds() {
-    use calx_alg::{from_log_odds, to_log_odds};
-    assert_eq!(from_log_odds(0.0), 0.5);
-    assert_eq!(to_log_odds(0.5), 0.0);
-
-    assert_eq!((from_log_odds(-5.0) * 100.0) as i32, 24);
-    assert_eq!(to_log_odds(0.909091) as i32, 10);
-}
-
-#[test]
 fn test_split_line() {
     use calx_alg::split_line;
 
