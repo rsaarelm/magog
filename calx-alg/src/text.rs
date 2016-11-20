@@ -32,7 +32,6 @@ impl<'a, F> Iterator for LineSplit<'a, F>
             return None;
         }
 
-        #[derive(Copy, Clone)]
         struct State {
             total_width: f32,
             clip_pos: usize,
@@ -50,22 +49,20 @@ impl<'a, F> Iterator for LineSplit<'a, F>
                 }
             }
 
-            fn update<F: Fn(char) -> f32>(&mut self, char_width: &F, c: char) {
+            fn update<F: Fn(char) -> f32>(
+                &mut self,
+                char_width: &F,
+                c: char
+            ) -> Option<(usize, f32)> {
                 if c.is_whitespace() && !self.prev.is_whitespace() {
                     self.last_word_break = Some((self.clip_pos, self.total_width));
                 }
                 self.clip_pos += c.len_utf8();
                 self.total_width += char_width(c);
                 self.prev = c;
-            }
 
-            fn best_pos(&self) -> (usize, f32) {
                 // Return the cut in the current word if there is no last_word_break set yet.
-                if let Some(x) = self.last_word_break {
-                    x
-                } else {
-                    (self.clip_pos, self.total_width)
-                }
+                Some(self.last_word_break.unwrap_or((self.clip_pos, self.total_width)))
             }
         }
 
@@ -73,14 +70,17 @@ impl<'a, F> Iterator for LineSplit<'a, F>
             self.remain
                 .chars()
                 .chain(Some(' ')) // Makes the ending of the last word in line show up.
-                .scan(State::new(), |s, c| {
-                    s.update(&self.char_width, c);
-                    Some(*s)
+                .scan(State::new(), |s, c| s.update(&self.char_width, c))
+                .scan(true, |is_first, (i, w)| {
+                    // Always return at least one element.
+                    // Past that return the last element that fits in the space.
+                    if *is_first {
+                        *is_first = false;
+                        Some(i)
+                    } else {
+                        if w <= self.max_width { Some(i) } else { None }
+                    }
                 })
-                // Guarantee at least one item is taken if there are any items by
-                // recognizing the first item from len_utf8 and always taking it.
-                .take_while(|s| s.clip_pos == s.prev.len_utf8() || s.best_pos().1 <= self.max_width)
-                .map(|s| s.best_pos().0)
                 .last()
                 .unwrap_or(0)
         };
