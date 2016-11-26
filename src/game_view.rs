@@ -1,5 +1,6 @@
 use std::io::Write;
 use euclid::{Point2D, Rect};
+use rand;
 use calx_grid::Dir6;
 use calx_resource::Resource;
 use scancode::Scancode;
@@ -31,36 +32,6 @@ impl View {
             A => self.world.step(Dir6::Southwest),
             S => self.world.step(Dir6::South),
             D => self.world.step(Dir6::Southeast),
-            Num1 => {
-                writeln!(&mut self.console, "PRINTAN!").unwrap();
-                Ok(())
-            }
-            Num2 => {
-                writeln!(&mut self.console,
-                         "The quick brown fox jumps over the lazy dog.")
-                    .unwrap();
-                Ok(())
-            }
-            Num3 => {
-                writeln!(&mut self.console,
-                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras \
-                         volutpat, diam eget iaculis ullamcorper, diam ligula cursus velit, \
-                         et tristique nisl mi eu lectus. Vestibulum ullamcorper lectus sed \
-                         magna tempor condimentum. Sed lorem metus, ultrices vitae nunc in, \
-                         luctus ultricies lorem. Proin at risus et arcu interdum tempor \
-                         quis eu urna. Phasellus lectus neque, finibus vitae enim eget, \
-                         tincidunt venenatis nisl. In aliquet at leo et mollis. Mauris \
-                         sollicitudin leo metus, nec finibus quam ultrices at. Quisque \
-                         lacinia hendrerit placerat. Sed nec enim sit amet nulla volutpat \
-                         vestibulum quis lacinia lectus. Morbi at diam at sapien efficitur \
-                         rutrum. Quisque pellentesque nulla non erat viverra, eget tempus \
-                         lorem pharetra. Aenean lobortis ut elit et varius. Phasellus nisl \
-                         orci, mollis non tincidunt quis, lacinia non diam. Morbi in \
-                         scelerisque eros. Quisque quis augue et enim pretium ullamcorper \
-                         et ac arcu.")
-                    .unwrap();
-                Ok(())
-            }
             _ => Ok(()),
         }
     }
@@ -79,12 +50,18 @@ impl View {
         }
     }
 
-    fn ping(&mut self) {
-        writeln!(&mut self.console, "pong");
+    /// Generate a new random cave map.
+    fn cave(&mut self) {
+        use world::mapgen;
+        self.world = World::new(1);
+        mapgen::caves(&mut self.world,
+                      &mut rand::thread_rng(),
+                      Location::new(0, 0, 0),
+                      300);
     }
 
     command_parser!{
-        fn ping(&mut self);
+        fn cave(&mut self);
     }
 
     fn parse_command(&mut self, command: &str) {
