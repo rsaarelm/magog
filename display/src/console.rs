@@ -73,7 +73,7 @@ impl Console {
         let font: Resource<backend::Font> = Resource::new("default".to_string()).unwrap();
         // TODO: Ditto for color
         let color = [0.6, 0.6, 0.6, 1.0];
-        let background = [0.0, 0.0, 0.6, 1.0];
+        let background = [0.0, 0.0, 0.6, 0.8];
 
         context.ui.fill_rect(*screen_area, background);
 
