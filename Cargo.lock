@@ -76,7 +76,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#a73493efb599d941eb20db45a3d18b33f638ea3e"
+source = "git+https://github.com/rsaarelm/calx#358d3233c3a034c35e7165e4c1a6ff2b16632f6f"
 dependencies = [
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -87,7 +87,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#a73493efb599d941eb20db45a3d18b33f638ea3e"
+source = "git+https://github.com/rsaarelm/calx#358d3233c3a034c35e7165e4c1a6ff2b16632f6f"
 dependencies = [
  "image 0.10.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -106,7 +106,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#a73493efb599d941eb20db45a3d18b33f638ea3e"
+source = "git+https://github.com/rsaarelm/calx#358d3233c3a034c35e7165e4c1a6ff2b16632f6f"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -117,7 +117,7 @@ dependencies = [
 [[package]]
 name = "calx-resource"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#a73493efb599d941eb20db45a3d18b33f638ea3e"
+source = "git+https://github.com/rsaarelm/calx#358d3233c3a034c35e7165e4c1a6ff2b16632f6f"
 dependencies = [
  "rustc-serialize 0.3.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -468,6 +468,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "magog"
 version = "0.1.0"
 dependencies = [
+ "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
