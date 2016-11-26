@@ -10,6 +10,7 @@ use num::Float;
 pub use rng::{EncodeRng, RngExt};
 pub use text::{Map2DIterator, Map2DUtil, split_line, LineSplit};
 
+mod parser;
 mod rng;
 mod text;
 pub mod timing;
