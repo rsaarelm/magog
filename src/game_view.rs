@@ -71,11 +71,20 @@ impl View {
             Tab => Ok(self.console_is_large = !self.console_is_large),
             Enter | PadEnter => {
                 let input = self.console.get_input();
-                self.parse_command(&input);
+                writeln!(&mut self.console, "{}", input);
+                if let Err(e) = self.parse(&input) { writeln!(&mut self.console, "{}", e); }
                 Ok(())
             }
             _ => Ok(()),
         }
+    }
+
+    fn ping(&mut self) {
+        writeln!(&mut self.console, "pong");
+    }
+
+    command_parser!{
+        fn ping(&mut self);
     }
 
     fn parse_command(&mut self, command: &str) {

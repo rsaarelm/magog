@@ -5,15 +5,17 @@ extern crate scancode;
 extern crate vitral;
 extern crate calx_grid;
 extern crate calx_resource;
+#[macro_use]
+extern crate calx_alg;
 extern crate world;
 extern crate display;
 
 pub mod game_view;
 
-use rand::{XorShiftRng, SeedableRng};
+use rand::{SeedableRng, XorShiftRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::{World, Location, mapgen};
+use world::{Location, World, mapgen};
 use game_view::View;
 
 pub fn main() {
@@ -40,7 +42,10 @@ pub fn main() {
     let seed = 1;
 
     let mut world = World::new(seed);
-    mapgen::caves(&mut world, &mut XorShiftRng::from_seed([seed, 1, 1, 1]), Location::new(0, 0, 0), 300);
+    mapgen::caves(&mut world,
+                  &mut XorShiftRng::from_seed([seed, 1, 1, 1]),
+                  Location::new(0, 0, 0),
+                  300);
 
     let mut view = View::new(world);
 
