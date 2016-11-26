@@ -10,6 +10,7 @@ extern crate world;
 extern crate calx_resource;
 extern crate calx_grid;
 extern crate calx_color;
+extern crate calx_alg;
 
 mod backend;
 mod canvas;
