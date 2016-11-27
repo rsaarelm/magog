@@ -81,3 +81,18 @@ fn test_weighted_choice() {
     println!("Mean square error from expected: {}", err);
     assert!(err < 0.0001);
 }
+
+#[test]
+fn test_random_permutation() {
+    use calx_alg::RandomPermutation;
+    let perm: Vec<usize> = RandomPermutation::new(&mut rand::thread_rng(), 100).collect();
+    let mut sorted = perm.clone();
+    sorted.sort();
+    assert_eq!(sorted, (0..100).collect::<Vec<usize>>());
+
+    // XXX: It is technically possible to get the unpermutating permutation and fail here.
+    // Not very likely though.
+    assert_ne!(perm, sorted);
+    sorted.reverse();
+    assert_ne!(perm, sorted);
+}

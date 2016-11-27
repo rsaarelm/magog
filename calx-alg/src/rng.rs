@@ -1,4 +1,5 @@
 use std::mem;
+use vec_map::VecMap;
 use rand::{Rng, SeedableRng};
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use to_log_odds;
@@ -74,7 +75,7 @@ impl<T: Rng + 'static> Encodable for EncodeRng<T> {
 
 impl<T: Rng + 'static> Decodable for EncodeRng<T> {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        let blob: Vec<u8> = Decodable::decode(d)?;;
+        let blob: Vec<u8> = Decodable::decode(d)?;
         unsafe {
             if blob.len() == mem::size_of::<T>() {
                 Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
@@ -82,5 +83,39 @@ impl<T: Rng + 'static> Decodable for EncodeRng<T> {
                 Err(d.error(&format!("Invalid length {}", blob.len())))
             }
         }
+    }
+}
+
+/// Lazily evaluated random permutation.
+pub struct RandomPermutation<'a, R: Rng + 'static> {
+    remain: usize,
+    shuffle: VecMap<usize>,
+    rng: &'a mut R,
+}
+
+impl<'a, R: Rng + 'static> RandomPermutation<'a, R> {
+    pub fn new(rng: &'a mut R, n: usize) -> RandomPermutation<'a, R> {
+        RandomPermutation {
+            remain: n,
+            shuffle: VecMap::new(),
+            rng: rng,
+        }
+    }
+}
+
+impl<'a, R: Rng + 'static> Iterator for RandomPermutation<'a, R> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<usize> {
+        if self.remain == 0 {
+            return None;
+        }
+
+        let swap_idx = self.rng.gen_range(0, self.remain);
+        self.remain -= 1;
+
+        let head = *self.shuffle.get(self.remain).unwrap_or(&self.remain);
+        let ret = Some(self.shuffle.insert(swap_idx, head).unwrap_or(swap_idx));
+        ret
     }
 }

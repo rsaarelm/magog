@@ -1,13 +1,14 @@
 extern crate num;
 extern crate rand;
 extern crate time;
+extern crate vec_map;
 extern crate rustc_serialize;
 
 use rand::Rng;
 use std::ops::{Add, Mul, Sub};
 use num::Float;
 
-pub use rng::{EncodeRng, RngExt};
+pub use rng::{EncodeRng, RngExt, RandomPermutation};
 pub use text::{Map2DIterator, Map2DUtil, split_line, LineSplit};
 
 mod parser;
