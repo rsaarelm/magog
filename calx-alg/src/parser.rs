@@ -61,7 +61,7 @@ macro_rules! command_parser {
                 fn description(&self) -> &str { &self.0 }
             }
 
-            fn ParseErr(s: String) -> Result<(), Box<::std::error::Error>> {
+            fn parse_err(s: String) -> Result<(), Box<::std::error::Error>> {
                 Err(Box::new(ParseError(s)))
             }
 
@@ -78,17 +78,17 @@ macro_rules! command_parser {
                                     let param: $argtype = FromStr::from_str(arg)?;
                                     param
                                 } else {
-                                    return ParseErr(format!("Too few arguments"));
+                                    return parse_err(format!("Too few arguments"));
                                 }
                             }),*
                         );
                         Ok(())
                     }
                     )+
-                    x => ParseErr(format!("Unknown command {}", x)),
+                    x => parse_err(format!("Unknown command {}", x)),
                 }
             } else {
-                return ParseErr(format!("No input"));
+                return parse_err(format!("No input"));
             }
         }
     }
