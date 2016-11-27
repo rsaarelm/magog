@@ -62,8 +62,24 @@ impl View {
                       300);
     }
 
+    /// Generate a new random maze map.
+    fn maze(&mut self, sparseness: usize) {
+        use world::mapgen;
+        self.world = World::new(1);
+        mapgen::maze(&mut self.world, &mut rand::thread_rng(), sparseness);
+    }
+
+    /// Generate a new random rooms and corridors
+    fn rooms(&mut self) {
+        use world::mapgen;
+        self.world = World::new(1);
+        mapgen::rooms(&mut self.world, &mut rand::thread_rng());
+    }
+
     command_parser!{
         fn cave(&mut self);
+        fn maze(&mut self, sparseness: usize);
+        fn rooms(&mut self);
     }
 
     fn parse_command(&mut self, command: &str) {
