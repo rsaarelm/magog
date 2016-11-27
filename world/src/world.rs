@@ -102,6 +102,13 @@ impl TerrainQuery for World {
             idx = self.default_terrain_id(loc);
         }
 
+        if idx == terrain::Id::Door as u8 {
+            // Standing in the doorway opens the door.
+            if self.has_mobs(loc) {
+                idx = terrain::Id::OpenDoor as u8;
+            }
+        }
+
         terrain::Tile::get_resource(&idx).unwrap()
 
         // TODO: Add open/closed door mapping to terrain data, closed door terrain should have a field
