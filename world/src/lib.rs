@@ -82,17 +82,17 @@ fn on_screen(chart_pos: Point2D<i32>) -> bool {
         && x <= H - 1 - y // south
 }
 
-pub fn onscreen_locations() -> &'static HashSet<Point2D<i32>> {
+pub fn onscreen_locations() -> &'static Vec<Point2D<i32>> {
     lazy_static! {
-        static ref ONSCREEN_LOCATIONS: HashSet<Point2D<i32>> = {
-            let mut m = HashSet::new();
+        static ref ONSCREEN_LOCATIONS: Vec<Point2D<i32>> = {
+            let mut m = Vec::new();
 
             // XXX: Hardcoded limits, tied to W and H in on-screen but expressed differently here.
-            for y in -21..21 {
+            for y in -21..22 {
                 for x in -21..21 {
                     let point = Point2D::new(x, y);
                     if on_screen(point) {
-                        m.insert(point);
+                        m.push(point);
                     }
                 }
             }
