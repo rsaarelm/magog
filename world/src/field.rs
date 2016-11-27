@@ -19,6 +19,10 @@ impl<T: Copy + PartialEq> Field<T> {
         self.patch.get(&pos).map(|&x| x).unwrap_or(self.default)
     }
 
+    pub fn overrides(&self, pos: Location) -> bool {
+        self.patch.contains_key(&pos)
+    }
+
     pub fn set(&mut self, pos: Location, val: T) {
         if val == self.default {
             self.patch.remove(&pos);

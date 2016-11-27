@@ -14,4 +14,5 @@ pub fn terrain() {
     Tile::insert_resource(Id::Tree as u8, Tile::new("tree", Kind::Block, Form::Prop));
     Tile::insert_resource(Id::Wall as u8, Tile::new("wall", Kind::Block, Form::Wall));
     Tile::insert_resource(Id::Rock as u8, Tile::new("rock", Kind::Block, Form::Blob));
+    Tile::insert_resource(Id::Corridor as u8, Tile::new("ground", Kind::Corridor, Form::Floor));
 }

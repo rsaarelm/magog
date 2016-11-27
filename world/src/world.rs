@@ -84,6 +84,10 @@ impl<'a> World {
         serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
     }
     */
+
+    fn default_terrain_id(&self, loc: Location) -> u8 {
+        terrain::Id::Rock as u8
+    }
 }
 
 impl TerrainQuery for World {
@@ -95,7 +99,7 @@ impl TerrainQuery for World {
         let mut idx = self.terrain.get(loc);
 
         if idx == 0 {
-            idx = terrain::Id::Rock as u8;
+            idx = self.default_terrain_id(loc);
         }
 
         terrain::Tile::get_resource(&idx).unwrap()
@@ -122,6 +126,10 @@ impl TerrainQuery for World {
     }
 
     fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }
+
+    fn is_untouched(&self, loc: Location) -> bool {
+        !self.terrain.overrides(loc)
+    }
 }
 
 impl Query for World {
@@ -184,7 +192,9 @@ impl Command for World {
 }
 
 impl Terraform for World {
-    fn set_terrain(&mut self, loc: Location, terrain: u8) { self.terrain.set(loc, terrain); }
+    fn set_terrain(&mut self, loc: Location, terrain: u8) {
+        self.terrain.set(loc, terrain);
+    }
 
     fn set_portal(&mut self, loc: Location, mut portal: Portal) {
         let target_loc = loc + portal;

@@ -92,6 +92,10 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(32, 0)
         .brush("ground")
         ////
+        .color(SLATEGRAY)
+        .tile(32, 0)
+        .brush("corridor")
+        ////
         .color(ROYALBLUE)
         .tile(96, 0)
         .brush("water")

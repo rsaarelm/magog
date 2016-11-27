@@ -6,6 +6,8 @@ use brush::Brush;
 pub enum Kind {
     /// Regular flat solid ground, can walk across easily.
     Ground,
+    /// Like floor, but map generation treats it differently.
+    Corridor,
     /// An obstacle that fills the entire cell, blocks field of view.
     Block,
     /// An obstacle that can be seen through.
@@ -74,12 +76,12 @@ impl Tile {
 
     pub fn blocks_walk(&self) -> bool {
         match self.kind {
-            Kind::Ground | Kind::Door => false,
+            Kind::Ground | Kind::Corridor | Kind::Door => false,
             _ => true,
         }
     }
 
-    pub fn is_open(&self) -> bool { self.kind == Kind::Ground }
+    pub fn is_open(&self) -> bool { self.kind == Kind::Ground || self.kind == Kind::Corridor }
 
     pub fn is_door(&self) -> bool { self.kind == Kind::Door }
 
@@ -107,4 +109,5 @@ pub enum Id {
     Tree = 5,
     Wall = 6,
     Rock = 7,
+    Corridor = 8,
 }

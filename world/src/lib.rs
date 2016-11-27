@@ -71,7 +71,7 @@ pub enum FovStatus {
 ///
 /// Since various bits of game logic are tied to the screen boundaries, the screen size is fixed as
 /// a constant.
-fn on_screen(chart_pos: Point2D<i32>) -> bool {
+pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
     const W: i32 = 39;
     const H: i32 = 22;
     let (x, y) = (chart_pos.x, chart_pos.y);
@@ -82,6 +82,7 @@ fn on_screen(chart_pos: Point2D<i32>) -> bool {
         && x <= H - 1 - y // south
 }
 
+/// List of all points for which `on_screen` is true.
 pub fn onscreen_locations() -> &'static Vec<Point2D<i32>> {
     lazy_static! {
         static ref ONSCREEN_LOCATIONS: Vec<Point2D<i32>> = {
