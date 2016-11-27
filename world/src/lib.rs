@@ -57,7 +57,7 @@ pub use terraform::TerrainQuery;
 pub mod terrain;
 
 mod world;
-pub use world::{World, Ecs};
+pub use world::{Ecs, World};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {

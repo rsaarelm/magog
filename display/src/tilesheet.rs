@@ -37,9 +37,7 @@ pub fn tilesheet_bounds<I>(image: &I) -> Vec<Rect<i32>>
     ret.sort_by(|a, b| rect_key(a).cmp(&rect_key(b)));
     return ret;
 
-    fn rect_key(x: &Rect<i32>) -> (i32, i32) {
-        (x.bottom_right().y, x.bottom_right().x)
-    }
+    fn rect_key(x: &Rect<i32>) -> (i32, i32) { (x.bottom_right().y, x.bottom_right().x) }
 }
 
 /// Find the smallest bounding box around seed pixel whose sides are either all background color or

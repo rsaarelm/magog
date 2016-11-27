@@ -43,7 +43,9 @@ impl View {
             Enter | PadEnter => {
                 let input = self.console.get_input();
                 writeln!(&mut self.console, "{}", input);
-                if let Err(e) = self.parse(&input) { writeln!(&mut self.console, "{}", e); }
+                if let Err(e) = self.parse(&input) {
+                    writeln!(&mut self.console, "{}", e);
+                }
                 Ok(())
             }
             _ => Ok(()),

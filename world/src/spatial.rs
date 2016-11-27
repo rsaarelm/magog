@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
+use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 use vec_map::VecMap;
 use calx_ecs::Entity;
 use location::Location;
@@ -196,9 +196,7 @@ impl Spatial {
 struct Elt(Entity, Place);
 
 impl Encodable for Spatial {
-    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        self.dump().encode(s)
-    }
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> { self.dump().encode(s) }
 }
 
 impl Decodable for Spatial {

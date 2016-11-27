@@ -2,7 +2,7 @@ use calx_resource::ResourceStore;
 
 /// Init the static terrain assets.
 pub fn terrain() {
-    use terrain::{Form, Kind, Tile, Id};
+    use terrain::{Form, Id, Kind, Tile};
 
     // Void, terrain 0 is special.
     Tile::insert_resource(Id::Empty as u8, Tile::new("blank_floor", Kind::Block, Form::Void));

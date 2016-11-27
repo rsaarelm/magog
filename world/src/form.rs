@@ -2,10 +2,10 @@ use calx_ecs::Entity;
 use calx_color::color::*;
 use calx_color::Rgba;
 use calx_resource::Resource;
-use stats::{Stats, Intrinsic};
+use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
-use components::{Desc, Brain, Health};
-use world::{World, Loadout};
+use components::{Brain, Desc, Health};
+use world::{Loadout, World};
 use mutate::Mutate;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -27,23 +27,19 @@ pub struct Form {
     ///
     /// More powerful entities only start showing up in large depths.
     pub min_depth: i32,
-//    /// Type of thing.
-//    pub category: FormType,
+    //    /// Type of thing.
+    //    pub category: FormType,
     /// Actual components to set up the thing.
     pub loadout: Loadout,
 }
 
 impl Form {
     /// Create a standard form for a living creature.
-    pub fn mob(name: &str,
-               brush: &str,
-               power: i32,
-               intrinsics: &[Intrinsic])
-               -> Form {
+    pub fn mob(name: &str, brush: &str, power: i32, intrinsics: &[Intrinsic]) -> Form {
         Form {
             rarity: 1.0,
             min_depth: 0,
-//            category: FormType::Creature,
+            // category: FormType::Creature,
             loadout: Loadout::new()
                          .c(Stats::new(power, intrinsics))
                          .c(Desc::new(name, brush))
@@ -68,9 +64,7 @@ impl Form {
     }
 
     /// Build a new entity with this form.
-    pub fn build<W: Mutate>(&self, w: &mut W) -> Entity {
-        w.spawn(&self.loadout)
-    }
+    pub fn build<W: Mutate>(&self, w: &mut W) -> Entity { w.spawn(&self.loadout) }
 }
 
 lazy_static! {
