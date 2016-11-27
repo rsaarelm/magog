@@ -296,7 +296,7 @@ impl BrushBuilder {
     /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
     /// and the other contains the two long sides wallform.
     pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Self {
-        self.splat(center_x, center_y, 16, 32) .offset(16, 16)              // 0
+        self.splat(center_x, center_y, 16, 32).offset(16, 16)               // 0
             .frame().splat(center_x + 16, center_y, 16, 32).offset(0, 16)   // 1
             .frame().splat(sides_x, sides_y, 16, 32).offset(16, 16)         // 2
             .frame().splat(sides_x + 16, sides_y, 16, 32).offset(0, 16)     // 3

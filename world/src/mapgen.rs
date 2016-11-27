@@ -152,10 +152,13 @@ pub fn rooms<T, R>(world: &mut T, rng: &mut R)
 {
     // Accept the first room site with badness below this threshold.
     static GOOD_ENOUGH_BADNESS: f32 = 15.0;
+    static UNACCEPTABLE_BADNESS: f32 = 350.0;
+    let mut failures_left = 20;
+    let mut rooms_left = rng.gen_range(4, 9);
 
     maze(world, rng, 8);
 
-    for _ in 0..rng.gen_range(3, 9) {
+    while rooms_left > 0 && failures_left > 0 {
         let room = EmptyRoom::rand(rng);
 
         let mut best_site = None;
@@ -181,8 +184,15 @@ pub fn rooms<T, R>(world: &mut T, rng: &mut R)
             }
         }
 
-        if let Some((loc, _)) = best_site {
-            room.place(world, loc);
+        if let Some((loc, badness)) = best_site {
+            if badness > UNACCEPTABLE_BADNESS && failures_left > 1 {
+                failures_left -= 1;
+            } else {
+                room.place(world, loc);
+                rooms_left -= 1;
+            }
+        } else {
+            failures_left -= 1;
         }
     }
 }
@@ -221,16 +231,8 @@ impl Room for EmptyRoom {
 
         for y in 0..(self.height) {
             for x in 0..(self.width) {
-                let is_wall = x == 0 || y == 0 || x == self.width - 1 || y == self.height - 1;
-
-                // This is a corner tile that does not connect to the main floor, due to hex map
-                // geometry. Breach of this corner will not make the space of the room connected to
-                // the map.
-                let is_blocked_corner = (x == self.width - 1 && y == 0) ||
-                                        (y == self.width - 1 && x == 0);
-
-                let is_corner = is_blocked_corner || (x == 0 && y == 0) ||
-                                (x == self.width - 1 && y == self.width - 1);
+                let is_wall = x == 0 || x == self.width - 1 || y == 0 || y == self.height - 1;
+                let is_corner = (x == 0 || x == self.width - 1) && (y == 0 || y == self.height - 1);
 
                 let is_x_wall = (y == 0 || y == self.height - 1) && !is_corner;
                 let is_y_wall = (x == 0 || x == self.width - 1) && !is_corner;
@@ -243,7 +245,7 @@ impl Room for EmptyRoom {
                     return None;
                 }
 
-                if is_wall && !is_blocked_corner && w.terrain(loc).is_open() {
+                if is_wall && !is_corner && w.terrain(loc).is_open() {
                     connected = true;
                 }
 
@@ -293,10 +295,11 @@ impl Room for EmptyRoom {
                 let is_wall = x == 0 || y == 0 || x == self.width - 1 || y == self.height - 1;
                 let loc = loc + Point2D::new(x as i32, y as i32);
 
+                let is_corner = (x == 0 || x == self.width - 1) && (y == 0 || y == self.height - 1);
+
                 if is_wall {
                     if w.terrain(loc).is_open() {
-                        // TODO: Doors
-                        w.set_terrain(loc, Ground as u8);
+                        w.set_terrain(loc, if is_corner { Ground } else { Door } as u8);
                     } else {
                         w.set_terrain(loc, Wall as u8);
                     }

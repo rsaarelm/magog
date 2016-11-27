@@ -74,6 +74,9 @@ pub fn font(display: &glium::Display, backend: &mut Backend) {
 
 /// Init the static brush assets.
 pub fn brushes(display: &glium::Display, backend: &mut Backend) {
+    // FIXME: This API needs to be more ergonomic. In particular, need better syntactic cues for
+    // brush boundries.
+
     BrushBuilder::new()
         .file("display/assets/floors.png")
         ////
@@ -153,6 +156,39 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .color(LIGHTSLATEGRAY)
         .wall(0, 0, 32, 0)
         .brush("wall")
+
+        .color(LIGHTSLATEGRAY)
+        .wall(0, 0, 96, 0)
+        .brush("open_door")
+
+        // XXX: Wall helper function doesn't handle complex splats.
+        //
+        .color(SADDLEBROWN)
+        .splat(128, 0, 16, 32).offset(16, 16)
+        .color(LIGHTSLATEGRAY)
+        .splat(0, 0, 16, 32).offset(16, 16)
+
+        .frame()
+        .color(SADDLEBROWN)
+        .splat(128 + 16, 0, 16, 32).offset(0, 16)
+        .color(LIGHTSLATEGRAY)
+        .splat(16, 0, 16, 32).offset(0, 16)
+
+        .frame()
+        .color(SADDLEBROWN)
+        .splat(160, 0, 16, 32).offset(16, 16)
+        .color(LIGHTSLATEGRAY)
+        .splat(96, 0, 16, 32).offset(16, 16)
+
+        .frame()
+        .color(SADDLEBROWN)
+        .splat(160 + 16, 0, 16, 32).offset(0, 16)
+        .color(LIGHTSLATEGRAY)
+        .splat(96 + 16, 0, 16, 32).offset(0, 16)
+
+        .brush("door")
+        // Door finally ends here.
+
         ////
         .file("display/assets/blobs.png")
         ////

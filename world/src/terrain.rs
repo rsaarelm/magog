@@ -110,4 +110,6 @@ pub enum Id {
     Wall = 6,
     Rock = 7,
     Corridor = 8,
+    OpenDoor = 9,
+    Door = 10,
 }
