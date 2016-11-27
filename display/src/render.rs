@@ -255,14 +255,11 @@ impl Kernel {
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn blob_faces(&self) -> [bool; 6] {
-        // Because they work a bit differently visually, back-side faces
-        // are not drawn if there is any hull touching, front is only
-        // not drawn if there's another blob.
         [!self.n.is_hull(),
          !self.ne.is_hull(),
-         !self.se.is_blob(),
-         !self.s.is_blob(),
-         !self.sw.is_blob(),
+         !self.se.is_hull(),
+         !self.s.is_hull(),
+         !self.sw.is_hull(),
          !self.nw.is_hull()]
     }
 
