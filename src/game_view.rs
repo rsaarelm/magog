@@ -4,7 +4,7 @@ use rand;
 use calx_grid::Dir6;
 use calx_resource::Resource;
 use scancode::Scancode;
-use world::{Command, Location, TerrainQuery, World};
+use world::{on_screen, Command, Location, TerrainQuery, World};
 use display;
 
 pub struct View {
@@ -52,6 +52,10 @@ impl View {
         }
     }
 
+    fn dump(&mut self) {
+        dump_map(&self.world);
+    }
+
     /// Generate a new random cave map.
     fn cave(&mut self) {
         use world::mapgen;
@@ -80,6 +84,8 @@ impl View {
         fn cave(&mut self);
         fn maze(&mut self, sparseness: usize);
         fn rooms(&mut self);
+
+        fn dump(&mut self);
     }
 
     fn parse_command(&mut self, command: &str) {
@@ -110,5 +116,30 @@ impl View {
                 self.game_input(scancode)
             };
         }
+    }
+}
+
+/// Print the world map as ASCII.
+fn dump_map(world: &World) {
+    for y in -21..21 {
+        for x in -39..41 {
+            if (x + y) % 2 != 0 { print!(" "); continue; }
+            let pos = Point2D::new((x + y) / 2, y);
+            if on_screen(pos) {
+                let t = world.terrain(Location::new(0, 0, 0) + pos);
+                if t.is_open() {
+                    print!(".");
+                } else if t.is_door() {
+                    print!("+");
+                } else if t.is_wall() {
+                    print!("#");
+                } else {
+                    print!("*");
+                }
+            } else {
+                print!(" ");
+            }
+        }
+        println!("");
     }
 }
