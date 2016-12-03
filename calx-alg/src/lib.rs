@@ -9,7 +9,7 @@ use std::ops::{Add, Mul, Sub};
 use num::Float;
 
 pub use rng::{EncodeRng, RngExt, RandomPermutation};
-pub use text::{Map2DIterator, Map2DUtil, split_line, LineSplit};
+pub use text::{split_line, LineSplit};
 
 mod parser;
 mod rng;
