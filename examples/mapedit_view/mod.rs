@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::num::Wrapping;
 use euclid::{Point2D, Rect};
 use scancode::Scancode;
@@ -127,4 +128,19 @@ impl View {
         let (a, b) = self.camera;
         self.camera = (b, a);
     }
+}
+
+/// Type for maps saved into disk.
+#[derive(Debug, RustcEncodable, RustcDecodable)]
+struct MapSave {
+    pub map: String,
+    pub legend: HashMap<char, LegendItem>,
+}
+
+#[derive(Debug, RustcEncodable, RustcDecodable)]
+struct LegendItem {
+    /// Terrain
+    pub t: String,
+    /// Entities
+    pub e: Vec<String>,
 }

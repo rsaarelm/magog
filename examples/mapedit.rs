@@ -1,3 +1,4 @@
+extern crate rustc_serialize;
 extern crate euclid;
 #[macro_use]
 extern crate glium;

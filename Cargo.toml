@@ -18,6 +18,7 @@ euclid = "0.10"
 time = "0.1"
 glium = "0.15"
 scancode = "0.1"
+rustc-serialize = "0.3"
 
 # TODO: Make Vitral into a proper crate eventually.
 [dependencies.vitral]
