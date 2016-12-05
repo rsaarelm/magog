@@ -32,11 +32,11 @@ impl View {
     }
 
     pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
-        // TODO: Camera logic
         let camera_loc = self.camera.0;
 
         let mut view = display::WorldView::new(camera_loc, *screen_area);
         view.show_cursor = true;
+        view.highlight_offscreen_tiles = true;
         view.draw(&self.world, context);
 
         if let Some(loc) = view.cursor_loc {

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
-use calx_grid::{FovValue, HexFov};
+use calx_grid::{Dir6, FovValue, HexFov};
 use calx_resource::Resource;
-use world::{Location, Query, TerrainQuery, World};
+use world::{self, Location, Query, TerrainQuery, World};
 use sprite::Sprite;
 use render::{self, Layer};
 use backend;
@@ -17,6 +17,9 @@ pub struct WorldView {
     camera_loc: Location,
     screen_area: Rect<f32>,
     fov: Option<HashMap<Point2D<i32>, Vec<Location>>>,
+
+    /// Mostly used in mapedit
+    pub highlight_offscreen_tiles: bool,
 }
 
 impl WorldView {
@@ -27,6 +30,7 @@ impl WorldView {
             camera_loc: camera_loc,
             screen_area: screen_area,
             fov: None,
+            highlight_offscreen_tiles: false,
         }
     }
 
@@ -88,6 +92,28 @@ impl WorldView {
                         brush: desc.brush.clone(),
                         frame_idx: frame_idx,
                     });
+                }
+            }
+
+            if self.highlight_offscreen_tiles {
+                let p = Point2D::new(loc.x as i32, loc.y as i32);
+
+                if !world::on_screen(p) {
+                    if Dir6::iter().any(|d| world::on_screen(p + d.to_v2())) {
+                        sprites.push(Sprite {
+                            layer: Layer::Decal,
+                            offset: [screen_pos.x as i32, screen_pos.y as i32],
+                            brush: Resource::new("portal".to_string()).unwrap(),
+                            frame_idx: 0,
+                        });
+                    } else {
+                        sprites.push(Sprite {
+                            layer: Layer::Decal,
+                            offset: [screen_pos.x as i32, screen_pos.y as i32],
+                            brush: Resource::new("cursor".to_string()).unwrap(),
+                            frame_idx: 0,
+                        });
+                    }
                 }
             }
         }
