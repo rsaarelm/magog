@@ -1,8 +1,7 @@
 use std::num::Wrapping;
 use euclid::{Point2D, Rect};
-use calx_resource::Resource;
 use scancode::Scancode;
-use world::{Location, Portal, Query, Terraform, World};
+use world::{Location, Portal, Terraform, World};
 use display;
 use vitral;
 

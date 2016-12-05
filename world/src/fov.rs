@@ -2,7 +2,6 @@ use euclid::Point2D;
 use calx_grid::{FovValue, HexGeom};
 use world::World;
 use location::Location;
-use query::Query;
 use terraform::TerrainQuery;
 use terrain;
 

@@ -2,7 +2,6 @@ use std::io::Write;
 use euclid::{Point2D, Rect};
 use rand;
 use calx_grid::Dir6;
-use calx_resource::Resource;
 use scancode::Scancode;
 use world::{on_screen, Command, Location, TerrainQuery, World};
 use display;
@@ -42,9 +41,9 @@ impl View {
             Tab => Ok(self.console_is_large = !self.console_is_large),
             Enter | PadEnter => {
                 let input = self.console.get_input();
-                writeln!(&mut self.console, "{}", input);
+                let _ = writeln!(&mut self.console, "{}", input);
                 if let Err(e) = self.parse(&input) {
-                    writeln!(&mut self.console, "{}", e);
+                    let _ = writeln!(&mut self.console, "{}", e);
                 }
                 Ok(())
             }
