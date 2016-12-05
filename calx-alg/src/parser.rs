@@ -66,6 +66,7 @@ macro_rules! command_parser {
             }
 
             use ::std::str::FromStr;
+            let input = input.trim_right();
             let mut elts = input.split(" ");
             let cmd = elts.next();
             if let Some(cmd) = cmd {
