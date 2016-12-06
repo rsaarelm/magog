@@ -134,13 +134,11 @@ impl<T: fmt::Display + Clone + Eq + Hash> fmt::Display for Prefab<T> {
     }
 }
 
-impl <T: fmt::Display+Clone+Eq+Hash> Prefab<T> {
+impl<T: fmt::Display + Clone + Eq + Hash> Prefab<T> {
     /// Return a wrapper for printing the map in hex layout.
     ///
     /// Without the wrapper the print format will be a traditional dense text map.
-    pub fn hexmap_display<'a>(&'a self) -> HexmapDisplay<'a, T> {
-        HexmapDisplay(self)
-    }
+    pub fn hexmap_display<'a>(&'a self) -> HexmapDisplay<'a, T> { HexmapDisplay(self) }
 }
 
 /// Wrapper type for displaying the `Prefab` as a text hexmap.
@@ -149,7 +147,13 @@ pub struct HexmapDisplay<'a, T: 'a>(&'a Prefab<T>);
 impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let max_width = self.0.dim.width * 2 + self.0.dim.height;
-        let x_offset = self.0.dim.height as i32 / 2;
+
+        // Find the smallest displayed x-coordinate that actually shows up in the map.
+        let min_x = (0..self.0.dim.width).zip(0..self.0.dim.height)
+                       .map(|(x, y)| Point2D::new(x as i32, y as i32))
+                       .filter(|&p| self.0.get(p).is_some())
+                       .map(|p| p.x * 2 - p.y)
+                       .min().unwrap_or(0) + 1;
 
         for y in 0..(self.0.dim.height) {
             for x in 0..max_width {
@@ -157,7 +161,7 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
                     write!(f, " ")?;
                     continue;
                 }
-                let map_x = (x + y) as i32 / 2 - x_offset;
+                let map_x = (x + y) as i32 / 2 - min_x;
                 let map_y = y as i32;
                 if let Some(c) = self.0.get(Point2D::new(map_x, map_y)) {
                     write!(f, "{}", c)?;
@@ -231,7 +235,65 @@ mod test {
 @@@@";
         let map = Prefab::from_text_hexmap(&hex_text);
 
-        assert_eq!(normalize(&format!("{}", map.hexmap_display())), normalize(hex_text));
+        assert_eq!(normalize(&format!("{}", map.hexmap_display())),
+                   normalize(hex_text));
         assert_eq!(normalize(&format!("{}", map)), normalize(dense_text));
+    }
+
+    #[test]
+    fn test_left_align() {
+        let big_hex = "
+                                                            * *
+                                                         * * * *
+                                                      * * * * * *
+                                                   * * * * * * * *
+                                                * * * * * * * * * *
+                                             * * * * * * * * * * * *
+                                          * * * * * * * * * * * * * *
+                                       * * * * * * * * * * * * * * * *
+                                    * * * * * * * * * * * * * * * * * *
+                                 * * * * * * * * * * * * * * * * * * * *
+                              * * * * * * * * * * * * * * * * * * * * * *
+                           * * * * * * * * * * * * * * * * * * * * * * * *
+                        * * * * * * * * * * * * * * ^ * * * * * * * * * * *
+                     * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+               * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+         * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  * * * * * * * * * * * * * * * * * * * * , , % # # , , , * * * * * * * * * * * * * *
+   * * * * * * * * * * * * * * * * * * * , , , , , , , , * * * * * * * * * * * * * *
+    * * * * * * * * * * * * * * * * * * , , , * * , , , * * * * * * * * * * * * * *
+     * * * * * * * * * * * * * * * * * , , , , , , , , * * * * * * * * * * * * *
+      * * * * * * * * * * * * * * * * , , , , , , , , * * * * * * * * * * * *
+       * * * * * * * * * * * * * * * , , , , , , , , * * * * * * * * * * *
+        * * * * * * * * * * * * * * , , , , , , , , * * * * * * * * * *
+         * * * * * * * * * * * * * , , , , , , , , * * * * * * * * *
+          * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+           * * * * * * * * * * * * * * * * * * * * * * * * * *
+            * * * * * * * * * * * * * * * * * * * * * * * *
+             * * * * * * * * * * * * * * * * * * * * * *
+              * * * * * * * * * * * * * * * * * * * *
+               * * * * * * * * * * * * * * * * * *
+                * * * * * * * * * * * * * * * *
+                 * * * * * * * * * * * * * *
+                  * * * * * * * * * * * *
+                   * * * * * * * * * *
+                    * * * * * * * *
+                     * * * * * *
+                      * * * *
+                       * *";
+        let map = Prefab::from_text_hexmap(&big_hex);
+
+        let map2 = Prefab::from_text_hexmap(&format!("{}", map.hexmap_display()));
+        assert_eq!(map, map2);
+
+        assert_eq!(normalize(&format!("{}", map.hexmap_display())),
+                   normalize(big_hex));
+
     }
 }
