@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use calx_resource::ResourceStore;
 use location::{Location, Portal};
 use terrain;
 
@@ -7,14 +8,19 @@ pub trait TerrainQuery {
     /// Return whether location is contained in the current play area.
     fn is_valid_location(&self, loc: Location) -> bool;
 
-    /// Return terrain at location.
-    fn terrain(&self, loc: Location) -> Arc<terrain::Tile>;
+    /// Return Id value of terrain at location.
+    fn terrain_id(&self, loc: Location) -> u8;
 
     /// If location contains a portal, return the destination of the portal.
     fn portal(&self, loc: Location) -> Option<Location>;
 
     /// The cell has not (probably) been touched by map generation yet.
     fn is_untouched(&self, loc: Location) -> bool;
+
+    /// Return terrain at location.
+    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
+        terrain::Tile::get_resource(&self.terrain_id(loc)).unwrap()
+    }
 
     /// Return a portal if it can be seen through.
     fn visible_portal(&self, loc: Location) -> Option<Location> {

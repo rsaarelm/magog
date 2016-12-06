@@ -100,6 +100,8 @@ impl Loadable<u8> for Tile {}
 
 impl_store!(TILE_STORE, u8, Tile);
 
+#[derive(Debug)]
+#[repr(u8)]
 pub enum Id {
     Empty = 0,
     Gate = 1,

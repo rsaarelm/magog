@@ -95,7 +95,7 @@ impl TerrainQuery for World {
         ::on_screen(Point2D::new(loc.x as i32, loc.y as i32))
     }
 
-    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
+    fn terrain_id(&self, loc: Location) -> u8 {
         let mut idx = self.terrain.get(loc);
 
         if idx == 0 {
@@ -109,21 +109,14 @@ impl TerrainQuery for World {
             }
         }
 
-        terrain::Tile::get_resource(&idx).unwrap()
-
-        // TODO: Add open/closed door mapping to terrain data, closed door terrain should have a field
-        // that contains the terrain index of the corresponding open door tile.
+        idx
 
         // TODO: Support terrain with brush variant distributions, like the grass case below that
         // occasionlly emits a fancier brush. The distribution needs to be embedded in the Tile struct.
         // The sampling needs loc noise, but is probably better done at the point where terrain is
         // being drawn than here, since we'll want to still have just one immutable terrain id
         // corresponding to all the variants.
-        // Mobs standing on doors make the doors open.
-
-        // if ret == TerrainType::Door && self.has_mobs(loc) {
-        //     ret = TerrainType::OpenDoor;
-        // }
+        //
         // // Grass is only occasionally fancy.
         // if ret == TerrainType::Grass {
         //     if loc.noise() > 0.85 {
