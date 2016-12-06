@@ -2,8 +2,11 @@ extern crate rustc_serialize;
 extern crate euclid;
 #[macro_use]
 extern crate glium;
+extern crate toml;
 extern crate vitral;
 extern crate scancode;
+#[macro_use]
+extern crate calx_alg;
 extern crate calx_color;
 #[macro_use]
 extern crate calx_resource;
@@ -30,6 +33,7 @@ pub fn main() {
 
     // Initialize game resources.
     ::display::init::brushes(&display, &mut backend);
+    ::display::init::font(&display, &mut backend);
     ::world::init::terrain();
 
     let mut context = display::Context {

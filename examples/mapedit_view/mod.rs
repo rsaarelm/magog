@@ -1,8 +1,13 @@
-use std::collections::HashMap;
+use std::io::Write;
+use std::iter::FromIterator;
+use std::fmt;
+use std::collections::{HashMap, HashSet};
 use std::num::Wrapping;
 use euclid::{Point2D, Rect};
+use toml;
 use scancode::Scancode;
-use world::{Location, Portal, Terraform, World};
+use calx_grid::{Prefab, Dir6};
+use world::{self, Location, Portal, TerrainQuery, Terraform, World};
 use display;
 use vitral;
 
@@ -19,6 +24,9 @@ pub struct View {
     camera: (Location, Location),
     /// Do the two cameras move together?
     camera_lock: bool,
+
+    console: display::Console,
+    console_is_large: bool,
 }
 
 impl View {
@@ -28,6 +36,8 @@ impl View {
             mode: PaintMode::Terrain(7, 2),
             camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
             camera_lock: false,
+            console: display::Console::new(),
+            console_is_large: false,
         }
     }
 
@@ -94,20 +104,126 @@ impl View {
 
         context.ui.set_clip_rect(None);
 
+        if self.console_is_large {
+            let mut console_area = *screen_area;
+            console_area.size.height /= 2.0;
+            self.console.draw_large(context, &console_area);
+        } else {
+            self.console.draw_small(context, screen_area);
+        }
+
         if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
-            use scancode::Scancode::*;
-            match scancode {
-                Q => self.move_camera(Point2D::new(-1, 0), 0),
-                W => self.move_camera(Point2D::new(-1, -1), 0),
-                E => self.move_camera(Point2D::new(0, -1), 0),
-                A => self.move_camera(Point2D::new(0, 1), 0),
-                S => self.move_camera(Point2D::new(1, 1), 0),
-                D => self.move_camera(Point2D::new(1, 0), 0),
-                Tab => self.switch_camera(),
-                RightBracket => self.move_camera(Point2D::new(0, 0), 1),
-                LeftBracket => self.move_camera(Point2D::new(0, 0), -1),
-                _ => {}
+            if self.console_is_large {
+                self.console_input(scancode);
+            } else {
+                self.editor_input(scancode);
             }
+        }
+    }
+
+    command_parser!{
+        fn load(&mut self, path: String);
+        fn save(&mut self, path: String);
+    }
+
+    fn load(&mut self, path: String) {
+        let _ = writeln!(&mut self.console, "TODO load");
+    }
+
+    fn save(&mut self, path: String) {
+        let mut pts = HashSet::new();
+        for x in world::onscreen_locations().iter() {
+            pts.insert(*x);
+            // Get the immediate border around the actual screen cells, these will also affect the
+            // visual look of the map.
+            for d in Dir6::iter() {
+                pts.insert(*x + d.to_v2());
+            }
+        }
+
+        let mut map = Vec::new();
+        let mut legend = HashMap::new();
+
+        for &p in pts.iter() {
+            use world::terrain::Id::*;
+            use world::terrain::Id;
+            // TODO: Centralized place for this. Does not belong here...
+            //
+            // This will get more complex anyway once entity spawns are added to the mix, so hold
+            // off doing the more engineered version for now. (Plan is to use more or less
+            // conventional roguelike characters for plain terrain, then a sequence of alphabetical
+            // chars diving off into unicode space if needed for each unique terrain + entity list
+            // value.)
+            //
+            // TODO: Add unicode's confusables.txt official visual lookalike dataset,
+            // eg at ftp://unicode.org/Public/security/8.0.0/confusables.txt
+            // to filter the generated characters.
+            //
+            // The load code reads this stuff from the legend, doesn't need mapping logic.
+
+            // NB: Since these are saved to TOML which uses the `'` single quote character to
+            // separate literal strings, no legend item must use the single quote character.
+            let id = self.world.terrain_id(Location::origin() + p);
+            // XXX: Hacketyhack unsafe integer to enum.
+            let id = unsafe { ::std::mem::transmute::<u8, Id>(id) };
+
+            let c = match id {
+                Empty => ' ',
+                Gate => '^',
+                Ground => '.',
+                Grass => ',',
+                Water => '~',
+                Tree => '%',
+                Wall => '#',
+                Rock => '*',
+                Corridor => '_',
+                OpenDoor => '|',
+                Door => '+',
+            };
+
+            legend.insert(c, LegendItem { t: format!("{:?}", id), e: Vec::new() });
+            map.push((p, c));
+        }
+
+        let save = MapSave {
+            map: format!("{}", Prefab::from_iter(map.into_iter()).hexmap_display()),
+            legend: legend
+        };
+
+        println!("{}", save);
+
+        // TODO: Write TOML.
+    }
+
+    fn console_input(&mut self, scancode: Scancode) {
+        use scancode::Scancode::*;
+        match scancode {
+            Tab => { self.console_is_large = !self.console_is_large; }
+            Enter | PadEnter => {
+                let input = self.console.get_input();
+                let _ = writeln!(&mut self.console, "{}", input);
+                if let Err(e) = self.parse(&input) {
+                    let _ = writeln!(&mut self.console, "{}", e);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn editor_input(&mut self, scancode: Scancode) {
+        use scancode::Scancode::*;
+        match scancode {
+            Q => self.move_camera(Point2D::new(-1, 0), 0),
+            W => self.move_camera(Point2D::new(-1, -1), 0),
+            E => self.move_camera(Point2D::new(0, -1), 0),
+            A => self.move_camera(Point2D::new(0, 1), 0),
+            S => self.move_camera(Point2D::new(1, 1), 0),
+            D => self.move_camera(Point2D::new(1, 0), 0),
+            F1 => self.switch_camera(),
+            Tab => self.console_is_large = !self.console_is_large,
+            RightBracket => self.move_camera(Point2D::new(0, 0), 1),
+            LeftBracket => self.move_camera(Point2D::new(0, 0), -1),
+            _ => {}
         }
     }
 
@@ -137,10 +253,38 @@ struct MapSave {
     pub legend: HashMap<char, LegendItem>,
 }
 
+impl fmt::Display for MapSave {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TOML formatted output.
+        writeln!(f, "map = '''")?;
+        for line in self.map.lines() {
+            writeln!(f, "{}", line.trim_right())?;
+        }
+        writeln!(f, "'''\n")?;
+        writeln!(f, "[legend]")?;
+        for (k, v) in self.legend.iter() {
+            writeln!(f, "\"{}\" = {}", k, v)?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, RustcEncodable, RustcDecodable)]
 struct LegendItem {
     /// Terrain
     pub t: String,
     /// Entities
     pub e: Vec<String>,
+}
+
+impl fmt::Display for LegendItem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TOML formatted output.
+        write!(f, "{{ t: \"{}\", e: [", self.t)?;
+        self.e.iter().next().map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
+        for e in self.e.iter().skip(1) {
+            write!(f, ", \"{}\"", e)?;
+        }
+        write!(f, "] }}")
+    }
 }
