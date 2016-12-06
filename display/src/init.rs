@@ -192,8 +192,11 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         ////
         .file("display/assets/blobs.png")
         ////
+        .color(BLACK)
+        .blob(0, 64, 0, 96, 0, 128)
+        .brush("solid-blob")
         .color(DARKGOLDENROD)
-        .blob(0, 0, 0, 32, 0, 64)
+        .blob(0, 0, 0, 32, 0, 160)
         .brush("rock")
         ////
         .file("display/assets/mobs.png")
