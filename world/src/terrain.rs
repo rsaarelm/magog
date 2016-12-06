@@ -1,4 +1,5 @@
 use calx_resource::{Loadable, Resource};
+use std::str::FromStr;
 use brush::Brush;
 
 /// Movement effect of a terrain tile.
@@ -100,7 +101,7 @@ impl Loadable<u8> for Tile {}
 
 impl_store!(TILE_STORE, u8, Tile);
 
-#[derive(Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, RustcEncodable, RustcDecodable)]
 #[repr(u8)]
 pub enum Id {
     Empty = 0,
@@ -114,4 +115,27 @@ pub enum Id {
     Corridor = 8,
     OpenDoor = 9,
     Door = 10,
+}
+
+impl FromStr for Id {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use self::Id::*;
+
+        // XXX: Repeating the enum list.
+        match s {
+            "Empty" => Ok(Empty),
+            "Gate" => Ok(Gate),
+            "Ground" => Ok(Ground),
+            "Grass" => Ok(Grass),
+            "Water" => Ok(Water),
+            "Tree" => Ok(Tree),
+            "Wall" => Ok(Wall),
+            "Rock" => Ok(Rock),
+            "Corridor" => Ok(Corridor),
+            "OpenDoor" => Ok(OpenDoor),
+            "Door" => Ok(Door),
+            _ => Err(format!("Unknown terrain '{}'", s))
+        }
+    }
 }

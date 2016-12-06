@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::str::FromStr;
 use std::error::Error;
 use std::iter::FromIterator;
 use std::fmt;
@@ -131,7 +132,7 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        fn loader(path: String) -> Result<MapSave, Box<Error>> {
+        fn loader(path: String) -> Result<Prefab<terrain::Id>, Box<Error>> {
             let mut file = File::open(path)?;
             let mut s = String::new();
             file.read_to_string(&mut s)?;
@@ -139,19 +140,46 @@ impl View {
 
             let mut decoder = toml::Decoder::new(
                 toml::Value::Table(parser.parse().ok_or_else(|| format!("Parse errors: {:?}", parser.errors))?));
-            Ok(MapSave::decode(&mut decoder)?)
+            let save = MapSave::decode(&mut decoder)?;
+
+            // Turn map into prefab.
+            let prefab: Prefab<char> = Prefab::from_text_hexmap(&save.map);
+            let prefab: Prefab<terrain::Id> = prefab.map(|item| {
+                // TODO: REALLY need error handling instead of panicing here, since we're possibly
+                // dealing with input from the outside, but can't do error pattern in the map
+                // closure. Fix by adding a pre-verify stage that checks that all map glyphs are
+                // found in legend and that all legend items can be instantiated.
+                let item = save.legend.get(&item).expect(&format!("Glyph '{}' not found in legend!", item));
+                terrain::Id::from_str(&item.t).expect(&format!("Unknown terrain type '{}'!", item.t))
+            });
+
+            Ok(prefab)
         }
 
-        let map = match loader(path) {
-            Ok(map) => map,
+        let prefab = match loader(path) {
+            Ok(prefab) => prefab,
             Err(e) => {
                 let _ = writeln!(&mut self.console, "Load error: {}", e);
                 return;
             }
         };
 
-        // TODO: impress map upon world.
-        println!("{}", map);
+        // Apply map.
+        self.world = World::new(1);
+
+        // Prefabs do not contain positioning data. The standard fullscreen prefab which includes a
+        // one-cell wide offscreen boundary goes in a bounding box with origin at (-21, -22).
+        let offset = Point2D::new(-21, -22);
+
+        for y in 0..prefab.dim().height {
+            for x in 0..prefab.dim().width {
+                let p = Point2D::new(x as i32, y as i32);
+                if let Some(&t) = prefab.get(p) {
+                    let loc = Location::origin() + p + offset;
+                    self.world.set_terrain(loc, t as u8);
+                }
+            }
+        }
     }
 
     fn save(&mut self, path: String) {
