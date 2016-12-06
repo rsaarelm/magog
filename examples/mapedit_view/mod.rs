@@ -1,13 +1,17 @@
-use std::io::Write;
+use std::fs::File;
+use std::io::prelude::*;
+use std::error::Error;
 use std::iter::FromIterator;
 use std::fmt;
 use std::collections::{HashMap, HashSet};
 use std::num::Wrapping;
 use euclid::{Point2D, Rect};
+use rustc_serialize::Decodable;
 use toml;
 use scancode::Scancode;
 use calx_grid::{Prefab, Dir6};
 use world::{self, Location, Portal, TerrainQuery, Terraform, World};
+use world::terrain;
 use display;
 use vitral;
 
@@ -127,7 +131,27 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        let _ = writeln!(&mut self.console, "TODO load");
+        fn loader(path: String) -> Result<MapSave, Box<Error>> {
+            let mut file = File::open(path)?;
+            let mut s = String::new();
+            file.read_to_string(&mut s)?;
+            let mut parser = toml::Parser::new(&s);
+
+            let mut decoder = toml::Decoder::new(
+                toml::Value::Table(parser.parse().ok_or_else(|| format!("Parse errors: {:?}", parser.errors))?));
+            Ok(MapSave::decode(&mut decoder)?)
+        }
+
+        let map = match loader(path) {
+            Ok(map) => map,
+            Err(e) => {
+                let _ = writeln!(&mut self.console, "Load error: {}", e);
+                return;
+            }
+        };
+
+        // TODO: impress map upon world.
+        println!("{}", map);
     }
 
     fn save(&mut self, path: String) {
@@ -190,9 +214,13 @@ impl View {
             legend: legend
         };
 
-        println!("{}", save);
-
-        // TODO: Write TOML.
+        match File::create(&path) {
+            Ok(mut file) => {
+                write!(file, "{}", save).expect("Write to file failed");
+                let _ = writeln!(&mut self.console, "Saved '{}'", path);
+            }
+            Err(e) => { let _ = writeln!(&mut self.console, "Couldn't open file {}: {:?}", path, e); }
+        }
     }
 
     fn console_input(&mut self, scancode: Scancode) {
@@ -280,7 +308,7 @@ struct LegendItem {
 impl fmt::Display for LegendItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TOML formatted output.
-        write!(f, "{{ t: \"{}\", e: [", self.t)?;
+        write!(f, "{{ t = \"{}\", e = [", self.t)?;
         self.e.iter().next().map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
         for e in self.e.iter().skip(1) {
             write!(f, ", \"{}\"", e)?;
