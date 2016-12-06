@@ -87,12 +87,6 @@ impl View {
         fn dump(&mut self);
     }
 
-    fn parse_command(&mut self, command: &str) {
-        writeln!(&mut self.console,
-                 "TODO: Do something clever with '{}' here.",
-                 command);
-    }
-
     pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
         let mut view = display::WorldView::new(camera_loc, *screen_area);
