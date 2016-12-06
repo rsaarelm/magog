@@ -101,14 +101,14 @@ impl WorldView {
                 if !world::on_screen(p) {
                     if Dir6::iter().any(|d| world::on_screen(p + d.to_v2())) {
                         sprites.push(Sprite {
-                            layer: Layer::Decal,
+                            layer: Layer::Effect,
                             offset: [screen_pos.x as i32, screen_pos.y as i32],
                             brush: Resource::new("portal".to_string()).unwrap(),
                             frame_idx: 0,
                         });
                     } else {
                         sprites.push(Sprite {
-                            layer: Layer::Decal,
+                            layer: Layer::Effect,
                             offset: [screen_pos.x as i32, screen_pos.y as i32],
                             brush: Resource::new("cursor".to_string()).unwrap(),
                             frame_idx: 0,
