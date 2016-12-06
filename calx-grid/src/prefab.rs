@@ -149,8 +149,8 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
         let max_width = (self.0.dim.width * 2 + self.0.dim.height) as i32;
 
         // Find the smallest displayed x-coordinate that actually shows up in the map.
-        let min_x = (0..(self.0.dim.width * self.0.dim.height))
-                       .map(|i| Point2D::new((i % self.0.dim.width) as i32, (i / self.0.dim.width) as i32))
+        let min_x = (0..self.0.dim.width).flat_map(
+                            move |x| (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32)))
                        .filter(|&p| self.0.get(p).is_some())
                        .map(|p| p.x * 2 - p.y)
                        .min().unwrap_or(0);
