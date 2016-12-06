@@ -54,6 +54,141 @@ pub enum Layer {
     Text,
 }
 
+fn blobform<F>(kernel: &Kernel, brush: &Resource<Brush>, is_solid: bool, draw: &mut F)
+    where F: FnMut(Layer, Angle, &Resource<Brush>, usize)
+{
+    use self::Angle::*;
+    // This part gets a little tricky. Basic idea is that there's an inner pointy-top
+    // hex core and the blob hull will snap to that instead of the outer flat-top hex
+    // edge if neither adjacent face to the outer hex vertex is connected to another
+    // blob.
+    //
+    // Based on how the sprites split up, the processing is done in four vertical
+    // segments.
+
+    // Shape the blob based on neighbors that are also blob forms.
+    let neighbors = kernel.blob_neighbors();
+
+    // Do we snap to the outer vertices?
+    let ne_vertex = !neighbors[0] || !neighbors[1];
+    let e_vertex = !neighbors[1] || !neighbors[2];
+    let se_vertex = !neighbors[2] || !neighbors[3];
+    let sw_vertex = !neighbors[3] || !neighbors[4];
+    let w_vertex = !neighbors[4] || !neighbors[5];
+    let nw_vertex = !neighbors[5] || !neighbors[0];
+
+    // Show exposed faces if neighbors are not blob and not wall.
+    let faces = if is_solid { [true, true, true, true, true, true] } else { kernel.blob_faces() };
+
+    // Segment 2, middle left
+    {
+        if faces[0] {
+            if nw_vertex && ne_vertex {
+                draw(Layer::Object, North, brush, 7);
+            } else if nw_vertex {
+                draw(Layer::Object, XWallBack, brush, 15);
+            } else {
+                draw(Layer::Object, YWallBack, brush, 11);
+            }
+        }
+        if faces[3] {
+            if sw_vertex && se_vertex {
+                draw(Layer::Object, South, brush, 19);
+            } else if sw_vertex {
+                draw(Layer::Object, YWall, brush, 23);
+            } else {
+                draw(Layer::Object, XWall, brush, 27);
+            }
+        }
+    }
+
+    // Segment 3, middle right
+    {
+        if faces[0] {
+            if ne_vertex && nw_vertex {
+                draw(Layer::Object, North, brush, 8);
+            } else if ne_vertex {
+                draw(Layer::Object, YWallBack, brush, 12);
+            } else {
+                draw(Layer::Object, XWallBack, brush, 16);
+            }
+        }
+        if faces[3] {
+            if se_vertex && sw_vertex {
+                draw(Layer::Object, South, brush, 20);
+            } else if se_vertex {
+                draw(Layer::Object, XWall, brush, 28);
+            } else {
+                draw(Layer::Object, YWall, brush, 24);
+            }
+        }
+    }
+
+    // The side segments need to come after the middle
+    // segments so that the vertical edges can overwrite the
+    // middle segment pixels.
+
+    // Segment 1, left edge
+    {
+        if w_vertex {
+            if faces[5] {
+                if nw_vertex {
+                    draw(Layer::Object, Northwest, brush, 6);
+                } else {
+                    draw(Layer::Object, YWallBack, brush, 10);
+                }
+            }
+
+            if faces[4] {
+                if sw_vertex {
+                    draw(Layer::Object, Southwest, brush, 18);
+                } else {
+                    draw(Layer::Object, XWall, brush, 26);
+                }
+            }
+        } else if !is_solid && (faces[4] || faces[5]) {
+            // Draw the left vertical line.
+            draw(Layer::Object, West, brush, 2);
+            if !faces[0] && nw_vertex {
+                draw(Layer::Object, West, brush, 0);
+            }
+            if !faces[3] && sw_vertex {
+                draw(Layer::Object, West, brush, 4);
+            }
+        }
+    }
+
+    // Segment 4, right edge
+    {
+        if e_vertex {
+            if faces[1] {
+                if ne_vertex {
+                    draw(Layer::Object, Northeast, brush, 9);
+                } else {
+                    draw(Layer::Object, XWallBack, brush, 17);
+                }
+            }
+
+            if faces[2] {
+                if se_vertex {
+                    draw(Layer::Object, Southeast, brush, 21);
+                } else {
+                    draw(Layer::Object, YWall, brush, 25);
+                }
+            }
+        } else if !is_solid && (faces[1] || faces[2]) {
+            // Draw the right vertical line.
+            draw(Layer::Object, East, brush, 3);
+            if !faces[0] && ne_vertex {
+                draw(Layer::Object, East, brush, 1);
+            }
+            if !faces[3] && se_vertex {
+                draw(Layer::Object, East, brush, 5);
+            }
+        }
+    }
+}
+
 pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
     where F: FnMut(Layer, Angle, &Resource<Brush>, usize)
 {
@@ -77,131 +212,13 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
             draw(Layer::Object, South, &terrain.brush, 0);
         }
         terrain::Form::Blob => {
-            // This part gets a little tricky. Basic idea is that there's an inner pointy-top
-            // hex core and the blob hull will snap to that instead of the outer flat-top hex
-            // edge if neither adjacent face to the outer hex vertex is connected to another
-            // blob.
+            // XXX: Expensive initialization, needs to be cached somewhere.
             //
-            // Based on how the sprites split up, the processing is done in four vertical
-            // segments.
-
-            let faces = kernel.blob_faces();
-
-            // Do we snap to the outer vertices?
-            let ne_vertex = !faces[0] || !faces[1];
-            let e_vertex = !faces[1] || !faces[2];
-            let se_vertex = !faces[2] || !faces[3];
-            let sw_vertex = !faces[3] || !faces[4];
-            let w_vertex = !faces[4] || !faces[5];
-            let nw_vertex = !faces[5] || !faces[0];
-
-            // Segment 2, middle left
-            {
-                if faces[0] {
-                    if nw_vertex && ne_vertex {
-                        draw(Layer::Object, North, &terrain.brush, 7);
-                    } else if nw_vertex {
-                        draw(Layer::Object, XWallBack, &terrain.brush, 15);
-                    } else {
-                        draw(Layer::Object, YWallBack, &terrain.brush, 11);
-                    }
-                }
-                if faces[3] {
-                    if sw_vertex && se_vertex {
-                        draw(Layer::Object, South, &terrain.brush, 19);
-                    } else if sw_vertex {
-                        draw(Layer::Object, YWall, &terrain.brush, 23);
-                    } else {
-                        draw(Layer::Object, XWall, &terrain.brush, 27);
-                    }
-                }
-            }
-
-            // Segment 3, middle right
-            {
-                if faces[0] {
-                    if ne_vertex && nw_vertex {
-                        draw(Layer::Object, North, &terrain.brush, 8);
-                    } else if ne_vertex {
-                        draw(Layer::Object, YWallBack, &terrain.brush, 12);
-                    } else {
-                        draw(Layer::Object, XWallBack, &terrain.brush, 16);
-                    }
-                }
-                if faces[3] {
-                    if se_vertex && sw_vertex {
-                        draw(Layer::Object, South, &terrain.brush, 20);
-                    } else if se_vertex {
-                        draw(Layer::Object, XWall, &terrain.brush, 28);
-                    } else {
-                        draw(Layer::Object, YWall, &terrain.brush, 24);
-                    }
-                }
-            }
-
-            // The side segments need to come after the middle
-            // segments so that the vertical edges can overwrite the
-            // middle segment pixels.
-
-            // Segment 1, left edge
-            {
-                if w_vertex {
-                    if faces[5] {
-                        if nw_vertex {
-                            draw(Layer::Object, Northwest, &terrain.brush, 6);
-                        } else {
-                            draw(Layer::Object, YWallBack, &terrain.brush, 10);
-                        }
-                    }
-
-                    if faces[4] {
-                        if sw_vertex {
-                            draw(Layer::Object, Southwest, &terrain.brush, 18);
-                        } else {
-                            draw(Layer::Object, XWall, &terrain.brush, 26);
-                        }
-                    }
-                } else {
-                    // Draw the left vertical line.
-                    draw(Layer::Object, West, &terrain.brush, 2);
-                    if !faces[0] {
-                        draw(Layer::Object, West, &terrain.brush, 0);
-                    }
-                    if !faces[3] {
-                        draw(Layer::Object, West, &terrain.brush, 4);
-                    }
-                }
-            }
-
-            // Segment 4, right edge
-            {
-                if e_vertex {
-                    if faces[1] {
-                        if ne_vertex {
-                            draw(Layer::Object, Northeast, &terrain.brush, 9);
-                        } else {
-                            draw(Layer::Object, XWallBack, &terrain.brush, 17);
-                        }
-                    }
-
-                    if faces[2] {
-                        if se_vertex {
-                            draw(Layer::Object, Southeast, &terrain.brush, 21);
-                        } else {
-                            draw(Layer::Object, YWall, &terrain.brush, 25);
-                        }
-                    }
-                } else {
-                    // Draw the right vertical line.
-                    draw(Layer::Object, East, &terrain.brush, 3);
-                    if !faces[0] {
-                        draw(Layer::Object, East, &terrain.brush, 1);
-                    }
-                    if !faces[3] {
-                        draw(Layer::Object, East, &terrain.brush, 5);
-                    }
-                }
-            }
+            // Draw the solid blob first to block out other stuff.
+            let solid = Resource::new("solid-blob".to_string()).unwrap();
+            blobform(&kernel, &solid, true, &mut draw);
+            // Then draw the decoration with the actual brush.
+            blobform(&kernel, &terrain.brush, false, &mut draw);
         }
         terrain::Form::Wall => {
             let extends = kernel.wall_extends();
@@ -261,6 +278,15 @@ impl Kernel {
          !self.s.is_hull(),
          !self.sw.is_hull(),
          !self.nw.is_hull()]
+    }
+
+    pub fn blob_neighbors(&self) -> [bool; 6] {
+        [!self.n.is_blob(),
+         !self.ne.is_blob(),
+         !self.se.is_blob(),
+         !self.s.is_blob(),
+         !self.sw.is_blob(),
+         !self.nw.is_blob()]
     }
 
     /// Mark neighbors that are not void terrain as true.
