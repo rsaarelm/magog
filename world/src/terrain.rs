@@ -115,6 +115,18 @@ pub enum Id {
     Corridor = 8,
     OpenDoor = 9,
     Door = 10,
+
+    _MaxTerrain,
+}
+
+impl Id {
+    pub fn from_u8(id: u8) -> Option<Id> {
+        if id < Id::_MaxTerrain as u8 {
+            Some(unsafe { ::std::mem::transmute::<u8, Id>(id) })
+        } else {
+            None
+        }
+    }
 }
 
 impl FromStr for Id {
@@ -122,20 +134,12 @@ impl FromStr for Id {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use self::Id::*;
 
-        // XXX: Repeating the enum list.
-        match s {
-            "Empty" => Ok(Empty),
-            "Gate" => Ok(Gate),
-            "Ground" => Ok(Ground),
-            "Grass" => Ok(Grass),
-            "Water" => Ok(Water),
-            "Tree" => Ok(Tree),
-            "Wall" => Ok(Wall),
-            "Rock" => Ok(Rock),
-            "Corridor" => Ok(Corridor),
-            "OpenDoor" => Ok(OpenDoor),
-            "Door" => Ok(Door),
-            _ => Err(format!("Unknown terrain '{}'", s))
+        for i in 0..(Id::_MaxTerrain as u8) {
+            let id = Id::from_u8(i).expect("Couldn't turn u8 to terrain::Id");
+            if &format!("{:?}", id) == s {
+                return Ok(id);
+            }
         }
+        Err(format!("Unknown terrain '{}'", s))
     }
 }

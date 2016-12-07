@@ -76,27 +76,28 @@ impl View {
                     }
                 }
             }
-
         }
 
-        if context.ui.button("draw void") {
-            self.mode = PaintMode::Terrain(0, 2);
-        }
+        match self.mode {
+            PaintMode::Terrain(mut fore, mut back) => {
+                let fore_id = terrain::Id::from_u8(fore).unwrap();
+                let back_id = terrain::Id::from_u8(back).unwrap();
 
-        if context.ui.button("draw gate") {
-            self.mode = PaintMode::Terrain(1, 2);
-        }
+                if context.ui.button(&format!("left: {:?}", fore_id)) {
+                    fore += 1;
+                    fore %= terrain::Id::_MaxTerrain as u8;
+                }
 
-        if context.ui.button("draw wall") {
-            self.mode = PaintMode::Terrain(6, 2);
-        }
+                if context.ui.button(&format!("right: {:?}", back_id)) {
+                    back += 1;
+                    back %= terrain::Id::_MaxTerrain as u8;
+                }
 
-        if context.ui.button("draw rock") {
-            self.mode = PaintMode::Terrain(7, 2);
-        }
-
-        if context.ui.button("PORTALS!") {
-            self.mode = PaintMode::Portal;
+                self.mode = PaintMode::Terrain(fore, back);
+            }
+            _ => {
+                unimplemented!();
+            }
         }
 
         for (y, loc) in view.cursor_loc.iter().enumerate() {
@@ -231,6 +232,8 @@ impl View {
                 Corridor => '_',
                 OpenDoor => '|',
                 Door => '+',
+
+                _MaxTerrain => panic!("Invalid terrain"),
             };
 
             legend.insert(c, LegendItem { t: format!("{:?}", id), e: Vec::new() });
