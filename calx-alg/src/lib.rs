@@ -8,8 +8,8 @@ use rand::Rng;
 use std::ops::{Add, Mul, Sub};
 use num::Float;
 
-pub use rng::{EncodeRng, RngExt, RandomPermutation};
-pub use text::{split_line, LineSplit};
+pub use rng::{EncodeRng, RandomPermutation, RngExt};
+pub use text::{LineSplit, split_line};
 
 mod parser;
 mod rng;
@@ -107,13 +107,13 @@ impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
     fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
         where F: Fn(&Self::Item) -> f32
     {
-        self.fold((0.0, None), |(weight_sum, prev_item), item| {
-                let item_weight = weight_fn(&item);
-                assert!(item_weight >= 0.0);
-                let p = item_weight / (weight_sum + item_weight);
-                let next_item = if rng.next_f32() < p { Some(item) } else { prev_item };
-                (weight_sum + item_weight, next_item)
-            })
-            .1
+        let (_, ret) = self.fold((0.0, None), |(weight_sum, prev_item), item| {
+            let item_weight = weight_fn(&item);
+            assert!(item_weight >= 0.0);
+            let p = item_weight / (weight_sum + item_weight);
+            let next_item = if rng.next_f32() < p { Some(item) } else { prev_item };
+            (weight_sum + item_weight, next_item)
+        });
+        ret
     }
 }
