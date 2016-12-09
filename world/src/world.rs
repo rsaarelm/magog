@@ -86,7 +86,7 @@ impl<'a> World {
     */
 
     fn default_terrain_id(&self, loc: Location) -> u8 {
-        terrain::Id::Rock as u8
+        terrain::Id::Empty as u8
     }
 }
 
