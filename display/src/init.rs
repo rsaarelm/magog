@@ -1,5 +1,6 @@
 //! Set up resource content for game.
 
+use std::str::FromStr;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use glium;
@@ -7,6 +8,7 @@ use image::{self, GenericImage};
 use euclid::Point2D;
 use vitral_atlas;
 use vitral;
+use calx_color::Rgba;
 use calx_color::color::*;
 use calx_resource::ResourceStore;
 use world::BrushBuilder;
@@ -141,7 +143,7 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .color(RED)
         .tile(32, 0)
         .brush("cursor_top")
-        .color(ORANGE)
+        .color(Rgba::from_str("#fa08").unwrap())
         .tile(0, 0)
         .brush("portal") // TODO: This thing is a temporary display helper for mapedit, maybe remove when can?
         ////
