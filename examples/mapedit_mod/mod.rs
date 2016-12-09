@@ -47,6 +47,8 @@ impl View {
     }
 
     pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
+        context.ui.set_clip_rect(Some(*screen_area));
+
         let camera_loc = self.camera.0;
 
         let mut view = display::WorldView::new(camera_loc, *screen_area);

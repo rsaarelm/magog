@@ -29,7 +29,7 @@ pub fn main() {
                       .build_glium()
                       .unwrap();
 
-    let mut backend = display::Backend::new(&display, 640, 360);
+    let mut backend = display::Backend::new(&display, 640, 480);
 
     // Initialize game resources.
     ::display::init::brushes(&display, &mut backend);
@@ -43,20 +43,6 @@ pub fn main() {
 
     // Initialize worldstate
     let mut view = View::new(World::new(1));
-
-    for x in -0..8 {
-        for y in 0..8 {
-            view.world.set_terrain(Location::new(x, y, 0), 3);
-        }
-    }
-
-    view.world.set_terrain(Location::new(0, -10, 0), 1);
-    view.world.set_terrain(Location::new(1, 0, 0), 3);
-    view.world.set_terrain(Location::new(2, 0, 0), 5);
-    view.world.set_terrain(Location::new(3, 0, 0), 6);
-    view.world.set_terrain(Location::new(4, 0, 0), 6);
-    view.world.set_terrain(Location::new(3, 2, 0), 7);
-    view.world.set_terrain(Location::new(4, 2, 0), 7);
 
     // Run game.
     loop {
