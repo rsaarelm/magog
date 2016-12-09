@@ -42,6 +42,7 @@ pub use location::{Location, Portal};
 mod location_set;
 // TODO: Make private, trigger mapgen internally using higher-level API
 pub mod mapgen;
+mod mapfile;
 mod mutate;
 
 mod query;

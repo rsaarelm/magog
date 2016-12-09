@@ -95,13 +95,28 @@ impl Tile {
     pub fn is_blob(&self) -> bool { self.form == Form::Blob }
 
     pub fn is_block(&self) -> bool { self.is_hull() || self.form == Form::Prop }
+
+    /// For constructing text maps.
+    pub fn preferred_map_chars(&self) -> &'static str {
+        match self.kind {
+            Kind::Ground => ".,_",
+            Kind::Corridor => "_.,",
+            Kind::Water => "~=",
+            Kind::Magma => "=~",
+            Kind::Window => "+",
+            Kind::Door => "|",
+            Kind::Block if self.is_wall() => "#%&$*",
+            Kind::Block if self.is_blob() => "*%&$#",
+            _ => "",
+        }
+    }
 }
 
 impl Loadable<u8> for Tile {}
 
 impl_store!(TILE_STORE, u8, Tile);
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, RustcEncodable, RustcDecodable)]
 #[repr(u8)]
 pub enum Id {
     Empty = 0,

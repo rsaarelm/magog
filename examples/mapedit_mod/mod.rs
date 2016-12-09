@@ -10,8 +10,9 @@ use euclid::{Point2D, Rect};
 use rustc_serialize::Decodable;
 use toml;
 use scancode::Scancode;
-use calx_grid::{Prefab, Dir6};
-use world::{self, Location, Portal, TerrainQuery, Terraform, World};
+use calx_resource::ResourceStore;
+use calx_grid::{Dir6, LegendBuilder, Prefab};
+use world::{self, Location, Portal, Query, Terraform, TerrainQuery, World};
 use world::terrain;
 use display;
 use vitral;
@@ -152,8 +153,11 @@ impl View {
                 // dealing with input from the outside, but can't do error pattern in the map
                 // closure. Fix by adding a pre-verify stage that checks that all map glyphs are
                 // found in legend and that all legend items can be instantiated.
-                let item = save.legend.get(&item).expect(&format!("Glyph '{}' not found in legend!", item));
-                terrain::Id::from_str(&item.t).expect(&format!("Unknown terrain type '{}'!", item.t))
+                let item = save.legend
+                               .get(&item)
+                               .expect(&format!("Glyph '{}' not found in legend!", item));
+                terrain::Id::from_str(&item.t)
+                    .expect(&format!("Unknown terrain type '{}'!", item.t))
             });
 
             Ok(prefab)
@@ -186,67 +190,53 @@ impl View {
     }
 
     fn save(&mut self, path: String) {
-        let mut pts = HashSet::new();
+        let mut locs = HashSet::new();
         for x in world::onscreen_locations().iter() {
-            pts.insert(*x);
+            locs.insert(Location::origin() + *x);
             // Get the immediate border around the actual screen cells, these will also affect the
             // visual look of the map.
             for d in Dir6::iter() {
-                pts.insert(*x + d.to_v2());
+                locs.insert(Location::origin() + *x + d.to_v2());
             }
         }
 
-        let mut map = Vec::new();
-        let mut legend = BTreeMap::new();
+        let prefab = self.world.extract_prefab(locs.iter().map(|&x| x));
+        const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+             abcdefghijklmnopqrstuvwxyz\
+             0123456789";
 
-        for &p in pts.iter() {
-            use world::terrain::Id::*;
-            use world::terrain::Id;
-            // TODO: Centralized place for this. Does not belong here...
-            //
-            // This will get more complex anyway once entity spawns are added to the mix, so hold
-            // off doing the more engineered version for now. (Plan is to use more or less
-            // conventional roguelike characters for plain terrain, then a sequence of alphabetical
-            // chars diving off into unicode space if needed for each unique terrain + entity list
-            // value.)
-            //
-            // TODO: Add unicode's confusables.txt official visual lookalike dataset,
-            // eg at ftp://unicode.org/Public/security/8.0.0/confusables.txt
-            // to filter the generated characters.
-            //
-            // The load code reads this stuff from the legend, doesn't need mapping logic.
+        let mut legend_builder = LegendBuilder::new(ALPHABET.to_string(),
+                                                    move |x: &(terrain::Id, Vec<String>)| {
+                                                        let &(ref t, ref e) = x;
+                                                        if e.is_empty() {
+                                                            terrain::Tile::get_resource(&(*t as u8))
+                                                                .unwrap()
+                                                                .preferred_map_chars()
+                                                        } else {
+                                                            ""
+                                                        }
+                                                    });
 
-            // NB: Since these are saved to TOML which uses the `'` single quote character to
-            // separate literal strings, no legend item must use the single quote character.
-            let id = self.world.terrain_id(Location::origin() + p);
-            // XXX: Hacketyhack unsafe integer to enum.
-            let id = unsafe { ::std::mem::transmute::<u8, Id>(id) };
+        // TODO: Turn legend failure into a recoverable error.
+        // (Can't do that from inside a closure, so will need a separate checkup stage)
+        let prefab = prefab.map(|e| {
+            legend_builder.add(&e).expect("Unable to build legend, too many unique spawns?")
+        });
 
-            let c = match id {
-                Empty => ' ',
-                Gate => '^',
-                Ground => '.',
-                Grass => ',',
-                Water => '~',
-                Magma => '=',
-                Tree => '%',
-                Wall => '#',
-                Rock => '*',
-                Door => '+',
-
-                Corridor => '_',
-                OpenDoor => '|',
-                Grass2 => 'x',
-                _MaxTerrain => panic!("Invalid terrain"),
-            };
-
-            legend.insert(c, LegendItem { t: format!("{:?}", id), e: Vec::new() });
-            map.push((p, c));
-        }
+        let legend: BTreeMap<char, LegendItem> = legend_builder.legend
+                                                               .into_iter()
+                                                               .map(|(c, t)| {
+                                                                   (c,
+                                                                    LegendItem {
+                                                                       t: format!("{:?}", t.0),
+                                                                       e: t.1.clone(),
+                                                                   })
+                                                               })
+                                                               .collect();
 
         let save = MapSave {
-            map: format!("{}", Prefab::from_iter(map.into_iter()).hexmap_display()),
-            legend: legend
+            map: format!("{}", prefab.hexmap_display()),
+            legend: legend,
         };
 
         match File::create(&path) {
@@ -254,14 +244,18 @@ impl View {
                 write!(file, "{}", save).expect("Write to file failed");
                 let _ = writeln!(&mut self.console, "Saved '{}'", path);
             }
-            Err(e) => { let _ = writeln!(&mut self.console, "Couldn't open file {}: {:?}", path, e); }
+            Err(e) => {
+                let _ = writeln!(&mut self.console, "Couldn't open file {}: {:?}", path, e);
+            }
         }
     }
 
     fn console_input(&mut self, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
-            Tab => { self.console_is_large = !self.console_is_large; }
+            Tab => {
+                self.console_is_large = !self.console_is_large;
+            }
             Enter | PadEnter => {
                 let input = self.console.get_input();
                 let _ = writeln!(&mut self.console, "{}", input);

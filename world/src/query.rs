@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use calx_grid::{Dir6, HexFov};
+use calx_grid::{Dir6, HexFov, Prefab};
 use calx_ecs::Entity;
 use calx_resource::{Resource, ResourceStore};
 use world::World;
@@ -265,5 +265,41 @@ pub trait Query: TerrainQuery {
     /// this should not be reflected in the logical terrain.
     fn visual_terrain(&self, loc: Location) -> Arc<terrain::Tile> {
         terrain::Tile::get_resource(&self.visual_terrain_id(loc)).unwrap()
+    }
+
+    /// Return the name that can be used to spawn this entity.
+    fn spawn_name(&self, e: Entity) -> Option<String> {
+        // TODO: Create a special component for this.
+        None
+    }
+
+    fn is_spawn_name(&self, spawn_name: &str) -> bool {
+        // TODO: Return true if `spawn_name` will build an entity in whatever factory system we'll
+        // use.
+        false
+    }
+
+    fn extract_prefab<I: IntoIterator<Item=Location>>(&self, locs: I) -> Prefab<(terrain::Id, Vec<String>)> {
+        let mut map = Vec::new();
+        let mut origin = None;
+
+        for loc in locs {
+            // Store first location as an arbitrary origin.
+            let origin = match origin {
+                None => { origin = Some(loc); loc }
+                Some(origin) => origin,
+            };
+
+            let pos = origin.v2_at(loc).expect("Trying to build prefab from multiple z-levels");
+
+            let terrain = terrain::Id::from_u8(self.terrain_id(loc)).expect("Corrupt terrain");
+
+            let entities = Vec::from_iter(
+                self.entities_at(loc).into_iter().filter_map(|e| self.spawn_name(e)));
+
+            map.push((pos, (terrain, entities)));
+        }
+
+        Prefab::from_iter(map.into_iter())
     }
 }
