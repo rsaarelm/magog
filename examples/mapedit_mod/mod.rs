@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::error::Error;
 use std::iter::FromIterator;
 use std::fmt;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::num::Wrapping;
 use euclid::{Point2D, Rect};
 use rustc_serialize::Decodable;
@@ -197,7 +197,7 @@ impl View {
         }
 
         let mut map = Vec::new();
-        let mut legend = HashMap::new();
+        let mut legend = BTreeMap::new();
 
         for &p in pts.iter() {
             use world::terrain::Id::*;
@@ -313,7 +313,7 @@ impl View {
 #[derive(Debug, RustcEncodable, RustcDecodable)]
 struct MapSave {
     pub map: String,
-    pub legend: HashMap<char, LegendItem>,
+    pub legend: BTreeMap<char, LegendItem>,
 }
 
 impl fmt::Display for MapSave {
