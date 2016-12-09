@@ -16,12 +16,12 @@ extern crate display;
 
 // Make all mods public at the top app level just to make them show up in the rustdoc.
 
-pub mod mapedit_view;
+pub mod mapedit_mod;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
 use world::{Location, Terraform, World};
-use mapedit_view::View;
+use mapedit_mod::View;
 
 pub fn main() {
     // Construct display and Vitral context.

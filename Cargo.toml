@@ -20,25 +20,10 @@ glium = "0.15"
 toml = "0.2"
 scancode = "0.1"
 rustc-serialize = "0.3"
-
-# TODO: Make Vitral into a proper crate eventually.
-[dependencies.vitral]
-git = "https://github.com/rsaarelm/vitral"
-
-[dependencies.calx-color]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-resource]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-grid]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-alg]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.world]
-path = "world"
-
-[dependencies.display]
-path = "display"
+vitral = { git = "https://github.com/rsaarelm/vitral" }
+calx-color = { git = "https://github.com/rsaarelm/calx" }
+calx-resource = { git = "https://github.com/rsaarelm/calx" }
+calx-grid = { git = "https://github.com/rsaarelm/calx" }
+calx-alg = { git = "https://github.com/rsaarelm/calx" }
+world = { path = "world" }
+display = { path = "display" }
