@@ -11,10 +11,13 @@ pub fn terrain() {
     Tile::insert_resource(Id::Ground as u8, Tile::new("ground", Kind::Ground, Form::Floor));
     Tile::insert_resource(Id::Grass as u8, Tile::new("grass", Kind::Ground, Form::Floor));
     Tile::insert_resource(Id::Water as u8, Tile::new("water", Kind::Water, Form::Floor));
+    Tile::insert_resource(Id::Magma as u8, Tile::new("magma", Kind::Magma, Form::Floor));
     Tile::insert_resource(Id::Tree as u8, Tile::new("tree", Kind::Block, Form::Prop));
     Tile::insert_resource(Id::Wall as u8, Tile::new("wall", Kind::Block, Form::Wall));
     Tile::insert_resource(Id::Rock as u8, Tile::new("rock", Kind::Block, Form::Blob));
+    Tile::insert_resource(Id::Door as u8, Tile::new("door", Kind::Door, Form::Wall));
+
     Tile::insert_resource(Id::Corridor as u8, Tile::new("ground", Kind::Corridor, Form::Floor));
     Tile::insert_resource(Id::OpenDoor as u8, Tile::new("open_door", Kind::Ground, Form::Wall));
-    Tile::insert_resource(Id::Door as u8, Tile::new("door", Kind::Door, Form::Wall));
+    Tile::insert_resource(Id::Grass2 as u8, Tile::new("grass2", Kind::Ground, Form::Floor));
 }

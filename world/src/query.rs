@@ -1,8 +1,9 @@
+use std::sync::Arc;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
-use calx_resource::Resource;
+use calx_resource::{Resource, ResourceStore};
 use world::World;
 use components::{Alignment, BrainState};
 use stats::Intrinsic;
@@ -13,6 +14,7 @@ use FovStatus;
 use fov::SightFov;
 use terraform::TerrainQuery;
 use world::Ecs;
+use terrain;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery {
@@ -233,5 +235,35 @@ pub trait Query: TerrainQuery {
     fn sight_fov(w: &World, origin: Location, range: u32) -> HashSet<Location> {
         HashSet::from_iter(HexFov::new(SightFov::new(w, range, origin))
                                .map(|(pos, a)| a.origin + pos))
+    }
+
+    /// Return Id value of terrain at location for drawing on screen.
+    fn visual_terrain_id(&self, loc: Location) -> u8 {
+        let mut idx = self.terrain_id(loc);
+
+        if idx == terrain::Id::Door as u8 {
+            // Standing in the doorway opens the door.
+            if self.has_mobs(loc) {
+                idx = terrain::Id::OpenDoor as u8;
+            }
+        }
+
+        // TODO: Might want a more generic method of specifying cosmetic terrain variants.
+        if idx == terrain::Id::Grass as u8 {
+            // Grass is occasionally fancy.
+            if loc.noise() > 0.85 {
+                idx = terrain::Id::Grass2 as u8;
+            }
+        }
+
+        idx
+    }
+
+    /// Return terrain at location for drawing on screen.
+    ///
+    /// Terrain is sometimes replaced with a variant for visual effect, but
+    /// this should not be reflected in the logical terrain.
+    fn visual_terrain(&self, loc: Location) -> Arc<terrain::Tile> {
+        terrain::Tile::get_resource(&self.visual_terrain_id(loc)).unwrap()
     }
 }

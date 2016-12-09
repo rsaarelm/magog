@@ -105,6 +105,10 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(96, 0)
         .brush("water")
         ////
+        .color(RED)
+        .tile(96, 0)
+        .brush("magma")
+        ////
         .file("display/assets/portals.png")
         ////
         .color(LIGHTCYAN)

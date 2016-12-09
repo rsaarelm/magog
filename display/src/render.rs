@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use calx_resource::Resource;
 use calx_grid::{Dir12, Dir6};
-use world::{Brush, Location, World};
+use world::{Brush, Location, World, Query};
 use world::{TerrainQuery, terrain};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
@@ -194,7 +194,7 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 {
     use self::Angle::*;
 
-    let terrain = w.terrain(loc);
+    let terrain = w.visual_terrain(loc);
     let kernel = Kernel::new(w, loc);
 
     match terrain.form {
@@ -251,7 +251,7 @@ pub struct Kernel {
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Arc<terrain::Tile> {
     let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
-    w.terrain(loc)
+    w.visual_terrain(loc)
 }
 
 impl Kernel {
@@ -260,7 +260,7 @@ impl Kernel {
             n: neighbor(w, loc, Dir6::North),
             ne: neighbor(w, loc, Dir6::Northeast),
             nw: neighbor(w, loc, Dir6::Northwest),
-            center: w.terrain(loc),
+            center: w.visual_terrain(loc),
             se: neighbor(w, loc, Dir6::Southeast),
             sw: neighbor(w, loc, Dir6::Southwest),
             s: neighbor(w, loc, Dir6::South),

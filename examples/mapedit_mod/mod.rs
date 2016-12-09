@@ -228,13 +228,15 @@ impl View {
                 Ground => '.',
                 Grass => ',',
                 Water => '~',
+                Magma => '=',
                 Tree => '%',
                 Wall => '#',
                 Rock => '*',
-                Corridor => '_',
-                OpenDoor => '|',
                 Door => '+',
 
+                Corridor => '_',
+                OpenDoor => '|',
+                Grass2 => 'x',
                 _MaxTerrain => panic!("Invalid terrain"),
             };
 

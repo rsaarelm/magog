@@ -96,33 +96,13 @@ impl TerrainQuery for World {
     }
 
     fn terrain_id(&self, loc: Location) -> u8 {
-        let mut idx = self.terrain.get(loc);
+        let idx = self.terrain.get(loc);
 
         if idx == 0 {
-            idx = self.default_terrain_id(loc);
+            self.default_terrain_id(loc)
+        } else {
+            idx
         }
-
-        if idx == terrain::Id::Door as u8 {
-            // Standing in the doorway opens the door.
-            if self.has_mobs(loc) {
-                idx = terrain::Id::OpenDoor as u8;
-            }
-        }
-
-        idx
-
-        // TODO: Support terrain with brush variant distributions, like the grass case below that
-        // occasionlly emits a fancier brush. The distribution needs to be embedded in the Tile struct.
-        // The sampling needs loc noise, but is probably better done at the point where terrain is
-        // being drawn than here, since we'll want to still have just one immutable terrain id
-        // corresponding to all the variants.
-        //
-        // // Grass is only occasionally fancy.
-        // if ret == TerrainType::Grass {
-        //     if loc.noise() > 0.85 {
-        //         ret = TerrainType::Grass2;
-        //     }
-        // }
     }
 
     fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }

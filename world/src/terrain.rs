@@ -105,17 +105,23 @@ impl_store!(TILE_STORE, u8, Tile);
 #[repr(u8)]
 pub enum Id {
     Empty = 0,
-    Gate = 1,
-    Ground = 2,
-    Grass = 3,
-    Water = 4,
-    Tree = 5,
-    Wall = 6,
-    Rock = 7,
-    Corridor = 8,
-    OpenDoor = 9,
-    Door = 10,
+    Gate,
+    Ground,
+    Grass,
+    Water,
+    Magma,
+    Tree,
+    Wall,
+    Rock,
+    Door,
 
+    // XXX: Corridor is more a mapgen nicety than a thing that actually needs to be separate.
+    Corridor,
+    // XXX: OpenDoor and Grass2 are variants of Door and Grass, they shouldn't be in a set
+    // where you pick terrains to paint from for example.
+    OpenDoor,
+    Grass2,
+    // XXX: The ENUM_MAX pattern isn't very rustic, better idiom to iterate the terrain set?
     _MaxTerrain,
 }
 
