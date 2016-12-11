@@ -31,7 +31,7 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
         self.terrain.get(&pos).map(|&idx| &self.elements[idx])
     }
 
-    pub fn map<F: Fn(T) -> U, U>(self, f: F) -> Prefab<U> {
+    pub fn map<F: FnMut(T) -> U, U>(self, f: F) -> Prefab<U> {
         Prefab {
             terrain: self.terrain,
             elements: self.elements.into_iter().map(f).collect(),
@@ -214,7 +214,7 @@ pub struct LegendBuilder<T, F> {
 
 impl<T, F> LegendBuilder<T, F>
     where T: Ord + Eq + Clone,
-          F: Fn(&T) -> &'static str
+          F: FnMut(&T) -> &'static str
 {
     /// Initialize the legend builder.
     pub fn new(alphabet: String, prefix_fn: F) -> LegendBuilder<T, F> {
