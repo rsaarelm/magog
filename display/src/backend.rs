@@ -218,6 +218,47 @@ impl Backend {
         self.canvas.draw(display, self.zoom);
         self.process_events(display, context)
     }
+
+    pub fn save_screenshot(&mut self, basename: &str) {
+        use time;
+        use std::path::{Path};
+        use std::fs::{self, File};
+        use image;
+
+        let shot = self.canvas.screenshot();
+
+        let timestamp = time::precise_time_s() as u64;
+        // Create screenshot filenames by concatenating the current timestamp in
+        // seconds with a running number from 00 to 99. 100 shots per second
+        // should be good enough.
+
+        // Default if we fail to generate any of the 100 candidates for this
+        // second, just overwrite with the "xx" prefix then.
+        let mut filename = format!("{}-{}{}.png", basename, timestamp, "xx");
+
+        // Run through candidates for this second.
+        for i in 0..100 {
+            let test_filename = format!("{}-{}{:02}.png", basename, timestamp, i);
+            // If file does not exist.
+            if fs::metadata(&test_filename).is_err() {
+                // Thread-safe claiming: create_dir will fail if the dir
+                // already exists (it'll exist if another thread is gunning
+                // for the same filename and managed to get past us here).
+                // At least assuming that create_dir is atomic...
+                let squat_dir = format!(".tmp-{}{:02}", timestamp, i);
+                if fs::create_dir(&squat_dir).is_ok() {
+                    File::create(&test_filename).unwrap();
+                    filename = test_filename;
+                    fs::remove_dir(&squat_dir).unwrap();
+                    break;
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        let _ = image::save_buffer(&Path::new(&filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
+    }
 }
 
 

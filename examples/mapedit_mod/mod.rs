@@ -123,9 +123,9 @@ impl View {
 
         if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             if self.console_is_large {
-                self.console_input(scancode);
+                self.console_input(context, scancode);
             } else {
-                self.editor_input(scancode);
+                self.editor_input(context, scancode);
             }
         }
     }
@@ -250,7 +250,7 @@ impl View {
         }
     }
 
-    fn console_input(&mut self, scancode: Scancode) {
+    fn console_input(&mut self, context: &mut display::Context, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -263,11 +263,12 @@ impl View {
                     let _ = writeln!(&mut self.console, "{}", e);
                 }
             }
+            F12 => context.backend.save_screenshot("mapedit"),
             _ => {}
         }
     }
 
-    fn editor_input(&mut self, scancode: Scancode) {
+    fn editor_input(&mut self, context: &mut display::Context, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Q => self.move_camera(Point2D::new(-1, 0), 0),
@@ -277,6 +278,7 @@ impl View {
             S => self.move_camera(Point2D::new(1, 1), 0),
             D => self.move_camera(Point2D::new(1, 0), 0),
             F1 => self.switch_camera(),
+            F12 => context.backend.save_screenshot("mapedit"),
             Tab => self.console_is_large = !self.console_is_large,
             RightBracket => self.move_camera(Point2D::new(0, 0), 1),
             LeftBracket => self.move_camera(Point2D::new(0, 0), -1),

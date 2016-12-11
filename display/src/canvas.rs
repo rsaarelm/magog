@@ -1,6 +1,7 @@
 use euclid::Size2D;
 use glium::{self, framebuffer, texture};
 use glium::Surface;
+use image;
 use canvas_zoom::CanvasZoom;
 
 /// A deferred rendering buffer for pixel-perfect display.
@@ -144,4 +145,31 @@ impl Canvas {
     }
 
     pub fn size(&self) -> Size2D<u32> { self.size }
+
+    pub fn screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+        use calx_color::to_srgb;
+
+        let image: glium::texture::RawImage2d<u8> = self.buffer.read();
+        let image = image::ImageBuffer::from_raw(image.width,
+                                                 image.height,
+                                                 image.data.into_owned())
+                        .unwrap();
+        let mut image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
+
+        // Convert to sRGB
+        // XXX: Probably horribly slow, can we make OpenGL do this?
+        for p in image.pixels_mut() {
+            p.data[0] = (to_srgb(p.data[0] as f32 / 255.0) *
+                         255.0)
+                            .round() as u8;
+            p.data[1] = (to_srgb(p.data[1] as f32 / 255.0) *
+                         255.0)
+                            .round() as u8;
+            p.data[2] = (to_srgb(p.data[2] as f32 / 255.0) *
+                         255.0)
+                            .round() as u8;
+        }
+
+        image
+    }
 }
