@@ -151,7 +151,7 @@ impl<T> Builder<T>
 /// converted into rendering instructions for the GUI.
 pub struct Context<T, V> {
     draw_list: Vec<DrawBatch<T, V>>,
-    layout_pos: Point2D<f32>,
+    pub layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
     click_state: [ClickState; 3],
