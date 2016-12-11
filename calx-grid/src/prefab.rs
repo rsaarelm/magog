@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::hash_map;
 use std::i32;
 use std::hash::Hash;
 use std::iter::{FromIterator, IntoIterator};
@@ -40,11 +41,32 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
 
     pub fn dim(&self) -> Size2D<u32> { self.dim }
 
-    // TODO: Need to write a custom iterator type if you want iteration.
-    //
-    // Prefabs are generally pretty dense, so you can just iterate all points in the rectangle from
-    // origin to dim.
+    pub fn iter<'a>(&'a self) -> PrefabIterator<'a, T> {
+        PrefabIterator {
+            prefab: self,
+            iter: self.terrain.iter(),
+        }
+    }
 }
+
+pub struct PrefabIterator<'a, T: 'a> {
+    prefab: &'a Prefab<T>,
+    iter: hash_map::Iter<'a, Point2D<i32>, usize>,
+}
+
+impl<'a, T: 'a> Iterator for PrefabIterator<'a, T> {
+    type Item = (Point2D<i32>, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.iter.next() {
+            Some((&pos, &idx)) => {
+                Some((pos, &self.prefab.elements[idx]))
+            },
+            _ => None
+        }
+    }
+}
+
 
 impl<T: Clone + Eq + Hash> FromIterator<(Point2D<i32>, T)> for Prefab<T> {
     fn from_iter<I: IntoIterator<Item = (Point2D<i32>, T)>>(iter: I) -> Self {
