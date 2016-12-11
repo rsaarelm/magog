@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::i32;
 use std::hash::Hash;
-use std::iter::FromIterator;
+use std::iter::{FromIterator, IntoIterator};
 use std::cmp::{max, min};
 use std::fmt;
 use euclid::{Point2D, Size2D};
@@ -149,11 +149,14 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
         let max_width = (self.0.dim.width * 2 + self.0.dim.height) as i32;
 
         // Find the smallest displayed x-coordinate that actually shows up in the map.
-        let min_x = (0..self.0.dim.width).flat_map(
-                            move |x| (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32)))
-                       .filter(|&p| self.0.get(p).is_some())
-                       .map(|p| p.x * 2 - p.y)
-                       .min().unwrap_or(0);
+        let min_x = (0..self.0.dim.width)
+                        .flat_map(move |x| {
+                            (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32))
+                        })
+                        .filter(|&p| self.0.get(p).is_some())
+                        .map(|p| p.x * 2 - p.y)
+                        .min()
+                        .unwrap_or(0);
 
         for y in 0..(self.0.dim.height as i32) {
             for x in min_x..(min_x + max_width) {
@@ -173,6 +176,46 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
         }
         Ok(())
     }
+}
+
+/// Build a text map legend given an alphabet and a sequence of elements.
+///
+/// Each unique element will be assigned a letter from the alphabet. A preference function can
+/// provide an additional alphabet prefix for specific values, which will be sampled before the
+/// main alphabet. This will allow having standard special characters for eg. certain types of
+/// terrain tiles. When no special alphabet is required, the preference function can return an
+/// empty string.
+pub fn build_legend<T, I, F>(
+    alphabet: &str,
+    prefer_f: F,
+    elements: I
+) -> Result<BTreeMap<char, T>, ()>
+    where F: Fn(&T) -> &'static str,
+          I: IntoIterator<Item = T>,
+          T: Ord + Eq + Clone
+{
+    let mut seen_keys = BTreeSet::new();
+    let mut seen_values = BTreeSet::new();
+    let mut legend = BTreeMap::new();
+
+    'outer: for e in elements {
+        if seen_values.contains(&e) {
+            continue;
+        }
+        seen_values.insert(e.clone());
+        for c in prefer_f(&e).chars().chain(alphabet.chars()) {
+            if seen_keys.contains(&c) {
+                continue;
+            }
+            seen_keys.insert(c);
+            legend.insert(c, e);
+            continue 'outer;
+        }
+        // Ran out of alphabet
+        return Err(());
+    }
+
+    Ok(legend)
 }
 
 #[cfg(test)]
