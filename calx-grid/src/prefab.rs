@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, HashMap};
 use std::collections::hash_map;
 use std::i32;
 use std::hash::Hash;
@@ -59,10 +59,8 @@ impl<'a, T: 'a> Iterator for PrefabIterator<'a, T> {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.iter.next() {
-            Some((&pos, &idx)) => {
-                Some((pos, &self.prefab.elements[idx]))
-            },
-            _ => None
+            Some((&pos, &idx)) => Some((pos, &self.prefab.elements[idx])),
+            _ => None,
         }
     }
 }
@@ -207,37 +205,46 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
 /// main alphabet. This will allow having standard special characters for eg. certain types of
 /// terrain tiles. When no special alphabet is required, the preference function can return an
 /// empty string.
-pub fn build_legend<T, I, F>(
-    alphabet: &str,
-    prefer_f: F,
-    elements: I
-) -> Result<BTreeMap<char, T>, ()>
-    where F: Fn(&T) -> &'static str,
-          I: IntoIterator<Item = T>,
-          T: Ord + Eq + Clone
-{
-    let mut seen_keys = BTreeSet::new();
-    let mut seen_values = BTreeSet::new();
-    let mut legend = BTreeMap::new();
+pub struct LegendBuilder<T, F> {
+    pub legend: BTreeMap<char, T>,
+    seen_values: BTreeMap<T, char>,
+    prefix_fn: F,
+    alphabet: String,
+}
 
-    'outer: for e in elements {
-        if seen_values.contains(&e) {
-            continue;
+impl<T, F> LegendBuilder<T, F>
+    where T: Ord + Eq + Clone,
+          F: Fn(&T) -> &'static str
+{
+    /// Initialize the legend builder.
+    pub fn new(alphabet: String, prefix_fn: F) -> LegendBuilder<T, F> {
+        LegendBuilder {
+            legend: BTreeMap::new(),
+            seen_values: BTreeMap::new(),
+            prefix_fn: prefix_fn,
+            alphabet: alphabet,
         }
-        seen_values.insert(e.clone());
-        for c in prefer_f(&e).chars().chain(alphabet.chars()) {
-            if seen_keys.contains(&c) {
-                continue;
-            }
-            seen_keys.insert(c);
-            legend.insert(c, e);
-            continue 'outer;
-        }
-        // Ran out of alphabet
-        return Err(());
     }
 
-    Ok(legend)
+    /// Show a value to `LegendBuilder` and get its legend key.
+    ///
+    /// Returns an error if the alphabet has been exhausted.
+    pub fn add(&mut self, value: &T) -> Result<char, ()> {
+        if let Some(&c) = self.seen_values.get(value) {
+            return Ok(c);
+        }
+
+        for c in (self.prefix_fn)(value).chars().chain(self.alphabet.chars()) {
+            if self.legend.contains_key(&c) {
+                continue;
+            }
+
+            self.legend.insert(c, value.clone());
+            self.seen_values.insert(value.clone(), c);
+            return Ok(c);
+        }
+        Err(())
+    }
 }
 
 #[cfg(test)]
