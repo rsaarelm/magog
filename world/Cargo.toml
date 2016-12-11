@@ -17,21 +17,9 @@ euclid = "0.10"
 lazy_static = "0.2"
 rustc-serialize = "0.3"
 calx-ecs = "0.3"
-
-[dependencies.vitral]
-git = "https://github.com/rsaarelm/vitral"
-
-[dependencies.vitral-atlas]
-git = "https://github.com/rsaarelm/vitral"
-
-[dependencies.calx-alg]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-resource]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-grid]
-git = "https://github.com/rsaarelm/calx"
-
-[dependencies.calx-color]
-git = "https://github.com/rsaarelm/calx"
+vitral = { git = "https://github.com/rsaarelm/vitral" }
+vitral-atlas = { git = "https://github.com/rsaarelm/vitral" }
+calx-alg = { git = "https://github.com/rsaarelm/calx" }
+calx-resource = { git = "https://github.com/rsaarelm/calx" }
+calx-grid = { git = "https://github.com/rsaarelm/calx" }
+calx-color = { git = "https://github.com/rsaarelm/calx" }
