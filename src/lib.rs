@@ -151,7 +151,6 @@ impl<T> Builder<T>
 /// converted into rendering instructions for the GUI.
 pub struct Context<T, V> {
     draw_list: Vec<DrawBatch<T, V>>,
-    /// Texture value used for solid-color drawing
     layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
