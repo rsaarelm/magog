@@ -803,7 +803,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#4fa98d63eae14554778acc460705976f4ba7e123"
+source = "git+https://github.com/rsaarelm/vitral#741a3dcbf8ff124cb8d3e14287c141c34ce9e2ab"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -812,7 +812,7 @@ dependencies = [
 [[package]]
 name = "vitral-atlas"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#4fa98d63eae14554778acc460705976f4ba7e123"
+source = "git+https://github.com/rsaarelm/vitral#741a3dcbf8ff124cb8d3e14287c141c34ce9e2ab"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
