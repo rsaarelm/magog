@@ -6,7 +6,7 @@ use std::iter::FromIterator;
 use std::fmt;
 use std::collections::{BTreeMap, HashSet};
 use std::num::Wrapping;
-use euclid::{Point2D, Rect};
+use euclid::{Point2D, Rect, Size2D};
 use rustc_serialize::Decodable;
 use toml;
 use scancode::Scancode;
@@ -81,6 +81,12 @@ impl View {
             }
         }
 
+        let ui_top_y = screen_area.size.height;
+        context.ui.set_clip_rect(Some(Rect::new(
+                Point2D::new(0.0, ui_top_y),
+                Size2D::new(screen_area.size.width, 480.0 - ui_top_y))));
+        context.ui.layout_pos.y = ui_top_y + 10.0;
+
         match self.mode {
             PaintMode::Terrain(mut fore, mut back) => {
                 let fore_id = terrain::Id::from_u8(fore).unwrap();
@@ -106,7 +112,7 @@ impl View {
         for (y, loc) in view.cursor_loc.iter().enumerate() {
             let font = context.ui.default_font();
             context.ui.draw_text(&*font,
-                                 Point2D::new(400.0, y as f32 * 20.0 + 20.0),
+                                 Point2D::new(400.0, y as f32 * 20.0 + 20.0 + ui_top_y),
                                  [1.0, 1.0, 1.0, 1.0],
                                  &format!("{:?}", loc));
         }
