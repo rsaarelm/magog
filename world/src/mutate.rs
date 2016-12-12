@@ -1,11 +1,12 @@
 use calx_ecs::Entity;
-use calx_grid::Dir6;
+use calx_grid::{Dir6, Prefab};
 use location::Location;
 use query::Query;
 use command::CommandResult;
 use terraform::Terraform;
 use world::Loadout;
 use form;
+use terrain;
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -69,4 +70,27 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn spawn(&mut self, loadout: &Loadout) -> Entity;
+
+    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(terrain::Id, Vec<String>)>) {
+        for (p, &(ref terrain, ref entities)) in prefab.iter() {
+            let loc = origin + p;
+
+            // Annihilate any existing entities in the drop zone.
+            let es = self.entities_at(loc);
+            for &e in &es {
+                self.remove_entity(e);
+            }
+
+            // Set terrain.
+            self.set_terrain(loc, *terrain as u8);
+
+            // Spawn new entities.
+            for spawn in entities.iter() {
+                let form = form::FORMS.iter().find(|f| f.name() == Some(spawn)).expect(
+                    &format!("Form '{}' not found!", spawn));
+                let e = self.spawn(&form.loadout);
+                self.set_entity_location(e, loc);
+            }
+        }
+    }
 }

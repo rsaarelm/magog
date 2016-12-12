@@ -209,7 +209,7 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        fn loader(path: String) -> Result<Prefab<LegendItem>, Box<Error>> {
+        fn loader(path: String) -> Result<Prefab<(terrain::Id, Vec<String>)>, Box<Error>> {
             let mut file = File::open(path)?;
             let mut s = String::new();
             file.read_to_string(&mut s)?;
@@ -221,18 +221,18 @@ impl View {
 
             // Turn map into prefab.
             let prefab: Prefab<char> = Prefab::from_text_hexmap(&save.map);
-            let prefab: Prefab<LegendItem> = prefab.map(|item| {
+            Ok(prefab.map(|item| {
                 // TODO: REALLY need error handling instead of panicing here, since we're possibly
                 // dealing with input from the outside, but can't do error pattern in the map
                 // closure. Fix by adding a pre-verify stage that checks that all map glyphs are
                 // found in legend and that all legend items can be instantiated.
-                save.legend
+                let e = save.legend
                     .get(&item)
-                    .expect(&format!("Glyph '{}' not found in legend!", item))
-                    .clone()
-            });
-
-            Ok(prefab)
+                    .expect(&format!("Glyph '{}' not found in legend!", item));
+                let terrain = terrain::Id::from_str(&e.t).expect(&format!("Unknown terrain '{}'", e.t));
+                let spawns = e.e.clone();
+                (terrain, spawns)
+            }))
         }
 
         let prefab = match loader(path) {
@@ -245,26 +245,9 @@ impl View {
 
         // Apply map.
         self.world = World::new(1);
-
-        let all: Vec<Entity> = self.world.ecs().iter().map(|&x| x).collect();
-        for e in all.into_iter() {
-            self.world.remove_entity(e);
-        }
-
         // Prefabs do not contain positioning data. The standard fullscreen prefab which includes a
         // one-cell wide offscreen boundary goes in a bounding box with origin at (-21, -22).
-        let origin = Location::new(-21, -22, 0);
-
-        for (p, i) in prefab.iter() {
-            let loc = origin + p;
-
-            let terrain = terrain::Id::from_str(&i.t).expect(&format!("Unknown terrain '{}'", i.t));
-            self.world.set_terrain(loc, terrain as u8);
-
-            for spawn in &i.e {
-                self.spawn_at(loc, Some(&spawn));
-            }
-        }
+        self.world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
     }
 
     fn save(&mut self, path: String) {
