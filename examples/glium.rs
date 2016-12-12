@@ -61,11 +61,11 @@ fn main() {
 
         context.draw_image(&image, Point2D::new(100.0, 100.0), [1.0, 1.0, 1.0, 1.0]);
 
-        if context.button("Hello, world") {
+        if context.button("Hello, world").left_clicked() {
             println!("Click");
         }
 
-        if context.button("Another button") {
+        if context.button("Another button").left_clicked() {
             println!("Clack {}", test_input);
         }
 

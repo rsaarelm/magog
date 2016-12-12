@@ -219,7 +219,7 @@ impl<T, V: Vertex> Context<T, V>
         self.default_font.clone()
     }
 
-    pub fn button(&mut self, caption: &str) -> bool {
+    pub fn button(&mut self, caption: &str) -> ButtonAction {
         let font = self.default_font.clone();
         let area = font.render_size(caption)
                        .inflate(4.0, 4.0)
@@ -228,8 +228,13 @@ impl<T, V: Vertex> Context<T, V>
         self.layout_pos.y += area.size.height + 2.0;
 
         let hover = area.contains(&self.mouse_pos);
-        let press = self.click_state[MouseButton::Left as usize].is_pressed() &&
+        let left_press = self.click_state[MouseButton::Left as usize].is_pressed() &&
                     area.contains(&self.mouse_pos);
+
+        let right_press = self.click_state[MouseButton::Right as usize].is_pressed() &&
+                    area.contains(&self.mouse_pos);
+
+        let press = left_press || right_press;
 
         let color = if press {
             [1.0, 1.0, 0.0, 1.0]
@@ -246,7 +251,15 @@ impl<T, V: Vertex> Context<T, V>
                        color,
                        caption);
 
-        press && self.click_state[MouseButton::Left as usize].is_release()
+        if left_press && self.click_state[MouseButton::Left as usize].is_release() {
+            ButtonAction::LeftClicked
+        } else if right_press && self.click_state[MouseButton::Right as usize].is_release() {
+            ButtonAction::RightClicked
+        } else if hover {
+            ButtonAction::Hover
+        } else {
+            ButtonAction::Inert
+        }
     }
 
     pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
@@ -631,4 +644,17 @@ pub struct ImageData<T> {
     pub texture: T,
     pub size: Size2D<u32>,
     pub tex_coords: Rect<f32>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum ButtonAction {
+    Inert,
+    Hover,
+    LeftClicked,
+    RightClicked,
+}
+
+impl ButtonAction {
+    pub fn left_clicked(&self) -> bool { self == &ButtonAction::LeftClicked }
+    pub fn right_clicked(&self) -> bool { self == &ButtonAction::RightClicked }
 }
