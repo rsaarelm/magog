@@ -17,7 +17,7 @@ pub enum Forms {
 }
 
 /// Forms are the prototypes for the entities you create.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Form {
     /// Spawn probability weight is the inverse of rarity.
     ///

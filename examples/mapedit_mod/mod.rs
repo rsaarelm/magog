@@ -12,20 +12,27 @@ use toml;
 use scancode::Scancode;
 use calx_resource::ResourceStore;
 use calx_grid::{Dir6, LegendBuilder, Prefab};
-use world::{self, Location, Portal, Query, Terraform, TerrainQuery, World};
+use world::{self, Location, Mutate, Portal, Query, Terraform, TerrainQuery, World};
 use world::terrain;
 use display;
-use vitral;
+use vitral::{self, ButtonAction};
 
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum PaintMode {
-    Terrain(u8, u8),
+    Terrain,
+    Entity,
     Portal,
 }
 
 /// Top-level application state for gameplay.
 pub struct View {
     pub world: World,
+
+    fore_terrain: u8,
+    back_terrain: u8,
+    entity: String,
     mode: PaintMode,
+
     /// Camera and second camera (for portaling)
     camera: (Location, Location),
     /// Do the two cameras move together?
@@ -39,11 +46,27 @@ impl View {
     pub fn new(world: World) -> View {
         View {
             world: world,
-            mode: PaintMode::Terrain(7, 2),
+            fore_terrain: 7,
+            back_terrain: 2,
+            entity: "player".to_string(),
+            mode: PaintMode::Terrain,
             camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
             camera_lock: false,
             console: display::Console::new(),
             console_is_large: false,
+        }
+    }
+
+    fn spawn_at(&mut self, loc: Location, form: Option<&str>) {
+        for e in self.world.entities_at(loc) {
+            self.world.remove_entity(e);
+        }
+
+        if let Some(name) = form {
+            let form = world::FORMS.iter().find(|f| f.name() == Some(name)).expect(
+                &format!("Form '{}' not found!", form.unwrap()));
+            let e = self.world.spawn(&form.loadout);
+            self.world.set_entity_location(e, loc);
         }
     }
 
@@ -59,13 +82,25 @@ impl View {
 
         if let Some(loc) = view.cursor_loc {
             match self.mode {
-                PaintMode::Terrain(draw, erase) => {
+                PaintMode::Terrain => {
                     if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        self.world.set_terrain(loc, draw);
+                        self.world.set_terrain(loc, self.fore_terrain);
                     }
 
                     if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                        self.world.set_terrain(loc, erase);
+                        self.world.set_terrain(loc, self.back_terrain);
+                    }
+                }
+
+                PaintMode::Entity => {
+                    if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
+                        // XXX: Cloning to evade borrow checker...
+                        let e = self.entity.clone();
+                        self.spawn_at(loc, Some(&e[..]));
+                    }
+
+                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
+                        self.spawn_at(loc, None);
                     }
                 }
 
@@ -87,27 +122,57 @@ impl View {
                 Size2D::new(screen_area.size.width, 480.0 - ui_top_y))));
         context.ui.layout_pos.y = ui_top_y + 10.0;
 
-        match self.mode {
-            PaintMode::Terrain(mut fore, mut back) => {
-                let fore_id = terrain::Id::from_u8(fore).unwrap();
-                let back_id = terrain::Id::from_u8(back).unwrap();
+        let fore_id = terrain::Id::from_u8(self.fore_terrain).unwrap();
+        let back_id = terrain::Id::from_u8(self.back_terrain).unwrap();
 
-                if context.ui.button(&format!("left: {:?}", fore_id)) {
-                    fore += 1;
-                    fore %= terrain::Id::_MaxTerrain as u8;
-                }
-
-                if context.ui.button(&format!("right: {:?}", back_id)) {
-                    back += 1;
-                    back %= terrain::Id::_MaxTerrain as u8;
-                }
-
-                self.mode = PaintMode::Terrain(fore, back);
+        match context.ui.button(&format!("left: {:?}", fore_id)) {
+            ButtonAction::LeftClicked => {
+                self.mode = PaintMode::Terrain;
+                self.fore_terrain += terrain::Id::_MaxTerrain as u8 - 1;
+                self.fore_terrain %= terrain::Id::_MaxTerrain as u8;
             }
-            _ => {
-                unimplemented!();
+            ButtonAction::RightClicked => {
+                self.mode = PaintMode::Terrain;
+                self.fore_terrain += 1;
+                self.fore_terrain %= terrain::Id::_MaxTerrain as u8;
             }
+            _ => {}
         }
+
+        match context.ui.button(&format!("right: {:?}", back_id)) {
+            ButtonAction::LeftClicked => {
+                self.mode = PaintMode::Terrain;
+                self.back_terrain += terrain::Id::_MaxTerrain as u8 - 1;
+                self.back_terrain %= terrain::Id::_MaxTerrain as u8;
+            }
+            ButtonAction::RightClicked => {
+                self.mode = PaintMode::Terrain;
+                self.back_terrain += 1;
+                self.back_terrain %= terrain::Id::_MaxTerrain as u8;
+            }
+            _ => {}
+        }
+
+        match context.ui.button(&format!("entity: {}", self.entity)) {
+            ButtonAction::LeftClicked => {
+                self.mode = PaintMode::Entity;
+
+                let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
+                let idx = names.iter().position(|x| *x == &self.entity[..]).expect(&format!("Invalid current entity '{}'", self.entity));
+
+                self.entity = names[(idx + (names.len() - 1)) % names.len()].to_string();
+            }
+            ButtonAction::RightClicked => {
+                self.mode = PaintMode::Entity;
+
+                let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
+                let idx = names.iter().position(|x| *x == &self.entity[..]).expect(&format!("Invalid current entity '{}'", self.entity));
+
+                self.entity = names[(idx + 1) % names.len()].to_string();
+            }
+            _ => {}
+        }
+
 
         for (y, loc) in view.cursor_loc.iter().enumerate() {
             let font = context.ui.default_font();

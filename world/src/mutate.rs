@@ -18,6 +18,8 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn set_player(&mut self, player: Entity);
 
+    fn remove_entity(&mut self, e: Entity);
+
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
         unimplemented!();
@@ -67,8 +69,4 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn spawn(&mut self, loadout: &Loadout) -> Entity;
-
-    fn delete(&mut self, e: Entity) {
-        unimplemented!();
-    }
 }

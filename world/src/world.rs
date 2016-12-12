@@ -153,6 +153,8 @@ impl Mutate for World {
     fn set_player(&mut self, player: Entity) { self.flags.player = Some(player); }
 
     fn spawn(&mut self, loadout: &Loadout) -> Entity { loadout.make(&mut self.ecs) }
+
+    fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 }
 
 impl Command for World {
