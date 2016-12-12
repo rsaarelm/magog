@@ -67,4 +67,8 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn spawn(&mut self, loadout: &Loadout) -> Entity;
+
+    fn delete(&mut self, e: Entity) {
+        unimplemented!();
+    }
 }

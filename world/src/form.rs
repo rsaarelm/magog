@@ -65,6 +65,14 @@ impl Form {
 
     /// Build a new entity with this form.
     pub fn build<W: Mutate>(&self, w: &mut W) -> Entity { w.spawn(&self.loadout) }
+
+    /// Return the name of the form if it has one.
+    pub fn name<'a>(&'a self) -> Option<&'a str> {
+        match self.loadout.desc {
+            Some(ref desc) => Some(&desc.name[..]),
+            None => None
+        }
+    }
 }
 
 lazy_static! {

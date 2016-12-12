@@ -31,7 +31,10 @@ pub use command::Command;
 mod components;
 mod field;
 mod flags;
+
 mod form;
+pub use form::FORMS;
+
 mod fov;
 pub mod init;
 mod item;
@@ -44,6 +47,7 @@ mod location_set;
 pub mod mapgen;
 mod mapfile;
 mod mutate;
+pub use mutate::Mutate;
 
 mod query;
 pub use query::Query;
