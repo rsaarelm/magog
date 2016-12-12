@@ -15,6 +15,7 @@ use fov::SightFov;
 use terraform::TerrainQuery;
 use world::Ecs;
 use terrain;
+use form;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery {
@@ -268,15 +269,13 @@ pub trait Query: TerrainQuery {
     }
 
     /// Return the name that can be used to spawn this entity.
-    fn spawn_name(&self, e: Entity) -> Option<String> {
+    fn spawn_name<'a>(&'a self, e: Entity) -> Option<&'a str> {
         // TODO: Create a special component for this.
-        None
+        self.ecs().desc.get(e).map_or(None, |ref desc| Some(&desc.name[..]))
     }
 
     fn is_spawn_name(&self, spawn_name: &str) -> bool {
-        // TODO: Return true if `spawn_name` will build an entity in whatever factory system we'll
-        // use.
-        false
+        form::FORMS.iter().position(|f| f.name() == Some(spawn_name)).is_some()
     }
 
     fn extract_prefab<I: IntoIterator<Item=Location>>(&self, locs: I) -> Prefab<(terrain::Id, Vec<String>)> {
@@ -295,7 +294,7 @@ pub trait Query: TerrainQuery {
             let terrain = terrain::Id::from_u8(self.terrain_id(loc)).expect("Corrupt terrain");
 
             let entities = Vec::from_iter(
-                self.entities_at(loc).into_iter().filter_map(|e| self.spawn_name(e)));
+                self.entities_at(loc).into_iter().filter_map(|e| self.spawn_name(e).map(|s| s.to_string())));
 
             map.push((pos, (terrain, entities)));
         }
