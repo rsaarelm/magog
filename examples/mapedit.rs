@@ -10,6 +10,7 @@ extern crate calx_alg;
 extern crate calx_color;
 #[macro_use]
 extern crate calx_resource;
+extern crate calx_ecs;
 extern crate calx_grid;
 extern crate world;
 extern crate display;

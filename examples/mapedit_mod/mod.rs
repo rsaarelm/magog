@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::str::FromStr;
+use std::hash::Hash;
 use std::error::Error;
 use std::iter::FromIterator;
 use std::fmt;
@@ -12,6 +13,7 @@ use toml;
 use scancode::Scancode;
 use calx_resource::ResourceStore;
 use calx_grid::{Dir6, LegendBuilder, Prefab};
+use calx_ecs::{Entity};
 use world::{self, Location, Mutate, Portal, Query, Terraform, TerrainQuery, World};
 use world::terrain;
 use display;
@@ -64,7 +66,7 @@ impl View {
 
         if let Some(name) = form {
             let form = world::FORMS.iter().find(|f| f.name() == Some(name)).expect(
-                &format!("Form '{}' not found!", form.unwrap()));
+                &format!("Form '{}' not found!", name));
             let e = self.world.spawn(&form.loadout);
             self.world.set_entity_location(e, loc);
         }
@@ -207,7 +209,7 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        fn loader(path: String) -> Result<Prefab<terrain::Id>, Box<Error>> {
+        fn loader(path: String) -> Result<Prefab<LegendItem>, Box<Error>> {
             let mut file = File::open(path)?;
             let mut s = String::new();
             file.read_to_string(&mut s)?;
@@ -219,16 +221,15 @@ impl View {
 
             // Turn map into prefab.
             let prefab: Prefab<char> = Prefab::from_text_hexmap(&save.map);
-            let prefab: Prefab<terrain::Id> = prefab.map(|item| {
+            let prefab: Prefab<LegendItem> = prefab.map(|item| {
                 // TODO: REALLY need error handling instead of panicing here, since we're possibly
                 // dealing with input from the outside, but can't do error pattern in the map
                 // closure. Fix by adding a pre-verify stage that checks that all map glyphs are
                 // found in legend and that all legend items can be instantiated.
-                let item = save.legend
-                               .get(&item)
-                               .expect(&format!("Glyph '{}' not found in legend!", item));
-                terrain::Id::from_str(&item.t)
-                    .expect(&format!("Unknown terrain type '{}'!", item.t))
+                save.legend
+                    .get(&item)
+                    .expect(&format!("Glyph '{}' not found in legend!", item))
+                    .clone()
             });
 
             Ok(prefab)
@@ -245,17 +246,23 @@ impl View {
         // Apply map.
         self.world = World::new(1);
 
+        let all: Vec<Entity> = self.world.ecs().iter().map(|&x| x).collect();
+        for e in all.into_iter() {
+            self.world.remove_entity(e);
+        }
+
         // Prefabs do not contain positioning data. The standard fullscreen prefab which includes a
         // one-cell wide offscreen boundary goes in a bounding box with origin at (-21, -22).
-        let offset = Point2D::new(-21, -22);
+        let origin = Location::new(-21, -22, 0);
 
-        for y in 0..prefab.dim().height {
-            for x in 0..prefab.dim().width {
-                let p = Point2D::new(x as i32, y as i32);
-                if let Some(&t) = prefab.get(p) {
-                    let loc = Location::origin() + p + offset;
-                    self.world.set_terrain(loc, t as u8);
-                }
+        for (p, i) in prefab.iter() {
+            let loc = origin + p;
+
+            let terrain = terrain::Id::from_str(&i.t).expect(&format!("Unknown terrain '{}'", i.t));
+            self.world.set_terrain(loc, terrain as u8);
+
+            for spawn in &i.e {
+                self.spawn_at(loc, Some(&spawn));
             }
         }
     }
@@ -399,7 +406,7 @@ impl fmt::Display for MapSave {
     }
 }
 
-#[derive(Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, RustcEncodable, RustcDecodable)]
 struct LegendItem {
     /// Terrain
     pub t: String,
