@@ -471,6 +471,7 @@ version = "0.1.0"
 dependencies = [
  "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-ecs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-resource 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "display 0.1.0",
@@ -803,7 +804,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#741a3dcbf8ff124cb8d3e14287c141c34ce9e2ab"
+source = "git+https://github.com/rsaarelm/vitral#b1681f0091f811afee9d5a68dfaa62b592410480"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -812,7 +813,7 @@ dependencies = [
 [[package]]
 name = "vitral-atlas"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#741a3dcbf8ff124cb8d3e14287c141c34ce9e2ab"
+source = "git+https://github.com/rsaarelm/vitral#b1681f0091f811afee9d5a68dfaa62b592410480"
 dependencies = [
  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",

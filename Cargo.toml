@@ -20,6 +20,7 @@ glium = "0.15"
 toml = "0.2"
 scancode = "0.1"
 rustc-serialize = "0.3"
+calx-ecs = "0.3"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }
 calx-resource = { git = "https://github.com/rsaarelm/calx" }
