@@ -206,7 +206,10 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
 /// terrain tiles. When no special alphabet is required, the preference function can return an
 /// empty string.
 pub struct LegendBuilder<T, F> {
+    /// The generated legend map.
     pub legend: BTreeMap<char, T>,
+    /// Set to true if an add operation failed to assign a symbol.
+    pub out_of_alphabet: bool,
     seen_values: BTreeMap<T, char>,
     prefix_fn: F,
     alphabet: String,
@@ -220,6 +223,7 @@ impl<T, F> LegendBuilder<T, F>
     pub fn new(alphabet: String, prefix_fn: F) -> LegendBuilder<T, F> {
         LegendBuilder {
             legend: BTreeMap::new(),
+            out_of_alphabet: false,
             seen_values: BTreeMap::new(),
             prefix_fn: prefix_fn,
             alphabet: alphabet,
@@ -243,6 +247,7 @@ impl<T, F> LegendBuilder<T, F>
             self.seen_values.insert(value.clone(), c);
             return Ok(c);
         }
+        self.out_of_alphabet = true;
         Err(())
     }
 }
