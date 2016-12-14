@@ -7,6 +7,9 @@ extern crate image;
 extern crate euclid;
 #[macro_use]
 extern crate lazy_static;
+extern crate toml;
+#[macro_use]
+extern crate error_chain;
 extern crate vitral;
 extern crate vitral_atlas;
 extern crate calx_alg;
@@ -33,7 +36,7 @@ mod field;
 mod flags;
 
 mod form;
-pub use form::FORMS;
+pub use form::{Form, FORMS};
 
 mod fov;
 pub mod init;
@@ -45,7 +48,10 @@ pub use location::{Location, Portal};
 mod location_set;
 // TODO: Make private, trigger mapgen internally using higher-level API
 pub mod mapgen;
+
 mod mapfile;
+pub use mapfile::{save_prefab, load_prefab};
+
 mod mutate;
 pub use mutate::Mutate;
 
@@ -56,13 +62,15 @@ mod spatial;
 mod stats;
 
 mod terraform;
-pub use terraform::Terraform;
-pub use terraform::TerrainQuery;
+pub use terraform::{Terraform, TerrainQuery};
 
 pub mod terrain;
 
 mod world;
 pub use world::{Ecs, World};
+
+/// Standard Prefab type, terrain type and spawn name list.
+pub type Prefab = calx_grid::Prefab<(terrain::Id, Vec<String>)>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
@@ -107,4 +115,13 @@ pub fn onscreen_locations() -> &'static Vec<Point2D<i32>> {
     }
 
     &*ONSCREEN_LOCATIONS
+}
+
+pub mod errors {
+    error_chain! {
+        foreign_links {
+            Io(::std::io::Error) #[cfg(unix)];
+            TomlDecode(::toml::DecodeError);
+        }
+    }
 }

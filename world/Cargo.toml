@@ -17,6 +17,8 @@ euclid = "0.10"
 lazy_static = "0.2"
 rustc-serialize = "0.3"
 calx-ecs = "0.3"
+toml = "0.2"
+error-chain = "0.7"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 vitral-atlas = { git = "https://github.com/rsaarelm/vitral" }
 calx-alg = { git = "https://github.com/rsaarelm/calx" }

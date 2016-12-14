@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::str::FromStr;
 use std::hash::Hash;
-use std::error::Error;
 use std::iter::FromIterator;
 use std::fmt;
 use std::collections::{BTreeMap, HashSet};
@@ -14,8 +13,9 @@ use scancode::Scancode;
 use calx_resource::ResourceStore;
 use calx_grid::{Dir6, LegendBuilder, Prefab};
 use calx_ecs::{Entity};
-use world::{self, Location, Mutate, Portal, Query, Terraform, TerrainQuery, World};
+use world::{self, Location, Mutate, Portal, Query, Terraform, TerrainQuery, World, Form};
 use world::terrain;
+use world::errors::*;
 use display;
 use vitral::{self, ButtonAction};
 
@@ -65,10 +65,8 @@ impl View {
         }
 
         if let Some(name) = form {
-            let form = world::FORMS.iter().find(|f| f.name() == Some(name)).expect(
-                &format!("Form '{}' not found!", name));
-            let e = self.world.spawn(&form.loadout);
-            self.world.set_entity_location(e, loc);
+            let form = Form::named(name).expect(&format!("Form '{}' not found!", name));
+            self.world.spawn(&form.loadout, loc);
         }
     }
 
@@ -209,30 +207,9 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        fn loader(path: String) -> Result<Prefab<(terrain::Id, Vec<String>)>, Box<Error>> {
+        fn loader(path: String) -> Result<Prefab<(terrain::Id, Vec<String>)>> {
             let mut file = File::open(path)?;
-            let mut s = String::new();
-            file.read_to_string(&mut s)?;
-            let mut parser = toml::Parser::new(&s);
-
-            let mut decoder = toml::Decoder::new(
-                toml::Value::Table(parser.parse().ok_or_else(|| format!("Parse errors: {:?}", parser.errors))?));
-            let save = MapSave::decode(&mut decoder)?;
-
-            // Turn map into prefab.
-            let prefab: Prefab<char> = Prefab::from_text_hexmap(&save.map);
-            Ok(prefab.map(|item| {
-                // TODO: REALLY need error handling instead of panicing here, since we're possibly
-                // dealing with input from the outside, but can't do error pattern in the map
-                // closure. Fix by adding a pre-verify stage that checks that all map glyphs are
-                // found in legend and that all legend items can be instantiated.
-                let e = save.legend
-                    .get(&item)
-                    .expect(&format!("Glyph '{}' not found in legend!", item));
-                let terrain = terrain::Id::from_str(&e.t).expect(&format!("Unknown terrain '{}'", e.t));
-                let spawns = e.e.clone();
-                (terrain, spawns)
-            }))
+            world::load_prefab(&mut file)
         }
 
         let prefab = match loader(path) {
@@ -262,48 +239,14 @@ impl View {
         }
 
         let prefab = self.world.extract_prefab(locs.iter().map(|&x| x));
-        const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-             abcdefghijklmnopqrstuvwxyz\
-             0123456789";
-
-        let mut legend_builder = LegendBuilder::new(ALPHABET.to_string(),
-                                                    move |x: &(terrain::Id, Vec<String>)| {
-                                                        let &(ref t, ref e) = x;
-                                                        if e.is_empty() {
-                                                            terrain::Tile::get_resource(&(*t as u8))
-                                                                .unwrap()
-                                                                .preferred_map_chars()
-                                                        } else {
-                                                            ""
-                                                        }
-                                                    });
-
-        // TODO: Turn legend failure into a recoverable error.
-        // (Can't do that from inside a closure, so will need a separate checkup stage)
-        let prefab = prefab.map(|e| {
-            legend_builder.add(&e).expect("Unable to build legend, too many unique spawns?")
-        });
-
-        let legend: BTreeMap<char, LegendItem> = legend_builder.legend
-                                                               .into_iter()
-                                                               .map(|(c, t)| {
-                                                                   (c,
-                                                                    LegendItem {
-                                                                       t: format!("{:?}", t.0),
-                                                                       e: t.1.clone(),
-                                                                   })
-                                                               })
-                                                               .collect();
-
-        let save = MapSave {
-            map: format!("{}", prefab.hexmap_display()),
-            legend: legend,
-        };
 
         match File::create(&path) {
             Ok(mut file) => {
-                write!(file, "{}", save).expect("Write to file failed");
-                let _ = writeln!(&mut self.console, "Saved '{}'", path);
+                if let Err(e) = world::save_prefab(&mut file, &prefab) {
+                    let _ = writeln!(&mut self.console, "Save failed: {}", e);
+                } else {
+                    let _ = writeln!(&mut self.console, "Saved '{}'", path);
+                }
             }
             Err(e) => {
                 let _ = writeln!(&mut self.console, "Couldn't open file {}: {:?}", path, e);
@@ -363,48 +306,5 @@ impl View {
     fn switch_camera(&mut self) {
         let (a, b) = self.camera;
         self.camera = (b, a);
-    }
-}
-
-/// Type for maps saved into disk.
-#[derive(Debug, RustcEncodable, RustcDecodable)]
-struct MapSave {
-    pub map: String,
-    pub legend: BTreeMap<char, LegendItem>,
-}
-
-impl fmt::Display for MapSave {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TOML formatted output.
-        writeln!(f, "map = '''")?;
-        for line in self.map.lines() {
-            writeln!(f, "{}", line.trim_right())?;
-        }
-        writeln!(f, "'''\n")?;
-        writeln!(f, "[legend]")?;
-        for (k, v) in self.legend.iter() {
-            writeln!(f, "\"{}\" = {}", k, v)?;
-        }
-        Ok(())
-    }
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Debug, RustcEncodable, RustcDecodable)]
-struct LegendItem {
-    /// Terrain
-    pub t: String,
-    /// Entities
-    pub e: Vec<String>,
-}
-
-impl fmt::Display for LegendItem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TOML formatted output.
-        write!(f, "{{ t = \"{}\", e = [", self.t)?;
-        self.e.iter().next().map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
-        for e in self.e.iter().skip(1) {
-            write!(f, ", \"{}\"", e)?;
-        }
-        write!(f, "] }}")
     }
 }

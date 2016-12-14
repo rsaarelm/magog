@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use calx_grid::{Dir6, HexFov, Prefab};
+use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
 use calx_resource::{Resource, ResourceStore};
 use world::World;
@@ -16,6 +16,7 @@ use terraform::TerrainQuery;
 use world::Ecs;
 use terrain;
 use form;
+use ::Prefab;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery {
@@ -278,7 +279,7 @@ pub trait Query: TerrainQuery {
         form::FORMS.iter().position(|f| f.name() == Some(spawn_name)).is_some()
     }
 
-    fn extract_prefab<I: IntoIterator<Item=Location>>(&self, locs: I) -> Prefab<(terrain::Id, Vec<String>)> {
+    fn extract_prefab<I: IntoIterator<Item=Location>>(&self, locs: I) -> Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
