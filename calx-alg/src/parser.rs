@@ -47,12 +47,12 @@ macro_rules! command_parser {
     {
         $(fn $method:ident(&mut self$(, $argname:ident: $argtype:ty)*);)+
     } => {
-        fn parse(&mut self, input: &str) -> Result<(), Box<::std::error::Error>> {
+        fn parse(&mut self, input: &str) -> ::std::result::Result<(), Box<::std::error::Error>> {
             #[derive(Debug)]
             struct ParseError(String);
 
             impl ::std::fmt::Display for ParseError {
-                fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+                fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::result::Result<(), ::std::fmt::Error> {
                     self.0.fmt(fmt)
                 }
             }
@@ -61,7 +61,7 @@ macro_rules! command_parser {
                 fn description(&self) -> &str { &self.0 }
             }
 
-            fn parse_err(s: String) -> Result<(), Box<::std::error::Error>> {
+            fn parse_err(s: String) -> ::std::result::Result<(), Box<::std::error::Error>> {
                 Err(Box::new(ParseError(s)))
             }
 
