@@ -59,8 +59,6 @@ impl<'a> World {
             flags: Flags::new(seed),
         };
 
-        ret.init_level(1);
-
         ret
     }
 
@@ -152,7 +150,11 @@ impl Mutate for World {
 
     fn set_player(&mut self, player: Entity) { self.flags.player = Some(player); }
 
-    fn spawn(&mut self, loadout: &Loadout) -> Entity { loadout.make(&mut self.ecs) }
+    fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity {
+        let e = loadout.make(&mut self.ecs);
+        self.place_entity(e, loc);
+        e
+    }
 
     fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 }

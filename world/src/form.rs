@@ -34,6 +34,10 @@ pub struct Form {
 }
 
 impl Form {
+    pub fn named(name: &str) -> Option<&'static Form> {
+        FORMS.iter().find(|x| x.name() == Some(name))
+    }
+
     /// Create a standard form for a living creature.
     pub fn mob(name: &str, brush: &str, power: i32, intrinsics: &[Intrinsic]) -> Form {
         Form {
@@ -62,9 +66,6 @@ impl Form {
         self.loadout.brain = Some(Brain::player());
         self
     }
-
-    /// Build a new entity with this form.
-    pub fn build<W: Mutate>(&self, w: &mut W) -> Entity { w.spawn(&self.loadout) }
 
     /// Return the name of the form if it has one.
     pub fn name<'a>(&'a self) -> Option<&'a str> {

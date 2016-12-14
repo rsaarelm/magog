@@ -5,7 +5,7 @@ use query::Query;
 use command::CommandResult;
 use terraform::Terraform;
 use world::Loadout;
-use form;
+use form::Form;
 use terrain;
 
 /// World-mutating methods that are not exposed outside the crate.
@@ -57,19 +57,7 @@ pub trait Mutate: Query + Terraform + Sized {
         unimplemented!();
     }
 
-    fn init_level(&mut self, depth: u32) {
-        if let None = self.player() {
-            // XXX: Assuming player is the first element
-            // TODO: A spawn named method instead.
-            let player = form::FORMS[0].build(self);
-            self.place_entity(player, Location::new(0, 0, 0));
-            self.set_player(player);
-        }
-
-        // TODO: Map init.
-    }
-
-    fn spawn(&mut self, loadout: &Loadout) -> Entity;
+    fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
     fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(terrain::Id, Vec<String>)>) {
         for (p, &(ref terrain, ref entities)) in prefab.iter() {
@@ -86,11 +74,34 @@ pub trait Mutate: Query + Terraform + Sized {
 
             // Spawn new entities.
             for spawn in entities.iter() {
-                let form = form::FORMS.iter().find(|f| f.name() == Some(spawn)).expect(
-                    &format!("Form '{}' not found!", spawn));
-                let e = self.spawn(&form.loadout);
-                self.set_entity_location(e, loc);
+                if spawn == "player" {
+                    self.spawn_player(loc);
+                } else {
+                    let form = Form::named(spawn).expect(&format!("Form '{}' not found!", spawn));
+                    self.spawn(&form.loadout, loc);
+                }
             }
+        }
+    }
+
+    /// Special method for setting the player start position.
+    ///
+    /// If player already exists and is placed in the world, do nothing.
+    ///
+    /// If player exists, but is not placed in spatial, teleport the player here.
+    ///
+    /// If player does not exist, create the initial player entity.
+    fn spawn_player(&mut self, loc: Location) {
+        if let Some(player) = self.player() {
+            if self.location(player).is_none() {
+                // Teleport player from limbo.
+                self.place_entity(player, loc);
+            }
+        } else {
+            // Initialize new player object.
+            let form = Form::named("player").expect("Player form not found");
+            let player = self.spawn(&form.loadout, loc);
+            self.set_player(player);
         }
     }
 }
