@@ -2,7 +2,6 @@ extern crate rustc_serialize;
 extern crate euclid;
 #[macro_use]
 extern crate glium;
-extern crate toml;
 extern crate vitral;
 extern crate scancode;
 #[macro_use]
@@ -21,7 +20,7 @@ pub mod mapedit_mod;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::{Location, Terraform, World};
+use world::World;
 use mapedit_mod::View;
 
 pub fn main() {

@@ -1,19 +1,11 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::str::FromStr;
-use std::hash::Hash;
-use std::iter::FromIterator;
-use std::fmt;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::HashSet;
 use std::num::Wrapping;
 use euclid::{Point2D, Rect, Size2D};
-use rustc_serialize::Decodable;
-use toml;
 use scancode::Scancode;
-use calx_resource::ResourceStore;
-use calx_grid::{Dir6, LegendBuilder, Prefab};
-use calx_ecs::{Entity};
-use world::{self, Location, Mutate, Portal, Query, Terraform, TerrainQuery, World, Form};
+use calx_grid::{Dir6, Prefab};
+use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World};
 use world::terrain;
 use world::errors::*;
 use display;
@@ -117,9 +109,9 @@ impl View {
         }
 
         let ui_top_y = screen_area.size.height;
-        context.ui.set_clip_rect(Some(Rect::new(
-                Point2D::new(0.0, ui_top_y),
-                Size2D::new(screen_area.size.width, 480.0 - ui_top_y))));
+        context.ui.set_clip_rect(Some(Rect::new(Point2D::new(0.0, ui_top_y),
+                                                Size2D::new(screen_area.size.width,
+                                                            480.0 - ui_top_y))));
         context.ui.layout_pos.y = ui_top_y + 10.0;
 
         let fore_id = terrain::Id::from_u8(self.fore_terrain).unwrap();
@@ -158,7 +150,9 @@ impl View {
                 self.mode = PaintMode::Entity;
 
                 let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                let idx = names.iter().position(|x| *x == &self.entity[..]).expect(&format!("Invalid current entity '{}'", self.entity));
+                let idx = names.iter()
+                               .position(|x| *x == &self.entity[..])
+                               .expect(&format!("Invalid current entity '{}'", self.entity));
 
                 self.entity = names[(idx + (names.len() - 1)) % names.len()].to_string();
             }
@@ -166,7 +160,9 @@ impl View {
                 self.mode = PaintMode::Entity;
 
                 let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                let idx = names.iter().position(|x| *x == &self.entity[..]).expect(&format!("Invalid current entity '{}'", self.entity));
+                let idx = names.iter()
+                               .position(|x| *x == &self.entity[..])
+                               .expect(&format!("Invalid current entity '{}'", self.entity));
 
                 self.entity = names[(idx + 1) % names.len()].to_string();
             }

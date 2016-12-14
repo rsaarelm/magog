@@ -6,7 +6,7 @@ use rustc_serialize::Decodable;
 use toml;
 use calx_grid;
 use calx_resource::ResourceStore;
-use ::Prefab;
+use Prefab;
 use terrain;
 use form::Form;
 use errors::*;
@@ -17,20 +17,18 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
              0123456789";
 
     let mut legend_builder = calx_grid::LegendBuilder::new(ALPHABET.to_string(),
-    move |x: &(terrain::Id, Vec<String>)| {
-        let &(ref t, ref e) = x;
-        if e.is_empty() {
-            terrain::Tile::get_resource(&(*t as u8))
+                                                           move |x: &(terrain::Id, Vec<String>)| {
+                                                               let &(ref t, ref e) = x;
+                                                               if e.is_empty() {
+                                                                   terrain::Tile::get_resource(&(*t as u8))
                 .unwrap()
                 .preferred_map_chars()
-        } else {
-            ""
-        }
-    });
+                                                               } else {
+                                                                   ""
+                                                               }
+                                                           });
 
-    let prefab = prefab.clone().map(|e| {
-        legend_builder.add(&e)
-    });
+    let prefab = prefab.clone().map(|e| legend_builder.add(&e));
     // Values are still results, we need to check if legend building failed.
     if legend_builder.out_of_alphabet {
         return Err("Unable to build legend, scene too complex?".into());
@@ -40,15 +38,15 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     let prefab = prefab.map(|e| e.unwrap());
 
     let legend: BTreeMap<char, LegendItem> = legend_builder.legend
-        .into_iter()
-        .map(|(c, t)| {
-            (c,
-             LegendItem {
-                 t: format!("{:?}", t.0),
-                 e: t.1.clone(),
-             })
-        })
-    .collect();
+                                                           .into_iter()
+                                                           .map(|(c, t)| {
+                                                               (c,
+                                                                LegendItem {
+                                                                   t: format!("{:?}", t.0),
+                                                                   e: t.1.clone(),
+                                                               })
+                                                           })
+                                                           .collect();
 
     let save = MapSave {
         map: format!("{}", prefab.hexmap_display()),
@@ -80,7 +78,9 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
         }
     }
     for c in save.map.chars() {
-        if c.is_whitespace() { continue; }
+        if c.is_whitespace() {
+            continue;
+        }
         if !save.legend.contains_key(&c) {
             return Err(format!("Unknown map character '{}'", c).into());
         }
