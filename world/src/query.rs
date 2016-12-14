@@ -16,7 +16,7 @@ use terraform::TerrainQuery;
 use world::Ecs;
 use terrain;
 use form;
-use ::Prefab;
+use Prefab;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery {
@@ -127,6 +127,9 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the location obstructs entity movement.
     fn blocks_walk(&self, loc: Location) -> bool {
+        if !self.is_valid_location(loc) {
+            return true;
+        }
         if self.terrain(loc).blocks_walk() {
             return true;
         }
