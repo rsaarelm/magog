@@ -96,7 +96,14 @@ impl TerrainQuery for World {
     }
 
     fn terrain_id(&self, loc: Location) -> u8 {
-        let idx = self.terrain.get(loc);
+        let mut idx = self.terrain.get(loc);
+
+        if idx == terrain::Id::Door as u8 {
+            // Standing in the doorway opens the door.
+            if self.has_mobs(loc) {
+                idx = terrain::Id::OpenDoor as u8;
+            }
+        }
 
         if idx == 0 { self.default_terrain_id(loc) } else { idx }
     }
