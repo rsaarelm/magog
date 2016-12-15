@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::collections::HashSet;
 use std::iter::FromIterator;
 use calx_grid::{Dir6, HexFov};
 use calx_ecs::Entity;
@@ -235,12 +234,6 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the entity should have an idle animation.
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
-
-    /// Return the field of view chart for visible tiles.
-    fn sight_fov(w: &World, origin: Location, range: u32) -> HashSet<Location> {
-        HashSet::from_iter(HexFov::new(SightFov::new(w, range, origin))
-                               .map(|(pos, a)| a.origin + pos))
-    }
 
     /// Return Id value of terrain at location for drawing on screen.
     fn visual_terrain_id(&self, loc: Location) -> u8 {

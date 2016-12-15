@@ -4,8 +4,8 @@ use calx_color::Rgba;
 use calx_resource::Resource;
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
-use components::{Brain, Desc, Health};
-use world::{Loadout, World};
+use components::{Brain, Desc, Health, MapMemory};
+use world::{Component, Loadout, World};
 use mutate::Mutate;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -74,12 +74,18 @@ impl Form {
             None => None
         }
     }
+
+    pub fn c<C: Component>(mut self, comp: C) -> Form {
+        self.loadout = self.loadout.c(comp);
+        self
+    }
 }
 
 lazy_static! {
     pub static ref FORMS: Vec<Form> =
         vec![
-        Form::mob("player",     "player",     10, &[Hands]).rarity(0.0).player(),
+        Form::mob("player",     "player",     10, &[Hands]).rarity(0.0).player()
+            .c(MapMemory::new()),
         Form::mob("dreg",       "dreg",       1,  &[Hands]),
         Form::mob("snake",      "snake",      1,  &[]),
         ];

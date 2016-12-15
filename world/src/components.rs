@@ -4,8 +4,10 @@ use calx_resource::Resource;
 use item::ItemType;
 use ability::Ability;
 use stats::Stats;
+use location::Location;
 use location_set::LocationSet;
 use brush::Brush;
+use FovStatus;
 
 /// Entity name and appearance.
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
@@ -42,6 +44,16 @@ impl MapMemory {
         MapMemory {
             seen: LocationSet::new(),
             remembered: LocationSet::new(),
+        }
+    }
+
+    pub fn status(&self, loc: Location) -> Option<FovStatus> {
+        if self.seen.contains(&loc) {
+            Some(FovStatus::Seen)
+        } else if self.remembered.contains(&loc) {
+            Some(FovStatus::Remembered)
+        } else {
+            None
         }
     }
 }

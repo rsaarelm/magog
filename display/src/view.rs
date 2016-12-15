@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{Dir6, FovValue, HexFov};
 use calx_resource::Resource;
-use world::{self, Location, Query, TerrainQuery, World};
+use world::{self, Location, Query, TerrainQuery, World, FovStatus};
 use sprite::Sprite;
 use render::{self, Layer};
 use backend;
@@ -56,7 +56,8 @@ impl WorldView {
         }
     }
 
-    pub fn draw(&mut self, world: &World, context: &mut backend::Context) {
+    pub fn draw(
+        &mut self, world: &World, context: &mut backend::Context) {
         self.ensure_fov(world);
 
         let center = self.screen_area.origin + self.screen_area.size / 2.0 -
@@ -65,10 +66,17 @@ impl WorldView {
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(context.ui.mouse_pos() - center);
 
+        let mut fov_status = Some(FovStatus::Seen);
+
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
 
             let loc = origins[0] + chart_pos;
+
+            // Always draw FOV if there's an active player with a map memory component.
+            if let Some(player) = world.player() {
+                fov_status = world.ecs().map_memory.get(player).map_or(None, |fov| fov.status(loc));
+            }
 
             let screen_pos = chart_to_view(chart_pos) + center;
 

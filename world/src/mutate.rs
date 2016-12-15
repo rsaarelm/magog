@@ -21,6 +21,11 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn remove_entity(&mut self, e: Entity);
 
+    /// Compute field-of-view into entity's map memory.
+    ///
+    /// Does nothing for entities without a map memory component.
+    fn do_fov(&mut self, e: Entity);
+
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
         unimplemented!();
@@ -37,7 +42,7 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn after_entity_moved(&mut self, e: Entity) {
-        // TODO
+        self.do_fov(e);
     }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> CommandResult {
@@ -50,10 +55,6 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> CommandResult {
-        unimplemented!();
-    }
-
-    fn do_fov(&mut self, e: Entity) {
         unimplemented!();
     }
 

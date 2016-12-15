@@ -1,11 +1,12 @@
 use std::sync::Arc;
 use std::io::{Read, Write};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
 use bincode::{self, serde};
 use euclid::Point2D;
 use calx_resource::ResourceStore;
 use calx_ecs::Entity;
-use calx_grid::Dir6;
+use calx_grid::{Dir6, HexFov};
 use field::Field;
 use spatial::{Place, Spatial};
 use flags::Flags;
@@ -17,6 +18,7 @@ use query::Query;
 use command::{Command, CommandResult};
 use mutate::Mutate;
 use terraform::{Terraform, TerrainQuery};
+use fov::SightFov;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -157,6 +159,27 @@ impl Mutate for World {
     }
 
     fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
+
+    fn do_fov(&mut self, e: Entity) {
+        if !self.ecs.map_memory.contains(e) {
+            return;
+        }
+
+        if let Some(loc) = self.location(e) {
+            const DEFAULT_FOV_RANGE: u32 = 12;
+
+            let fov: HashSet<Location> = HashSet::from_iter(HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
+                               .map(|(pos, a)| a.origin + pos));
+
+            let ref mut memory = self.ecs.map_memory[e];
+            memory.seen.clear();
+
+            for &loc in fov.iter() {
+                memory.seen.insert(loc);
+                memory.remembered.insert(loc);
+            }
+        }
+    }
 }
 
 impl Command for World {
