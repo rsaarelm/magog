@@ -59,7 +59,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
     fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(terrain::Id, Vec<String>)>) {
-        for (p, &(ref terrain, ref entities)) in prefab.iter() {
+        for (p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 
             // Annihilate any existing entities in the drop zone.
@@ -70,8 +70,12 @@ pub trait Mutate: Query + Terraform + Sized {
 
             // Set terrain.
             self.set_terrain(loc, *terrain as u8);
+        }
 
-            // Spawn new entities.
+        // Spawn entities after all terrain is in place so that initial FOV is good.
+        for (p, &(_, ref entities)) in prefab.iter() {
+            let loc = origin + p;
+
             for spawn in entities.iter() {
                 if spawn == "player" {
                     self.spawn_player(loc);

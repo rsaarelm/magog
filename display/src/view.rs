@@ -77,6 +77,15 @@ impl WorldView {
                 fov_status = world.ecs().map_memory.get(player).map_or(None, |fov| fov.status(loc));
             }
 
+            if fov_status.is_none() {
+                continue;
+            }
+
+            if fov_status == Some(FovStatus::Remembered) {
+                // TODO: Map memory display.
+                continue;
+            }
+
             let screen_pos = chart_to_view(chart_pos) + center;
 
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
