@@ -41,9 +41,7 @@ pub trait Mutate: Query + Terraform + Sized {
         self.after_entity_moved(e);
     }
 
-    fn after_entity_moved(&mut self, e: Entity) {
-        self.do_fov(e);
-    }
+    fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> CommandResult {
         let loc = try!(self.location(e).ok_or(())) + dir;

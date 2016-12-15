@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{Dir6, FovValue, HexFov};
 use calx_resource::Resource;
-use world::{self, Location, Query, TerrainQuery, World, FovStatus};
+use world::{self, FovStatus, Location, Query, TerrainQuery, World};
 use sprite::Sprite;
 use render::{self, Layer};
 use backend;
@@ -56,8 +56,7 @@ impl WorldView {
         }
     }
 
-    pub fn draw(
-        &mut self, world: &World, context: &mut backend::Context) {
+    pub fn draw(&mut self, world: &World, context: &mut backend::Context) {
         self.ensure_fov(world);
 
         let center = self.screen_area.origin + self.screen_area.size / 2.0 -

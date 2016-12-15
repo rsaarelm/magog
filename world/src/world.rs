@@ -98,18 +98,12 @@ impl TerrainQuery for World {
     fn terrain_id(&self, loc: Location) -> u8 {
         let idx = self.terrain.get(loc);
 
-        if idx == 0 {
-            self.default_terrain_id(loc)
-        } else {
-            idx
-        }
+        if idx == 0 { self.default_terrain_id(loc) } else { idx }
     }
 
     fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }
 
-    fn is_untouched(&self, loc: Location) -> bool {
-        !self.terrain.overrides(loc)
-    }
+    fn is_untouched(&self, loc: Location) -> bool { !self.terrain.overrides(loc) }
 }
 
 impl Query for World {
@@ -168,8 +162,9 @@ impl Mutate for World {
         if let Some(loc) = self.location(e) {
             const DEFAULT_FOV_RANGE: u32 = 12;
 
-            let fov: HashSet<Location> = HashSet::from_iter(HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
-                               .map(|(pos, a)| a.origin + pos));
+            let fov: HashSet<Location> =
+                HashSet::from_iter(HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
+                                       .map(|(pos, a)| a.origin + pos));
 
             let ref mut memory = self.ecs.map_memory[e];
             memory.seen.clear();
@@ -199,9 +194,7 @@ impl Command for World {
 }
 
 impl Terraform for World {
-    fn set_terrain(&mut self, loc: Location, terrain: u8) {
-        self.terrain.set(loc, terrain);
-    }
+    fn set_terrain(&mut self, loc: Location, terrain: u8) { self.terrain.set(loc, terrain); }
 
     fn set_portal(&mut self, loc: Location, mut portal: Portal) {
         let target_loc = loc + portal;
