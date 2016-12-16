@@ -237,17 +237,22 @@ pub trait Query: TerrainQuery {
 
     /// Return Id value of terrain at location for drawing on screen.
     fn visual_terrain_id(&self, loc: Location) -> u8 {
+        use terrain::Id::*;
         let mut idx = self.terrain_id(loc);
 
-        if idx == terrain::Id::Door as u8 {
-            // Standing in the doorway opens the door.
-            if self.has_mobs(loc) {
-                idx = terrain::Id::OpenDoor as u8;
+        // Floor terrain dot means "you can step here". So if the floor is outside the valid play
+        // area, don't show the dot.
+        //
+        // XXX: Hardcoded set of floors, must be updated whenever a new floor type is added.
+        if !self.is_valid_location(loc) {
+            if idx == Ground as u8 || idx == Grass as u8 || idx == Gate as u8 {
+                idx = Empty as u8;
             }
         }
 
+
         // TODO: Might want a more generic method of specifying cosmetic terrain variants.
-        if idx == terrain::Id::Grass as u8 {
+        if idx == Grass as u8 {
             // Grass is occasionally fancy.
             if loc.noise() > 0.85 {
                 idx = terrain::Id::Grass2 as u8;
