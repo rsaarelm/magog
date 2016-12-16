@@ -45,7 +45,7 @@ impl<T> Encodable for Resource<T> {
 
 impl<T: ResourceStore> Decodable for Resource<T> {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        let key: String = Decodable::decode(d)?;;;
+        let key: String = Decodable::decode(d)?;
         Ok(Self::new(key).unwrap())
     }
 }
