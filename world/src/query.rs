@@ -280,14 +280,17 @@ pub trait Query: TerrainQuery {
         form::FORMS.iter().position(|f| f.name() == Some(spawn_name)).is_some()
     }
 
-    fn extract_prefab<I: IntoIterator<Item=Location>>(&self, locs: I) -> Prefab {
+    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
         for loc in locs {
             // Store first location as an arbitrary origin.
             let origin = match origin {
-                None => { origin = Some(loc); loc }
+                None => {
+                    origin = Some(loc);
+                    loc
+                }
                 Some(origin) => origin,
             };
 
@@ -295,8 +298,9 @@ pub trait Query: TerrainQuery {
 
             let terrain = terrain::Id::from_u8(self.terrain_id(loc)).expect("Corrupt terrain");
 
-            let entities = Vec::from_iter(
-                self.entities_at(loc).into_iter().filter_map(|e| self.spawn_name(e).map(|s| s.to_string())));
+            let entities = Vec::from_iter(self.entities_at(loc).into_iter().filter_map(|e| {
+                self.spawn_name(e).map(|s| s.to_string())
+            }));
 
             map.push((pos, (terrain, entities)));
         }
