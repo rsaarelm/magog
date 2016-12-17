@@ -92,7 +92,7 @@ impl<'a> World {
 
 impl TerrainQuery for World {
     fn is_valid_location(&self, loc: Location) -> bool {
-        ::on_screen(Point2D::new(loc.x as i32, loc.y as i32))
+        Location::origin().v2_at(loc).map_or(false, |p| ::on_screen(p))
     }
 
     fn terrain_id(&self, loc: Location) -> u8 {

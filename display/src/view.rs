@@ -112,23 +112,23 @@ impl WorldView {
             }
 
             if self.highlight_offscreen_tiles {
-                let p = Point2D::new(loc.x as i32, loc.y as i32);
-
-                if !world::on_screen(p) {
-                    if Dir6::iter().any(|d| world::on_screen(p + d.to_v2())) {
-                        sprites.push(Sprite {
-                            layer: Layer::Effect,
-                            offset: [screen_pos.x as i32, screen_pos.y as i32],
-                            brush: Resource::new("portal".to_string()).unwrap(),
-                            frame_idx: 0,
-                        });
-                    } else {
-                        sprites.push(Sprite {
-                            layer: Layer::Effect,
-                            offset: [screen_pos.x as i32, screen_pos.y as i32],
-                            brush: Resource::new("cursor".to_string()).unwrap(),
-                            frame_idx: 0,
-                        });
+                if let Some(loc) = Location::origin().v2_at(loc) {
+                    if !world::on_screen(loc) {
+                        if Dir6::iter().any(|d| world::on_screen(loc + d.to_v2())) {
+                            sprites.push(Sprite {
+                                layer: Layer::Effect,
+                                offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                brush: Resource::new("portal".to_string()).unwrap(),
+                                frame_idx: 0,
+                            });
+                        } else {
+                            sprites.push(Sprite {
+                                layer: Layer::Effect,
+                                offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                brush: Resource::new("cursor".to_string()).unwrap(),
+                                frame_idx: 0,
+                            });
+                        }
                     }
                 }
             }
