@@ -92,7 +92,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#ae63f6ee4528763ccdd93073a47893c83a11025d"
+source = "git+https://github.com/rsaarelm/calx#c3fa13d984d4e8b0c279a736b370eb313217a291"
 dependencies = [
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -104,7 +104,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#ae63f6ee4528763ccdd93073a47893c83a11025d"
+source = "git+https://github.com/rsaarelm/calx#c3fa13d984d4e8b0c279a736b370eb313217a291"
 dependencies = [
  "image 0.10.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -123,7 +123,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#ae63f6ee4528763ccdd93073a47893c83a11025d"
+source = "git+https://github.com/rsaarelm/calx#c3fa13d984d4e8b0c279a736b370eb313217a291"
 dependencies = [
  "euclid 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -134,7 +134,7 @@ dependencies = [
 [[package]]
 name = "calx-resource"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#ae63f6ee4528763ccdd93073a47893c83a11025d"
+source = "git+https://github.com/rsaarelm/calx#c3fa13d984d4e8b0c279a736b370eb313217a291"
 dependencies = [
  "rustc-serialize 0.3.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
