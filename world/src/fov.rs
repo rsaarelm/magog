@@ -10,7 +10,7 @@ pub struct SightFov<'a> {
     w: &'a World,
     range: u32,
     pub origin: Location,
-    prev_offset: Point2D<i32>,
+    is_edge: bool,
 }
 
 impl<'a> SightFov<'a> {
@@ -19,7 +19,7 @@ impl<'a> SightFov<'a> {
             w: w,
             range: range,
             origin: origin,
-            prev_offset: Point2D::new(0, 0),
+            is_edge: false,
         }
     }
 }
@@ -27,7 +27,7 @@ impl<'a> SightFov<'a> {
 impl<'a> PartialEq for SightFov<'a> {
     fn eq(&self, other: &Self) -> bool {
         self.w as *const World == other.w as *const World && self.range == other.range &&
-        self.origin == other.origin && self.prev_offset == other.prev_offset
+        self.origin == other.origin && self.is_edge == other.is_edge
     }
 }
 
@@ -39,14 +39,17 @@ impl<'a> FovValue for SightFov<'a> {
             return None;
         }
 
-        if self.w.terrain(self.origin + self.prev_offset).blocks_sight() {
+        if self.is_edge {
             return None;
         }
 
         let mut ret = self.clone();
-        ret.prev_offset = offset;
         if let Some(dest) = self.w.visible_portal(self.origin + offset) {
             ret.origin = dest - offset;
+        }
+
+        if self.w.terrain(self.origin + offset).blocks_sight() {
+            ret.is_edge = true;
         }
 
         Some(ret)
