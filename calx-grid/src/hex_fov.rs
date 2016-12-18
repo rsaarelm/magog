@@ -44,20 +44,19 @@ impl<T: FovValue> HexFov<T> {
         // points to check.
         if let Some(side_pos) = current.pt.side_point() {
             let next = current.pt.next();
+            let next_value = current.prev_value.advance(next.to_v2());
             // If the next cell is within the current span and the current cell is
-            // wallform,
+            // wallform, and current and next are in the same value group,
             if next.is_below(current.end) &&
-               current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) {
-                // and if the next cell is visible,
-                if let Some(next_value) = current.prev_value.advance(next.to_v2()) {
-                    // and if the current and the next cell are in the same value group,
-                    // both the next cell and the third corner point cell are
+               current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) &&
+               next_value == current.prev_value.advance(current.pt.to_v2()) {
+                if let Some(next_value) = next_value {
+                    // and if both the next cell and the third corner point cell are
                     // wallforms, and the side point would not be otherwise
                     // visible:
-                    if next_value == current.prev_value &&
-                       next_value.is_fake_isometric_wall(next.to_v2()) &&
-                       current.prev_value.advance(side_pos).is_none() &&
-                       current.prev_value.is_fake_isometric_wall(side_pos) {
+                    if next_value.is_fake_isometric_wall(next.to_v2()) &&
+                       next_value.advance(side_pos).is_none() &&
+                       next_value.is_fake_isometric_wall(side_pos) {
                         // Add the side point to the side channel.
                         self.side_channel.push((side_pos, current.prev_value.clone()));
                     }
