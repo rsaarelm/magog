@@ -117,3 +117,31 @@ impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
         ret
     }
 }
+
+/// Insert a 0 bit between the low 16 bits of a number.
+///
+/// Useful for https://en.wikipedia.org/wiki/Z-order_curve
+#[inline(always)]
+pub fn spread_bits_by_2(mut bits: u32) -> u32 {
+    // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
+    bits &=                       0b00000000_00000000_11111111_11111111;
+    bits = (bits ^ (bits << 8)) & 0b00000000_11111111_00000000_11111111;
+    bits = (bits ^ (bits << 4)) & 0b00001111_00001111_00001111_00001111;
+    bits = (bits ^ (bits << 2)) & 0b00110011_00110011_00110011_00110011;
+    bits = (bits ^ (bits << 1)) & 0b01010101_01010101_01010101_01010101;
+    bits
+}
+
+/// Remove every odd bit and compact the even bits into the lower half of the number.
+///
+/// Useful for https://en.wikipedia.org/wiki/Z-order_curve
+#[inline(always)]
+pub fn compact_bits_by_2(mut bits: u32) -> u32 {
+    // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
+    bits &=                       0b01010101_01010101_01010101_01010101;
+    bits = (bits ^ (bits >> 1)) & 0b00110011_00110011_00110011_00110011;
+    bits = (bits ^ (bits >> 2)) & 0b00001111_00001111_00001111_00001111;
+    bits = (bits ^ (bits >> 4)) & 0b00000000_11111111_00000000_11111111;
+    bits = (bits ^ (bits >> 8)) & 0b00000000_00000000_11111111_11111111;
+    bits
+}

@@ -96,3 +96,15 @@ fn test_random_permutation() {
     sorted.reverse();
     assert_ne!(perm, sorted);
 }
+
+#[test]
+fn test_bit_spread() {
+    use calx_alg::{spread_bits_by_2, compact_bits_by_2};
+    let mut rng = rand::thread_rng();
+
+    for _ in 0..1000 {
+        let x = rng.gen::<u16>() as u32;
+        assert!(x == 0 || spread_bits_by_2(x) != x);
+        assert_eq!(compact_bits_by_2(spread_bits_by_2(x)), x);
+    }
+}
