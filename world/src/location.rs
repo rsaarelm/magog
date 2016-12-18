@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 use std::num::Wrapping;
 use euclid::Point2D;
-use calx_alg::noise;
+use calx_alg::{compact_bits_by_2, noise, spread_bits_by_2};
 use calx_grid::{Dir6, GridNode, HexGeom};
 
 /// Unambiguous location in the game world.
@@ -16,6 +16,40 @@ impl Location {
     pub fn origin() -> Location { Location { x: 0, y: 0, z: 0 } }
 
     pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x: x, y: y, z: z } }
+
+    /// Construct a Location from a Morton code representation.
+    ///
+    /// Use the representation generated with `to_morton`. The odd low 16 bits are compacted to x
+    /// value, the even low 16 bits to z and the first 8 of the high 16 bits become z.
+    pub fn from_morton(morton_code: u32) -> Location {
+        let xy = morton_code & 0xffff_ffff;
+        let x = compact_bits_by_2(xy) as u8;
+        let y = compact_bits_by_2(xy >> 1) as u8;
+        let z = (morton_code >> 16) as u8;
+
+        unsafe {
+            Location {
+                x: ::std::mem::transmute(x),
+                y: ::std::mem::transmute(y),
+                z: ::std::mem::transmute(z),
+            }
+        }
+    }
+
+    /// Turn the Location to a Morton code value.
+    ///
+    /// Spatially close locations are often numerically close in Morton codes, these are useful for
+    /// quadtree-like structures.
+    pub fn to_morton(&self) -> u32 {
+        let mut ret = 0;
+        let x: u8 = unsafe { ::std::mem::transmute(self.x) };
+        let y: u8 = unsafe { ::std::mem::transmute(self.y) };
+        let z: u8 = unsafe { ::std::mem::transmute(self.z) };
+        ret ^= spread_bits_by_2(x as u32);
+        ret ^= spread_bits_by_2(y as u32) << 1;
+        ret ^= (z as u32) << 16;
+        ret
+    }
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
@@ -122,5 +156,16 @@ mod test {
         let l1 = Location::new(0, 0, 0);
         let l2 = l1 + Point2D::new(300, 300);
         assert_eq!((44, 44), (l2.x, l2.y));
+    }
+
+    #[test]
+    fn test_morton() {
+        use rand::{self, Rng};
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..1000 {
+            let x = rng.gen::<u32>() & 0xff_ffff;
+            assert_eq!(x, Location::from_morton(x).to_morton());
+        }
     }
 }

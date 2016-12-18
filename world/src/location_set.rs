@@ -5,10 +5,12 @@ use super::location::Location;
 /// Compact Location set collection
 #[derive(Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct LocationSet {
-    /// Chunks of 8x8 locations. The key has top 5 bits of the x and y
-    /// coordinates of the location catenated into one integer for the
-    /// location of the chunk, and the value uses the 64 bits of the u64 to
-    /// cover the 8x8 chunk with a bitmap.
+    /// Chunks of 8x8 locations.
+    ///
+    /// The locations are assigned to the chunks using their Morton codes (Z-order curves). The low
+    /// 6 bits in the Morton code assign the position in the chunk and the higher bits give the
+    /// chunk index. Sequences of 6 low bits in 2D Morton coding correspond to 8x8 squares on the
+    /// map grid.
     chunks: HashMap<u32, u64>,
 }
 
@@ -18,19 +20,14 @@ impl LocationSet {
     /// Return the chunk index and the bit offset for a location.
     #[inline]
     fn chunk(loc: &Location) -> (u32, u64) {
-        let ux: u8 = unsafe { mem::transmute(loc.x) };
-        let uy: u8 = unsafe { mem::transmute(loc.y) };
-
-        let index = (ux as u32 >> 3) + ((uy as u32 >> 3) << 5);
-        let bit = (ux % 8) as u64 + ((uy % 8) << 3) as u64;
-
-        (index, 1 << bit)
+        let morton = loc.to_morton();
+        (morton >> 6, 1 << (morton % 64))
     }
 
     pub fn contains(&self, loc: &Location) -> bool {
         let (index, bit) = LocationSet::chunk(loc);
         match self.chunks.get(&index) {
-            Some(b) if b & bit != 0 => true,
+            Some(b) => b & bit != 0,
             _ => false,
         }
     }
