@@ -221,6 +221,9 @@ impl View {
         // Prefabs do not contain positioning data. The standard fullscreen prefab which includes a
         // one-cell wide offscreen boundary goes in a bounding box with origin at (-21, -22).
         self.world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
+
+        // We don't want mapedit to have an active player entity.
+        self.world.set_player(None);
     }
 
     fn save(&mut self, path: String) {

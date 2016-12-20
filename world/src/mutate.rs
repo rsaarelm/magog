@@ -17,7 +17,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn set_entity_location(&mut self, e: Entity, loc: Location);
 
-    fn set_player(&mut self, player: Entity);
+    fn set_player(&mut self, player: Option<Entity>);
 
     fn remove_entity(&mut self, e: Entity);
 
@@ -104,7 +104,7 @@ pub trait Mutate: Query + Terraform + Sized {
             // Initialize new player object.
             let form = Form::named("player").expect("Player form not found");
             let player = self.spawn(&form.loadout, loc);
-            self.set_player(player);
+            self.set_player(Some(player));
         }
     }
 }

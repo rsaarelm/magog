@@ -151,7 +151,7 @@ impl Mutate for World {
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
 
-    fn set_player(&mut self, player: Entity) { self.flags.player = Some(player); }
+    fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity {
         let e = loadout.make(&mut self.ecs);
