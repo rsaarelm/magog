@@ -38,7 +38,11 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
     /// to render data of that type as argument to the constructor.
-    pub fn new(display: &glium::Display, program: glium::Program, width: u32, height: u32) -> Backend<V> {
+    pub fn new(display: &glium::Display,
+               program: glium::Program,
+               width: u32,
+               height: u32)
+               -> Backend<V> {
         let (w, h) = display.get_framebuffer_dimensions();
 
         Backend {
@@ -57,16 +61,16 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
 
     /// Create a new texture using Vitral's input.
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
-        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels, (img.size.width, img.size.height));
+        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels,
+                                                            (img.size.width, img.size.height));
         let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
 
-    fn process_events(&mut self,
-                      display: &glium::Display,
-                      context: &mut vitral::Context<usize, V>)
-                      -> bool {
+    fn process_events<C>(&mut self, display: &glium::Display, context: &mut C) -> bool
+        where C: vitral::Context
+    {
         self.keypress.clear();
 
         // polling and handling the events received by the window
@@ -130,7 +134,9 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
         self.keypress.pop()
     }
 
-    fn render(&mut self, display: &glium::Display, context: &mut vitral::Context<usize, V>) {
+    fn render<C>(&mut self, display: &glium::Display, context: &mut C)
+        where C: vitral::Context<T = usize, V = V>
+    {
         let mut target = self.canvas.get_framebuffer_target(display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
@@ -186,17 +192,15 @@ impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
     }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self,
-                  display: &glium::Display,
-                  context: &mut vitral::Context<usize, V>)
-                  -> bool {
+    pub fn update<C>(&mut self, display: &glium::Display, context: &mut C) -> bool
+        where C: vitral::Context<T = usize, V = V>
+    {
         self.update_window_size(display);
         self.render(display, context);
         self.canvas.draw(display, self.zoom);
         self.process_events(display, context)
     }
 }
-
 
 /// Type for key events not handled by Vitral.
 pub struct KeyEvent {

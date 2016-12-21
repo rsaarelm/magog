@@ -6,6 +6,7 @@ use std::iter;
 use std::collections::HashMap;
 use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
+use euclid::{TypedPoint2D, TypedRect, TypedSize2D};
 
 /// Image buffer.
 #[derive(Clone)]
@@ -120,7 +121,7 @@ impl<T> Builder<T>
                                size: Size2D::new(char_width, char_height),
                                tex_coords: tex_coords,
                            },
-                           draw_offset: Point2D::new(0.0, char_height as f32),
+                           draw_offset: Point2D::new(0.0, 0.0),
                            advance: char_width as f32,
                        });
         }
@@ -132,24 +133,29 @@ impl<T> Builder<T>
     }
 
     /// Construct an interface context instance.
-    pub fn build<F, V>(self, mut make_t: F) -> Context<T, V>
+    pub fn build<F, V>(self, screen_size: Size2D<f32>, mut make_t: F) -> State<T, V>
         where F: FnMut(ImageBuffer) -> T,
               V: Vertex
     {
         let default_font = self.build_default_font(&mut make_t);
-        let solid = make_t(ImageBuffer::blank());
+        let solid = ImageData {
+            texture: make_t(ImageBuffer::blank()),
+            size: Size2D::new(1, 1),
+            tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
+        };
 
-        Context::new(default_font, solid)
+        let mut ret = State::new(solid, screen_size);
+        ret.default_font = Rc::new(default_font);
+        ret
     }
 }
-
 
 /// An immediate mode graphical user interface context.
 ///
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Context<T, V> {
+pub struct State<T, V> {
     draw_list: Vec<DrawBatch<T, V>>,
     pub layout_pos: Point2D<f32>,
 
@@ -159,20 +165,22 @@ pub struct Context<T, V> {
     // Make this Rc so it can be passed outside without copying and used as a reference in a
     // mutable op.
     default_font: Rc<FontData<T>>,
-    solid_texture: T,
+    solid_texture: ImageData<T>,
 
     text_input: Vec<KeyInput>,
 
     tick: u64,
 
-    clip: Option<Rect<f32>>,
+    clip_stack: Vec<Rect<f32>>,
+
+    screen_size: Size2D<f32>,
 }
 
-impl<T, V: Vertex> Context<T, V>
+impl<T, V: Vertex> State<T, V>
     where T: Clone + Eq
 {
-    fn new(default_font: FontData<T>, solid_texture: T) -> Context<T, V> {
-        Context {
+    fn new(solid_texture: ImageData<T>, screen_size: Size2D<f32>) -> State<T, V> {
+        State {
             draw_list: Vec::new(),
             // solid_texture: Image(0),
             layout_pos: Point2D::new(0.0, 0.0),
@@ -180,216 +188,71 @@ impl<T, V: Vertex> Context<T, V>
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: [ClickState::Unpressed, ClickState::Unpressed, ClickState::Unpressed],
 
-            default_font: Rc::new(default_font),
+            default_font: Rc::new(Default::default()),
             solid_texture: solid_texture,
 
             text_input: Vec::new(),
 
             tick: 0,
 
-            clip: None,
+            clip_stack: Vec::new(),
+
+            screen_size: screen_size,
         }
     }
 
-    pub fn begin_frame(&mut self) {
-        self.tick += 1;
-
-        self.layout_pos = Point2D::new(10.0, 10.0);
-
-        // TODO
-    }
-
-    pub fn draw_text(&mut self,
-                     font: &FontData<T>,
-                     mut pos: Point2D<f32>,
-                     color: [f32; 4],
-                     text: &str) {
-        for c in text.chars() {
-            // FIXME: Gratuitous cloning because of borrow checker.
-            let x = font.chars.get(&c).cloned();
-            // TODO: Draw some sort of symbol for characters missing from font.
-            if let Some(f) = x {
-                self.draw_image(&f.image, pos - f.draw_offset, color);
-                pos.x += f.advance;
-            }
-        }
-    }
-
-    pub fn default_font<'a>(&self) -> Rc<FontData<T>> {
-        self.default_font.clone()
-    }
-
-    pub fn button(&mut self, caption: &str) -> ButtonAction {
-        let font = self.default_font.clone();
-        let area = font.render_size(caption)
-                       .inflate(4.0, 4.0)
-                       .translate(&self.layout_pos);
-
-        self.layout_pos.y += area.size.height + 2.0;
-
-        let hover = area.contains(&self.mouse_pos);
-        let left_press = self.click_state[MouseButton::Left as usize].is_pressed() &&
-                         area.contains(&self.mouse_pos);
-
-        let right_press = self.click_state[MouseButton::Right as usize].is_pressed() &&
-                          area.contains(&self.mouse_pos);
-
-        let press = left_press || right_press;
-
-        let color = if press {
-            [1.0, 1.0, 0.0, 1.0]
-        } else if hover {
-            [0.5, 1.0, 0.0, 1.0]
-        } else {
-            [0.0, 1.0, 0.0, 1.0]
-        };
-
-        self.fill_rect(area, color);
-        self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
-        self.draw_text(&*font,
-                       area.origin + Point2D::new(4.0, area.size.height - 4.0),
-                       color,
-                       caption);
-
-        if left_press && self.click_state[MouseButton::Left as usize].is_release() {
-            ButtonAction::LeftClicked
-        } else if right_press && self.click_state[MouseButton::Right as usize].is_release() {
-            ButtonAction::RightClicked
-        } else if hover {
-            ButtonAction::Hover
-        } else {
-            ButtonAction::Inert
-        }
-    }
-
-    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
-        self.start_texture(image.texture.clone());
-        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
-        self.push_rect(Rect::new(pos, size), image.tex_coords, color);
-    }
-
-    fn push_rect(&mut self, area: Rect<f32>, tex_coords: Rect<f32>, color: [f32; 4]) {
-        let (p1, p2) = (area.origin, area.bottom_right());
-        let (t1, t2) = (tex_coords.origin, tex_coords.bottom_right());
+    /// Push vertex into the draw batch, return its index offset.
+    ///
+    /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
+    /// batch has not been switched, so you can grab the return value from the first `vertex_push`
+    /// and express the rest by adding offsets to it.
+    #[inline(always)]
+    fn push_vertex(&mut self, vtx: V) -> u16 {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
-
-        batch.vertices.push(Vertex::new([p1.x, p1.y], color, [t1.x, t1.y]));
-        batch.vertices.push(Vertex::new([p2.x, p1.y], color, [t2.x, t1.y]));
-        batch.vertices.push(Vertex::new([p2.x, p2.y], color, [t2.x, t2.y]));
-        batch.vertices.push(Vertex::new([p1.x, p2.y], color, [t1.x, t2.y]));
-
-        batch.triangle_indices.push(idx_offset);
-        batch.triangle_indices.push(idx_offset + 1);
-        batch.triangle_indices.push(idx_offset + 2);
-
-        batch.triangle_indices.push(idx_offset);
-        batch.triangle_indices.push(idx_offset + 2);
-        batch.triangle_indices.push(idx_offset + 3);
+        batch.vertices.push(vtx);
+        idx_offset
     }
 
-    /// Set or clear clip rectangle.
-    pub fn set_clip_rect(&mut self, area: Option<Rect<f32>>) {
-        self.clip = area;
+    #[inline(always)]
+    fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
+        let idx = self.draw_list.len() - 1;
+        let batch = &mut self.draw_list[idx];
+        batch.triangle_indices.push(i1);
+        batch.triangle_indices.push(i2);
+        batch.triangle_indices.push(i3);
+    }
+
+    /// Push a clipping rectangle into the clip stack.
+    fn push_clip_rect(&mut self, area: Rect<f32>) {
+        self.clip_stack.push(area);
         self.check_batch(None);
     }
 
+    /// Pop the last clipping rectangle from the clip stack.
+    ///
+    /// The clip stack must have had at least one rectangle added with `push_clip_rect`.
+    fn pop_clip_rect(&mut self) -> Rect<f32> {
+        self.clip_stack.pop().expect("Popping an empty clip stack")
+    }
+
     /// Return current clip rectangle, if any.
-    pub fn clip_rect(&self) -> Option<Rect<f32>> {
-        self.clip
-    }
-
-    pub fn fill_rect(&mut self, area: Rect<f32>, color: [f32; 4]) {
-        self.start_solid_texture();
-        self.push_rect(area,
-                       Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
-                       color);
-    }
-
-    pub fn draw_line(&mut self,
-                     thickness: f32,
-                     p1: Point2D<f32>,
-                     p2: Point2D<f32>,
-                     color: [f32; 4]) {
-        if p1 == p2 {
-            return;
-        }
-
-        self.start_solid_texture();
-        let t = Point2D::new(0.0, 0.0);
-
-        // Displacements from the one-dimensional base line.
-        let mut front = p2 - p1;
-        front = front / front.dot(front).sqrt() * (thickness / 2.0);
-
-        let side = Point2D::new(-front.y, front.x);
-
-        let q1 = p1 - side - front + Point2D::new(0.5, 0.5);
-        let q2 = p1 + side - front + Point2D::new(0.5, 0.5);
-        let q3 = p2 + side + front + Point2D::new(0.5, 0.5);
-        let q4 = p2 - side + front + Point2D::new(0.5, 0.5);
-
-        let idx = self.draw_list.len() - 1;
-        let batch = &mut self.draw_list[idx];
-        let idx_offset = batch.vertices.len() as u16;
-
-        batch.vertices.push(Vertex::new([q1.x, q1.y], color, [t.x, t.y]));
-        batch.vertices.push(Vertex::new([q2.x, q2.y], color, [t.x, t.y]));
-        batch.vertices.push(Vertex::new([q3.x, q3.y], color, [t.x, t.y]));
-        batch.vertices.push(Vertex::new([q4.x, q4.y], color, [t.x, t.y]));
-
-        batch.triangle_indices.push(idx_offset);
-        batch.triangle_indices.push(idx_offset + 1);
-        batch.triangle_indices.push(idx_offset + 2);
-
-        batch.triangle_indices.push(idx_offset);
-        batch.triangle_indices.push(idx_offset + 2);
-        batch.triangle_indices.push(idx_offset + 3);
-    }
-
-    pub fn text_input(&mut self,
-                      font: &FontData<T>,
-                      pos: Point2D<f32>,
-                      color: [f32; 4],
-                      text_buffer: &mut String) {
-        // TODO: Focus system. Only accept input if current input widget is focused.
-        // (Also needs widget identifiers to know which is which.)
-        for c in &self.text_input {
-            match *c {
-                KeyInput::Printable(c) => {
-                    if c >= ' ' {
-                        text_buffer.push(c);
-                    }
-                }
-                KeyInput::Other(Keycode::Backspace) => {
-                    text_buffer.pop();
-                }
-                KeyInput::Other(_) => {}
-            }
-        }
-
-        // TODO: Option to draw cursor mid-string (font may be
-        // variable-width...), track cursor pos somehow (external ref or
-        // internal cache)
-
-        // TODO: Arrow keys move cursor
-
-        // TODO: Filter function for input, eg. numbers only.
-
-        // Nasty hack to show a blinking cursor. Will only work for cursor
-        // always at the end of the input.
-
-        if ((time::precise_time_s() * 3.0) % 3.0) as u32 == 0 {
-            self.draw_text(font, pos, color, text_buffer);
+    fn clip_rect(&self) -> Option<Rect<f32>> {
+        if self.clip_stack.is_empty() {
+            None
         } else {
-            self.draw_text(font, pos, color, &format!("{}_", text_buffer));
+            Some(self.clip_stack[self.clip_stack.len() - 1])
         }
     }
 
     fn start_solid_texture(&mut self) {
-        let t = self.solid_texture.clone();
+        let t = self.solid_texture.texture.clone();
         self.start_texture(t);
+    }
+
+    fn solid_texture_texcoord(&self) -> Point2D<f32> {
+        self.solid_texture.tex_coords.origin
     }
 
     /// Ensure that there current draw batch has solid texture.
@@ -406,7 +269,7 @@ impl<T, V: Vertex> Context<T, V>
             return true;
         }
 
-        if self.draw_list[self.draw_list.len() - 1].clip != self.clip {
+        if self.draw_list[self.draw_list.len() - 1].clip != self.clip_rect() {
             return true;
         }
 
@@ -432,68 +295,399 @@ impl<T, V: Vertex> Context<T, V>
             self.draw_list[self.draw_list.len() - 1].texture.clone()
         });
 
+        let clip = self.clip_rect();
+
         if self.current_batch_is_invalid(texture.clone()) {
             self.draw_list.push(DrawBatch {
                 texture: texture,
-                clip: self.clip,
+                clip: clip,
                 vertices: Vec::new(),
                 triangle_indices: Vec::new(),
             });
         }
     }
+}
 
-    pub fn end_frame(&mut self) -> Vec<DrawBatch<T, V>> {
-        // Clean up transient mouse click info.
-        for i in 0..3 {
-            self.click_state[i] = self.click_state[i].tick();
+pub trait Context: Sized {
+    type T: Clone + Eq;
+    type V: Vertex;
+
+    /// Return the internal GUI state.
+    ///
+    /// This is mostly intended for other trait methods, not for direct use.
+    fn state<'a>(&'a self) -> &'a State<Self::T, Self::V>;
+
+    /// Return mutable reference to the internal GUI state.
+    ///
+    /// This is mostly intended for other trait methods, not for direct use.
+    fn state_mut<'a>(&'a mut self) -> &'a mut State<Self::T, Self::V>;
+
+    /// Construct a new vertex.
+    ///
+    /// Properties other than position and texture coordinate are provided by the implementation.
+    fn new_vertex(&mut self,
+                  pos: Point2D<f32>,
+                  tex_coord: Point2D<f32>,
+                  color: [f32; 4])
+                  -> Self::V;
+
+    /// Return reference to the currently active font.
+    fn current_font<'a>(&'a mut self) -> Rc<FontData<Self::T>> {
+        self.state().default_font.clone()
+    }
+
+    fn push_raw_vertex(&mut self, vertex: Self::V) -> u16 {
+        self.state_mut().push_vertex(vertex)
+    }
+
+    fn push_vertex<U: ConvertibleUnit>(&mut self,
+                                       pos: TypedPoint2D<f32, U>,
+                                       tex_coord: Point2D<f32>,
+                                       color: [f32; 4])
+                                       -> u16 {
+        let pos = ConvertibleUnit::convert_point(&self.scale_factor(), pos);
+        // NB: Transform is called on incoming vertices here, if any other place is pushing
+        // vertices to the underlying state, make sure they go through `transform` as well.
+        let pos = self.transform(pos);
+        let v = self.new_vertex(pos, tex_coord, color);
+        self.state_mut().push_vertex(v)
+    }
+
+    /// Transform point from the space of this context to global space.
+    fn transform(&self, in_pos: Point2D<f32>) -> Point2D<f32> {
+        in_pos
+    }
+
+    fn draw_line<U: ConvertibleUnit>(&mut self,
+                                     thickness: f32,
+                                     color: [f32; 4],
+                                     p1: TypedPoint2D<f32, U>,
+                                     p2: TypedPoint2D<f32, U>) {
+        if p1 == p2 {
+            return;
         }
 
-        // Clean up text buffer
-        self.text_input.clear();
+        // Convert to screen space here because before applying thickness so that thickness will
+        // always be in pixel units.
+        let p1 = ConvertibleUnit::convert_point(&self.scale_factor(), p1);
+        let p2 = ConvertibleUnit::convert_point(&self.scale_factor(), p2);
 
-        let mut ret = Vec::new();
-        mem::swap(&mut ret, &mut self.draw_list);
+        self.state_mut().start_solid_texture();
+        let t = self.state().solid_texture_texcoord();
+
+        // Displacements from the one-dimensional base line.
+        let mut front = p2 - p1;
+        front = front / front.dot(front).sqrt() * (thickness / 2.0);
+
+        let side = TypedPoint2D::new(-front.y, front.x);
+
+        let q1 = p1 - side - front + Point2D::new(0.5, 0.5);
+        let q2 = p1 + side - front + Point2D::new(0.5, 0.5);
+        let q3 = p2 + side + front + Point2D::new(0.5, 0.5);
+        let q4 = p2 - side + front + Point2D::new(0.5, 0.5);
+
+        let idx = self.push_vertex(q1, t, color);
+        self.push_vertex(q2, t, color);
+        self.push_vertex(q3, t, color);
+        self.push_vertex(q4, t, color);
+        self.state_mut().push_triangle(idx, idx + 1, idx + 2);
+        self.state_mut().push_triangle(idx, idx + 2, idx + 3);
+    }
+
+    fn draw_tex_rect<U: ConvertibleUnit>(&mut self,
+                                         area: TypedRect<f32, U>,
+                                         tex_coords: Rect<f32>,
+                                         color: [f32; 4]) {
+        let idx = self.push_vertex(area.origin, tex_coords.origin, color);
+        self.push_vertex(area.top_right(), tex_coords.top_right(), color);
+        self.push_vertex(area.bottom_right(), tex_coords.bottom_right(), color);
+        self.push_vertex(area.bottom_left(), tex_coords.bottom_left(), color);
+
+        self.state_mut().push_triangle(idx, idx + 1, idx + 2);
+        self.state_mut().push_triangle(idx, idx + 2, idx + 3);
+    }
+
+    fn fill_rect<U: ConvertibleUnit>(&mut self, area: TypedRect<f32, U>, color: [f32; 4]) {
+        self.state_mut().start_solid_texture();
+        self.draw_tex_rect(area,
+                           Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
+                           color);
+    }
+
+    fn draw_image<U: ConvertibleUnit>(&mut self,
+                                      image: &ImageData<Self::T>,
+                                      pos: TypedPoint2D<f32, U>,
+                                      color: [f32; 4]) {
+        let pos = ConvertibleUnit::convert_point(&self.scale_factor(), pos);
+
+        self.state_mut().start_texture(image.texture.clone());
+        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
+        self.draw_tex_rect(Rect::new(pos, size), image.tex_coords, color);
+    }
+
+    /// Draw a line of text to screen.
+    ///
+    /// The `align` parameter indicates whether pos is interpreted as top left, top middle or top
+    /// right position of the string.
+    ///
+    /// The return value is the position for the next line.
+    fn draw_text<U: ConvertibleUnit>(&mut self,
+                                     pos: TypedPoint2D<f32, U>,
+                                     align: Align,
+                                     color: [f32; 4],
+                                     text: &str)
+                                     -> TypedPoint2D<f32, U> {
+        // Convert to pixel space here, because font offsetting will operate in pixel space.
+        let mut pixel_pos = ConvertibleUnit::convert_point(&self.scale_factor(), pos);
+
+        pixel_pos.x -= match align {
+            Align::Left => 0.0,
+            Align::Center => self.current_font().str_width(text) / 2.0,
+            Align::Right => self.current_font().str_width(text),
+        };
+
+        for c in text.chars() {
+            // XXX: Gratuitous cloning because of borrow checker.
+            let x = self.current_font().chars.get(&c).cloned();
+            // TODO: Draw some sort of symbol for characters missing from font.
+            if let Some(f) = x {
+                self.draw_image(&f.image, pixel_pos - f.draw_offset, color);
+                pixel_pos.x += f.advance;
+            }
+        }
+
+        let (_, delta) = U::from_pixel_scale(&self.scale_factor(), 0.0, self.current_font().height);
+
+        TypedPoint2D::new(pos.x, pos.y + delta)
+    }
+
+    /// Return the mouse input state for the current bounds area.
+    fn click_state(&self) -> ButtonAction {
+        let is_hovering = self.global_bounds().contains(&self.mouse_pos());
+
+        let left_press = self.state().click_state[MouseButton::Left as usize].is_pressed() &&
+                         is_hovering;
+
+        let right_press = self.state().click_state[MouseButton::Right as usize].is_pressed() &&
+                          is_hovering;
+
+        let is_pressed = left_press || right_press;
+
+        // Determine the return value.
+        if left_press && self.state().click_state[MouseButton::Left as usize].is_release() {
+            ButtonAction::LeftClicked
+        } else if right_press && self.state().click_state[MouseButton::Right as usize].is_release() {
+            ButtonAction::RightClicked
+        } else if is_pressed {
+            ButtonAction::Pressed
+        } else if is_hovering {
+            ButtonAction::Hover
+        } else {
+            ButtonAction::Inert
+        }
+    }
+
+    /// Draw a button in the current bounds
+    fn button(&mut self, caption: &str) -> ButtonAction {
+        let ret = self.click_state();
+
+        // Choose color.
+        // TODO: Way to parametrize UI colors in style data.
+        let color = match ret {
+            ButtonAction::Pressed => [1.0, 1.0, 0.0, 1.0],
+            ButtonAction::Hover => [0.5, 1.0, 0.0, 1.0],
+            _ => [0.0, 1.0, 0.0, 1.0],
+        };
+
+        // Draw button in current bounds.
+        let area = self.bounds();
+        self.fill_rect(area, color);
+        self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
+
+        // Vertically center the caption.
+        let mut pos = ConvertibleUnit::convert_point(&self.scale_factor(),
+                                                     PropPoint2D::new(0.5, 0.0));
+        pos.y = (self.bounds().size.height - self.current_font().height) / 2.0;
+        self.draw_text(pos, Align::Center, color, caption);
+
         ret
     }
 
+    fn begin_frame(&mut self) {
+        self.state_mut().tick += 1;
+    }
+
+    fn end_frame(&mut self) -> Vec<DrawBatch<Self::T, Self::V>> {
+        // Clean up transient mouse click info.
+        for i in 0..3 {
+            self.state_mut().click_state[i] = self.state().click_state[i].tick();
+        }
+
+        // Clean up text buffer
+        self.state_mut().text_input.clear();
+
+        let mut ret = Vec::new();
+        mem::swap(&mut ret, &mut self.state_mut().draw_list);
+        ret
+    }
+
+    fn bound<'a, U: ConvertibleUnit>(&'a mut self, area: TypedRect<f32, U>) -> Bounds<'a, Self> {
+        let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
+        area.origin = self.transform(area.origin);
+
+        Bounds {
+            parent: self,
+            area: area,
+            is_clipped: false,
+        }
+    }
+
+    fn bound_clipped<'a, U: ConvertibleUnit>(&'a mut self,
+                                             area: TypedRect<f32, U>)
+                                             -> Bounds<'a, Self> {
+        let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
+        area.origin = self.transform(area.origin);
+
+        self.state_mut().push_clip_rect(area);
+        Bounds {
+            parent: self,
+            area: area,
+            is_clipped: true,
+        }
+    }
+
+    /// Get the local space bounds rectangle of this context.
+    fn bounds(&self) -> Rect<f32> {
+        Rect::new(Point2D::new(0.0, 0.0), self.state().screen_size)
+    }
+
+    /// Get the global space bounds rectangle of this context.
+    fn global_bounds(&self) -> Rect<f32> {
+        let mut ret = self.bounds();
+        ret.origin = self.transform(ret.origin);
+        ret
+    }
+
+    fn scale_factor(&self) -> Size2D<f32> {
+        self.bounds().size
+    }
+
+    /// Get the mouse cursor position in global space.
+    fn mouse_pos(&self) -> Point2D<f32> {
+        self.state().mouse_pos
+    }
+
     /// Register mouse button state.
-    pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
+    fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
         if is_down {
-            self.click_state[id as usize] = self.click_state[id as usize]
-                                                .input_press(self.mouse_pos);
+            self.state_mut().click_state[id as usize] = self.state().click_state[id as usize]
+                                                            .input_press(self.mouse_pos());
         } else {
-            self.click_state[id as usize] = self.click_state[id as usize]
-                                                .input_release(self.mouse_pos);
+            self.state_mut().click_state[id as usize] = self.state().click_state[id as usize]
+                                                            .input_release(self.mouse_pos());
         }
     }
 
     /// Register mouse motion.
-    pub fn input_mouse_move(&mut self, x: i32, y: i32) {
-        self.mouse_pos = Point2D::new(x as f32, y as f32);
+    fn input_mouse_move(&mut self, x: i32, y: i32) {
+        self.state_mut().mouse_pos = Point2D::new(x as f32, y as f32);
     }
 
     /// Register printable character input.
-    pub fn input_char(&mut self, c: char) {
-        self.text_input.push(KeyInput::Printable(c));
+    fn input_char(&mut self, c: char) {
+        self.state_mut().text_input.push(KeyInput::Printable(c));
     }
 
     /// Register a nonprintable key state.
-    pub fn input_key_state(&mut self, k: Keycode, is_down: bool) {
+    fn input_key_state(&mut self, k: Keycode, is_down: bool) {
         if is_down {
-            self.text_input.push(KeyInput::Other(k));
+            self.state_mut().text_input.push(KeyInput::Other(k));
         }
     }
 
-    /// Get the current mouse position
-    pub fn mouse_pos(&self) -> Point2D<f32> {
-        self.mouse_pos
-    }
+    fn text_input(&mut self, color: [f32; 4], text_buffer: &mut String) {
+        // TODO: Focus system. Only accept input if current input widget is focused.
+        // (Also needs widget identifiers to know which is which.)
+        for c in &self.state().text_input {
+            match *c {
+                KeyInput::Printable(c) => {
+                    if c >= ' ' {
+                        text_buffer.push(c);
+                    }
+                }
+                KeyInput::Other(Keycode::Backspace) => {
+                    text_buffer.pop();
+                }
+                KeyInput::Other(_) => {}
+            }
+        }
 
-    /// Get whether mouse button was pressed
-    pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
-        self.click_state[button as usize].is_pressed()
+        // TODO: Option to draw cursor mid-string (font may be
+        // variable-width...), track cursor pos somehow (external ref or
+        // internal cache)
+
+        // TODO: Arrow keys move cursor
+
+        // TODO: Filter function for input, eg. numbers only.
+
+        // Nasty hack to show a blinking cursor. Will only work for cursor
+        // always at the end of the input.
+
+        if ((time::precise_time_s() * 3.0) % 3.0) as u32 == 0 {
+            self.draw_text(Point2D::new(0.0, 0.0), Align::Left, color, text_buffer);
+        } else {
+            self.draw_text(Point2D::new(0.0, 0.0),
+                           Align::Left,
+                           color,
+                           &format!("{}_", text_buffer));
+        }
     }
 }
+
+pub struct Bounds<'a, C: Context + 'a> {
+    parent: &'a mut C,
+    area: Rect<f32>,
+    is_clipped: bool,
+}
+
+impl<'a, C: Context> Context for Bounds<'a, C> {
+    type T = C::T;
+    type V = C::V;
+
+    fn state<'b>(&'b self) -> &'b State<Self::T, Self::V> {
+        self.parent.state()
+    }
+
+    fn state_mut<'b>(&'b mut self) -> &'b mut State<Self::T, Self::V> {
+        self.parent.state_mut()
+    }
+
+    fn new_vertex(&mut self,
+                  pos: Point2D<f32>,
+                  tex_coord: Point2D<f32>,
+                  color: [f32; 4])
+                  -> Self::V {
+        self.parent.new_vertex(pos, tex_coord, color)
+    }
+
+    fn transform(&self, in_pos: Point2D<f32>) -> Point2D<f32> {
+        self.parent.transform(in_pos + self.area.origin)
+    }
+
+    fn bounds(&self) -> Rect<f32> {
+        Rect::new(Point2D::new(0.0, 0.0), self.area.size)
+    }
+}
+
+impl<'a, C: Context> Drop for Bounds<'a, C> {
+    fn drop(&mut self) {
+        // If this is a clipping bounds context, remove the clip when going out of scope.
+        if self.is_clipped {
+            self.state_mut().pop_clip_rect();
+        }
+    }
+}
+
 
 /// A sequence of primitive draw operarations.
 pub struct DrawBatch<T, V> {
@@ -628,6 +822,20 @@ impl<T> FontData<T> {
     pub fn char_width(&self, c: char) -> Option<f32> {
         self.chars.get(&c).map(|c| c.advance)
     }
+
+    pub fn str_width(&self, s: &str) -> f32 {
+        s.chars().map(|c| self.char_width(c).unwrap_or(0.0)).sum()
+    }
+}
+
+impl<T> Default for FontData<T> {
+    fn default() -> Self {
+        // Build an empty font.
+        FontData {
+            chars: HashMap::new(),
+            height: 8.0,
+        }
+    }
 }
 
 /// Drawable image data for Vitral.
@@ -650,6 +858,7 @@ pub struct ImageData<T> {
 pub enum ButtonAction {
     Inert,
     Hover,
+    Pressed,
     LeftClicked,
     RightClicked,
 }
@@ -662,3 +871,60 @@ impl ButtonAction {
         self == &ButtonAction::RightClicked
     }
 }
+
+/// Unit type for `euclid` primitives for representing proportional units in [0.0, 1.0].
+pub struct ProportionalUnit;
+
+/// Explicit unit type for pixel units, treated the same as `euclid::UnknownUnit`.
+pub struct PixelUnit;
+
+pub trait ConvertibleUnit: Sized {
+    fn scale_factor(scale: &Size2D<f32>) -> (f32, f32);
+
+    fn to_pixel_scale(scale: &Size2D<f32>, x: f32, y: f32) -> (f32, f32) {
+        let (w, h) = Self::scale_factor(scale);
+        (x * w, y * h)
+    }
+
+    fn from_pixel_scale(scale: &Size2D<f32>, x: f32, y: f32) -> (f32, f32) {
+        let (w, h) = Self::scale_factor(scale);
+        (x / w, y / h)
+    }
+
+    fn convert_rect(scale: &Size2D<f32>, rect: TypedRect<f32, Self>) -> Rect<f32> {
+        Rect::new(Self::convert_point(scale, rect.origin),
+                  Self::convert_size(scale, rect.size))
+    }
+
+    fn convert_point(scale: &Size2D<f32>, point: TypedPoint2D<f32, Self>) -> Point2D<f32> {
+        let (x, y) = Self::to_pixel_scale(scale, point.x, point.y);
+        Point2D::new(x, y)
+    }
+
+    fn convert_size(scale: &Size2D<f32>, size: TypedSize2D<f32, Self>) -> Size2D<f32> {
+        let (width, height) = Self::to_pixel_scale(scale, size.width, size.height);
+        Size2D::new(width, height)
+    }
+}
+
+impl ConvertibleUnit for euclid::UnknownUnit {
+    fn scale_factor(_: &Size2D<f32>) -> (f32, f32) {
+        (1.0, 1.0)
+    }
+}
+
+impl ConvertibleUnit for PixelUnit {
+    fn scale_factor(_: &Size2D<f32>) -> (f32, f32) {
+        (1.0, 1.0)
+    }
+}
+
+impl ConvertibleUnit for ProportionalUnit {
+    fn scale_factor(scale: &Size2D<f32>) -> (f32, f32) {
+        (scale.width, scale.height)
+    }
+}
+
+pub type PropPoint2D = TypedPoint2D<f32, ProportionalUnit>;
+pub type PropSize2D = TypedSize2D<f32, ProportionalUnit>;
+pub type PropRect = TypedRect<f32, ProportionalUnit>;
