@@ -229,10 +229,10 @@ impl<T, V: Vertex> Context<T, V>
 
         let hover = area.contains(&self.mouse_pos);
         let left_press = self.click_state[MouseButton::Left as usize].is_pressed() &&
-                    area.contains(&self.mouse_pos);
+                         area.contains(&self.mouse_pos);
 
         let right_press = self.click_state[MouseButton::Right as usize].is_pressed() &&
-                    area.contains(&self.mouse_pos);
+                          area.contains(&self.mouse_pos);
 
         let press = left_press || right_press;
 
@@ -655,6 +655,10 @@ pub enum ButtonAction {
 }
 
 impl ButtonAction {
-    pub fn left_clicked(&self) -> bool { self == &ButtonAction::LeftClicked }
-    pub fn right_clicked(&self) -> bool { self == &ButtonAction::RightClicked }
+    pub fn left_clicked(&self) -> bool {
+        self == &ButtonAction::LeftClicked
+    }
+    pub fn right_clicked(&self) -> bool {
+        self == &ButtonAction::RightClicked
+    }
 }
