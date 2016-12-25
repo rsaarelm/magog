@@ -6,10 +6,10 @@ A backend-agnostic immediate mode GUI library.
 
 Using ImageMagick, convert raw font to png:
 
-    convert -depth 8 -size 96x72 a:src/profont9.raw profont9.png
+    convert -depth 8 -size 96x48 a:src/font-96x48.raw font.png
 
 Convert png back to raw:
 
-    convert profont9.png a:src/profont9.raw
+    convert font.png a:src/font-96x48.raw
 
 (The size value depends on the dimensions of your font sheet.)

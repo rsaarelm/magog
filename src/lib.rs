@@ -89,11 +89,11 @@ impl<T> Builder<T>
     fn build_default_font<F>(&self, make_t: &mut F) -> FontData<T>
         where F: FnMut(ImageBuffer) -> T
     {
-        static DEFAULT_FONT: &'static [u8] = include_bytes!("unscii16-256x112.raw");
-        let (width, height) = (256, 112);
+        static DEFAULT_FONT: &'static [u8] = include_bytes!("font-96x48.raw");
+        let (char_width, char_height) = (6, 8);
+        let (width, height) = (char_width * 16, char_height * 6);
         let start_char = 32;
         let end_char = 127;
-        let (char_width, char_height) = (8, 16);
         let columns = width / char_width;
 
         let img = ImageBuffer::from_fn(width, height, |x, y| {
