@@ -50,21 +50,18 @@ pub fn font(display: &glium::Display, backend: &mut Backend) {
     let font_height = glyphs[0].size.height;
 
     // Build the font atlas and map the items to CharData.
-    let items: Vec<vitral::CharData<usize>> = vitral_atlas::build(&glyphs, 2048, |img| {
-                                                  backend.make_texture(display, img)
-                                              })
-                                                  .expect("Atlas construction failed")
-                                                  .into_iter()
-                                                  .map(|image| {
-                                                      let advance = image.size.width as f32;
-                                                      vitral::CharData {
-                                                          image: image,
-                                                          draw_offset:
-                                                              Point2D::new(0.0, font_height as f32),
-                                                          advance: advance,
-                                                      }
-                                                  })
-                                                  .collect();
+    let items = vitral_atlas::build(&glyphs, 2048, |img| backend.make_texture(display, img))
+                    .expect("Atlas construction failed")
+                    .into_iter()
+                    .map(|image| {
+                        let advance = image.size.width as f32;
+                        vitral::CharData {
+                            image: image,
+                            draw_offset: Point2D::new(0.0, font_height as f32),
+                            advance: advance,
+                        }
+                    })
+                    .collect::<Vec<vitral::CharData<usize>>>();
 
     let font = Font(vitral::FontData {
         chars: HashMap::from_iter((32u8..128).map(|c| c as char).zip(items.into_iter())),
