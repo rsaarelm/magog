@@ -43,14 +43,17 @@ impl Backend {
 
                 in vec2 pos;
                 in vec4 color;
+                in vec4 back_color;
                 in vec2 tex_coord;
 
                 out vec4 v_color;
+                out vec4 v_back_color;
                 out vec2 v_tex_coord;
 
                 void main() {
                     gl_Position = vec4(pos, 0.0, 1.0) * matrix;
                     v_color = color;
+                    v_back_color = back_color;
                     v_tex_coord = tex_coord;
                 }
             ",
@@ -59,6 +62,7 @@ impl Backend {
                 #version 150 core
                 uniform sampler2D tex;
                 in vec4 v_color;
+                in vec4 v_back_color;
                 in vec2 v_tex_coord;
                 out vec4 f_color;
 
@@ -69,7 +73,7 @@ impl Backend {
                     // writing into the depth buffer.
                     if (tex_color.a == 0.0) discard;
 
-                    f_color = v_color * tex_color;
+                    f_color = v_color * tex_color + v_back_color * (vec4(1, 1, 1, 1) - tex_color);
                 }
             "})
                           .unwrap();
@@ -268,21 +272,21 @@ pub struct KeyEvent {
 }
 
 
-// XXX: An exact copy of Vitral vertex struct, just so that I can derive a
-// Glium vertex implementatino for it.
 #[derive(Copy, Clone)]
 pub struct Vertex {
     pub pos: [f32; 2],
     pub color: [f32; 4],
+    pub back_color: [f32; 4],
     pub tex_coord: [f32; 2],
 }
-implement_vertex!(Vertex, pos, color, tex_coord);
+implement_vertex!(Vertex, pos, color, back_color, tex_coord);
 
 impl vitral::Vertex for Vertex {
     fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self {
         Vertex {
             pos: pos,
             color: color,
+            back_color: [0.0, 0.0, 0.0, 0.0],
             tex_coord: tex_coord,
         }
     }
