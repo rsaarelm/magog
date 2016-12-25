@@ -153,8 +153,7 @@ impl<T> Builder<T>
 
     /// Construct an interface context instance.
     pub fn build<F, V>(self, screen_size: Size2D<f32>, mut make_t: F) -> State<T, V>
-        where F: FnMut(ImageBuffer) -> T,
-              V: Vertex
+        where F: FnMut(ImageBuffer) -> T
     {
         let font;
         if let Some(user_font) = self.user_font {
@@ -204,7 +203,7 @@ pub struct State<T, V> {
     screen_size: Size2D<f32>,
 }
 
-impl<T, V: Vertex> State<T, V>
+impl<T, V> State<T, V>
     where T: Clone + Eq
 {
     fn new(solid_texture: ImageData<T>,
@@ -341,7 +340,7 @@ impl<T, V: Vertex> State<T, V>
 
 pub trait Context: Sized {
     type T: Clone + Eq;
-    type V: Vertex;
+    type V;
 
     /// Return the internal GUI state.
     ///
@@ -731,10 +730,6 @@ pub struct DrawBatch<T, V> {
     pub vertices: Vec<V>,
     /// Indices into the vertex array for the triangles that make up the batch
     pub triangle_indices: Vec<u16>,
-}
-
-pub trait Vertex {
-    fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self;
 }
 
 /// Text alignment.

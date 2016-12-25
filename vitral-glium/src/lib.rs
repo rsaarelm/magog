@@ -33,7 +33,7 @@ pub struct Backend<V> {
     phantom: ::std::marker::PhantomData<V>,
 }
 
-impl<V: vitral::Vertex + glium::Vertex> Backend<V> {
+impl<V: glium::Vertex> Backend<V> {
     /// Create a new Glium backend for Vitral.
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
@@ -267,13 +267,3 @@ pub struct DefaultVertex {
     pub tex_coord: [f32; 2],
 }
 implement_vertex!(DefaultVertex, pos, color, tex_coord);
-
-impl vitral::Vertex for DefaultVertex {
-    fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self {
-        DefaultVertex {
-            pos: pos,
-            color: color,
-            tex_coord: tex_coord,
-        }
-    }
-}

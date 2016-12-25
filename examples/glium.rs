@@ -16,7 +16,7 @@ fn load_image<V>(display: &glium::Display,
                  backend: &mut Backend<V>,
                  path: &str)
                  -> vitral::ImageData<usize>
-    where V: vitral::Vertex + glium::Vertex
+    where V: glium::Vertex
 {
     let image = image::open(&Path::new(path)).unwrap();
     let (w, h) = image.dimensions();
