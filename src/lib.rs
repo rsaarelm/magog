@@ -76,14 +76,33 @@ impl ImageBuffer {
 }
 
 pub struct Builder<T> {
-    phantom: ::std::marker::PhantomData<T>,
+    user_font: Option<Rc<FontData<T>>>,
+    user_solid: Option<ImageData<T>>,
 }
 
 impl<T> Builder<T>
     where T: Clone + Eq
 {
     pub fn new() -> Builder<T> {
-        Builder { phantom: ::std::marker::PhantomData }
+        Builder {
+            user_font: None,
+            user_solid: None,
+        }
+    }
+
+    /// Set a different font as the default font.
+    pub fn default_font(mut self, font: Rc<FontData<T>>) -> Builder<T> {
+        self.user_font = Some(font);
+        self
+    }
+
+    /// Give your own `ImageData` for the solid texture.
+    ///
+    /// You want to use this if you have an image atlas and you want to have both drawing solid
+    /// shapes and textured shapes use the same texture resource and go to the same draw batch.
+    pub fn solid_texture(mut self, solid: ImageData<T>) -> Builder<T> {
+        self.user_solid = Some(solid);
+        self
     }
 
     fn build_default_font<F>(&self, make_t: &mut F) -> FontData<T>
@@ -137,16 +156,25 @@ impl<T> Builder<T>
         where F: FnMut(ImageBuffer) -> T,
               V: Vertex
     {
-        let default_font = self.build_default_font(&mut make_t);
-        let solid = ImageData {
-            texture: make_t(ImageBuffer::blank()),
-            size: Size2D::new(1, 1),
-            tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
-        };
+        let font;
+        if let Some(user_font) = self.user_font {
+            font = user_font
+        } else {
+            font = Rc::new(self.build_default_font(&mut make_t));
+        }
 
-        let mut ret = State::new(solid, screen_size);
-        ret.default_font = Rc::new(default_font);
-        ret
+        let solid;
+        if let Some(user_solid) = self.user_solid {
+            solid = user_solid;
+        } else {
+            solid = ImageData {
+                texture: make_t(ImageBuffer::blank()),
+                size: Size2D::new(1, 1),
+                tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
+            };
+        }
+
+        State::new(solid, screen_size, font)
     }
 }
 
@@ -179,7 +207,10 @@ pub struct State<T, V> {
 impl<T, V: Vertex> State<T, V>
     where T: Clone + Eq
 {
-    fn new(solid_texture: ImageData<T>, screen_size: Size2D<f32>) -> State<T, V> {
+    fn new(solid_texture: ImageData<T>,
+           screen_size: Size2D<f32>,
+           default_font: Rc<FontData<T>>)
+           -> State<T, V> {
         State {
             draw_list: Vec::new(),
             // solid_texture: Image(0),
@@ -188,7 +219,7 @@ impl<T, V: Vertex> State<T, V>
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: [ClickState::Unpressed, ClickState::Unpressed, ClickState::Unpressed],
 
-            default_font: Rc::new(Default::default()),
+            default_font: default_font,
             solid_texture: solid_texture,
 
             text_input: Vec::new(),
@@ -825,16 +856,6 @@ impl<T> FontData<T> {
 
     pub fn str_width(&self, s: &str) -> f32 {
         s.chars().map(|c| self.char_width(c).unwrap_or(0.0)).sum()
-    }
-}
-
-impl<T> Default for FontData<T> {
-    fn default() -> Self {
-        // Build an empty font.
-        FontData {
-            chars: HashMap::new(),
-            height: 8.0,
-        }
     }
 }
 
