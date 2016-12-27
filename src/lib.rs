@@ -58,12 +58,11 @@ impl ImageBuffer {
         }
     }
 
-    /// Copy pixels from source buffer to self starting from given coordinates.
+    /// Copy all pixels from source buffer to self starting at given coordinates in self.
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
-        let self_rect = Rect::new(Point2D::new(0, 0), self.size);
-        let source_rect = Rect::new(Point2D::new(x, y), source.size);
+        let blit_rect = Rect::new(Point2D::new(x, y), source.size);
 
-        if let Some(blit_rect) = self_rect.intersection(&source_rect) {
+        if let Some(blit_rect) = blit_rect.intersection(&Rect::new(Point2D::new(0, 0), self.size)) {
             for y2 in blit_rect.min_y()..blit_rect.max_y() {
                 for x2 in blit_rect.min_x()..blit_rect.max_x() {
                     let self_idx = (x2 + y2 * self.size.width) as usize;
@@ -72,6 +71,10 @@ impl ImageBuffer {
                 }
             }
         }
+    }
+
+    pub fn get_pixel(&self, x: u32, y: u32) -> u32 {
+        self.pixels[(x + y * self.size.width) as usize]
     }
 }
 
