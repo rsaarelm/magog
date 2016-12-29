@@ -1,15 +1,13 @@
-use std::sync::Arc;
-use calx_resource::ResourceStore;
 use location::{Location, Portal};
-use terrain;
+use terrain::{self, Terrain};
 
 /// Immutable terrain field query.
 pub trait TerrainQuery {
     /// Return whether location is contained in the current play area.
     fn is_valid_location(&self, loc: Location) -> bool;
 
-    /// Return Id value of terrain at location.
-    fn terrain_id(&self, loc: Location) -> u8;
+    /// Return terrain at location.
+    fn terrain(&self, loc: Location) -> Terrain;
 
     /// If location contains a portal, return the destination of the portal.
     fn portal(&self, loc: Location) -> Option<Location>;
@@ -17,15 +15,10 @@ pub trait TerrainQuery {
     /// The cell has not (probably) been touched by map generation yet.
     fn is_untouched(&self, loc: Location) -> bool;
 
-    /// Return terrain at location.
-    fn terrain(&self, loc: Location) -> Arc<terrain::Tile> {
-        terrain::Tile::get_resource(&self.terrain_id(loc)).unwrap()
-    }
-
     /// Return a portal if it can be seen through.
     fn visible_portal(&self, loc: Location) -> Option<Location> {
         // Only void-form is transparent to portals.
-        if self.terrain(loc).form == terrain::Form::Void { self.portal(loc) } else { None }
+        if self.terrain(loc).form() == terrain::Form::Void { self.portal(loc) } else { None }
     }
 
     /// Does this location belong to a placed room in mapgen.
@@ -33,7 +26,7 @@ pub trait TerrainQuery {
         // XXX: This is dodgy and assumes dungeony maps that start out as undug blocks, plus
         // assumes that room terrain will not consist of blocks. May want to have more
         // sophisticated logic here in the future.
-        match self.terrain(loc).kind {
+        match self.terrain(loc).kind() {
             terrain::Kind::Block | terrain::Kind::Corridor => false,
             _ => true
         }
@@ -45,7 +38,7 @@ pub trait Terraform {
     /// Set map terrain.
     ///
     /// A zero value will generally reset the terrain to the map default.
-    fn set_terrain(&mut self, loc: Location, terrain: u8);
+    fn set_terrain(&mut self, loc: Location, terrain: terrain::Terrain);
 
     /// Set a portal on map.
     ///

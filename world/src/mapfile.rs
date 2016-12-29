@@ -5,9 +5,8 @@ use std::collections::BTreeMap;
 use rustc_serialize::Decodable;
 use toml;
 use calx_grid;
-use calx_resource::ResourceStore;
 use Prefab;
-use terrain;
+use terrain::Terrain;
 use form::Form;
 use errors::*;
 
@@ -16,17 +15,12 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
              abcdefghijklmnopqrstuvwxyz\
              0123456789";
 
-    let mut legend_builder = calx_grid::LegendBuilder::new(ALPHABET.to_string(),
-                                                           move |x: &(terrain::Id, Vec<String>)| {
-                                                               let &(ref t, ref e) = x;
-                                                               if e.is_empty() {
-                                                                   terrain::Tile::get_resource(&(*t as u8))
-                .unwrap()
-                .preferred_map_chars()
-                                                               } else {
-                                                                   ""
-                                                               }
-                                                           });
+    let chars_f = move |x: &(Terrain, Vec<String>)| {
+        let &(ref t, ref e) = x;
+        if e.is_empty() { t.preferred_map_chars() } else { "" }
+    };
+
+    let mut legend_builder = calx_grid::LegendBuilder::new(ALPHABET.to_string(), chars_f);
 
     let prefab = prefab.clone().map(|e| legend_builder.add(&e));
     // Values are still results, we need to check if legend building failed.
@@ -37,16 +31,16 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab = prefab.map(|e| e.unwrap());
 
-    let legend: BTreeMap<char, LegendItem> = legend_builder.legend
-                                                           .into_iter()
-                                                           .map(|(c, t)| {
-                                                               (c,
-                                                                LegendItem {
-                                                                   t: format!("{:?}", t.0),
-                                                                   e: t.1.clone(),
-                                                               })
-                                                           })
-                                                           .collect();
+    let legend = legend_builder.legend
+                               .into_iter()
+                               .map(|(c, t)| {
+                                   (c,
+                                    LegendItem {
+                                       t: format!("{:?}", t.0),
+                                       e: t.1.clone(),
+                                   })
+                               })
+                               .collect::<BTreeMap<char, LegendItem>>();
 
     let save = MapSave {
         map: format!("{}", prefab.hexmap_display()),
@@ -67,7 +61,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
 
     // Validate the prefab
     for i in save.legend.values() {
-        if terrain::Id::from_str(&i.t).is_err() {
+        if Terrain::from_str(&i.t).is_err() {
             return Err(format!("Unknown terrain type '{}'", i.t).into());
         }
 
@@ -90,7 +84,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
     Ok(prefab.map(|item| {
         let e = save.legend.get(&item).unwrap();
-        let terrain = terrain::Id::from_str(&e.t).unwrap();
+        let terrain = Terrain::from_str(&e.t).unwrap();
         let spawns = e.e.clone();
         (terrain, spawns)
     }))

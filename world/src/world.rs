@@ -1,10 +1,7 @@
-use std::sync::Arc;
 use std::io::{Read, Write};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 use bincode::{self, serde};
-use euclid::Point2D;
-use calx_resource::ResourceStore;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
 use field::Field;
@@ -13,7 +10,7 @@ use flags::Flags;
 use location::{Location, Portal};
 use components;
 use stats;
-use terrain;
+use terrain::Terrain;
 use query::Query;
 use command::{Command, CommandResult};
 use mutate::Mutate;
@@ -41,7 +38,7 @@ pub struct World {
     /// Entity component system.
     ecs: Ecs,
     /// Terrain data.
-    terrain: Field<u8>,
+    terrain: Field<Terrain>,
     /// Optional portals between map zones.
     portals: HashMap<Location, Portal>,
     /// Spatial index for game entities.
@@ -52,16 +49,14 @@ pub struct World {
 
 impl<'a> World {
     pub fn new(seed: u32) -> World {
-        let mut ret = World {
+        World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            terrain: Field::new(0),
+            terrain: Field::new(Terrain::Empty),
             portals: HashMap::new(),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
-        };
-
-        ret
+        }
     }
 
     /* TODO: Reactivate for rustc-serialize
@@ -84,10 +79,6 @@ impl<'a> World {
         serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
     }
     */
-
-    fn default_terrain_id(&self, loc: Location) -> u8 {
-        terrain::Id::Empty as u8
-    }
 }
 
 impl TerrainQuery for World {
@@ -95,17 +86,17 @@ impl TerrainQuery for World {
         Location::origin().v2_at(loc).map_or(false, |p| ::on_screen(p))
     }
 
-    fn terrain_id(&self, loc: Location) -> u8 {
-        let mut idx = self.terrain.get(loc);
+    fn terrain(&self, loc: Location) -> Terrain {
+        let mut t = self.terrain.get(loc);
 
-        if idx == terrain::Id::Door as u8 {
+        if t == Terrain::Door {
             // Standing in the doorway opens the door.
             if self.has_mobs(loc) {
-                idx = terrain::Id::OpenDoor as u8;
+                t = Terrain::OpenDoor;
             }
         }
 
-        if idx == 0 { self.default_terrain_id(loc) } else { idx }
+        t
     }
 
     fn portal(&self, loc: Location) -> Option<Location> { self.portals.get(&loc).map(|&p| loc + p) }
@@ -201,7 +192,7 @@ impl Command for World {
 }
 
 impl Terraform for World {
-    fn set_terrain(&mut self, loc: Location, terrain: u8) { self.terrain.set(loc, terrain); }
+    fn set_terrain(&mut self, loc: Location, terrain: Terrain) { self.terrain.set(loc, terrain); }
 
     fn set_portal(&mut self, loc: Location, mut portal: Portal) {
         let target_loc = loc + portal;

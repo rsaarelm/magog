@@ -20,8 +20,7 @@ extern crate calx_ecs;
 #[macro_use]
 extern crate calx_resource;
 
-use std::collections::HashSet;
-use euclid::{Point2D, Rect, Size2D};
+use euclid::Point2D;
 
 mod ability;
 
@@ -39,7 +38,6 @@ mod form;
 pub use form::{Form, FORMS};
 
 mod fov;
-pub mod init;
 mod item;
 
 mod location;
@@ -65,12 +63,13 @@ mod terraform;
 pub use terraform::{Terraform, TerrainQuery};
 
 pub mod terrain;
+pub use terrain::Terrain;
 
 mod world;
 pub use world::{Ecs, World};
 
 /// Standard Prefab type, terrain type and spawn name list.
-pub type Prefab = calx_grid::Prefab<(terrain::Id, Vec<String>)>;
+pub type Prefab = calx_grid::Prefab<(Terrain, Vec<String>)>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {

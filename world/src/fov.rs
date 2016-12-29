@@ -3,7 +3,6 @@ use calx_grid::{FovValue, HexGeom};
 use world::World;
 use location::Location;
 use terraform::TerrainQuery;
-use terrain;
 
 #[derive(Clone)]
 pub struct SightFov<'a> {
@@ -56,6 +55,6 @@ impl<'a> FovValue for SightFov<'a> {
     }
 
     fn is_fake_isometric_wall(&self, offset: Point2D<i32>) -> bool {
-        self.w.terrain(self.origin + offset).form == terrain::Form::Wall
+        self.w.terrain(self.origin + offset).is_wall()
     }
 }

@@ -33,7 +33,6 @@ pub fn main() {
     // Initialize game resources.
     ::display::init::brushes(&glium, &mut backend);
     ::display::init::font(&glium, &mut backend);
-    ::world::init::terrain();
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&glium, img)),

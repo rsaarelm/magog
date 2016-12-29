@@ -5,8 +5,7 @@ use std::num::Wrapping;
 use euclid::{Point2D, Rect, Size2D};
 use scancode::Scancode;
 use calx_grid::{Dir6, Prefab};
-use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World};
-use world::terrain;
+use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World, Terrain};
 use world::errors::*;
 use display;
 use vitral::{self, ButtonAction};
@@ -22,8 +21,8 @@ enum PaintMode {
 pub struct View {
     pub world: World,
 
-    fore_terrain: u8,
-    back_terrain: u8,
+    fore_terrain: Terrain,
+    back_terrain: Terrain,
     entity: String,
     mode: PaintMode,
 
@@ -40,8 +39,8 @@ impl View {
     pub fn new(world: World) -> View {
         View {
             world: world,
-            fore_terrain: 7,
-            back_terrain: 2,
+            fore_terrain: Terrain::Rock,
+            back_terrain: Terrain::Ground,
             entity: "player".to_string(),
             mode: PaintMode::Terrain,
             camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
@@ -114,33 +113,26 @@ impl View {
                                                             480.0 - ui_top_y))));
         context.ui.layout_pos.y = ui_top_y + 10.0;
 
-        let fore_id = terrain::Id::from_u8(self.fore_terrain).unwrap();
-        let back_id = terrain::Id::from_u8(self.back_terrain).unwrap();
-
-        match context.ui.button(&format!("left: {:?}", fore_id)) {
+        match context.ui.button(&format!("left: {:?}", self.fore_terrain)) {
             ButtonAction::LeftClicked => {
                 self.mode = PaintMode::Terrain;
-                self.fore_terrain += terrain::Id::_MaxTerrain as u8 - 1;
-                self.fore_terrain %= terrain::Id::_MaxTerrain as u8;
+                self.fore_terrain = prev_terrain(self.fore_terrain);
             }
             ButtonAction::RightClicked => {
                 self.mode = PaintMode::Terrain;
-                self.fore_terrain += 1;
-                self.fore_terrain %= terrain::Id::_MaxTerrain as u8;
+                self.fore_terrain = next_terrain(self.fore_terrain);
             }
             _ => {}
         }
 
-        match context.ui.button(&format!("right: {:?}", back_id)) {
+        match context.ui.button(&format!("right: {:?}", self.back_terrain)) {
             ButtonAction::LeftClicked => {
                 self.mode = PaintMode::Terrain;
-                self.back_terrain += terrain::Id::_MaxTerrain as u8 - 1;
-                self.back_terrain %= terrain::Id::_MaxTerrain as u8;
+                self.back_terrain = prev_terrain(self.back_terrain);
             }
             ButtonAction::RightClicked => {
                 self.mode = PaintMode::Terrain;
-                self.back_terrain += 1;
-                self.back_terrain %= terrain::Id::_MaxTerrain as u8;
+                self.back_terrain = next_terrain(self.back_terrain);
             }
             _ => {}
         }
@@ -203,7 +195,7 @@ impl View {
     }
 
     fn load(&mut self, path: String) {
-        fn loader(path: String) -> Result<Prefab<(terrain::Id, Vec<String>)>> {
+        fn loader(path: String) -> Result<Prefab<(Terrain, Vec<String>)>> {
             let mut file = File::open(path)?;
             world::load_prefab(&mut file)
         }
@@ -305,5 +297,23 @@ impl View {
     fn switch_camera(&mut self) {
         let (a, b) = self.camera;
         self.camera = (b, a);
+    }
+}
+
+fn next_terrain(t: Terrain) -> Terrain {
+    let mut i = Terrain::iter().cycle().filter(|t| !t.is_irregular());
+    loop {
+        if i.next() == Some(&t) {
+            return *i.next().unwrap();
+        }
+    }
+}
+
+fn prev_terrain(t: Terrain) -> Terrain {
+    let mut i = Terrain::iter().rev().cycle().filter(|t| !t.is_irregular());
+    loop {
+        if i.next() == Some(&t) {
+            return *i.next().unwrap();
+        }
     }
 }

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use std::mem;
-use super::location::Location;
+use location::Location;
 
 /// Compact Location set collection
 #[derive(Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]

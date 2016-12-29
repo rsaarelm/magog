@@ -1,12 +1,7 @@
-use calx_ecs::Entity;
-use calx_color::color::*;
-use calx_color::Rgba;
-use calx_resource::Resource;
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
 use components::{Brain, Desc, Health, MapMemory};
-use world::{Component, Loadout, World};
-use mutate::Mutate;
+use world::{Component, Loadout};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Forms {

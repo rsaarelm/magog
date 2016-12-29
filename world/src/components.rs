@@ -1,5 +1,3 @@
-use std::convert::Into;
-use calx_color::Rgba;
 use calx_resource::Resource;
 use item::ItemType;
 use ability::Ability;

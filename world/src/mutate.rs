@@ -6,7 +6,7 @@ use command::CommandResult;
 use terraform::Terraform;
 use world::Loadout;
 use form::Form;
-use terrain;
+use terrain::Terrain;
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -58,7 +58,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
-    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(terrain::Id, Vec<String>)>) {
+    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(Terrain, Vec<String>)>) {
         for (p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 
@@ -68,8 +68,7 @@ pub trait Mutate: Query + Terraform + Sized {
                 self.remove_entity(e);
             }
 
-            // Set terrain.
-            self.set_terrain(loc, *terrain as u8);
+            self.set_terrain(loc, *terrain);
         }
 
         // Spawn entities after all terrain is in place so that initial FOV is good.

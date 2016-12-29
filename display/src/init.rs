@@ -80,31 +80,31 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .file("display/assets/floors.png")
         ////
         .tile(0, 0)
-        .brush("blank_floor")
+        .brush("Empty")
         ////
         .color(DARKGREEN)
         .tile(32, 0)
-        .brush("grass")
+        .brush("Grass")
         ////
         .color(DARKGREEN)
         .tile(64, 0)
-        .brush("grass2")
+        .brush("Grass2")
         ////
         .color(SLATEGRAY)
         .tile(32, 0)
-        .brush("ground")
+        .brush("Ground")
         ////
         .color(SLATEGRAY)
         .tile(32, 0)
-        .brush("corridor")
+        .brush("Corridor")
         ////
         .color(ROYALBLUE)
         .tile(96, 0)
-        .brush("water")
+        .brush("Water")
         ////
         .color(RED)
         .tile(96, 0)
-        .brush("magma")
+        .brush("Magma")
         ////
         .file("display/assets/portals.png")
         ////
@@ -134,7 +134,7 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(352, 0)
         .frame()
         .tile(384, 0)
-        .brush("gate")
+        .brush("Gate")
         ////
         .file("display/assets/props.png")
         ////
@@ -152,17 +152,17 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .tile(160, 64)
         .color(GREEN)
         .tile(192, 64)
-        .brush("tree")
+        .brush("Tree")
         ////
         .file("display/assets/walls.png")
         ////
         .color(LIGHTSLATEGRAY)
         .wall(0, 0, 32, 0)
-        .brush("wall")
+        .brush("Wall")
 
         .color(LIGHTSLATEGRAY)
         .wall(0, 0, 96, 0)
-        .brush("open_door")
+        .brush("OpenDoor")
 
         // XXX: Wall helper function doesn't handle complex splats.
         //
@@ -189,7 +189,7 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .color(LIGHTSLATEGRAY)
         .splat(96 + 16, 0, 16, 32).offset(0, 16)
 
-        .brush("door")
+        .brush("Door")
         // Door finally ends here.
 
         ////
@@ -200,7 +200,7 @@ pub fn brushes(display: &glium::Display, backend: &mut Backend) {
         .brush("solid-blob")
         .color(DARKGOLDENROD)
         .blob(0, 0, 0, 32, 0, 160)
-        .brush("rock")
+        .brush("Rock")
         ////
         .file("display/assets/mobs.png")
         .color(AZURE)

@@ -6,7 +6,7 @@ use calx_grid::Dir6;
 use calx_alg::{RandomPermutation, RngExt};
 use location::Location;
 use terraform::{Terraform, TerrainQuery};
-use terrain::Id;
+use terrain::Terrain;
 use onscreen_locations;
 
 pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
@@ -49,7 +49,7 @@ pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_
         where T: TerrainQuery + Terraform
     {
         assert!(world.is_valid_location(loc));
-        world.set_terrain(loc, Id::Ground as u8);
+        world.set_terrain(loc, Terrain::Ground);
 
         edge.remove(&loc);
         for &d in Dir6::iter() {
@@ -66,7 +66,7 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
     where T: TerrainQuery + Terraform,
           R: Rng
 {
-    use terrain::Id::*;
+    use Terrain::*;
 
     fn dead_ends<'a, T, I>(world: &T, i: &'a mut I) -> Vec<Location>
         where T: TerrainQuery,
@@ -116,8 +116,8 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
 
         let dig_dir = *sample(rng, dig_options.iter(), 1)[0];
 
-        world.set_terrain(current + dig_dir, Corridor as u8);
-        world.set_terrain(current + dig_dir + dig_dir, Corridor as u8);
+        world.set_terrain(current + dig_dir, Corridor);
+        world.set_terrain(current + dig_dir + dig_dir, Corridor);
         current = current + dig_dir + dig_dir;
         unvisited.remove(&current);
         visited.insert(current);
@@ -127,9 +127,9 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
         for loc in dead_ends(world, &mut visited.iter()).into_iter() {
             visited.remove(&loc);
             // TODO: Don't hardcode terrain type in 'undig' operation.
-            world.set_terrain(loc, Rock as u8);
+            world.set_terrain(loc, Rock);
             for &dir in DIRS4.iter() {
-                world.set_terrain(loc + dir, Rock as u8);
+                world.set_terrain(loc + dir, Rock);
             }
         }
     }
@@ -140,7 +140,7 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
     for loc in dead_ends(world, &mut visited.iter()).into_iter() {
         for &dir in DIRS4.iter() {
             if world.terrain(loc + dir + dir).is_open() && rng.with_chance(0.7) {
-                world.set_terrain(loc + dir, Corridor as u8);
+                world.set_terrain(loc + dir, Corridor);
             }
         }
     }
@@ -288,7 +288,7 @@ impl Room for EmptyRoom {
     }
 
     fn place<T: Terraform + TerrainQuery>(&self, w: &mut T, loc: Location) {
-        use terrain::Id::*;
+        use Terrain::*;
 
         for y in 0..self.height {
             for x in 0..self.width {
@@ -299,12 +299,12 @@ impl Room for EmptyRoom {
 
                 if is_wall {
                     if w.terrain(loc).is_open() {
-                        w.set_terrain(loc, if is_corner { Ground } else { Door } as u8);
+                        w.set_terrain(loc, if is_corner { Ground } else { Door });
                     } else {
-                        w.set_terrain(loc, Wall as u8);
+                        w.set_terrain(loc, Wall);
                     }
                 } else {
-                    w.set_terrain(loc, Ground as u8);
+                    w.set_terrain(loc, Ground);
                 }
             }
         }

@@ -1,19 +1,16 @@
-use std::sync::Arc;
 use std::iter::FromIterator;
-use calx_grid::{Dir6, HexFov};
+use calx_grid::Dir6;
 use calx_ecs::Entity;
-use calx_resource::{Resource, ResourceStore};
-use world::World;
+use calx_resource::Resource;
 use components::{Alignment, BrainState};
 use stats::Intrinsic;
 use location::Location;
 use brush::Brush;
 use stats;
 use FovStatus;
-use fov::SightFov;
 use terraform::TerrainQuery;
 use world::Ecs;
-use terrain;
+use terrain::Terrain;
 use form;
 use Prefab;
 
@@ -235,39 +232,32 @@ pub trait Query: TerrainQuery {
     /// Return whether the entity should have an idle animation.
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
-    /// Return Id value of terrain at location for drawing on screen.
-    fn visual_terrain_id(&self, loc: Location) -> u8 {
-        use terrain::Id::*;
-        let mut idx = self.terrain_id(loc);
+    /// Return terrain at location for drawing on screen.
+    ///
+    /// Terrain is sometimes replaced with a variant for visual effect, but
+    /// this should not be reflected in the logical terrain.
+    fn visual_terrain(&self, loc: Location) -> Terrain {
+        use Terrain::*;
 
+        let mut t = self.terrain(loc);
         // Floor terrain dot means "you can step here". So if the floor is outside the valid play
         // area, don't show the dot.
         //
         // XXX: Hardcoded set of floors, must be updated whenever a new floor type is added.
         if !self.is_valid_location(loc) {
-            if idx == Ground as u8 || idx == Grass as u8 || idx == Gate as u8 {
-                idx = Empty as u8;
+            if t == Ground || t == Grass || t == Gate {
+                t = Empty;
             }
         }
 
 
         // TODO: Might want a more generic method of specifying cosmetic terrain variants.
-        if idx == Grass as u8 {
+        if t == Grass && loc.noise() > 0.85 {
             // Grass is occasionally fancy.
-            if loc.noise() > 0.85 {
-                idx = terrain::Id::Grass2 as u8;
-            }
+            t = Grass2;
         }
 
-        idx
-    }
-
-    /// Return terrain at location for drawing on screen.
-    ///
-    /// Terrain is sometimes replaced with a variant for visual effect, but
-    /// this should not be reflected in the logical terrain.
-    fn visual_terrain(&self, loc: Location) -> Arc<terrain::Tile> {
-        terrain::Tile::get_resource(&self.visual_terrain_id(loc)).unwrap()
+        t
     }
 
     /// Return the name that can be used to spawn this entity.
@@ -296,7 +286,7 @@ pub trait Query: TerrainQuery {
 
             let pos = origin.v2_at(loc).expect("Trying to build prefab from multiple z-levels");
 
-            let terrain = terrain::Id::from_u8(self.terrain_id(loc)).expect("Corrupt terrain");
+            let terrain = self.terrain(loc);
 
             let entities = Vec::from_iter(self.entities_at(loc).into_iter().filter_map(|e| {
                 self.spawn_name(e).map(|s| s.to_string())

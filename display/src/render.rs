@@ -1,10 +1,9 @@
 //! Game world display utilities.
 
-use std::sync::Arc;
 use calx_resource::Resource;
 use calx_grid::{Dir12, Dir6};
 use world::{Brush, Location, World, Query};
-use world::{TerrainQuery, terrain};
+use world::{TerrainQuery, Terrain, terrain};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
@@ -197,19 +196,23 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
     let terrain = w.visual_terrain(loc);
     let kernel = Kernel::new(w, loc);
 
-    match terrain.form {
+    // TODO: Temp measure while moving away from Resource system, replace with display-local
+    // terrain brush cache indexed by terrain enum as usize.
+    let brush = Resource::new(format!("{:?}", terrain)).unwrap();
+
+    match terrain.form() {
         terrain::Form::Void | terrain::Form::Floor => {
-            draw(Layer::Floor, Up, &terrain.brush, 0);
+            draw(Layer::Floor, Up, &brush, 0);
         }
         terrain::Form::Gate => {
             if let Some(d12) = Dir12::away_from(&kernel.void_mask()) {
-                draw(Layer::Floor, Up, &terrain.brush, d12 as usize + 1);
+                draw(Layer::Floor, Up, &brush, d12 as usize + 1);
             } else {
-                draw(Layer::Floor, Up, &terrain.brush, 0);
+                draw(Layer::Floor, Up, &brush, 0);
             }
         }
         terrain::Form::Prop => {
-            draw(Layer::Object, South, &terrain.brush, 0);
+            draw(Layer::Object, South, &brush, 0);
         }
         terrain::Form::Blob => {
             // XXX: Expensive initialization, needs to be cached somewhere.
@@ -218,19 +221,19 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
             let solid = Resource::new("solid-blob".to_string()).unwrap();
             blobform(&kernel, &solid, true, &mut draw);
             // Then draw the decoration with the actual brush.
-            blobform(&kernel, &terrain.brush, false, &mut draw);
+            blobform(&kernel, &brush, false, &mut draw);
         }
         terrain::Form::Wall => {
             let extends = kernel.wall_extends();
             if extends[0] {
-                draw(Layer::Object, XWall, &terrain.brush, 2);
+                draw(Layer::Object, XWall, &brush, 2);
             } else {
-                draw(Layer::Object, XWall, &terrain.brush, 0);
+                draw(Layer::Object, XWall, &brush, 0);
             }
             if extends[1] {
-                draw(Layer::Object, YWall, &terrain.brush, 3);
+                draw(Layer::Object, YWall, &brush, 3);
             } else {
-                draw(Layer::Object, YWall, &terrain.brush, 1);
+                draw(Layer::Object, YWall, &brush, 1);
             }
         }
     }
@@ -240,16 +243,16 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 
 #[derive(Clone)]
 pub struct Kernel {
-    pub n: Arc<terrain::Tile>,
-    pub ne: Arc<terrain::Tile>,
-    pub nw: Arc<terrain::Tile>,
-    pub center: Arc<terrain::Tile>,
-    pub se: Arc<terrain::Tile>,
-    pub sw: Arc<terrain::Tile>,
-    pub s: Arc<terrain::Tile>,
+    pub n: Terrain,
+    pub ne: Terrain,
+    pub nw: Terrain,
+    pub center: Terrain,
+    pub se: Terrain,
+    pub sw: Terrain,
+    pub s: Terrain,
 }
 
-fn neighbor(w: &World, loc: Location, dir: Dir6) -> Arc<terrain::Tile> {
+fn neighbor(w: &World, loc: Location, dir: Dir6) -> Terrain {
     let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
     w.visual_terrain(loc)
 }
@@ -291,11 +294,11 @@ impl Kernel {
 
     /// Mark neighbors that are not void terrain as true.
     pub fn void_mask(&self) -> [bool; 6] {
-        [self.n.form != terrain::Form::Void,
-         self.ne.form != terrain::Form::Void,
-         self.se.form != terrain::Form::Void,
-         self.s.form != terrain::Form::Void,
-         self.sw.form != terrain::Form::Void,
-         self.nw.form != terrain::Form::Void]
+        [self.n.form() != terrain::Form::Void,
+         self.ne.form() != terrain::Form::Void,
+         self.se.form() != terrain::Form::Void,
+         self.s.form() != terrain::Form::Void,
+         self.sw.form() != terrain::Form::Void,
+         self.nw.form() != terrain::Form::Void]
     }
 }

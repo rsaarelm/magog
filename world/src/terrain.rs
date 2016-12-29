@@ -1,6 +1,5 @@
-use calx_resource::{Loadable, Resource};
 use std::str::FromStr;
-use brush::Brush;
+use std::slice;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -44,121 +43,127 @@ pub enum Form {
     Wall,
 }
 
-/// Data for the terrain in a single map cell.
-#[derive(Clone, Debug)]
-pub struct Tile {
-    pub brush: Resource<Brush>,
-    pub kind: Kind,
-    pub form: Form,
+struct TerrainData {
+    name: &'static str,
+    kind: Kind,
+    form: Form,
+    map_chars: &'static str,
+    /// For variants that should not show up in main terrain sets.
+    is_irregular: bool,
 }
 
-impl Tile {
-    pub fn new(brush: &str, kind: Kind, form: Form) -> Tile {
-        Tile {
-            brush: Resource::new(brush.to_string()).unwrap(),
-            kind: kind,
-            form: form,
+macro_rules! count_tts {
+    () => {0usize};
+    ($_head:tt $($tail:tt)*) => {1usize + count_tts!($($tail)*)};
+}
+
+macro_rules! terrain_enum {
+    {
+        $($sym:ident: $data:expr,)+
+    } => {
+        #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, RustcEncodable, RustcDecodable)]
+        pub enum Terrain {
+            $($sym,)+
         }
+
+        const N_ENUM: usize = count_tts!($($sym)+);
+
+        static TERRAIN_DATA: [TerrainData; N_ENUM] = [
+            $($data,)+
+        ];
+
+        static TERRAIN_ENUM: [Terrain; N_ENUM] = [
+            $(Terrain::$sym,)+
+        ];
+    }
+}
+
+terrain_enum! {
+    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_irregular: false },
+    Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_irregular: false },
+    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false },
+    Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false },
+    Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_irregular: false },
+    Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_irregular: false },
+    Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false },
+    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "",    is_irregular: false },
+    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "",    is_irregular: false },
+    Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false },
+    // TODO: Get rid of corridor, it only makes sense for mapgen bookkeeping and that doesn't
+    // belong in persistent map.
+    Corridor:    TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: "_.,", is_irregular: true },
+    OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_irregular: true },
+    // TODO: Get rid of grass2, give render a coherent noise source for tiles and make it do the
+    // variation locally.
+    Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_irregular: true },
+}
+
+impl Terrain {
+    pub fn iter() -> slice::Iter<'static, Terrain> {
+        TERRAIN_ENUM.iter()
     }
 
-    pub fn blocks_sight(&self) -> bool {
-        match self.kind {
+    #[inline(always)]
+    pub fn kind(self) -> Kind {
+        TERRAIN_DATA[self as usize].kind
+    }
+
+    #[inline(always)]
+    pub fn form(self) -> Form {
+        TERRAIN_DATA[self as usize].form
+    }
+
+    pub fn blocks_sight(self) -> bool {
+        match self.kind() {
             Kind::Block | Kind::Door => true,
             _ => false,
         }
     }
 
-    pub fn blocks_shot(&self) -> bool {
-        match self.kind {
+    pub fn blocks_shot(self) -> bool {
+        match self.kind() {
             Kind::Block | Kind::Window | Kind::Door => true,
             _ => false,
         }
     }
 
-    pub fn blocks_walk(&self) -> bool {
-        match self.kind {
+    pub fn blocks_walk(self) -> bool {
+        match self.kind() {
             Kind::Ground | Kind::Corridor | Kind::Door => false,
             _ => true,
         }
     }
 
-    pub fn is_open(&self) -> bool { self.kind == Kind::Ground || self.kind == Kind::Corridor }
+    pub fn name(self) -> &'static str { TERRAIN_DATA[self as usize].name }
 
-    pub fn is_door(&self) -> bool { self.kind == Kind::Door }
+    pub fn is_open(self) -> bool { self.kind() == Kind::Ground || self.kind() == Kind::Corridor }
 
-    pub fn is_luminous(&self) -> bool { self.kind == Kind::Magma }
+    pub fn is_door(self) -> bool { self.kind() == Kind::Door }
 
-    pub fn is_wall(&self) -> bool { self.form == Form::Wall }
+    pub fn is_luminous(self) -> bool { self.kind() == Kind::Magma }
 
-    pub fn is_hull(&self) -> bool { self.form == Form::Wall || self.form == Form::Blob }
+    pub fn is_wall(self) -> bool { self.form() == Form::Wall }
 
-    pub fn is_blob(&self) -> bool { self.form == Form::Blob }
+    pub fn is_hull(self) -> bool { self.form() == Form::Wall || self.form() == Form::Blob }
 
-    pub fn is_block(&self) -> bool { self.is_hull() || self.form == Form::Prop }
+    pub fn is_blob(self) -> bool { self.form() == Form::Blob }
+
+    pub fn is_block(self) -> bool { self.is_hull() || self.form() == Form::Prop }
+
+    pub fn is_irregular(self) -> bool { TERRAIN_DATA[self as usize].is_irregular }
 
     /// For constructing text maps.
-    pub fn preferred_map_chars(&self) -> &'static str {
-        match self.kind {
-            Kind::Ground => ".,_",
-            Kind::Corridor => "_.,",
-            Kind::Water => "~=",
-            Kind::Magma => "=~",
-            Kind::Window => "+",
-            Kind::Door => "|",
-            Kind::Block if self.is_wall() => "#%&$*",
-            Kind::Block if self.is_blob() => "*%&$#",
-            _ => "",
-        }
+    pub fn preferred_map_chars(self) -> &'static str {
+        &TERRAIN_DATA[self as usize].map_chars
     }
 }
 
-impl Loadable<u8> for Tile {}
-
-impl_store!(TILE_STORE, u8, Tile);
-
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, RustcEncodable, RustcDecodable)]
-#[repr(u8)]
-pub enum Id {
-    Empty = 0,
-    Gate,
-    Ground,
-    Grass,
-    Water,
-    Magma,
-    Tree,
-    Wall,
-    Rock,
-    Door,
-
-    // XXX: Corridor is more a mapgen nicety than a thing that actually needs to be separate.
-    Corridor,
-    // XXX: OpenDoor and Grass2 are variants of Door and Grass, they shouldn't be in a set
-    // where you pick terrains to paint from for example.
-    OpenDoor,
-    Grass2,
-    // XXX: The ENUM_MAX pattern isn't very rustic, better idiom to iterate the terrain set?
-    _MaxTerrain,
-}
-
-impl Id {
-    pub fn from_u8(id: u8) -> Option<Id> {
-        if id < Id::_MaxTerrain as u8 {
-            Some(unsafe { ::std::mem::transmute::<u8, Id>(id) })
-        } else {
-            None
-        }
-    }
-}
-
-impl FromStr for Id {
+impl FromStr for Terrain {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use self::Id::*;
-
-        for i in 0..(Id::_MaxTerrain as u8) {
-            let id = Id::from_u8(i).expect("Couldn't turn u8 to terrain::Id");
-            if &format!("{:?}", id) == s {
-                return Ok(id);
+        for t in Terrain::iter() {
+            if &format!("{:?}", t) == s {
+                return Ok(*t);
             }
         }
         Err(format!("Unknown terrain '{}'", s))
