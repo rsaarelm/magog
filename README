@@ -10,8 +10,6 @@ grid: Utilities for grid maps, especially hex maps
 
 layout: 2D geometric layout, rectangle type
 
-resource: Smart pointers for immutable resources
-
 system: Various utilities that tie into the underlying operating
 system
 

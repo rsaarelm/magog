@@ -3,6 +3,5 @@ members = [
     "calx-alg",
     "calx-color",
     "calx-grid",
-    "calx-resource",
     "calx-system",
 ]
