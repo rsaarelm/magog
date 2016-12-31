@@ -9,6 +9,4 @@ repository = "https://github.com/rsaarelm/vitral-atlas"
 
 [dependencies]
 euclid = "0.10"
-
-[dependencies.vitral]
-path = "../"
+vitral = { path = "../" }
