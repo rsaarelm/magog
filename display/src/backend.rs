@@ -3,9 +3,9 @@ use glium::glutin;
 use glium::index::PrimitiveType;
 use euclid::{Point2D, Size2D};
 use vitral;
-use calx_resource::Loadable;
 use canvas::Canvas;
 use canvas_zoom::CanvasZoom;
+use cache;
 
 pub type UI = vitral::Context<usize, Vertex>;
 
@@ -13,10 +13,6 @@ pub struct Context {
     pub ui: UI,
     pub backend: Backend,
 }
-
-pub struct Font(pub vitral::FontData<usize>);
-
-impl Loadable for Font {}
 
 pub type GliumTexture = glium::texture::SrgbTexture2d;
 
@@ -89,6 +85,20 @@ impl Backend {
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
         }
+    }
+
+    fn make_empty_texture(&mut self, display: &glium::Display, width: u32, height: u32) -> usize {
+        let tex = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
+        self.textures.push(tex);
+        self.textures.len() - 1
+    }
+
+    fn write_to_texture(&mut self, img: &vitral::ImageBuffer, texture: usize) {
+        assert!(texture < self.textures.len(), "Trying to write nonexistent texture");
+        let rect = glium::Rect { left: 0, bottom: 0, width: img.size.width, height: img.size.height };
+        let data = glium::texture::RawImage2d::from_raw_rgba(img.pixels.clone(),
+                                                             (img.size.width, img.size.height));
+        self.textures[texture].write(rect, data);
     }
 
     pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
@@ -167,6 +177,13 @@ impl Backend {
         let (w, h) = target.get_dimensions();
 
         for batch in context.end_frame() {
+            // With the atlas cache, it's possible to get texture IDs for very recent images in the
+            // render pipeline that don't have an actual GL texture associated with them yet.
+            // Intercept them here and skip drawing them.
+            if batch.texture >= self.textures.len() {
+                continue;
+            }
+
             // building the uniforms
             let uniforms = uniform! {
                 matrix: [
@@ -211,12 +228,27 @@ impl Backend {
         }
     }
 
+    fn refresh_atlas(&mut self, display: &glium::Display) {
+        cache::ATLAS.with(|a| {
+            for a in a.borrow_mut().atlases_mut() {
+                let idx = *a.texture();
+                assert!(idx <= self.textures.len());
+                if idx == self.textures.len() {
+                    self.make_empty_texture(display, a.size().width, a.size().height);
+                }
+
+                a.update_texture(|buf, &idx| self.write_to_texture(buf, idx));
+            }
+        });
+    }
+
     fn update_window_size(&mut self, display: &glium::Display) {
         let (w, h) = display.get_framebuffer_dimensions();
         self.window_size = Size2D::new(w, h);
     }
 
     pub fn update(&mut self, display: &glium::Display, context: &mut UI) -> bool {
+        self.refresh_atlas(display);
         self.update_window_size(display);
         self.render(display, context);
         self.canvas.draw(display, self.zoom);

@@ -1,6 +1,6 @@
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
-use components::{Brain, Desc, Health, MapMemory};
+use components::{Icon, Brain, Desc, Health, MapMemory};
 use world::{Component, Loadout};
 
 /// Forms are the prototypes for the entities you create.
@@ -26,7 +26,7 @@ impl Form {
     }
 
     /// Create a standard form for a living creature.
-    pub fn mob(name: &str, brush: &str, power: i32, intrinsics: &[Intrinsic]) -> Form {
+    pub fn mob(name: &str, brush: Icon, power: i32, intrinsics: &[Intrinsic]) -> Form {
         Form {
             rarity: 1.0,
             min_depth: 0,
@@ -71,9 +71,9 @@ impl Form {
 lazy_static! {
     pub static ref FORMS: Vec<Form> =
         vec![
-        Form::mob("player",     "player",     10, &[Hands]).rarity(0.0).player()
+        Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
             .c(MapMemory::new()),
-        Form::mob("dreg",       "dreg",       1,  &[Hands]),
-        Form::mob("snake",      "snake",      1,  &[]),
+        Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
+        Form::mob("snake",      Icon::Snake,      1,  &[]),
         ];
 }

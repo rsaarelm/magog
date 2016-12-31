@@ -2,219 +2,99 @@
 
 use std::str::FromStr;
 use std::collections::HashMap;
-use std::iter::FromIterator;
-use glium;
-use image::{self, GenericImage};
+use std::rc::Rc;
+use vec_map::VecMap;
 use euclid::Point2D;
-use vitral_atlas;
 use vitral;
 use calx_color::Rgba;
 use calx_color::color::*;
-use calx_resource::ResourceStore;
-use world::BrushBuilder;
-use backend::{Backend, Font};
+use brush::{Brush, Builder};
+use cache;
 
-impl_store!(FONT, String, Font);
+pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
+    use world::Terrain::*;
+    let mut ret = VecMap::new();
 
-fn to_image_buffer<I>(image: &I) -> vitral::ImageBuffer
-    where I: image::GenericImage<Pixel = image::Rgba<u8>>
-{
-    vitral::ImageBuffer::from_iter(image.width(),
-                                   image.height(),
-                                   &mut image.pixels().map(|p| unsafe {
-                                       ::std::mem::transmute::<image::Rgba<u8>, u32>(p.2)
-                                   }))
-}
-
-pub fn font(display: &glium::Display, backend: &mut Backend) {
-    use tilesheet::tilesheet_bounds;
-
-    const PATH: &'static str = "display/assets/font.png";
-
-    let mut font_sheet = image::open(PATH).expect(&format!("Font sheet '{}' not found", PATH));
-
-    // Use the tilesheet machinery to extract individual glyph boundaries from the special font
-    // tilesheet.
-    let bounds = tilesheet_bounds(&font_sheet);
-
-    // Construct Vitral ImageBuffers of the glyphs.
-    let glyphs: Vec<vitral::ImageBuffer> = bounds.iter()
-                                                 .map(|rect| {
-                                                     to_image_buffer(&font_sheet.sub_image(
-                rect.origin.x as u32, rect.origin.y as u32,
-                rect.size.width as u32, rect.size.height as u32))
-                                                 })
-                                                 .collect();
-
-    assert!(glyphs.len() == 96, "Unexpected number of font glyphs");
-    let font_height = glyphs[0].size.height;
-
-    // Build the font atlas and map the items to CharData.
-    let items = vitral_atlas::build(&glyphs, 2048, |img| backend.make_texture(display, img))
-                    .expect("Atlas construction failed")
-                    .into_iter()
-                    .map(|image| {
-                        let advance = image.size.width as f32;
-                        vitral::CharData {
-                            image: image,
-                            draw_offset: Point2D::new(0.0, font_height as f32),
-                            advance: advance,
-                        }
-                    })
-                    .collect::<Vec<vitral::CharData<usize>>>();
-
-    let font = Font(vitral::FontData {
-        chars: HashMap::from_iter((32u8..128).map(|c| c as char).zip(items.into_iter())),
-        height: font_height as f32,
-    });
-
-    Font::insert_resource("default".to_string(), font);
-}
-
-/// Init the static brush assets.
-pub fn brushes(display: &glium::Display, backend: &mut Backend) {
-    // FIXME: This API needs to be more ergonomic. In particular, need better syntactic cues for
-    // brush boundries.
-
-    BrushBuilder::new()
-        .file("display/assets/floors.png")
-        ////
-        .tile(0, 0)
-        .brush("Empty")
-        ////
-        .color(DARKGREEN)
-        .tile(32, 0)
-        .brush("Grass")
-        ////
-        .color(DARKGREEN)
-        .tile(64, 0)
-        .brush("Grass2")
-        ////
-        .color(SLATEGRAY)
-        .tile(32, 0)
-        .brush("Ground")
-        ////
-        .color(SLATEGRAY)
-        .tile(32, 0)
-        .brush("Corridor")
-        ////
-        .color(ROYALBLUE)
-        .tile(96, 0)
-        .brush("Water")
-        ////
-        .color(RED)
-        .tile(96, 0)
-        .brush("Magma")
-        ////
-        .file("display/assets/portals.png")
-        ////
+    ret.insert(Empty as usize, Builder::new("assets/floors.png").tile(0, 0).finish());
+    ret.insert(Gate as usize, Builder::new("assets/portals.png")
         .color(LIGHTCYAN)
-        .tile(0, 0)
-        .frame()
-        .tile(32, 0)
-        .frame()
-        .tile(64, 0)
-        .frame()
-        .tile(96, 0)
-        .frame()
-        .tile(128, 0)
-        .frame()
-        .tile(160, 0)
-        .frame()
-        .tile(192, 0)
-        .frame()
-        .tile(224, 0)
-        .frame()
-        .tile(256, 0)
-        .frame()
-        .tile(288, 0)
-        .frame()
-        .tile(320, 0)
-        .frame()
-        .tile(352, 0)
-        .frame()
-        .tile(384, 0)
-        .brush("Gate")
-        ////
-        .file("display/assets/props.png")
-        ////
-        .color(RED)
-        .tile(0, 0)
-        .brush("cursor")
-        .color(RED)
-        .tile(32, 0)
-        .brush("cursor_top")
-        .color(Rgba::from_str("#fa08").unwrap())
-        .tile(0, 0)
-        .brush("portal") // TODO: This thing is a temporary display helper for mapedit, maybe remove when can?
-        ////
-        .color(SADDLEBROWN)
-        .tile(160, 64)
-        .color(GREEN)
-        .tile(192, 64)
-        .brush("Tree")
-        ////
-        .file("display/assets/walls.png")
-        ////
-        .color(LIGHTSLATEGRAY)
-        .wall(0, 0, 32, 0)
-        .brush("Wall")
+        .tile(0, 0).merge()
+        .tile(32, 0).merge()
+        .tile(64, 0).merge()
+        .tile(96, 0).merge()
+        .tile(128, 0).merge()
+        .tile(160, 0).merge()
+        .tile(192, 0).merge()
+        .tile(224, 0).merge()
+        .tile(256, 0).merge()
+        .tile(288, 0).merge()
+        .tile(320, 0).merge()
+        .tile(352, 0).merge()
+        .tile(384, 0).finish());
+    ret.insert(Ground as usize, Builder::new("assets/floors.png").color(SLATEGRAY).tile(32, 0).finish());
+    ret.insert(Grass as usize, Builder::new("assets/floors.png").color(DARKGREEN).tile(32, 0).finish());
+    ret.insert(Water as usize, Builder::new("assets/floors.png").color(ROYALBLUE).tile(96, 0).finish());
+    ret.insert(Magma as usize, Builder::new("assets/floors.png").colors(YELLOW, DARKRED).tile(96, 0).finish());
+    ret.insert(Tree as usize, Builder::new("assets/props.png")
+        .color(SADDLEBROWN).tile(160, 64)
+        .color(GREEN).tile(192, 64).finish());
+    ret.insert(Wall as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 32, 0).finish());
+    ret.insert(Rock as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
+    ret.insert(Door as usize, Builder::new("assets/walls.png")
+               .color(SADDLEBROWN).wall(128, 0, 160, 0)
+               .color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
+    ret.insert(Corridor as usize, Builder::new("assets/floors.png").color(SLATEGRAY).tile(32, 0).finish());
+    ret.insert(OpenDoor as usize, Builder::new("assets/walls.png").color(SADDLEBROWN).wall(128, 0, 160, 0).finish());
+    ret.insert(Grass2 as usize, Builder::new("assets/floors.png").color(DARKGREEN).tile(64, 0).finish());
 
-        .color(LIGHTSLATEGRAY)
-        .wall(0, 0, 96, 0)
-        .brush("OpenDoor")
+    ret
+}
 
-        // XXX: Wall helper function doesn't handle complex splats.
-        //
-        .color(SADDLEBROWN)
-        .splat(128, 0, 16, 32).offset(16, 16)
-        .color(LIGHTSLATEGRAY)
-        .splat(0, 0, 16, 32).offset(16, 16)
+pub fn entity_brushes() -> VecMap<Rc<Brush>> {
+    use world::Icon::*;
+    let mut ret = VecMap::new();
 
-        .frame()
-        .color(SADDLEBROWN)
-        .splat(128 + 16, 0, 16, 32).offset(0, 16)
-        .color(LIGHTSLATEGRAY)
-        .splat(16, 0, 16, 32).offset(0, 16)
+    ret.insert(Player as usize, Builder::new("assets/mobs.png").color(AZURE).tile(0, 0).finish());
+    ret.insert(Snake as usize, Builder::new("assets/mobs.png").color(GREEN).tile(32, 0).finish());
+    ret.insert(Dreg as usize, Builder::new("assets/mobs.png").color(OLIVE).tile(64, 0).finish());
 
-        .frame()
-        .color(SADDLEBROWN)
-        .splat(160, 0, 16, 32).offset(16, 16)
-        .color(LIGHTSLATEGRAY)
-        .splat(96, 0, 16, 32).offset(16, 16)
+    ret
+}
 
-        .frame()
-        .color(SADDLEBROWN)
-        .splat(160 + 16, 0, 16, 32).offset(0, 16)
-        .color(LIGHTSLATEGRAY)
-        .splat(96 + 16, 0, 16, 32).offset(0, 16)
+pub fn misc_brushes() -> VecMap<Rc<Brush>> {
+    use Icon::*;
+    let mut ret = VecMap::new();
 
-        .brush("Door")
-        // Door finally ends here.
+    ret.insert(SolidBlob as usize, Builder::new("assets/blobs.png").blob(0, 64, 0, 96, 0, 128).finish());
+    ret.insert(CursorTop as usize, Builder::new("assets/props.png").color(RED).tile(32, 0).finish());
+    ret.insert(CursorBottom as usize, Builder::new("assets/props.png").color(RED).tile(0, 0).finish());
+    ret.insert(Portal as usize, Builder::new("assets/props.png").color(Rgba::from_str("#fa08").unwrap()).tile(0, 0).finish());
 
-        ////
-        .file("display/assets/blobs.png")
-        ////
-        .color(BLACK)
-        .blob(0, 64, 0, 96, 0, 128)
-        .brush("solid-blob")
-        .color(DARKGOLDENROD)
-        .blob(0, 0, 0, 32, 0, 160)
-        .brush("Rock")
-        ////
-        .file("display/assets/mobs.png")
-        .color(AZURE)
-        .tile(0, 0)
-        .bob()
-        .brush("player")
-        .color(GREEN)
-        .tile(32, 0)
-        .bob()
-        .brush("snake")
-        .color(OLIVE)
-        .tile(64, 0)
-        .bob()
-        .brush("dreg")
-        ////
-        .finish(|img| backend.make_texture(&display, img));
+    ret
+}
+
+pub fn font<I: Iterator<Item=char>>(name: String, data: &[u8], span: I) -> vitral::FontData<usize> {
+    let glyphs = cache::ATLAS.with(|a| a.borrow_mut().load_tilesheet(name, data).unwrap());
+
+    let mut glyphs = glyphs.into_iter().map(|i|
+                                            vitral::CharData {
+                                                image: cache::get(&i),
+                                                draw_offset: Point2D::new(0.0, 0.0),
+                                                advance: i.bounds.size.width as f32
+                                                }).collect::<Vec<_>>();
+
+    assert!(!glyphs.is_empty());
+    let font_height = glyphs[0].image.size.height as f32;
+
+    glyphs.reverse();
+
+    let mut chars = HashMap::new();
+    for c in span {
+        chars.insert(c, glyphs.pop().expect("Not enough glyphs in font sheet for all chars"));
+    }
+
+    vitral::FontData {
+        chars: chars,
+        height: font_height,
+    }
 }

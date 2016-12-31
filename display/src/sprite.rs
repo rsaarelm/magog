@@ -1,16 +1,16 @@
+use std::rc::Rc;
 use std::cmp::Ordering;
 use euclid::Point2D;
-use calx_resource::Resource;
-use world::Brush;
 use backend;
 use render::Layer;
+use brush::Brush;
 
 /// Drawable display element.
 ///
 /// Sprites are basically a way to defer somewhat complex draw instructions. The reason they exist
 /// is that scene draw order is not necessarily trivially reflectable in scene data traversal, so
 /// emitting sprites and then sorting them is the simplest way to go ahead.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub struct Sprite {
     pub layer: Layer,
     // XXX: Not using Point2D<f32> because floats don't have Ord.
@@ -18,9 +18,11 @@ pub struct Sprite {
 
     // TODO: Replace this with a generic "Drawable" trait object once we start having other things
     // than frames as sprites.
-    pub brush: Resource<Brush>,
+    pub brush: Rc<Brush>,
     pub frame_idx: usize,
 }
+
+impl Eq for Sprite {}
 
 impl Ord for Sprite {
     fn cmp(&self, other: &Self) -> Ordering {

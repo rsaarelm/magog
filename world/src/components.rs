@@ -1,30 +1,36 @@
-use calx_resource::Resource;
 use item::ItemType;
 use ability::Ability;
 use stats::Stats;
 use location::Location;
 use location_set::LocationSet;
-use brush::Brush;
 use FovStatus;
+
+/// The visual representation for an entity
+///
+/// How this is interpreted depends on the frontend module.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, RustcEncodable, RustcDecodable)]
+pub enum Icon {
+    Player,
+    Snake,
+    Dreg,
+}
 
 /// Entity name and appearance.
 #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
 pub struct Desc {
     pub name: String,
-    pub brush: Resource<Brush>,
+    pub icon: Icon,
 }
 
 impl Desc {
-    pub fn new(name: &str, brush: &str) -> Desc {
-        let brush = Resource::new(brush.to_string())
-                        .expect(&format!("Brush '{}' not found", brush));
+    pub fn new(name: &str, icon: Icon) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned
         // &str instead of a String, I just want to get away from typing
         // .to_string() everywhere with the calls that mostly use string
         // literals.
         Desc {
             name: name.to_string(),
-            brush: brush,
+            icon: icon,
         }
     }
 }

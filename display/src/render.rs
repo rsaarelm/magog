@@ -1,9 +1,11 @@
 //! Game world display utilities.
 
-use calx_resource::Resource;
+use std::rc::Rc;
 use calx_grid::{Dir12, Dir6};
-use world::{Brush, Location, World, Query};
-use world::{TerrainQuery, Terrain, terrain};
+use world::{Location, World, Query, TerrainQuery, Terrain, terrain};
+use brush::Brush;
+use cache;
+use Icon;
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
@@ -53,8 +55,8 @@ pub enum Layer {
     Text,
 }
 
-fn blobform<F>(kernel: &Kernel, brush: &Resource<Brush>, is_solid: bool, draw: &mut F)
-    where F: FnMut(Layer, Angle, &Resource<Brush>, usize)
+fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
+    where F: FnMut(Layer, Angle, &Rc<Brush>, usize)
 {
     use self::Angle::*;
     // This part gets a little tricky. Basic idea is that there's an inner pointy-top
@@ -189,16 +191,13 @@ fn blobform<F>(kernel: &Kernel, brush: &Resource<Brush>, is_solid: bool, draw: &
 }
 
 pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
-    where F: FnMut(Layer, Angle, &Resource<Brush>, usize)
+    where F: FnMut(Layer, Angle, &Rc<Brush>, usize)
 {
     use self::Angle::*;
 
     let terrain = w.visual_terrain(loc);
     let kernel = Kernel::new(w, loc);
-
-    // TODO: Temp measure while moving away from Resource system, replace with display-local
-    // terrain brush cache indexed by terrain enum as usize.
-    let brush = Resource::new(format!("{:?}", terrain)).unwrap();
+    let brush = cache::terrain(terrain);
 
     match terrain.form() {
         terrain::Form::Void | terrain::Form::Floor => {
@@ -215,10 +214,8 @@ pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
             draw(Layer::Object, South, &brush, 0);
         }
         terrain::Form::Blob => {
-            // XXX: Expensive initialization, needs to be cached somewhere.
-            //
             // Draw the solid blob first to block out other stuff.
-            let solid = Resource::new("solid-blob".to_string()).unwrap();
+            let solid = cache::misc(Icon::SolidBlob);
             blobform(&kernel, &solid, true, &mut draw);
             // Then draw the decoration with the actual brush.
             blobform(&kernel, &brush, false, &mut draw);

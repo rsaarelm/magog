@@ -22,7 +22,6 @@ rustc-serialize = "0.3"
 calx-ecs = "0.3"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }
-calx-resource = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }
 calx-alg = { git = "https://github.com/rsaarelm/calx" }
 world = { path = "world" }

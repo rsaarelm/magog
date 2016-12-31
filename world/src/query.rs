@@ -1,11 +1,9 @@
 use std::iter::FromIterator;
 use calx_grid::Dir6;
 use calx_ecs::Entity;
-use calx_resource::Resource;
-use components::{Alignment, BrainState};
+use components::{Alignment, BrainState, Icon};
 use stats::Intrinsic;
 use location::Location;
-use brush::Brush;
 use stats;
 use FovStatus;
 use terraform::TerrainQuery;
@@ -79,8 +77,8 @@ pub trait Query: TerrainQuery {
     }
 
     /// Return visual brush for an entity.
-    fn entity_brush(&self, e: Entity) -> Option<Resource<Brush>> {
-        self.ecs().desc.get(e).map(|x| x.brush.clone())
+    fn entity_icon(&self, e: Entity) -> Option<Icon> {
+        self.ecs().desc.get(e).map(|x| x.icon)
     }
 
     /// Return the (composite) stats for an entity.

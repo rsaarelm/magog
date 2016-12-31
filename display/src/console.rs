@@ -4,7 +4,6 @@ use std::str;
 use std::mem;
 use time;
 use euclid::{Point2D, Rect};
-use calx_resource::Resource;
 use calx_alg::split_line;
 use backend;
 
@@ -44,6 +43,8 @@ impl Console {
 
     /// Draw the console as a regular message display.
     pub fn draw_small(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
+        // TODO: reactivate
+        /*
         // TODO: Store default font in context object
         let font: Resource<backend::Font> = Resource::new("default".to_string()).unwrap();
         // TODO: Ditto for color
@@ -65,10 +66,13 @@ impl Console {
                 y -= font.0.height;
             }
         }
+        */
     }
 
     /// Draw the console as a big drop-down with a command prompt.
     pub fn draw_large(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
+        // TODO: reactivate
+        /*
         // TODO: Store default font in context object
         let font: Resource<backend::Font> = Resource::new("default".to_string()).unwrap();
         // TODO: Ditto for color
@@ -104,6 +108,7 @@ impl Console {
                 break;
             }
         }
+        */
     }
 
     fn end_message(&mut self) {

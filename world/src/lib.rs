@@ -3,34 +3,28 @@ extern crate rand;
 extern crate bincode;
 extern crate rustc_serialize;
 extern crate vec_map;
-extern crate image;
 extern crate euclid;
 #[macro_use]
 extern crate lazy_static;
 extern crate toml;
 #[macro_use]
 extern crate error_chain;
-extern crate vitral;
-extern crate vitral_atlas;
 extern crate calx_alg;
 extern crate calx_grid;
 extern crate calx_color;
 #[macro_use]
 extern crate calx_ecs;
-#[macro_use]
-extern crate calx_resource;
 
 use euclid::Point2D;
 
 mod ability;
 
-mod brush;
-pub use brush::{Brush, BrushBuilder, Color, Frame, ImageRef, Splat};
-
 mod command;
 pub use command::Command;
 
 mod components;
+pub use components::Icon;
+
 mod field;
 mod flags;
 

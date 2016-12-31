@@ -7,8 +7,6 @@ extern crate scancode;
 #[macro_use]
 extern crate calx_alg;
 extern crate calx_color;
-#[macro_use]
-extern crate calx_resource;
 extern crate calx_ecs;
 extern crate calx_grid;
 extern crate world;
@@ -30,10 +28,6 @@ pub fn main() {
                       .unwrap();
 
     let mut backend = display::Backend::new(&display, 640, 480);
-
-    // Initialize game resources.
-    ::display::init::brushes(&display, &mut backend);
-    ::display::init::font(&display, &mut backend);
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),

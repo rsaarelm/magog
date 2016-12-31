@@ -4,7 +4,6 @@ extern crate glium;
 extern crate scancode;
 extern crate vitral;
 extern crate calx_grid;
-extern crate calx_resource;
 #[macro_use]
 extern crate calx_alg;
 extern crate world;
@@ -29,10 +28,6 @@ pub fn main() {
     let mut backend = display::Backend::new(&glium,
                                             screen_area.size.width as u32,
                                             screen_area.size.height as u32);
-
-    // Initialize game resources.
-    ::display::init::brushes(&glium, &mut backend);
-    ::display::init::font(&glium, &mut backend);
 
     let mut context = display::Context {
         ui: vitral::Builder::new().build(|img| backend.make_texture(&glium, img)),

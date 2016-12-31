@@ -2,11 +2,12 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use euclid::{Point2D, Rect};
 use calx_grid::{Dir6, FovValue, HexFov};
-use calx_resource::Resource;
 use world::{self, FovStatus, Location, Query, TerrainQuery, World};
 use sprite::Sprite;
 use render::{self, Layer};
 use backend;
+use cache;
+use Icon;
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
@@ -105,7 +106,7 @@ impl WorldView {
                     sprites.push(Sprite {
                         layer: layer,
                         offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: desc.brush.clone(),
+                        brush: cache::entity(desc.icon),
                         frame_idx: frame_idx,
                     });
                 }
@@ -118,14 +119,14 @@ impl WorldView {
                             sprites.push(Sprite {
                                 layer: Layer::Effect,
                                 offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: Resource::new("portal".to_string()).unwrap(),
+                                brush: cache::misc(Icon::Portal),
                                 frame_idx: 0,
                             });
                         } else {
                             sprites.push(Sprite {
                                 layer: Layer::Effect,
                                 offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: Resource::new("cursor".to_string()).unwrap(),
+                                brush: cache::misc(Icon::CursorBottom),
                                 frame_idx: 0,
                             });
                         }
@@ -145,13 +146,13 @@ impl WorldView {
                 sprites.push(Sprite {
                     layer: Layer::Decal,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: Resource::new("cursor".to_string()).unwrap(),
+                    brush: cache::misc(Icon::CursorBottom),
                     frame_idx: 0,
                 });
                 sprites.push(Sprite {
                     layer: Layer::Effect,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: Resource::new("cursor_top".to_string()).unwrap(),
+                    brush: cache::misc(Icon::CursorTop),
                     frame_idx: 0,
                 });
             }

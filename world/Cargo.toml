@@ -12,16 +12,12 @@ num = "0.1"
 rand = "0.3"
 vec_map = "0.6"
 bincode = "0.6"
-image = "0.10"
 euclid = "0.10"
 lazy_static = "0.2"
 rustc-serialize = "0.3"
 calx-ecs = "0.3"
 toml = "0.2"
 error-chain = "0.7"
-vitral = { git = "https://github.com/rsaarelm/vitral" }
-vitral-atlas = { git = "https://github.com/rsaarelm/vitral" }
 calx-alg = { git = "https://github.com/rsaarelm/calx" }
-calx-resource = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }

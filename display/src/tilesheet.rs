@@ -11,7 +11,7 @@ use euclid::{Point2D, Rect, Size2D};
 ///
 /// Note that the background color is a solid color, not transparent pixels. The inner tiles may
 /// have transparent parts, so a solid color is needed to separate them.
-pub fn tilesheet_bounds<I>(image: &I) -> Vec<Rect<i32>>
+pub fn bounds<I>(image: &I) -> Vec<Rect<u32>>
     where I: GenericImage,
           I::Pixel: PartialEq
 {
@@ -35,7 +35,7 @@ pub fn tilesheet_bounds<I>(image: &I) -> Vec<Rect<i32>>
     }
 
     ret.sort_by(|a, b| rect_key(a).cmp(&rect_key(b)));
-    return ret;
+    return ret.into_iter().map(|r| r.cast::<u32>().unwrap()).collect();
 
     fn rect_key(x: &Rect<i32>) -> (i32, i32) { (x.bottom_right().y, x.bottom_right().x) }
 }
