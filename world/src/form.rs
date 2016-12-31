@@ -3,14 +3,6 @@ use stats::Intrinsic::*;
 use components::{Brain, Desc, Health, MapMemory};
 use world::{Component, Loadout};
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum Forms {
-    Player,
-    Dreg,
-    Snake,
-    Ooze,
-}
-
 /// Forms are the prototypes for the entities you create.
 #[derive(Clone, Debug)]
 pub struct Form {
