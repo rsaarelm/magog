@@ -14,14 +14,14 @@ thread_local! {
         let mut ret = AtlasCache::new(1024, 2);
         // XXX: Boilerplatey, would probably need a macro to clean this up, because include_bytes!
         // must resolve at compile time.
-        ret.load_tilesheet("assets/blobs.png".to_string(), include_bytes!("../assets/blobs.png")).expect("Error loading blobs.png");
-        ret.load_tilesheet("assets/floors.png".to_string(), include_bytes!("../assets/floors.png")).expect("Error loading floors.png");
-        ret.load_tilesheet("assets/logo.png".to_string(), include_bytes!("../assets/logo.png")).expect("Error loading logo.png");
-        ret.load_tilesheet("assets/mobs.png".to_string(), include_bytes!("../assets/mobs.png")).expect("Error loading mobs.png");
-        ret.load_tilesheet("assets/portals.png".to_string(), include_bytes!("../assets/portals.png")).expect("Error loading portals.png");
-        ret.load_tilesheet("assets/props.png".to_string(), include_bytes!("../assets/props.png")).expect("Error loading props.png");
-        ret.load_tilesheet("assets/splatter.png".to_string(), include_bytes!("../assets/splatter.png")).expect("Error loading splatter.png");
-        ret.load_tilesheet("assets/walls.png".to_string(), include_bytes!("../assets/walls.png")).expect("Error loading walls.png");
+        ret.load_png("assets/blobs.png".to_string(), include_bytes!("../assets/blobs.png")).expect("Error loading blobs.png");
+        ret.load_png("assets/floors.png".to_string(), include_bytes!("../assets/floors.png")).expect("Error loading floors.png");
+        ret.load_png("assets/logo.png".to_string(), include_bytes!("../assets/logo.png")).expect("Error loading logo.png");
+        ret.load_png("assets/mobs.png".to_string(), include_bytes!("../assets/mobs.png")).expect("Error loading mobs.png");
+        ret.load_png("assets/portals.png".to_string(), include_bytes!("../assets/portals.png")).expect("Error loading portals.png");
+        ret.load_png("assets/props.png".to_string(), include_bytes!("../assets/props.png")).expect("Error loading props.png");
+        ret.load_png("assets/splatter.png".to_string(), include_bytes!("../assets/splatter.png")).expect("Error loading splatter.png");
+        ret.load_png("assets/walls.png".to_string(), include_bytes!("../assets/walls.png")).expect("Error loading walls.png");
         RefCell::new(ret)
     };
 

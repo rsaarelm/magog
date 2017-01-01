@@ -95,7 +95,7 @@ impl AtlasCache {
 
     /// Load PNG from bytes to use in image specs.
     pub fn load_png(&mut self, name: String, data: &[u8]) -> Result<(), image::ImageError> {
-        let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;;
+        let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
         self.image_sheets.insert(name, convert_image(img));
         Ok(())
     }
@@ -106,7 +106,7 @@ impl AtlasCache {
         name: String,
         data: &[u8]
     ) -> Result<Vec<SubImageSpec>, image::ImageError> {
-        let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;;
+        let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
         let ret = tilesheet::bounds(&img)
                       .into_iter()
                       .map(|r| {
