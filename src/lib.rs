@@ -8,6 +8,14 @@ use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
 use euclid::{TypedPoint2D, TypedRect, TypedSize2D};
 
+/// Drawable image data for Vitral.
+#[derive(Clone, PartialEq)]
+pub struct ImageData<T> {
+    pub texture: T,
+    pub size: Size2D<u32>,
+    pub tex_coords: Rect<f32>,
+}
+
 /// Simple 32-bit image container.
 ///
 /// The pixel data structure is RGBA.
@@ -27,13 +35,6 @@ impl ImageBuffer {
             pixels: iter::repeat(0u32).take((width * height) as usize).collect(),
         }
 
-    }
-
-    fn blank() -> ImageBuffer {
-        ImageBuffer {
-            size: Size2D::new(1, 1),
-            pixels: vec![0xffffffff],
-        }
     }
 
     /// Build the buffer from a function.
@@ -177,7 +178,7 @@ impl<T> Builder<T>
             solid = user_solid;
         } else {
             solid = ImageData {
-                texture: make_t(ImageBuffer::blank()),
+                texture: make_t(ImageBuffer::from_fn(1, 1, |_, _| 0xffffffff)),
                 size: Size2D::new(1, 1),
                 tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
             };
@@ -247,7 +248,7 @@ impl<T, V> State<T, V>
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
     #[inline(always)]
-    fn push_vertex(&mut self, vtx: V) -> u16 {
+    pub fn push_vertex(&mut self, vtx: V) -> u16 {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
@@ -256,7 +257,7 @@ impl<T, V> State<T, V>
     }
 
     #[inline(always)]
-    fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
+    pub fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         batch.triangle_indices.push(i1);
@@ -286,7 +287,7 @@ impl<T, V> State<T, V>
         }
     }
 
-    fn start_solid_texture(&mut self) {
+    pub fn start_solid_texture(&mut self) {
         let t = self.solid_texture.texture.clone();
         self.start_texture(t);
     }
@@ -295,8 +296,7 @@ impl<T, V> State<T, V>
         self.solid_texture.tex_coords.origin
     }
 
-    /// Ensure that there current draw batch has solid texture.
-    fn start_texture(&mut self, texture: T) {
+    pub fn start_texture(&mut self, texture: T) {
         self.check_batch(Some(texture));
     }
 
@@ -375,10 +375,6 @@ pub trait Context: Sized {
     /// Return reference to the currently active font.
     fn current_font<'a>(&'a mut self) -> Rc<FontData<Self::T>> {
         self.state().default_font.clone()
-    }
-
-    fn push_raw_vertex(&mut self, vertex: Self::V) -> u16 {
-        self.state_mut().push_vertex(vertex)
     }
 
     fn push_vertex<U: ConvertibleUnit>(&mut self,
@@ -874,14 +870,6 @@ pub struct CharData<T> {
     pub image: ImageData<T>,
     pub draw_offset: Point2D<f32>,
     pub advance: f32,
-}
-
-/// Drawable image data for Vitral.
-#[derive(Clone, PartialEq)]
-pub struct ImageData<T> {
-    pub texture: T,
-    pub size: Size2D<u32>,
-    pub tex_coords: Rect<f32>,
 }
 
 /// Action on a GUI button.
