@@ -8,7 +8,9 @@ use std::rc::Rc;
 use euclid::{Point2D, Rect, Size2D};
 use euclid::{TypedPoint2D, TypedRect, TypedSize2D};
 
-/// Image buffer.
+/// Simple 32-bit image container.
+///
+/// The pixel data structure is RGBA.
 #[derive(Clone)]
 pub struct ImageBuffer {
     /// Image size.
@@ -78,6 +80,7 @@ impl ImageBuffer {
     }
 }
 
+/// Builder for Vitral `State` structure.
 pub struct Builder<T> {
     user_font: Option<Rc<FontData<T>>>,
     user_solid: Option<ImageData<T>>,
@@ -155,6 +158,10 @@ impl<T> Builder<T>
     }
 
     /// Construct an interface context instance.
+    ///
+    /// Needs to be provided a texture creation function. If the user has not specified them
+    /// earlier, this will be used to construct a separate texture for the solid color and a
+    /// default font texture.
     pub fn build<F, V>(self, screen_size: Size2D<f32>, mut make_t: F) -> State<T, V>
         where F: FnMut(ImageBuffer) -> T
     {
@@ -341,6 +348,7 @@ impl<T, V> State<T, V>
     }
 }
 
+/// Command interface for a Vitral GUI.
 pub trait Context: Sized {
     type T: Clone + Eq;
     type V;
@@ -743,6 +751,7 @@ pub enum Align {
     Right,
 }
 
+/// Mouse button identifier.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum MouseButton {
     Left,
@@ -750,6 +759,7 @@ pub enum MouseButton {
     Right,
 }
 
+/// Mouse click state.
 #[derive(Copy, Clone, PartialEq, Debug)]
 enum ClickState {
     Unpressed,
@@ -804,6 +814,7 @@ impl ClickState {
     }
 }
 
+/// Identifiers for nonprintable keys used in text editing widgets.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Keycode {
     Tab,
@@ -873,6 +884,7 @@ pub struct ImageData<T> {
     pub tex_coords: Rect<f32>,
 }
 
+/// Action on a GUI button.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum ButtonAction {
     Inert,
@@ -944,6 +956,11 @@ impl ConvertibleUnit for ProportionalUnit {
     }
 }
 
+/// Alias for proportional unit point type.
 pub type PropPoint2D = TypedPoint2D<f32, ProportionalUnit>;
+
+/// Alias for proportional unit size type.
 pub type PropSize2D = TypedSize2D<f32, ProportionalUnit>;
+
+/// Alias for proportional unit rectangle type.
 pub type PropRect = TypedRect<f32, ProportionalUnit>;
