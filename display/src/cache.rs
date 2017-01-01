@@ -4,7 +4,7 @@ use vec_map::VecMap;
 use atlas_cache::{AtlasCache, SubImageSpec};
 use world;
 use brush::Brush;
-use vitral;
+use vitral::{self, ImageBuffer};
 use init;
 use Icon;
 
@@ -22,6 +22,7 @@ thread_local! {
         ret.load_png("assets/props.png".to_string(), include_bytes!("../assets/props.png")).expect("Error loading props.png");
         ret.load_png("assets/splatter.png".to_string(), include_bytes!("../assets/splatter.png")).expect("Error loading splatter.png");
         ret.load_png("assets/walls.png".to_string(), include_bytes!("../assets/walls.png")).expect("Error loading walls.png");
+        ret.add_sheet("solid".to_string(), ImageBuffer::from_fn(1, 1, |_, _| 0xffffffff));
         RefCell::new(ret)
     };
 
@@ -50,6 +51,11 @@ pub fn entity(e: world::Icon) -> Rc<Brush> {
 
 pub fn misc(e: Icon) -> Rc<Brush> {
     MISC_BRUSHES.with(|b| b.get(e as usize).expect(&format!("No brush for icon {:?}", e)).clone())
+}
+
+/// Return the single solid pixel texture for Vitral's graphics.
+pub fn solid() -> vitral::ImageData<usize> {
+    ATLAS.with(|a| a.borrow_mut().get(&SubImageSpec::new("solid", 0, 0, 1, 1)).clone())
 }
 
 pub fn font() -> Rc<vitral::FontData<usize>> { FONT.with(|f| f.clone()) }

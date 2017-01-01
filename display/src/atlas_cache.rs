@@ -2,16 +2,26 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::slice;
 use std::hash::{Hash, Hasher};
-use euclid::{Rect, Size2D};
+use euclid::{Point2D, Rect, Size2D};
 use image::{self, GenericImage};
 use vitral::{self, ImageBuffer};
 use vitral_atlas::Atlas;
 use tilesheet;
 
+/// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SubImageSpec {
     pub sheet_name: String,
     pub bounds: Rect<u32>,
+}
+
+impl SubImageSpec {
+    pub fn new(name: &str, x: u32, y: u32, width: u32, height: u32) -> SubImageSpec {
+        SubImageSpec {
+            sheet_name: name.to_string(),
+            bounds: Rect::new(Point2D::new(x, y), Size2D::new(width, height)),
+        }
+    }
 }
 
 impl Hash for SubImageSpec {
@@ -93,10 +103,14 @@ impl AtlasCache {
         self.next_index += 1;
     }
 
+    pub fn add_sheet(&mut self, name: String, sheet: ImageBuffer) {
+        self.image_sheets.insert(name, sheet);
+    }
+
     /// Load PNG from bytes to use in image specs.
     pub fn load_png(&mut self, name: String, data: &[u8]) -> Result<(), image::ImageError> {
         let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
-        self.image_sheets.insert(name, convert_image(img));
+        self.add_sheet(name, convert_image(img));
         Ok(())
     }
 
@@ -116,8 +130,7 @@ impl AtlasCache {
                           }
                       })
                       .collect();
-        let buf = convert_image(img);
-        self.image_sheets.insert(name, buf);
+        self.add_sheet(name, convert_image(img));
         Ok(ret)
     }
 }
