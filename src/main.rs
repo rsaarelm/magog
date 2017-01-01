@@ -15,7 +15,8 @@ use std::fs::File;
 use rand::{SeedableRng, XorShiftRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
-use world::{Location, World, mapgen, Mutate};
+use vitral::Context;
+use world::{Location, Mutate, World, mapgen};
 use game_view::View;
 
 pub fn main() {
@@ -29,11 +30,6 @@ pub fn main() {
                                             screen_area.size.width as u32,
                                             screen_area.size.height as u32);
 
-    let mut context = display::Context {
-        ui: vitral::Builder::new().build(|img| backend.make_texture(&glium, img)),
-        backend: backend,
-    };
-
     let seed = 1;
 
     let mut world = World::new(seed);
@@ -45,11 +41,9 @@ pub fn main() {
     let mut view = View::new(world);
 
     loop {
-        context.ui.begin_frame();
-
-        view.draw(&mut context, &screen_area);
-
-        if !context.backend.update(&glium, &mut context.ui) {
+        backend.begin_frame();
+        view.draw(&mut backend, &screen_area);
+        if !backend.update(&glium) {
             return;
         }
     }

@@ -18,6 +18,7 @@ pub mod mapedit_mod;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
+use vitral::Context;
 use world::World;
 use mapedit_mod::View;
 
@@ -29,22 +30,17 @@ pub fn main() {
 
     let mut backend = display::Backend::new(&display, 640, 480);
 
-    let mut context = display::Context {
-        ui: vitral::Builder::new().build(|img| backend.make_texture(&display, img)),
-        backend: backend,
-    };
-
     // Initialize worldstate
     let mut view = View::new(World::new(1));
 
     // Run game.
     loop {
-        context.ui.begin_frame();
+        backend.begin_frame();
 
         let area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0, 360.0));
-        view.draw(&mut context, &area);
+        view.draw(&mut backend, &area);
 
-        if !context.backend.update(&display, &mut context.ui) {
+        if !backend.update(&display) {
             return;
         }
     }

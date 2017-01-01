@@ -1,20 +1,23 @@
 use glium::{self, Surface};
 use glium::glutin;
 use glium::index::PrimitiveType;
-use euclid::{Point2D, Size2D};
-use vitral;
+use euclid::{Point2D, Rect, Size2D, TypedPoint2D};
+use vitral::{self, Context};
 use canvas::Canvas;
 use canvas_zoom::CanvasZoom;
 use cache;
 
-pub type UI = vitral::Context<usize, Vertex>;
-
-pub struct Context {
-    pub ui: UI,
-    pub backend: Backend,
-}
-
 pub type GliumTexture = glium::texture::SrgbTexture2d;
+
+pub trait MagogContext: Context {
+    fn draw_image_2color<U>(
+        &mut self,
+        image: &vitral::ImageData<usize>,
+        pos: TypedPoint2D<f32, U>,
+        color: [f32; 4],
+        back_color: [f32; 4]
+    ) where U: vitral::ConvertibleUnit;
+}
 
 pub struct Backend {
     program: glium::Program,
@@ -25,6 +28,8 @@ pub struct Backend {
     canvas: Canvas,
     zoom: CanvasZoom,
     window_size: Size2D<u32>,
+
+    ui_state: vitral::State<usize, Vertex>,
 }
 
 impl Backend {
@@ -76,14 +81,24 @@ impl Backend {
 
         let (w, h) = display.get_framebuffer_dimensions();
 
+        let mut textures = Vec::new();
+
+        let state = vitral::Builder::new()
+                        .default_font(cache::font())
+                        .solid_texture(cache::solid())
+                        .build(Size2D::new(width as f32, height as f32),
+                               |img| Self::make_texture(&mut textures, display, img));
+
         Backend {
             program: program,
-            textures: Vec::new(),
+            textures: textures,
 
             keypress: Vec::new(),
             canvas: Canvas::new(display, width, height),
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
+
+            ui_state: state,
         }
     }
 
@@ -94,22 +109,32 @@ impl Backend {
     }
 
     fn write_to_texture(&mut self, img: &vitral::ImageBuffer, texture: usize) {
-        assert!(texture < self.textures.len(), "Trying to write nonexistent texture");
-        let rect = glium::Rect { left: 0, bottom: 0, width: img.size.width, height: img.size.height };
+        assert!(texture < self.textures.len(),
+                "Trying to write nonexistent texture");
+        let rect = glium::Rect {
+            left: 0,
+            bottom: 0,
+            width: img.size.width,
+            height: img.size.height,
+        };
         let data = glium::texture::RawImage2d::from_raw_rgba(img.pixels.clone(),
                                                              (img.size.width, img.size.height));
         self.textures[texture].write(rect, data);
     }
 
-    pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
+    fn make_texture(
+        textures: &mut Vec<GliumTexture>,
+        display: &glium::Display,
+        img: vitral::ImageBuffer
+    ) -> usize {
         let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels,
                                                             (img.size.width, img.size.height));
         let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
-        self.textures.push(tex);
-        self.textures.len() - 1
+        textures.push(tex);
+        textures.len() - 1
     }
 
-    fn process_events(&mut self, display: &glium::Display, context: &mut UI) -> bool {
+    fn process_events(&mut self, display: &glium::Display) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
@@ -120,21 +145,21 @@ impl Backend {
                     let pos = self.zoom.screen_to_canvas(self.window_size,
                                                          self.canvas.size(),
                                                          Point2D::new(x as f32, y as f32));
-                    context.input_mouse_move(pos.x as i32, pos.y as i32);
+                    self.input_mouse_move(pos.x as i32, pos.y as i32);
                 }
                 glutin::Event::MouseInput(state, button) => {
-                    context.input_mouse_button(match button {
-                                                   glutin::MouseButton::Left => {
-                                                       vitral::MouseButton::Left
-                                                   }
-                                                   glutin::MouseButton::Right => {
-                                                       vitral::MouseButton::Right
-                                                   }
-                                                   _ => vitral::MouseButton::Middle,
-                                               },
-                                               state == glutin::ElementState::Pressed)
+                    self.input_mouse_button(match button {
+                                                glutin::MouseButton::Left => {
+                                                    vitral::MouseButton::Left
+                                                }
+                                                glutin::MouseButton::Right => {
+                                                    vitral::MouseButton::Right
+                                                }
+                                                _ => vitral::MouseButton::Middle,
+                                            },
+                                            state == glutin::ElementState::Pressed)
                 }
-                glutin::Event::ReceivedCharacter(c) => context.input_char(c),
+                glutin::Event::ReceivedCharacter(c) => self.input_char(c),
                 glutin::Event::KeyboardInput(s, scancode, Some(vk)) => {
                     let is_down = s == glutin::ElementState::Pressed;
 
@@ -159,7 +184,7 @@ impl Backend {
                         Numpad6 | Right => Some(vitral::Keycode::Right),
                         _ => None,
                     } {
-                        context.input_key_state(vk, is_down);
+                        self.input_key_state(vk, is_down);
                     }
                 }
                 _ => (),
@@ -171,12 +196,13 @@ impl Backend {
 
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
-    pub fn render(&mut self, display: &glium::Display, context: &mut UI) {
+    pub fn render(&mut self, display: &glium::Display) {
+        let batches = self.end_frame();
         let mut target = self.canvas.get_framebuffer_target(display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
-        for batch in context.end_frame() {
+        for batch in batches {
             // With the atlas cache, it's possible to get texture IDs for very recent images in the
             // render pipeline that don't have an actual GL texture associated with them yet.
             // Intercept them here and skip drawing them.
@@ -247,17 +273,17 @@ impl Backend {
         self.window_size = Size2D::new(w, h);
     }
 
-    pub fn update(&mut self, display: &glium::Display, context: &mut UI) -> bool {
+    pub fn update(&mut self, display: &glium::Display) -> bool {
         self.refresh_atlas(display);
         self.update_window_size(display);
-        self.render(display, context);
+        self.render(display);
         self.canvas.draw(display, self.zoom);
-        self.process_events(display, context)
+        self.process_events(display)
     }
 
     pub fn save_screenshot(&mut self, basename: &str) {
         use time;
-        use std::path::{Path};
+        use std::path::Path;
         use std::fs::{self, File};
         use image;
 
@@ -293,16 +319,79 @@ impl Backend {
             }
         }
 
-        let _ = image::save_buffer(&Path::new(&filename), &shot, shot.width(), shot.height(), image::ColorType::RGB(8));
+        let _ = image::save_buffer(&Path::new(&filename),
+                                   &shot,
+                                   shot.width(),
+                                   shot.height(),
+                                   image::ColorType::RGB(8));
     }
 }
 
+impl Context for Backend {
+    type T = usize;
+    type V = Vertex;
+
+    fn state<'a>(&'a self) -> &'a vitral::State<usize, Vertex> { &self.ui_state }
+
+    fn state_mut<'a>(&'a mut self) -> &'a mut vitral::State<usize, Vertex> { &mut self.ui_state }
+
+    fn new_vertex(
+        &mut self,
+        pos: Point2D<f32>,
+        tex_coord: Point2D<f32>,
+        color: [f32; 4]
+    ) -> Vertex {
+        Vertex {
+            pos: [pos.x, pos.y],
+            color: color,
+            back_color: [0.0, 0.0, 0.0, 1.0],
+            tex_coord: [tex_coord.x, tex_coord.y],
+        }
+    }
+}
+
+impl<C: Context<T=usize, V=Vertex>> MagogContext for C {
+    fn draw_image_2color<U>(
+        &mut self,
+        image: &vitral::ImageData<usize>,
+        pos: TypedPoint2D<f32, U>,
+        color: [f32; 4],
+        back_color: [f32; 4]
+    ) where U: vitral::ConvertibleUnit
+    {
+        // XXX: Copy-pasting tex rect code from Vitral.
+        let pos = vitral::ConvertibleUnit::convert_point(&self.scale_factor(), pos);
+
+        self.state_mut().start_texture(image.texture.clone());
+        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
+        let area = Rect::new(pos, size);
+
+        let idx = self.state_mut().push_vertex(Vertex::new(area.origin,
+                                                           image.tex_coords.origin,
+                                                           color,
+                                                           back_color));
+        self.state_mut().push_vertex(Vertex::new(area.top_right(),
+                                                 image.tex_coords.top_right(),
+                                                 color,
+                                                 back_color));
+        self.state_mut().push_vertex(Vertex::new(area.bottom_right(),
+                                                 image.tex_coords.bottom_right(),
+                                                 color,
+                                                 back_color));
+        self.state_mut().push_vertex(Vertex::new(area.bottom_left(),
+                                                 image.tex_coords.bottom_left(),
+                                                 color,
+                                                 back_color));
+
+        self.state_mut().push_triangle(idx, idx + 1, idx + 2);
+        self.state_mut().push_triangle(idx, idx + 2, idx + 3);
+    }
+}
 
 pub struct KeyEvent {
     pub key_code: glutin::VirtualKeyCode,
     pub scancode: u8,
 }
-
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -313,13 +402,18 @@ pub struct Vertex {
 }
 implement_vertex!(Vertex, pos, color, back_color, tex_coord);
 
-impl vitral::Vertex for Vertex {
-    fn new(pos: [f32; 2], color: [f32; 4], tex_coord: [f32; 2]) -> Self {
+impl Vertex {
+    pub fn new(
+        pos: Point2D<f32>,
+        tex_coord: Point2D<f32>,
+        color: [f32; 4],
+        back_color: [f32; 4]
+    ) -> Vertex {
         Vertex {
-            pos: pos,
+            pos: [pos.x, pos.y],
             color: color,
-            back_color: [0.0, 0.0, 0.0, 0.0],
-            tex_coord: tex_coord,
+            back_color: back_color,
+            tex_coord: [tex_coord.x, tex_coord.y],
         }
     }
 }

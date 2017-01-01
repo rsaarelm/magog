@@ -4,8 +4,8 @@ use std::str;
 use std::mem;
 use time;
 use euclid::{Point2D, Rect};
+use vitral::{Align, Context};
 use calx_alg::split_line;
-use backend;
 
 struct Message {
     expire_time_s: f64,
@@ -42,65 +42,58 @@ impl Console {
     }
 
     /// Draw the console as a regular message display.
-    pub fn draw_small(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
-        // TODO: reactivate
-        /*
-        // TODO: Store default font in context object
-        let font: Resource<backend::Font> = Resource::new("default".to_string()).unwrap();
-        // TODO: Ditto for color
+    pub fn draw_small<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
+        // TODO: Store color in draw context.
         let color = [1.0, 1.0, 1.0, 1.0];
 
         let t = time::precise_time_s();
-        let mut y = screen_area.max_y();
+        let h = context.current_font().height;
+        let mut y = screen_area.max_y() - h;
         // The log can be very long, and we're always most interested in the latest ones, so
         // do a backwards iteration with an early exist once we hit a sufficiently old item.
         for msg in self.lines.iter().rev().take_while(|m| m.expire_time_s > t) {
             // The split_line iterator can't be reversed, need to do a bit of caching here.
             let fragments = split_line(&msg.text,
-                                       |c| font.0.char_width(c).unwrap_or(0.0),
+                                       |c| context.current_font().char_width(c).unwrap_or(0.0),
                                        screen_area.size.width)
                                 .map(|x| x.to_string())
                                 .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                context.ui.draw_text(&font.0, Point2D::new(0.0, y), color, line);
-                y -= font.0.height;
+                context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
+                y -= h;
             }
         }
-        */
     }
 
     /// Draw the console as a big drop-down with a command prompt.
-    pub fn draw_large(&mut self, context: &mut backend::Context, screen_area: &Rect<f32>) {
-        // TODO: reactivate
-        /*
-        // TODO: Store default font in context object
-        let font: Resource<backend::Font> = Resource::new("default".to_string()).unwrap();
-        // TODO: Ditto for color
+    pub fn draw_large<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
+        // TODO: Store color in draw context.
         let color = [0.6, 0.6, 0.6, 1.0];
         let background = [0.0, 0.0, 0.6, 0.8];
 
-        context.ui.fill_rect(*screen_area, background);
+        context.fill_rect(*screen_area, background);
 
-        let mut lines_left = (screen_area.size.height / font.0.height).ceil() as i32;
-
-        let mut y = screen_area.max_y();
+        let h = context.current_font().height;
+        let mut lines_left = (screen_area.size.height / h).ceil() as i32;
+        let mut y = screen_area.max_y() - h;
 
         // TODO: Handle enter with text input.
         // TODO: Command history.
-        context.ui.text_input(&font.0, Point2D::new(0.0, y), color, &mut self.input_buffer);
-        y -= font.0.height;
+        context.bound(0, y as u32, screen_area.size.width as u32, h as u32)
+               .text_input(color, &mut self.input_buffer);
+        y -= h;
         lines_left -= 1;
 
         for msg in self.lines.iter().rev() {
             // XXX: Duplicated from draw_small.
             let fragments = split_line(&msg.text,
-                                       |c| font.0.char_width(c).unwrap_or(0.0),
+                                       |c| context.current_font().char_width(c).unwrap_or(0.0),
                                        screen_area.size.width)
                                 .map(|x| x.to_string())
                                 .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                context.ui.draw_text(&font.0, Point2D::new(0.0, y), color, line);
-                y -= font.0.height;
+                context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
+                y -= h;
                 lines_left -= 1;
             }
 
@@ -108,7 +101,6 @@ impl Console {
                 break;
             }
         }
-        */
     }
 
     fn end_message(&mut self) {

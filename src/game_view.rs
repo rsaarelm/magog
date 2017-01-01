@@ -3,7 +3,7 @@ use euclid::{Point2D, Rect};
 use rand;
 use calx_grid::Dir6;
 use scancode::Scancode;
-use world::{on_screen, Command, Location, TerrainQuery, World};
+use world::{Command, Location, TerrainQuery, World, on_screen};
 use display;
 
 pub struct View {
@@ -51,9 +51,7 @@ impl View {
         }
     }
 
-    fn dump(&mut self) {
-        dump_map(&self.world);
-    }
+    fn dump(&mut self) { dump_map(&self.world); }
 
     /// Generate a new random cave map.
     fn cave(&mut self) {
@@ -87,7 +85,7 @@ impl View {
         fn dump(&mut self);
     }
 
-    pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
+    pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
         let mut view = display::WorldView::new(camera_loc, *screen_area);
         view.show_cursor = true;
@@ -102,7 +100,7 @@ impl View {
             self.console.draw_small(context, screen_area);
         }
 
-        if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
+        if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             if self.console_is_large {
                 self.console_input(scancode)
             } else {
@@ -116,7 +114,10 @@ impl View {
 fn dump_map(world: &World) {
     for y in -21..21 {
         for x in -39..41 {
-            if (x + y) % 2 != 0 { print!(" "); continue; }
+            if (x + y) % 2 != 0 {
+                print!(" ");
+                continue;
+            }
             let pos = Point2D::new((x + y) / 2, y);
             if on_screen(pos) {
                 let t = world.terrain(Location::new(0, 0, 0) + pos);

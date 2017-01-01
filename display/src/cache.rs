@@ -10,8 +10,7 @@ use Icon;
 
 thread_local! {
     pub static ATLAS: RefCell<AtlasCache> = {
-        // TODO: Currently textures 0, 1 are baked in by Vitral, fix this.
-        let mut ret = AtlasCache::new(1024, 2);
+        let mut ret = AtlasCache::new(1024, 0);
         // XXX: Boilerplatey, would probably need a macro to clean this up, because include_bytes!
         // must resolve at compile time.
         ret.load_png("assets/blobs.png".to_string(), include_bytes!("../assets/blobs.png")).expect("Error loading blobs.png");

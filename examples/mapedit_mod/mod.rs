@@ -4,11 +4,12 @@ use std::collections::HashSet;
 use std::num::Wrapping;
 use euclid::{Point2D, Rect, Size2D};
 use scancode::Scancode;
+use vitral::Context;
 use calx_grid::{Dir6, Prefab};
 use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World, Terrain};
 use world::errors::*;
 use display;
-use vitral::{self, ButtonAction};
+use vitral::{self, ButtonAction, Align, FracPoint2D};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum PaintMode {
@@ -61,116 +62,112 @@ impl View {
         }
     }
 
-    pub fn draw(&mut self, context: &mut display::Context, screen_area: &Rect<f32>) {
-        context.ui.set_clip_rect(Some(*screen_area));
-
+    pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
         let camera_loc = self.camera.0;
-
         let mut view = display::WorldView::new(camera_loc, *screen_area);
         view.show_cursor = true;
         view.highlight_offscreen_tiles = true;
-        view.draw(&self.world, context);
 
-        if let Some(loc) = view.cursor_loc {
-            match self.mode {
-                PaintMode::Terrain => {
-                    if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        self.world.set_terrain(loc, self.fore_terrain);
+        {
+            let mut context = context.bound_clipped_r(*screen_area);
+
+            view.draw(&self.world, &mut context);
+
+            if let Some(loc) = view.cursor_loc {
+                match self.mode {
+                    PaintMode::Terrain => {
+                        if context.is_mouse_pressed(vitral::MouseButton::Left) {
+                            self.world.set_terrain(loc, self.fore_terrain);
+                        }
+
+                        if context.is_mouse_pressed(vitral::MouseButton::Right) {
+                            self.world.set_terrain(loc, self.back_terrain);
+                        }
                     }
 
-                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                        self.world.set_terrain(loc, self.back_terrain);
+                    PaintMode::Entity => {
+                        if context.is_mouse_pressed(vitral::MouseButton::Left) {
+                            // XXX: Cloning to evade borrow checker...
+                            let e = self.entity.clone();
+                            self.spawn_at(loc, Some(&e[..]));
+                        }
+
+                        if context.is_mouse_pressed(vitral::MouseButton::Right) {
+                            self.spawn_at(loc, None);
+                        }
+                    }
+
+                    PaintMode::Portal => {
+                        let (a, b) = self.camera;
+                        if a != b && context.is_mouse_pressed(vitral::MouseButton::Left) {
+                            self.world.set_portal(loc, Portal::new(a, b));
+                        }
+                        if context.is_mouse_pressed(vitral::MouseButton::Right) {
+                            self.world.remove_portal(loc);
+                        }
                     }
                 }
+            }
+        }
 
-                PaintMode::Entity => {
-                    if context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        // XXX: Cloning to evade borrow checker...
-                        let e = self.entity.clone();
-                        self.spawn_at(loc, Some(&e[..]));
-                    }
+        {
+            let mut context = context.bound(0, 360, 640, 120);
 
-                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                        self.spawn_at(loc, None);
-                    }
+            match context.bound(10, 10, 100, 10).button(&format!("left: {:?}", self.fore_terrain)) {
+                ButtonAction::LeftClicked => {
+                    self.mode = PaintMode::Terrain;
+                    self.fore_terrain = prev_terrain(self.fore_terrain);
                 }
-
-                PaintMode::Portal => {
-                    let (a, b) = self.camera;
-                    if a != b && context.ui.is_mouse_pressed(vitral::MouseButton::Left) {
-                        self.world.set_portal(loc, Portal::new(a, b));
-                    }
-                    if context.ui.is_mouse_pressed(vitral::MouseButton::Right) {
-                        self.world.remove_portal(loc);
-                    }
+                ButtonAction::RightClicked => {
+                    self.mode = PaintMode::Terrain;
+                    self.fore_terrain = next_terrain(self.fore_terrain);
                 }
+                _ => {}
+            };
+
+            match context.bound(112, 10, 100, 10).button(&format!("right: {:?}", self.back_terrain)) {
+                ButtonAction::LeftClicked => {
+                    self.mode = PaintMode::Terrain;
+                    self.back_terrain = prev_terrain(self.back_terrain);
+                }
+                ButtonAction::RightClicked => {
+                    self.mode = PaintMode::Terrain;
+                    self.back_terrain = next_terrain(self.back_terrain);
+                }
+                _ => {}
+            };
+
+            match context.bound(10, 22, 100, 10).button(&format!("entity: {}", self.entity)) {
+                ButtonAction::LeftClicked => {
+                    self.mode = PaintMode::Entity;
+
+                    let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
+                    let idx = names.iter()
+                                   .position(|x| *x == &self.entity[..])
+                                   .expect(&format!("Invalid current entity '{}'", self.entity));
+
+                    self.entity = names[(idx + (names.len() - 1)) % names.len()].to_string();
+                }
+                ButtonAction::RightClicked => {
+                    self.mode = PaintMode::Entity;
+
+                    let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
+                    let idx = names.iter()
+                                   .position(|x| *x == &self.entity[..])
+                                   .expect(&format!("Invalid current entity '{}'", self.entity));
+
+                    self.entity = names[(idx + 1) % names.len()].to_string();
+                }
+                _ => {}
+            };
+
+
+            let mut pos = FracPoint2D::new(1.0, 0.05);
+            for loc in view.cursor_loc.iter() {
+                pos = context.draw_text(pos, Align::Right, [1.0, 1.0, 1.0, 1.0], &format!("{:?}", loc));
             }
+
         }
-
-        let ui_top_y = screen_area.size.height;
-        context.ui.set_clip_rect(Some(Rect::new(Point2D::new(0.0, ui_top_y),
-                                                Size2D::new(screen_area.size.width,
-                                                            480.0 - ui_top_y))));
-        context.ui.layout_pos.y = ui_top_y + 10.0;
-
-        match context.ui.button(&format!("left: {:?}", self.fore_terrain)) {
-            ButtonAction::LeftClicked => {
-                self.mode = PaintMode::Terrain;
-                self.fore_terrain = prev_terrain(self.fore_terrain);
-            }
-            ButtonAction::RightClicked => {
-                self.mode = PaintMode::Terrain;
-                self.fore_terrain = next_terrain(self.fore_terrain);
-            }
-            _ => {}
-        }
-
-        match context.ui.button(&format!("right: {:?}", self.back_terrain)) {
-            ButtonAction::LeftClicked => {
-                self.mode = PaintMode::Terrain;
-                self.back_terrain = prev_terrain(self.back_terrain);
-            }
-            ButtonAction::RightClicked => {
-                self.mode = PaintMode::Terrain;
-                self.back_terrain = next_terrain(self.back_terrain);
-            }
-            _ => {}
-        }
-
-        match context.ui.button(&format!("entity: {}", self.entity)) {
-            ButtonAction::LeftClicked => {
-                self.mode = PaintMode::Entity;
-
-                let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                let idx = names.iter()
-                               .position(|x| *x == &self.entity[..])
-                               .expect(&format!("Invalid current entity '{}'", self.entity));
-
-                self.entity = names[(idx + (names.len() - 1)) % names.len()].to_string();
-            }
-            ButtonAction::RightClicked => {
-                self.mode = PaintMode::Entity;
-
-                let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                let idx = names.iter()
-                               .position(|x| *x == &self.entity[..])
-                               .expect(&format!("Invalid current entity '{}'", self.entity));
-
-                self.entity = names[(idx + 1) % names.len()].to_string();
-            }
-            _ => {}
-        }
-
-
-        for (y, loc) in view.cursor_loc.iter().enumerate() {
-            let font = context.ui.default_font();
-            context.ui.draw_text(&*font,
-                                 Point2D::new(400.0, y as f32 * 20.0 + 20.0 + ui_top_y),
-                                 [1.0, 1.0, 1.0, 1.0],
-                                 &format!("{:?}", loc));
-        }
-
-        context.ui.set_clip_rect(None);
 
         if self.console_is_large {
             let mut console_area = *screen_area;
@@ -180,7 +177,7 @@ impl View {
             self.console.draw_small(context, screen_area);
         }
 
-        if let Some(scancode) = context.backend.poll_key().and_then(|k| Scancode::new(k.scancode)) {
+        if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
             if self.console_is_large {
                 self.console_input(context, scancode);
             } else {
@@ -245,7 +242,7 @@ impl View {
         }
     }
 
-    fn console_input(&mut self, context: &mut display::Context, scancode: Scancode) {
+    fn console_input(&mut self, context: &mut display::Backend, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -258,12 +255,12 @@ impl View {
                     let _ = writeln!(&mut self.console, "{}", e);
                 }
             }
-            F12 => context.backend.save_screenshot("mapedit"),
+            F12 => context.save_screenshot("mapedit"),
             _ => {}
         }
     }
 
-    fn editor_input(&mut self, context: &mut display::Context, scancode: Scancode) {
+    fn editor_input(&mut self, context: &mut display::Backend, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Q => self.move_camera(Point2D::new(-1, 0), 0),
@@ -273,7 +270,7 @@ impl View {
             S => self.move_camera(Point2D::new(1, 1), 0),
             D => self.move_camera(Point2D::new(1, 0), 0),
             F1 => self.switch_camera(),
-            F12 => context.backend.save_screenshot("mapedit"),
+            F12 => context.save_screenshot("mapedit"),
             Tab => self.console_is_large = !self.console_is_large,
             RightBracket => self.move_camera(Point2D::new(0, 0), 1),
             LeftBracket => self.move_camera(Point2D::new(0, 0), -1),

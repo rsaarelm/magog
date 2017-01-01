@@ -24,7 +24,7 @@ mod sprite;
 mod tilesheet;
 mod view;
 
-pub use backend::{Backend, Context};
+pub use backend::Backend;
 pub use canvas_zoom::CanvasZoom;
 pub use console::Console;
 pub use view::WorldView;
