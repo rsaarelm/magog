@@ -55,6 +55,10 @@ pub enum Layer {
     Text,
 }
 
+/// Draw a blobform tile.
+///
+/// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
+/// the blob but doesn't have visible walls.
 fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
     where F: FnMut(Layer, Angle, &Rc<Brush>, usize)
 {

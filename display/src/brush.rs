@@ -63,7 +63,19 @@ pub struct Builder {
 }
 
 
+/// Builder structure for brushes.
+///
+/// Building the brush involves some complex standard sequences like blob and wall forms. It also
+/// involves combining splats into frames. A complex form with frames consisting of multiple splats
+/// is made using the column-adding functions for each splat and the calling `merge` or `finish` to
+/// convert them into frames.
 impl Builder {
+    /// Start a new brush builder using the given sprite sheet from cache.
+    ///
+    /// You're expected to set up your sprite sheets so that a single brush is built from a single
+    /// sheet.
+    ///
+    /// The default foreground color is white and the default background color is black.
     pub fn new(sheet_name: &str) -> Builder {
         Builder {
             color: WHITE,
@@ -74,11 +86,13 @@ impl Builder {
         }
     }
 
+    /// Set the foreground color for the brush.
     pub fn color<C: Into<Rgba>>(mut self, color: C) -> Builder {
         self.color = color.into();
         self
     }
 
+    /// Set the foreground and background colors for the brush.
     pub fn colors<C: Into<Rgba>, D: Into<Rgba>>(mut self, color: C, back_color: D) -> Builder {
         self.color = color.into();
         self.back_color = back_color.into();
@@ -92,6 +106,10 @@ impl Builder {
                    self.back_color.into_array())
     }
 
+    /// Add a splat columnn to the current splat matrix.
+    ///
+    /// If a splat matrix exists, the column must match the height of the matrix. Otherwise the
+    /// column will start a new splat matrix.
     pub fn splat<I: IntoIterator<Item = Geom>>(mut self, geom: I) -> Builder {
         let matrix_column = geom.into_iter().map(|g| self.into_splat(&g)).collect::<Vec<Splat>>();
         assert!(self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
@@ -100,8 +118,16 @@ impl Builder {
         self
     }
 
+    /// Add a single-frame splat for a standard tile to the splat matrix.
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
+    /// Add a blobform splat column to the splat matrix.
+    ///
+    /// Blobs are built from three 96x32 strips. First one contains the vertical edges, the second
+    /// contains the rear blob and the third contains the blob front. The vertical and rear
+    /// frames are nondescript and will probably be reused extensively.
+    ///
+    /// Blob shaping is somewhat complicated and generates a large number of frames.
     pub fn blob(
         self,
         vert_x: u32,
@@ -114,10 +140,15 @@ impl Builder {
         self.splat(Geom::blob(vert_x, vert_y, rear_x, rear_y, x, y))
     }
 
+    /// Add a wallform splat column to the splat matrix.
+    ///
+    /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
+    /// and the other contains the two long sides wallform.
     pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Builder {
         self.splat(Geom::wall(center_x, center_y, sides_x, sides_y))
     }
 
+    /// Merge the rows in the current splat matrix to frames, clear the splat matrix.
     pub fn merge(mut self) -> Builder {
         assert!(!self.splat_matrix.is_empty(),
                 "Merging without any splats specified");
@@ -135,6 +166,9 @@ impl Builder {
         self
     }
 
+    /// Convert the builder into a finished brush.
+    ///
+    /// If the current splat matrix is not empty, it will be merged into frames first.
     pub fn finish(mut self) -> Rc<Brush> {
         if !self.splat_matrix.is_empty() {
             // A merge is pending, do it now.
@@ -170,13 +204,6 @@ impl Geom {
         Some(Geom::new(16, 16, x, y, 32, 32))
     }
 
-    /// Helper for blob chunks.
-    ///
-    /// Blobs are built from three 96x32 strips. First one contains the vertical edges, the second
-    /// contains the rear blob and the third contains the blob front. The vertical and rear
-    /// frames are nondescript and will probably be reused extensively.
-    ///
-    /// Blob shaping is somewhat complicated and requires a large number of frames.
     pub fn blob(vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, vert_x, vert_y, 16, 32),       // 0: Top left    VERTICAL SIDES
@@ -222,10 +249,6 @@ impl Geom {
         ]
     }
 
-    /// Helper for wall tiles
-    ///
-    /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
-    /// and the other contains the two long sides wallform.
     pub fn wall(center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, center_x, center_y, 16, 32),       // 0
