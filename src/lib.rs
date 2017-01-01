@@ -630,6 +630,11 @@ pub trait Context: Sized {
         self.state_mut().mouse_pos = Point2D::new(x as f32, y as f32);
     }
 
+    /// Get whether mouse button was pressed
+    fn is_mouse_pressed(&self, button: MouseButton) -> bool {
+        self.state().click_state[button as usize].is_pressed()
+    }
+
     /// Register printable character input.
     fn input_char(&mut self, c: char) {
         self.state_mut().text_input.push(KeyInput::Printable(c));
