@@ -568,9 +568,7 @@ pub trait Context: Sized {
 
     /// Create a sub-context with geometry bound to a rectangle.
     fn bound_r<'a, U: ConvertibleUnit>(&'a mut self, area: TypedRect<f32, U>) -> Bounds<'a, Self> {
-        let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
-        area.origin = self.transform(area.origin);
-
+        let area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         Bounds {
             parent: self,
             area: area,
@@ -582,9 +580,7 @@ pub trait Context: Sized {
     fn bound_clipped_r<'a, U: ConvertibleUnit>(&'a mut self,
                                                area: TypedRect<f32, U>)
                                                -> Bounds<'a, Self> {
-        let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
-        area.origin = self.transform(area.origin);
-
+        let area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         self.state_mut().push_clip_rect(area);
         Bounds {
             parent: self,

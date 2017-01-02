@@ -9,7 +9,7 @@ use std::path::Path;
 use image::GenericImage;
 use glium::{DisplayBuild, glutin};
 use euclid::{Rect, Point2D, Size2D};
-use vitral::{Context, FracPoint2D, Align};
+use vitral::{Context, FracPoint2D, Align, FracRect, FracSize2D};
 use vitral_glium::{Backend, DefaultVertex};
 
 fn load_image<V>(display: &glium::Display,
@@ -123,16 +123,25 @@ fn main() {
                         [1.0, 1.0, 0.0, 1.0],
                         "Window");
         }
+
+        {
+            let mut c = context.bound_clipped(600, 20, 40, 40);
+            c.fill_rect(FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
+                        [1.0, 0.0, 0.0, 1.0]);
+            c.bound(10, 10, 20, 20).fill_rect(FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
+                        [1.0, 1.0, 0.0, 1.0]);
+        }
+
         if context.bound(10, 30, 120, 20)
-                  .button("Hello, world")
+                  .button("click")
                   .left_clicked() {
-            println!("Click");
+            println!("Click.");
         }
 
         if context.bound(10, 60, 120, 20)
-                  .button("Another button")
+                  .button("clack")
                   .left_clicked() {
-            println!("Clack {}", test_input);
+            println!("Clack. {}", test_input);
         }
 
         context.text_input([0.8, 0.8, 0.8, 1.0], &mut test_input);
