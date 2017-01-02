@@ -372,7 +372,7 @@ pub trait Context: Sized {
                   -> Self::V;
 
     /// Return reference to the currently active font.
-    fn current_font<'a>(&'a mut self) -> Rc<FontData<Self::T>> {
+    fn current_font<'a>(&'a self) -> Rc<FontData<Self::T>> {
         self.state().default_font.clone()
     }
 
