@@ -223,7 +223,6 @@ impl<T, V> State<T, V>
            -> State<T, V> {
         State {
             draw_list: Vec::new(),
-            // solid_texture: Image(0),
             layout_pos: Point2D::new(0.0, 0.0),
 
             mouse_pos: Point2D::new(0.0, 0.0),
@@ -446,9 +445,8 @@ pub trait Context: Sized {
 
     fn fill_rect<U: ConvertibleUnit>(&mut self, area: TypedRect<f32, U>, color: [f32; 4]) {
         self.state_mut().start_solid_texture();
-        self.draw_tex_rect(area,
-                           Rect::new(Point2D::new(0.0, 0.0), Size2D::new(0.0, 0.0)),
-                           color);
+        let p = self.state().solid_texture_texcoord();
+        self.draw_tex_rect(area, Rect::new(p, Size2D::new(0.0, 0.0)), color);
     }
 
     fn draw_image<U: ConvertibleUnit>(&mut self,
