@@ -543,7 +543,7 @@ pub trait Context: Sized {
 
         // Vertically center the caption.
         let mut pos = ConvertibleUnit::convert_point(&self.scale_factor(),
-                                                     PropPoint2D::new(0.5, 0.0));
+                                                     FracPoint2D::new(0.5, 0.0));
         pos.y = (self.bounds().size.height - self.current_font().height) / 2.0;
         self.draw_text(pos, Align::Center, color, caption);
 
@@ -568,7 +568,8 @@ pub trait Context: Sized {
         ret
     }
 
-    fn bound<'a, U: ConvertibleUnit>(&'a mut self, area: TypedRect<f32, U>) -> Bounds<'a, Self> {
+    /// Create a sub-context with geometry bound to a rectangle.
+    fn bound_r<'a, U: ConvertibleUnit>(&'a mut self, area: TypedRect<f32, U>) -> Bounds<'a, Self> {
         let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         area.origin = self.transform(area.origin);
 
@@ -579,9 +580,10 @@ pub trait Context: Sized {
         }
     }
 
-    fn bound_clipped<'a, U: ConvertibleUnit>(&'a mut self,
-                                             area: TypedRect<f32, U>)
-                                             -> Bounds<'a, Self> {
+    /// Create a sub-context with geometry bound to a rectangle and clip drawing to the bounds.
+    fn bound_clipped_r<'a, U: ConvertibleUnit>(&'a mut self,
+                                               area: TypedRect<f32, U>)
+                                               -> Bounds<'a, Self> {
         let mut area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         area.origin = self.transform(area.origin);
 
@@ -591,6 +593,30 @@ pub trait Context: Sized {
             area: area,
             is_clipped: true,
         }
+    }
+
+    /// Helper method for calling `bound_r` with pixel coordinates.
+    fn bound<'a>(&'a mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<'a, Self> {
+        self.bound_r(Rect::new(Point2D::new(x as f32, y as f32),
+                               Size2D::new(w as f32, h as f32)))
+    }
+
+    /// Helper method for calling `bound_clipped_r` with pixel coordinates.
+    fn bound_clipped<'a>(&'a mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<'a, Self> {
+        self.bound_clipped_r(Rect::new(Point2D::new(x as f32, y as f32),
+                                       Size2D::new(w as f32, h as f32)))
+    }
+
+    /// Helper method for calling `bound_r` with fractional coordinates.
+    fn bound_f<'a>(&'a mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<'a, Self> {
+        self.bound_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
+                                                           TypedSize2D::new(w, h)))
+    }
+
+    /// Helper method for calling `bound_clipped_r` with fractional coordinates.
+    fn bound_clipped_f<'a>(&'a mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<'a, Self> {
+        self.bound_clipped_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
+                                                                   TypedSize2D::new(w, h)))
     }
 
     /// Get the local space bounds rectangle of this context.
@@ -896,8 +922,11 @@ impl ButtonAction {
     }
 }
 
-/// Unit type for `euclid` primitives for representing proportional units in [0.0, 1.0].
-pub struct ProportionalUnit;
+/// Unit type for `euclid` primitives for representing fractional units in [0.0, 1.0].
+///
+/// These units will be scaled to the area of the `Context` they're used in, (0.5, 0.5) will always
+/// be in the center of the area.
+pub struct FractionalUnit;
 
 /// Explicit unit type for pixel units, treated the same as `euclid::UnknownUnit`.
 pub struct PixelUnit;
@@ -943,17 +972,17 @@ impl ConvertibleUnit for PixelUnit {
     }
 }
 
-impl ConvertibleUnit for ProportionalUnit {
+impl ConvertibleUnit for FractionalUnit {
     fn scale_factor(scale: &Size2D<f32>) -> (f32, f32) {
         (scale.width, scale.height)
     }
 }
 
 /// Alias for proportional unit point type.
-pub type PropPoint2D = TypedPoint2D<f32, ProportionalUnit>;
+pub type FracPoint2D = TypedPoint2D<f32, FractionalUnit>;
 
 /// Alias for proportional unit size type.
-pub type PropSize2D = TypedSize2D<f32, ProportionalUnit>;
+pub type FracSize2D = TypedSize2D<f32, FractionalUnit>;
 
 /// Alias for proportional unit rectangle type.
-pub type PropRect = TypedRect<f32, ProportionalUnit>;
+pub type FracRect = TypedRect<f32, FractionalUnit>;

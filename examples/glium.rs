@@ -9,7 +9,7 @@ use std::path::Path;
 use image::GenericImage;
 use glium::{DisplayBuild, glutin};
 use euclid::{Rect, Point2D, Size2D};
-use vitral::{Context, PropPoint2D, Align};
+use vitral::{Context, FracPoint2D, Align};
 use vitral_glium::{Backend, DefaultVertex};
 
 fn load_image<V>(display: &glium::Display,
@@ -97,24 +97,23 @@ fn main() {
 
         context.draw_line(3.0,
                           [1.0, 0.0, 0.0, 1.0],
-                          PropPoint2D::new(0.1, 0.1),
-                          PropPoint2D::new(0.9, 0.9));
+                          FracPoint2D::new(0.1, 0.1),
+                          FracPoint2D::new(0.9, 0.9));
 
-        let mut text_pos = PropPoint2D::new(0.5, 0.0);
+        let mut text_pos = FracPoint2D::new(0.5, 0.0);
         text_pos = context.draw_text(text_pos, Align::Center, [0.0, 1.0, 0.0, 1.0], "Hello,");
         context.draw_text(text_pos, Align::Center, [0.0, 1.0, 0.0, 1.0], "world!");
 
         {
-            let mut c = context.bound_clipped(Rect::new(Point2D::new(100.0, 100.0),
-                                                        Size2D::new(320.0, 240.0)));
+            let mut c = context.bound_clipped(100, 100, 320, 240);
 
             c.draw_image(&image, Point2D::new(0.0, 0.0), [1.0, 1.0, 1.0, 1.0]);
 
             // Demonstrate proportional coordinates
             c.draw_line(5.0,
                         [1.0, 1.0, 1.0, 1.0],
-                        PropPoint2D::new(0.1, 0.1),
-                        PropPoint2D::new(0.9, 0.9));
+                        FracPoint2D::new(0.1, 0.1),
+                        FracPoint2D::new(0.9, 0.9));
 
             c.fill_rect(Rect::new(Point2D::new(0.0, 0.0), Size2D::new(80.0, 16.0)),
                         [0.0, 0.0, 0.0, 1.0]);
@@ -124,13 +123,13 @@ fn main() {
                         [1.0, 1.0, 0.0, 1.0],
                         "Window");
         }
-        if context.bound(Rect::new(Point2D::new(10.0, 30.0), Size2D::new(120.0, 20.0)))
+        if context.bound(10, 30, 120, 20)
                   .button("Hello, world")
                   .left_clicked() {
             println!("Click");
         }
 
-        if context.bound(Rect::new(Point2D::new(10.0, 60.0), Size2D::new(120.0, 20.0)))
+        if context.bound(10, 60, 120, 20)
                   .button("Another button")
                   .left_clicked() {
             println!("Clack {}", test_input);
