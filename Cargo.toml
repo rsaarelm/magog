@@ -13,5 +13,5 @@ time = "0.1"
 
 [dev-dependencies]
 glium = "0.15"
-image = "0.10"
+image = "0.12"
 vitral-glium = { path = "vitral-glium" }
