@@ -8,6 +8,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/rsaarelm/vitral-glium"
 
 [dependencies]
-glium = "0.15"
+glium = "0.16"
 euclid = "0.10"
 vitral = { path = "../" }
