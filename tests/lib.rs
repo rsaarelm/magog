@@ -1,15 +1,17 @@
-extern crate rustc_serialize;
-extern crate bincode;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 #[macro_use]
 extern crate calx_ecs;
 
-#[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Desc {
     name: String,
     icon: usize,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Pos {
     x: i32,
     y: i32,
@@ -22,8 +24,6 @@ Ecs! {
 
 #[test]
 fn test_ecs() {
-    use bincode::{rustc_serialize, SizeLimit};
-
     let mut ecs = Ecs::new();
 
     let e1 = ecs.make();
@@ -58,7 +58,7 @@ fn test_ecs() {
     assert!(ecs.desc[e3].icon == 10);
 
     // Check that serialization works.
-    let saved = rustc_serialize::encode(&ecs, SizeLimit::Infinite).expect("ECS serialization failed");
-    let ecs2 = rustc_serialize::decode::<Ecs>(&saved).expect("ECS deserialization failed");
+    let saved = serde_json::to_string(&ecs).expect("ECS serialization failed");
+    let ecs2: Ecs = serde_json::from_str(&saved).expect("ECS deserialization failed");
     assert!(ecs2.desc[e3].icon == 10);
 }

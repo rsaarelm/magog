@@ -2,20 +2,21 @@
 
 #![deny(missing_docs)]
 
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+
 extern crate fnv;
-extern crate rustc_serialize;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{HashMap, hash_map, HashSet, hash_set};
-use std::iter::FromIterator;
-use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
+use std::collections::{hash_map, HashSet, hash_set};
 
 /// Handle for an entity in the entity component system.
 ///
 /// The internal value is the unique identifier for the entity. No two
 /// entities should get the same UID during the lifetime of the ECS.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Entity(pub usize);
 
 /// Operations all components must support.
@@ -25,28 +26,12 @@ pub trait AnyComponent {
 }
 
 /// Storage for a single component type.
+#[derive(Serialize, Deserialize)]
 pub struct ComponentData<C> {
     // TODO: Add reused index fields to entities and use VecMap with the
     // index field instead of HashMap with the UID here for more
     // efficient access.
     data: fnv::FnvHashMap<Entity, C>,
-}
-
-// XXX: rustc-serialize doesn't support custom hashers, need to jump through hoops here.
-impl<C: Encodable+Clone> Encodable for ComponentData<C> {
-    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
-        let data: HashMap<Entity, C> = HashMap::from_iter(self.data.clone().into_iter());
-        data.encode(s)
-    }
-}
-
-impl<C: Decodable> Decodable for ComponentData<C> {
-    fn decode<D: Decoder>(d: &mut D) -> Result<ComponentData<C>, D::Error> {
-        let data: HashMap<Entity, C> = HashMap::decode(d)?;
-        Ok(ComponentData {
-            data: fnv::FnvHashMap::from_iter(data.into_iter())
-        })
-    }
 }
 
 impl<C> ComponentData<C> {
@@ -116,7 +101,7 @@ pub trait Store {
 ///
 /// Needs to be specified with the parametrized `Store` type that has struct fields for the actual
 /// components. This can be done with the `Ecs!` macro.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct Ecs<ST> {
     next_uid: usize,
     active: HashSet<Entity>,
@@ -196,7 +181,7 @@ macro_rules! Ecs {
 
         pub use self::_ecs_inner::ComponentNum;
 
-        #[derive(RustcEncodable, RustcDecodable)]
+        #[derive(Serialize, Deserialize)]
         pub struct _ComponentStore {
             $(pub $compname: $crate::ComponentData<$comptype>),+
         }
@@ -251,7 +236,7 @@ macro_rules! Ecs {
 
         /// A straightforward representation for the complete data of an
         /// entity.
-        #[derive(Clone, Debug, RustcEncodable, RustcDecodable)]
+        #[derive(Clone, Debug, Serialize, Deserialize)]
         pub struct Loadout {
             $(pub $compname: Option<$comptype>),+
         }
