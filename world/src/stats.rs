@@ -5,7 +5,7 @@ use std::ops::Add;
 /// together to build composites. The Default value for Stats must be an
 /// algebraic zero element, adding it to any Stats value must leave that value
 /// unchanged.
-#[derive(Copy, Clone, Debug, Default, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Stats {
     /// Generic power level
     pub power: i32,
@@ -68,7 +68,7 @@ impl Add<Stats> for Stats {
     }
 }
 
-#[derive(Copy, Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow = 0b1,

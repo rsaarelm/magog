@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use location::Location;
 
-#[derive(Clone, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Field<T: PartialEq> {
     pub default: T,
     patch: BTreeMap<Location, T>,

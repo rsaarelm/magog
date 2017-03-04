@@ -1,7 +1,9 @@
 extern crate num;
 extern crate rand;
 extern crate bincode;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate vec_map;
 extern crate euclid;
 #[macro_use]
@@ -114,7 +116,7 @@ pub mod errors {
     error_chain! {
         foreign_links {
             Io(::std::io::Error) #[cfg(unix)];
-            TomlDecode(::toml::DecodeError);
+            TomlDecode(::toml::de::Error);
         }
     }
 }

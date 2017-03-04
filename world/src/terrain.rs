@@ -61,7 +61,7 @@ macro_rules! terrain_enum {
     {
         $($sym:ident: $data:expr,)+
     } => {
-        #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, RustcEncodable, RustcDecodable)]
+        #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
         pub enum Terrain {
             $($sym,)+
         }

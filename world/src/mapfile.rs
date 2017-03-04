@@ -2,7 +2,6 @@ use std::fmt;
 use std::io;
 use std::str::FromStr;
 use std::collections::BTreeMap;
-use rustc_serialize::Decodable;
 use toml;
 use calx_grid;
 use Prefab;
@@ -54,10 +53,7 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
 pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     let mut s = String::new();
     input.read_to_string(&mut s)?;
-    let mut parser = toml::Parser::new(&s);
-    let mut decoder = toml::Decoder::new(
-        toml::Value::Table(parser.parse().ok_or_else(|| format!("Parse errors: {:?}", parser.errors))?));
-    let save = MapSave::decode(&mut decoder)?;
+    let save: MapSave = toml::from_str(&s)?;
 
     // Validate the prefab
     for i in save.legend.values() {
@@ -91,7 +87,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
 }
 
 /// Type for maps saved into disk.
-#[derive(Debug, RustcEncodable, RustcDecodable)]
+#[derive(Debug, Serialize, Deserialize)]
 struct MapSave {
     pub map: String,
     pub legend: BTreeMap<char, LegendItem>,
@@ -113,7 +109,7 @@ impl fmt::Display for MapSave {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 struct LegendItem {
     /// Terrain
     pub t: String,

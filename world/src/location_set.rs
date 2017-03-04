@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use location::Location;
 
 /// Compact Location set collection
-#[derive(Eq, PartialEq, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct LocationSet {
     /// Chunks of 8x8 locations.
     ///

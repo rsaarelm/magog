@@ -10,14 +10,15 @@ name = "world"
 [dependencies]
 num = "0.1"
 rand = "0.3"
-vec_map = "0.6"
-bincode = "0.6"
-euclid = "0.10"
+vec_map = "0.7"
+bincode = "1.0.0-alpha5" # TODO: Update to regular 1.0 when it's available
+euclid = "0.11"
 lazy_static = "0.2"
-rustc-serialize = "0.3"
-calx-ecs = "0.3"
-toml = "0.2"
-error-chain = "0.7"
+serde = "0.9"
+serde_derive = "0.9"
+calx-ecs = "0.4"
+toml = "0.3"
+error-chain = "0.10"
 calx-alg = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }

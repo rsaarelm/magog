@@ -8,10 +8,10 @@ name = "display"
 
 [dependencies]
 time = "0.1"
-euclid = "0.10"
+euclid = "0.11"
 image = "0.12"
 glium = "0.16"
-vec_map = "0.6"
+vec_map = "0.7"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 vitral-atlas = { git = "https://github.com/rsaarelm/vitral" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }

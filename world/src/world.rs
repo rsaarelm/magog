@@ -1,7 +1,7 @@
 use std::io::{Read, Write};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
-use bincode::{self, serde};
+use bincode;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
 use field::Field;
@@ -30,7 +30,7 @@ Ecs! {
 }
 
 /// Toplevel game state object.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct World {
     /// Game version. Not mutable in the slightest, but the simplest way to
     /// get versioned save files is to just drop it here.
@@ -59,7 +59,7 @@ impl<'a> World {
         }
     }
 
-    /* TODO: Reactivate for rustc-serialize
+    /* TODO: Reactivate
 
     pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
         let ret: serde::DeserializeResult<World> =
