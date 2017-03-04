@@ -11,11 +11,12 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-calx-ecs = "0.3"
+calx-ecs = "0.4"
 ```
 
 and this to your crate root:
 
 ```rust
+#[macro_use]
 extern crate calx_ecs;
 ```
