@@ -2,7 +2,7 @@ extern crate num;
 extern crate rand;
 extern crate time;
 extern crate vec_map;
-extern crate rustc_serialize;
+extern crate serde;
 
 use rand::Rng;
 use std::ops::{Add, Mul, Sub};

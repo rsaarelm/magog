@@ -9,4 +9,5 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 image = "0.12"
 num = "0.1"
-rustc-serialize = "0.3"
+serde = "0.9"
+serde_derive = "0.9"

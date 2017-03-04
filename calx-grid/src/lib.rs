@@ -1,6 +1,8 @@
 extern crate num;
 extern crate rand;
-extern crate rustc_serialize;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate euclid;
 
 pub use search::{Dijkstra, GridNode, astar_path_with};

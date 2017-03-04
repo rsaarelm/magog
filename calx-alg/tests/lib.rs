@@ -1,5 +1,4 @@
-extern crate rustc_serialize;
-extern crate bincode;
+extern crate serde_json;
 extern crate calx_alg;
 extern crate rand;
 
@@ -11,13 +10,12 @@ use calx_alg::WeightedChoice;
 #[test]
 fn test_serialize_rng() {
     use calx_alg::EncodeRng;
-    use bincode::{SizeLimit, rustc_serialize};
 
     let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
-    let saved = rustc_serialize::encode(&rng, SizeLimit::Infinite).expect("Serialization failed");
-    let mut rng2 = rustc_serialize::decode::<EncodeRng<XorShiftRng>>(&saved)
-                       .expect("Deserialization failed");
+    let saved = serde_json::to_string(&rng).expect("Serialization failed");
+    let mut rng2: EncodeRng<XorShiftRng> = serde_json::from_str(&saved)
+                                               .expect("Deserialization failed");
 
     assert!(rng.next_u32() == rng2.next_u32());
 }
@@ -36,7 +34,10 @@ fn splits_into(space: usize, line: &str, parts: &[&str]) {
 
     split_line(line, |_| 1.0, space as f32)
         .zip(parts)
-        .all(|(actual, &expected)| { assert_eq!(expected, actual); true });
+        .all(|(actual, &expected)| {
+            assert_eq!(expected, actual);
+            true
+        });
 
     assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
 }
@@ -99,7 +100,7 @@ fn test_random_permutation() {
 
 #[test]
 fn test_bit_spread() {
-    use calx_alg::{spread_bits_by_2, compact_bits_by_2};
+    use calx_alg::{compact_bits_by_2, spread_bits_by_2};
     let mut rng = rand::thread_rng();
 
     for _ in 0..1000 {
