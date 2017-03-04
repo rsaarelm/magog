@@ -81,13 +81,13 @@ macro_rules! terrain_enum {
 terrain_enum! {
     Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_irregular: false },
     Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_irregular: false },
-    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false },
+    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_irregular: false },
     Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false },
     Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_irregular: false },
     Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_irregular: false },
     Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false },
-    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "",    is_irregular: false },
-    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "",    is_irregular: false },
+    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false },
+    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false },
     Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false },
     // TODO: Get rid of corridor, it only makes sense for mapgen bookkeeping and that doesn't
     // belong in persistent map.
