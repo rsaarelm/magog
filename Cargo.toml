@@ -8,7 +8,6 @@ repository = "https://github.com/rsaarelm/calx-ecs"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-fnv = "1.0"
 serde_derive = "0.9"
 serde = "0.9"
 

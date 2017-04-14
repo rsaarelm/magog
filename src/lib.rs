@@ -6,88 +6,164 @@
 extern crate serde_derive;
 extern crate serde;
 
-extern crate fnv;
-
 use std::default::Default;
-use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{hash_map, HashSet, hash_set};
+use std::ops;
+use std::slice;
 
 /// Handle for an entity in the entity component system.
 ///
 /// The internal value is the unique identifier for the entity. No two
 /// entities should get the same UID during the lifetime of the ECS.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
-pub struct Entity(pub usize);
+pub struct Entity {
+    uid: u32,
+    idx: u32,
+}
+
+/// Indexing entity index to data array.
+#[derive(Copy, Clone, PartialEq, Eq, Default, Debug, Serialize, Deserialize)]
+struct Index {
+    /// Must match the uid for the entity that is querying for component.
+    uid: u32,
+    /// Index for this entity in the data array.
+    data_idx: u32,
+}
 
 /// Operations all components must support.
 pub trait AnyComponent {
     /// Remove an entity's component.
     fn remove(&mut self, e: Entity);
+
+    /// Increment space for entities by one.
+    fn reserve_entity_space(&mut self);
 }
 
 /// Storage for a single component type.
 #[derive(Serialize, Deserialize)]
 pub struct ComponentData<C> {
-    // TODO: Add reused index fields to entities and use VecMap with the
-    // index field instead of HashMap with the UID here for more
-    // efficient access.
-    data: fnv::FnvHashMap<Entity, C>,
+    /// Dense component data.
+    data: Vec<C>,
+    /// Entity idx corresponding to elements in data.
+    entities: Vec<Entity>,
+    /// Sparse array mapping entity indices to data values.
+    entity_idx_to_data: Vec<Index>,
 }
 
 impl<C> ComponentData<C> {
     /// Construct new empty `ComponentData` instance.
     pub fn new() -> ComponentData<C> {
-        ComponentData { data: fnv::FnvHashMap::default() }
+        ComponentData {
+            data: Vec::new(),
+            entities: Vec::new(),
+            entity_idx_to_data: Vec::new(),
+        }
     }
 
     /// Insert a component to an entity.
     pub fn insert(&mut self, e: Entity, comp: C) {
-        self.data.insert(e, comp);
+        debug_assert!(self.data.len() == self.entities.len());
+
+        if self.contains(e) {
+            // Component is set for entity, replace existing component.
+            self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize] = comp;
+        } else {
+            // Add a new component.
+            let data_idx = self.data.len() as u32;
+            self.data.push(comp);
+            self.entities.push(e);
+            self.entity_idx_to_data[e.idx as usize] = Index {
+                uid: e.uid,
+                data_idx: data_idx,
+            };
+        }
     }
 
     /// Return whether an entity contains this component.
+    #[inline(always)]
     pub fn contains(&self, e: Entity) -> bool {
-        self.data.contains_key(&e)
+        debug_assert!(e.uid != 0);
+        debug_assert!((e.idx as usize) < self.entity_idx_to_data.len());
+
+        self.entity_idx_to_data[e.idx as usize].uid == e.uid
     }
 
     /// Get a reference to a component only if it exists for this entity.
+    #[inline(always)]
     pub fn get(&self, e: Entity) -> Option<&C> {
-        self.data.get(&e)
+        if self.contains(e) {
+            Some(&self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+        } else {
+            None
+        }
     }
 
     /// Get a mutable reference to a component only if it exists for this entity.
+    #[inline(always)]
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
-        self.data.get_mut(&e)
+        if self.contains(e) {
+            Some(&mut self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+        } else {
+            None
+        }
     }
 
-    /// Iterate entity-component pairs for this component.
-    pub fn iter(&self) -> hash_map::Iter<Entity, C> {
+    /// Iterate entity ids in this component.
+    pub fn ent_iter(&self) -> slice::Iter<Entity> {
+        self.entities.iter()
+    }
+
+    /// Iterate elements in this component.
+    pub fn iter(&self) -> slice::Iter<C> {
         self.data.iter()
     }
 
-    /// Iterate mutable entity-component pairs for this component.
-    pub fn iter_mut(&mut self) -> hash_map::IterMut<Entity, C> {
+    /// Iterate mutable elements in this component.
+    pub fn iter_mut(&mut self) -> slice::IterMut<C> {
         self.data.iter_mut()
     }
 }
 
-impl<C> Index<Entity> for ComponentData<C> {
+impl<C> ops::Index<Entity> for ComponentData<C> {
     type Output = C;
 
     fn index<'a>(&'a self, e: Entity) -> &'a C {
-        self.data.get(&e).unwrap()
+        self.get(e).unwrap()
     }
 }
 
-impl<C> IndexMut<Entity> for ComponentData<C> {
+impl<C> ops::IndexMut<Entity> for ComponentData<C> {
     fn index_mut<'a>(&'a mut self, e: Entity) -> &'a mut C {
-        self.data.get_mut(&e).unwrap()
+        self.get_mut(e).unwrap()
     }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
     fn remove(&mut self, e: Entity) {
-        self.data.remove(&e);
+        debug_assert!(self.data.len() == self.entities.len());
+        if self.contains(e) {
+            let removed_index = self.entity_idx_to_data[e.idx as usize];
+            self.entity_idx_to_data[e.idx as usize] = Default::default();
+
+            // To keep the data compact, we do swap-remove with the last data item and update the
+            // lookup on the moved item. If the component being removed isn't the last item in the
+            // list, we need to reset the lookup value for the component that was moved.
+            if removed_index.data_idx as usize != self.entities.len() - 1 {
+                let last_entity = self.entities[self.entities.len() - 1];
+                self.entities.swap_remove(removed_index.data_idx as usize);
+                self.entity_idx_to_data[last_entity.idx as usize] = Index {
+                    uid: last_entity.uid,
+                    data_idx: removed_index.data_idx,
+                };
+            } else {
+                self.entities.swap_remove(removed_index.data_idx as usize);
+            }
+
+            self.data.swap_remove(removed_index.data_idx as usize);
+        }
+    }
+
+    fn reserve_entity_space(&mut self) {
+        self.entity_idx_to_data.push(Default::default());
     }
 }
 
@@ -103,8 +179,10 @@ pub trait Store {
 /// components. This can be done with the `Ecs!` macro.
 #[derive(Serialize, Deserialize)]
 pub struct Ecs<ST> {
-    next_uid: usize,
-    active: HashSet<Entity>,
+    next_uid: u32,
+    next_idx: u32,
+    free_indices: Vec<u32>,
+    active: ComponentData<bool>,
     store: ST,
 }
 
@@ -113,38 +191,54 @@ impl<ST: Default + Store> Ecs<ST> {
     pub fn new() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
-            active: HashSet::default(),
+            next_idx: 0,
+            free_indices: Vec::new(),
+            active: ComponentData::new(),
             store: Default::default(),
         }
     }
 
     /// Create a new empty entity.
     pub fn make(&mut self) -> Entity {
-        let next = self.next_uid;
+        let uid = self.next_uid;
         self.next_uid += 1;
-        let ret = Entity(next);
-        self.active.insert(ret);
+
+        let idx = if let Some(idx) = self.free_indices.pop() {
+            idx
+        } else {
+            self.next_idx += 1;
+            self.store.for_each_component(|c| c.reserve_entity_space());
+            self.active.reserve_entity_space();
+            self.next_idx - 1
+        };
+
+        let ret = Entity {
+            uid: uid,
+            idx: idx,
+        };
+        self.active.insert(ret, true);
         ret
     }
 
     /// Remove an entity from the system and clear its components.
     pub fn remove(&mut self, e: Entity) {
-        self.active.remove(&e);
+        self.free_indices.push(e.idx);
+        self.active.remove(e);
         self.store.for_each_component(|c| c.remove(e));
     }
 
     /// Return whether the system contains an entity.
     pub fn contains(&self, e: Entity) -> bool {
-        self.active.contains(&e)
+        self.active.contains(e)
     }
 
     /// Iterate through all the active entities.
-    pub fn iter(&self) -> hash_set::Iter<Entity> {
-        self.active.iter()
+    pub fn iter(&self) -> slice::Iter<Entity> {
+        self.active.ent_iter()
     }
 }
 
-impl<ST> Deref for Ecs<ST> {
+impl<ST> ops::Deref for Ecs<ST> {
     type Target = ST;
 
     fn deref(&self) -> &ST {
@@ -152,7 +246,7 @@ impl<ST> Deref for Ecs<ST> {
     }
 }
 
-impl<ST> DerefMut for Ecs<ST> {
+impl<ST> ops::DerefMut for Ecs<ST> {
     fn deref_mut(&mut self) -> &mut ST {
         &mut self.store
     }
