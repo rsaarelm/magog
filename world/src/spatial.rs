@@ -17,20 +17,20 @@ pub enum Place {
 /// Spatial index for game entities
 pub struct Spatial {
     place_to_entities: BTreeMap<Place, Vec<Entity>>,
-    entity_to_place: VecMap<Place>,
+    entity_to_place: BTreeMap<Entity, Place>,
 }
 
 impl Spatial {
     pub fn new() -> Spatial {
         Spatial {
             place_to_entities: BTreeMap::new(),
-            entity_to_place: VecMap::new(),
+            entity_to_place: BTreeMap::new(),
         }
     }
 
-    fn insert(&mut self, Entity(idx): Entity, p: Place) {
+    fn insert(&mut self, e: Entity, p: Place) {
         // Remove the entity from its old position.
-        self.single_remove(Entity(idx));
+        self.single_remove(e);
 
         if let In(_, Some(_)) = p {
             // Slotted in-places are a special case that can hold at most one entity.
@@ -39,10 +39,10 @@ impl Spatial {
             }
         }
 
-        self.entity_to_place.insert(idx, p);
+        self.entity_to_place.insert(e, p);
         match self.place_to_entities.get_mut(&p) {
             Some(v) => {
-                v.push(Entity(idx));
+                v.push(e);
                 return;
             }
             _ => (),
@@ -50,7 +50,7 @@ impl Spatial {
         // Didn't return above, that means this location isn't indexed
         // yet and needs a brand new container. (Can't do this in match
         // block because borrows.)
-        self.place_to_entities.insert(p, vec![Entity(idx)]);
+        self.place_to_entities.insert(p, vec![e]);
     }
 
     /// Insert an entity into space.
@@ -58,8 +58,8 @@ impl Spatial {
 
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
-    pub fn contains(&self, parent: Entity, Entity(idx): Entity) -> bool {
-        match self.entity_to_place.get(idx) {
+    pub fn contains(&self, parent: Entity, e: Entity) -> bool {
+        match self.entity_to_place.get(&e) {
             Some(&In(p, _)) if p == parent => true,
             Some(&In(p, _)) => self.contains(parent, p),
             _ => false,
@@ -82,13 +82,13 @@ impl Spatial {
     /// Remove an entity from the local structures but do not pop out its
     /// items. Unless the entity is added back in or the contents are handled
     /// somehow, this will leave the spatial index in an inconsistent state.
-    fn single_remove(&mut self, Entity(idx): Entity) {
-        if !self.entity_to_place.contains_key(idx) {
+    fn single_remove(&mut self, e: Entity) {
+        if !self.entity_to_place.contains_key(&e) {
             return;
         }
 
-        let &p = self.entity_to_place.get(idx).unwrap();
-        self.entity_to_place.remove(idx);
+        let &p = self.entity_to_place.get(&e).unwrap();
+        self.entity_to_place.remove(&e);
 
         {
             let v = self.place_to_entities.get_mut(&p).unwrap();
@@ -97,7 +97,7 @@ impl Spatial {
                 // More than one entity present, remove this one, keep the
                 // rest.
                 for i in 0..v.len() {
-                    if v[i] == Entity(idx) {
+                    if v[i] == e {
                         v.swap_remove(i);
                         return;
                     }
@@ -107,7 +107,7 @@ impl Spatial {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
                 // (Need to drop out of scope for borrows reasons)
-                assert!((*v)[0] == Entity(idx));
+                assert!((*v)[0] == e);
             }
         }
         // We only end up here if we need to clear the container for the
@@ -117,12 +117,12 @@ impl Spatial {
 
     /// Remove an entity from the space. Entities contained in the entity will
     /// also be removed from the space.
-    pub fn remove(&mut self, Entity(idx): Entity) {
+    pub fn remove(&mut self, e: Entity) {
         // Remove the contents
-        for &content in self.entities_in(Entity(idx)).iter() {
+        for &content in self.entities_in(e).iter() {
             self.remove(content);
         }
-        self.single_remove(Entity(idx));
+        self.single_remove(e);
     }
 
     fn entities(&self, p: Place) -> Vec<Entity> {
@@ -168,15 +168,15 @@ impl Spatial {
     }
 
     /// Return the place of an entity if the entity is present in the space.
-    pub fn get(&self, Entity(idx): Entity) -> Option<Place> {
-        self.entity_to_place.get(idx).map(|&loc| loc)
+    pub fn get(&self, e: Entity) -> Option<Place> {
+        self.entity_to_place.get(&e).map(|&loc| loc)
     }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
         let mut ret = vec![];
-        for (idx, &loc) in self.entity_to_place.iter() {
-            ret.push(Elt(Entity(idx), loc));
+        for (&e, &loc) in self.entity_to_place.iter() {
+            ret.push(Elt(e, loc));
         }
         ret
     }
@@ -211,12 +211,17 @@ impl serde::Deserialize for Spatial {
 #[cfg(test)]
 mod test {
     use super::{Place, Spatial};
+    use world::Ecs;
     use item::Slot;
     use calx_ecs::Entity;
     use location::Location;
 
     #[test]
     fn test_place_adjacency() {
+        let mut ecs = Ecs::new();
+        let e1 = ecs.make();
+        let e2 = ecs.make();
+
         // Test that the Place type gets a lexical ordering where elements in
         // the same parent entity get sorted next to each other, and that None
         // is the minimum value for the slot option.
@@ -225,38 +230,42 @@ mod test {
         // it's not obvious which way the derived lexical order sorts, so put
         // an unit test here to check it out.
         let mut places = vec![
-            Place::In(Entity(0), Some(Slot::Melee)),
-            Place::In(Entity(1), None),
-            Place::In(Entity(0), Some(Slot::Ranged)),
-            Place::In(Entity(0), None),
+            Place::In(e1, Some(Slot::Melee)),
+            Place::In(e2, None),
+            Place::In(e1, Some(Slot::Ranged)),
+            Place::In(e1, None),
         ];
 
         places.sort();
         assert_eq!(places,
                    vec![
-                Place::In(Entity(0), None),
-                Place::In(Entity(0), Some(Slot::Melee)),
-                Place::In(Entity(0), Some(Slot::Ranged)),
-                Place::In(Entity(1), None),
+                Place::In(e1, None),
+                Place::In(e1, Some(Slot::Melee)),
+                Place::In(e1, Some(Slot::Ranged)),
+                Place::In(e2, None),
             ]);
     }
 
     #[test]
     fn test_serialization() {
-        use bincode::{serialize, deserialize, SizeLimit};
+        use bincode;
+
+        let mut ecs = Ecs::new();
+        let e1 = ecs.make();
+        let e2 = ecs.make();
 
         let mut spatial = Spatial::new();
         let p1 = Place::At(Location::new(10, 10, 0));
-        let p2 = Place::In(Entity(1), None);
-        spatial.insert(Entity(1), p1);
-        spatial.insert(Entity(2), p2);
+        let p2 = Place::In(e1, None);
+        spatial.insert(e1, p1);
+        spatial.insert(e2, p2);
 
-        let saved = serialize(&spatial, SizeLimit::Infinite)
+        let saved = bincode::serialize(&spatial, bincode::Infinite)
                         .expect("Spatial serialization failed");
-        let spatial2: Spatial = deserialize(&saved)
+        let spatial2: Spatial = bincode::deserialize(&saved)
                            .expect("Spatial deserialization failed");
 
-        assert_eq!(spatial2.get(Entity(1)), Some(p1));
-        assert_eq!(spatial2.get(Entity(2)), Some(p2));
+        assert_eq!(spatial2.get(e1), Some(p1));
+        assert_eq!(spatial2.get(e2), Some(p2));
     }
 }
