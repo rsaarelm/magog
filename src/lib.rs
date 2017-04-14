@@ -10,7 +10,8 @@ extern crate fnv;
 
 use std::default::Default;
 use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::collections::{hash_map, HashSet, hash_set};
+use std::collections::{HashSet, hash_set};
+use std::slice;
 
 /// Handle for an entity in the entity component system.
 ///
@@ -28,45 +29,64 @@ pub trait AnyComponent {
 /// Storage for a single component type.
 #[derive(Serialize, Deserialize)]
 pub struct ComponentData<C> {
-    // TODO: Add reused index fields to entities and use VecMap with the
-    // index field instead of HashMap with the UID here for more
-    // efficient access.
-    data: fnv::FnvHashMap<Entity, C>,
+    /// Component data in a densely packed vector.
+    data: Vec<C>,
+    /// `Entity` values that correspond to indices in `data`.
+    id: Vec<Entity>,
+    /// Lookup from `Entity` values to `data` and `id` indices.
+    lookup: fnv::FnvHashMap<Entity, usize>,
 }
 
 impl<C> ComponentData<C> {
     /// Construct new empty `ComponentData` instance.
     pub fn new() -> ComponentData<C> {
-        ComponentData { data: fnv::FnvHashMap::default() }
+        ComponentData {
+            data: Vec::new(),
+            id: Vec::new(),
+            lookup: fnv::FnvHashMap::default()
+        }
     }
 
     /// Insert a component to an entity.
     pub fn insert(&mut self, e: Entity, comp: C) {
-        self.data.insert(e, comp);
+        debug_assert!(self.data.len() == self.id.len());
+
+        self.lookup.insert(e, self.data.len());
+        self.data.push(comp);
+        self.id.push(e);
     }
 
     /// Return whether an entity contains this component.
     pub fn contains(&self, e: Entity) -> bool {
-        self.data.contains_key(&e)
+        self.lookup.contains_key(&e)
     }
 
     /// Get a reference to a component only if it exists for this entity.
     pub fn get(&self, e: Entity) -> Option<&C> {
-        self.data.get(&e)
+        self.lookup.get(&e).map(|&idx| &self.data[idx])
     }
 
     /// Get a mutable reference to a component only if it exists for this entity.
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
-        self.data.get_mut(&e)
+        if let Some(idx) = self.lookup.get(&e).cloned() {
+            Some(&mut self.data[idx])
+        } else {
+            None
+        }
     }
 
-    /// Iterate entity-component pairs for this component.
-    pub fn iter(&self) -> hash_map::Iter<Entity, C> {
+    /// Iterate entity ids in this component.
+    pub fn ent_iter(&self) -> slice::Iter<Entity> {
+        self.id.iter()
+    }
+
+    /// Iterate elements in this component.
+    pub fn iter(&self) -> slice::Iter<C> {
         self.data.iter()
     }
 
-    /// Iterate mutable entity-component pairs for this component.
-    pub fn iter_mut(&mut self) -> hash_map::IterMut<Entity, C> {
+    /// Iterate mutable elements in this component.
+    pub fn iter_mut(&mut self) -> slice::IterMut<C> {
         self.data.iter_mut()
     }
 }
@@ -75,19 +95,39 @@ impl<C> Index<Entity> for ComponentData<C> {
     type Output = C;
 
     fn index<'a>(&'a self, e: Entity) -> &'a C {
-        self.data.get(&e).unwrap()
+        self.get(e).unwrap()
     }
 }
 
 impl<C> IndexMut<Entity> for ComponentData<C> {
     fn index_mut<'a>(&'a mut self, e: Entity) -> &'a mut C {
-        self.data.get_mut(&e).unwrap()
+        self.get_mut(e).unwrap()
     }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
     fn remove(&mut self, e: Entity) {
-        self.data.remove(&e);
+        debug_assert!(self.data.len() == self.id.len());
+        if let Some(&idx) = self.lookup.get(&e) {
+            debug_assert!(idx <= self.id.len());
+            debug_assert!(self.id[idx] == e);
+
+            // To keep the data compact, we do swap-remove with the last data item and update the
+            // lookup on the moved item. If the component being removed isn't the last item in the
+            // list, we need to reset the lookup value for the component that was moved.
+            if idx != self.id.len() - 1 {
+                let last_entity = self.id[self.id.len() - 1];
+                self.id.swap_remove(idx);
+                debug_assert!(self.id[idx] == last_entity);
+                self.lookup.insert(last_entity, idx);
+            } else {
+                self.id.swap_remove(idx);
+            }
+
+            self.data.swap_remove(idx);
+            self.lookup.remove(&e);
+
+        }
     }
 }
 
