@@ -45,7 +45,7 @@ fn test_ecs() {
     assert!(!ecs.contains(e1));
 
     let e2 = ecs.make();
-    assert!(e2 != e1);
+    assert_ne!(e2, e1);
 
     // Use the loadout system to create an entity.
     let loadout = Loadout::new().c(Desc {
@@ -55,12 +55,12 @@ fn test_ecs() {
 
     // Then instantiate an entity with that form.
     let e3 = loadout.make(&mut ecs);
-    assert!(ecs.desc[e3].icon == 10);
+    assert_eq!(ecs.desc[e3].icon, 10);
 
     // Check that serialization works.
     let saved = serde_json::to_string(&ecs).expect("ECS serialization failed");
     let ecs2: Ecs = serde_json::from_str(&saved).expect("ECS deserialization failed");
-    assert!(ecs2.desc[e3].icon == 10);
+    assert_eq!(ecs2.desc[e3].icon, 10);
 
     // Test deletion from component with multiple elements.
 
@@ -68,5 +68,5 @@ fn test_ecs() {
     ecs.desc.insert(e2, Desc { name: "Foo".to_string(), icon: 20 });
     // Remove first element, e3. ECS needs to move the e2 element.
     ecs.remove(e3);
-    assert!(ecs.desc[e2].icon == 20);
+    assert_eq!(ecs.desc[e2].icon, 20);
 }

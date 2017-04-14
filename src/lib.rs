@@ -392,7 +392,7 @@ macro_rules! Ecs {
             /// Get the loadout that corresponds to an existing entity.
             pub fn get(ecs: &Ecs, e: $crate::Entity) -> Loadout {
                 Loadout {
-                    $($compname: ecs.$compname.get(e).map(|e| e.clone())),+
+                    $($compname: ecs.$compname.get(e).cloned()),+
                 }
             }
 

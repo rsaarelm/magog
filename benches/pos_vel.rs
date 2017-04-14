@@ -55,7 +55,7 @@ fn build() -> Ecs {
 
 #[bench]
 fn bench_build(b: &mut Bencher) {
-    b.iter(|| build());
+    b.iter(build);
 }
 
 #[bench]
@@ -64,7 +64,7 @@ fn bench_update(b: &mut Bencher) {
 
     b.iter(|| {
         // Update
-        let with_velocity: Vec<Entity> = ecs.vel.ent_iter().map(|&e| e).collect();
+        let with_velocity: Vec<Entity> = ecs.vel.ent_iter().cloned().collect();
         for &e in &with_velocity {
             let vel = ecs.vel[e];
             ecs.pos.get_mut(e).map(|pos| {
