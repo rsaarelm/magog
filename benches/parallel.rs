@@ -59,7 +59,7 @@ fn bench_update(b: &mut Bencher) {
     let mut ecs = build();
 
     b.iter(|| {
-        let es: Vec<Entity> = ecs.r.ent_iter().map(|&e| e).collect();
+        let es: Vec<Entity> = ecs.r.iter().map(|(&e, _)| e).collect();
         for &e in &es {
             let rx = ecs.r[e].x;
             ecs.w1.get_mut(e).map(|w1| w1.x = rx);
