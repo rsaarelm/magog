@@ -10,6 +10,9 @@ use std::default::Default;
 use std::ops;
 use std::slice;
 
+use serde::ser::{Serialize, SerializeSeq};
+use serde::de::{Deserialize};
+
 /// Handle for an entity in the entity component system.
 ///
 /// The internal value is the unique identifier for the entity. No two
@@ -39,7 +42,6 @@ pub trait AnyComponent {
 }
 
 /// Storage for a single component type.
-#[derive(Serialize, Deserialize)]
 pub struct ComponentData<C> {
     /// Dense component data.
     data: Vec<C>,
@@ -164,6 +166,45 @@ impl<C> AnyComponent for ComponentData<C> {
 
     fn reserve_entity_space(&mut self) {
         self.entity_idx_to_data.push(Default::default());
+    }
+}
+
+impl<C: Serialize> serde::Serialize for ComponentData<C> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        // As long as we have the entity count, we can regenerate entity_idx_to_data, no need to
+        // serialize it.
+        let mut seq = s.serialize_seq(Some(3))?;
+        seq.serialize_element(&(self.entity_idx_to_data.len() as u32))?;
+        seq.serialize_element(&self.data)?;
+        seq.serialize_element(&self.entities)?;
+        seq.end()
+    }
+}
+
+#[derive(Deserialize)]
+struct Packed<C: Deserialize> {
+    entity_count: u32,
+    data: Vec<C>,
+    entities: Vec<Entity>,
+}
+
+impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
+    fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
+
+        let packed: Packed<C> = Deserialize::deserialize(d)?;
+
+        let mut entity_idx_to_data = Vec::new();
+        entity_idx_to_data.resize(packed.entity_count as usize, Default::default());
+
+        for (i, e) in packed.entities.iter().enumerate() {
+            entity_idx_to_data[e.idx as usize] = Index { uid: e.uid, data_idx: i as u32 };
+        }
+
+        Ok(ComponentData {
+            data: packed.data,
+            entities: packed.entities,
+            entity_idx_to_data: entity_idx_to_data,
+        })
     }
 }
 
