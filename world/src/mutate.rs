@@ -19,6 +19,13 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn set_player(&mut self, player: Option<Entity>);
 
+    /// Mark an entity as dead, but don't remove it from the system yet.
+    fn kill_entity(&mut self, e: Entity);
+
+    /// Remove an entity from the system.
+    ///
+    /// You generally do not want to call this directly. Mark the entity as dead and it will be
+    /// removed at the end of the turn.
     fn remove_entity(&mut self, e: Entity);
 
     /// Compute field-of-view into entity's map memory.
@@ -52,13 +59,21 @@ pub trait Mutate: Query + Terraform + Sized {
         let loc = try!(self.location(e).ok_or(())) + dir;
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
+            return Ok(());
         }
 
         Err(())
     }
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> CommandResult {
-        unimplemented!();
+        if let Some(loc) = self.location(e) {
+            if let Some(target) = self.mob_at(loc + dir) {
+                // TODO: Proper damage system.
+                self.kill_entity(target);
+                return Ok(());
+            }
+        }
+        Err(())
     }
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;

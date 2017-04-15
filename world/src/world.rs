@@ -149,6 +149,8 @@ impl Mutate for World {
         e
     }
 
+    fn kill_entity(&mut self, e: Entity) { self.spatial.remove(e); }
+
     fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 
     fn do_fov(&mut self, e: Entity) {
