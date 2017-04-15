@@ -59,15 +59,12 @@ impl<'a> World {
         }
     }
 
-    /* TODO: Reactivate
-
-    pub fn load<R: Read>(reader: &mut R) -> serde::DeserializeResult<World> {
-        let ret: serde::DeserializeResult<World> =
-            serde::deserialize_from(reader, bincode::SizeLimit::Infinite);
+    pub fn load<R: Read>(reader: &mut R) -> bincode::Result<World> {
+        let ret: bincode::Result<World> =
+            bincode::deserialize_from(reader, bincode::Infinite);
         if let &Ok(ref x) = &ret {
             if &x.version != GAME_VERSION {
-                panic!("Save game version {} does not match current version \
-                        {}",
+                panic!("Save game version {} does not match current version {}",
                        x.version,
                        GAME_VERSION);
             }
@@ -75,10 +72,9 @@ impl<'a> World {
         ret
     }
 
-    pub fn save<W: Write>(&self, writer: &mut W) -> serde::SerializeResult<()> {
-        serde::serialize_into(writer, self, bincode::SizeLimit::Infinite)
+    pub fn save<W: Write>(&self, writer: &mut W) -> bincode::Result<()> {
+        bincode::serialize_into(writer, self, bincode::Infinite)
     }
-    */
 }
 
 impl TerrainQuery for World {

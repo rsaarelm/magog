@@ -1,4 +1,5 @@
-use std::io::Write;
+use std::fs::File;
+use std::io::prelude::*;
 use euclid::{Point2D, Rect};
 use rand;
 use calx_grid::Dir6;
@@ -31,6 +32,15 @@ impl View {
             A => self.world.step(Dir6::Southwest),
             S => self.world.step(Dir6::South),
             D => self.world.step(Dir6::Southeast),
+            F5 => {
+                self.world.save(&mut File::create("save.gam").unwrap()).unwrap();
+                Ok(())
+            }
+            F9 => {
+                let mut savefile = File::open("save.gam").unwrap();
+                self.world = World::load(&mut savefile).unwrap();
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
