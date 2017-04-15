@@ -66,7 +66,7 @@ impl<C> ComponentData<C> {
 
     /// Insert a component to an entity.
     pub fn insert(&mut self, e: Entity, comp: C) {
-        debug_assert!(self.inner.data.len() == self.inner.entities.len());
+        debug_assert_eq!(self.inner.data.len(), self.inner.entities.len());
 
         if self.contains(e) {
             // Component is set for entity, replace existing component.
@@ -89,16 +89,14 @@ impl<C> ComponentData<C> {
     }
 
     /// Return whether an entity contains this component.
-    #[inline(always)]
     pub fn contains(&self, e: Entity) -> bool {
-        debug_assert!(e.uid != 0);
+        debug_assert_ne!(e.uid, 0);
 
         (e.idx as usize) < self.entity_idx_to_data.len() &&
-            self.entity_idx_to_data[e.idx as usize].uid == e.uid
+        self.entity_idx_to_data[e.idx as usize].uid == e.uid
     }
 
     /// Get a reference to a component only if it exists for this entity.
-    #[inline(always)]
     pub fn get(&self, e: Entity) -> Option<&C> {
         if self.contains(e) {
             Some(&self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
@@ -108,7 +106,6 @@ impl<C> ComponentData<C> {
     }
 
     /// Get a mutable reference to a component only if it exists for this entity.
-    #[inline(always)]
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
         if self.contains(e) {
             Some(&mut self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
@@ -136,20 +133,20 @@ impl<C> ComponentData<C> {
 impl<C> ops::Index<Entity> for ComponentData<C> {
     type Output = C;
 
-    fn index<'a>(&'a self, e: Entity) -> &'a C {
+    fn index(&self, e: Entity) -> &C {
         self.get(e).unwrap()
     }
 }
 
 impl<C> ops::IndexMut<Entity> for ComponentData<C> {
-    fn index_mut<'a>(&'a mut self, e: Entity) -> &'a mut C {
+    fn index_mut(&mut self, e: Entity) -> &mut C {
         self.get_mut(e).unwrap()
     }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
     fn remove(&mut self, e: Entity) {
-        debug_assert!(self.inner.data.len() == self.inner.entities.len());
+        debug_assert_eq!(self.inner.data.len(), self.inner.entities.len());
         if self.contains(e) {
             let removed_index = self.entity_idx_to_data[e.idx as usize];
             self.entity_idx_to_data[e.idx as usize] = Default::default();
@@ -180,7 +177,7 @@ struct Packed<C> {
     entities: Vec<Entity>,
 }
 
-impl<C: Serialize+Clone> serde::Serialize for ComponentData<C> {
+impl<C: Serialize + Clone> serde::Serialize for ComponentData<C> {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         self.inner.serialize(s)
     }
@@ -188,7 +185,7 @@ impl<C: Serialize+Clone> serde::Serialize for ComponentData<C> {
 
 impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
     fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
-        let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
+        let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;;
 
         // Regenerate cache.
         let mut entity_idx_to_data = Vec::new();
@@ -196,7 +193,10 @@ impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
             if e.idx as usize >= entity_idx_to_data.len() {
                 entity_idx_to_data.resize(e.idx as usize + 1, Default::default());
             }
-            entity_idx_to_data[e.idx as usize] = Index { uid: e.uid, data_idx: i as u32 };
+            entity_idx_to_data[e.idx as usize] = Index {
+                uid: e.uid,
+                data_idx: i as u32,
+            };
         }
 
         Ok(ComponentData {
@@ -410,7 +410,7 @@ macro_rules! Ecs {
 
 /// Build a component type mask to match component iteration with.
 ///
-/// You must have ComponentNum enum from the Ecs! macro expansion in scope
+/// You must have `ComponentNum` enum from the Ecs! macro expansion in scope
 /// when using this.
 #[macro_export]
 macro_rules! build_mask {
