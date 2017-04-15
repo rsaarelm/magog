@@ -185,7 +185,7 @@ impl<C: Serialize + Clone> serde::Serialize for ComponentData<C> {
 
 impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
     fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
-        let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;;
+        let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
 
         // Regenerate cache.
         let mut entity_idx_to_data = Vec::new();
