@@ -1,22 +1,9 @@
 # calx-ecs
 
-Calx-ecs is a serializable entity-component system for Rust.
+Calx-ecs is a simple and fast entity-component system for Rust. You want to use
+this if you're writing a computer game.
 
-It is based on a macro which generates a local ECS structure with serialization
-implemented.
+It uses a macro to generate a local ECS structure that can be serialized using
+Serde.
 
-## Usage
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-calx-ecs = "0.4"
-```
-
-and this to your crate root:
-
-```rust
-#[macro_use]
-extern crate calx_ecs;
-```
+See `tests/lib.rs` for a usage example.
