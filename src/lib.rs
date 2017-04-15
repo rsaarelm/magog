@@ -10,13 +10,9 @@ use std::default::Default;
 use std::ops;
 use std::slice;
 
-use serde::ser::{Serialize, SerializeSeq};
-use serde::de::{Deserialize};
+use serde::{Serialize, Deserialize};
 
 /// Handle for an entity in the entity component system.
-///
-/// The internal value is the unique identifier for the entity. No two
-/// entities should get the same UID during the lifetime of the ECS.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Entity {
     uid: u32,
@@ -36,18 +32,23 @@ struct Index {
 pub trait AnyComponent {
     /// Remove an entity's component.
     fn remove(&mut self, e: Entity);
-
-    /// Increment space for entities by one.
-    fn reserve_entity_space(&mut self);
 }
 
-/// Storage for a single component type.
-pub struct ComponentData<C> {
+/// Nonredundant component data, in separate struct for efficient serialization.
+#[derive(Serialize, Deserialize)]
+struct DenseComponentData<C> {
     /// Dense component data.
     data: Vec<C>,
     /// Entity idx corresponding to elements in data.
     entities: Vec<Entity>,
-    /// Sparse array mapping entity indices to data values.
+}
+
+/// Storage for a single component type.
+pub struct ComponentData<C> {
+    inner: DenseComponentData<C>,
+    /// Map entity indices to component data.
+    ///
+    /// This array spans all live component indices.
     entity_idx_to_data: Vec<Index>,
 }
 
@@ -55,24 +56,31 @@ impl<C> ComponentData<C> {
     /// Construct new empty `ComponentData` instance.
     pub fn new() -> ComponentData<C> {
         ComponentData {
-            data: Vec::new(),
-            entities: Vec::new(),
+            inner: DenseComponentData {
+                data: Vec::new(),
+                entities: Vec::new(),
+            },
             entity_idx_to_data: Vec::new(),
         }
     }
 
     /// Insert a component to an entity.
     pub fn insert(&mut self, e: Entity, comp: C) {
-        debug_assert!(self.data.len() == self.entities.len());
+        debug_assert!(self.inner.data.len() == self.inner.entities.len());
 
         if self.contains(e) {
             // Component is set for entity, replace existing component.
-            self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize] = comp;
+            self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize] = comp;
         } else {
+            // Grow lookup vector if needed.
+            if e.idx as usize >= self.entity_idx_to_data.len() {
+                self.entity_idx_to_data.resize(e.idx as usize + 1, Default::default());
+            }
+
             // Add a new component.
-            let data_idx = self.data.len() as u32;
-            self.data.push(comp);
-            self.entities.push(e);
+            let data_idx = self.inner.data.len() as u32;
+            self.inner.data.push(comp);
+            self.inner.entities.push(e);
             self.entity_idx_to_data[e.idx as usize] = Index {
                 uid: e.uid,
                 data_idx: data_idx,
@@ -84,16 +92,16 @@ impl<C> ComponentData<C> {
     #[inline(always)]
     pub fn contains(&self, e: Entity) -> bool {
         debug_assert!(e.uid != 0);
-        debug_assert!((e.idx as usize) < self.entity_idx_to_data.len());
 
-        self.entity_idx_to_data[e.idx as usize].uid == e.uid
+        (e.idx as usize) < self.entity_idx_to_data.len() &&
+            self.entity_idx_to_data[e.idx as usize].uid == e.uid
     }
 
     /// Get a reference to a component only if it exists for this entity.
     #[inline(always)]
     pub fn get(&self, e: Entity) -> Option<&C> {
         if self.contains(e) {
-            Some(&self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+            Some(&self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
         } else {
             None
         }
@@ -103,7 +111,7 @@ impl<C> ComponentData<C> {
     #[inline(always)]
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
         if self.contains(e) {
-            Some(&mut self.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+            Some(&mut self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
         } else {
             None
         }
@@ -111,17 +119,17 @@ impl<C> ComponentData<C> {
 
     /// Iterate entity ids in this component.
     pub fn ent_iter(&self) -> slice::Iter<Entity> {
-        self.entities.iter()
+        self.inner.entities.iter()
     }
 
     /// Iterate elements in this component.
     pub fn iter(&self) -> slice::Iter<C> {
-        self.data.iter()
+        self.inner.data.iter()
     }
 
     /// Iterate mutable elements in this component.
     pub fn iter_mut(&mut self) -> slice::IterMut<C> {
-        self.data.iter_mut()
+        self.inner.data.iter_mut()
     }
 }
 
@@ -141,7 +149,7 @@ impl<C> ops::IndexMut<Entity> for ComponentData<C> {
 
 impl<C> AnyComponent for ComponentData<C> {
     fn remove(&mut self, e: Entity) {
-        debug_assert!(self.data.len() == self.entities.len());
+        debug_assert!(self.inner.data.len() == self.inner.entities.len());
         if self.contains(e) {
             let removed_index = self.entity_idx_to_data[e.idx as usize];
             self.entity_idx_to_data[e.idx as usize] = Default::default();
@@ -149,60 +157,50 @@ impl<C> AnyComponent for ComponentData<C> {
             // To keep the data compact, we do swap-remove with the last data item and update the
             // lookup on the moved item. If the component being removed isn't the last item in the
             // list, we need to reset the lookup value for the component that was moved.
-            if removed_index.data_idx as usize != self.entities.len() - 1 {
-                let last_entity = self.entities[self.entities.len() - 1];
-                self.entities.swap_remove(removed_index.data_idx as usize);
+            if removed_index.data_idx as usize != self.inner.entities.len() - 1 {
+                let last_entity = self.inner.entities[self.inner.entities.len() - 1];
+                self.inner.entities.swap_remove(removed_index.data_idx as usize);
                 self.entity_idx_to_data[last_entity.idx as usize] = Index {
                     uid: last_entity.uid,
                     data_idx: removed_index.data_idx,
                 };
             } else {
-                self.entities.swap_remove(removed_index.data_idx as usize);
+                self.inner.entities.swap_remove(removed_index.data_idx as usize);
             }
 
-            self.data.swap_remove(removed_index.data_idx as usize);
+            self.inner.data.swap_remove(removed_index.data_idx as usize);
         }
     }
-
-    fn reserve_entity_space(&mut self) {
-        self.entity_idx_to_data.push(Default::default());
-    }
 }
 
-impl<C: Serialize> serde::Serialize for ComponentData<C> {
-    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        // As long as we have the entity count, we can regenerate entity_idx_to_data, no need to
-        // serialize it.
-        let mut seq = s.serialize_seq(Some(3))?;
-        seq.serialize_element(&(self.entity_idx_to_data.len() as u32))?;
-        seq.serialize_element(&self.data)?;
-        seq.serialize_element(&self.entities)?;
-        seq.end()
-    }
-}
-
-#[derive(Deserialize)]
-struct Packed<C: Deserialize> {
+#[derive(Serialize, Deserialize)]
+struct Packed<C> {
     entity_count: u32,
     data: Vec<C>,
     entities: Vec<Entity>,
 }
 
+impl<C: Serialize+Clone> serde::Serialize for ComponentData<C> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.inner.serialize(s)
+    }
+}
+
 impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
     fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
+        let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
 
-        let packed: Packed<C> = Deserialize::deserialize(d)?;
-
+        // Regenerate cache.
         let mut entity_idx_to_data = Vec::new();
-        entity_idx_to_data.resize(packed.entity_count as usize, Default::default());
-
-        for (i, e) in packed.entities.iter().enumerate() {
+        for (i, e) in inner.entities.iter().enumerate() {
+            if e.idx as usize >= entity_idx_to_data.len() {
+                entity_idx_to_data.resize(e.idx as usize + 1, Default::default());
+            }
             entity_idx_to_data[e.idx as usize] = Index { uid: e.uid, data_idx: i as u32 };
         }
 
         Ok(ComponentData {
-            data: packed.data,
-            entities: packed.entities,
+            inner: inner,
             entity_idx_to_data: entity_idx_to_data,
         })
     }
@@ -248,8 +246,6 @@ impl<ST: Default + Store> Ecs<ST> {
             idx
         } else {
             self.next_idx += 1;
-            self.store.for_each_component(|c| c.reserve_entity_space());
-            self.active.reserve_entity_space();
             self.next_idx - 1
         };
 
