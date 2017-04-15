@@ -1,6 +1,7 @@
 use std::io::{Read, Write};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
+use std::slice;
 use bincode;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
@@ -123,6 +124,8 @@ impl Query for World {
 
     fn rng_seed(&self) -> u32 { self.flags.seed }
 
+    fn entities(&self) -> slice::Iter<Entity> { self.ecs.iter() }
+
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
     fn ecs<'a>(&'a self) -> &'a Ecs { &self.ecs }
@@ -131,7 +134,7 @@ impl Query for World {
 impl Mutate for World {
     fn next_tick(&mut self) -> CommandResult {
         // TODO: Run AI
-        // TODO: Clean dead
+        self.clean_dead();
         self.flags.tick += 1;
         Ok(())
     }

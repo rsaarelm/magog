@@ -33,7 +33,12 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Remove destroyed entities from system
     fn clean_dead(&mut self) {
-        unimplemented!();
+        let kill_list: Vec<Entity> =
+            self.entities().filter(|&&e| !self.is_alive(e)).cloned().collect();
+
+        for e in kill_list.into_iter() {
+            self.remove_entity(e);
+        }
     }
 
     fn place_entity(&mut self, e: Entity, loc: Location) {

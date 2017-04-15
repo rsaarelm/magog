@@ -1,4 +1,5 @@
 use std::iter::FromIterator;
+use std::slice;
 use calx_grid::Dir6;
 use calx_ecs::Entity;
 use components::{Alignment, BrainState, Icon};
@@ -32,10 +33,13 @@ pub trait Query: TerrainQuery {
     /// Return maximum health of an entity.
     fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
 
+    /// Return all entities in the world.
+    fn entities(&self) -> slice::Iter<Entity>;
+
     // XXX: Would be nicer if entities_at returned an iterator. Probably want to wait for impl
     // Trait return types before jumping to this.
 
-    /// Return an iterator to entities at the given location.
+    /// Return entities at the given location.
     fn entities_at(&self, loc: Location) -> Vec<Entity>;
 
     /// Return reference to the world entity component system.
