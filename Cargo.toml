@@ -19,7 +19,7 @@ time = "0.1"
 glium = "0.16"
 scancode = "0.1"
 serde = "0.9"
-calx-ecs = "0.3"
+calx-ecs = "0.5"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }

@@ -5,7 +5,7 @@ dependencies = [
  "bincode 1.0.0-alpha7 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
- "calx-ecs 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "calx-ecs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "euclid 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -120,19 +120,9 @@ dependencies = [
 
 [[package]]
 name = "calx-ecs"
-version = "0.3.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "fnv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.23 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "calx-ecs"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "fnv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 0.9.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 0.9.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -517,7 +507,7 @@ version = "0.1.0"
 dependencies = [
  "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
- "calx-ecs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "calx-ecs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "display 0.1.0",
  "euclid 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -916,7 +906,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#499495156a8660a576245256c77280cf443fe40a"
+source = "git+https://github.com/rsaarelm/vitral#83c4a7772d47dff9a51848966b0a69387d2e39cd"
 dependencies = [
  "euclid 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -925,7 +915,7 @@ dependencies = [
 [[package]]
 name = "vitral-atlas"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#499495156a8660a576245256c77280cf443fe40a"
+source = "git+https://github.com/rsaarelm/vitral#83c4a7772d47dff9a51848966b0a69387d2e39cd"
 dependencies = [
  "euclid 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
@@ -1048,8 +1038,7 @@ dependencies = [
 "checksum byteorder 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c40977b0ee6b9885c9013cd41d9feffdd22deb3bb4dc3a71d901cc7a77de18c8"
 "checksum calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
 "checksum calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-ecs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9389807f5f2c52b9c4229c2086907714e00bb5f115ac2f065577d8e92a3c1db2"
-"checksum calx-ecs 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2c8fefb5af15737ef78fd45c69f93515be156a400c2208635563c0e6a4649c3b"
+"checksum calx-ecs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c9b439644d76b44b1bc741cb6e9fe886bdd457c003dd6adbeae6b16c9f195434"
 "checksum calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
 "checksum cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de1e760d7b6535af4241fca8bd8adf68e2e7edacc6b29f5d399050c5e48cf88c"
 "checksum cgl 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "8bdd78cca65a739cb5475dbf6b6bbb49373e327f4a6f2b499c0f98632df38c10"
