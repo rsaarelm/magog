@@ -42,6 +42,7 @@ impl<T: Rng> RngExt for T {
 /// For games that want to store the current Rng state as a part of the save
 /// game. Works by casting the Rng representation into a binary blob, will
 /// crash and burn if the Rng struct is not plain-old-data.
+#[derive(Clone, Debug)]
 pub struct EncodeRng<T> {
     inner: T,
 }
