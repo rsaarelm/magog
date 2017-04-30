@@ -201,8 +201,8 @@ impl serde::Serialize for Spatial {
     }
 }
 
-impl serde::Deserialize for Spatial {
-    fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
+impl<'a> serde::Deserialize<'a> for Spatial {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         Ok(Spatial::slurp(serde::Deserialize::deserialize(d)?))
     }
 }

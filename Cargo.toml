@@ -18,8 +18,8 @@ euclid = "0.11"
 time = "0.1"
 glium = "0.16"
 scancode = "0.1"
-serde = "0.9"
-calx-ecs = "0.5"
+serde = "1.0"
+calx-ecs = "0.6"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }
