@@ -1,6 +1,6 @@
 [package]
 name = "calx-ecs"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Serializable entity component system for games"
 keywords = ["gamedev", "ecs"]
