@@ -183,8 +183,8 @@ impl<C: Serialize + Clone> serde::Serialize for ComponentData<C> {
     }
 }
 
-impl<C: Deserialize> serde::Deserialize for ComponentData<C> {
-    fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
+impl<'a, C: Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
 
         // Regenerate cache.
