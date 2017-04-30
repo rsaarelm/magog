@@ -9,6 +9,6 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 num = "0.1"
 rand = "0.3"
-serde_derive = "0.9"
-serde = "0.9"
+serde_derive = "1.0"
+serde = "1.0"
 euclid = "0.11"

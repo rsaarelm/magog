@@ -74,8 +74,8 @@ impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {
     }
 }
 
-impl<T: Rng + 'static> serde::Deserialize for EncodeRng<T> {
-    fn deserialize<D: serde::Deserializer>(d: D) -> Result<Self, D::Error> {
+impl<'a, T: Rng + 'static> serde::Deserialize<'a> for EncodeRng<T> {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         let blob: Vec<u8> = serde::Deserialize::deserialize(d)?;
         unsafe {
             if blob.len() == mem::size_of::<T>() {
