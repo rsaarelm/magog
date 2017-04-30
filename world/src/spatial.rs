@@ -137,24 +137,13 @@ impl Spatial {
 
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
-        // XXX: Can't make the API return an iterator (more efficient than
-        // running collect) since the chain depends on a closure that captures
-        // the 'parent' parameter from the outside scope, and closures can't
-        // be typed in the return signature.
-
-        // TODO: Get range iteration for BTreeMaps working in stable Rust.
-        // self.place_to_entities.range(Included(&In(parent, None)), Unbounded)
-        //     // Consume the contingent elements for the parent container.
-        //     .take_while(|&(ref k, _)| if let &&In(ref p, _) = k { *p == parent } else { false })
-
-        // XXX: This replacement thing is quite nasty, it iterates over the
-        // whole collection for every query.
-        self.place_to_entities
-            .iter()
-            .filter(|&(ref k, _)| { if let &&In(ref p, _) = k { *p == parent } else { false } })
-            .flat_map(|(_, ref v)| v.iter())
-            .map(|&x| x)
-            .collect()
+        self.place_to_entities.range(In(parent, None)..)
+             // Consume the contiguous elements for the parent container.
+             // This expects the ordering of the `Place` type to group contents
+             // of the same parent together.
+             .take_while(|&(k, _)| if let &In(ref p, _) = k { *p == parent } else { false })
+             .flat_map(|(_, ref e)| e.iter().cloned())
+             .collect()
     }
 
     pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
