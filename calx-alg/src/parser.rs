@@ -79,7 +79,7 @@ macro_rules! command_parser {
                                     let param: $argtype = FromStr::from_str(arg)?;
                                     param
                                 } else {
-                                    return parse_err(format!("Too few arguments"));
+                                    return parse_err("Too few arguments".to_string());
                                 }
                             }),*
                         );
@@ -89,7 +89,7 @@ macro_rules! command_parser {
                     x => parse_err(format!("Unknown command {}", x)),
                 }
             } else {
-                return parse_err(format!("No input"));
+                return parse_err("No input".to_string());
             }
         }
     }
