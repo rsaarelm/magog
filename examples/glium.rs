@@ -25,7 +25,7 @@ fn load_image<V>(display: &glium::Display,
                       .collect();
     let image = vitral::ImageBuffer {
         size: Size2D::new(w, h),
-        pixels: pixels,
+        pixels,
     };
 
     let id = backend.make_texture(display, image);
@@ -45,11 +45,11 @@ impl vitral::Context for ContextBase {
     type T = usize;
     type V = DefaultVertex;
 
-    fn state<'a>(&'a self) -> &'a vitral::State<usize, DefaultVertex> {
+    fn state(&self) -> &vitral::State<usize, DefaultVertex> {
         &self.state
     }
 
-    fn state_mut<'a>(&'a mut self) -> &'a mut vitral::State<usize, DefaultVertex> {
+    fn state_mut(&mut self) -> &mut vitral::State<usize, DefaultVertex> {
         &mut self.state
     }
 
@@ -61,7 +61,7 @@ impl vitral::Context for ContextBase {
         DefaultVertex {
             pos: [pos.x, pos.y],
             tex_coord: [tex_coord.x, tex_coord.y],
-            color: color,
+            color,
         }
     }
 }

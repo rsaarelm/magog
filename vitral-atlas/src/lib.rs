@@ -20,7 +20,7 @@ pub struct Atlas<T> {
 impl<T: Clone> Atlas<T> {
     pub fn new(texture: T, size: Size2D<u32>) -> Atlas<T> {
         Atlas {
-            texture: texture,
+            texture,
             slots: vec![Rect::new(Point2D::new(0, 0), size)],
             placed: Vec::new(),
             atlas: ImageBuffer::new(size.width, size.height),
@@ -59,7 +59,7 @@ impl<T: Clone> Atlas<T> {
 
     pub fn size(&self) -> Size2D<u32> { self.atlas.size }
 
-    pub fn texture<'a>(&'a self) -> &'a T { &self.texture }
+    pub fn texture(&self) -> &T { &self.texture }
 
     /// Write the current atlas image to the system texture handle if the atlas has changed.
     ///

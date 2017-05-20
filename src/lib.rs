@@ -47,7 +47,7 @@ impl ImageBuffer {
                          .collect();
         ImageBuffer {
             size: Size2D::new(width, height),
-            pixels: pixels,
+            pixels,
         }
     }
 
@@ -228,8 +228,8 @@ impl<T, V> State<T, V>
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: [ClickState::Unpressed, ClickState::Unpressed, ClickState::Unpressed],
 
-            default_font: default_font,
-            solid_texture: solid_texture,
+            default_font,
+            solid_texture,
 
             text_input: Vec::new(),
 
@@ -237,7 +237,7 @@ impl<T, V> State<T, V>
 
             clip_stack: Vec::new(),
 
-            screen_size: screen_size,
+            screen_size,
         }
     }
 
@@ -338,8 +338,8 @@ impl<T, V> State<T, V>
 
         if self.current_batch_is_invalid(texture.clone()) {
             self.draw_list.push(DrawBatch {
-                texture: texture,
-                clip: clip,
+                texture,
+                clip,
                 vertices: Vec::new(),
                 triangle_indices: Vec::new(),
             });
@@ -355,12 +355,12 @@ pub trait Context: Sized {
     /// Return the internal GUI state.
     ///
     /// This is mostly intended for other trait methods, not for direct use.
-    fn state<'a>(&'a self) -> &'a State<Self::T, Self::V>;
+    fn state(&self) -> &State<Self::T, Self::V>;
 
     /// Return mutable reference to the internal GUI state.
     ///
     /// This is mostly intended for other trait methods, not for direct use.
-    fn state_mut<'a>(&'a mut self) -> &'a mut State<Self::T, Self::V>;
+    fn state_mut(&mut self) -> &mut State<Self::T, Self::V>;
 
     /// Construct a new vertex.
     ///
@@ -372,7 +372,7 @@ pub trait Context: Sized {
                   -> Self::V;
 
     /// Return reference to the currently active font.
-    fn current_font<'a>(&'a self) -> Rc<FontData<Self::T>> {
+    fn current_font(&self) -> Rc<FontData<Self::T>> {
         self.state().default_font.clone()
     }
 
@@ -567,7 +567,7 @@ pub trait Context: Sized {
     }
 
     /// Create a sub-context with geometry bound to a rectangle.
-    fn bound_r<'a, U: ConvertibleUnit>(&'a mut self, area: TypedRect<f32, U>) -> Bounds<'a, Self> {
+    fn bound_r<U: ConvertibleUnit>(&mut self, area: TypedRect<f32, U>) -> Bounds<Self> {
         let area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         Bounds {
             parent: self,
@@ -577,9 +577,9 @@ pub trait Context: Sized {
     }
 
     /// Create a sub-context with geometry bound to a rectangle and clip drawing to the bounds.
-    fn bound_clipped_r<'a, U: ConvertibleUnit>(&'a mut self,
+    fn bound_clipped_r<U: ConvertibleUnit>(&mut self,
                                                area: TypedRect<f32, U>)
-                                               -> Bounds<'a, Self> {
+                                               -> Bounds<Self> {
         let area = ConvertibleUnit::convert_rect(&self.scale_factor(), area);
         self.state_mut().push_clip_rect(area);
         Bounds {
@@ -590,25 +590,25 @@ pub trait Context: Sized {
     }
 
     /// Helper method for calling `bound_r` with pixel coordinates.
-    fn bound<'a>(&'a mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<'a, Self> {
+    fn bound(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
         self.bound_r(Rect::new(Point2D::new(x as f32, y as f32),
                                Size2D::new(w as f32, h as f32)))
     }
 
     /// Helper method for calling `bound_clipped_r` with pixel coordinates.
-    fn bound_clipped<'a>(&'a mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<'a, Self> {
+    fn bound_clipped(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
         self.bound_clipped_r(Rect::new(Point2D::new(x as f32, y as f32),
                                        Size2D::new(w as f32, h as f32)))
     }
 
     /// Helper method for calling `bound_r` with fractional coordinates.
-    fn bound_f<'a>(&'a mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<'a, Self> {
+    fn bound_f(&mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<Self> {
         self.bound_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
                                                            TypedSize2D::new(w, h)))
     }
 
     /// Helper method for calling `bound_clipped_r` with fractional coordinates.
-    fn bound_clipped_f<'a>(&'a mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<'a, Self> {
+    fn bound_clipped_f(&mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<Self> {
         self.bound_clipped_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
                                                                    TypedSize2D::new(w, h)))
     }
@@ -716,11 +716,11 @@ impl<'a, C: Context> Context for Bounds<'a, C> {
     type T = C::T;
     type V = C::V;
 
-    fn state<'b>(&'b self) -> &'b State<Self::T, Self::V> {
+    fn state(&self) -> &State<Self::T, Self::V> {
         self.parent.state()
     }
 
-    fn state_mut<'b>(&'b mut self) -> &'b mut State<Self::T, Self::V> {
+    fn state_mut(&mut self) -> &mut State<Self::T, Self::V> {
         self.parent.state_mut()
     }
 
