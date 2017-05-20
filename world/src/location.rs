@@ -1,8 +1,8 @@
-use std::ops::{Add, Sub};
-use std::num::Wrapping;
-use euclid::Point2D;
 use calx_alg::{compact_bits_by_2, noise, spread_bits_by_2};
 use calx_grid::{Dir6, GridNode, HexGeom};
+use euclid::Point2D;
+use std::num::Wrapping;
+use std::ops::{Add, Sub};
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
@@ -63,11 +63,19 @@ impl Location {
 
     /// Hex distance from this location to the other one, if applicable.
     pub fn distance_from(&self, other: Location) -> Option<i32> {
-        if let Some(v) = self.v2_at(other) { Some(v.hex_dist()) } else { None }
+        if let Some(v) = self.v2_at(other) {
+            Some(v.hex_dist())
+        } else {
+            None
+        }
     }
 
     pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
-        if let Some(v) = self.v2_at(other) { Some(Dir6::from_v2(v)) } else { None }
+        if let Some(v) = self.v2_at(other) {
+            Some(Dir6::from_v2(v))
+        } else {
+            None
+        }
     }
 
     /// A pseudorandom value corresponding to this specific location.

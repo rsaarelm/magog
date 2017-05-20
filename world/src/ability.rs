@@ -1,6 +1,6 @@
+use self::Ability::*;
 use calx_ecs::Entity;
 use spatial::Place;
-use self::Ability::*;
 
 /// Ability describes some way of affecting the game world. It is generally
 /// attached to a mob or an item.

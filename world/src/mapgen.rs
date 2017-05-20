@@ -1,13 +1,13 @@
-use std::collections::BTreeSet;
-use std::cmp::max;
-use rand::{Rand, Rng, sample};
-use euclid::Point2D;
-use calx_grid::Dir6;
 use calx_alg::{RandomPermutation, RngExt};
+use calx_grid::Dir6;
+use euclid::Point2D;
 use location::Location;
+use onscreen_locations;
+use rand::{Rand, Rng, sample};
+use std::cmp::max;
+use std::collections::BTreeSet;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
-use onscreen_locations;
 
 pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
     where T: TerrainQuery + Terraform,
@@ -32,8 +32,8 @@ pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_
         // Prefer digging narrow corridors, there's an increasing chance to abort the dig when the
         // selected location is in a very open space.
         let adjacent_floors = Dir6::iter()
-                                  .filter(|d| world.terrain(dig_loc + **d).is_open())
-                                  .count();
+            .filter(|d| world.terrain(dig_loc + **d).is_open())
+            .count();
         if rng.gen_range(0, max(1, adjacent_floors * 2)) != 0 {
             continue;
         }
@@ -73,23 +73,27 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
               I: Iterator<Item = &'a Location>
     {
         i.filter(|&x| {
-             DIRS4.iter()
-                  .filter(|&d| world.terrain(*x + *d).is_open())
-                  .count() == 1
-         })
-         .cloned()
-         .collect()
+                        DIRS4
+                            .iter()
+                            .filter(|&d| world.terrain(*x + *d).is_open())
+                            .count() == 1
+                    })
+            .cloned()
+            .collect()
     }
 
     let mut retries_left = 1000;
 
-    static DIRS4: [Dir6; 4] = [Dir6::Northeast, Dir6::Southeast, Dir6::Southwest, Dir6::Northwest];
+    static DIRS4: [Dir6; 4] = [Dir6::Northeast,
+                               Dir6::Southeast,
+                               Dir6::Southwest,
+                               Dir6::Northwest];
 
     let mut unvisited: BTreeSet<Location> = onscreen_locations()
-                                                .iter()
-                                                .filter(|p| p.x % 2 == 0 && p.y % 2 == 0)
-                                                .map(|p| Location::new(p.x as i8, p.y as i8, 0))
-                                                .collect();
+        .iter()
+        .filter(|p| p.x % 2 == 0 && p.y % 2 == 0)
+        .map(|p| Location::new(p.x as i8, p.y as i8, 0))
+        .collect();
     let mut visited = BTreeSet::new();
 
     let mut current = *sample(rng, unvisited.iter(), 1)[0];
@@ -97,10 +101,11 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
     visited.insert(current);
 
     while !unvisited.is_empty() {
-        let dig_options: Vec<Dir6> = DIRS4.iter()
-                                          .cloned()
-                                          .filter(|d| unvisited.contains(&(current + *d + *d)))
-                                          .collect();
+        let dig_options: Vec<Dir6> = DIRS4
+            .iter()
+            .cloned()
+            .filter(|d| unvisited.contains(&(current + *d + *d)))
+            .collect();
         if dig_options.is_empty() {
             // Dead end, jump to an earlier pos.
             current = *sample(rng, visited.iter(), 1)[0];
@@ -165,7 +170,7 @@ pub fn rooms<T, R>(world: &mut T, rng: &mut R)
         let sites = onscreen_locations();
 
         for site in RandomPermutation::new(rng, sites.len())
-                        .map(|idx| Location::new(0, 0, 0) + sites[idx]) {
+                .map(|idx| Location::new(0, 0, 0) + sites[idx]) {
             if let Some(badness) = room.fit_badness(world, site) {
                 if let Some((best, best_badness)) = best_site {
                     if badness < best_badness {

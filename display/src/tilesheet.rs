@@ -1,5 +1,5 @@
-use image::GenericImage;
 use euclid::{Point2D, Rect, Size2D};
+use image::GenericImage;
 
 /// Return the tiles on a tile sheet image.
 ///

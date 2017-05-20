@@ -1,6 +1,6 @@
+use components::{Icon, Brain, Desc, Health, MapMemory};
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
-use components::{Icon, Brain, Desc, Health, MapMemory};
 use world::{Component, Loadout};
 
 /// Forms are the prototypes for the entities you create.
@@ -32,10 +32,10 @@ impl Form {
             min_depth: 0,
             // category: FormType::Creature,
             loadout: Loadout::new()
-                         .c(Stats::new(power, intrinsics))
-                         .c(Desc::new(name, brush))
-                         .c(Brain::enemy())
-                         .c(Health::new()),
+                .c(Stats::new(power, intrinsics))
+                .c(Desc::new(name, brush))
+                .c(Brain::enemy())
+                .c(Health::new()),
         }
     }
 
@@ -58,7 +58,7 @@ impl Form {
     pub fn name(&self) -> Option<&str> {
         match self.loadout.desc {
             Some(ref desc) => Some(&desc.name[..]),
-            None => None
+            None => None,
         }
     }
 

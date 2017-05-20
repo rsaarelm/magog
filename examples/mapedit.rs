@@ -16,15 +16,13 @@ pub mod mapedit_mod;
 
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
+use mapedit_mod::View;
 use vitral::Context;
 use world::World;
-use mapedit_mod::View;
 
 pub fn main() {
     // Construct display and Vitral context.
-    let display = glutin::WindowBuilder::new()
-                      .build_glium()
-                      .unwrap();
+    let display = glutin::WindowBuilder::new().build_glium().unwrap();
 
     let mut backend = display::Backend::new(&display, 640, 480);
 

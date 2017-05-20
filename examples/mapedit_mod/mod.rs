@@ -1,15 +1,15 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::collections::HashSet;
-use std::num::Wrapping;
+use calx_grid::{Dir6, Prefab};
+use display;
 use euclid::{Point2D, Rect};
 use scancode::Scancode;
+use std::collections::HashSet;
+use std::fs::File;
+use std::io::prelude::*;
+use std::num::Wrapping;
+use vitral::{self, ButtonAction, Align, FracPoint2D};
 use vitral::Context;
-use calx_grid::{Dir6, Prefab};
 use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World, Terrain};
 use world::errors::*;
-use display;
-use vitral::{self, ButtonAction, Align, FracPoint2D};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum PaintMode {
@@ -113,7 +113,9 @@ impl View {
         {
             let mut context = context.bound(0, 360, 640, 120);
 
-            match context.bound(10, 10, 100, 10).button(&format!("left: {:?}", self.fore_terrain)) {
+            match context
+                      .bound(10, 10, 100, 10)
+                      .button(&format!("left: {:?}", self.fore_terrain)) {
                 ButtonAction::LeftClicked => {
                     self.mode = PaintMode::Terrain;
                     self.fore_terrain = prev_terrain(self.fore_terrain);
@@ -125,7 +127,9 @@ impl View {
                 _ => {}
             };
 
-            match context.bound(112, 10, 100, 10).button(&format!("right: {:?}", self.back_terrain)) {
+            match context
+                      .bound(112, 10, 100, 10)
+                      .button(&format!("right: {:?}", self.back_terrain)) {
                 ButtonAction::LeftClicked => {
                     self.mode = PaintMode::Terrain;
                     self.back_terrain = prev_terrain(self.back_terrain);
@@ -137,14 +141,17 @@ impl View {
                 _ => {}
             };
 
-            match context.bound(10, 22, 100, 10).button(&format!("entity: {}", self.entity)) {
+            match context
+                      .bound(10, 22, 100, 10)
+                      .button(&format!("entity: {}", self.entity)) {
                 ButtonAction::LeftClicked => {
                     self.mode = PaintMode::Entity;
 
                     let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                    let idx = names.iter()
-                                   .position(|x| *x == &self.entity[..])
-                                   .expect(&format!("Invalid current entity '{}'", self.entity));
+                    let idx = names
+                        .iter()
+                        .position(|x| *x == &self.entity[..])
+                        .expect(&format!("Invalid current entity '{}'", self.entity));
 
                     self.entity = names[(idx + (names.len() - 1)) % names.len()].to_string();
                 }
@@ -152,9 +159,10 @@ impl View {
                     self.mode = PaintMode::Entity;
 
                     let names: Vec<&str> = world::FORMS.iter().filter_map(|x| x.name()).collect();
-                    let idx = names.iter()
-                                   .position(|x| *x == &self.entity[..])
-                                   .expect(&format!("Invalid current entity '{}'", self.entity));
+                    let idx = names
+                        .iter()
+                        .position(|x| *x == &self.entity[..])
+                        .expect(&format!("Invalid current entity '{}'", self.entity));
 
                     self.entity = names[(idx + 1) % names.len()].to_string();
                 }
@@ -164,7 +172,10 @@ impl View {
 
             let mut pos = FracPoint2D::new(1.0, 0.05);
             for loc in view.cursor_loc.iter() {
-                pos = context.draw_text(pos, Align::Right, [1.0, 1.0, 1.0, 1.0], &format!("{:?}", loc));
+                pos = context.draw_text(pos,
+                                        Align::Right,
+                                        [1.0, 1.0, 1.0, 1.0],
+                                        &format!("{:?}", loc));
             }
 
         }
@@ -209,7 +220,8 @@ impl View {
         self.world = World::new(1);
         // Prefabs do not contain positioning data. The standard fullscreen prefab which includes a
         // one-cell wide offscreen boundary goes in a bounding box with origin at (-21, -22).
-        self.world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
+        self.world
+            .deploy_prefab(Location::new(-21, -22, 0), &prefab);
 
         // We don't want mapedit to have an active player entity.
         self.world.set_player(None);
@@ -279,7 +291,11 @@ impl View {
     }
 
     fn move_camera(&mut self, delta: Point2D<i32>, dz: i8) {
-        let second_delta = if self.camera_lock { delta } else { Point2D::new(0, 0) };
+        let second_delta = if self.camera_lock {
+            delta
+        } else {
+            Point2D::new(0, 0)
+        };
 
         let (a, b) = self.camera;
         self.camera = (a + delta, b + second_delta);

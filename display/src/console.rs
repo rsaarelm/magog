@@ -1,11 +1,11 @@
-use std::io::prelude::*;
-use std::io;
-use std::str;
-use std::mem;
-use time;
-use euclid::{Point2D, Rect};
-use vitral::{Align, Context};
 use calx_alg::split_line;
+use euclid::{Point2D, Rect};
+use std::io;
+use std::io::prelude::*;
+use std::mem;
+use std::str;
+use time;
+use vitral::{Align, Context};
 
 struct Message {
     expire_time_s: f64,
@@ -48,8 +48,8 @@ impl Console {
             let fragments = split_line(&msg.text,
                                        |c| context.current_font().char_width(c).unwrap_or(0.0),
                                        screen_area.size.width)
-                                .map(|x| x.to_string())
-                                .collect::<Vec<String>>();
+                    .map(|x| x.to_string())
+                    .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
                 context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
                 y -= h;
@@ -71,8 +71,9 @@ impl Console {
 
         // TODO: Handle enter with text input.
         // TODO: Command history.
-        context.bound(0, y as u32, screen_area.size.width as u32, h as u32)
-               .text_input(color, &mut self.input_buffer);
+        context
+            .bound(0, y as u32, screen_area.size.width as u32, h as u32)
+            .text_input(color, &mut self.input_buffer);
         y -= h;
         lines_left -= 1;
 
@@ -81,8 +82,8 @@ impl Console {
             let fragments = split_line(&msg.text,
                                        |c| context.current_font().char_width(c).unwrap_or(0.0),
                                        screen_area.size.width)
-                                .map(|x| x.to_string())
-                                .collect::<Vec<String>>();
+                    .map(|x| x.to_string())
+                    .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
                 context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
                 y -= h;

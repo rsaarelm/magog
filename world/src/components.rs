@@ -1,9 +1,9 @@
-use item::ItemType;
+use FovStatus;
 use ability::Ability;
-use stats::Stats;
+use item::ItemType;
 use location::Location;
 use location_set::LocationSet;
-use FovStatus;
+use stats::Stats;
 
 /// The visual representation for an entity
 ///

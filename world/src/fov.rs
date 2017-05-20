@@ -1,8 +1,8 @@
-use euclid::Point2D;
 use calx_grid::{FovValue, HexGeom};
-use world::World;
+use euclid::Point2D;
 use location::Location;
 use terraform::TerrainQuery;
+use world::World;
 
 #[derive(Clone)]
 pub struct SightFov<'a> {
@@ -14,7 +14,12 @@ pub struct SightFov<'a> {
 
 impl<'a> SightFov<'a> {
     pub fn new(w: &'a World, range: u32, origin: Location) -> SightFov<'a> {
-        SightFov { w, range, origin, is_edge: false, }
+        SightFov {
+            w,
+            range,
+            origin,
+            is_edge: false,
+        }
     }
 }
 

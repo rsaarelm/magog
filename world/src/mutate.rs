@@ -1,12 +1,12 @@
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
+use command::CommandResult;
+use form::Form;
 use location::Location;
 use query::Query;
-use command::CommandResult;
 use terraform::Terraform;
-use world::Loadout;
-use form::Form;
 use terrain::Terrain;
+use world::Loadout;
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -40,8 +40,10 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Remove destroyed entities from system
     fn clean_dead(&mut self) {
-        let kill_list: Vec<Entity> =
-            self.entities().filter(|&&e| !self.is_alive(e)).cloned().collect();
+        let kill_list: Vec<Entity> = self.entities()
+            .filter(|&&e| !self.is_alive(e))
+            .cloned()
+            .collect();
 
         for e in kill_list {
             self.remove_entity(e);

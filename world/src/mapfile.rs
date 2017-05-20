@@ -1,13 +1,13 @@
+use Prefab;
+use calx_grid;
+use errors::*;
+use form::Form;
+use std::collections::BTreeMap;
 use std::fmt;
 use std::io;
 use std::str::FromStr;
-use std::collections::BTreeMap;
-use toml;
-use calx_grid;
-use Prefab;
 use terrain::Terrain;
-use form::Form;
-use errors::*;
+use toml;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> {
     const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -16,7 +16,11 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
 
     let chars_f = move |x: &(Terrain, Vec<String>)| {
         let &(ref t, ref e) = x;
-        if e.is_empty() { t.preferred_map_chars() } else { "" }
+        if e.is_empty() {
+            t.preferred_map_chars()
+        } else {
+            ""
+        }
     };
 
     let mut legend_builder = calx_grid::LegendBuilder::new(ALPHABET.to_string(), chars_f);
@@ -30,16 +34,17 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab = prefab.map(|e| e.unwrap());
 
-    let legend = legend_builder.legend
-                               .into_iter()
-                               .map(|(c, t)| {
-                                   (c,
-                                    LegendItem {
-                                       t: format!("{:?}", t.0),
-                                       e: t.1.clone(),
-                                   })
-                               })
-                               .collect::<BTreeMap<char, LegendItem>>();
+    let legend = legend_builder
+        .legend
+        .into_iter()
+        .map(|(c, t)| {
+                 (c,
+                  LegendItem {
+                      t: format!("{:?}", t.0),
+                      e: t.1.clone(),
+                  })
+             })
+        .collect::<BTreeMap<char, LegendItem>>();
 
     let save = MapSave {
         map: format!("{}", prefab.hexmap_display()),
@@ -79,11 +84,11 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Turn map into prefab.
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
     Ok(prefab.map(|item| {
-        let e = &save.legend[&item];
-        let terrain = Terrain::from_str(&e.t).unwrap();
-        let spawns = e.e.clone();
-        (terrain, spawns)
-    }))
+                      let e = &save.legend[&item];
+                      let terrain = Terrain::from_str(&e.t).unwrap();
+                      let spawns = e.e.clone();
+                      (terrain, spawns)
+                  }))
 }
 
 /// Type for maps saved into disk.
@@ -121,7 +126,10 @@ impl fmt::Display for LegendItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TOML formatted output.
         write!(f, "{{ t = \"{}\", e = [", self.t)?;
-        self.e.iter().next().map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
+        self.e
+            .iter()
+            .next()
+            .map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
         for e in self.e.iter().skip(1) {
             write!(f, ", \"{}\"", e)?;
         }

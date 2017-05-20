@@ -18,7 +18,11 @@ pub trait TerrainQuery {
     /// Return a portal if it can be seen through.
     fn visible_portal(&self, loc: Location) -> Option<Location> {
         // Only void-form is transparent to portals.
-        if self.terrain(loc).form() == terrain::Form::Void { self.portal(loc) } else { None }
+        if self.terrain(loc).form() == terrain::Form::Void {
+            self.portal(loc)
+        } else {
+            None
+        }
     }
 
     /// Does this location belong to a placed room in mapgen.
@@ -28,7 +32,7 @@ pub trait TerrainQuery {
         // sophisticated logic here in the future.
         match self.terrain(loc).kind() {
             terrain::Kind::Block | terrain::Kind::Corridor => false,
-            _ => true
+            _ => true,
         }
     }
 }

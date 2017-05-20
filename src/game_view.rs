@@ -1,11 +1,11 @@
-use std::fs::File;
-use std::io::prelude::*;
+use calx_grid::Dir6;
+use display;
 use euclid::{Point2D, Rect};
 use rand;
-use calx_grid::Dir6;
 use scancode::Scancode;
+use std::fs::File;
+use std::io::prelude::*;
 use world::{Command, Location, TerrainQuery, World, on_screen};
-use display;
 
 pub struct View {
     pub world: World,
@@ -33,7 +33,9 @@ impl View {
             S => self.world.step(Dir6::South),
             D => self.world.step(Dir6::Southeast),
             F5 => {
-                self.world.save(&mut File::create("save.gam").unwrap()).unwrap();
+                self.world
+                    .save(&mut File::create("save.gam").unwrap())
+                    .unwrap();
                 Ok(())
             }
             F9 => {

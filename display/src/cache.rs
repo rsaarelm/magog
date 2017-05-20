@@ -1,12 +1,12 @@
+use Icon;
+use atlas_cache::{AtlasCache, SubImageSpec};
+use brush::Brush;
+use init;
 use std::cell::RefCell;
 use std::rc::Rc;
 use vec_map::VecMap;
-use atlas_cache::{AtlasCache, SubImageSpec};
-use world;
-use brush::Brush;
 use vitral::{self, ImageBuffer};
-use init;
-use Icon;
+use world;
 
 thread_local! {
     pub static ATLAS: RefCell<AtlasCache> = {
@@ -38,23 +38,35 @@ pub fn get(key: &SubImageSpec) -> vitral::ImageData<usize> {
 
 pub fn terrain(t: world::Terrain) -> Rc<Brush> {
     TERRAIN_BRUSHES.with(|b| {
-        b.get(t as usize).expect(&format!("No brush for terrain {:?}", t)).clone()
-    })
+                             b.get(t as usize)
+                                 .expect(&format!("No brush for terrain {:?}", t))
+                                 .clone()
+                         })
 }
 
 pub fn entity(e: world::Icon) -> Rc<Brush> {
     ENTITY_BRUSHES.with(|b| {
-        b.get(e as usize).expect(&format!("No brush for entity {:?}", e)).clone()
-    })
+                            b.get(e as usize)
+                                .expect(&format!("No brush for entity {:?}", e))
+                                .clone()
+                        })
 }
 
 pub fn misc(e: Icon) -> Rc<Brush> {
-    MISC_BRUSHES.with(|b| b.get(e as usize).expect(&format!("No brush for icon {:?}", e)).clone())
+    MISC_BRUSHES.with(|b| {
+                          b.get(e as usize)
+                              .expect(&format!("No brush for icon {:?}", e))
+                              .clone()
+                      })
 }
 
 /// Return the single solid pixel texture for Vitral's graphics.
 pub fn solid() -> vitral::ImageData<usize> {
-    ATLAS.with(|a| a.borrow_mut().get(&SubImageSpec::new("solid", 0, 0, 1, 1)).clone())
+    ATLAS.with(|a| {
+                   a.borrow_mut()
+                       .get(&SubImageSpec::new("solid", 0, 0, 1, 1))
+                       .clone()
+               })
 }
 
 pub fn font() -> Rc<vitral::FontData<usize>> { FONT.with(|f| f.clone()) }

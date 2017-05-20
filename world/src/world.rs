@@ -1,22 +1,22 @@
-use std::io::{Read, Write};
-use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
-use std::slice;
 use bincode;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
-use field::Field;
-use spatial::{Place, Spatial};
-use flags::Flags;
-use location::{Location, Portal};
-use components;
-use stats;
-use terrain::Terrain;
-use query::Query;
 use command::{Command, CommandResult};
-use mutate::Mutate;
-use terraform::{Terraform, TerrainQuery};
+use components;
+use field::Field;
+use flags::Flags;
 use fov::SightFov;
+use location::{Location, Portal};
+use mutate::Mutate;
+use query::Query;
+use spatial::{Place, Spatial};
+use stats;
+use std::collections::{HashMap, HashSet};
+use std::io::{Read, Write};
+use std::iter::FromIterator;
+use std::slice;
+use terraform::{Terraform, TerrainQuery};
+use terrain::Terrain;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -61,8 +61,7 @@ impl<'a> World {
     }
 
     pub fn load<R: Read>(reader: &mut R) -> bincode::Result<World> {
-        let ret: bincode::Result<World> =
-            bincode::deserialize_from(reader, bincode::Infinite);
+        let ret: bincode::Result<World> = bincode::deserialize_from(reader, bincode::Infinite);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
                 panic!("Save game version {} does not match current version {}",

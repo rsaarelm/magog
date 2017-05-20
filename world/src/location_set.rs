@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use location::Location;
+use std::collections::HashMap;
 
 /// Compact Location set collection
 #[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize)]

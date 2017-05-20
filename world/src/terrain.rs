@@ -1,5 +1,5 @@
-use std::str::FromStr;
 use std::slice;
+use std::str::FromStr;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -99,19 +99,13 @@ terrain_enum! {
 }
 
 impl Terrain {
-    pub fn iter() -> slice::Iter<'static, Terrain> {
-        TERRAIN_ENUM.iter()
-    }
+    pub fn iter() -> slice::Iter<'static, Terrain> { TERRAIN_ENUM.iter() }
 
     #[inline(always)]
-    pub fn kind(self) -> Kind {
-        TERRAIN_DATA[self as usize].kind
-    }
+    pub fn kind(self) -> Kind { TERRAIN_DATA[self as usize].kind }
 
     #[inline(always)]
-    pub fn form(self) -> Form {
-        TERRAIN_DATA[self as usize].form
-    }
+    pub fn form(self) -> Form { TERRAIN_DATA[self as usize].form }
 
     pub fn blocks_sight(self) -> bool {
         match self.kind() {
@@ -153,9 +147,7 @@ impl Terrain {
     pub fn is_irregular(self) -> bool { TERRAIN_DATA[self as usize].is_irregular }
 
     /// For constructing text maps.
-    pub fn preferred_map_chars(self) -> &'static str {
-        TERRAIN_DATA[self as usize].map_chars
-    }
+    pub fn preferred_map_chars(self) -> &'static str { TERRAIN_DATA[self as usize].map_chars }
 }
 
 impl FromStr for Terrain {

@@ -1,15 +1,15 @@
 //! Set up resource content for game.
 
-use std::str::FromStr;
-use std::collections::HashMap;
-use std::rc::Rc;
-use vec_map::VecMap;
-use euclid::Point2D;
-use vitral;
-use calx_color::Rgba;
-use calx_color::color::*;
 use brush::{Brush, Builder};
 use cache;
+use calx_color::Rgba;
+use calx_color::color::*;
+use euclid::Point2D;
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::str::FromStr;
+use vec_map::VecMap;
+use vitral;
 
 pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
     use world::Terrain::*;
@@ -73,15 +73,23 @@ pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     ret
 }
 
-pub fn font<I: Iterator<Item=char>>(name: String, data: &[u8], span: I) -> vitral::FontData<usize> {
+pub fn font<I: Iterator<Item = char>>(
+    name: String,
+    data: &[u8],
+    span: I,
+) -> vitral::FontData<usize> {
     let glyphs = cache::ATLAS.with(|a| a.borrow_mut().load_tilesheet(name, data).unwrap());
 
-    let mut glyphs = glyphs.into_iter().map(|i|
-                                            vitral::CharData {
-                                                image: cache::get(&i),
-                                                draw_offset: Point2D::new(0.0, 0.0),
-                                                advance: i.bounds.size.width as f32
-                                                }).collect::<Vec<_>>();
+    let mut glyphs = glyphs
+        .into_iter()
+        .map(|i| {
+                 vitral::CharData {
+                     image: cache::get(&i),
+                     draw_offset: Point2D::new(0.0, 0.0),
+                     advance: i.bounds.size.width as f32,
+                 }
+             })
+        .collect::<Vec<_>>();
 
     assert!(!glyphs.is_empty());
     let font_height = glyphs[0].image.size.height as f32;
@@ -90,7 +98,10 @@ pub fn font<I: Iterator<Item=char>>(name: String, data: &[u8], span: I) -> vitra
 
     let mut chars = HashMap::new();
     for c in span {
-        chars.insert(c, glyphs.pop().expect("Not enough glyphs in font sheet for all chars"));
+        chars.insert(c,
+                     glyphs
+                         .pop()
+                         .expect("Not enough glyphs in font sheet for all chars"));
     }
 
     vitral::FontData {

@@ -1,11 +1,11 @@
 //! Game world display utilities.
 
-use std::rc::Rc;
-use calx_grid::{Dir12, Dir6};
-use world::{Location, World, Query, TerrainQuery, Terrain, terrain};
+use Icon;
 use brush::Brush;
 use cache;
-use Icon;
+use calx_grid::{Dir12, Dir6};
+use std::rc::Rc;
+use world::{Location, World, Query, TerrainQuery, Terrain, terrain};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
@@ -83,7 +83,11 @@ fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
     let nw_vertex = !neighbors[5] || !neighbors[0];
 
     // Show exposed faces if neighbors are not blob and not wall.
-    let faces = if is_solid { [true, true, true, true, true, true] } else { kernel.blob_faces() };
+    let faces = if is_solid {
+        [true, true, true, true, true, true]
+    } else {
+        kernel.blob_faces()
+    };
 
     // Segment 2, middle left
     {
@@ -254,7 +258,8 @@ pub struct Kernel {
 }
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Terrain {
-    let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(loc + dir.to_v2());
+    let loc = w.visible_portal(loc + dir.to_v2())
+        .unwrap_or(loc + dir.to_v2());
     w.visual_terrain(loc)
 }
 

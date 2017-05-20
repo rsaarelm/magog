@@ -11,18 +11,16 @@ extern crate display;
 
 pub mod game_view;
 
-use std::fs::File;
 use euclid::{Point2D, Rect, Size2D};
+use game_view::View;
 use glium::{DisplayBuild, glutin};
+use std::fs::File;
 use vitral::Context;
 use world::{Location, Mutate, World};
-use game_view::View;
 
 pub fn main() {
     // Construct display and Vitral context.
-    let glium = glutin::WindowBuilder::new()
-                    .build_glium()
-                    .unwrap();
+    let glium = glutin::WindowBuilder::new().build_glium().unwrap();
 
     let screen_area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0f32, 360.0f32));
     let mut backend = display::Backend::new(&glium,

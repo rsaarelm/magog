@@ -1,7 +1,7 @@
-use rand::{Rng, SeedableRng, XorShiftRng};
-use location::Location;
 use calx_alg::EncodeRng;
 use calx_ecs::Entity;
+use location::Location;
+use rand::{Rng, SeedableRng, XorShiftRng};
 
 #[derive(Serialize, Deserialize)]
 pub struct Flags {

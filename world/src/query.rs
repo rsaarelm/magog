@@ -1,17 +1,17 @@
-use std::iter::FromIterator;
-use std::slice;
-use calx_grid::Dir6;
+use FovStatus;
+use Prefab;
 use calx_ecs::Entity;
+use calx_grid::Dir6;
 use components::{Alignment, BrainState, Icon};
-use stats::Intrinsic;
+use form;
 use location::Location;
 use stats;
-use FovStatus;
+use stats::Intrinsic;
+use std::iter::FromIterator;
+use std::slice;
 use terraform::TerrainQuery;
-use world::Ecs;
 use terrain::Terrain;
-use form;
-use Prefab;
+use world::Ecs;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery {
@@ -47,7 +47,10 @@ pub trait Query: TerrainQuery {
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs().brain.get(e).map_or(None, |brain| Some(brain.state))
+        self.ecs()
+            .brain
+            .get(e)
+            .map_or(None, |brain| Some(brain.state))
     }
 
     /// Return whether the entity is a mobile object (eg. active creature).
@@ -60,7 +63,12 @@ pub trait Query: TerrainQuery {
 
     /// Return current health of an entity.
     fn hp(&self, e: Entity) -> i32 {
-        self.max_hp(e) - if self.ecs().health.contains(e) { self.ecs().health[e].wounds } else { 0 }
+        self.max_hp(e) -
+        if self.ecs().health.contains(e) {
+            self.ecs().health[e].wounds
+        } else {
+            0
+        }
     }
 
     /// Return field of view for a location.
@@ -81,16 +89,17 @@ pub trait Query: TerrainQuery {
     }
 
     /// Return visual brush for an entity.
-    fn entity_icon(&self, e: Entity) -> Option<Icon> {
-        self.ecs().desc.get(e).map(|x| x.icon)
-    }
+    fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
     /// Return the (composite) stats for an entity.
     ///
     /// Will return the default value for the Stats type (additive identity in the stat algebra)
     /// for entities that have no stats component defined.
     fn stats(&self, e: Entity) -> stats::Stats {
-        self.ecs().composite_stats.get(e).map_or_else(|| self.base_stats(e), |x| x.0)
+        self.ecs()
+            .composite_stats
+            .get(e)
+            .map_or_else(|| self.base_stats(e), |x| x.0)
     }
 
     /// Return the base stats of the entity. Does not include any added effects.
@@ -102,7 +111,8 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the entity can move in a direction.
     fn can_step(&self, e: Entity, dir: Dir6) -> bool {
-        self.location(e).map_or(false, |loc| self.can_enter(e, loc + dir.to_v2()))
+        self.location(e)
+            .map_or(false, |loc| self.can_enter(e, loc + dir.to_v2()))
     }
 
     /// Return whether location blocks line of sight.
@@ -263,7 +273,10 @@ pub trait Query: TerrainQuery {
     /// Return the name that can be used to spawn this entity.
     fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
-        self.ecs().desc.get(e).map_or(None, |desc| Some(&desc.name[..]))
+        self.ecs()
+            .desc
+            .get(e)
+            .map_or(None, |desc| Some(&desc.name[..]))
     }
 
     fn is_spawn_name(&self, spawn_name: &str) -> bool {
@@ -284,13 +297,16 @@ pub trait Query: TerrainQuery {
                 Some(origin) => origin,
             };
 
-            let pos = origin.v2_at(loc).expect("Trying to build prefab from multiple z-levels");
+            let pos = origin
+                .v2_at(loc)
+                .expect("Trying to build prefab from multiple z-levels");
 
             let terrain = self.terrain(loc);
 
-            let entities = Vec::from_iter(self.entities_at(loc).into_iter().filter_map(|e| {
-                self.spawn_name(e).map(|s| s.to_string())
-            }));
+            let entities =
+                Vec::from_iter(self.entities_at(loc)
+                                   .into_iter()
+                                   .filter_map(|e| self.spawn_name(e).map(|s| s.to_string())));
 
             map.push((pos, (terrain, entities)));
         }

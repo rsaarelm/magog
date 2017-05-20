@@ -1,9 +1,9 @@
-use std::collections::BTreeMap;
-use serde;
-use calx_ecs::Entity;
-use location::Location;
-use item::Slot;
 use self::Place::*;
+use calx_ecs::Entity;
+use item::Slot;
+use location::Location;
+use serde;
+use std::collections::BTreeMap;
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
@@ -153,9 +153,7 @@ impl Spatial {
     }
 
     /// Return the place of an entity if the entity is present in the space.
-    pub fn get(&self, e: Entity) -> Option<Place> {
-        self.entity_to_place.get(&e).cloned()
-    }
+    pub fn get(&self, e: Entity) -> Option<Place> { self.entity_to_place.get(&e).cloned() }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
@@ -196,9 +194,9 @@ impl<'a> serde::Deserialize<'a> for Spatial {
 #[cfg(test)]
 mod test {
     use super::{Place, Spatial};
-    use world::Ecs;
     use item::Slot;
     use location::Location;
+    use world::Ecs;
 
     #[test]
     fn test_place_adjacency() {
@@ -213,21 +211,17 @@ mod test {
         // This needs to be right for the containment logic to function, but
         // it's not obvious which way the derived lexical order sorts, so put
         // an unit test here to check it out.
-        let mut places = vec![
-            Place::In(e1, Some(Slot::Melee)),
-            Place::In(e2, None),
-            Place::In(e1, Some(Slot::Ranged)),
-            Place::In(e1, None),
-        ];
+        let mut places = vec![Place::In(e1, Some(Slot::Melee)),
+                              Place::In(e2, None),
+                              Place::In(e1, Some(Slot::Ranged)),
+                              Place::In(e1, None)];
 
         places.sort();
         assert_eq!(places,
-                   vec![
-                Place::In(e1, None),
-                Place::In(e1, Some(Slot::Melee)),
-                Place::In(e1, Some(Slot::Ranged)),
-                Place::In(e2, None),
-            ]);
+                   vec![Place::In(e1, None),
+                        Place::In(e1, Some(Slot::Melee)),
+                        Place::In(e1, Some(Slot::Ranged)),
+                        Place::In(e2, None)]);
     }
 
     #[test]
@@ -245,9 +239,9 @@ mod test {
         spatial.insert(e2, p2);
 
         let saved = bincode::serialize(&spatial, bincode::Infinite)
-                        .expect("Spatial serialization failed");
+            .expect("Spatial serialization failed");
         let spatial2: Spatial = bincode::deserialize(&saved)
-                           .expect("Spatial deserialization failed");
+            .expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(e1), Some(p1));
         assert_eq!(spatial2.get(e2), Some(p2));

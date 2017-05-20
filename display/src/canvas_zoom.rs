@@ -24,7 +24,7 @@ impl CanvasZoom {
         self,
         scale: f32,
         window_size: Size2D<u32>,
-        canvas_size: Size2D<u32>
+        canvas_size: Size2D<u32>,
     ) -> Rect<f32> {
         let dim = Size2D::new((scale * canvas_size.width as f32) * 2.0 / window_size.width as f32,
                               (scale * canvas_size.height as f32) * 2.0 /
@@ -36,7 +36,7 @@ impl CanvasZoom {
     fn aspect_preserving(self, window_size: Size2D<u32>, canvas_size: Size2D<u32>) -> Rect<f32> {
         // Scale based on whichever of X or Y axis is the tighter fit.
         let scale = (window_size.width as f32 / canvas_size.width as f32)
-                        .min(window_size.height as f32 / canvas_size.height as f32);
+            .min(window_size.height as f32 / canvas_size.height as f32);
 
         self.with_scale(scale, window_size, canvas_size)
     }
@@ -48,7 +48,7 @@ impl CanvasZoom {
 
         // Scale based on whichever of X or Y axis is the tighter fit.
         let mut scale = (window_size.width as f32 / canvas_size.width as f32)
-                            .min(window_size.height as f32 / canvas_size.height as f32);
+            .min(window_size.height as f32 / canvas_size.height as f32);
 
         if scale > 1.0 {
             // Snap to pixel scale if more than 1 window pixel per canvas pixel.
@@ -62,7 +62,7 @@ impl CanvasZoom {
         self,
         mut window_size: Size2D<u32>,
         canvas_size: Size2D<u32>,
-        screen_pos: Point2D<f32>
+        screen_pos: Point2D<f32>,
     ) -> Point2D<f32> {
         // let Rect { origin: rp, size: rs } = self.screen_rect();
         let rect = self.fit_canvas(window_size, canvas_size);

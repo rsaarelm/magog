@@ -1,12 +1,12 @@
-use std::collections::HashMap;
-use std::io::Cursor;
-use std::slice;
-use std::hash::{Hash, Hasher};
 use euclid::{Point2D, Rect, Size2D};
 use image::{self, GenericImage};
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::io::Cursor;
+use std::slice;
+use tilesheet;
 use vitral::{self, ImageBuffer};
 use vitral_atlas::Atlas;
-use tilesheet;
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -96,8 +96,9 @@ impl AtlasCache {
     }
 
     fn new_atlas(&mut self) {
-        self.atlases.push(Atlas::new(self.next_index,
-                                     Size2D::new(self.atlas_size, self.atlas_size)));
+        self.atlases
+            .push(Atlas::new(self.next_index,
+                             Size2D::new(self.atlas_size, self.atlas_size)));
         self.next_index += 1;
     }
 
@@ -116,18 +117,18 @@ impl AtlasCache {
     pub fn load_tilesheet(
         &mut self,
         name: String,
-        data: &[u8]
+        data: &[u8],
     ) -> Result<Vec<SubImageSpec>, image::ImageError> {
         let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
         let ret = tilesheet::bounds(&img)
-                      .into_iter()
-                      .map(|r| {
-                          SubImageSpec {
-                              bounds: r,
-                              sheet_name: name.clone(),
-                          }
-                      })
-                      .collect();
+            .into_iter()
+            .map(|r| {
+                     SubImageSpec {
+                         bounds: r,
+                         sheet_name: name.clone(),
+                     }
+                 })
+            .collect();
         self.add_sheet(name, convert_image(&img));
         Ok(ret)
     }

@@ -1,8 +1,8 @@
+use canvas_zoom::CanvasZoom;
 use euclid::Size2D;
 use glium::{self, framebuffer, texture};
 use glium::Surface;
 use image;
-use canvas_zoom::CanvasZoom;
 
 /// A deferred rendering buffer for pixel-perfect display.
 pub struct Canvas {
@@ -42,15 +42,13 @@ impl Canvas {
                     tex_color.a = 1.0;
                     f_color = tex_color;
                 }"})
-                         .unwrap();
+                .unwrap();
 
         let buffer = texture::Texture2d::empty(display, width, height).unwrap();
 
-        let depth_buffer = framebuffer::DepthRenderBuffer::new(display,
-                                                               texture::DepthFormat::F32,
-                                                               width,
-                                                               height)
-                               .unwrap();
+        let depth_buffer =
+            framebuffer::DepthRenderBuffer::new(display, texture::DepthFormat::F32, width, height)
+                .unwrap();
 
 
         Canvas {
@@ -64,7 +62,7 @@ impl Canvas {
     /// Get the render target to the pixel-perfect framebuffer.
     pub fn get_framebuffer_target(
         &mut self,
-        display: &glium::Display
+        display: &glium::Display,
     ) -> glium::framebuffer::SimpleFrameBuffer {
         framebuffer::SimpleFrameBuffer::with_depth_buffer(display, &self.buffer, &self.depth_buffer)
             .unwrap()
@@ -95,39 +93,39 @@ impl Canvas {
 
             glium::VertexBuffer::new(display,
                                      &[BlitVertex {
-                                           pos: [sx, sy],
-                                           tex_coord: [0.0, 0.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx + sw, sy],
-                                           tex_coord: [1.0, 0.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx + sw, sy + sh],
-                                           tex_coord: [1.0, 1.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx, sy + sh],
-                                           tex_coord: [0.0, 1.0],
-                                       }])
-                .unwrap()
+                                          pos: [sx, sy],
+                                          tex_coord: [0.0, 0.0],
+                                      },
+                                      BlitVertex {
+                                          pos: [sx + sw, sy],
+                                          tex_coord: [1.0, 0.0],
+                                      },
+                                      BlitVertex {
+                                          pos: [sx + sw, sy + sh],
+                                          tex_coord: [1.0, 1.0],
+                                      },
+                                      BlitVertex {
+                                          pos: [sx, sy + sh],
+                                          tex_coord: [0.0, 1.0],
+                                      }])
+                    .unwrap()
         };
 
         let indices = glium::IndexBuffer::new(display,
                                               glium::index::PrimitiveType::TrianglesList,
                                               &[0u16, 1, 2, 0, 2, 3])
-                          .unwrap();
+                .unwrap();
 
         // Set up the rest of the draw parameters.
         let mut params: glium::DrawParameters = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
         // pixel perfect rounding errors.
         params.viewport = Some(glium::Rect {
-            left: 0,
-            bottom: 0,
-            width: w,
-            height: h,
-        });
+                                   left: 0,
+                                   bottom: 0,
+                                   width: w,
+                                   height: h,
+                               });
 
         // TODO: Option to use smooth filter & non-pixel-perfect scaling
         let mag_filter = glium::uniforms::MagnifySamplerFilter::Nearest;
@@ -139,8 +137,9 @@ impl Canvas {
                 .. Default::default() }));
 
         // Draw the graphics buffer to the window.
-        target.draw(&vertices, &indices, &self.shader, &uniforms, &params)
-              .unwrap();
+        target
+            .draw(&vertices, &indices, &self.shader, &uniforms, &params)
+            .unwrap();
         target.finish().unwrap();
     }
 
@@ -150,24 +149,17 @@ impl Canvas {
         use calx_color::to_srgb;
 
         let image: glium::texture::RawImage2d<u8> = self.buffer.read();
-        let image = image::ImageBuffer::from_raw(image.width,
-                                                 image.height,
-                                                 image.data.into_owned())
-                        .unwrap();
+        let image =
+            image::ImageBuffer::from_raw(image.width, image.height, image.data.into_owned())
+                .unwrap();
         let mut image = image::DynamicImage::ImageRgba8(image).flipv().to_rgb();
 
         // Convert to sRGB
         // XXX: Probably horribly slow, can we make OpenGL do this?
         for p in image.pixels_mut() {
-            p.data[0] = (to_srgb(p.data[0] as f32 / 255.0) *
-                         255.0)
-                            .round() as u8;
-            p.data[1] = (to_srgb(p.data[1] as f32 / 255.0) *
-                         255.0)
-                            .round() as u8;
-            p.data[2] = (to_srgb(p.data[2] as f32 / 255.0) *
-                         255.0)
-                            .round() as u8;
+            p.data[0] = (to_srgb(p.data[0] as f32 / 255.0) * 255.0).round() as u8;
+            p.data[1] = (to_srgb(p.data[1] as f32 / 255.0) * 255.0).round() as u8;
+            p.data[2] = (to_srgb(p.data[2] as f32 / 255.0) * 255.0).round() as u8;
         }
 
         image

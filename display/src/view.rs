@@ -1,13 +1,13 @@
-use std::collections::HashMap;
-use std::iter::FromIterator;
-use euclid::{Point2D, Rect};
-use calx_grid::{Dir6, FovValue, HexFov};
-use world::{self, FovStatus, Location, Query, TerrainQuery, World};
-use sprite::Sprite;
-use render::{self, Layer};
+use Icon;
 use backend::MagogContext;
 use cache;
-use Icon;
+use calx_grid::{Dir6, FovValue, HexFov};
+use euclid::{Point2D, Rect};
+use render::{self, Layer};
+use sprite::Sprite;
+use std::collections::HashMap;
+use std::iter::FromIterator;
+use world::{self, FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
@@ -50,8 +50,8 @@ impl WorldView {
             let center = self.screen_area.origin + self.screen_area.size / 2.0 -
                          Point2D::new(PIXEL_UNIT / 2.0, 0.0);
             let bounds = self.screen_area
-                             .translate(&-(center + self.screen_area.origin))
-                             .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
+                .translate(&-(center + self.screen_area.origin))
+                .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
 
             self.fov = Some(screen_fov(world, self.camera_loc, bounds));
         }
@@ -75,7 +75,11 @@ impl WorldView {
 
             // Always draw FOV if there's an active player with a map memory component.
             if let Some(player) = world.player() {
-                fov_status = world.ecs().map_memory.get(player).map_or(None, |fov| fov.status(loc));
+                fov_status = world
+                    .ecs()
+                    .map_memory
+                    .get(player)
+                    .map_or(None, |fov| fov.status(loc));
             }
 
             if fov_status.is_none() {
@@ -92,23 +96,27 @@ impl WorldView {
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
             render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
                 sprites.push(Sprite {
-                    layer: layer,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: brush.clone(),
-                    frame_idx: frame_idx,
-                })
+                                 layer: layer,
+                                 offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                 brush: brush.clone(),
+                                 frame_idx: frame_idx,
+                             })
             });
 
             for &i in &world.entities_at(loc) {
                 if let Some(desc) = world.ecs().desc.get(i) {
-                    let layer = if world.is_mob(i) { Layer::Object } else { Layer::Items };
+                    let layer = if world.is_mob(i) {
+                        Layer::Object
+                    } else {
+                        Layer::Items
+                    };
                     let frame_idx = if world.is_bobbing(i) { 1 } else { 0 };
                     sprites.push(Sprite {
-                        layer: layer,
-                        offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: cache::entity(desc.icon),
-                        frame_idx: frame_idx,
-                    });
+                                     layer: layer,
+                                     offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                     brush: cache::entity(desc.icon),
+                                     frame_idx: frame_idx,
+                                 });
                 }
             }
 
@@ -117,18 +125,18 @@ impl WorldView {
                     if !world::on_screen(loc) {
                         if Dir6::iter().any(|d| world::on_screen(loc + d.to_v2())) {
                             sprites.push(Sprite {
-                                layer: Layer::Effect,
-                                offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: cache::misc(Icon::Portal),
-                                frame_idx: 0,
-                            });
+                                             layer: Layer::Effect,
+                                             offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                             brush: cache::misc(Icon::Portal),
+                                             frame_idx: 0,
+                                         });
                         } else {
                             sprites.push(Sprite {
-                                layer: Layer::Effect,
-                                offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: cache::misc(Icon::CursorBottom),
-                                frame_idx: 0,
-                            });
+                                             layer: Layer::Effect,
+                                             offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                             brush: cache::misc(Icon::CursorBottom),
+                                             frame_idx: 0,
+                                         });
                         }
                     }
                 }
@@ -144,17 +152,17 @@ impl WorldView {
             if self.show_cursor {
                 // TODO: Need a LOT less verbose API to add stuff to the sprite set.
                 sprites.push(Sprite {
-                    layer: Layer::Decal,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: cache::misc(Icon::CursorBottom),
-                    frame_idx: 0,
-                });
+                                 layer: Layer::Decal,
+                                 offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                 brush: cache::misc(Icon::CursorBottom),
+                                 frame_idx: 0,
+                             });
                 sprites.push(Sprite {
-                    layer: Layer::Effect,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: cache::misc(Icon::CursorTop),
-                    frame_idx: 0,
-                });
+                                 layer: Layer::Effect,
+                                 offset: [screen_pos.x as i32, screen_pos.y as i32],
+                                 brush: cache::misc(Icon::CursorTop),
+                                 frame_idx: 0,
+                             });
             }
         } else {
             self.cursor_loc = None;
@@ -230,7 +238,7 @@ impl<'a> FovValue for ScreenFov<'a> {
 pub fn screen_fov(
     w: &World,
     origin: Location,
-    screen_area: Rect<f32>
+    screen_area: Rect<f32>,
 ) -> HashMap<Point2D<i32>, Vec<Location>> {
     let init = ScreenFov {
         w: w,
@@ -325,4 +333,6 @@ mod test {
         assert!(fov.get(&view_to_chart(outside_screen.bottom_right())).is_none());
     }
 */
+
+
 }

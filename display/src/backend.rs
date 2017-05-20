@@ -1,11 +1,11 @@
+use cache;
+use canvas::Canvas;
+use canvas_zoom::CanvasZoom;
+use euclid::{Point2D, Rect, Size2D, TypedPoint2D};
 use glium::{self, Surface};
 use glium::glutin;
 use glium::index::PrimitiveType;
-use euclid::{Point2D, Rect, Size2D, TypedPoint2D};
 use vitral::{self, Context};
-use canvas::Canvas;
-use canvas_zoom::CanvasZoom;
-use cache;
 
 pub type GliumTexture = glium::texture::SrgbTexture2d;
 
@@ -15,7 +15,7 @@ pub trait MagogContext: Context {
         image: &vitral::ImageData<usize>,
         pos: TypedPoint2D<f32, U>,
         color: [f32; 4],
-        back_color: [f32; 4]
+        back_color: [f32; 4],
     ) where U: vitral::ConvertibleUnit;
 }
 
@@ -77,17 +77,17 @@ impl Backend {
                     f_color = v_color * tex_color + v_back_color * (vec4(1, 1, 1, 1) - tex_color);
                 }
             "})
-                          .unwrap();
+                .unwrap();
 
         let (w, h) = display.get_framebuffer_dimensions();
 
         let mut textures = Vec::new();
 
         let state = vitral::Builder::new()
-                        .default_font(cache::font())
-                        .solid_texture(cache::solid())
-                        .build(Size2D::new(width as f32, height as f32),
-                               |img| Self::make_texture(&mut textures, display, img));
+            .default_font(cache::font())
+            .solid_texture(cache::solid())
+            .build(Size2D::new(width as f32, height as f32),
+                   |img| Self::make_texture(&mut textures, display, img));
 
         Backend {
             program: program,
@@ -125,7 +125,7 @@ impl Backend {
     fn make_texture(
         textures: &mut Vec<GliumTexture>,
         display: &glium::Display,
-        img: vitral::ImageBuffer
+        img: vitral::ImageBuffer,
     ) -> usize {
         let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels,
                                                             (img.size.width, img.size.height));
@@ -142,9 +142,10 @@ impl Backend {
             match event {
                 glutin::Event::Closed => return false,
                 glutin::Event::MouseMoved(x, y) => {
-                    let pos = self.zoom.screen_to_canvas(self.window_size,
-                                                         self.canvas.size(),
-                                                         Point2D::new(x as f32, y as f32));
+                    let pos = self.zoom
+                        .screen_to_canvas(self.window_size,
+                                          self.canvas.size(),
+                                          Point2D::new(x as f32, y as f32));
                     self.input_mouse_move(pos.x as i32, pos.y as i32);
                 }
                 glutin::Event::MouseInput(state, button) => {
@@ -164,26 +165,27 @@ impl Backend {
                     let is_down = s == glutin::ElementState::Pressed;
 
                     if is_down {
-                        self.keypress.push(KeyEvent {
-                            key_code: vk,
-                            scancode: scancode,
-                        });
+                        self.keypress
+                            .push(KeyEvent {
+                                      key_code: vk,
+                                      scancode: scancode,
+                                  });
                     }
 
                     use glium::glutin::VirtualKeyCode::*;
                     if let Some(vk) = match vk {
-                        Tab => Some(vitral::Keycode::Tab),
-                        LShift | RShift => Some(vitral::Keycode::Shift),
-                        LControl | RControl => Some(vitral::Keycode::Ctrl),
-                        NumpadEnter | Return => Some(vitral::Keycode::Enter),
-                        Back => Some(vitral::Keycode::Backspace),
-                        Delete => Some(vitral::Keycode::Del),
-                        Numpad8 | Up => Some(vitral::Keycode::Up),
-                        Numpad2 | Down => Some(vitral::Keycode::Down),
-                        Numpad4 | Left => Some(vitral::Keycode::Left),
-                        Numpad6 | Right => Some(vitral::Keycode::Right),
-                        _ => None,
-                    } {
+                           Tab => Some(vitral::Keycode::Tab),
+                           LShift | RShift => Some(vitral::Keycode::Shift),
+                           LControl | RControl => Some(vitral::Keycode::Ctrl),
+                           NumpadEnter | Return => Some(vitral::Keycode::Enter),
+                           Back => Some(vitral::Keycode::Backspace),
+                           Delete => Some(vitral::Keycode::Del),
+                           Numpad8 | Up => Some(vitral::Keycode::Up),
+                           Numpad2 | Down => Some(vitral::Keycode::Down),
+                           Numpad4 | Left => Some(vitral::Keycode::Left),
+                           Numpad6 | Right => Some(vitral::Keycode::Right),
+                           _ => None,
+                       } {
                         self.input_key_state(vk, is_down);
                     }
                 }
@@ -230,42 +232,43 @@ impl Backend {
             let index_buffer = glium::IndexBuffer::new(display,
                                                        PrimitiveType::TrianglesList,
                                                        &batch.triangle_indices)
-                                   .unwrap();
+                    .unwrap();
 
             let params = glium::draw_parameters::DrawParameters {
-                scissor: batch.clip.map(|clip| {
-                    glium::Rect {
-                        left: clip.origin.x as u32,
-                        bottom: h - (clip.origin.y + clip.size.height) as u32,
-                        width: clip.size.width as u32,
-                        height: clip.size.height as u32,
-                    }
-                }),
+                scissor: batch
+                    .clip
+                    .map(|clip| {
+                             glium::Rect {
+                                 left: clip.origin.x as u32,
+                                 bottom: h - (clip.origin.y + clip.size.height) as u32,
+                                 width: clip.size.width as u32,
+                                 height: clip.size.height as u32,
+                             }
+                         }),
                 blend: glium::Blend::alpha_blending(),
                 ..Default::default()
             };
 
-            target.draw(&vertex_buffer,
-                        &index_buffer,
-                        &self.program,
-                        &uniforms,
-                        &params)
-                  .unwrap();
+            target
+                .draw(&vertex_buffer,
+                      &index_buffer,
+                      &self.program,
+                      &uniforms,
+                      &params)
+                .unwrap();
         }
     }
 
     fn refresh_atlas(&mut self, display: &glium::Display) {
-        cache::ATLAS.with(|a| {
-            for a in a.borrow_mut().atlases_mut() {
-                let idx = *a.texture();
-                assert!(idx <= self.textures.len());
-                if idx == self.textures.len() {
-                    self.make_empty_texture(display, a.size().width, a.size().height);
-                }
+        cache::ATLAS.with(|a| for a in a.borrow_mut().atlases_mut() {
+                              let idx = *a.texture();
+                              assert!(idx <= self.textures.len());
+                              if idx == self.textures.len() {
+                                  self.make_empty_texture(display, a.size().width, a.size().height);
+                              }
 
-                a.update_texture(|buf, &idx| self.write_to_texture(buf, idx));
-            }
-        });
+                              a.update_texture(|buf, &idx| self.write_to_texture(buf, idx));
+                          });
     }
 
     fn update_window_size(&mut self, display: &glium::Display) {
@@ -339,7 +342,7 @@ impl Context for Backend {
         &mut self,
         pos: Point2D<f32>,
         tex_coord: Point2D<f32>,
-        color: [f32; 4]
+        color: [f32; 4],
     ) -> Vertex {
         Vertex {
             pos: [pos.x, pos.y],
@@ -350,13 +353,13 @@ impl Context for Backend {
     }
 }
 
-impl<C: Context<T=usize, V=Vertex>> MagogContext for C {
+impl<C: Context<T = usize, V = Vertex>> MagogContext for C {
     fn draw_image_2color<U>(
         &mut self,
         image: &vitral::ImageData<usize>,
         pos: TypedPoint2D<f32, U>,
         color: [f32; 4],
-        back_color: [f32; 4]
+        back_color: [f32; 4],
     ) where U: vitral::ConvertibleUnit
     {
         // XXX: Copy-pasting tex rect code from Vitral.
@@ -366,22 +369,24 @@ impl<C: Context<T=usize, V=Vertex>> MagogContext for C {
         let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         let area = Rect::new(pos, size);
 
-        let idx = self.state_mut().push_vertex(Vertex::new(area.origin,
-                                                           image.tex_coords.origin,
-                                                           color,
-                                                           back_color));
-        self.state_mut().push_vertex(Vertex::new(area.top_right(),
-                                                 image.tex_coords.top_right(),
-                                                 color,
-                                                 back_color));
-        self.state_mut().push_vertex(Vertex::new(area.bottom_right(),
-                                                 image.tex_coords.bottom_right(),
-                                                 color,
-                                                 back_color));
-        self.state_mut().push_vertex(Vertex::new(area.bottom_left(),
-                                                 image.tex_coords.bottom_left(),
-                                                 color,
-                                                 back_color));
+        let idx =
+            self.state_mut()
+                .push_vertex(Vertex::new(area.origin, image.tex_coords.origin, color, back_color));
+        self.state_mut()
+            .push_vertex(Vertex::new(area.top_right(),
+                                     image.tex_coords.top_right(),
+                                     color,
+                                     back_color));
+        self.state_mut()
+            .push_vertex(Vertex::new(area.bottom_right(),
+                                     image.tex_coords.bottom_right(),
+                                     color,
+                                     back_color));
+        self.state_mut()
+            .push_vertex(Vertex::new(area.bottom_left(),
+                                     image.tex_coords.bottom_left(),
+                                     color,
+                                     back_color));
 
         self.state_mut().push_triangle(idx, idx + 1, idx + 2);
         self.state_mut().push_triangle(idx, idx + 2, idx + 3);
@@ -407,7 +412,7 @@ impl Vertex {
         pos: Point2D<f32>,
         tex_coord: Point2D<f32>,
         color: [f32; 4],
-        back_color: [f32; 4]
+        back_color: [f32; 4],
     ) -> Vertex {
         Vertex {
             pos: [pos.x, pos.y],

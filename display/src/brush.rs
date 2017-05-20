@@ -1,11 +1,11 @@
-use std::rc::Rc;
-use std::fmt;
-use euclid::{Point2D, Rect, Size2D};
-use vitral;
+use atlas_cache::SubImageSpec;
+use cache;
 use calx_color::Rgba;
 use calx_color::color::*;
-use cache;
-use atlas_cache::SubImageSpec;
+use euclid::{Point2D, Rect, Size2D};
+use std::fmt;
+use std::rc::Rc;
+use vitral;
 
 pub type Color = [f32; 4];
 
@@ -33,9 +33,9 @@ impl Splat {
     pub fn new(geom: &Geom, sheet: String, color: [f32; 4], back_color: [f32; 4]) -> Splat {
         Splat {
             image: cache::get(&SubImageSpec {
-                sheet_name: sheet,
-                bounds: geom.bounds,
-            }),
+                                  sheet_name: sheet,
+                                  bounds: geom.bounds,
+                              }),
             offset: geom.offset,
             color: color,
             back_color: back_color,
@@ -111,7 +111,9 @@ impl Builder {
     /// If a splat matrix exists, the column must match the height of the matrix. Otherwise the
     /// column will start a new splat matrix.
     pub fn splat<I: IntoIterator<Item = Geom>>(mut self, geom: I) -> Builder {
-        let matrix_column = geom.into_iter().map(|g| self.make_splat(&g)).collect::<Vec<Splat>>();
+        let matrix_column = geom.into_iter()
+            .map(|g| self.make_splat(&g))
+            .collect::<Vec<Splat>>();
         assert!(self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
                 "Splat frame count does not match previous parallel splats");
         self.splat_matrix.push(matrix_column);
@@ -135,7 +137,7 @@ impl Builder {
         rear_x: u32,
         rear_y: u32,
         x: u32,
-        y: u32
+        y: u32,
     ) -> Builder {
         self.splat(Geom::blob(vert_x, vert_y, rear_x, rear_y, x, y))
     }
@@ -190,7 +192,7 @@ impl Geom {
         orig_x: u32,
         orig_y: u32,
         width: u32,
-        height: u32
+        height: u32,
     ) -> Geom {
         Geom {
             offset: Point2D::new(offset_x as f32, offset_y as f32),

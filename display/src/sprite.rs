@@ -1,9 +1,9 @@
-use std::rc::Rc;
-use std::cmp::Ordering;
+use backend::MagogContext;
+use brush::Brush;
 use euclid::Point2D;
 use render::Layer;
-use brush::Brush;
-use backend::MagogContext;
+use std::cmp::Ordering;
+use std::rc::Rc;
 
 /// Drawable display element.
 ///
@@ -38,7 +38,10 @@ impl Sprite {
     pub fn draw<C: MagogContext>(&self, ui: &mut C) {
         let pos = Point2D::new(self.offset[0] as f32, self.offset[1] as f32);
         for splat in &self.brush[self.frame_idx] {
-            ui.draw_image_2color(&splat.image, pos - splat.offset, splat.color, splat.back_color);
+            ui.draw_image_2color(&splat.image,
+                                 pos - splat.offset,
+                                 splat.color,
+                                 splat.back_color);
         }
     }
 }
