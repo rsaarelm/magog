@@ -14,7 +14,7 @@ lto = true
 
 [dependencies]
 rand = "0.3"
-euclid = "0.11"
+euclid = "0.13"
 time = "0.1"
 glium = "0.16"
 scancode = "0.1"
