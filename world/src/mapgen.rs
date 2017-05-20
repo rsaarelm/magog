@@ -77,7 +77,7 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
                   .filter(|&d| world.terrain(*x + *d).is_open())
                   .count() == 1
          })
-         .map(|&x| x)
+         .cloned()
          .collect()
     }
 
@@ -98,7 +98,7 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
 
     while !unvisited.is_empty() {
         let dig_options: Vec<Dir6> = DIRS4.iter()
-                                          .map(|&d| d)
+                                          .cloned()
                                           .filter(|d| unvisited.contains(&(current + *d + *d)))
                                           .collect();
         if dig_options.is_empty() {
@@ -124,11 +124,11 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
     }
 
     for _ in 0..sparseness {
-        for loc in dead_ends(world, &mut visited.iter()).into_iter() {
+        for loc in dead_ends(world, &mut visited.iter()) {
             visited.remove(&loc);
             // TODO: Don't hardcode terrain type in 'undig' operation.
             world.set_terrain(loc, Rock);
-            for &dir in DIRS4.iter() {
+            for &dir in &DIRS4 {
                 world.set_terrain(loc + dir, Rock);
             }
         }
@@ -137,8 +137,8 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
     // Connect simple loops.
     //
     // FIXME: This is too weak, mazes are still not very loopy.
-    for loc in dead_ends(world, &mut visited.iter()).into_iter() {
-        for &dir in DIRS4.iter() {
+    for loc in dead_ends(world, &mut visited.iter()) {
+        for &dir in &DIRS4 {
             if world.terrain(loc + dir + dir).is_open() && rng.with_chance(0.7) {
                 world.set_terrain(loc + dir, Corridor);
             }
@@ -227,7 +227,6 @@ impl Room for EmptyRoom {
     fn fit_badness<T: TerrainQuery>(&self, w: &T, loc: Location) -> Option<f32> {
         let mut connected = false;
         let mut badness = 0.0;
-        let mut n_doors = 0;
 
         for y in 0..(self.height) {
             for x in 0..(self.width) {

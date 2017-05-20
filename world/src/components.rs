@@ -30,27 +30,20 @@ impl Desc {
         // literals.
         Desc {
             name: name.to_string(),
-            icon: icon,
+            icon,
         }
     }
 }
 
 
 /// Map field-of-view and remembered terrain.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct MapMemory {
     pub seen: LocationSet,
     pub remembered: LocationSet,
 }
 
 impl MapMemory {
-    pub fn new() -> MapMemory {
-        MapMemory {
-            seen: LocationSet::new(),
-            remembered: LocationSet::new(),
-        }
-    }
-
     pub fn status(&self, loc: Location) -> Option<FovStatus> {
         if self.seen.contains(&loc) {
             Some(FovStatus::Seen)

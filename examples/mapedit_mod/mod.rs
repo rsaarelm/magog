@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashSet;
 use std::num::Wrapping;
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Point2D, Rect};
 use scancode::Scancode;
 use vitral::Context;
 use calx_grid::{Dir6, Prefab};
@@ -46,7 +46,7 @@ impl View {
             mode: PaintMode::Terrain,
             camera: (Location::new(0, 0, 0), Location::new(0, 8, 0)),
             camera_lock: false,
-            console: display::Console::new(),
+            console: display::Console::default(),
             console_is_large: false,
         }
     }
@@ -226,7 +226,7 @@ impl View {
             }
         }
 
-        let prefab = self.world.extract_prefab(locs.iter().map(|&x| x));
+        let prefab = self.world.extract_prefab(locs.iter().cloned());
 
         match File::create(&path) {
             Ok(mut file) => {

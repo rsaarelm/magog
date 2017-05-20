@@ -12,11 +12,10 @@ extern crate display;
 pub mod game_view;
 
 use std::fs::File;
-use rand::{SeedableRng, XorShiftRng};
 use euclid::{Point2D, Rect, Size2D};
 use glium::{DisplayBuild, glutin};
 use vitral::Context;
-use world::{Location, Mutate, World, mapgen};
+use world::{Location, Mutate, World};
 use game_view::View;
 
 pub fn main() {

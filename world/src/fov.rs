@@ -14,12 +14,7 @@ pub struct SightFov<'a> {
 
 impl<'a> SightFov<'a> {
     pub fn new(w: &'a World, range: u32, origin: Location) -> SightFov<'a> {
-        SightFov {
-            w: w,
-            range: range,
-            origin: origin,
-            is_edge: false,
-        }
+        SightFov { w, range, origin, is_edge: false, }
     }
 }
 

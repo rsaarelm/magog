@@ -28,7 +28,7 @@ impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
         let mut intr = 0u32;
         for &i in intrinsics.iter() {
-            intr = intr | (i as u32);
+            intr |= i as u32;
         }
         Stats {
             power: power,

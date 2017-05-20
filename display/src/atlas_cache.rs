@@ -57,13 +57,13 @@ impl AtlasCache {
 
     pub fn get<'a>(&'a mut self, key: &SubImageSpec) -> &'a vitral::ImageData<usize> {
         if self.atlas_images.contains_key(key) {
-            self.atlas_images.get(key).unwrap()
+            &self.atlas_images[key]
         } else {
             self.add(key)
         }
     }
 
-    pub fn atlases_mut<'a>(&mut self) -> slice::IterMut<Atlas<usize>> { self.atlases.iter_mut() }
+    pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas<usize>> { self.atlases.iter_mut() }
 
     fn add<'a>(&'a mut self, key: &SubImageSpec) -> &'a vitral::ImageData<usize> {
         assert!(!self.atlas_images.contains_key(key));
@@ -84,16 +84,14 @@ impl AtlasCache {
 
         if let Some(image_data) = self.atlases[atlas_id].add(&sub_image) {
             self.atlas_images.insert(key.clone(), image_data);
-            self.atlas_images.get(key).unwrap()
+            &self.atlas_images[key]
+        } else if self.atlases[atlas_id].is_empty() {
+            panic!("Image {:?} too large, won't fit in empty atlas.", key);
         } else {
-            if self.atlases[atlas_id].is_empty() {
-                panic!("Image {:?} too large, won't fit in empty atlas.");
-            } else {
-                // Try adding a new atlas.
-                self.new_atlas();
-                assert!(self.atlases[self.atlases.len() - 1].is_empty());
-                self.add(key)
-            }
+            // Try adding a new atlas.
+            self.new_atlas();
+            assert!(self.atlases[self.atlases.len() - 1].is_empty());
+            self.add(key)
         }
     }
 
@@ -110,7 +108,7 @@ impl AtlasCache {
     /// Load PNG from bytes to use in image specs.
     pub fn load_png(&mut self, name: String, data: &[u8]) -> Result<(), image::ImageError> {
         let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
-        self.add_sheet(name, convert_image(img));
+        self.add_sheet(name, convert_image(&img));
         Ok(())
     }
 
@@ -130,12 +128,12 @@ impl AtlasCache {
                           }
                       })
                       .collect();
-        self.add_sheet(name, convert_image(img));
+        self.add_sheet(name, convert_image(&img));
         Ok(ret)
     }
 }
 
-fn convert_image<G>(input: G) -> ImageBuffer
+fn convert_image<G>(input: &G) -> ImageBuffer
     where G: GenericImage<Pixel = image::Rgba<u8>>
 {
     let (w, h) = input.dimensions();

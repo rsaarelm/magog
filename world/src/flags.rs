@@ -25,11 +25,11 @@ impl Flags {
             player: None,
             depth: 0,
 
-            seed: seed,
+            seed,
             rng: SeedableRng::from_seed([seed, seed, seed, seed]),
         }
     }
 
     pub fn seed(&self) -> u32 { self.seed }
-    pub fn rng<'a>(&'a mut self) -> &'a mut Rng { &mut self.rng }
+    pub fn rng(&mut self) -> &mut Rng { &mut self.rng }
 }

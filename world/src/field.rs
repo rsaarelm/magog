@@ -11,12 +11,12 @@ impl<T: Copy + PartialEq> Field<T> {
     pub fn new(default: T) -> Field<T> {
         Field {
             patch: BTreeMap::new(),
-            default: default,
+            default
         }
     }
 
     pub fn get(&self, pos: Location) -> T {
-        self.patch.get(&pos).map(|&x| x).unwrap_or(self.default)
+        self.patch.get(&pos).cloned().unwrap_or(self.default)
     }
 
     pub fn overrides(&self, pos: Location) -> bool {

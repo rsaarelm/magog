@@ -99,7 +99,7 @@ impl Builder {
         self
     }
 
-    fn into_splat(&self, geom: &Geom) -> Splat {
+    fn make_splat(&self, geom: &Geom) -> Splat {
         Splat::new(geom,
                    self.sheet_name.clone(),
                    self.color.into_array(),
@@ -111,7 +111,7 @@ impl Builder {
     /// If a splat matrix exists, the column must match the height of the matrix. Otherwise the
     /// column will start a new splat matrix.
     pub fn splat<I: IntoIterator<Item = Geom>>(mut self, geom: I) -> Builder {
-        let matrix_column = geom.into_iter().map(|g| self.into_splat(&g)).collect::<Vec<Splat>>();
+        let matrix_column = geom.into_iter().map(|g| self.make_splat(&g)).collect::<Vec<Splat>>();
         assert!(self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
                 "Splat frame count does not match previous parallel splats");
         self.splat_matrix.push(matrix_column);
@@ -156,7 +156,7 @@ impl Builder {
 
         for _ in 0..n {
             let mut frame = Vec::new();
-            for i in self.splat_matrix.iter_mut() {
+            for i in &mut self.splat_matrix {
                 frame.push(i.remove(0));
             }
             self.brush.push(frame);

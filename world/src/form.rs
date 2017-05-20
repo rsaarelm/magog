@@ -55,7 +55,7 @@ impl Form {
     }
 
     /// Return the name of the form if it has one.
-    pub fn name<'a>(&'a self) -> Option<&'a str> {
+    pub fn name(&self) -> Option<&str> {
         match self.loadout.desc {
             Some(ref desc) => Some(&desc.name[..]),
             None => None
@@ -72,7 +72,7 @@ lazy_static! {
     pub static ref FORMS: Vec<Form> =
         vec![
         Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
-            .c(MapMemory::new()),
+            .c(MapMemory::default()),
         Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
         Form::mob("snake",      Icon::Snake,      1,  &[]),
         ];

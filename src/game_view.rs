@@ -17,7 +17,7 @@ impl View {
     pub fn new(world: World) -> View {
         View {
             world: world,
-            console: display::Console::new(),
+            console: display::Console::default(),
             console_is_large: false,
         }
     }
@@ -111,7 +111,7 @@ impl View {
         }
 
         if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
-            if self.console_is_large {
+            let _ = if self.console_is_large {
                 self.console_input(scancode)
             } else {
                 self.game_input(scancode)

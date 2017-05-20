@@ -63,8 +63,8 @@ impl<'a> World {
     pub fn load<R: Read>(reader: &mut R) -> bincode::Result<World> {
         let ret: bincode::Result<World> =
             bincode::deserialize_from(reader, bincode::Infinite);
-        if let &Ok(ref x) = &ret {
-            if &x.version != GAME_VERSION {
+        if let Ok(ref x) = ret {
+            if x.version != GAME_VERSION {
                 panic!("Save game version {} does not match current version {}",
                        x.version,
                        GAME_VERSION);
@@ -80,17 +80,15 @@ impl<'a> World {
 
 impl TerrainQuery for World {
     fn is_valid_location(&self, loc: Location) -> bool {
-        Location::origin().v2_at(loc).map_or(false, |p| ::on_screen(p))
+        Location::origin().v2_at(loc).map_or(false, ::on_screen)
     }
 
     fn terrain(&self, loc: Location) -> Terrain {
         let mut t = self.terrain.get(loc);
 
-        if t == Terrain::Door {
+        if t == Terrain::Door && self.has_mobs(loc) {
             // Standing in the doorway opens the door.
-            if self.has_mobs(loc) {
-                t = Terrain::OpenDoor;
-            }
+            t = Terrain::OpenDoor;
         }
 
         t
@@ -128,7 +126,7 @@ impl Query for World {
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
-    fn ecs<'a>(&'a self) -> &'a Ecs { &self.ecs }
+    fn ecs(&self) -> &Ecs { &self.ecs }
 }
 
 impl Mutate for World {
@@ -165,10 +163,10 @@ impl Mutate for World {
                 HashSet::from_iter(HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
                                        .map(|(pos, a)| a.origin + pos));
 
-            let ref mut memory = self.ecs.map_memory[e];
+            let memory = &mut self.ecs.map_memory[e];
             memory.seen.clear();
 
-            for &loc in fov.iter() {
+            for &loc in &fov {
                 memory.seen.insert(loc);
                 memory.remembered.insert(loc);
             }

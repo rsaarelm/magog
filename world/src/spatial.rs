@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use vec_map::VecMap;
 use serde;
 use calx_ecs::Entity;
 use location::Location;
@@ -40,13 +39,10 @@ impl Spatial {
         }
 
         self.entity_to_place.insert(e, p);
-        match self.place_to_entities.get_mut(&p) {
-            Some(v) => {
-                v.push(e);
-                return;
-            }
-            _ => (),
-        };
+        if let Some(v) = self.place_to_entities.get_mut(&p) {
+            v.push(e);
+            return;
+        }
         // Didn't return above, that means this location isn't indexed
         // yet and needs a brand new container. (Can't do this in match
         // block because borrows.)
@@ -87,12 +83,12 @@ impl Spatial {
             return;
         }
 
-        let &p = self.entity_to_place.get(&e).unwrap();
+        let &p = &self.entity_to_place[&e];
         self.entity_to_place.remove(&e);
 
         {
             let v = self.place_to_entities.get_mut(&p).unwrap();
-            assert!(v.len() > 0);
+            assert!(!v.is_empty());
             if v.len() > 1 {
                 // More than one entity present, remove this one, keep the
                 // rest.
@@ -107,7 +103,7 @@ impl Spatial {
                 // This was the only entity in the location.
                 // Drop the entry for this location from the index.
                 // (Need to drop out of scope for borrows reasons)
-                assert!((*v)[0] == e);
+                assert_eq!((*v)[0], e);
             }
         }
         // We only end up here if we need to clear the container for the
@@ -119,7 +115,7 @@ impl Spatial {
     /// also be removed from the space.
     pub fn remove(&mut self, e: Entity) {
         // Remove the contents
-        for &content in self.entities_in(e).iter() {
+        for &content in &self.entities_in(e) {
             self.remove(content);
         }
         self.single_remove(e);
@@ -141,8 +137,8 @@ impl Spatial {
              // Consume the contiguous elements for the parent container.
              // This expects the ordering of the `Place` type to group contents
              // of the same parent together.
-             .take_while(|&(k, _)| if let &In(ref p, _) = k { *p == parent } else { false })
-             .flat_map(|(_, ref e)| e.iter().cloned())
+             .take_while(|&(k, _)| if let In(ref p, _) = *k { *p == parent } else { false })
+             .flat_map(|(_, e)| e.iter().cloned())
              .collect()
     }
 
@@ -150,7 +146,7 @@ impl Spatial {
         match self.place_to_entities.get(&In(parent, Some(slot))) {
             None => None,
             Some(v) => {
-                assert!(v.len() == 1, "Slot entity container corrupt");
+                assert_eq!(v.len(), 1, "Slot entity container corrupt");
                 Some(v[0])
             }
         }
@@ -158,13 +154,13 @@ impl Spatial {
 
     /// Return the place of an entity if the entity is present in the space.
     pub fn get(&self, e: Entity) -> Option<Place> {
-        self.entity_to_place.get(&e).map(|&loc| loc)
+        self.entity_to_place.get(&e).cloned()
     }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
         let mut ret = vec![];
-        for (&e, &loc) in self.entity_to_place.iter() {
+        for (&e, &loc) in &self.entity_to_place {
             ret.push(Elt(e, loc));
         }
         ret
@@ -174,7 +170,7 @@ impl Spatial {
     fn slurp(dump: Vec<Elt>) -> Spatial {
         let mut ret = Spatial::new();
 
-        for &Elt(e, loc) in dump.iter() {
+        for &Elt(e, loc) in &dump {
             ret.insert(e, loc);
         }
         ret
@@ -202,7 +198,6 @@ mod test {
     use super::{Place, Spatial};
     use world::Ecs;
     use item::Slot;
-    use calx_ecs::Entity;
     use location::Location;
 
     #[test]

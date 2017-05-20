@@ -15,7 +15,7 @@ pub struct Location {
 impl Location {
     pub fn origin() -> Location { Location { x: 0, y: 0, z: 0 } }
 
-    pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x: x, y: y, z: z } }
+    pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x, y, z } }
 
     /// Construct a Location from a Morton code representation.
     ///

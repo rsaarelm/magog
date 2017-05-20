@@ -62,7 +62,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
         }
 
         for e in &i.e {
-            if Form::named(&e).is_none() {
+            if Form::named(e).is_none() {
                 return Err(format!("Unknown entity spawn '{}'", e).into());
             }
         }
@@ -79,7 +79,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Turn map into prefab.
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
     Ok(prefab.map(|item| {
-        let e = save.legend.get(&item).unwrap();
+        let e = &save.legend[&item];
         let terrain = Terrain::from_str(&e.t).unwrap();
         let spawns = e.e.clone();
         (terrain, spawns)
@@ -102,7 +102,7 @@ impl fmt::Display for MapSave {
         }
         writeln!(f, "'''\n")?;
         writeln!(f, "[legend]")?;
-        for (k, v) in self.legend.iter() {
+        for (k, v) in &self.legend {
             writeln!(f, "\"{}\" = {}", k, v)?;
         }
         Ok(())

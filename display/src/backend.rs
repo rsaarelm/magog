@@ -331,9 +331,9 @@ impl Context for Backend {
     type T = usize;
     type V = Vertex;
 
-    fn state<'a>(&'a self) -> &'a vitral::State<usize, Vertex> { &self.ui_state }
+    fn state(&self) -> &vitral::State<usize, Vertex> { &self.ui_state }
 
-    fn state_mut<'a>(&'a mut self) -> &'a mut vitral::State<usize, Vertex> { &mut self.ui_state }
+    fn state_mut(&mut self) -> &mut vitral::State<usize, Vertex> { &mut self.ui_state }
 
     fn new_vertex(
         &mut self,
@@ -362,7 +362,7 @@ impl<C: Context<T=usize, V=Vertex>> MagogContext for C {
         // XXX: Copy-pasting tex rect code from Vitral.
         let pos = vitral::ConvertibleUnit::convert_point(&self.scale_factor(), pos);
 
-        self.state_mut().start_texture(image.texture.clone());
+        self.state_mut().start_texture(image.texture);
         let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         let area = Rect::new(pos, size);
 

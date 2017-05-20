@@ -43,7 +43,7 @@ pub trait Mutate: Query + Terraform + Sized {
         let kill_list: Vec<Entity> =
             self.entities().filter(|&&e| !self.is_alive(e)).cloned().collect();
 
-        for e in kill_list.into_iter() {
+        for e in kill_list {
             self.remove_entity(e);
         }
     }

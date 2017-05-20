@@ -43,7 +43,7 @@ pub trait Query: TerrainQuery {
     fn entities_at(&self, loc: Location) -> Vec<Entity>;
 
     /// Return reference to the world entity component system.
-    fn ecs<'a>(&'a self) -> &'a Ecs;
+    fn ecs(&self) -> &Ecs;
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
@@ -164,11 +164,11 @@ pub trait Query: TerrainQuery {
         // System idea from Jeff Lait.
         let phase = self.tick() % 5;
         match phase {
-            0 => return true,
-            1 => return self.has_intrinsic(e, Intrinsic::Fast),
-            2 => return true,
-            3 => return self.has_intrinsic(e, Intrinsic::Quick),
-            4 => return !self.has_intrinsic(e, Intrinsic::Slow),
+            0 => true,
+            1 => self.has_intrinsic(e, Intrinsic::Fast),
+            2 => true,
+            3 => self.has_intrinsic(e, Intrinsic::Quick),
+            4 => !self.has_intrinsic(e, Intrinsic::Slow),
             _ => panic!("Invalid action phase"),
         }
     }
@@ -200,7 +200,7 @@ pub trait Query: TerrainQuery {
         if !self.is_active(e) {
             return false;
         }
-        return self.ticks_this_frame(e);
+        self.ticks_this_frame(e)
     }
 
     /// Look for targets to shoot in a direction.
@@ -246,10 +246,8 @@ pub trait Query: TerrainQuery {
         // area, don't show the dot.
         //
         // XXX: Hardcoded set of floors, must be updated whenever a new floor type is added.
-        if !self.is_valid_location(loc) {
-            if t == Ground || t == Grass || t == Gate {
-                t = Empty;
-            }
+        if !self.is_valid_location(loc) && (t == Ground || t == Grass || t == Gate) {
+            t = Empty;
         }
 
 
@@ -263,13 +261,13 @@ pub trait Query: TerrainQuery {
     }
 
     /// Return the name that can be used to spawn this entity.
-    fn spawn_name<'a>(&'a self, e: Entity) -> Option<&'a str> {
+    fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
-        self.ecs().desc.get(e).map_or(None, |ref desc| Some(&desc.name[..]))
+        self.ecs().desc.get(e).map_or(None, |desc| Some(&desc.name[..]))
     }
 
     fn is_spawn_name(&self, spawn_name: &str) -> bool {
-        form::FORMS.iter().position(|f| f.name() == Some(spawn_name)).is_some()
+        form::FORMS.iter().any(|f| f.name() == Some(spawn_name))
     }
 
     fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> Prefab {

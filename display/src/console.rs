@@ -23,7 +23,8 @@ impl Message {
     }
 }
 
-/// Output 
+/// Output text container.
+#[derive(Default)]
 pub struct Console {
     lines: Vec<Message>,
     input_buffer: String,
@@ -32,15 +33,6 @@ pub struct Console {
 }
 
 impl Console {
-    pub fn new() -> Console {
-        Console {
-            lines: Vec::new(),
-            input_buffer: String::new(),
-            output_buffer: String::new(),
-            done_reading_s: 0.0,
-        }
-    }
-
     /// Draw the console as a regular message display.
     pub fn draw_small<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
         // TODO: Store color in draw context.

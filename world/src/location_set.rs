@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use location::Location;
 
 /// Compact Location set collection
-#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct LocationSet {
     /// Chunks of 8x8 locations.
     ///
@@ -14,8 +14,6 @@ pub struct LocationSet {
 }
 
 impl LocationSet {
-    pub fn new() -> LocationSet { LocationSet { chunks: HashMap::new() } }
-
     /// Return the chunk index and the bit offset for a location.
     #[inline]
     fn chunk(loc: &Location) -> (u32, u64) {

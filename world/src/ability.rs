@@ -17,7 +17,7 @@ pub enum Ability {
 
 impl Ability {
     pub fn apply(&self, agent: Option<Entity>, target: Place) {
-        if let &Multi(ref abls) = self {
+        if let Multi(ref abls) = *self {
             for abl in abls.iter() {
                 abl.apply(agent, target);
             }

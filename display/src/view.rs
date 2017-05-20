@@ -90,7 +90,7 @@ impl WorldView {
             let screen_pos = chart_to_view(chart_pos) + center;
 
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
-            render::draw_terrain_sprites(&world, loc, |layer, _angle, brush, frame_idx| {
+            render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
                 sprites.push(Sprite {
                     layer: layer,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
