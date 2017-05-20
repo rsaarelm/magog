@@ -25,12 +25,12 @@ impl<N: GridNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
     pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {
-        assert!(goals.len() > 0);
+        assert!(!goals.is_empty());
 
         let mut weights = HashMap::new();
         let mut edge = HashSet::new();
 
-        for n in goals.into_iter() {
+        for n in goals {
             edge.insert(n);
         }
 
@@ -41,7 +41,7 @@ impl<N: GridNode> Dijkstra<N> {
 
             let mut new_edge = HashSet::new();
             for n in &edge {
-                for m in n.neighbors().into_iter() {
+                for m in n.neighbors() {
                     if is_valid(&m) && !weights.contains_key(&m) {
                         new_edge.insert(m);
                     }
@@ -128,7 +128,7 @@ pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Op
         open.remove(&pick);
 
         let new_pathlen = dist + One::one();
-        for x in pick.neighbors().into_iter() {
+        for x in pick.neighbors() {
             if visited.contains(&x) {
                 continue;
             }

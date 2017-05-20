@@ -68,7 +68,7 @@ impl TimeLog {
             let mut n = 1;
             let contains = a.borrow().logs.contains_key(&name);
             if contains {
-                let (old_n, total) = *a.borrow().logs.get(&name).unwrap();
+                let (old_n, total) = a.borrow().logs[&name];
                 n = old_n + 1;
                 duration += total;
             }
@@ -81,7 +81,7 @@ impl TimeLog {
 impl Drop for TimeLog {
     fn drop(&mut self) {
         println!("Timing logs:");
-        for (name, &(n, total)) in self.logs.iter() {
+        for (name, &(n, total)) in &self.logs {
             println!("  {}:\t{:.3} s\t(avg. {:.3} s)",
                      name,
                      total,
@@ -117,7 +117,7 @@ impl Drop for TimeLogItem {
 
 /// Save a timestamped screenshot to disk.
 pub fn save_screenshot(basename: &str,
-                       shot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>>)
+                       shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>)
                        -> io::Result<()> {
 
     let tmpdir = try!(TempDir::new("calx"));
@@ -126,7 +126,7 @@ pub fn save_screenshot(basename: &str,
                    .to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
     try!(image::save_buffer(&tmpfile,
-                            &shot,
+                            shot,
                             shot.width(),
                             shot.height(),
                             image::ColorType::RGB(8)));

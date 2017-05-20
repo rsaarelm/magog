@@ -87,7 +87,7 @@ impl FromStr for SRgba {
             return Ok(NAMED_COLORS[idx].2);
         }
 
-        if s.starts_with("#") {
+        if s.starts_with('#') {
             let s = &s[1..];
 
             // Hex digits per color channel, either 1 or 2. Single digit values
@@ -127,21 +127,19 @@ impl FromStr for SRgba {
             let b = Num::from_str_radix(&s[(2 * digits)..(3 * digits)], 16);
             let a = if alpha {
                 Num::from_str_radix(&s[(3 * digits)..(4 * digits)], 16)
+            } else if digits == 1 {
+                Ok(0xFu8)
             } else {
-                if digits == 1 {
-                    Ok(0xFu8)
-                } else {
-                    Ok(0xFFu8)
-                }
+                Ok(0xFFu8)
             };
 
             return match (r, g, b, a) {
                 (Ok(mut r), Ok(mut g), Ok(mut b), Ok(mut a)) => {
                     if digits == 1 {
-                        r = (r << 4) + r;
-                        g = (g << 4) + g;
-                        b = (b << 4) + b;
-                        a = (a << 4) + a;
+                        r += r << 4;
+                        g += g << 4;
+                        b += b << 4;
+                        a += a << 4;
                     }
 
                     Ok(SRgba::new(r, g, b, a))
@@ -150,7 +148,7 @@ impl FromStr for SRgba {
             };
         }
 
-        return Err(());
+        Err(())
     }
 }
 
@@ -295,7 +293,7 @@ macro_rules! color_constants {
             }
         }
 
-        /// Return an index to NAMED_COLORS.
+        /// Return an index to `NAMED_COLORS`.
         fn parse_color_name(upper_case_name: &str) -> Option<usize> {
             match upper_case_name {
                 $(stringify!($name) => Some(_color_name_to_integer::ColorEnum::$name as usize),)+

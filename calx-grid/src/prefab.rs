@@ -27,7 +27,7 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
         }
     }
 
-    pub fn get<'a>(&'a self, pos: Point2D<i32>) -> Option<&'a T> {
+    pub fn get(&self, pos: Point2D<i32>) -> Option<&T> {
         self.terrain.get(&pos).map(|&idx| &self.elements[idx])
     }
 
@@ -41,7 +41,7 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
 
     pub fn dim(&self) -> Size2D<u32> { self.dim }
 
-    pub fn iter<'a>(&'a self) -> PrefabIterator<'a, T> {
+    pub fn iter(&self) -> PrefabIterator<T> {
         PrefabIterator {
             prefab: self,
             iter: self.terrain.iter(),
@@ -78,7 +78,7 @@ impl<T: Clone + Eq + Hash> FromIterator<(Point2D<i32>, T)> for Prefab<T> {
         // Temporary storage before positions have been normalized.
         let mut temp_buffer = Vec::new();
 
-        for (p, e) in iter.into_iter() {
+        for (p, e) in iter {
             min_x = min(min_x, p.x);
             min_y = min(min_y, p.y);
 
@@ -94,7 +94,7 @@ impl<T: Clone + Eq + Hash> FromIterator<(Point2D<i32>, T)> for Prefab<T> {
         let mut max_x = 0;
         let mut max_y = 0;
 
-        for (mut p, e) in temp_buffer.into_iter() {
+        for (mut p, e) in temp_buffer {
             p.x -= min_x;
             assert!(p.x >= 0);
             p.y -= min_y;
@@ -158,7 +158,7 @@ impl<T: fmt::Display + Clone + Eq + Hash> Prefab<T> {
     /// Return a wrapper for printing the map in hex layout.
     ///
     /// Without the wrapper the print format will be a traditional dense text map.
-    pub fn hexmap_display<'a>(&'a self) -> HexmapDisplay<'a, T> { HexmapDisplay(self) }
+    pub fn hexmap_display(&self) -> HexmapDisplay<T> { HexmapDisplay(self) }
 }
 
 /// Wrapper type for displaying the `Prefab` as a text hexmap.

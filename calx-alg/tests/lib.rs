@@ -17,7 +17,7 @@ fn test_serialize_rng() {
     let mut rng2: EncodeRng<XorShiftRng> = serde_json::from_str(&saved)
                                                .expect("Deserialization failed");
 
-    assert!(rng.next_u32() == rng2.next_u32());
+    assert_eq!(rng.next_u32(), rng2.next_u32());
 }
 
 #[test]
@@ -69,10 +69,10 @@ fn test_weighted_choice() {
         *histogram.entry(choice).or_insert(0.0) += 1.0;
     }
 
-    let measurement = vec![histogram.get(&1).unwrap() / n as f32,
-                           histogram.get(&2).unwrap() / n as f32,
-                           histogram.get(&3).unwrap() / n as f32,
-                           histogram.get(&4).unwrap() / n as f32];
+    let measurement = vec![histogram[&1] / n as f32,
+                           histogram[&2] / n as f32,
+                           histogram[&3] / n as f32,
+                           histogram[&4] / n as f32];
 
     // The weights match the values because 1+2+3+4 = 10.
     let ideal = vec![0.1, 0.2, 0.3, 0.4];

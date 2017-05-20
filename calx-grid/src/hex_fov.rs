@@ -130,10 +130,8 @@ impl<T: FovValue> Arc<T> {
         self.pt = self.pt.next();
         if self.pt.is_below(self.end) {
             stack.push(self);
-        } else {
-            if let Some(group_value) = self.group_value {
-                stack.push(Arc::new(self.begin.further(), self.end.further(), group_value));
-            }
+        } else if let Some(group_value) = self.group_value {
+            stack.push(Arc::new(self.begin.further(), self.end.further(), group_value));
         }
     }
 
@@ -173,11 +171,9 @@ struct PolarPoint {
 
 impl PolarPoint {
     pub fn new(pos: f32, radius: u32) -> PolarPoint {
-        PolarPoint {
-            pos: pos,
-            radius: radius,
-        }
+        PolarPoint { pos, radius }
     }
+
     /// Index of the discrete hex cell along the circle that corresponds to this point.
     fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
 
