@@ -11,8 +11,10 @@ pub struct Stats {
     pub power: i32,
     /// Attack bonus
     pub attack: i32,
+    /// Defense bonus
+    pub defense: i32,
     /// Damage reduction
-    pub protection: i32,
+    pub armor: i32,
     /// Mana pool / mana drain
     pub mana: i32,
     /// Ranged attack range. Zero means no ranged capability.
@@ -26,39 +28,27 @@ pub struct Stats {
 
 impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
-        let mut intr = 0u32;
-        for &i in intrinsics.iter() {
-            intr |= i as u32;
-        }
+        let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | i as u32);
         Stats {
-            power: power,
-            intrinsics: intr,
+            power,
+            intrinsics,
             ..Default::default()
         }
     }
 
-    pub fn mana(self, mana: i32) -> Stats { Stats { mana: mana, ..self } }
-    pub fn protection(self, protection: i32) -> Stats {
-        Stats {
-            protection: protection,
-            ..self
-        }
-    }
-    pub fn attack(self, attack: i32) -> Stats {
-        Stats {
-            attack: attack,
-            ..self
-        }
-    }
+    pub fn mana(self, mana: i32) -> Stats { Stats { mana, ..self } }
+    pub fn armor(self, armor: i32) -> Stats { Stats { armor, ..self } }
+    pub fn attack(self, attack: i32) -> Stats { Stats { attack, ..self } }
+    pub fn defense(self, defense: i32) -> Stats { Stats { defense, ..self } }
     pub fn ranged_range(self, ranged_range: u32) -> Stats {
         Stats {
-            ranged_range: ranged_range,
+            ranged_range,
             ..self
         }
     }
     pub fn ranged_power(self, ranged_power: i32) -> Stats {
         Stats {
-            ranged_power: ranged_power,
+            ranged_power,
             ..self
         }
     }
@@ -70,7 +60,8 @@ impl Add<Stats> for Stats {
         Stats {
             power: self.power + other.power,
             attack: self.attack + other.attack,
-            protection: self.protection + other.protection,
+            defense: self.defense + other.defense,
+            armor: self.armor + other.armor,
             mana: self.mana + other.mana,
             // XXX: Must be careful to have exactly one "ranged weapon" item
             // in the mix. A mob with a natural ranged attack equipping a
