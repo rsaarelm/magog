@@ -1,4 +1,3 @@
-use rand::Rng;
 use calx_alg::{Deciban, clamp};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
@@ -6,6 +5,7 @@ use command::CommandResult;
 use form::Form;
 use location::Location;
 use query::Query;
+use rand::Rng;
 use terraform::Terraform;
 use terrain::Terrain;
 use world::Loadout;
@@ -39,9 +39,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn rng(&mut self) -> &mut ::Rng;
 
     /// Standard deciban roll, convert to i32 and clamp out extremes.
-    fn roll(&mut self) -> f32 {
-        clamp(-20.0, 20.0, self.rng().gen::<Deciban>().0.round())
-    }
+    fn roll(&mut self) -> f32 { clamp(-20.0, 20.0, self.rng().gen::<Deciban>().0.round()) }
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
@@ -81,15 +79,14 @@ pub trait Mutate: Query + Terraform + Sized {
         if let Some(loc) = self.location(e) {
             if let Some(target) = self.mob_at(loc + dir) {
 
-                // Combat formula
-                const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
+                // XXX: Using power stat for damage, should this be different?
+                let damage = ::attack_damage(self.roll(),
+                                             self.stats(e).attack,
+                                             self.stats(e).power,
+                                             self.stats(target).defense,
+                                             self.stats(target).armor);
 
-                let roll = self.roll() + (self.stats(e).attack - self.stats(target).defense) as f32;
-                let damage_power = 1.0; // TODO: Modify by weapon in use
-                let target_armor = self.stats(target).armor as f32;
-                let damage = damage_power * clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05 - target_armor * 0.1);
-
-                self.damage(target, damage as i32, Some(e));
+                self.damage(target, damage, Some(e));
                 return Ok(());
             }
         }

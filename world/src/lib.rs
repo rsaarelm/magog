@@ -114,6 +114,16 @@ pub fn onscreen_locations() -> &'static Vec<Point2D<i32>> {
     &*ONSCREEN_LOCATIONS
 }
 
+/// The combat formula.
+///
+/// Given a deciban roll and the relevant stats, determine amount of damage dealt.
+pub fn attack_damage(roll: f32, attack: i32, weapon_power: i32, target_defense: i32, target_armor: i32) -> i32 {
+    const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
+
+    let roll = roll + (attack - target_defense) as f32;
+    (weapon_power as f32 * calx_alg::clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05 - target_armor as f32 * 0.1)) as i32
+}
+
 pub mod errors {
     error_chain! {
         foreign_links {
