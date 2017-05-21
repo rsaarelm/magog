@@ -2,10 +2,10 @@ extern crate serde_json;
 extern crate calx_alg;
 extern crate rand;
 
-use std::collections::HashMap;
-use rand::{Rng, SeedableRng, XorShiftRng};
 
 use calx_alg::WeightedChoice;
+use rand::{Rng, SeedableRng, XorShiftRng};
+use std::collections::HashMap;
 
 #[test]
 fn test_serialize_rng() {
@@ -15,7 +15,7 @@ fn test_serialize_rng() {
 
     let saved = serde_json::to_string(&rng).expect("Serialization failed");
     let mut rng2: EncodeRng<XorShiftRng> = serde_json::from_str(&saved)
-                                               .expect("Deserialization failed");
+        .expect("Deserialization failed");
 
     assert_eq!(rng.next_u32(), rng2.next_u32());
 }
@@ -35,9 +35,9 @@ fn splits_into(space: usize, line: &str, parts: &[&str]) {
     split_line(line, |_| 1.0, space as f32)
         .zip(parts)
         .all(|(actual, &expected)| {
-            assert_eq!(expected, actual);
-            true
-        });
+                 assert_eq!(expected, actual);
+                 true
+             });
 
     assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
 }
@@ -65,7 +65,10 @@ fn test_weighted_choice() {
     let n = 1000;
 
     for _ in 0..n {
-        let choice = *items.iter().weighted_choice(&mut rng, |&&x| x as f32).unwrap();
+        let choice = *items
+                          .iter()
+                          .weighted_choice(&mut rng, |&&x| x as f32)
+                          .unwrap();
         *histogram.entry(choice).or_insert(0.0) += 1.0;
     }
 
@@ -77,8 +80,11 @@ fn test_weighted_choice() {
     // The weights match the values because 1+2+3+4 = 10.
     let ideal = vec![0.1, 0.2, 0.3, 0.4];
 
-    let err = measurement.iter().zip(ideal).map(|(x, y)| (x - y) * (x - y)).sum::<f32>() /
-              measurement.len() as f32;
+    let err = measurement
+        .iter()
+        .zip(ideal)
+        .map(|(x, y)| (x - y) * (x - y))
+        .sum::<f32>() / measurement.len() as f32;
     println!("Mean square error from expected: {}", err);
     assert!(err < 0.0001);
 }

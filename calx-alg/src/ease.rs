@@ -9,7 +9,11 @@ pub fn quadratic_in(t: f32) -> f32 { t * t }
 pub fn quadratic_out(t: f32) -> f32 { -(t * (t - 2.0)) }
 
 pub fn quadratic_in_out(t: f32) -> f32 {
-    if t < 0.5 { 2.0 * t * t } else { -2.0 * t * t + 4.0 * t - 1.0 }
+    if t < 0.5 {
+        2.0 * t * t
+    } else {
+        -2.0 * t * t + 4.0 * t - 1.0
+    }
 }
 
 pub fn cubic_in(t: f32) -> f32 { t * t * t }

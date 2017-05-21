@@ -52,7 +52,7 @@ impl<'a, F> Iterator for LineSplit<'a, F>
             fn update<F: Fn(char) -> f32>(
                 &mut self,
                 char_width: &F,
-                c: char
+                c: char,
             ) -> Option<(usize, f32)> {
                 if c.is_whitespace() && !self.prev.is_whitespace() {
                     self.last_word_break = Some((self.clip_pos, self.total_width));
@@ -62,7 +62,8 @@ impl<'a, F> Iterator for LineSplit<'a, F>
                 self.prev = c;
 
                 // Return the cut in the current word if there is no last_word_break set yet.
-                Some(self.last_word_break.unwrap_or((self.clip_pos, self.total_width)))
+                Some(self.last_word_break
+                         .unwrap_or((self.clip_pos, self.total_width)))
             }
         }
 
@@ -90,10 +91,10 @@ impl<'a, F> Iterator for LineSplit<'a, F>
         self.remain = &self.remain[end_pos..];
         // Strip whitespace between this line and the next.
         let start_pos = self.remain
-                            .chars()
-                            .take_while(|&c| c.is_whitespace())
-                            .map(|c| c.len_utf8())
-                            .sum();
+            .chars()
+            .take_while(|&c| c.is_whitespace())
+            .map(|c| c.len_utf8())
+            .sum();
         self.remain = &self.remain[start_pos..];
         if self.remain.is_empty() {
             self.finished = true;

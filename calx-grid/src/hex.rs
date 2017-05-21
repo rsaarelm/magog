@@ -1,10 +1,11 @@
-use std::slice;
-use std::ops::{Add, Sub};
-use std::f32::consts::PI;
-use std::cmp::max;
-use rand::{Rand, Rng};
-use num::Integer;
+
 use euclid::Point2D;
+use num::Integer;
+use rand::{Rand, Rng};
+use std::cmp::max;
+use std::f32::consts::PI;
+use std::ops::{Add, Sub};
+use std::slice;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
@@ -67,14 +68,14 @@ impl Dir6 {
         };
 
         Dir6::from_int(match hexadecant {
-            13 | 14 => 0,
-            15 | 0 | 1 => 1,
-            2 | 3 | 4 => 2,
-            5 | 6 => 3,
-            7 | 8 | 9 => 4,
-            10 | 11 | 12 => 5,
-            _ => panic!("Bad hexadecant"),
-        })
+                           13 | 14 => 0,
+                           15 | 0 | 1 => 1,
+                           2 | 3 | 4 => 2,
+                           5 | 6 => 3,
+                           7 | 8 | 9 => 4,
+                           10 | 11 | 12 => 5,
+                           _ => panic!("Bad hexadecant"),
+                       })
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
@@ -143,7 +144,11 @@ impl Dir12 {
             return None;
         }
 
-        let cluster_size = if end < begin { end + 6 - begin } else { end - begin };
+        let cluster_size = if end < begin {
+            end + 6 - begin
+        } else {
+            end - begin
+        };
         assert!(cluster_size > 0);
 
         // Dir12 in use from here on.
@@ -200,10 +205,10 @@ impl Dir12 {
 
 #[cfg(test)]
 mod test {
-    use euclid::Point2D;
+    use super::Dir12;
     use super::Dir6;
     use super::Dir6::*;
-    use super::Dir12;
+    use euclid::Point2D;
 
     #[test]
     fn test_dir6() {

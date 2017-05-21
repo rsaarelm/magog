@@ -6,8 +6,8 @@ extern crate serde;
 
 use num::Float;
 use rand::Rng;
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 pub use rng::{EncodeRng, RandomPermutation, RngExt};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 pub use text::{LineSplit, split_line};
 
 mod parser;
@@ -136,7 +136,11 @@ impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
             let item_weight = weight_fn(&item);
             assert!(item_weight >= 0.0);
             let p = item_weight / (weight_sum + item_weight);
-            let next_item = if rng.next_f32() < p { Some(item) } else { prev_item };
+            let next_item = if rng.next_f32() < p {
+                Some(item)
+            } else {
+                prev_item
+            };
             (weight_sum + item_weight, next_item)
         });
         ret

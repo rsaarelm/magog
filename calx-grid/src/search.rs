@@ -1,9 +1,10 @@
-use std::hash::Hash;
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::collections::BTreeMap;
+
 use num::{One, Zero};
 use num::traits::Num;
+use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::hash::Hash;
 
 /// A node in a graph with a regular grid.
 pub trait GridNode: PartialEq + Eq + Clone + Hash + PartialOrd + Ord {
@@ -104,22 +105,22 @@ pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Op
 
     while !open.is_empty() && limit > 0 {
         let (pick, dist) = open.iter()
-                               .fold(None, |a, (x, &pathlen_x)| {
-                                   let x_cost = pathlen_x + metric(x, &to);
+            .fold(None, |a, (x, &pathlen_x)| {
+                let x_cost = pathlen_x + metric(x, &to);
 
-                                   match a {
-                                       None => Some((x.clone(), pathlen_x)),
-                                       Some((y, pathlen_y)) => {
-                                           let y_cost = pathlen_y + metric(&y, &to);
-                                           if x_cost < y_cost {
-                                               Some((x.clone(), pathlen_x))
-                                           } else {
-                                               Some((y, pathlen_y))
-                                           }
-                                       }
-                                   }
-                               })
-                               .unwrap();
+                match a {
+                    None => Some((x.clone(), pathlen_x)),
+                    Some((y, pathlen_y)) => {
+                        let y_cost = pathlen_y + metric(&y, &to);
+                        if x_cost < y_cost {
+                            Some((x.clone(), pathlen_x))
+                        } else {
+                            Some((y, pathlen_y))
+                        }
+                    }
+                }
+            })
+            .unwrap();
 
         if pick == to {
             return Some(build_path(&pick, &path));
@@ -161,12 +162,10 @@ mod test {
 
         impl GridNode for V {
             fn neighbors(&self) -> Vec<V> {
-                vec![
-                V([self.0[0] - 1, self.0[1]]),
-                V([self.0[0], self.0[1] - 1]),
-                V([self.0[0] + 1, self.0[1]]),
-                V([self.0[0], self.0[1] + 1]),
-            ]
+                vec![V([self.0[0] - 1, self.0[1]]),
+                     V([self.0[0], self.0[1] - 1]),
+                     V([self.0[0] + 1, self.0[1]]),
+                     V([self.0[0], self.0[1] + 1])]
             }
         }
 
@@ -174,7 +173,7 @@ mod test {
                                    V([1, 1]),
                                    V([10, 10]),
                                    10000)
-                       .unwrap();
+                .unwrap();
         assert!(path[0] == V([1, 1]));
         assert!(path[path.len() - 1] == V([10, 10]));
     }

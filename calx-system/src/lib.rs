@@ -2,11 +2,11 @@ extern crate time;
 extern crate tempdir;
 extern crate image;
 
-use std::io;
-use std::path::{Path, PathBuf};
-use std::fs;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
 use tempdir::TempDir;
 
 /// Return the application data directory path for the current platform.
@@ -32,21 +32,15 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
                 _ => Path::new(".").to_path_buf(),
             }
         } else {
-            Path::new(&format!("{}\\{}",
-                               env::var("APPDATA").unwrap(),
-                               app_name))
-                .to_path_buf()
+            Path::new(&format!("{}\\{}", env::var("APPDATA").unwrap(), app_name)).to_path_buf()
         }
     } else if cfg!(macos) {
         Path::new(&format!("{}/Library/Application Support/{}",
-                           env::var("HOME").unwrap(),
-                           app_name))
-            .to_path_buf()
+                          env::var("HOME").unwrap(),
+                          app_name))
+                .to_path_buf()
     } else {
-        Path::new(&format!("{}/.config/{}",
-                           env::var("HOME").unwrap(),
-                           app_name))
-            .to_path_buf()
+        Path::new(&format!("{}/.config/{}", env::var("HOME").unwrap(), app_name)).to_path_buf()
     }
 }
 
@@ -55,9 +49,7 @@ struct TimeLog {
 }
 
 impl TimeLog {
-    pub fn new() -> TimeLog {
-        TimeLog { logs: HashMap::new() }
-    }
+    pub fn new() -> TimeLog { TimeLog { logs: HashMap::new() } }
 
     pub fn log(name: String, mut duration: f64) {
         // TODO: Enable this when it's stable. Otherwise occasionally getting
@@ -110,20 +102,18 @@ impl TimeLogItem {
 }
 
 impl Drop for TimeLogItem {
-    fn drop(&mut self) {
-        TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin);
-    }
+    fn drop(&mut self) { TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin); }
 }
 
 /// Save a timestamped screenshot to disk.
-pub fn save_screenshot(basename: &str,
-                       shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>)
-                       -> io::Result<()> {
+pub fn save_screenshot(
+    basename: &str,
+    shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>,
+) -> io::Result<()> {
 
     let tmpdir = try!(TempDir::new("calx"));
     let timestamp = (time::precise_time_s() * 100.0) as u64;
-    let file = Path::new(&format!("{}-{}.png", basename, timestamp))
-                   .to_path_buf();
+    let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
     try!(image::save_buffer(&tmpfile,
                             shot,

@@ -1,6 +1,7 @@
-use num::Integer;
+
 use euclid::Point2D;
 use hex::Dir6;
+use num::Integer;
 
 /// User data for field of view cells.
 pub trait FovValue: PartialEq + Clone {
@@ -48,7 +49,9 @@ impl<T: FovValue> HexFov<T> {
             // If the next cell is within the current span and the current cell is
             // wallform, and current and next are in the same value group,
             if next.is_below(current.end) &&
-               current.prev_value.is_fake_isometric_wall(current.pt.to_v2()) &&
+               current
+                   .prev_value
+                   .is_fake_isometric_wall(current.pt.to_v2()) &&
                next_value == current.prev_value.advance(current.pt.to_v2()) {
                 if let Some(next_value) = next_value {
                     // and if both the next cell and the third corner point cell are
@@ -58,7 +61,8 @@ impl<T: FovValue> HexFov<T> {
                        next_value.advance(side_pos).is_none() &&
                        next_value.is_fake_isometric_wall(side_pos) {
                         // Add the side point to the side channel.
-                        self.side_channel.push((side_pos, current.prev_value.clone()));
+                        self.side_channel
+                            .push((side_pos, current.prev_value.clone()));
                     }
                 }
             }
@@ -143,12 +147,12 @@ impl<T: FovValue> Arc<T> {
         if next_value != self.group_value {
             // Using the literal instead of the constructor to avoid recomputing next_value.
             stack.push(Arc {
-                begin: self.pt,
-                pt: self.pt,
-                end: self.end,
-                prev_value: self.prev_value.clone(),
-                group_value: next_value,
-            });
+                           begin: self.pt,
+                           pt: self.pt,
+                           end: self.end,
+                           prev_value: self.prev_value.clone(),
+                           group_value: next_value,
+                       });
 
             // Extend current arc if it has a group value.
             if let Some(ref group_value) = self.group_value {
@@ -170,9 +174,7 @@ struct PolarPoint {
 }
 
 impl PolarPoint {
-    pub fn new(pos: f32, radius: u32) -> PolarPoint {
-        PolarPoint { pos, radius }
-    }
+    pub fn new(pos: f32, radius: u32) -> PolarPoint { PolarPoint { pos, radius } }
 
     /// Index of the discrete hex cell along the circle that corresponds to this point.
     fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
@@ -229,11 +231,11 @@ impl PolarPoint {
 
 #[cfg(test)]
 mod test {
+    use super::{FovValue, HexFov};
+    use euclid::Point2D;
+    use hex::HexGeom;
     use std::collections::HashMap;
     use std::iter::FromIterator;
-    use euclid::Point2D;
-    use super::{FovValue, HexFov};
-    use hex::HexGeom;
 
     #[derive(PartialEq, Eq, Clone)]
     struct Cell1 {
@@ -242,7 +244,11 @@ mod test {
 
     impl FovValue for Cell1 {
         fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
-            if offset.hex_dist() < self.range { Some(self.clone()) } else { None }
+            if offset.hex_dist() < self.range {
+                Some(self.clone())
+            } else {
+                None
+            }
         }
     }
 
@@ -253,7 +259,11 @@ mod test {
 
     impl FovValue for Cell2 {
         fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
-            if offset.hex_dist() < self.range { Some(self.clone()) } else { None }
+            if offset.hex_dist() < self.range {
+                Some(self.clone())
+            } else {
+                None
+            }
         }
 
         fn is_fake_isometric_wall(&self, offset: Point2D<i32>) -> bool {
@@ -265,16 +275,14 @@ mod test {
     #[test]
     fn trivial_fov() {
         // Just draw a small circle.
-        let field: HashMap<Point2D<i32>, Cell1> = HashMap::from_iter(HexFov::new(Cell1 {
-            range: 2,
-        }));
+        let field: HashMap<Point2D<i32>, Cell1> =
+            HashMap::from_iter(HexFov::new(Cell1 { range: 2 }));
         assert!(field.contains_key(&Point2D::new(1, 0)));
         assert!(!field.contains_key(&Point2D::new(1, -1)));
 
         // Now test out the fake-isometric corners.
-        let field: HashMap<Point2D<i32>, Cell2> = HashMap::from_iter(HexFov::new(Cell2 {
-            range: 2,
-        }));
+        let field: HashMap<Point2D<i32>, Cell2> =
+            HashMap::from_iter(HexFov::new(Cell2 { range: 2 }));
         assert!(field.contains_key(&Point2D::new(1, 0)));
         assert!(field.contains_key(&Point2D::new(1, -1)));
     }

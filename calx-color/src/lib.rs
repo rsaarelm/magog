@@ -4,11 +4,11 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-use std::str::FromStr;
-use std::ascii::AsciiExt;
-use std::ops::{Add, Sub, Mul};
-use std::fmt;
 use num::Num;
+use std::ascii::AsciiExt;
+use std::fmt;
+use std::ops::{Add, Sub, Mul};
+use std::str::FromStr;
 
 /// Color in sRGB color space.
 ///
@@ -73,17 +73,14 @@ impl From<u32> for SRgba {
 }
 
 impl Into<image::Rgba<u8>> for SRgba {
-    fn into(self) -> image::Rgba<u8> {
-        image::Rgba { data: [self.r, self.g, self.b, self.a] }
-    }
+    fn into(self) -> image::Rgba<u8> { image::Rgba { data: [self.r, self.g, self.b, self.a] } }
 }
 
 impl FromStr for SRgba {
     type Err = ();
 
     fn from_str(s: &str) -> Result<SRgba, ()> {
-        if let Some(idx) =
-               parse_color_name(&s.to_string().to_ascii_uppercase()[..]) {
+        if let Some(idx) = parse_color_name(&s.to_string().to_ascii_uppercase()[..]) {
             return Ok(NAMED_COLORS[idx].2);
         }
 
@@ -134,18 +131,18 @@ impl FromStr for SRgba {
             };
 
             return match (r, g, b, a) {
-                (Ok(mut r), Ok(mut g), Ok(mut b), Ok(mut a)) => {
-                    if digits == 1 {
-                        r += r << 4;
-                        g += g << 4;
-                        b += b << 4;
-                        a += a << 4;
-                    }
+                       (Ok(mut r), Ok(mut g), Ok(mut b), Ok(mut a)) => {
+                           if digits == 1 {
+                               r += r << 4;
+                               g += g << 4;
+                               b += b << 4;
+                               a += a << 4;
+                           }
 
-                    Ok(SRgba::new(r, g, b, a))
-                }
-                _ => Err(()),
-            };
+                           Ok(SRgba::new(r, g, b, a))
+                       }
+                       _ => Err(()),
+                   };
         }
 
         Err(())
@@ -212,9 +209,7 @@ impl From<SRgba> for Rgba {
 }
 
 impl From<u32> for Rgba {
-    fn from(u: u32) -> Rgba {
-        SRgba::from(u).into()
-    }
+    fn from(u: u32) -> Rgba { SRgba::from(u).into() }
 }
 
 impl Add<Rgba> for Rgba {
@@ -239,9 +234,7 @@ impl Sub<Rgba> for Rgba {
 
 impl Mul<f32> for Rgba {
     type Output = Rgba;
-    fn mul(self, rhs: f32) -> Rgba {
-        Rgba::new(self.r * rhs, self.g * rhs, self.b * rhs, self.a)
-    }
+    fn mul(self, rhs: f32) -> Rgba { Rgba::new(self.r * rhs, self.g * rhs, self.b * rhs, self.a) }
 }
 
 impl Mul<Rgba> for Rgba {

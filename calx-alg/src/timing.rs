@@ -1,8 +1,8 @@
 //! Time-related utilities
 
-use time;
 use std::thread;
 use std::time::Duration;
+use time;
 
 /// Animation cycle based on system clock.
 pub fn cycle_anim<'a, T>(period_s: f64, frames: &'a [T]) -> &'a T {

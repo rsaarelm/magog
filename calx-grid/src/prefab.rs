@@ -1,11 +1,12 @@
+
+use euclid::{Point2D, Size2D};
+use std::cmp::{max, min};
 use std::collections::{BTreeMap, HashMap};
 use std::collections::hash_map;
-use std::i32;
-use std::hash::Hash;
-use std::iter::{FromIterator, IntoIterator};
-use std::cmp::{max, min};
 use std::fmt;
-use euclid::{Point2D, Size2D};
+use std::hash::Hash;
+use std::i32;
+use std::iter::{FromIterator, IntoIterator};
 
 /// A structure for storing a piece of a grid map.
 ///
@@ -82,10 +83,12 @@ impl<T: Clone + Eq + Hash> FromIterator<(Point2D<i32>, T)> for Prefab<T> {
             min_x = min(min_x, p.x);
             min_y = min(min_y, p.y);
 
-            let val = *element_idx.entry(e.clone()).or_insert_with(|| {
-                ret.elements.push(e);
-                ret.elements.len() - 1
-            });
+            let val = *element_idx
+                           .entry(e.clone())
+                           .or_insert_with(|| {
+                                               ret.elements.push(e);
+                                               ret.elements.len() - 1
+                                           });
 
             temp_buffer.push((p, val));
         }
@@ -170,13 +173,13 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
 
         // Find the smallest displayed x-coordinate that actually shows up in the map.
         let min_x = (0..self.0.dim.width)
-                        .flat_map(move |x| {
-                            (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32))
-                        })
-                        .filter(|&p| self.0.get(p).is_some())
-                        .map(|p| p.x * 2 - p.y)
-                        .min()
-                        .unwrap_or(0);
+            .flat_map(move |x| {
+                          (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32))
+                      })
+            .filter(|&p| self.0.get(p).is_some())
+            .map(|p| p.x * 2 - p.y)
+            .min()
+            .unwrap_or(0);
 
         for y in 0..(self.0.dim.height as i32) {
             for x in min_x..(min_x + max_width) {
@@ -254,8 +257,8 @@ impl<T, F> LegendBuilder<T, F>
 
 #[cfg(test)]
 mod test {
-    use euclid::Point2D;
     use super::Prefab;
+    use euclid::Point2D;
 
     #[test]
     fn test_from_text() {

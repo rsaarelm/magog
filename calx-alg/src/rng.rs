@@ -1,8 +1,9 @@
+
+use Deciban;
 use rand::{Rng, SeedableRng};
 use serde;
 use std::mem;
 use vec_map::VecMap;
-use Deciban;
 
 /// Additional methods for random number generators.
 pub trait RngExt {
