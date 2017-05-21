@@ -1,8 +1,8 @@
-use std::mem;
-use vec_map::VecMap;
 use rand::{Rng, SeedableRng};
 use serde;
-use to_log_odds;
+use std::mem;
+use vec_map::VecMap;
+use Deciban;
 
 /// Additional methods for random number generators.
 pub trait RngExt {
@@ -15,14 +15,9 @@ pub trait RngExt {
     /// Return true with p probability.
     fn with_chance(&mut self, p: f32) -> bool;
 
-    /// Return a log odds deciban score that corresponds to a random
-    /// probability from [0, 1].
-    ///
-    fn log_odds(&mut self) -> f32;
-
     /// Return true with the probability corresponding to the log odds with
     /// the given deciban value.
-    fn with_log_odds(&mut self, db: f32) -> bool;
+    fn with_log_odds(&mut self, db: Deciban) -> bool;
 }
 
 impl<T: Rng> RngExt for T {
@@ -32,9 +27,7 @@ impl<T: Rng> RngExt for T {
 
     fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0, 1.0) < p }
 
-    fn log_odds(&mut self) -> f32 { to_log_odds(self.gen_range(0.0, 1.0)) }
-
-    fn with_log_odds(&mut self, db: f32) -> bool { db > self.log_odds() }
+    fn with_log_odds(&mut self, db: Deciban) -> bool { db > self.gen::<Deciban>() }
 }
 
 /// A wrapper that makes a Rng implementation encodable.

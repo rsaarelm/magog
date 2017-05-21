@@ -4,10 +4,9 @@ extern crate time;
 extern crate vec_map;
 extern crate serde;
 
-use rand::Rng;
-use std::ops::{Add, Mul, Sub};
 use num::Float;
-
+use rand::Rng;
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 pub use rng::{EncodeRng, RandomPermutation, RngExt};
 pub use text::{LineSplit, split_line};
 
@@ -41,7 +40,7 @@ pub fn noise(n: i32) -> f32 {
     1.0 - m as f32 / 1073741824.0
 }
 
-/// Convert probability to a log odds deciban value.
+/// A deciban unit log odds value.
 ///
 /// Log odds correspond to the Bayesian probability for a hypothesis that
 /// has decibans * 1/10 log_2(10) bits of evidence in favor of it. They're
@@ -50,22 +49,48 @@ pub fn noise(n: i32) -> f32 {
 /// # Examples
 ///
 /// ```
-/// use calx_alg::to_log_odds;
-/// assert_eq!(0.0, to_log_odds(0.5));
-/// assert_eq!(10, to_log_odds(0.909091) as i32);
+/// use calx_alg::Deciban;
+/// assert_eq!(0.0, Deciban::new(0.5).0);
+/// assert_eq!(10, Deciban::new(0.909091).0 as i32);
+///
+/// assert_eq!(0.5, Deciban(0.0).to_p());
+/// assert_eq!(24, (Deciban(-5.0).to_p() * 100.0) as i32);
 /// ```
-pub fn to_log_odds(p: f32) -> f32 { 10.0 * (p / (1.0 - p)).log(10.0) }
+#[derive(Copy, Clone, PartialEq, PartialOrd, Default, Debug)]
+pub struct Deciban(pub f32);
 
-/// Convert a log odds deciban value to the corresponding probability.
-///
-/// # Examples
-///
-/// ```
-/// use calx_alg::from_log_odds;
-/// assert_eq!(0.5, from_log_odds(0.0));
-/// assert_eq!(24, (from_log_odds(-5.0) * 100.0) as i32);
-/// ```
-pub fn from_log_odds(db: f32) -> f32 { (1.0 - 1.0 / (1.0 + 10.0.powf(db / 10.0))) }
+impl rand::Rand for Deciban {
+    fn rand<R: Rng>(rng: &mut R) -> Self { Deciban::new(rng.next_f32()) }
+}
+
+impl Deciban {
+    /// Build a deciban value from a probability in [0, 1).
+    pub fn new(p: f32) -> Deciban {
+        assert!(p >= 0.0 && p < 1.0);
+        Deciban(10.0 * (p / (1.0 - p)).log(10.0))
+    }
+
+    /// Convert a deciban value to the corresponding probability in [0, 1).
+    pub fn to_p(self) -> f32 { 1.0 - 1.0 / (1.0 + 10.0.powf(self.0 / 10.0)) }
+}
+
+impl Add for Deciban {
+    type Output = Deciban;
+    fn add(self, rhs: Deciban) -> Deciban { Deciban(self.0 + rhs.0) }
+}
+
+impl AddAssign for Deciban {
+    fn add_assign(&mut self, rhs: Deciban) { self.0 += rhs.0; }
+}
+
+impl Sub for Deciban {
+    type Output = Deciban;
+    fn sub(self, rhs: Deciban) -> Deciban { Deciban(self.0 - rhs.0) }
+}
+
+impl SubAssign for Deciban {
+    fn sub_assign(&mut self, rhs: Deciban) { self.0 -= rhs.0; }
+}
 
 /// Interpolate linearly between two values.
 pub fn lerp<T, U>(a: U, b: U, t: T) -> U
