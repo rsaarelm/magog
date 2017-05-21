@@ -17,6 +17,7 @@ use std::iter::FromIterator;
 use std::slice;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
+use Rng;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -171,6 +172,8 @@ impl Mutate for World {
             }
         }
     }
+
+    fn rng(&mut self) -> &mut Rng { self.flags.rng() }
 }
 
 impl Command for World {

@@ -73,6 +73,8 @@ pub enum FovStatus {
     Remembered,
 }
 
+pub type Rng = calx_alg::EncodeRng<rand::XorShiftRng>;
+
 /// Return whether the given chart point is on the currently visible screen.
 ///
 /// It is assumed that the chart point 0, 0 is at the center of the screen.

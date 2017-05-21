@@ -1,3 +1,5 @@
+use rand::Rng;
+use calx_alg::{Deciban, clamp};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
@@ -32,6 +34,14 @@ pub trait Mutate: Query + Terraform + Sized {
     ///
     /// Does nothing for entities without a map memory component.
     fn do_fov(&mut self, e: Entity);
+
+    /// Access the persistent random number generator.
+    fn rng(&mut self) -> &mut ::Rng;
+
+    /// Standard deciban roll, convert to i32 and clamp out extremes.
+    fn roll(&mut self) -> f32 {
+        clamp(-20.0, 20.0, self.rng().gen::<Deciban>().0.round())
+    }
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
@@ -70,12 +80,27 @@ pub trait Mutate: Query + Terraform + Sized {
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> CommandResult {
         if let Some(loc) = self.location(e) {
             if let Some(target) = self.mob_at(loc + dir) {
-                // TODO: Proper damage system.
-                self.kill_entity(target);
+
+                // Combat formula
+                const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
+
+                let roll = self.roll() + (self.stats(e).attack - self.stats(target).defense) as f32;
+                let damage_power = 1.0; // TODO: Modify by weapon in use
+                let target_armor = self.stats(target).armor as f32;
+                let damage = damage_power * clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05 - target_armor * 0.1);
+
+                self.damage(target, damage as i32, Some(e));
                 return Ok(());
             }
         }
         Err(())
+    }
+
+    fn damage(&mut self, e: Entity, amount: i32, source: Option<Entity>) {
+        // TODO: Proper damage system using amount value.
+        // TODO: Aggro an AI entity at source.
+        // NB: Damage may be 0, this does no harm but should still cause aggro.
+        self.kill_entity(e);
     }
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;

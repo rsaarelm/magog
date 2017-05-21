@@ -1,7 +1,7 @@
-use calx_alg::EncodeRng;
 use calx_ecs::Entity;
 use location::Location;
-use rand::{Rng, SeedableRng, XorShiftRng};
+use rand::SeedableRng;
+use Rng;
 
 #[derive(Serialize, Deserialize)]
 pub struct Flags {
@@ -13,7 +13,7 @@ pub struct Flags {
     pub depth: i32,
 
     pub seed: u32,
-    rng: EncodeRng<XorShiftRng>,
+    rng: Rng,
 }
 
 impl Flags {
