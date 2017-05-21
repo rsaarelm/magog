@@ -119,7 +119,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "calx-alg"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#703f1357131a38af04cef491bf2d05829e974ddc"
+source = "git+https://github.com/rsaarelm/calx#7b081f5a070ddce83c48f3d416fdc8d6e7d3801f"
 dependencies = [
  "num 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "calx-color"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#703f1357131a38af04cef491bf2d05829e974ddc"
+source = "git+https://github.com/rsaarelm/calx#7b081f5a070ddce83c48f3d416fdc8d6e7d3801f"
 dependencies = [
  "image 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -151,7 +151,7 @@ dependencies = [
 [[package]]
 name = "calx-grid"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#703f1357131a38af04cef491bf2d05829e974ddc"
+source = "git+https://github.com/rsaarelm/calx#7b081f5a070ddce83c48f3d416fdc8d6e7d3801f"
 dependencies = [
  "euclid 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -984,7 +984,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#01036cca4d9bdeaf6a7b95098ed768f53b0efe16"
+source = "git+https://github.com/rsaarelm/vitral#10ab387e1a42a702fd62557d47e0b237c7254147"
 dependencies = [
  "euclid 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "vitral-atlas"
 version = "0.1.0"
-source = "git+https://github.com/rsaarelm/vitral#01036cca4d9bdeaf6a7b95098ed768f53b0efe16"
+source = "git+https://github.com/rsaarelm/vitral#10ab387e1a42a702fd62557d47e0b237c7254147"
 dependencies = [
  "euclid 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.1.0 (git+https://github.com/rsaarelm/vitral)",
