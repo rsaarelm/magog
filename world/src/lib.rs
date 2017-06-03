@@ -34,7 +34,9 @@ mod form;
 pub use form::{Form, FORMS};
 
 mod fov;
+
 mod item;
+pub use item::Slot;
 
 mod location;
 pub use location::{Location, Portal};
