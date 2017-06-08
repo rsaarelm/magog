@@ -364,7 +364,8 @@ pub trait Context: Sized {
 
     /// Construct a new vertex.
     ///
-    /// Properties other than position and texture coordinate are provided by the implementation.
+    /// Properties other than position, texture coordinate and color are provided by the
+    /// implementation.
     fn new_vertex(
         &mut self,
         pos: Point2D<f32>,
