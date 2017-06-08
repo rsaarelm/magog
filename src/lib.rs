@@ -195,7 +195,6 @@ impl<T> Builder<T>
 /// converted into rendering instructions for the GUI.
 pub struct State<T, V> {
     draw_list: Vec<DrawBatch<T, V>>,
-    pub layout_pos: Point2D<f32>,
 
     mouse_pos: Point2D<f32>,
     click_state: [ClickState; 3],
@@ -224,7 +223,6 @@ impl<T, V> State<T, V>
     ) -> State<T, V> {
         State {
             draw_list: Vec::new(),
-            layout_pos: Point2D::new(0.0, 0.0),
 
             mouse_pos: Point2D::new(0.0, 0.0),
             click_state: [ClickState::Unpressed,
