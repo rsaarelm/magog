@@ -1,3 +1,6 @@
+// Don't show a console window when running on Windows.
+#![windows_subsystem = "windows"]
+
 extern crate rand;
 extern crate euclid;
 extern crate glium;
