@@ -1,5 +1,5 @@
 
-use euclid::{Point2D, Size2D};
+use euclid::{Vector2D, vec2, Size2D};
 use std::cmp::{max, min};
 use std::collections::{BTreeMap, HashMap};
 use std::collections::hash_map;
@@ -14,7 +14,7 @@ use std::iter::{FromIterator, IntoIterator};
 /// (exclusive).
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Prefab<T> {
-    terrain: HashMap<Point2D<i32>, usize>,
+    terrain: HashMap<Vector2D<i32>, usize>,
     elements: Vec<T>,
     dim: Size2D<u32>,
 }
@@ -28,7 +28,7 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
         }
     }
 
-    pub fn get(&self, pos: Point2D<i32>) -> Option<&T> {
+    pub fn get(&self, pos: Vector2D<i32>) -> Option<&T> {
         self.terrain.get(&pos).map(|&idx| &self.elements[idx])
     }
 
@@ -52,11 +52,11 @@ impl<T: Clone + Eq + Hash> Prefab<T> {
 
 pub struct PrefabIterator<'a, T: 'a> {
     prefab: &'a Prefab<T>,
-    iter: hash_map::Iter<'a, Point2D<i32>, usize>,
+    iter: hash_map::Iter<'a, Vector2D<i32>, usize>,
 }
 
 impl<'a, T: 'a> Iterator for PrefabIterator<'a, T> {
-    type Item = (Point2D<i32>, &'a T);
+    type Item = (Vector2D<i32>, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.iter.next() {
@@ -67,8 +67,8 @@ impl<'a, T: 'a> Iterator for PrefabIterator<'a, T> {
 }
 
 
-impl<T: Clone + Eq + Hash> FromIterator<(Point2D<i32>, T)> for Prefab<T> {
-    fn from_iter<I: IntoIterator<Item = (Point2D<i32>, T)>>(iter: I) -> Self {
+impl<T: Clone + Eq + Hash> FromIterator<(Vector2D<i32>, T)> for Prefab<T> {
+    fn from_iter<I: IntoIterator<Item = (Vector2D<i32>, T)>>(iter: I) -> Self {
         // List of unique values.
         let mut element_idx: HashMap<T, usize> = HashMap::new();
         let mut ret = Prefab::new();
@@ -124,7 +124,7 @@ impl Prefab<char> {
             for (x, c) in line.chars().enumerate() {
                 let (map_x, map_y) = project(x, y);
                 if !c.is_whitespace() {
-                    buf.push((Point2D::new(map_x, map_y), c));
+                    buf.push((vec2(map_x, map_y), c));
                 }
             }
         }
@@ -145,7 +145,7 @@ impl<T: fmt::Display + Clone + Eq + Hash> fmt::Display for Prefab<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for y in 0..self.dim.height {
             for x in 0..self.dim.width {
-                if let Some(c) = self.get(Point2D::new(x as i32, y as i32)) {
+                if let Some(c) = self.get(vec2(x as i32, y as i32)) {
                     write!(f, "{}", c)?;
                 } else {
                     write!(f, " ")?;
@@ -174,7 +174,7 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
         // Find the smallest displayed x-coordinate that actually shows up in the map.
         let min_x = (0..self.0.dim.width)
             .flat_map(move |x| {
-                          (0..self.0.dim.height).map(move |y| Point2D::new(x as i32, y as i32))
+                          (0..self.0.dim.height).map(move |y| vec2(x as i32, y as i32))
                       })
             .filter(|&p| self.0.get(p).is_some())
             .map(|p| p.x * 2 - p.y)
@@ -189,7 +189,7 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
                 }
                 let map_x = (x + y) / 2;
                 let map_y = y;
-                if let Some(c) = self.0.get(Point2D::new(map_x, map_y)) {
+                if let Some(c) = self.0.get(vec2(map_x, map_y)) {
                     write!(f, "{}", c)?;
                 } else {
                     write!(f, " ")?;
@@ -258,7 +258,7 @@ impl<T, F> LegendBuilder<T, F>
 #[cfg(test)]
 mod test {
     use super::Prefab;
-    use euclid::Point2D;
+    use euclid::vec2;
 
     #[test]
     fn test_from_text() {
@@ -277,9 +277,9 @@ mod test {
 
         assert_eq!(a, b);
 
-        assert_eq!(Some(&'#'), a.get(Point2D::new(0, 0)));
-        assert_eq!(Some(&'.'), a.get(Point2D::new(1, 1)));
-        assert_eq!(Some(&'#'), a.get(Point2D::new(1, 2)));
+        assert_eq!(Some(&'#'), a.get(vec2(0, 0)));
+        assert_eq!(Some(&'.'), a.get(vec2(1, 1)));
+        assert_eq!(Some(&'#'), a.get(vec2(1, 2)));
     }
 
     /// Remove whitespace differences from text map strings.
