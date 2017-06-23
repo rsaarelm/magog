@@ -11,6 +11,7 @@ use std::str::FromStr;
 use vec_map::VecMap;
 use vitral;
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
     use world::Terrain::*;
     let mut ret = VecMap::new();
