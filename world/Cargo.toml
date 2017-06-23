@@ -12,7 +12,7 @@ num = "0.1"
 rand = "0.3"
 vec_map = "0.8"
 bincode = { git = "https://github.com/TyOverby/bincode" } # TODO: Waiting for serde 1.0 version to hit crates.
-euclid = "0.13"
+euclid = "0.15"
 lazy_static = "0.2"
 serde = "1.0"
 serde_derive = "1.0"
