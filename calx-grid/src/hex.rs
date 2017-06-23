@@ -1,5 +1,5 @@
 
-use euclid::Point2D;
+use euclid::{Vector2D, vec2};
 use num::Integer;
 use rand::{Rand, Rng};
 use std::cmp::max;
@@ -13,7 +13,7 @@ pub trait HexGeom {
     fn hex_dist(&self) -> i32;
 }
 
-impl HexGeom for Point2D<i32> {
+impl HexGeom for Vector2D<i32> {
     fn hex_dist(&self) -> i32 {
         if self.x.signum() == self.y.signum() {
             max(self.x.abs(), self.y.abs())
@@ -57,7 +57,7 @@ impl Dir6 {
     /// Vectors that are in a space between two hex direction vectors are
     /// rounded to a hexadecant, then assigned the hex direction whose vector
     /// is nearest to that hexadecant.
-    pub fn from_v2(v: Point2D<i32>) -> Dir6 {
+    pub fn from_v2(v: Vector2D<i32>) -> Dir6 {
         let hexadecant = {
             let width = PI / 8.0;
             let mut radian = (v.x as f32).atan2(-v.y as f32);
@@ -82,9 +82,9 @@ impl Dir6 {
     pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
-    pub fn to_v2(&self) -> Point2D<i32> {
+    pub fn to_v2(&self) -> Vector2D<i32> {
         let v = [[-1, -1], [0, -1], [1, 0], [1, 1], [0, 1], [-1, 0]][*self as usize];
-        Point2D::new(v[0], v[1])
+        vec2(v[0], v[1])
     }
 
     /// Iterate through the six hex dirs in the standard order.
@@ -208,7 +208,7 @@ mod test {
     use super::Dir12;
     use super::Dir6;
     use super::Dir6::*;
-    use euclid::Point2D;
+    use euclid::vec2;
 
     #[test]
     fn test_dir6() {
@@ -217,10 +217,10 @@ mod test {
         assert_eq!(Northwest, Dir6::from_int(5));
         assert_eq!(Northeast, Dir6::from_int(1));
 
-        assert_eq!(Northeast, Dir6::from_v2(Point2D::new(20i32, -21i32)));
-        assert_eq!(Southeast, Dir6::from_v2(Point2D::new(20, -10)));
-        assert_eq!(North, Dir6::from_v2(Point2D::new(-10, -10)));
-        assert_eq!(South, Dir6::from_v2(Point2D::new(1, 1)));
+        assert_eq!(Northeast, Dir6::from_v2(vec2(20i32, -21i32)));
+        assert_eq!(Southeast, Dir6::from_v2(vec2(20, -10)));
+        assert_eq!(North, Dir6::from_v2(vec2(-10, -10)));
+        assert_eq!(South, Dir6::from_v2(vec2(1, 1)));
 
         for i in 0..6 {
             let d = Dir6::from_int(i);
@@ -236,14 +236,14 @@ mod test {
 
             // Test opposite dir vector mapping.
             assert_eq!(Dir6::from_int(i + 3),
-                       Dir6::from_v2(Point2D::new(-v.x, -v.y)));
+                       Dir6::from_v2(vec2(-v.x, -v.y)));
 
             // Test approximation of longer vectors.
-            assert_eq!(d, Dir6::from_v2(Point2D::new(v.x * 3, v.y * 3)));
+            assert_eq!(d, Dir6::from_v2(vec2(v.x * 3, v.y * 3)));
             assert_eq!(d,
-                       Dir6::from_v2(Point2D::new(v.x * 3 + v1.x, v.y * 3 + v1.y)));
+                       Dir6::from_v2(vec2(v.x * 3 + v1.x, v.y * 3 + v1.y)));
             assert_eq!(d,
-                       Dir6::from_v2(Point2D::new(v.x * 3 + v2.x, v.y * 3 + v2.y)));
+                       Dir6::from_v2(vec2(v.x * 3 + v2.x, v.y * 3 + v2.y)));
         }
     }
 
