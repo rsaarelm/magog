@@ -39,7 +39,8 @@ impl ImageBuffer {
 
     /// Build the buffer from a function.
     pub fn from_fn<F>(width: u32, height: u32, f: F) -> ImageBuffer
-        where F: Fn(u32, u32) -> u32
+    where
+        F: Fn(u32, u32) -> u32,
     {
         let pixels = (0..)
             .take((width * height) as usize)
@@ -53,7 +54,8 @@ impl ImageBuffer {
 
     /// Build the buffer from RGBA pixel iterator.
     pub fn from_iter<I>(width: u32, height: u32, pixels: &mut I) -> ImageBuffer
-        where I: Iterator<Item = u32>
+    where
+        I: Iterator<Item = u32>,
     {
         ImageBuffer {
             size: Size2D::new(width, height),
@@ -65,7 +67,10 @@ impl ImageBuffer {
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
         let blit_rect: Rect<u32> = rect(x, y, source.size.width, source.size.height);
 
-        if let Some(blit_rect) = blit_rect.intersection(&rect(0, 0, self.size.width, self.size.height)) {
+        if let Some(blit_rect) = blit_rect.intersection(
+            &rect(0, 0, self.size.width, self.size.height),
+        )
+        {
             for y2 in blit_rect.min_y()..blit_rect.max_y() {
                 for x2 in blit_rect.min_x()..blit_rect.max_x() {
                     let self_idx = (x2 + y2 * self.size.width) as usize;
@@ -88,7 +93,8 @@ pub struct Builder<T> {
 }
 
 impl<T> Builder<T>
-    where T: Clone + Eq
+where
+    T: Clone + Eq,
 {
     pub fn new() -> Builder<T> {
         Builder {
@@ -113,7 +119,8 @@ impl<T> Builder<T>
     }
 
     fn build_default_font<F>(&self, make_t: &mut F) -> FontData<T>
-        where F: FnMut(ImageBuffer) -> T
+    where
+        F: FnMut(ImageBuffer) -> T,
     {
         static DEFAULT_FONT: &'static [u8] = include_bytes!("font-96x48.raw");
         let (char_width, char_height) = (6, 8);
@@ -135,19 +142,25 @@ impl<T> Builder<T>
             let x = char_width * ((i - start_char) % columns);
             let y = char_height * ((i - start_char) / columns);
 
-            let tex_coords = rect(x as f32 / width as f32, y as f32 / height as f32,
-                                  char_width as f32 / width as f32, char_height as f32 / height as f32);
+            let tex_coords = rect(
+                x as f32 / width as f32,
+                y as f32 / height as f32,
+                char_width as f32 / width as f32,
+                char_height as f32 / height as f32,
+            );
 
-            map.insert(std::char::from_u32(i).unwrap(),
-                       CharData {
-                           image: ImageData {
-                               texture: t.clone(),
-                               size: Size2D::new(char_width, char_height),
-                               tex_coords: tex_coords,
-                           },
-                           draw_offset: vec2(0.0, 0.0),
-                           advance: char_width as f32,
-                       });
+            map.insert(
+                std::char::from_u32(i).unwrap(),
+                CharData {
+                    image: ImageData {
+                        texture: t.clone(),
+                        size: Size2D::new(char_width, char_height),
+                        tex_coords: tex_coords,
+                    },
+                    draw_offset: vec2(0.0, 0.0),
+                    advance: char_width as f32,
+                },
+            );
         }
 
         FontData {
@@ -162,7 +175,8 @@ impl<T> Builder<T>
     /// earlier, this will be used to construct a separate texture for the solid color and a
     /// default font texture.
     pub fn build<F, V>(self, screen_size: Size2D<f32>, mut make_t: F) -> State<T, V>
-        where F: FnMut(ImageBuffer) -> T
+    where
+        F: FnMut(ImageBuffer) -> T,
     {
         let font;
         if let Some(user_font) = self.user_font {
@@ -212,7 +226,8 @@ pub struct State<T, V> {
 }
 
 impl<T, V> State<T, V>
-    where T: Clone + Eq
+where
+    T: Clone + Eq,
 {
     fn new(
         solid_texture: ImageData<T>,
@@ -223,9 +238,11 @@ impl<T, V> State<T, V>
             draw_list: Vec::new(),
 
             mouse_pos: point2(0.0, 0.0),
-            click_state: [ClickState::Unpressed,
-                          ClickState::Unpressed,
-                          ClickState::Unpressed],
+            click_state: [
+                ClickState::Unpressed,
+                ClickState::Unpressed,
+                ClickState::Unpressed,
+            ],
 
             default_font,
             solid_texture,
@@ -325,20 +342,19 @@ impl<T, V> State<T, V>
             return;
         }
 
-        let texture =
-            texture_needed
-                .unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture.clone());
+        let texture = texture_needed.unwrap_or_else(|| {
+            self.draw_list[self.draw_list.len() - 1].texture.clone()
+        });
 
         let clip = self.clip_rect();
 
         if self.current_batch_is_invalid(texture.clone()) {
-            self.draw_list
-                .push(DrawBatch {
-                          texture,
-                          clip,
-                          vertices: Vec::new(),
-                          triangle_indices: Vec::new(),
-                      });
+            self.draw_list.push(DrawBatch {
+                texture,
+                clip,
+                vertices: Vec::new(),
+                triangle_indices: Vec::new(),
+            });
         }
     }
 }
@@ -503,10 +519,10 @@ pub trait Context: Sized {
         let is_hovering = self.global_bounds().contains(&self.mouse_pos());
 
         let left_press = self.state().click_state[MouseButton::Left as usize].is_pressed() &&
-                         is_hovering;
+            is_hovering;
 
         let right_press = self.state().click_state[MouseButton::Right as usize].is_pressed() &&
-                          is_hovering;
+            is_hovering;
 
         let is_pressed = left_press || right_press;
 
@@ -514,7 +530,8 @@ pub trait Context: Sized {
         if left_press && self.state().click_state[MouseButton::Left as usize].is_release() {
             ButtonAction::LeftClicked
         } else if right_press &&
-                  self.state().click_state[MouseButton::Right as usize].is_release() {
+                   self.state().click_state[MouseButton::Right as usize].is_release()
+        {
             ButtonAction::RightClicked
         } else if is_pressed {
             ButtonAction::Pressed
@@ -543,8 +560,8 @@ pub trait Context: Sized {
         self.fill_rect(area.inflate(-1.0, -1.0), [0.0, 0.0, 0.0, 1.0]);
 
         // Vertically center the caption.
-        let mut pos = ConvertibleUnit::convert_point(&self.scale_factor(),
-                                                     FracPoint2D::new(0.5, 0.0));
+        let mut pos =
+            ConvertibleUnit::convert_point(&self.scale_factor(), FracPoint2D::new(0.5, 0.0));
         pos.y = (self.bounds().size.height - self.current_font().height) / 2.0;
         self.draw_text(pos, Align::Center, color, caption);
 
@@ -590,18 +607,30 @@ pub trait Context: Sized {
 
     /// Helper method for calling `bound_r` with pixel coordinates.
     fn bound(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
-        self.bound_r(rect::<f32, PixelUnit>(x as f32, y as f32, w as f32, h as f32))
+        self.bound_r(rect::<f32, PixelUnit>(
+            x as f32,
+            y as f32,
+            w as f32,
+            h as f32,
+        ))
     }
 
     /// Helper method for calling `bound_clipped_r` with pixel coordinates.
     fn bound_clipped(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
-        self.bound_clipped_r(rect::<f32, PixelUnit>(x as f32, y as f32, w as f32, h as f32))
+        self.bound_clipped_r(rect::<f32, PixelUnit>(
+            x as f32,
+            y as f32,
+            w as f32,
+            h as f32,
+        ))
     }
 
     /// Helper method for calling `bound_r` with fractional coordinates.
     fn bound_f(&mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<Self> {
-        self.bound_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
-                                                           TypedSize2D::new(w, h)))
+        self.bound_r(TypedRect::<f32, FractionalUnit>::new(
+            TypedPoint2D::new(x, y),
+            TypedSize2D::new(w, h),
+        ))
     }
 
     /// Helper method for calling `bound_clipped_r` with fractional coordinates.
@@ -684,12 +713,19 @@ pub trait Context: Sized {
         // always at the end of the input.
 
         if ((time::precise_time_s() * 3.0) % 3.0) as u32 == 0 {
-            self.draw_text(point2::<f32, PixelUnit>(0.0, 0.0), Align::Left, color, text_buffer);
+            self.draw_text(
+                point2::<f32, PixelUnit>(0.0, 0.0),
+                Align::Left,
+                color,
+                text_buffer,
+            );
         } else {
-            self.draw_text(point2::<f32, PixelUnit>(0.0, 0.0),
-                           Align::Left,
-                           color,
-                           &format!("{}_", text_buffer));
+            self.draw_text(
+                point2::<f32, PixelUnit>(0.0, 0.0),
+                Align::Left,
+                color,
+                &format!("{}_", text_buffer),
+            );
         }
     }
 }
@@ -916,8 +952,10 @@ pub trait ConvertibleUnit: Sized {
     }
 
     fn convert_rect(scale: &Size2D<f32>, rect: TypedRect<f32, Self>) -> Rect<f32> {
-        Rect::new(Self::convert_point(scale, rect.origin),
-                  Self::convert_size(scale, rect.size))
+        Rect::new(
+            Self::convert_point(scale, rect.origin),
+            Self::convert_size(scale, rect.size),
+        )
     }
 
     fn convert_point(scale: &Size2D<f32>, point: TypedPoint2D<f32, Self>) -> Point2D<f32> {
