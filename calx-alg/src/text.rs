@@ -5,7 +5,8 @@
 /// Will treat newlines in the input as regular whitespace, you probably want to split your input
 /// at newlines before using `split_line` on the individual lines.
 pub fn split_line<'a, F>(text: &'a str, char_width: F, max_width: f32) -> LineSplit<'a, F>
-    where F: Fn(char) -> f32
+where
+    F: Fn(char) -> f32,
 {
     LineSplit {
         remain: text,
@@ -23,7 +24,8 @@ pub struct LineSplit<'a, F> {
 }
 
 impl<'a, F> Iterator for LineSplit<'a, F>
-    where F: Fn(char) -> f32
+where
+    F: Fn(char) -> f32,
 {
     type Item = &'a str;
 
@@ -62,8 +64,9 @@ impl<'a, F> Iterator for LineSplit<'a, F>
                 self.prev = c;
 
                 // Return the cut in the current word if there is no last_word_break set yet.
-                Some(self.last_word_break
-                         .unwrap_or((self.clip_pos, self.total_width)))
+                Some(self.last_word_break.unwrap_or(
+                    (self.clip_pos, self.total_width),
+                ))
             }
         }
 

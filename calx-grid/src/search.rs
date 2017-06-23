@@ -1,4 +1,3 @@
-
 use num::{One, Zero};
 use num::traits::Num;
 use std::collections::BTreeMap;
@@ -75,12 +74,14 @@ impl<N: GridNode> Dijkstra<N> {
 
 /// Find a path between two points using the A* algorithm.
 pub fn astar_path_with<N, F, T>(metric: F, from: N, to: N, mut limit: u32) -> Option<Vec<N>>
-    where N: GridNode,
-          F: Fn(&N, &N) -> T,
-          T: Num + Ord + Copy
+where
+    N: GridNode,
+    F: Fn(&N, &N) -> T,
+    T: Num + Ord + Copy,
 {
     fn build_path<'a, N>(mut end: &'a N, path: &'a HashMap<N, N>) -> Vec<N>
-        where N: GridNode
+    where
+        N: GridNode,
     {
         let mut ret = Vec::new();
         loop {
@@ -162,18 +163,21 @@ mod test {
 
         impl GridNode for V {
             fn neighbors(&self) -> Vec<V> {
-                vec![V([self.0[0] - 1, self.0[1]]),
-                     V([self.0[0], self.0[1] - 1]),
-                     V([self.0[0] + 1, self.0[1]]),
-                     V([self.0[0], self.0[1] + 1])]
+                vec![
+                    V([self.0[0] - 1, self.0[1]]),
+                    V([self.0[0], self.0[1] - 1]),
+                    V([self.0[0] + 1, self.0[1]]),
+                    V([self.0[0], self.0[1] + 1]),
+                ]
             }
         }
 
-        let path = astar_path_with(|a, b| (a.0[0] - b.0[0]).abs() + (a.0[1] - b.0[1]).abs(),
-                                   V([1, 1]),
-                                   V([10, 10]),
-                                   10000)
-                .unwrap();
+        let path = astar_path_with(
+            |a, b| (a.0[0] - b.0[0]).abs() + (a.0[1] - b.0[1]).abs(),
+            V([1, 1]),
+            V([10, 10]),
+            10000,
+        ).unwrap();
         assert!(path[0] == V([1, 1]));
         assert!(path[path.len() - 1] == V([10, 10]));
     }

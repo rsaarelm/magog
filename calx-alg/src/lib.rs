@@ -35,7 +35,7 @@ pub fn noise(n: i32) -> f32 {
     let n = Wrapping(n);
     let n = (n << 13) ^ n;
     let m = (n * (n * n * Wrapping(15731) + Wrapping(789221)) + Wrapping(1376312589)) &
-            Wrapping(0x7fffffff);
+        Wrapping(0x7fffffff);
     let Wrapping(m) = m;
     1.0 - m as f32 / 1073741824.0
 }
@@ -94,7 +94,8 @@ impl SubAssign for Deciban {
 
 /// Interpolate linearly between two values.
 pub fn lerp<T, U>(a: U, b: U, t: T) -> U
-    where U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy
+where
+    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
 {
     a + (b - a) * t
 }
@@ -123,14 +124,16 @@ pub trait WeightedChoice {
 
     /// Choose an item from the iteration with probability weighted by item weight.
     fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
-        where F: Fn(&Self::Item) -> f32;
+    where
+        F: Fn(&Self::Item) -> f32;
 }
 
 impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
     type Item = T;
 
     fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
-        where F: Fn(&Self::Item) -> f32
+    where
+        F: Fn(&Self::Item) -> f32,
     {
         let (_, ret) = self.fold((0.0, None), |(weight_sum, prev_item), item| {
             let item_weight = weight_fn(&item);

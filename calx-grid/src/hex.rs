@@ -1,4 +1,3 @@
-
 use euclid::{Vector2D, vec2};
 use num::Integer;
 use rand::{Rand, Rng};
@@ -68,14 +67,14 @@ impl Dir6 {
         };
 
         Dir6::from_int(match hexadecant {
-                           13 | 14 => 0,
-                           15 | 0 | 1 => 1,
-                           2 | 3 | 4 => 2,
-                           5 | 6 => 3,
-                           7 | 8 | 9 => 4,
-                           10 | 11 | 12 => 5,
-                           _ => panic!("Bad hexadecant"),
-                       })
+            13 | 14 => 0,
+            15 | 0 | 1 => 1,
+            2 | 3 | 4 => 2,
+            5 | 6 => 3,
+            7 | 8 | 9 => 4,
+            10 | 11 | 12 => 5,
+            _ => panic!("Bad hexadecant"),
+        })
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
@@ -105,12 +104,14 @@ impl Rand for Dir6 {
     fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
-static DIRS: [Dir6; 6] = [Dir6::North,
-                          Dir6::Northeast,
-                          Dir6::Southeast,
-                          Dir6::South,
-                          Dir6::Southwest,
-                          Dir6::Northwest];
+static DIRS: [Dir6; 6] = [
+    Dir6::North,
+    Dir6::Northeast,
+    Dir6::Southeast,
+    Dir6::South,
+    Dir6::Southwest,
+    Dir6::Northwest,
+];
 
 /// Hex grid directions with transitional directions.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
@@ -235,39 +236,56 @@ mod test {
             assert_eq!(d, Dir6::from_v2(v));
 
             // Test opposite dir vector mapping.
-            assert_eq!(Dir6::from_int(i + 3),
-                       Dir6::from_v2(vec2(-v.x, -v.y)));
+            assert_eq!(Dir6::from_int(i + 3), Dir6::from_v2(vec2(-v.x, -v.y)));
 
             // Test approximation of longer vectors.
             assert_eq!(d, Dir6::from_v2(vec2(v.x * 3, v.y * 3)));
-            assert_eq!(d,
-                       Dir6::from_v2(vec2(v.x * 3 + v1.x, v.y * 3 + v1.y)));
-            assert_eq!(d,
-                       Dir6::from_v2(vec2(v.x * 3 + v2.x, v.y * 3 + v2.y)));
+            assert_eq!(d, Dir6::from_v2(vec2(v.x * 3 + v1.x, v.y * 3 + v1.y)));
+            assert_eq!(d, Dir6::from_v2(vec2(v.x * 3 + v2.x, v.y * 3 + v2.y)));
         }
     }
 
     #[test]
     fn test_dir12() {
-        assert_eq!(None,
-                   Dir12::away_from(&[false, false, false, false, false, false]));
-        assert_eq!(None,
-                   Dir12::away_from(&[true, true, true, true, true, true]));
-        assert_eq!(None,
-                   Dir12::away_from(&[false, true, false, false, true, false]));
-        assert_eq!(None,
-                   Dir12::away_from(&[true, true, false, true, false, false]));
-        assert_eq!(None,
-                   Dir12::away_from(&[true, false, true, false, true, false]));
-        assert_eq!(Some(Dir12::South),
-                   Dir12::away_from(&[true, false, false, false, false, false]));
-        assert_eq!(Some(Dir12::East),
-                   Dir12::away_from(&[true, false, false, true, true, true]));
-        assert_eq!(Some(Dir12::SouthSouthwest),
-                   Dir12::away_from(&[true, true, false, false, false, false]));
-        assert_eq!(Some(Dir12::Southwest),
-                   Dir12::away_from(&[true, true, true, false, false, false]));
-        assert_eq!(Some(Dir12::SouthSoutheast),
-                   Dir12::away_from(&[true, true, false, false, true, true]));
+        assert_eq!(
+            None,
+            Dir12::away_from(&[false, false, false, false, false, false])
+        );
+        assert_eq!(
+            None,
+            Dir12::away_from(&[true, true, true, true, true, true])
+        );
+        assert_eq!(
+            None,
+            Dir12::away_from(&[false, true, false, false, true, false])
+        );
+        assert_eq!(
+            None,
+            Dir12::away_from(&[true, true, false, true, false, false])
+        );
+        assert_eq!(
+            None,
+            Dir12::away_from(&[true, false, true, false, true, false])
+        );
+        assert_eq!(
+            Some(Dir12::South),
+            Dir12::away_from(&[true, false, false, false, false, false])
+        );
+        assert_eq!(
+            Some(Dir12::East),
+            Dir12::away_from(&[true, false, false, true, true, true])
+        );
+        assert_eq!(
+            Some(Dir12::SouthSouthwest),
+            Dir12::away_from(&[true, true, false, false, false, false])
+        );
+        assert_eq!(
+            Some(Dir12::Southwest),
+            Dir12::away_from(&[true, true, true, false, false, false])
+        );
+        assert_eq!(
+            Some(Dir12::SouthSoutheast),
+            Dir12::away_from(&[true, true, false, false, true, true])
+        );
     }
 }

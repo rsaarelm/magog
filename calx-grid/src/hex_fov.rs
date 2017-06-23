@@ -1,4 +1,3 @@
-
 use euclid::{Vector2D, vec2};
 use hex::Dir6;
 use num::Integer;
@@ -30,9 +29,13 @@ impl<T: FovValue> HexFov<T> {
         // We could run f for (0, 0) here, but the traditional way for the FOV to work is to only
         // consider your surroundings, not the origin site itself.
         HexFov {
-            stack: vec![Arc::new(PolarPoint::new(0.0, 1),
-                                 PolarPoint::new(6.0, 1),
-                                 init.clone())],
+            stack: vec![
+                Arc::new(
+                    PolarPoint::new(0.0, 1),
+                    PolarPoint::new(6.0, 1),
+                    init.clone()
+                ),
+            ],
             // The FOV algorithm will not generate the origin point, so we use
             // the side channel to explicitly add it in the beginning.
             side_channel: vec![(vec2(0, 0), init)],
@@ -49,20 +52,22 @@ impl<T: FovValue> HexFov<T> {
             // If the next cell is within the current span and the current cell is
             // wallform, and current and next are in the same value group,
             if next.is_below(current.end) &&
-               current
-                   .prev_value
-                   .is_fake_isometric_wall(current.pt.to_v2()) &&
-               next_value == current.prev_value.advance(current.pt.to_v2()) {
+                current.prev_value.is_fake_isometric_wall(
+                    current.pt.to_v2(),
+                ) && next_value == current.prev_value.advance(current.pt.to_v2())
+            {
                 if let Some(next_value) = next_value {
                     // and if both the next cell and the third corner point cell are
                     // wallforms, and the side point would not be otherwise
                     // visible:
                     if next_value.is_fake_isometric_wall(next.to_v2()) &&
-                       next_value.advance(side_pos).is_none() &&
-                       next_value.is_fake_isometric_wall(side_pos) {
+                        next_value.advance(side_pos).is_none() &&
+                        next_value.is_fake_isometric_wall(side_pos)
+                    {
                         // Add the side point to the side channel.
-                        self.side_channel
-                            .push((side_pos, current.prev_value.clone()));
+                        self.side_channel.push(
+                            (side_pos, current.prev_value.clone()),
+                        );
                     }
                 }
             }
@@ -135,7 +140,11 @@ impl<T: FovValue> Arc<T> {
         if self.pt.is_below(self.end) {
             stack.push(self);
         } else if let Some(group_value) = self.group_value {
-            stack.push(Arc::new(self.begin.further(), self.end.further(), group_value));
+            stack.push(Arc::new(
+                self.begin.further(),
+                self.end.further(),
+                group_value,
+            ));
         }
     }
 
@@ -147,16 +156,20 @@ impl<T: FovValue> Arc<T> {
         if next_value != self.group_value {
             // Using the literal instead of the constructor to avoid recomputing next_value.
             stack.push(Arc {
-                           begin: self.pt,
-                           pt: self.pt,
-                           end: self.end,
-                           prev_value: self.prev_value.clone(),
-                           group_value: next_value,
-                       });
+                begin: self.pt,
+                pt: self.pt,
+                end: self.end,
+                prev_value: self.prev_value.clone(),
+                group_value: next_value,
+            });
 
             // Extend current arc if it has a group value.
             if let Some(ref group_value) = self.group_value {
-                stack.push(Arc::new(self.begin.further(), self.pt.further(), group_value.clone()));
+                stack.push(Arc::new(
+                    self.begin.further(),
+                    self.pt.further(),
+                    group_value.clone(),
+                ));
             }
 
             true
@@ -221,8 +234,10 @@ impl PolarPoint {
 
     /// The point corresponding to this one on the hex circle with radius +1.
     pub fn further(self) -> PolarPoint {
-        PolarPoint::new(self.pos * (self.radius + 1) as f32 / self.radius as f32,
-                        self.radius + 1)
+        PolarPoint::new(
+            self.pos * (self.radius + 1) as f32 / self.radius as f32,
+            self.radius + 1,
+        )
     }
 
     /// The point next to this one along the hex circle.

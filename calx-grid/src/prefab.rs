@@ -1,4 +1,3 @@
-
 use euclid::{Vector2D, vec2, Size2D};
 use std::cmp::{max, min};
 use std::collections::{BTreeMap, HashMap};
@@ -83,12 +82,10 @@ impl<T: Clone + Eq + Hash> FromIterator<(Vector2D<i32>, T)> for Prefab<T> {
             min_x = min(min_x, p.x);
             min_y = min(min_y, p.y);
 
-            let val = *element_idx
-                           .entry(e.clone())
-                           .or_insert_with(|| {
-                                               ret.elements.push(e);
-                                               ret.elements.len() - 1
-                                           });
+            let val = *element_idx.entry(e.clone()).or_insert_with(|| {
+                ret.elements.push(e);
+                ret.elements.len() - 1
+            });
 
             temp_buffer.push((p, val));
         }
@@ -117,7 +114,8 @@ impl<T: Clone + Eq + Hash> FromIterator<(Vector2D<i32>, T)> for Prefab<T> {
 
 impl Prefab<char> {
     fn from_text<F>(map: &str, project: F) -> Prefab<char>
-        where F: Fn(usize, usize) -> (i32, i32)
+    where
+        F: Fn(usize, usize) -> (i32, i32),
     {
         let mut buf = Vec::new();
         for (y, line) in map.lines().enumerate() {
@@ -174,8 +172,8 @@ impl<'a, T: fmt::Display + Clone + Eq + Hash> fmt::Display for HexmapDisplay<'a,
         // Find the smallest displayed x-coordinate that actually shows up in the map.
         let min_x = (0..self.0.dim.width)
             .flat_map(move |x| {
-                          (0..self.0.dim.height).map(move |y| vec2(x as i32, y as i32))
-                      })
+                (0..self.0.dim.height).map(move |y| vec2(x as i32, y as i32))
+            })
             .filter(|&p| self.0.get(p).is_some())
             .map(|p| p.x * 2 - p.y)
             .min()
@@ -219,8 +217,9 @@ pub struct LegendBuilder<T, F> {
 }
 
 impl<T, F> LegendBuilder<T, F>
-    where T: Ord + Eq + Clone,
-          F: FnMut(&T) -> &'static str
+where
+    T: Ord + Eq + Clone,
+    F: FnMut(&T) -> &'static str,
 {
     /// Initialize the legend builder.
     pub fn new(alphabet: String, prefix_fn: F) -> LegendBuilder<T, F> {
@@ -262,18 +261,22 @@ mod test {
 
     #[test]
     fn test_from_text() {
-        let a = Prefab::from_text_map("
+        let a = Prefab::from_text_map(
+            "
 ###
 #..
 ##.
 #..
-");
-        let b = Prefab::from_text_hexmap("
+",
+        );
+        let b = Prefab::from_text_hexmap(
+            "
     # # #
    # . .
   # # .
  # . .
-");
+",
+        );
 
         assert_eq!(a, b);
 
@@ -315,8 +318,10 @@ mod test {
 @@@@";
         let map = Prefab::from_text_hexmap(&hex_text);
 
-        assert_eq!(normalize(&format!("{}", map.hexmap_display())),
-                   normalize(hex_text));
+        assert_eq!(
+            normalize(&format!("{}", map.hexmap_display())),
+            normalize(hex_text)
+        );
         assert_eq!(normalize(&format!("{}", map)), normalize(dense_text));
     }
 
@@ -372,8 +377,10 @@ mod test {
         let map2 = Prefab::from_text_hexmap(&format!("{}", map.hexmap_display()));
         assert_eq!(map, map2);
 
-        assert_eq!(normalize(&format!("{}", map.hexmap_display())),
-                   normalize(big_hex));
+        assert_eq!(
+            normalize(&format!("{}", map.hexmap_display())),
+            normalize(big_hex)
+        );
 
     }
 }

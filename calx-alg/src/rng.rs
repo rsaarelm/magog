@@ -1,4 +1,3 @@
-
 use Deciban;
 use rand::{Rng, SeedableRng};
 use serde;
@@ -75,7 +74,10 @@ impl<'a, T: Rng + 'static> serde::Deserialize<'a> for EncodeRng<T> {
             if blob.len() == mem::size_of::<T>() {
                 Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
             } else {
-                Err(serde::de::Error::invalid_length(blob.len(), &"Bad inner RNG length"))
+                Err(serde::de::Error::invalid_length(
+                    blob.len(),
+                    &"Bad inner RNG length",
+                ))
             }
         }
     }

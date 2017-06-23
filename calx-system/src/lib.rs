@@ -35,12 +35,17 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
             Path::new(&format!("{}\\{}", env::var("APPDATA").unwrap(), app_name)).to_path_buf()
         }
     } else if cfg!(macos) {
-        Path::new(&format!("{}/Library/Application Support/{}",
-                          env::var("HOME").unwrap(),
-                          app_name))
-                .to_path_buf()
+        Path::new(&format!(
+            "{}/Library/Application Support/{}",
+            env::var("HOME").unwrap(),
+            app_name
+        )).to_path_buf()
     } else {
-        Path::new(&format!("{}/.config/{}", env::var("HOME").unwrap(), app_name)).to_path_buf()
+        Path::new(&format!(
+            "{}/.config/{}",
+            env::var("HOME").unwrap(),
+            app_name
+        )).to_path_buf()
     }
 }
 
@@ -74,10 +79,12 @@ impl Drop for TimeLog {
     fn drop(&mut self) {
         println!("Timing logs:");
         for (name, &(n, total)) in &self.logs {
-            println!("  {}:\t{:.3} s\t(avg. {:.3} s)",
-                     name,
-                     total,
-                     total / (n as f64));
+            println!(
+                "  {}:\t{:.3} s\t(avg. {:.3} s)",
+                name,
+                total,
+                total / (n as f64)
+            );
         }
     }
 }
@@ -115,11 +122,13 @@ pub fn save_screenshot(
     let timestamp = (time::precise_time_s() * 100.0) as u64;
     let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
-    try!(image::save_buffer(&tmpfile,
-                            shot,
-                            shot.width(),
-                            shot.height(),
-                            image::ColorType::RGB(8)));
+    try!(image::save_buffer(
+        &tmpfile,
+        shot,
+        shot.width(),
+        shot.height(),
+        image::ColorType::RGB(8),
+    ));
 
     fs::copy(&tmpfile, &file).map(|_| ())
 }
