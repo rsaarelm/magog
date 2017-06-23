@@ -64,8 +64,10 @@ impl Spatial {
 
     /// Insert an entity into container.
     pub fn insert_in(&mut self, e: Entity, parent: Entity) {
-        assert!(!self.contains(e, parent),
-                "Trying to create circular containment");
+        assert!(
+            !self.contains(e, parent),
+            "Trying to create circular containment"
+        );
         self.insert(e, In(parent, None));
     }
 
@@ -211,17 +213,23 @@ mod test {
         // This needs to be right for the containment logic to function, but
         // it's not obvious which way the derived lexical order sorts, so put
         // an unit test here to check it out.
-        let mut places = vec![Place::In(e1, Some(Slot::Melee)),
-                              Place::In(e2, None),
-                              Place::In(e1, Some(Slot::Ranged)),
-                              Place::In(e1, None)];
+        let mut places = vec![
+            Place::In(e1, Some(Slot::Melee)),
+            Place::In(e2, None),
+            Place::In(e1, Some(Slot::Ranged)),
+            Place::In(e1, None),
+        ];
 
         places.sort();
-        assert_eq!(places,
-                   vec![Place::In(e1, None),
-                        Place::In(e1, Some(Slot::Melee)),
-                        Place::In(e1, Some(Slot::Ranged)),
-                        Place::In(e2, None)]);
+        assert_eq!(
+            places,
+            vec![
+                Place::In(e1, None),
+                Place::In(e1, Some(Slot::Melee)),
+                Place::In(e1, Some(Slot::Ranged)),
+                Place::In(e2, None),
+            ]
+        );
     }
 
     #[test]
@@ -238,10 +246,10 @@ mod test {
         spatial.insert(e1, p1);
         spatial.insert(e2, p2);
 
-        let saved = bincode::serialize(&spatial, bincode::Infinite)
-            .expect("Spatial serialization failed");
-        let spatial2: Spatial = bincode::deserialize(&saved)
-            .expect("Spatial deserialization failed");
+        let saved =
+            bincode::serialize(&spatial, bincode::Infinite).expect("Spatial serialization failed");
+        let spatial2: Spatial =
+            bincode::deserialize(&saved).expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(e1), Some(p1));
         assert_eq!(spatial2.get(e2), Some(p2));

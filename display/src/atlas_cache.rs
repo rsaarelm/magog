@@ -96,9 +96,10 @@ impl AtlasCache {
     }
 
     fn new_atlas(&mut self) {
-        self.atlases
-            .push(Atlas::new(self.next_index,
-                             size2(self.atlas_size, self.atlas_size)));
+        self.atlases.push(Atlas::new(
+            self.next_index,
+            size2(self.atlas_size, self.atlas_size),
+        ));
         self.next_index += 1;
     }
 
@@ -123,11 +124,11 @@ impl AtlasCache {
         let ret = tilesheet::bounds(&img)
             .into_iter()
             .map(|r| {
-                     SubImageSpec {
-                         bounds: r,
-                         sheet_name: name.clone(),
-                     }
-                 })
+                SubImageSpec {
+                    bounds: r,
+                    sheet_name: name.clone(),
+                }
+            })
             .collect();
         self.add_sheet(name, convert_image(&img));
         Ok(ret)
@@ -135,7 +136,8 @@ impl AtlasCache {
 }
 
 fn convert_image<G>(input: &G) -> ImageBuffer
-    where G: GenericImage<Pixel = image::Rgba<u8>>
+where
+    G: GenericImage<Pixel = image::Rgba<u8>>,
 {
     let (w, h) = input.dimensions();
 

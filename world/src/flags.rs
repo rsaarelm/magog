@@ -1,7 +1,8 @@
+
+use Rng;
 use calx_ecs::Entity;
 use location::Location;
 use rand::SeedableRng;
-use Rng;
 
 #[derive(Serialize, Deserialize)]
 pub struct Flags {

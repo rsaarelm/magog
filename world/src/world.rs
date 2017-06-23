@@ -1,3 +1,5 @@
+
+use Rng;
 use bincode;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
@@ -17,7 +19,6 @@ use std::iter::FromIterator;
 use std::slice;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
-use Rng;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -65,9 +66,11 @@ impl<'a> World {
         let ret: bincode::Result<World> = bincode::deserialize_from(reader, bincode::Infinite);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
-                panic!("Save game version {} does not match current version {}",
-                       x.version,
-                       GAME_VERSION);
+                panic!(
+                    "Save game version {} does not match current version {}",
+                    x.version,
+                    GAME_VERSION
+                );
             }
         }
         ret
@@ -159,9 +162,10 @@ impl Mutate for World {
         if let Some(loc) = self.location(e) {
             const DEFAULT_FOV_RANGE: u32 = 12;
 
-            let fov: HashSet<Location> =
-                HashSet::from_iter(HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
-                                       .map(|(pos, a)| a.origin + pos));
+            let fov: HashSet<Location> = HashSet::from_iter(
+                HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
+                    .map(|(pos, a)| a.origin + pos),
+            );
 
             let memory = &mut self.ecs.map_memory[e];
             memory.seen.clear();

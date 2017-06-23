@@ -57,8 +57,9 @@ impl Location {
         if self.z != other.z {
             return None;
         }
-        Some(vec2(other.x as i32, other.y as i32) -
-             vec2(self.x as i32, self.y as i32))
+        Some(
+            vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32),
+        )
     }
 
     /// Hex distance from this location to the other one, if applicable.

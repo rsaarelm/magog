@@ -26,9 +26,11 @@ pub fn main() {
     let glium = glutin::WindowBuilder::new().build_glium().unwrap();
 
     let screen_area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0f32, 360.0f32));
-    let mut backend = display::Backend::new(&glium,
-                                            screen_area.size.width as u32,
-                                            screen_area.size.height as u32);
+    let mut backend = display::Backend::new(
+        &glium,
+        screen_area.size.width as u32,
+        screen_area.size.height as u32,
+    );
 
     let seed = 1;
 

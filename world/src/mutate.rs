@@ -80,11 +80,13 @@ pub trait Mutate: Query + Terraform + Sized {
             if let Some(target) = self.mob_at(loc + dir) {
 
                 // XXX: Using power stat for damage, should this be different?
-                let damage = ::attack_damage(self.roll(),
-                                             self.stats(e).attack,
-                                             self.stats(e).power,
-                                             self.stats(target).defense,
-                                             self.stats(target).armor);
+                let damage = ::attack_damage(
+                    self.roll(),
+                    self.stats(e).attack,
+                    self.stats(e).power,
+                    self.stats(target).defense,
+                    self.stats(target).armor,
+                );
 
                 self.damage(target, damage, Some(e));
                 return Ok(());

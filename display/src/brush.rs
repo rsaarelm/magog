@@ -20,12 +20,14 @@ pub struct Splat {
 
 impl fmt::Debug for Splat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "Splat {{ {:?}+{:?} {:?} {:?} }}",
-               self.image.tex_coords,
-               self.offset,
-               self.color,
-               self.back_color)
+        write!(
+            f,
+            "Splat {{ {:?}+{:?} {:?} {:?} }}",
+            self.image.tex_coords,
+            self.offset,
+            self.color,
+            self.back_color
+        )
     }
 }
 
@@ -33,9 +35,9 @@ impl Splat {
     pub fn new(geom: &Geom, sheet: String, color: [f32; 4], back_color: [f32; 4]) -> Splat {
         Splat {
             image: cache::get(&SubImageSpec {
-                                  sheet_name: sheet,
-                                  bounds: geom.bounds,
-                              }),
+                sheet_name: sheet,
+                bounds: geom.bounds,
+            }),
             offset: geom.offset,
             color: color,
             back_color: back_color,
@@ -100,10 +102,12 @@ impl Builder {
     }
 
     fn make_splat(&self, geom: &Geom) -> Splat {
-        Splat::new(geom,
-                   self.sheet_name.clone(),
-                   self.color.into_array(),
-                   self.back_color.into_array())
+        Splat::new(
+            geom,
+            self.sheet_name.clone(),
+            self.color.into_array(),
+            self.back_color.into_array(),
+        )
     }
 
     /// Add a splat columnn to the current splat matrix.
@@ -114,8 +118,10 @@ impl Builder {
         let matrix_column = geom.into_iter()
             .map(|g| self.make_splat(&g))
             .collect::<Vec<Splat>>();
-        assert!(self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
-                "Splat frame count does not match previous parallel splats");
+        assert!(
+            self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
+            "Splat frame count does not match previous parallel splats"
+        );
         self.splat_matrix.push(matrix_column);
         self
     }
@@ -152,8 +158,10 @@ impl Builder {
 
     /// Merge the rows in the current splat matrix to frames, clear the splat matrix.
     pub fn merge(mut self) -> Builder {
-        assert!(!self.splat_matrix.is_empty(),
-                "Merging without any splats specified");
+        assert!(
+            !self.splat_matrix.is_empty(),
+            "Merging without any splats specified"
+        );
         let n = self.splat_matrix[0].len();
 
         for _ in 0..n {

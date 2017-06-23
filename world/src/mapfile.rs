@@ -38,12 +38,14 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
         .legend
         .into_iter()
         .map(|(c, t)| {
-                 (c,
-                  LegendItem {
-                      t: format!("{:?}", t.0),
-                      e: t.1.clone(),
-                  })
-             })
+            (
+                c,
+                LegendItem {
+                    t: format!("{:?}", t.0),
+                    e: t.1.clone(),
+                },
+            )
+        })
         .collect::<BTreeMap<char, LegendItem>>();
 
     let save = MapSave {
@@ -84,11 +86,11 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Turn map into prefab.
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
     Ok(prefab.map(|item| {
-                      let e = &save.legend[&item];
-                      let terrain = Terrain::from_str(&e.t).unwrap();
-                      let spawns = e.e.clone();
-                      (terrain, spawns)
-                  }))
+        let e = &save.legend[&item];
+        let terrain = Terrain::from_str(&e.t).unwrap();
+        let spawns = e.e.clone();
+        (terrain, spawns)
+    }))
 }
 
 /// Type for maps saved into disk.
@@ -126,10 +128,10 @@ impl fmt::Display for LegendItem {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TOML formatted output.
         write!(f, "{{ t = \"{}\", e = [", self.t)?;
-        self.e
-            .iter()
-            .next()
-            .map_or(Ok(()), |e| write!(f, "\"{}\"", e))?;
+        self.e.iter().next().map_or(
+            Ok(()),
+            |e| write!(f, "\"{}\"", e),
+        )?;
         for e in self.e.iter().skip(1) {
             write!(f, ", \"{}\"", e)?;
         }

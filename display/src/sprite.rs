@@ -38,10 +38,12 @@ impl Sprite {
     pub fn draw<C: MagogContext>(&self, ui: &mut C) {
         let pos = point2(self.offset[0] as f32, self.offset[1] as f32);
         for splat in &self.brush[self.frame_idx] {
-            ui.draw_image_2color(&splat.image,
-                                 pos - splat.offset,
-                                 splat.color,
-                                 splat.back_color);
+            ui.draw_image_2color(
+                &splat.image,
+                pos - splat.offset,
+                splat.color,
+                splat.back_color,
+            );
         }
     }
 }

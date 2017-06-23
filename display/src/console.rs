@@ -45,11 +45,12 @@ impl Console {
         // do a backwards iteration with an early exist once we hit a sufficiently old item.
         for msg in self.lines.iter().rev().take_while(|m| m.expire_time_s > t) {
             // The split_line iterator can't be reversed, need to do a bit of caching here.
-            let fragments = split_line(&msg.text,
-                                       |c| context.current_font().char_width(c).unwrap_or(0.0),
-                                       screen_area.size.width)
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>();
+            let fragments = split_line(
+                &msg.text,
+                |c| context.current_font().char_width(c).unwrap_or(0.0),
+                screen_area.size.width,
+            ).map(|x| x.to_string())
+                .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
                 context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
                 y -= h;
@@ -79,11 +80,12 @@ impl Console {
 
         for msg in self.lines.iter().rev() {
             // XXX: Duplicated from draw_small.
-            let fragments = split_line(&msg.text,
-                                       |c| context.current_font().char_width(c).unwrap_or(0.0),
-                                       screen_area.size.width)
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>();
+            let fragments = split_line(
+                &msg.text,
+                |c| context.current_font().char_width(c).unwrap_or(0.0),
+                screen_area.size.width,
+            ).map(|x| x.to_string())
+                .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
                 context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
                 y -= h;

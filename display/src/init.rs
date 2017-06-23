@@ -51,6 +51,7 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
     ret
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn entity_brushes() -> VecMap<Rc<Brush>> {
     use world::Icon::*;
     let mut ret = VecMap::new();
@@ -62,6 +63,7 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
     ret
 }
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     use Icon::*;
     let mut ret = VecMap::new();
@@ -84,12 +86,12 @@ pub fn font<I: Iterator<Item = char>>(
     let mut glyphs = glyphs
         .into_iter()
         .map(|i| {
-                 vitral::CharData {
-                     image: cache::get(&i),
-                     draw_offset: vec2(0.0, 0.0),
-                     advance: i.bounds.size.width as f32,
-                 }
-             })
+            vitral::CharData {
+                image: cache::get(&i),
+                draw_offset: vec2(0.0, 0.0),
+                advance: i.bounds.size.width as f32,
+            }
+        })
         .collect::<Vec<_>>();
 
     assert!(!glyphs.is_empty());
@@ -99,10 +101,12 @@ pub fn font<I: Iterator<Item = char>>(
 
     let mut chars = HashMap::new();
     for c in span {
-        chars.insert(c,
-                     glyphs
-                         .pop()
-                         .expect("Not enough glyphs in font sheet for all chars"));
+        chars.insert(
+            c,
+            glyphs.pop().expect(
+                "Not enough glyphs in font sheet for all chars",
+            ),
+        );
     }
 
     vitral::FontData {

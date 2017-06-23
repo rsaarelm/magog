@@ -12,8 +12,9 @@ use image::GenericImage;
 /// Note that the background color is a solid color, not transparent pixels. The inner tiles may
 /// have transparent parts, so a solid color is needed to separate them.
 pub fn bounds<I>(image: &I) -> Vec<Rect<u32>>
-    where I: GenericImage,
-          I::Pixel: PartialEq
+where
+    I: GenericImage,
+    I::Pixel: PartialEq,
 {
     let mut ret: Vec<Rect<i32>> = Vec::new();
     let image_rect: Rect<i32> = rect(0, 0, image.width() as i32, image.height() as i32);
@@ -42,8 +43,9 @@ pub fn bounds<I>(image: &I) -> Vec<Rect<u32>>
 /// Find the smallest bounding box around seed pixel whose sides are either all background color or
 /// image edge.
 fn tile_bounds<I>(image: &I, seed_pos: Point2D<i32>, background: I::Pixel) -> Rect<i32>
-    where I: GenericImage,
-          I::Pixel: PartialEq
+where
+    I: GenericImage,
+    I::Pixel: PartialEq,
 {
     let image_rect = rect(0, 0, image.width() as i32, image.height() as i32);
     let mut ret = Rect::new(seed_pos, Size2D::new(1, 1));
@@ -56,16 +58,10 @@ fn tile_bounds<I>(image: &I, seed_pos: Point2D<i32>, background: I::Pixel) -> Re
 
             // Try adding a 1-pixel wide strip to the tile rectangle.
             let new_area = match dir {
-                0 => {
-                    Rect::new(ret.origin + vec2(0, -1),
-                              Size2D::new(ret.size.width, 1))
-                }
+                0 => Rect::new(ret.origin + vec2(0, -1), Size2D::new(ret.size.width, 1)),
                 1 => Rect::new(ret.top_right(), Size2D::new(1, ret.size.height)),
                 2 => Rect::new(ret.bottom_left(), Size2D::new(ret.size.width, 1)),
-                3 => {
-                    Rect::new(ret.origin + vec2(-1, 0),
-                              Size2D::new(1, ret.size.height))
-                }
+                3 => Rect::new(ret.origin + vec2(-1, 0), Size2D::new(1, ret.size.height)),
                 _ => panic!("Bad dir {}", dir),
             };
 
@@ -77,8 +73,9 @@ fn tile_bounds<I>(image: &I, seed_pos: Point2D<i32>, background: I::Pixel) -> Re
 
             // The new area is all background pixels, the tile ends here.
             if (new_area.min_x()..new_area.max_x())
-                   .zip(new_area.min_y()..new_area.max_y())
-                   .all(|(x, y)| image.get_pixel(x as u32, y as u32) == background) {
+                .zip(new_area.min_y()..new_area.max_y())
+                .all(|(x, y)| image.get_pixel(x as u32, y as u32) == background)
+            {
                 unchanged_count += 1;
                 continue;
             }

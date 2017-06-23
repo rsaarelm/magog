@@ -2,10 +2,10 @@ use calx_grid::Dir6;
 use display;
 use euclid::{Point2D, Rect, Size2D, vec2};
 use rand;
-use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
+use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
 use world::{Command, Location, Slot, TerrainQuery, World, on_screen};
 
 pub struct View {
@@ -76,10 +76,12 @@ impl View {
     fn cave(&mut self) {
         use world::mapgen;
         self.world = World::new(1);
-        mapgen::caves(&mut self.world,
-                      &mut rand::thread_rng(),
-                      Location::new(0, 0, 0),
-                      300);
+        mapgen::caves(
+            &mut self.world,
+            &mut rand::thread_rng(),
+            Location::new(0, 0, 0),
+            300,
+        );
     }
 
     /// Generate a new random maze map.
@@ -106,8 +108,10 @@ impl View {
 
     fn draw_inventory(&mut self, c: &mut display::Backend, area: &Rect<f32>) {
         // Start with hardcoded invetory data to test the UI logic.
-        c.fill_rect(FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
-                    [0.0, 0.0, 0.0, 0.99]);
+        c.fill_rect(
+            FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
+            [0.0, 0.0, 0.0, 0.99],
+        );
 
         let mut letter_pos = Point2D::new(0.0, 0.0);
         let mut slot_name_pos = Point2D::new(20.0, 0.0);
@@ -116,8 +120,12 @@ impl View {
 
         for slot in SLOT_DATA.iter() {
             // TODO: Bounding box for these is a button...
-            letter_pos = c.draw_text(letter_pos, Align::Left, text_color,
-                                   &format!("{})", slot.key));
+            letter_pos = c.draw_text(
+                letter_pos,
+                Align::Left,
+                text_color,
+                &format!("{})", slot.key),
+            );
             slot_name_pos = c.draw_text(slot_name_pos, Align::Left, text_color, slot.name);
             item_name_pos = c.draw_text(item_name_pos, Align::Left, text_color, "[Inventory Item]");
         }
@@ -137,7 +145,10 @@ impl View {
         }
 
         if self.show_inventory {
-            self.draw_inventory(context, &Rect::new(Point2D::new(0.0, 0.0), Size2D::new(320.0, 360.0)));
+            self.draw_inventory(
+                context,
+                &Rect::new(Point2D::new(0.0, 0.0), Size2D::new(320.0, 360.0)),
+            );
         }
 
         // Large console is drawn on top of all other windows.

@@ -10,8 +10,9 @@ use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
 
 pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
-    where T: TerrainQuery + Terraform,
-          R: Rng
+where
+    T: TerrainQuery + Terraform,
+    R: Rng,
 {
     if cells_to_dig == 0 {
         return;
@@ -46,7 +47,8 @@ pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_
     }
 
     fn dig<T>(world: &mut T, edge: &mut BTreeSet<Location>, loc: Location)
-        where T: TerrainQuery + Terraform
+    where
+        T: TerrainQuery + Terraform,
     {
         assert!(world.is_valid_location(loc));
         world.set_terrain(loc, Terrain::Ground);
@@ -63,31 +65,34 @@ pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_
 }
 
 pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
-    where T: TerrainQuery + Terraform,
-          R: Rng
+where
+    T: TerrainQuery + Terraform,
+    R: Rng,
 {
     use Terrain::*;
 
     fn dead_ends<'a, T, I>(world: &T, i: &'a mut I) -> Vec<Location>
-        where T: TerrainQuery,
-              I: Iterator<Item = &'a Location>
+    where
+        T: TerrainQuery,
+        I: Iterator<Item = &'a Location>,
     {
         i.filter(|&x| {
-                        DIRS4
-                            .iter()
-                            .filter(|&d| world.terrain(*x + *d).is_open())
-                            .count() == 1
-                    })
-            .cloned()
+            DIRS4
+                .iter()
+                .filter(|&d| world.terrain(*x + *d).is_open())
+                .count() == 1
+        }).cloned()
             .collect()
     }
 
     let mut retries_left = 1000;
 
-    static DIRS4: [Dir6; 4] = [Dir6::Northeast,
-                               Dir6::Southeast,
-                               Dir6::Southwest,
-                               Dir6::Northwest];
+    static DIRS4: [Dir6; 4] = [
+        Dir6::Northeast,
+        Dir6::Southeast,
+        Dir6::Southwest,
+        Dir6::Northwest,
+    ];
 
     let mut unvisited: BTreeSet<Location> = onscreen_locations()
         .iter()
@@ -152,8 +157,9 @@ pub fn maze<T, R>(world: &mut T, rng: &mut R, sparseness: usize)
 }
 
 pub fn rooms<T, R>(world: &mut T, rng: &mut R)
-    where T: TerrainQuery + Terraform,
-          R: Rng + 'static
+where
+    T: TerrainQuery + Terraform,
+    R: Rng + 'static,
 {
     // Accept the first room site with badness below this threshold.
     static GOOD_ENOUGH_BADNESS: f32 = 15.0;
@@ -169,8 +175,10 @@ pub fn rooms<T, R>(world: &mut T, rng: &mut R)
         let mut best_site = None;
         let sites = onscreen_locations();
 
-        for site in RandomPermutation::new(rng, sites.len())
-                .map(|idx| Location::new(0, 0, 0) + sites[idx]) {
+        for site in RandomPermutation::new(rng, sites.len()).map(|idx| {
+            Location::new(0, 0, 0) + sites[idx]
+        })
+        {
             if let Some(badness) = room.fit_badness(world, site) {
                 if let Some((best, best_badness)) = best_site {
                     if badness < best_badness {
@@ -271,14 +279,16 @@ impl Room for EmptyRoom {
 
                         // Non-perpendicular corridor.
                         if is_x_wall &&
-                           (!w.is_untouched(loc + Dir6::Northwest) ||
-                            !w.is_untouched(loc + Dir6::Southeast)) {
+                            (!w.is_untouched(loc + Dir6::Northwest) ||
+                                 !w.is_untouched(loc + Dir6::Southeast))
+                        {
                             badness += 100.0;
                         }
 
                         if is_y_wall &&
-                           (!w.is_untouched(loc + Dir6::Southwest) ||
-                            !w.is_untouched(loc + Dir6::Northeast)) {
+                            (!w.is_untouched(loc + Dir6::Southwest) ||
+                                 !w.is_untouched(loc + Dir6::Northeast))
+                        {
                             badness += 100.0;
                         }
                     } else {

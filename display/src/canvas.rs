@@ -41,8 +41,7 @@ impl Canvas {
                     vec4 tex_color = texture(tex, v_tex_coord);
                     tex_color.a = 1.0;
                     f_color = tex_color;
-                }"})
-                .unwrap();
+                }"}).unwrap();
 
         let buffer = texture::Texture2d::empty(display, width, height).unwrap();
 
@@ -91,50 +90,60 @@ impl Canvas {
             }
             implement_vertex!(BlitVertex, pos, tex_coord);
 
-            glium::VertexBuffer::new(display,
-                                     &[BlitVertex {
-                                          pos: [sx, sy],
-                                          tex_coord: [0.0, 0.0],
-                                      },
-                                      BlitVertex {
-                                          pos: [sx + sw, sy],
-                                          tex_coord: [1.0, 0.0],
-                                      },
-                                      BlitVertex {
-                                          pos: [sx + sw, sy + sh],
-                                          tex_coord: [1.0, 1.0],
-                                      },
-                                      BlitVertex {
-                                          pos: [sx, sy + sh],
-                                          tex_coord: [0.0, 1.0],
-                                      }])
-                    .unwrap()
+            glium::VertexBuffer::new(
+                display,
+                &[
+                    BlitVertex {
+                        pos: [sx, sy],
+                        tex_coord: [0.0, 0.0],
+                    },
+                    BlitVertex {
+                        pos: [sx + sw, sy],
+                        tex_coord: [1.0, 0.0],
+                    },
+                    BlitVertex {
+                        pos: [sx + sw, sy + sh],
+                        tex_coord: [1.0, 1.0],
+                    },
+                    BlitVertex {
+                        pos: [sx, sy + sh],
+                        tex_coord: [0.0, 1.0],
+                    },
+                ],
+            ).unwrap()
         };
 
-        let indices = glium::IndexBuffer::new(display,
-                                              glium::index::PrimitiveType::TrianglesList,
-                                              &[0u16, 1, 2, 0, 2, 3])
-                .unwrap();
+        let indices = glium::IndexBuffer::new(
+            display,
+            glium::index::PrimitiveType::TrianglesList,
+            &[0u16, 1, 2, 0, 2, 3],
+        ).unwrap();
 
         // Set up the rest of the draw parameters.
         let mut params: glium::DrawParameters = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
         // pixel perfect rounding errors.
         params.viewport = Some(glium::Rect {
-                                   left: 0,
-                                   bottom: 0,
-                                   width: w,
-                                   height: h,
-                               });
+            left: 0,
+            bottom: 0,
+            width: w,
+            height: h,
+        });
 
         // TODO: Option to use smooth filter & non-pixel-perfect scaling
         let mag_filter = glium::uniforms::MagnifySamplerFilter::Nearest;
 
-        let uniforms = glium::uniforms::UniformsStorage::new("tex",
-            glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
-                magnify_filter: mag_filter,
-                minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
-                .. Default::default() }));
+        let uniforms = glium::uniforms::UniformsStorage::new(
+            "tex",
+            glium::uniforms::Sampler(
+                &self.buffer,
+                glium::uniforms::SamplerBehavior {
+                    magnify_filter: mag_filter,
+                    minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
+                    ..Default::default()
+                },
+            ),
+        );
 
         // Draw the graphics buffer to the window.
         target

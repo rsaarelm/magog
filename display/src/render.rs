@@ -60,7 +60,8 @@ pub enum Layer {
 /// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
 /// the blob but doesn't have visible walls.
 fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
-    where F: FnMut(Layer, Angle, &Rc<Brush>, usize)
+where
+    F: FnMut(Layer, Angle, &Rc<Brush>, usize),
 {
     use self::Angle::*;
     // This part gets a little tricky. Basic idea is that there's an inner pointy-top
@@ -199,7 +200,8 @@ fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
 }
 
 pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
-    where F: FnMut(Layer, Angle, &Rc<Brush>, usize)
+where
+    F: FnMut(Layer, Angle, &Rc<Brush>, usize),
 {
     use self::Angle::*;
 
@@ -258,8 +260,9 @@ pub struct Kernel {
 }
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Terrain {
-    let loc = w.visible_portal(loc + dir.to_v2())
-        .unwrap_or(loc + dir.to_v2());
+    let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(
+        loc + dir.to_v2(),
+    );
     w.visual_terrain(loc)
 }
 
@@ -281,30 +284,36 @@ impl Kernel {
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn blob_faces(&self) -> [bool; 6] {
-        [!self.n.is_hull(),
-         !self.ne.is_hull(),
-         !self.se.is_hull(),
-         !self.s.is_hull(),
-         !self.sw.is_hull(),
-         !self.nw.is_hull()]
+        [
+            !self.n.is_hull(),
+            !self.ne.is_hull(),
+            !self.se.is_hull(),
+            !self.s.is_hull(),
+            !self.sw.is_hull(),
+            !self.nw.is_hull(),
+        ]
     }
 
     pub fn blob_neighbors(&self) -> [bool; 6] {
-        [!self.n.is_blob(),
-         !self.ne.is_blob(),
-         !self.se.is_blob(),
-         !self.s.is_blob(),
-         !self.sw.is_blob(),
-         !self.nw.is_blob()]
+        [
+            !self.n.is_blob(),
+            !self.ne.is_blob(),
+            !self.se.is_blob(),
+            !self.s.is_blob(),
+            !self.sw.is_blob(),
+            !self.nw.is_blob(),
+        ]
     }
 
     /// Mark neighbors that are not void terrain as true.
     pub fn void_mask(&self) -> [bool; 6] {
-        [self.n.form() != terrain::Form::Void,
-         self.ne.form() != terrain::Form::Void,
-         self.se.form() != terrain::Form::Void,
-         self.s.form() != terrain::Form::Void,
-         self.sw.form() != terrain::Form::Void,
-         self.nw.form() != terrain::Form::Void]
+        [
+            self.n.form() != terrain::Form::Void,
+            self.ne.form() != terrain::Form::Void,
+            self.se.form() != terrain::Form::Void,
+            self.s.form() != terrain::Form::Void,
+            self.sw.form() != terrain::Form::Void,
+            self.nw.form() != terrain::Form::Void,
+        ]
     }
 }
