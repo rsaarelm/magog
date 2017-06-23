@@ -1,7 +1,7 @@
 extern crate euclid;
 extern crate time;
 
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Point2D, point2, Rect, rect, Size2D, Vector2D, vec2};
 use euclid::{TypedPoint2D, TypedRect, TypedSize2D};
 use std::collections::HashMap;
 use std::iter;
@@ -63,9 +63,9 @@ impl ImageBuffer {
 
     /// Copy all pixels from source buffer to self starting at given coordinates in self.
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
-        let blit_rect = Rect::new(Point2D::new(x, y), source.size);
+        let blit_rect: Rect<u32> = rect(x, y, source.size.width, source.size.height);
 
-        if let Some(blit_rect) = blit_rect.intersection(&Rect::new(Point2D::new(0, 0), self.size)) {
+        if let Some(blit_rect) = blit_rect.intersection(&rect(0, 0, self.size.width, self.size.height)) {
             for y2 in blit_rect.min_y()..blit_rect.max_y() {
                 for x2 in blit_rect.min_x()..blit_rect.max_x() {
                     let self_idx = (x2 + y2 * self.size.width) as usize;
@@ -135,10 +135,8 @@ impl<T> Builder<T>
             let x = char_width * ((i - start_char) % columns);
             let y = char_height * ((i - start_char) / columns);
 
-            let tex_coords = Rect::new(Point2D::new(x as f32 / width as f32,
-                                                    y as f32 / height as f32),
-                                       Size2D::new(char_width as f32 / width as f32,
-                                                   char_height as f32 / height as f32));
+            let tex_coords = rect(x as f32 / width as f32, y as f32 / height as f32,
+                                  char_width as f32 / width as f32, char_height as f32 / height as f32);
 
             map.insert(std::char::from_u32(i).unwrap(),
                        CharData {
@@ -147,7 +145,7 @@ impl<T> Builder<T>
                                size: Size2D::new(char_width, char_height),
                                tex_coords: tex_coords,
                            },
-                           draw_offset: Point2D::new(0.0, 0.0),
+                           draw_offset: vec2(0.0, 0.0),
                            advance: char_width as f32,
                        });
         }
@@ -180,7 +178,7 @@ impl<T> Builder<T>
             solid = ImageData {
                 texture: make_t(ImageBuffer::from_fn(1, 1, |_, _| 0xffffffff)),
                 size: Size2D::new(1, 1),
-                tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
+                tex_coords: rect(0.0, 0.0, 1.0, 1.0),
             };
         }
 
@@ -224,7 +222,7 @@ impl<T, V> State<T, V>
         State {
             draw_list: Vec::new(),
 
-            mouse_pos: Point2D::new(0.0, 0.0),
+            mouse_pos: point2(0.0, 0.0),
             click_state: [ClickState::Unpressed,
                           ClickState::Unpressed,
                           ClickState::Unpressed],
@@ -414,12 +412,12 @@ pub trait Context: Sized {
         let mut front = p2 - p1;
         front = front / front.dot(front).sqrt() * (thickness / 2.0);
 
-        let side = TypedPoint2D::new(-front.y, front.x);
+        let side = vec2(-front.y, front.x);
 
-        let q1 = p1 - side - front + Point2D::new(0.5, 0.5);
-        let q2 = p1 + side - front + Point2D::new(0.5, 0.5);
-        let q3 = p2 + side + front + Point2D::new(0.5, 0.5);
-        let q4 = p2 - side + front + Point2D::new(0.5, 0.5);
+        let q1 = p1 - side - front + vec2(0.5, 0.5);
+        let q2 = p1 + side - front + vec2(0.5, 0.5);
+        let q3 = p2 + side + front + vec2(0.5, 0.5);
+        let q4 = p2 - side + front + vec2(0.5, 0.5);
 
         let idx = self.push_vertex(q1, t, color);
         self.push_vertex(q2, t, color);
@@ -447,7 +445,7 @@ pub trait Context: Sized {
     fn fill_rect<U: ConvertibleUnit>(&mut self, area: TypedRect<f32, U>, color: [f32; 4]) {
         self.state_mut().start_solid_texture();
         let p = self.state().solid_texture_texcoord();
-        self.draw_tex_rect(area, Rect::new(p, Size2D::new(0.0, 0.0)), color);
+        self.draw_tex_rect(area, rect(p.x, p.y, 0.0, 0.0), color);
     }
 
     fn draw_image<U: ConvertibleUnit>(
@@ -497,7 +495,7 @@ pub trait Context: Sized {
 
         let (_, delta) = U::from_pixel_scale(&self.scale_factor(), 0.0, self.current_font().height);
 
-        TypedPoint2D::new(pos.x, pos.y + delta)
+        point2(pos.x, pos.y + delta)
     }
 
     /// Return the mouse input state for the current bounds area.
@@ -592,14 +590,12 @@ pub trait Context: Sized {
 
     /// Helper method for calling `bound_r` with pixel coordinates.
     fn bound(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
-        self.bound_r(Rect::new(Point2D::new(x as f32, y as f32),
-                               Size2D::new(w as f32, h as f32)))
+        self.bound_r(rect::<f32, PixelUnit>(x as f32, y as f32, w as f32, h as f32))
     }
 
     /// Helper method for calling `bound_clipped_r` with pixel coordinates.
     fn bound_clipped(&mut self, x: u32, y: u32, w: u32, h: u32) -> Bounds<Self> {
-        self.bound_clipped_r(Rect::new(Point2D::new(x as f32, y as f32),
-                                       Size2D::new(w as f32, h as f32)))
+        self.bound_clipped_r(rect::<f32, PixelUnit>(x as f32, y as f32, w as f32, h as f32))
     }
 
     /// Helper method for calling `bound_r` with fractional coordinates.
@@ -610,12 +606,11 @@ pub trait Context: Sized {
 
     /// Helper method for calling `bound_clipped_r` with fractional coordinates.
     fn bound_clipped_f(&mut self, x: f32, y: f32, w: f32, h: f32) -> Bounds<Self> {
-        self.bound_clipped_r(TypedRect::<f32, FractionalUnit>::new(TypedPoint2D::new(x, y),
-                                                                   TypedSize2D::new(w, h)))
+        self.bound_clipped_r(rect::<f32, FractionalUnit>(x, y, w, h))
     }
 
     /// Get the local space bounds rectangle of this context.
-    fn bounds(&self) -> Rect<f32> { Rect::new(Point2D::new(0.0, 0.0), self.state().screen_size) }
+    fn bounds(&self) -> Rect<f32> { Rect::new(point2(0.0, 0.0), self.state().screen_size) }
 
     /// Get the global space bounds rectangle of this context.
     fn global_bounds(&self) -> Rect<f32> {
@@ -642,7 +637,7 @@ pub trait Context: Sized {
 
     /// Register mouse motion.
     fn input_mouse_move(&mut self, x: i32, y: i32) {
-        self.state_mut().mouse_pos = Point2D::new(x as f32, y as f32);
+        self.state_mut().mouse_pos = point2(x as f32, y as f32);
     }
 
     /// Get whether mouse button was pressed
@@ -689,9 +684,9 @@ pub trait Context: Sized {
         // always at the end of the input.
 
         if ((time::precise_time_s() * 3.0) % 3.0) as u32 == 0 {
-            self.draw_text(Point2D::new(0.0, 0.0), Align::Left, color, text_buffer);
+            self.draw_text(point2::<f32, PixelUnit>(0.0, 0.0), Align::Left, color, text_buffer);
         } else {
-            self.draw_text(Point2D::new(0.0, 0.0),
+            self.draw_text(point2::<f32, PixelUnit>(0.0, 0.0),
                            Align::Left,
                            color,
                            &format!("{}_", text_buffer));
@@ -723,10 +718,10 @@ impl<'a, C: Context> Context for Bounds<'a, C> {
     }
 
     fn transform(&self, in_pos: Point2D<f32>) -> Point2D<f32> {
-        self.parent.transform(in_pos + self.area.origin)
+        self.parent.transform(in_pos + self.area.origin.to_vector())
     }
 
-    fn bounds(&self) -> Rect<f32> { Rect::new(Point2D::new(0.0, 0.0), self.area.size) }
+    fn bounds(&self) -> Rect<f32> { Rect::new(point2(0.0, 0.0), self.area.size) }
 }
 
 impl<'a, C: Context> Drop for Bounds<'a, C> {
@@ -864,7 +859,7 @@ impl<T> FontData<T> {
             }
         }
 
-        Rect::new(Point2D::new(0.0, 0.0), Size2D::new(w, self.height))
+        rect(0.0, 0.0, w, self.height)
     }
 
     /// Return the width of a char in the font.
@@ -879,7 +874,7 @@ impl<T> FontData<T> {
 #[derive(Clone, PartialEq)]
 pub struct CharData<T> {
     pub image: ImageData<T>,
-    pub draw_offset: Point2D<f32>,
+    pub draw_offset: Vector2D<f32>,
     pub advance: f32,
 }
 
@@ -927,7 +922,7 @@ pub trait ConvertibleUnit: Sized {
 
     fn convert_point(scale: &Size2D<f32>, point: TypedPoint2D<f32, Self>) -> Point2D<f32> {
         let (x, y) = Self::to_pixel_scale(scale, point.x, point.y);
-        Point2D::new(x, y)
+        point2(x, y)
     }
 
     fn convert_size(scale: &Size2D<f32>, size: TypedSize2D<f32, Self>) -> Size2D<f32> {

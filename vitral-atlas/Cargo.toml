@@ -8,5 +8,5 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/rsaarelm/vitral-atlas"
 
 [dependencies]
-euclid = "0.13"
+euclid = "0.15"
 vitral = { path = "../" }

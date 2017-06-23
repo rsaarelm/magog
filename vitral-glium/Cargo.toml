@@ -9,5 +9,5 @@ repository = "https://github.com/rsaarelm/vitral-glium"
 
 [dependencies]
 glium = "0.16"
-euclid = "0.13"
+euclid = "0.15"
 vitral = { path = "../" }
