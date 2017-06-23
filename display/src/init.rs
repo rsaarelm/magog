@@ -4,7 +4,7 @@ use brush::{Brush, Builder};
 use cache;
 use calx_color::Rgba;
 use calx_color::color::*;
-use euclid::Point2D;
+use euclid::vec2;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::str::FromStr;
@@ -85,7 +85,7 @@ pub fn font<I: Iterator<Item = char>>(
         .map(|i| {
                  vitral::CharData {
                      image: cache::get(&i),
-                     draw_offset: Point2D::new(0.0, 0.0),
+                     draw_offset: vec2(0.0, 0.0),
                      advance: i.bounds.size.width as f32,
                  }
              })

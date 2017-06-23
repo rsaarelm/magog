@@ -2,7 +2,7 @@ use Icon;
 use backend::MagogContext;
 use cache;
 use calx_grid::{Dir6, FovValue, HexFov};
-use euclid::{Point2D, Rect};
+use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
 use sprite::Sprite;
 use std::collections::HashMap;
@@ -17,7 +17,7 @@ pub struct WorldView {
     pub show_cursor: bool,
     camera_loc: Location,
     screen_area: Rect<f32>,
-    fov: Option<HashMap<Point2D<i32>, Vec<Location>>>,
+    fov: Option<HashMap<Vector2D<i32>, Vec<Location>>>,
 
     /// Mostly used in mapedit
     pub highlight_offscreen_tiles: bool,
@@ -47,10 +47,10 @@ impl WorldView {
         if self.fov.is_none() {
             // Chart area, center in origin, inflated by tile width in every direction to get the cells
             // partially on screen included.
-            let center = self.screen_area.origin + self.screen_area.size / 2.0 -
-                         Point2D::new(PIXEL_UNIT / 2.0, 0.0);
+            let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
+                         vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
             let bounds = self.screen_area
-                .translate(&-(center + self.screen_area.origin))
+                .translate(&-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
 
             self.fov = Some(screen_fov(world, self.camera_loc, bounds));
@@ -60,8 +60,8 @@ impl WorldView {
     pub fn draw<C: MagogContext>(&mut self, world: &World, context: &mut C) {
         self.ensure_fov(world);
 
-        let center = self.screen_area.origin + self.screen_area.size / 2.0 -
-                     Point2D::new(PIXEL_UNIT / 2.0, 0.0);
+        let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
+                     vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(context.mouse_pos() - center);
@@ -91,7 +91,7 @@ impl WorldView {
                 continue;
             }
 
-            let screen_pos = chart_to_view(chart_pos) + center;
+            let screen_pos = chart_to_view(chart_pos.to_point()) + center;
 
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
             render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
@@ -144,9 +144,9 @@ impl WorldView {
         }
 
         // Draw cursor.
-        if let Some(origins) = chart.get(&cursor_pos) {
+        if let Some(origins) = chart.get(&cursor_pos.to_vector()) {
             let screen_pos = chart_to_view(cursor_pos) + center;
-            let loc = origins[0] + cursor_pos;
+            let loc = origins[0] + cursor_pos.to_vector();
             self.cursor_loc = Some(loc);
 
             if self.show_cursor {
@@ -179,7 +179,7 @@ impl WorldView {
 /// Transform from chart space (unit is one map cell) to view space (unit is
 /// one pixel).
 pub fn chart_to_view(chart_pos: Point2D<i32>) -> Point2D<f32> {
-    Point2D::new((chart_pos.x as f32 * PIXEL_UNIT - chart_pos.y as f32 * PIXEL_UNIT),
+    point2((chart_pos.x as f32 * PIXEL_UNIT - chart_pos.y as f32 * PIXEL_UNIT),
                  (chart_pos.x as f32 * PIXEL_UNIT / 2.0 + chart_pos.y as f32 * PIXEL_UNIT / 2.0))
 }
 
@@ -189,7 +189,7 @@ pub fn view_to_chart(view_pos: Point2D<f32>) -> Point2D<i32> {
     let c = PIXEL_UNIT / 2.0;
     let column = ((view_pos.x + c) / (c * 2.0)).floor();
     let row = ((view_pos.y - column * c) / (c * 2.0)).floor();
-    Point2D::new((column + row) as i32, row as i32)
+    point2((column + row) as i32, row as i32)
 }
 
 
@@ -210,8 +210,8 @@ impl<'a> PartialEq for ScreenFov<'a> {
 impl<'a> Eq for ScreenFov<'a> {}
 
 impl<'a> FovValue for ScreenFov<'a> {
-    fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
-        if !self.screen_area.contains(&chart_to_view(offset)) {
+    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+        if !self.screen_area.contains(&chart_to_view(offset.to_point())) {
             return None;
         }
 
@@ -239,7 +239,7 @@ pub fn screen_fov(
     w: &World,
     origin: Location,
     screen_area: Rect<f32>,
-) -> HashMap<Point2D<i32>, Vec<Location>> {
+) -> HashMap<Vector2D<i32>, Vec<Location>> {
     let init = ScreenFov {
         w: w,
         screen_area: screen_area,
@@ -254,7 +254,7 @@ mod test {
     // FIXME: Allow constructing World instances without resource dependencies to allow lightweight
     // unit tests.
 /*
-    use euclid::{Point2D, Rect, Size2D};
+    use euclid::{Point2D, Vector2D, Rect, Size2D};
     use world::{Location, Portal, World, Terraform};
     use super::{screen_fov, view_to_chart};
 
@@ -296,19 +296,19 @@ mod test {
         let fov = screen_fov(&world,
                              Location::new(10, 10, 0),
                              Rect::new(Point2D::new(-48.0, -48.0), Size2D::new(96.0, 96.0)));
-        assert_eq!(fov.get(&Point2D::new(0, 0)),
+        assert_eq!(fov.get(&vec2(0, 0)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(0, 1)),
+        assert_eq!(fov.get(&vec2(0, 1)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(1, 1)),
+        assert_eq!(fov.get(&vec2(1, 1)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(-1, -1)),
+        assert_eq!(fov.get(&vec2(-1, -1)),
                    Some(&vec![Location::new(10, 10, 0)]));
 
-        assert_eq!(fov.get(&Point2D::new(1, 0)),
+        assert_eq!(fov.get(&vec2(1, 0)),
                    Some(&vec![Location::new(30, 10, 0), Location::new(10, 10, 0)]));
     }
 

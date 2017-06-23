@@ -1,5 +1,5 @@
 use calx_grid::{FovValue, HexGeom};
-use euclid::Point2D;
+use euclid::Vector2D;
 use location::Location;
 use terraform::TerrainQuery;
 use world::World;
@@ -33,7 +33,7 @@ impl<'a> PartialEq for SightFov<'a> {
 impl<'a> Eq for SightFov<'a> {}
 
 impl<'a> FovValue for SightFov<'a> {
-    fn advance(&self, offset: Point2D<i32>) -> Option<Self> {
+    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
         if offset.hex_dist() as u32 > self.range {
             return None;
         }
@@ -54,7 +54,7 @@ impl<'a> FovValue for SightFov<'a> {
         Some(ret)
     }
 
-    fn is_fake_isometric_wall(&self, offset: Point2D<i32>) -> bool {
+    fn is_fake_isometric_wall(&self, offset: Vector2D<i32>) -> bool {
         self.w.terrain(self.origin + offset).is_wall()
     }
 }

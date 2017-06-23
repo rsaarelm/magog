@@ -1,6 +1,6 @@
 use calx_alg::{compact_bits_by_2, noise, spread_bits_by_2};
 use calx_grid::{Dir6, GridNode, HexGeom};
-use euclid::Point2D;
+use euclid::{Vector2D, vec2};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
 
@@ -53,12 +53,12 @@ impl Location {
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
-    pub fn v2_at(&self, other: Location) -> Option<Point2D<i32>> {
+    pub fn v2_at(&self, other: Location) -> Option<Vector2D<i32>> {
         if self.z != other.z {
             return None;
         }
-        Some(Point2D::new(other.x as i32, other.y as i32) -
-             Point2D::new(self.x as i32, self.y as i32))
+        Some(vec2(other.x as i32, other.y as i32) -
+             vec2(self.x as i32, self.y as i32))
     }
 
     /// Hex distance from this location to the other one, if applicable.
@@ -84,9 +84,9 @@ impl Location {
     pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
 }
 
-impl Add<Point2D<i32>> for Location {
+impl Add<Vector2D<i32>> for Location {
     type Output = Location;
-    fn add(self, other: Point2D<i32>) -> Location {
+    fn add(self, other: Vector2D<i32>) -> Location {
         Location {
             x: (self.x as i32 + other.x) as i8,
             y: (self.y as i32 + other.y) as i8,
@@ -111,9 +111,9 @@ impl Add<Portal> for Location {
     }
 }
 
-impl Sub<Point2D<i32>> for Location {
+impl Sub<Vector2D<i32>> for Location {
     type Output = Location;
-    fn sub(self, other: Point2D<i32>) -> Location {
+    fn sub(self, other: Vector2D<i32>) -> Location {
         Location {
             x: (self.x as i32 - other.x) as i8,
             y: (self.y as i32 - other.y) as i8,
@@ -157,12 +157,12 @@ impl Add<Portal> for Portal {
 #[cfg(test)]
 mod test {
     use super::Location;
-    use euclid::Point2D;
+    use euclid::vec2;
 
     #[test]
     fn test_wraparound() {
         let l1 = Location::new(0, 0, 0);
-        let l2 = l1 + Point2D::new(300, 300);
+        let l2 = l1 + vec2(300, 300);
         assert_eq!((44, 44), (l2.x, l2.y));
     }
 

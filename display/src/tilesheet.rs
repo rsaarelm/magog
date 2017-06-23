@@ -1,4 +1,4 @@
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Point2D, point2, Rect, rect, Size2D, vec2};
 use image::GenericImage;
 
 /// Return the tiles on a tile sheet image.
@@ -16,13 +16,12 @@ pub fn bounds<I>(image: &I) -> Vec<Rect<u32>>
           I::Pixel: PartialEq
 {
     let mut ret: Vec<Rect<i32>> = Vec::new();
-    let image_rect = Rect::new(Point2D::new(0, 0),
-                               Size2D::new(image.width() as i32, image.height() as i32));
+    let image_rect: Rect<i32> = rect(0, 0, image.width() as i32, image.height() as i32);
 
     let background = image.get_pixel(image.width() - 1, image.height() - 1);
     for y in image_rect.min_y()..image_rect.max_y() {
         for x in image_rect.min_x()..image_rect.max_x() {
-            let pt = Point2D::new(x, y);
+            let pt = point2(x, y);
             // Skip areas that are already contained in known tiles.
             if ret.iter().any(|&r| r.contains(&pt)) {
                 continue;
@@ -46,8 +45,7 @@ fn tile_bounds<I>(image: &I, seed_pos: Point2D<i32>, background: I::Pixel) -> Re
     where I: GenericImage,
           I::Pixel: PartialEq
 {
-    let image_rect = Rect::new(Point2D::new(0, 0),
-                               Size2D::new(image.width() as i32, image.height() as i32));
+    let image_rect = rect(0, 0, image.width() as i32, image.height() as i32);
     let mut ret = Rect::new(seed_pos, Size2D::new(1, 1));
 
     // How many consecutive edges couldn't be expanded. Once this hits 4, the tile is complete.
@@ -59,13 +57,13 @@ fn tile_bounds<I>(image: &I, seed_pos: Point2D<i32>, background: I::Pixel) -> Re
             // Try adding a 1-pixel wide strip to the tile rectangle.
             let new_area = match dir {
                 0 => {
-                    Rect::new(ret.origin + Point2D::new(0, -1),
+                    Rect::new(ret.origin + vec2(0, -1),
                               Size2D::new(ret.size.width, 1))
                 }
                 1 => Rect::new(ret.top_right(), Size2D::new(1, ret.size.height)),
                 2 => Rect::new(ret.bottom_left(), Size2D::new(ret.size.width, 1)),
                 3 => {
-                    Rect::new(ret.origin + Point2D::new(-1, 0),
+                    Rect::new(ret.origin + vec2(-1, 0),
                               Size2D::new(1, ret.size.height))
                 }
                 _ => panic!("Bad dir {}", dir),

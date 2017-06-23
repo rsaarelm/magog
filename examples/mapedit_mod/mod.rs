@@ -1,6 +1,6 @@
 use calx_grid::{Dir6, Prefab};
 use display;
-use euclid::{Point2D, Rect};
+use euclid::{Point2D, Rect, Vector2D, vec2};
 use scancode::Scancode;
 use std::collections::HashSet;
 use std::fs::File;
@@ -275,26 +275,26 @@ impl View {
     fn editor_input(&mut self, context: &mut display::Backend, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
-            Q => self.move_camera(Point2D::new(-1, 0), 0),
-            W => self.move_camera(Point2D::new(-1, -1), 0),
-            E => self.move_camera(Point2D::new(0, -1), 0),
-            A => self.move_camera(Point2D::new(0, 1), 0),
-            S => self.move_camera(Point2D::new(1, 1), 0),
-            D => self.move_camera(Point2D::new(1, 0), 0),
+            Q => self.move_camera(vec2(-1, 0), 0),
+            W => self.move_camera(vec2(-1, -1), 0),
+            E => self.move_camera(vec2(0, -1), 0),
+            A => self.move_camera(vec2(0, 1), 0),
+            S => self.move_camera(vec2(1, 1), 0),
+            D => self.move_camera(vec2(1, 0), 0),
             F1 => self.switch_camera(),
             F12 => context.save_screenshot("mapedit"),
             Tab => self.console_is_large = !self.console_is_large,
-            RightBracket => self.move_camera(Point2D::new(0, 0), 1),
-            LeftBracket => self.move_camera(Point2D::new(0, 0), -1),
+            RightBracket => self.move_camera(vec2(0, 0), 1),
+            LeftBracket => self.move_camera(vec2(0, 0), -1),
             _ => {}
         }
     }
 
-    fn move_camera(&mut self, delta: Point2D<i32>, dz: i8) {
+    fn move_camera(&mut self, delta: Vector2D<i32>, dz: i8) {
         let second_delta = if self.camera_lock {
             delta
         } else {
-            Point2D::new(0, 0)
+            vec2(0, 0)
         };
 
         let (a, b) = self.camera;

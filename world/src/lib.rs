@@ -17,7 +17,7 @@ extern crate calx_color;
 #[macro_use]
 extern crate calx_ecs;
 
-use euclid::Point2D;
+use euclid::Vector2D;
 
 mod ability;
 
@@ -83,7 +83,7 @@ pub type Rng = calx_alg::EncodeRng<rand::XorShiftRng>;
 ///
 /// Since various bits of game logic are tied to the screen boundaries, the screen size is fixed as
 /// a constant.
-pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
+pub fn on_screen(chart_pos: Vector2D<i32>) -> bool {
     const W: i32 = 39;
     const H: i32 = 22;
     let (x, y) = (chart_pos.x, chart_pos.y);
@@ -95,15 +95,15 @@ pub fn on_screen(chart_pos: Point2D<i32>) -> bool {
 }
 
 /// List of all points for which `on_screen` is true.
-pub fn onscreen_locations() -> &'static Vec<Point2D<i32>> {
+pub fn onscreen_locations() -> &'static Vec<Vector2D<i32>> {
     lazy_static! {
-        static ref ONSCREEN_LOCATIONS: Vec<Point2D<i32>> = {
+        static ref ONSCREEN_LOCATIONS: Vec<Vector2D<i32>> = {
             let mut m = Vec::new();
 
             // XXX: Hardcoded limits, tied to W and H in on-screen but expressed differently here.
             for y in -21..22 {
                 for x in -21..21 {
-                    let point = Point2D::new(x, y);
+                    let point = Vector2D::new(x, y);
                     if on_screen(point) {
                         m.push(point);
                     }

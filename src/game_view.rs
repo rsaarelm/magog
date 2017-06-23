@@ -1,6 +1,6 @@
 use calx_grid::Dir6;
 use display;
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Point2D, Rect, Size2D, vec2};
 use rand;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
 use scancode::Scancode;
@@ -165,7 +165,7 @@ fn dump_map(world: &World) {
                 print!(" ");
                 continue;
             }
-            let pos = Point2D::new((x + y) / 2, y);
+            let pos = vec2((x + y) / 2, y);
             if on_screen(pos) {
                 let t = world.terrain(Location::new(0, 0, 0) + pos);
                 if t.is_open() {

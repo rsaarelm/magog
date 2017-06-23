@@ -1,6 +1,6 @@
 use calx_alg::{RandomPermutation, RngExt};
 use calx_grid::Dir6;
-use euclid::Point2D;
+use euclid::vec2;
 use location::Location;
 use onscreen_locations;
 use rand::{Rand, Rng, sample};
@@ -241,7 +241,7 @@ impl Room for EmptyRoom {
                 let is_x_wall = (y == 0 || y == self.height - 1) && !is_corner;
                 let is_y_wall = (x == 0 || x == self.width - 1) && !is_corner;
 
-                let loc = loc + Point2D::new(x as i32, y as i32);
+                let loc = loc + vec2(x as i32, y as i32);
 
                 if !w.is_valid_location(loc) && !is_wall {
                     // Walls can be placed just outside the screen bounds, but definitely not
@@ -297,7 +297,7 @@ impl Room for EmptyRoom {
         for y in 0..self.height {
             for x in 0..self.width {
                 let is_wall = x == 0 || y == 0 || x == self.width - 1 || y == self.height - 1;
-                let loc = loc + Point2D::new(x as i32, y as i32);
+                let loc = loc + vec2(x as i32, y as i32);
 
                 let is_corner = (x == 0 || x == self.width - 1) && (y == 0 || y == self.height - 1);
 

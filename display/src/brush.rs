@@ -2,7 +2,7 @@ use atlas_cache::SubImageSpec;
 use cache;
 use calx_color::Rgba;
 use calx_color::color::*;
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Point2D, Rect, rect, Size2D, Vector2D, vec2};
 use std::fmt;
 use std::rc::Rc;
 use vitral;
@@ -13,7 +13,7 @@ pub type Color = [f32; 4];
 #[derive(Clone, PartialEq)]
 pub struct Splat {
     pub image: vitral::ImageData<usize>,
-    pub offset: Point2D<f32>,
+    pub offset: Vector2D<f32>,
     pub color: Color,
     pub back_color: Color,
 }
@@ -181,7 +181,7 @@ impl Builder {
 }
 
 pub struct Geom {
-    offset: Point2D<f32>,
+    offset: Vector2D<f32>,
     bounds: Rect<u32>,
 }
 
@@ -195,8 +195,8 @@ impl Geom {
         height: u32,
     ) -> Geom {
         Geom {
-            offset: Point2D::new(offset_x as f32, offset_y as f32),
-            bounds: Rect::new(Point2D::new(orig_x, orig_y), Size2D::new(width, height)),
+            offset: vec2(offset_x as f32, offset_y as f32),
+            bounds: rect(orig_x, orig_y, width, height),
         }
     }
 

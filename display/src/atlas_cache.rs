@@ -1,4 +1,4 @@
-use euclid::{Point2D, Rect, Size2D};
+use euclid::{Rect, rect, size2};
 use image::{self, GenericImage};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -19,7 +19,7 @@ impl SubImageSpec {
     pub fn new(name: &str, x: u32, y: u32, width: u32, height: u32) -> SubImageSpec {
         SubImageSpec {
             sheet_name: name.to_string(),
-            bounds: Rect::new(Point2D::new(x, y), Size2D::new(width, height)),
+            bounds: rect(x, y, width, height),
         }
     }
 }
@@ -98,7 +98,7 @@ impl AtlasCache {
     fn new_atlas(&mut self) {
         self.atlases
             .push(Atlas::new(self.next_index,
-                             Size2D::new(self.atlas_size, self.atlas_size)));
+                             size2(self.atlas_size, self.atlas_size)));
         self.next_index += 1;
     }
 
