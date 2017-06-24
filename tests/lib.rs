@@ -36,8 +36,7 @@ fn test_ecs() {
     Desc {
         name: "Orc".to_string(),
         icon: 8,
-    }
-    .add_to_ecs(&mut ecs, e1);
+    }.add_to_ecs(&mut ecs, e1);
     assert_eq!(ecs.desc[e1].name, "Orc");
 
     ecs.remove(e1);
@@ -65,7 +64,13 @@ fn test_ecs() {
     // Test deletion from component with multiple elements.
 
     // The last element in desc is now e2.
-    ecs.desc.insert(e2, Desc { name: "Foo".to_string(), icon: 20 });
+    ecs.desc.insert(
+        e2,
+        Desc {
+            name: "Foo".to_string(),
+            icon: 20,
+        },
+    );
     // Remove first element, e3. ECS needs to move the e2 element.
     ecs.remove(e3);
     assert_eq!(ecs.desc[e2].icon, 20);

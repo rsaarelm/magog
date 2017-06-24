@@ -74,7 +74,10 @@ impl<C> ComponentData<C> {
         } else {
             // Grow lookup vector if needed.
             if e.idx as usize >= self.entity_idx_to_data.len() {
-                self.entity_idx_to_data.resize(e.idx as usize + 1, Default::default());
+                self.entity_idx_to_data.resize(
+                    e.idx as usize + 1,
+                    Default::default(),
+                );
             }
 
             // Add a new component.
@@ -93,13 +96,15 @@ impl<C> ComponentData<C> {
         debug_assert_ne!(e.uid, 0);
 
         (e.idx as usize) < self.entity_idx_to_data.len() &&
-        self.entity_idx_to_data[e.idx as usize].uid == e.uid
+            self.entity_idx_to_data[e.idx as usize].uid == e.uid
     }
 
     /// Get a reference to a component only if it exists for this entity.
     pub fn get(&self, e: Entity) -> Option<&C> {
         if self.contains(e) {
-            Some(&self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+            Some(
+                &self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize],
+            )
         } else {
             None
         }
@@ -108,7 +113,9 @@ impl<C> ComponentData<C> {
     /// Get a mutable reference to a component only if it exists for this entity.
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
         if self.contains(e) {
-            Some(&mut self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
+            Some(
+                &mut self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize],
+            )
         } else {
             None
         }
@@ -156,13 +163,17 @@ impl<C> AnyComponent for ComponentData<C> {
             // list, we need to reset the lookup value for the component that was moved.
             if removed_index.data_idx as usize != self.inner.entities.len() - 1 {
                 let last_entity = self.inner.entities[self.inner.entities.len() - 1];
-                self.inner.entities.swap_remove(removed_index.data_idx as usize);
+                self.inner.entities.swap_remove(
+                    removed_index.data_idx as usize,
+                );
                 self.entity_idx_to_data[last_entity.idx as usize] = Index {
                     uid: last_entity.uid,
                     data_idx: removed_index.data_idx,
                 };
             } else {
-                self.inner.entities.swap_remove(removed_index.data_idx as usize);
+                self.inner.entities.swap_remove(
+                    removed_index.data_idx as usize,
+                );
             }
 
             self.inner.data.swap_remove(removed_index.data_idx as usize);
@@ -209,7 +220,9 @@ impl<'a, C: Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> {
 /// Operations for the internal component store object.
 pub trait Store {
     /// Perform an operation for each component container.
-    fn for_each_component<F>(&mut self, f: F) where F: FnMut(&mut AnyComponent);
+    fn for_each_component<F>(&mut self, f: F)
+    where
+        F: FnMut(&mut AnyComponent);
 }
 
 /// Generic entity component system container
@@ -249,10 +262,7 @@ impl<ST: Default + Store> Ecs<ST> {
             self.next_idx - 1
         };
 
-        let ret = Entity {
-            uid: uid,
-            idx: idx,
-        };
+        let ret = Entity { uid: uid, idx: idx };
         self.active.insert(ret, true);
         ret
     }
