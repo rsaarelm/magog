@@ -8,16 +8,16 @@ use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
 use world::{Command, Location, Slot, TerrainQuery, World, on_screen};
 
-pub struct View {
+pub struct GameLoop {
     pub world: World,
     pub console: display::Console,
     pub console_is_large: bool,
     pub show_inventory: bool,
 }
 
-impl View {
-    pub fn new(world: World) -> View {
-        View {
+impl GameLoop {
+    pub fn new(world: World) -> GameLoop {
+        GameLoop {
             world,
             console: display::Console::default(),
             console_is_large: false,

@@ -12,10 +12,10 @@ extern crate calx_alg;
 extern crate world;
 extern crate display;
 
-pub mod game_view;
+pub mod game_loop;
 
 use euclid::{Point2D, Rect, Size2D};
-use game_view::View;
+use game_loop::GameLoop;
 use glium::{DisplayBuild, glutin};
 use std::fs::File;
 use vitral::Context;
@@ -40,11 +40,11 @@ pub fn main() {
     let prefab = world::load_prefab(&mut File::open("sprint.toml").unwrap()).unwrap();
     world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
 
-    let mut view = View::new(world);
+    let mut game = GameLoop::new(world);
 
     loop {
         backend.begin_frame();
-        view.draw(&mut backend, &screen_area);
+        game.draw(&mut backend, &screen_area);
         if !backend.update(&glium) {
             return;
         }
