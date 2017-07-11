@@ -1,3 +1,5 @@
+
+use calx_ecs::Entity;
 use calx_grid::Dir6;
 use display;
 use euclid::{Point2D, Rect, Size2D, vec2};
@@ -8,11 +10,32 @@ use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
 use world::{Command, Location, Slot, TerrainQuery, World, on_screen};
 
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+enum State {
+    Main,
+    Inventory(InventoryAction),
+    Console,
+    Aim(AimAction),
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+enum InventoryAction {
+    View,
+    Drop,
+    Equip,
+    Use,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+enum AimAction {
+    Zap(Entity),
+    // Maybe add intrinsic abilities not tied to a specific entity later
+}
+
 pub struct GameLoop {
     pub world: World,
     pub console: display::Console,
-    pub console_is_large: bool,
-    pub show_inventory: bool,
+    state: State,
 }
 
 impl GameLoop {
@@ -20,15 +43,17 @@ impl GameLoop {
         GameLoop {
             world,
             console: display::Console::default(),
-            console_is_large: false,
-            show_inventory: false,
+            state: State::Main,
         }
     }
 
     fn game_input(&mut self, scancode: Scancode) -> Result<(), ()> {
         use scancode::Scancode::*;
         match scancode {
-            Tab => Ok(self.console_is_large = !self.console_is_large),
+            Tab => {
+                self.state = State::Console;
+                Ok(())
+            }
             Q => self.world.step(Dir6::Northwest),
             W => self.world.step(Dir6::North),
             E => self.world.step(Dir6::Northeast),
@@ -36,7 +61,7 @@ impl GameLoop {
             S => self.world.step(Dir6::South),
             D => self.world.step(Dir6::Southeast),
             I => {
-                self.show_inventory = !self.show_inventory;
+                self.state = State::Inventory(InventoryAction::View);
                 Ok(())
             }
             F5 => {
@@ -54,10 +79,24 @@ impl GameLoop {
         }
     }
 
+    fn inventory_input(&mut self, scancode: Scancode) -> Result<(), ()> {
+        use scancode::Scancode::*;
+        match scancode {
+            Escape => {
+                self.state = State::Main;
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
     fn console_input(&mut self, scancode: Scancode) -> Result<(), ()> {
         use scancode::Scancode::*;
         match scancode {
-            Tab => Ok(self.console_is_large = !self.console_is_large),
+            Tab => {
+                self.state = State::Main;
+                Ok(())
+            }
             Enter | PadEnter => {
                 let input = self.console.get_input();
                 let _ = writeln!(&mut self.console, "{}", input);
@@ -131,6 +170,8 @@ impl GameLoop {
         }
     }
 
+    fn draw_console(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {}
+
     pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
         let mut view = display::WorldView::new(camera_loc, *screen_area);
@@ -138,31 +179,28 @@ impl GameLoop {
 
         view.draw(&self.world, context);
 
-        // Small console drawn as part of the main view, before the extra UI windows like
-        // inventory.
-        if !self.console_is_large {
-            self.console.draw_small(context, screen_area);
-        }
-
-        if self.show_inventory {
-            self.draw_inventory(
-                context,
-                &Rect::new(Point2D::new(0.0, 0.0), Size2D::new(320.0, 360.0)),
-            );
-        }
-
-        // Large console is drawn on top of all other windows.
-        if self.console_is_large {
-            let mut console_area = *screen_area;
-            console_area.size.height /= 2.0;
-            self.console.draw_large(context, &console_area);
+        match self.state {
+            State::Inventory(_) => {
+                self.draw_inventory(
+                    context,
+                    &Rect::new(Point2D::new(0.0, 0.0), Size2D::new(320.0, 360.0)),
+                );
+            }
+            State::Console => {
+                let mut console_area = *screen_area;
+                console_area.size.height /= 2.0;
+                self.console.draw_large(context, &console_area);
+            }
+            _ => {
+                self.console.draw_small(context, screen_area);
+            }
         }
 
         if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
-            let _ = if self.console_is_large {
-                self.console_input(scancode)
-            } else {
-                self.game_input(scancode)
+            let _ = match self.state {
+                State::Inventory(_) => self.inventory_input(scancode),
+                State::Console => self.console_input(scancode),
+                _ => self.game_input(scancode),
             };
         }
     }
