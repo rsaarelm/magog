@@ -4,6 +4,7 @@ use calx_ecs::Entity;
 use calx_grid::Dir6;
 use components::{Alignment, BrainState, Icon};
 use form;
+use item::ItemType;
 use location::Location;
 use stats;
 use stats::Intrinsic;
@@ -245,6 +246,10 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the entity should have an idle animation.
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
+
+    fn item_type(&self, e: Entity) -> Option<ItemType> {
+        unimplemented!();
+    }
 
     /// Return terrain at location for drawing on screen.
     ///

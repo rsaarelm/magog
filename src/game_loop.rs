@@ -1,4 +1,3 @@
-
 use calx_ecs::Entity;
 use calx_grid::Dir6;
 use display;
@@ -8,7 +7,7 @@ use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
-use world::{Command, Location, Slot, TerrainQuery, World, on_screen};
+use world::{Command, CommandResult, ItemType, Location, Query, Slot, TerrainQuery, World, on_screen};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
@@ -28,7 +27,7 @@ enum InventoryAction {
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum AimAction {
-    Zap(Entity),
+    Zap(Slot),
     // Maybe add intrinsic abilities not tied to a specific entity later
 }
 
@@ -47,7 +46,7 @@ impl GameLoop {
         }
     }
 
-    fn game_input(&mut self, scancode: Scancode) -> Result<(), ()> {
+    fn game_input(&mut self, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -79,8 +78,36 @@ impl GameLoop {
         }
     }
 
-    fn inventory_input(&mut self, scancode: Scancode) -> Result<(), ()> {
+    fn aim_input(&mut self, slot: Slot, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
+        match scancode {
+            Q => self.world.zap_item(slot, Dir6::Northwest),
+            W => self.world.zap_item(slot, Dir6::North),
+            E => self.world.zap_item(slot, Dir6::Northeast),
+            A => self.world.zap_item(slot, Dir6::Southwest),
+            S => self.world.zap_item(slot, Dir6::South),
+            D => self.world.zap_item(slot, Dir6::Southeast),
+            Esc => {
+                self.state = State::Main;
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    fn inventory_input(&mut self, scancode: Scancode) -> CommandResult {
+        use scancode::Scancode::*;
+        for slot in SLOT_DATA.iter() {
+            if scancode == slot.code {
+                if let State::Inventory(action) = self.state {
+                    let ret = self.inventory_action(slot.slot, action);
+                    if ret.is_ok() {
+                        return ret;
+                    }
+                }
+            }
+        }
+
         match scancode {
             Escape => {
                 self.state = State::Main;
@@ -90,7 +117,35 @@ impl GameLoop {
         }
     }
 
-    fn console_input(&mut self, scancode: Scancode) -> Result<(), ()> {
+    fn slotted_item(&self, slot: Slot) -> Option<Entity> {
+        unimplemented!();
+    }
+
+    fn inventory_action(&mut self, slot: Slot, action: InventoryAction) -> CommandResult {
+        match action {
+            InventoryAction::Drop => self.world.drop(slot),
+            InventoryAction::Equip => self.world.equip(slot),
+            InventoryAction::Use => {
+                if let Some(item) = self.slotted_item(slot) {
+                    match self.world.item_type(item) {
+                        Some(ItemType::UntargetedUsable) => {
+                            return self.world.use_item(slot);
+                        }
+                        Some(ItemType::TargetedUsable) => {
+                            // If we need to aim, switch to aim state before calling world.
+                            self.state = State::Aim(AimAction::Zap(slot));
+                            return Ok(());
+                        }
+                        _ => {}
+                    }
+                }
+                return Err(());
+            }
+            _ => Err(()),
+        }
+    }
+
+    fn console_input(&mut self, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -200,6 +255,7 @@ impl GameLoop {
             let _ = match self.state {
                 State::Inventory(_) => self.inventory_input(scancode),
                 State::Console => self.console_input(scancode),
+                State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
                 _ => self.game_input(scancode),
             };
         }

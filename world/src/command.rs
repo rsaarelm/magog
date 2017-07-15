@@ -1,4 +1,6 @@
+use calx_ecs::Entity;
 use calx_grid::Dir6;
+use item::Slot;
 
 pub type CommandResult = Result<(), ()>;
 
@@ -22,4 +24,25 @@ pub trait Command {
     ///
     /// Will usually succeed, but some games might not let the player pass turns.
     fn pass(&mut self) -> CommandResult;
+
+    /// Take item from floor
+    ///
+    /// No selection support yet for multiple items, you pick up the topmost one.
+    /// Try to maintain a convention where there's no more than one item in a single location.
+    fn take(&mut self) -> CommandResult;
+
+    /// Drop item held in slot.
+    fn drop(&mut self, slot: Slot) -> CommandResult;
+
+    /// Swap item between equipment and inventory slots
+    ///
+    /// Behavior depends on slot. Equipment slots go to inventory, inventory slots go to equip. The
+    /// item will be moved to the first available slot.
+    fn equip(&mut self, slot: Slot) -> CommandResult;
+
+    /// Use a nontargeted effect item.
+    fn use_item(&mut self, slot: Slot) -> CommandResult;
+
+    /// Use a directionally targeted effect item.
+    fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult;
 }

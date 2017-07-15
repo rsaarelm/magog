@@ -22,7 +22,7 @@ use euclid::Vector2D;
 mod ability;
 
 mod command;
-pub use command::Command;
+pub use command::{Command, CommandResult};
 
 mod components;
 pub use components::Icon;
@@ -36,7 +36,7 @@ pub use form::{Form, FORMS};
 mod fov;
 
 mod item;
-pub use item::Slot;
+pub use item::{Slot, ItemType};
 
 mod location;
 pub use location::{Location, Portal};

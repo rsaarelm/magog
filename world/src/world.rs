@@ -1,4 +1,3 @@
-
 use Rng;
 use bincode;
 use calx_ecs::Entity;
@@ -8,6 +7,7 @@ use components;
 use field::Field;
 use flags::Flags;
 use fov::SightFov;
+use item::Slot;
 use location::{Location, Portal};
 use mutate::Mutate;
 use query::Query;
@@ -194,6 +194,26 @@ impl Command for World {
     }
 
     fn pass(&mut self) -> CommandResult { self.next_tick() }
+
+    fn take(&mut self) -> CommandResult {
+        unimplemented!();
+    }
+
+    fn drop(&mut self, slot: Slot) -> CommandResult {
+        unimplemented!();
+    }
+
+    fn equip(&mut self, slot: Slot) -> CommandResult {
+        unimplemented!();
+    }
+
+    fn use_item(&mut self, slot: Slot) -> CommandResult {
+        unimplemented!();
+    }
+
+    fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
+        unimplemented!();
+    }
 }
 
 impl Terraform for World {
