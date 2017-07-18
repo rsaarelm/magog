@@ -53,7 +53,7 @@ impl View {
 
     fn spawn_at(&mut self, loc: Location, form: Option<&str>) {
         for e in self.world.entities_at(loc) {
-            self.world.remove_entity(e);
+            self.world.kill_entity(e);
         }
 
         if let Some(name) = form {
@@ -204,6 +204,8 @@ impl View {
                 self.editor_input(context, scancode);
             }
         }
+
+        self.world.clean_dead();
     }
 
     command_parser!{
