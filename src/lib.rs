@@ -269,9 +269,11 @@ impl<ST: Default + Store> Ecs<ST> {
 
     /// Remove an entity from the system and clear its components.
     pub fn remove(&mut self, e: Entity) {
-        self.free_indices.push(e.idx);
-        self.active.remove(e);
-        self.store.for_each_component(|c| c.remove(e));
+        if self.contains(e) {
+            self.free_indices.push(e.idx);
+            self.active.remove(e);
+            self.store.for_each_component(|c| c.remove(e));
+        }
     }
 
     /// Return whether the system contains an entity.
