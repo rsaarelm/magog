@@ -216,7 +216,9 @@ impl GameLoop {
         fn dump(&mut self);
     }
 
-    fn draw_inventory(&mut self, c: &mut display::Backend, area: &Rect<f32>) {
+    fn draw_inventory(&mut self, c: &mut display::Backend, area: &Rect<f32>) -> Result<(), ()> {
+        let player = self.world.player().ok_or(())?;
+
         // Start with hardcoded invetory data to test the UI logic.
         c.fill_rect(
             FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
@@ -237,8 +239,16 @@ impl GameLoop {
                 &format!("{})", slot.key),
             );
             slot_name_pos = c.draw_text(slot_name_pos, Align::Left, text_color, slot.name);
-            item_name_pos = c.draw_text(item_name_pos, Align::Left, text_color, "[Inventory Item]");
+            let item_name = if let Some(item) = self.world.entity_equipped(player, slot.slot) {
+                self.world.entity_name(item)
+            } else {
+                "".to_string()
+            };
+
+            item_name_pos = c.draw_text(item_name_pos, Align::Left, text_color, &item_name);
         }
+
+        Ok(())
     }
 
     fn draw_console(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {}

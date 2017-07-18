@@ -101,6 +101,13 @@ pub trait Query: TerrainQuery {
     /// Return visual brush for an entity.
     fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
+    fn entity_name(&self, e: Entity) -> String {
+        self.ecs().desc.get(e).map_or_else(
+            || "N/A".to_string(),
+            |x| x.name.clone(),
+        )
+    }
+
     /// Return the (composite) stats for an entity.
     ///
     /// Will return the default value for the Stats type (additive identity in the stat algebra)
