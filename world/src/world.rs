@@ -190,51 +190,7 @@ impl Mutate for World {
     fn rng(&mut self) -> &mut Rng { self.flags.rng() }
 }
 
-impl Command for World {
-    fn step(&mut self, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        self.entity_step(player, dir)?;
-        self.next_tick()
-    }
-
-    fn melee(&mut self, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        self.entity_melee(player, dir)?;
-        self.next_tick()
-    }
-
-    fn pass(&mut self) -> CommandResult { self.next_tick() }
-
-    fn take(&mut self) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let location = self.location(player).ok_or(())?;
-        if let Some(item) = self.item_at(location) {
-            self.entity_take(player, item)
-        } else {
-            Err(())
-        }
-    }
-
-    fn drop(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        unimplemented!();
-    }
-
-    fn equip(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        unimplemented!();
-    }
-
-    fn use_item(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        unimplemented!();
-    }
-
-    fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        unimplemented!();
-    }
-}
+impl Command for World {}
 
 impl Terraform for World {
     fn set_terrain(&mut self, loc: Location, terrain: Terrain) { self.terrain.set(loc, terrain); }
