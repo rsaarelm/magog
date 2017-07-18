@@ -4,7 +4,7 @@ use calx_ecs::Entity;
 use calx_grid::Dir6;
 use components::{Alignment, BrainState, Icon};
 use form;
-use item::ItemType;
+use item::{ItemType, Slot};
 use location::Location;
 use stats;
 use stats::Intrinsic;
@@ -46,6 +46,11 @@ pub trait Query: TerrainQuery {
     /// Return reference to the world entity component system.
     fn ecs(&self) -> &Ecs;
 
+    /// Return the item parent has equipped in slot.
+    fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity>;
+
+    fn entity_contains(&self, parent: Entity, child: Entity) -> bool;
+
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
         self.ecs().brain.get(e).map_or(
@@ -56,6 +61,8 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the entity is a mobile object (eg. active creature).
     fn is_mob(&self, e: Entity) -> bool { self.ecs().brain.contains(e) }
+
+    fn is_item(&self, e: Entity) -> bool { self.ecs().item.contains(e) }
 
     /// Return the value for how a mob will react to other mobs.
     fn alignment(&self, e: Entity) -> Option<Alignment> {
@@ -155,9 +162,14 @@ pub trait Query: TerrainQuery {
     /// Return whether a location contains mobs.
     fn has_mobs(&self, loc: Location) -> bool { self.mob_at(loc).is_some() }
 
-    /// Return mob (if any) at given position.
+    /// Return mob (if any) at given location.
     fn mob_at(&self, loc: Location) -> Option<Entity> {
         self.entities_at(loc).into_iter().find(|&e| self.is_mob(e))
+    }
+
+    /// Return first item at given location.
+    fn item_at(&self, loc: Location) -> Option<Entity> {
+        self.entities_at(loc).into_iter().find(|&e| self.is_item(e))
     }
 
     /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
@@ -248,7 +260,7 @@ pub trait Query: TerrainQuery {
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     fn item_type(&self, e: Entity) -> Option<ItemType> {
-        unimplemented!();
+        self.ecs().item.get(e).map_or(None, |item| Some(item.item_type))
     }
 
     /// Return terrain at location for drawing on screen.
@@ -318,5 +330,14 @@ pub trait Query: TerrainQuery {
         }
 
         Prefab::from_iter(map.into_iter())
+    }
+
+    fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
+        Slot::iter()
+            .filter(|&&x| {
+                !x.is_equipment_slot() && self.entity_equipped(e, x).is_none()
+            })
+            .next()
+            .cloned()
     }
 }

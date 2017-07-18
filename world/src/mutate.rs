@@ -3,6 +3,7 @@ use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
 use form::Form;
+use item::Slot;
 use location::Location;
 use query::Query;
 use rand::Rng;
@@ -18,6 +19,8 @@ pub trait Mutate: Query + Terraform + Sized {
     fn next_tick(&mut self) -> CommandResult;
 
     fn set_entity_location(&mut self, e: Entity, loc: Location);
+
+    fn equip_item(&mut self, e: Entity, parent: Entity, slot: Slot);
 
     fn set_player(&mut self, player: Option<Entity>);
 
@@ -150,6 +153,30 @@ pub trait Mutate: Query + Terraform + Sized {
             let form = Form::named("player").expect("Player form not found");
             let player = self.spawn(&form.loadout, loc);
             self.set_player(Some(player));
+        }
+    }
+
+    fn entity_take(&mut self, e: Entity, item: Entity) -> CommandResult {
+        // Only mobs can take items.
+        if !self.is_mob(e) {
+            return Err(());
+        }
+
+        if !self.is_item(item) {
+            return Err(());
+        }
+
+        // Somehow trying to pick up something we're inside of. Pls don't break the universe.
+        if self.entity_contains(item, e) {
+            panic!("Trying to pick up an entity you are inside of. This shouldn't happen");
+        }
+
+        if let Some(slot) = self.free_bag_slot(e) {
+            self.equip_item(item, e, slot);
+            Ok(())
+        } else {
+            // No more inventory space
+            Err(())
         }
     }
 }

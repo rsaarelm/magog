@@ -130,6 +130,14 @@ impl Query for World {
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
     fn ecs(&self) -> &Ecs { &self.ecs }
+
+    fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
+        self.spatial.entity_equipped(parent, slot)
+    }
+
+    fn entity_contains(&self, parent: Entity, child: Entity) -> bool {
+        self.spatial.contains(parent, child)
+    }
 }
 
 impl Mutate for World {
@@ -141,6 +149,8 @@ impl Mutate for World {
     }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
+
+    fn equip_item(&mut self, e: Entity, parent: Entity, slot: Slot) { self.spatial.equip(e, parent, slot) }
 
     fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
 
@@ -182,36 +192,46 @@ impl Mutate for World {
 
 impl Command for World {
     fn step(&mut self, dir: Dir6) -> CommandResult {
-        let player = try!(self.player().ok_or(()));
-        try!(self.entity_step(player, dir));
+        let player = self.player().ok_or(())?;
+        self.entity_step(player, dir)?;
         self.next_tick()
     }
 
     fn melee(&mut self, dir: Dir6) -> CommandResult {
-        let player = try!(self.player().ok_or(()));
-        try!(self.entity_melee(player, dir));
+        let player = self.player().ok_or(())?;
+        self.entity_melee(player, dir)?;
         self.next_tick()
     }
 
     fn pass(&mut self) -> CommandResult { self.next_tick() }
 
     fn take(&mut self) -> CommandResult {
-        unimplemented!();
+        let player = self.player().ok_or(())?;
+        let location = self.location(player).ok_or(())?;
+        if let Some(item) = self.item_at(location) {
+            self.entity_take(player, item)
+        } else {
+            Err(())
+        }
     }
 
     fn drop(&mut self, slot: Slot) -> CommandResult {
+        let player = self.player().ok_or(())?;
         unimplemented!();
     }
 
     fn equip(&mut self, slot: Slot) -> CommandResult {
+        let player = self.player().ok_or(())?;
         unimplemented!();
     }
 
     fn use_item(&mut self, slot: Slot) -> CommandResult {
+        let player = self.player().ok_or(())?;
         unimplemented!();
     }
 
     fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
+        let player = self.player().ok_or(())?;
         unimplemented!();
     }
 }

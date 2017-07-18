@@ -60,9 +60,19 @@ impl GameLoop {
             S => self.world.step(Dir6::South),
             D => self.world.step(Dir6::Southeast),
             I => {
-                self.state = State::Inventory(InventoryAction::View);
+                self.state = State::Inventory(InventoryAction::Equip);
                 Ok(())
             }
+            // XXX: Key mnemonics, bit awkward when D is taken by movement.
+            B => {
+                self.state = State::Inventory(InventoryAction::Drop);
+                Ok(())
+            }
+            U => {
+                self.state = State::Inventory(InventoryAction::Use);
+                Ok(())
+            }
+            G => self.world.take(),
             F5 => {
                 self.world
                     .save(&mut File::create("save.gam").unwrap())
@@ -87,7 +97,7 @@ impl GameLoop {
             A => self.world.zap_item(slot, Dir6::Southwest),
             S => self.world.zap_item(slot, Dir6::South),
             D => self.world.zap_item(slot, Dir6::Southeast),
-            Esc => {
+            Escape => {
                 self.state = State::Main;
                 Ok(())
             }
@@ -117,16 +127,22 @@ impl GameLoop {
         }
     }
 
-    fn slotted_item(&self, slot: Slot) -> Option<Entity> {
-        unimplemented!();
-    }
-
     fn inventory_action(&mut self, slot: Slot, action: InventoryAction) -> CommandResult {
         match action {
-            InventoryAction::Drop => self.world.drop(slot),
+            InventoryAction::Drop => {
+                let ret = self.world.drop(slot);
+                // After succesful drop, go back to main state.
+                if ret.is_ok() {
+                    self.state = State::Main;
+                }
+                ret
+            }
+            // Can equip multiple items in one go, wait for ESC to return to main state.
             InventoryAction::Equip => self.world.equip(slot),
             InventoryAction::Use => {
-                if let Some(item) = self.slotted_item(slot) {
+                let player = self.world.player().ok_or(())?;
+
+                if let Some(item) = self.world.entity_equipped(player, slot) {
                     match self.world.item_type(item) {
                         Some(ItemType::UntargetedUsable) => {
                             return self.world.use_item(slot);
