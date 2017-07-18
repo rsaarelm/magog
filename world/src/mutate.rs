@@ -61,7 +61,10 @@ pub trait Mutate: Query + Terraform + Sized {
         }
     }
 
-    fn place_entity(&mut self, e: Entity, loc: Location) {
+    fn place_entity(&mut self, e: Entity, mut loc: Location) {
+        if self.is_item(e) {
+            loc = self.empty_item_drop_location(loc);
+        }
         self.set_entity_location(e, loc);
         self.after_entity_moved(e);
     }

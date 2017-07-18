@@ -1,13 +1,15 @@
 use FovStatus;
 use Prefab;
 use calx_ecs::Entity;
-use calx_grid::Dir6;
+use calx_grid::{Dir6, HexGeom};
 use components::{Alignment, BrainState, Icon};
+use euclid::{Vector2D, vec2};
 use form;
 use item::{ItemType, Slot};
 use location::Location;
 use stats;
 use stats::Intrinsic;
+use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
 use std::slice;
 use terraform::TerrainQuery;
@@ -139,6 +141,19 @@ pub trait Query: TerrainQuery {
         true
     }
 
+    fn can_drop_item_at(&self, loc: Location) -> bool {
+        if !self.is_valid_location(loc) {
+            return false;
+        }
+        if self.terrain(loc).blocks_walk() {
+            return false;
+        }
+        if self.terrain(loc).is_door() {
+            return false;
+        }
+        true
+    }
+
     /// Return whether the entity blocks movement of other entities.
     fn is_blocking_entity(&self, e: Entity) -> bool { self.is_mob(e) }
 
@@ -260,7 +275,10 @@ pub trait Query: TerrainQuery {
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     fn item_type(&self, e: Entity) -> Option<ItemType> {
-        self.ecs().item.get(e).map_or(None, |item| Some(item.item_type))
+        self.ecs().item.get(e).map_or(
+            None,
+            |item| Some(item.item_type),
+        )
     }
 
     /// Return terrain at location for drawing on screen.
@@ -339,5 +357,41 @@ pub trait Query: TerrainQuery {
             })
             .next()
             .cloned()
+    }
+
+    /// Find a drop position for an item, trying to keep one item per cell.
+    ///
+    /// Dropping several items in the same location will cause them to spread out to the adjacent
+    /// cells. If there is no room for the items to spread out, they will be stacked on the initial
+    /// drop site.
+    fn empty_item_drop_location(&self, starting_point: Location) -> Location {
+        static MAX_SPREAD_DISTANCE: i32 = 8;
+        let is_valid =
+            |v: Vector2D<i32>| self.can_drop_item_at(starting_point + v) && v.hex_dist() <= MAX_SPREAD_DISTANCE;
+        let mut seen = HashSet::new();
+        let mut incoming = VecDeque::new();
+        incoming.push_back(vec2(0, 0));
+
+        while let Some(offset) = incoming.pop_front() {
+            if seen.contains(&offset) {
+                continue;
+            } else {
+                seen.insert(offset);
+            }
+
+            if self.item_at(starting_point + offset).is_none() {
+                return starting_point + offset;
+            }
+
+            let current_dist = offset.hex_dist();
+            for d in Dir6::iter() {
+                let v = offset + d.to_v2();
+                if v.hex_dist() > current_dist && !seen.contains(&v) {
+                    incoming.push_back(v);
+                }
+            }
+        }
+
+        return starting_point;
     }
 }

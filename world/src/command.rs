@@ -51,7 +51,13 @@ pub trait Command: Mutate + Sized {
     /// Drop item held in slot.
     fn drop(&mut self, slot: Slot) -> CommandResult {
         let player = self.player().ok_or(())?;
-        unimplemented!();
+        let location = self.location(player).ok_or(())?;
+        if let Some(item) = self.entity_equipped(player, slot) {
+            self.place_entity(item, location);
+            self.next_tick()
+        } else {
+            Err(())
+        }
     }
 
     /// Swap item between equipment and inventory slots
