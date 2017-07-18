@@ -13,6 +13,8 @@ pub enum Icon {
     Player,
     Snake,
     Dreg,
+
+    Sword,
 }
 
 /// Entity name and appearance.
@@ -126,7 +128,6 @@ impl Health {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub item_type: ItemType,
-    pub ability: Ability,
 }
 
 

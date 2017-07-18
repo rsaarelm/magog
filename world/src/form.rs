@@ -1,4 +1,5 @@
-use components::{Icon, Brain, Desc, Health, MapMemory};
+use components::{Icon, Brain, Desc, Health, Item, MapMemory};
+use item::ItemType;
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
 use world::{Component, Loadout};
@@ -39,6 +40,17 @@ impl Form {
         }
     }
 
+    pub fn item(name: &str, brush: Icon, power: i32, item_type: ItemType) -> Form {
+        Form {
+            rarity: 1.0,
+            min_depth: 0,
+            loadout: Loadout::new()
+                .c(Stats::new(power, &[]))
+                .c(Desc::new(name, brush))
+                .c(Item { item_type }),
+        }
+    }
+
     pub fn rarity(mut self, rarity: f32) -> Form {
         self.rarity = rarity;
         self
@@ -75,5 +87,6 @@ lazy_static! {
             .c(MapMemory::default()),
         Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
         Form::mob("snake",      Icon::Snake,      1,  &[]),
+        Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon),
         ];
 }
