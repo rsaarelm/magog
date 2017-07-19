@@ -144,10 +144,10 @@ impl GameLoop {
 
                 if let Some(item) = self.world.entity_equipped(player, slot) {
                     match self.world.item_type(item) {
-                        Some(ItemType::UntargetedUsable) => {
+                        Some(ItemType::UntargetedUsable(_)) => {
                             return self.world.use_item(slot);
                         }
-                        Some(ItemType::TargetedUsable) => {
+                        Some(ItemType::TargetedUsable(_)) => {
                             // If we need to aim, switch to aim state before calling world.
                             self.state = State::Aim(AimAction::Zap(slot));
                             return Ok(());

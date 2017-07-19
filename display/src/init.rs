@@ -62,6 +62,9 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
 
     ret.insert(Sword as usize, Builder::new("assets/props.png").color(WHITE).tile(128, 32).finish());
 
+    ret.insert(Scroll1 as usize, Builder::new("assets/props.png").color(WHITE).tile(224, 64).finish());
+    ret.insert(Wand1 as usize, Builder::new("assets/props.png").color(RED).tile(224, 32).finish());
+    ret.insert(Wand2 as usize, Builder::new("assets/props.png").color(CYAN).tile(224, 32).finish());
     ret
 }
 

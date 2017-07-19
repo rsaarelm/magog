@@ -15,6 +15,9 @@ pub enum Icon {
     Dreg,
 
     Sword,
+    Wand1,
+    Wand2,
+    Scroll1,
 }
 
 /// Entity name and appearance.

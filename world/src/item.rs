@@ -95,8 +95,16 @@ pub enum ItemType {
     /// Passive effects when equipped
     Trinket,
     Spell,
-    UntargetedUsable,
-    TargetedUsable,
+    UntargetedUsable(MagicEffect),
+    TargetedUsable(MagicEffect),
     /// Consumed instantly when stepped on.
-    Instant,
+    Instant(MagicEffect),
+}
+
+#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+pub enum MagicEffect {
+    Heal,
+    Confuse,
+    Lightning,
+    Fireball
 }

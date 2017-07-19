@@ -81,12 +81,18 @@ impl Form {
 }
 
 lazy_static! {
-    pub static ref FORMS: Vec<Form> =
+    pub static ref FORMS: Vec<Form> = {
+        use item::MagicEffect::*;
         vec![
         Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
             .c(MapMemory::default()),
         Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
         Form::mob("snake",      Icon::Snake,      1,  &[]),
+
         Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon),
-        ];
+        Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)),
+        Form::item("wand of confusion",   Icon::Wand2,     5,  ItemType::TargetedUsable(Confuse)),
+        Form::item("scroll of lightning", Icon::Scroll1,   1,  ItemType::UntargetedUsable(Lightning)),
+        ]
+    };
 }
