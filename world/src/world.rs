@@ -4,6 +4,7 @@ use calx_ecs::Entity;
 use calx_grid::{Dir6, HexFov};
 use command::{Command, CommandResult};
 use components;
+use event::Event;
 use field::Field;
 use flags::Flags;
 use fov::SightFov;
@@ -48,6 +49,8 @@ pub struct World {
     spatial: Spatial,
     /// Global gamestate flags.
     flags: Flags,
+    /// Event queue
+    events: Vec<Event>,
 }
 
 impl<'a> World {
@@ -59,6 +62,7 @@ impl<'a> World {
             portals: HashMap::new(),
             spatial: Spatial::new(),
             flags: Flags::new(seed),
+            events: Vec::new(),
         }
     }
 
@@ -142,10 +146,16 @@ impl Query for World {
 
 impl Mutate for World {
     fn next_tick(&mut self) -> CommandResult {
+        use std::mem;
+
         // TODO: Run AI
         self.clean_dead();
         self.flags.tick += 1;
-        Ok(())
+
+        // Dump events.
+        let mut events = Vec::new();
+        mem::swap(&mut self.events, &mut events);
+        Ok(events)
     }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }

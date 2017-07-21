@@ -1,9 +1,10 @@
 use calx_ecs::Entity;
 use calx_grid::Dir6;
+use event::Event;
 use item::Slot;
 use mutate::Mutate;
 
-pub type CommandResult = Result<(), ()>;
+pub type CommandResult = Result<Vec<Event>, ()>;
 
 /// Player actions.
 pub trait Command: Mutate + Sized {
@@ -42,7 +43,8 @@ pub trait Command: Mutate + Sized {
         let player = self.player().ok_or(())?;
         let location = self.location(player).ok_or(())?;
         if let Some(item) = self.item_at(location) {
-            self.entity_take(player, item)
+            self.entity_take(player, item)?;
+            self.next_tick()
         } else {
             Err(())
         }

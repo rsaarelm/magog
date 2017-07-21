@@ -27,6 +27,9 @@ pub use command::{Command, CommandResult};
 mod components;
 pub use components::Icon;
 
+mod event;
+pub use event::Event;
+
 mod field;
 mod flags;
 

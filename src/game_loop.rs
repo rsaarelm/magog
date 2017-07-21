@@ -51,7 +51,7 @@ impl GameLoop {
         match scancode {
             Tab => {
                 self.state = State::Console;
-                Ok(())
+                Ok(Vec::new())
             }
             Q => self.world.step(Dir6::Northwest),
             W => self.world.step(Dir6::North),
@@ -61,30 +61,30 @@ impl GameLoop {
             D => self.world.step(Dir6::Southeast),
             I => {
                 self.state = State::Inventory(InventoryAction::Equip);
-                Ok(())
+                Ok(Vec::new())
             }
             // XXX: Key mnemonics, bit awkward when D is taken by movement.
             B => {
                 self.state = State::Inventory(InventoryAction::Drop);
-                Ok(())
+                Ok(Vec::new())
             }
             U => {
                 self.state = State::Inventory(InventoryAction::Use);
-                Ok(())
+                Ok(Vec::new())
             }
             G => self.world.take(),
             F5 => {
                 self.world
                     .save(&mut File::create("save.gam").unwrap())
                     .unwrap();
-                Ok(())
+                Ok(Vec::new())
             }
             F9 => {
                 let mut savefile = File::open("save.gam").unwrap();
                 self.world = World::load(&mut savefile).unwrap();
-                Ok(())
+                Ok(Vec::new())
             }
-            _ => Ok(()),
+            _ => Ok(Vec::new()),
         }
     }
 
@@ -99,9 +99,9 @@ impl GameLoop {
             D => self.world.zap_item(slot, Dir6::Southeast),
             Escape => {
                 self.state = State::Main;
-                Ok(())
+                Ok(Vec::new())
             }
-            _ => Ok(()),
+            _ => Ok(Vec::new()),
         }
     }
 
@@ -121,9 +121,9 @@ impl GameLoop {
         match scancode {
             Escape => {
                 self.state = State::Main;
-                Ok(())
+                Ok(Vec::new())
             }
-            _ => Ok(()),
+            _ => Ok(Vec::new()),
         }
     }
 
@@ -150,7 +150,7 @@ impl GameLoop {
                         Some(ItemType::TargetedUsable(_)) => {
                             // If we need to aim, switch to aim state before calling world.
                             self.state = State::Aim(AimAction::Zap(slot));
-                            return Ok(());
+                            return Ok(Vec::new());
                         }
                         _ => {}
                     }
@@ -166,7 +166,7 @@ impl GameLoop {
         match scancode {
             Tab => {
                 self.state = State::Main;
-                Ok(())
+                Ok(Vec::new())
             }
             Enter | PadEnter => {
                 let input = self.console.get_input();
@@ -174,9 +174,9 @@ impl GameLoop {
                 if let Err(e) = self.parse(&input) {
                     let _ = writeln!(&mut self.console, "{}", e);
                 }
-                Ok(())
+                Ok(Vec::new())
             }
-            _ => Ok(()),
+            _ => Ok(Vec::new()),
         }
     }
 
