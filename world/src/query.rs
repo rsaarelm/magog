@@ -373,8 +373,9 @@ pub trait Query: TerrainQuery {
     /// drop site.
     fn empty_item_drop_location(&self, starting_point: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
-        let is_valid =
-            |v: Vector2D<i32>| self.can_drop_item_at(starting_point + v) && v.hex_dist() <= MAX_SPREAD_DISTANCE;
+        let is_valid = |v: Vector2D<i32>| {
+            self.can_drop_item_at(starting_point + v) && v.hex_dist() <= MAX_SPREAD_DISTANCE
+        };
         let mut seen = HashSet::new();
         let mut incoming = VecDeque::new();
         incoming.push_back(vec2(0, 0));

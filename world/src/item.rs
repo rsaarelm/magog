@@ -106,5 +106,5 @@ pub enum MagicEffect {
     Heal,
     Confuse,
     Lightning,
-    Fireball
+    Fireball,
 }

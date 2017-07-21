@@ -1,4 +1,3 @@
-
 use Rng;
 use calx_ecs::Entity;
 use location::Location;
