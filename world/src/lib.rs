@@ -19,6 +19,19 @@ extern crate calx_ecs;
 
 use euclid::Vector2D;
 
+/// Helper macro for formatting textual event messages.
+macro_rules! msg {
+    ($ctx: expr, $fmt:expr) => {
+        let __event = Event::Msg($fmt);
+        $ctx.push_event(__event);
+    };
+
+    ($ctx: expr, $fmt:expr, $($arg:expr),*) => {
+        let __event = Event::Msg(format!($fmt, $($arg),*));
+        $ctx.push_event(__event);
+    };
+}
+
 mod ability;
 
 mod command;

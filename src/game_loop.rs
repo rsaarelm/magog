@@ -7,7 +7,7 @@ use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
-use world::{Command, CommandResult, ItemType, Location, Query, Slot, TerrainQuery, World, on_screen};
+use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, TerrainQuery, World, on_screen};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
@@ -278,12 +278,24 @@ impl GameLoop {
         }
 
         if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
-            let _ = match self.state {
+            let ret = match self.state {
                 State::Inventory(_) => self.inventory_input(scancode),
                 State::Console => self.console_input(scancode),
                 State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
                 _ => self.game_input(scancode),
             };
+
+            if let Ok(events) = ret {
+                // Input event caused a successful world step and we got an event sequence out.
+                // Convert events into UI display effects.
+                for e in events {
+                    match e {
+                        Event::Msg(text) => {
+                            let _ = writeln!(&mut self.console, "{}", text);
+                        }
+                    }
+                }
+            }
         }
     }
 }

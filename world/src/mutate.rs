@@ -2,6 +2,7 @@ use calx_alg::{Deciban, clamp};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
+use event::Event;
 use form::Form;
 use item::Slot;
 use location::Location;
@@ -37,6 +38,9 @@ pub trait Mutate: Query + Terraform + Sized {
     ///
     /// Does nothing for entities without a map memory component.
     fn do_fov(&mut self, e: Entity);
+
+    /// Push an event to the event queue for this tick.
+    fn push_event(&mut self, event: Event);
 
     /// Access the persistent random number generator.
     fn rng(&mut self) -> &mut ::Rng;
@@ -176,6 +180,10 @@ pub trait Mutate: Query + Terraform + Sized {
 
         if let Some(slot) = self.free_bag_slot(e) {
             self.equip_item(item, e, slot);
+            if self.is_player(e) {
+                msg!(self, "Picked up {}", self.entity_name(item));
+            }
+
             Ok(())
         } else {
             // No more inventory space

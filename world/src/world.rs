@@ -199,6 +199,10 @@ impl Mutate for World {
         }
     }
 
+    fn push_event(&mut self, event: Event) {
+        self.events.push(event);
+    }
+
     fn rng(&mut self) -> &mut Rng { self.flags.rng() }
 }
 
