@@ -44,6 +44,26 @@ impl GameLoop {
         }
     }
 
+    /// Step command that turns into melee attack if an enemy is in the way.
+    fn smart_step(&mut self, dir: Dir6) -> CommandResult {
+        let player = self.world.player().ok_or(())?;
+        let loc = self.world.location(player).ok_or(())?;
+        let destination = loc + dir;
+
+        if let Some(mob) = self.world.mob_at(destination) {
+            if self.world.is_hostile_to(player, mob) {
+                // Fight on!
+                self.world.melee(dir)
+            } else {
+                // Do we want to do something smarter than walk into friendlies?
+                // The world might treat this as a displace action so keep it like this for now.
+                self.world.step(dir)
+            }
+        } else {
+            self.world.step(dir)
+        }
+    }
+
     fn game_input(&mut self, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
@@ -51,12 +71,12 @@ impl GameLoop {
                 self.state = State::Console;
                 Ok(Vec::new())
             }
-            Q => self.world.step(Dir6::Northwest),
-            W => self.world.step(Dir6::North),
-            E => self.world.step(Dir6::Northeast),
-            A => self.world.step(Dir6::Southwest),
-            S => self.world.step(Dir6::South),
-            D => self.world.step(Dir6::Southeast),
+            Q => self.smart_step(Dir6::Northwest),
+            W => self.smart_step(Dir6::North),
+            E => self.smart_step(Dir6::Northeast),
+            A => self.smart_step(Dir6::Southwest),
+            S => self.smart_step(Dir6::South),
+            D => self.smart_step(Dir6::Southeast),
             I => {
                 self.state = State::Inventory(InventoryAction::Equip);
                 Ok(Vec::new())

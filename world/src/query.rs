@@ -269,13 +269,11 @@ pub trait Query: TerrainQuery {
 
     /// Return whether the entity wants to fight the other entity.
     fn is_hostile_to(&self, e: Entity, other: Entity) -> bool {
-        match (self.alignment(e), self.alignment(other)) {
-            (Some(Alignment::Chaotic), Some(_)) => true,
-            (Some(_), Some(Alignment::Chaotic)) => true,
-            (Some(Alignment::Evil), Some(Alignment::Good)) => true,
-            (Some(Alignment::Good), Some(Alignment::Evil)) => true,
-            _ => false,
-        }
+        let (a, b) = (self.alignment(e), self.alignment(other));
+        if a.is_none() || b.is_none() { return false; }
+
+        // Chaotics fight everything, otherwise different alignments fight.
+        a == Some(Alignment::Chaotic) || a != b
     }
 
     /// Return whether the entity should have an idle animation.
