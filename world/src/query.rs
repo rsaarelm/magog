@@ -394,7 +394,7 @@ pub trait Query: TerrainQuery {
             let current_dist = offset.hex_dist();
             for d in Dir6::iter() {
                 let v = offset + d.to_v2();
-                if v.hex_dist() > current_dist && !seen.contains(&v) {
+                if v.hex_dist() > current_dist && !seen.contains(&v) && is_valid(v) {
                     incoming.push_back(v);
                 }
             }
