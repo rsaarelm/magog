@@ -32,8 +32,6 @@ macro_rules! msg {
     };
 }
 
-mod ability;
-
 mod command;
 pub use command::{Command, CommandResult};
 

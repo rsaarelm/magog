@@ -1,4 +1,3 @@
-use calx_ecs::Entity;
 use calx_grid::Dir6;
 use event::Event;
 use item::Slot;

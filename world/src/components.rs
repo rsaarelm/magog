@@ -1,5 +1,4 @@
 use FovStatus;
-use ability::Ability;
 use item::ItemType;
 use location::Location;
 use location_set::LocationSet;

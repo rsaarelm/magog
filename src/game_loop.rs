@@ -1,7 +1,6 @@
-use calx_ecs::Entity;
 use calx_grid::Dir6;
 use display;
-use euclid::{Point2D, Rect, Size2D, vec2};
+use euclid::{Point2D, Rect, vec2};
 use rand;
 use scancode::Scancode;
 use std::fs::File;
@@ -19,7 +18,6 @@ enum State {
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum InventoryAction {
-    View,
     Drop,
     Equip,
     Use,
@@ -157,7 +155,6 @@ impl GameLoop {
                 }
                 return Err(());
             }
-            _ => Err(()),
         }
     }
 
@@ -216,7 +213,7 @@ impl GameLoop {
         fn dump(&mut self);
     }
 
-    fn draw_inventory(&mut self, c: &mut display::Backend, area: &Rect<f32>) -> Result<(), ()> {
+    fn draw_inventory(&mut self, c: &mut display::Backend) -> Result<(), ()> {
         let player = self.world.player().ok_or(())?;
 
         // Start with hardcoded invetory data to test the UI logic.
@@ -251,8 +248,6 @@ impl GameLoop {
         Ok(())
     }
 
-    fn draw_console(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {}
-
     pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
         let camera_loc = Location::new(0, 0, 0);
         let mut view = display::WorldView::new(camera_loc, *screen_area);
@@ -262,10 +257,7 @@ impl GameLoop {
 
         match self.state {
             State::Inventory(_) => {
-                self.draw_inventory(
-                    context,
-                    &Rect::new(Point2D::new(0.0, 0.0), Size2D::new(320.0, 360.0)),
-                );
+                let _ = self.draw_inventory(context);
             }
             State::Console => {
                 let mut console_area = *screen_area;

@@ -1,7 +1,7 @@
 use Rng;
 use bincode;
 use calx_ecs::Entity;
-use calx_grid::{Dir6, HexFov};
+use calx_grid::HexFov;
 use command::{Command, CommandResult};
 use components;
 use event::Event;

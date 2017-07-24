@@ -1,6 +1,6 @@
 use backend::MagogContext;
 use brush::Brush;
-use euclid::{point2, vec2};
+use euclid::point2;
 use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;

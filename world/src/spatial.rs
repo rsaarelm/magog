@@ -27,9 +27,17 @@ impl Spatial {
         }
     }
 
-    fn insert(&mut self, e: Entity, p: Place) {
+    /// The most general insert method.
+    pub fn insert(&mut self, e: Entity, p: Place) {
         // Remove the entity from its old position.
         self.single_remove(e);
+
+        if let In(parent, _) = p {
+            assert!(
+                !self.contains(e, parent),
+                "Trying to create circular containment"
+           );
+        }
 
         if let In(_, Some(_)) = p {
             // Slotted in-places are a special case that can hold at most one entity.
@@ -62,18 +70,13 @@ impl Spatial {
         }
     }
 
-    /// Insert an entity into container.
-    pub fn insert_in(&mut self, e: Entity, parent: Entity) {
+    /// Insert an entity into an equipment slot. Will panic if there already
+    /// is an item present in the slot.
+    pub fn equip(&mut self, e: Entity, parent: Entity, slot: Slot) {
         assert!(
             !self.contains(e, parent),
             "Trying to create circular containment"
         );
-        self.insert(e, In(parent, None));
-    }
-
-    /// Insert an entity into an equipment slot. Will panic if there already
-    /// is an item present in the slot.
-    pub fn equip(&mut self, e: Entity, parent: Entity, slot: Slot) {
         self.insert(e, In(parent, Some(slot)));
     }
 

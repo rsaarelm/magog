@@ -180,7 +180,7 @@ where
         })
         {
             if let Some(badness) = room.fit_badness(world, site) {
-                if let Some((best, best_badness)) = best_site {
+                if let Some((_, best_badness)) = best_site {
                     if badness < best_badness {
                         best_site = Some((site, badness));
                     }
@@ -190,7 +190,7 @@ where
             }
 
             // Early exit.
-            if let Some((best, best_badness)) = best_site {
+            if let Some((_, best_badness)) = best_site {
                 if best_badness <= GOOD_ENOUGH_BADNESS {
                     break;
                 }

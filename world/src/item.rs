@@ -44,7 +44,7 @@ impl Slot {
 
     pub fn iter() -> slice::Iter<'static, Slot> {
         use Slot::*;
-        static all: [Slot; 34] = [
+        static ALL: [Slot; 34] = [
             Spell1,
             Spell2,
             Spell3,
@@ -81,7 +81,7 @@ impl Slot {
             InventoryZ,
         ];
 
-        all.iter()
+        ALL.iter()
     }
 }
 
