@@ -1,6 +1,6 @@
 use calx_grid::{Dir6, Prefab};
 use display;
-use euclid::{Point2D, Rect, Vector2D, vec2};
+use euclid::{Rect, Vector2D, vec2};
 use scancode::Scancode;
 use std::collections::HashSet;
 use std::fs::File;
