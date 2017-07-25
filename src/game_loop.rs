@@ -285,7 +285,9 @@ impl GameLoop {
                 self.console.draw_large(context, &console_area);
             }
             _ => {
-                self.console.draw_small(context, screen_area);
+                let mut console_area = *screen_area;
+                console_area.size.height /= 8.0;
+                self.console.draw_small(context, &console_area);
             }
         }
 
