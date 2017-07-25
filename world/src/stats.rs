@@ -32,6 +32,7 @@ impl Stats {
         Stats {
             power,
             intrinsics,
+            attack: power,
             ..Default::default()
         }
     }
