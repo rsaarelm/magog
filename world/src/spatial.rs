@@ -36,7 +36,7 @@ impl Spatial {
             assert!(
                 !self.contains(e, parent),
                 "Trying to create circular containment"
-           );
+            );
         }
 
         if let In(_, Some(_)) = p {

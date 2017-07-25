@@ -10,7 +10,7 @@ use query::Query;
 use rand::Rng;
 use terraform::Terraform;
 use terrain::Terrain;
-use world::Loadout;
+use world::{Ecs, Loadout};
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -45,12 +45,25 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Access the persistent random number generator.
     fn rng(&mut self) -> &mut ::Rng;
 
+    /// Mutable access to ecs
+    fn ecs_mut(&mut self) -> &mut Ecs;
+
     /// Standard deciban roll, convert to i32 and clamp out extremes.
     fn roll(&mut self) -> f32 { clamp(-20.0, 20.0, self.rng().gen::<Deciban>().0.round()) }
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
         unimplemented!();
+    }
+
+    fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
+        // TODO: Check if victim is already in close combat and don't disengage against new target
+        // if it is.
+        self.designate_enemy(victim, attacker);
+    }
+
+    fn designate_enemy(&mut self, _e: Entity, _target: Entity) {
+        // TODO
     }
 
     /// Remove destroyed entities from system
@@ -106,10 +119,26 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn damage(&mut self, e: Entity, amount: i32, source: Option<Entity>) {
-        // TODO: Proper damage system using amount value.
-        // TODO: Aggro an AI entity at source.
-        // NB: Damage may be 0, this does no harm but should still cause aggro.
-        self.kill_entity(e);
+        if let Some(attacker) = source {
+            self.notify_attacked_by(e, attacker);
+        }
+
+        let max_hp = self.max_hp(e);
+
+        let mut kill = false;
+        if let Some(health) = self.ecs_mut().health.get_mut(e) {
+            if amount > 0 {
+                health.wounds += amount;
+
+                if health.wounds > max_hp {
+                    kill = true;
+                }
+            }
+        }
+
+        if kill {
+            self.kill_entity(e);
+        }
     }
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
@@ -189,5 +218,17 @@ pub trait Mutate: Query + Terraform + Sized {
             // No more inventory space
             Err(())
         }
+    }
+
+    /// Cast an undirected spell
+    fn cast_spell(&mut self, _origin: Location, _effect: Entity) {
+        // TODO: Probably want a dedicated spell struct here instead of using Entity.
+        unimplemented!();
+    }
+
+    /// Cast a directed spell
+    fn cast_directed_spell(&mut self, _origin: Location, _dir: Dir6, _effect: Entity) {
+        // TODO: Probably want a dedicated spell struct here instead of using Entity.
+        unimplemented!();
     }
 }

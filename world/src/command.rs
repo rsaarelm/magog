@@ -67,18 +67,25 @@ pub trait Command: Mutate + Sized {
     /// item will be moved to the first available slot.
     fn equip(&mut self, slot: Slot) -> CommandResult {
         let player = self.player().ok_or(())?;
+        let _item = self.entity_equipped(player, slot).ok_or(())?;
         unimplemented!();
     }
 
     /// Use a nontargeted effect item.
     fn use_item(&mut self, slot: Slot) -> CommandResult {
         let player = self.player().ok_or(())?;
-        unimplemented!();
+        let location = self.location(player).ok_or(())?;
+        let item = self.entity_equipped(player, slot).ok_or(())?;
+        self.cast_spell(location, item);
+        self.next_tick()
     }
 
     /// Use a directionally targeted effect item.
     fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
         let player = self.player().ok_or(())?;
-        unimplemented!();
+        let location = self.location(player).ok_or(())?;
+        let item = self.entity_equipped(player, slot).ok_or(())?;
+        self.cast_directed_spell(location, dir, item);
+        self.next_tick()
     }
 }
