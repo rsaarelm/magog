@@ -58,3 +58,51 @@ impl<'a> FovValue for SightFov<'a> {
         self.w.terrain(self.origin + offset).is_wall()
     }
 }
+
+
+#[derive(Clone)]
+/// Field for spherical explosions that can be blocked by terrain.
+pub struct SphereVolumeFov<'a> {
+    w: &'a World,
+    range: u32,
+    pub origin: Location,
+}
+
+impl<'a> SphereVolumeFov<'a> {
+    pub fn new(w: &'a World, range: u32, origin: Location) -> SphereVolumeFov<'a> {
+        SphereVolumeFov {
+            w,
+            range,
+            origin,
+        }
+    }
+}
+
+impl<'a> PartialEq for SphereVolumeFov<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        self.w as *const World == other.w as *const World && self.range == other.range &&
+            self.origin == other.origin
+    }
+}
+
+impl<'a> Eq for SphereVolumeFov<'a> {}
+
+impl<'a> FovValue for SphereVolumeFov<'a> {
+    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+        if offset.hex_dist() as u32 > self.range {
+            return None;
+        }
+
+        let mut ret = self.clone();
+        if let Some(dest) = self.w.visible_portal(self.origin + offset) {
+            ret.origin = dest - offset;
+        }
+
+        // Unlike with sight fov, the blocking cells won't be included in the result set.
+        if self.w.terrain(self.origin + offset).blocks_shot() {
+            return None;
+        }
+
+        Some(ret)
+    }
+}
