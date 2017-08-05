@@ -2,6 +2,7 @@ use calx_alg::{Deciban, clamp};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
+use effect::{Damage, Effect};
 use event::Event;
 use form::Form;
 use item::Slot;
@@ -10,6 +11,7 @@ use query::Query;
 use rand::Rng;
 use terraform::Terraform;
 use terrain::Terrain;
+use volume::Volume;
 use world::{Ecs, Loadout};
 
 /// World-mutating methods that are not exposed outside the crate.
@@ -111,14 +113,14 @@ pub trait Mutate: Query + Terraform + Sized {
                     self.stats(target).armor,
                 );
 
-                self.damage(target, damage, Some(e));
+                self.damage(target, damage, Damage::Physical, Some(e));
                 return Ok(());
             }
         }
         Err(())
     }
 
-    fn damage(&mut self, e: Entity, amount: i32, source: Option<Entity>) {
+    fn damage(&mut self, e: Entity, amount: i32, _damage_type: Damage, source: Option<Entity>) {
         if let Some(attacker) = source {
             self.notify_attacked_by(e, attacker);
         }
@@ -230,5 +232,35 @@ pub trait Mutate: Query + Terraform + Sized {
     fn cast_directed_spell(&mut self, _origin: Location, _dir: Dir6, _effect: Entity) {
         // TODO: Probably want a dedicated spell struct here instead of using Entity.
         unimplemented!();
+    }
+
+    fn apply_effect_to_entity(&mut self, effect: Effect, target: Entity, source: Option<Entity>) {
+        use effect::Effect::*;
+        match effect {
+            Heal(_amount) => {
+                unimplemented!();
+            }
+            Hit { amount, damage } => {
+                self.damage(target, amount as i32, damage, source);
+            }
+            Confuse => {
+                unimplemented!();
+            }
+            MagicMap => {
+                unimplemented!();
+            }
+        }
+    }
+
+    fn apply_effect_to(&mut self, effect: Effect, loc: Location, source: Option<Entity>) {
+        if let Some(mob) = self.mob_at(loc) {
+            self.apply_effect_to_entity(effect, mob, source);
+        }
+    }
+
+    fn apply_effect(&mut self, effect: Effect, volume: Volume, source: Option<Entity>) {
+        for loc in volume.0 {
+            self.apply_effect_to(effect, loc, source);
+        }
     }
 }

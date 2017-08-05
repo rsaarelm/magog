@@ -38,6 +38,8 @@ pub use command::{Command, CommandResult};
 mod components;
 pub use components::Icon;
 
+mod effect;
+
 mod event;
 pub use event::Event;
 
@@ -76,6 +78,8 @@ pub use terraform::{Terraform, TerrainQuery};
 
 pub mod terrain;
 pub use terrain::Terrain;
+
+mod volume;
 
 mod world;
 pub use world::{Ecs, World};
