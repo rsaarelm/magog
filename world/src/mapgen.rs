@@ -1,13 +1,62 @@
 use calx_alg::{RandomPermutation, RngExt};
 use calx_grid::Dir6;
-use euclid::vec2;
+use euclid::{Vector2D, vec2};
 use location::Location;
 use onscreen_locations;
 use rand::{Rand, Rng, sample};
 use std::cmp::max;
-use std::collections::BTreeSet;
+use std::collections::{HashMap, BTreeSet};
+use rand::distributions::Sample;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
+use Prefab;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+enum Prototerrain {
+    /// Area that should be filled with map content but hasn't been yet.
+    Unused,
+    /// Area that the player cannot enter but that may be visible on screen.
+    Border,
+    Floor,
+    Wall,
+    Door,
+}
+
+type Protomap = HashMap<Vector2D<i32>, Prototerrain>;
+
+fn blank_screen_map() -> Protomap {
+    let mut ret = Protomap::new();
+
+    for p in onscreen_locations() {
+        ret.insert(*p, Prototerrain::Unused);
+
+        // Make sure the map gets border tiles (border tiles written on map proper will get
+        // overwritten by Unused values.
+        for d in Dir6::iter() {
+            let edge = *p + d.to_v2();
+            if !ret.contains_key(&edge) {
+                ret.insert(edge, Prototerrain::Border);
+            }
+        }
+    }
+
+    ret
+}
+
+pub struct RoomsLevelGenerator {}
+
+impl RoomsLevelGenerator {
+    fn finish_map(&self, map: Protomap) -> Prefab {
+        unimplemented!();
+    }
+}
+
+impl Sample<Prefab> for RoomsLevelGenerator {
+    fn sample<R: Rng>(&mut self, rng: &mut R) -> Prefab {
+        let mut map = blank_screen_map();
+        unimplemented!();
+    }
+}
 
 pub fn caves<T, R>(world: &mut T, rng: &mut R, start_at: Location, mut cells_to_dig: u32)
 where
