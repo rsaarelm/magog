@@ -68,7 +68,7 @@ impl GameLoop {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
-                self.state = State::Console;
+                self.enter_state(State::Console);
                 Ok(Vec::new())
             }
             Q => self.smart_step(Dir6::Northwest),
@@ -78,16 +78,16 @@ impl GameLoop {
             S => self.smart_step(Dir6::South),
             D => self.smart_step(Dir6::Southeast),
             I => {
-                self.state = State::Inventory(InventoryAction::Equip);
+                self.enter_state(State::Inventory(InventoryAction::Equip));
                 Ok(Vec::new())
             }
             // XXX: Key mnemonics, bit awkward when D is taken by movement.
             B => {
-                self.state = State::Inventory(InventoryAction::Drop);
+                self.enter_state(State::Inventory(InventoryAction::Drop));
                 Ok(Vec::new())
             }
             U => {
-                self.state = State::Inventory(InventoryAction::Use);
+                self.enter_state(State::Inventory(InventoryAction::Use));
                 Ok(Vec::new())
             }
             G => self.world.take(),
@@ -106,17 +106,23 @@ impl GameLoop {
         }
     }
 
+    fn zap(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
+        let ret = self.world.zap_item(slot, dir)?;
+        self.enter_state(State::Main);
+        Ok(ret)
+    }
+
     fn aim_input(&mut self, slot: Slot, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
-            Q => self.world.zap_item(slot, Dir6::Northwest),
-            W => self.world.zap_item(slot, Dir6::North),
-            E => self.world.zap_item(slot, Dir6::Northeast),
-            A => self.world.zap_item(slot, Dir6::Southwest),
-            S => self.world.zap_item(slot, Dir6::South),
-            D => self.world.zap_item(slot, Dir6::Southeast),
+            Q => self.zap(slot, Dir6::Northwest),
+            W => self.zap(slot, Dir6::North),
+            E => self.zap(slot, Dir6::Northeast),
+            A => self.zap(slot, Dir6::Southwest),
+            S => self.zap(slot, Dir6::South),
+            D => self.zap(slot, Dir6::Southeast),
             Escape => {
-                self.state = State::Main;
+                self.enter_state(State::Main);
                 Ok(Vec::new())
             }
             _ => Ok(Vec::new()),
@@ -138,11 +144,23 @@ impl GameLoop {
 
         match scancode {
             Escape => {
-                self.state = State::Main;
+                self.enter_state(State::Main);
                 Ok(Vec::new())
             }
             _ => Ok(Vec::new()),
         }
+    }
+
+    fn enter_state(&mut self, new_state: State) {
+        if self.state == new_state {
+            return;
+        }
+
+        if let State::Aim(_) = new_state {
+            let _ = writeln!(&mut self.console, "Press direction to aim, Esc to cancel");
+        }
+
+        self.state = new_state;
     }
 
     fn inventory_action(&mut self, slot: Slot, action: InventoryAction) -> CommandResult {
@@ -151,7 +169,7 @@ impl GameLoop {
                 let ret = self.world.drop(slot);
                 // After succesful drop, go back to main state.
                 if ret.is_ok() {
-                    self.state = State::Main;
+                    self.enter_state(State::Main);
                 }
                 ret
             }
@@ -163,11 +181,13 @@ impl GameLoop {
                 if let Some(item) = self.world.entity_equipped(player, slot) {
                     match self.world.item_type(item) {
                         Some(ItemType::UntargetedUsable(_)) => {
-                            return self.world.use_item(slot);
+                            let ret = self.world.use_item(slot)?;
+                            self.enter_state(State::Main);
+                            return Ok(ret);
                         }
                         Some(ItemType::TargetedUsable(_)) => {
                             // If we need to aim, switch to aim state before calling world.
-                            self.state = State::Aim(AimAction::Zap(slot));
+                            self.enter_state(State::Aim(AimAction::Zap(slot)));
                             return Ok(Vec::new());
                         }
                         _ => {}
@@ -182,7 +202,7 @@ impl GameLoop {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
-                self.state = State::Main;
+                self.enter_state(State::Main);
                 Ok(Vec::new())
             }
             Enter | PadEnter => {
