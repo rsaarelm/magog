@@ -81,10 +81,7 @@ impl Dir6 {
     pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
-    pub fn to_v2(&self) -> Vector2D<i32> {
-        let v = [[-1, -1], [0, -1], [1, 0], [1, 1], [0, 1], [-1, 0]][*self as usize];
-        vec2(v[0], v[1])
-    }
+    pub fn to_v2(&self) -> Vector2D<i32> { Vector2D::from(*self) }
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
@@ -102,6 +99,22 @@ impl Sub<i32> for Dir6 {
 
 impl Rand for Dir6 {
     fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
+}
+
+impl From<Dir6> for Vector2D<i32> {
+    fn from(d: Dir6) -> Self {
+        const DIRS: [(i32, i32); 6] = [
+            (-1, -1),
+            (0,  -1),
+            (1,  0),
+            (1,  1),
+            (0,  1),
+            (-1, 0),
+        ];
+
+        let (x, y) = DIRS[d as usize];
+        vec2(x, y)
+    }
 }
 
 static DIRS: [Dir6; 6] = [
