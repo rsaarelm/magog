@@ -237,7 +237,8 @@ mod test {
 
     #[test]
     fn test_serialization() {
-        use bincode;
+        use ron::de;
+        use ron::ser;
 
         let mut ecs = Ecs::new();
         let e1 = ecs.make();
@@ -250,9 +251,9 @@ mod test {
         spatial.insert(e2, p2);
 
         let saved =
-            bincode::serialize(&spatial, bincode::Infinite).expect("Spatial serialization failed");
+            ser::to_string(&spatial).expect("Spatial serialization failed");
         let spatial2: Spatial =
-            bincode::deserialize(&saved).expect("Spatial deserialization failed");
+            de::from_str(&saved).expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(e1), Some(p1));
         assert_eq!(spatial2.get(e2), Some(p2));

@@ -7,7 +7,7 @@ use std::fmt;
 use std::io;
 use std::str::FromStr;
 use terrain::Terrain;
-use toml;
+use ron;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> {
     const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -53,14 +53,14 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
         legend: legend,
     };
 
-    write!(output, "{}", save)?;
+    write!(output, "{}", ron::ser::to_string(&save)?)?;
     Ok(())
 }
 
 pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     let mut s = String::new();
     input.read_to_string(&mut s)?;
-    let save: MapSave = toml::from_str(&s)?;
+    let save: MapSave = ron::de::from_str(&s)?;
 
     // Validate the prefab
     for i in save.legend.values() {
@@ -100,41 +100,10 @@ struct MapSave {
     pub legend: BTreeMap<char, LegendItem>,
 }
 
-impl fmt::Display for MapSave {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TOML formatted output.
-        writeln!(f, "map = '''")?;
-        for line in self.map.lines() {
-            writeln!(f, "{}", line.trim_right())?;
-        }
-        writeln!(f, "'''\n")?;
-        writeln!(f, "[legend]")?;
-        for (k, v) in &self.legend {
-            writeln!(f, "\"{}\" = {}", k, v)?;
-        }
-        Ok(())
-    }
-}
-
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 struct LegendItem {
     /// Terrain
     pub t: String,
     /// Entities
     pub e: Vec<String>,
-}
-
-impl fmt::Display for LegendItem {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TOML formatted output.
-        write!(f, "{{ t = \"{}\", e = [", self.t)?;
-        self.e.iter().next().map_or(
-            Ok(()),
-            |e| write!(f, "\"{}\"", e),
-        )?;
-        for e in self.e.iter().skip(1) {
-            write!(f, ", \"{}\"", e)?;
-        }
-        write!(f, "] }}")
-    }
 }

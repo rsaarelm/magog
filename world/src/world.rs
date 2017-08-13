@@ -1,5 +1,6 @@
 use Rng;
-use bincode;
+use ron;
+use errors::*;
 use calx_ecs::Entity;
 use calx_grid::HexFov;
 use command::{Command, CommandResult};
@@ -66,8 +67,8 @@ impl<'a> World {
         }
     }
 
-    pub fn load<R: Read>(reader: &mut R) -> bincode::Result<World> {
-        let ret: bincode::Result<World> = bincode::deserialize_from(reader, bincode::Infinite);
+    pub fn load<R: Read>(reader: &mut R) -> Result<World> {
+        let ret: ron::de::Result<World> = ron::de::from_reader(reader);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
                 panic!(
@@ -77,11 +78,14 @@ impl<'a> World {
                 );
             }
         }
-        ret
+        Ok(ret?)
     }
 
-    pub fn save<W: Write>(&self, writer: &mut W) -> bincode::Result<()> {
-        bincode::serialize_into(writer, self, bincode::Infinite)
+    pub fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
+        let enc = ron::ser::to_string(self)?;
+        // TODO: Handle error from writer too...
+        writeln!(writer, "{}", enc)?;
+        Ok(())
     }
 }
 

@@ -38,7 +38,7 @@ pub fn main() {
     let mut world = World::new(seed);
 
     /// TODO error handling.
-    let prefab = world::load_prefab(&mut File::open("sprint.toml").unwrap()).unwrap();
+    let prefab = world::load_prefab(&mut File::open("sprint.ron").unwrap()).unwrap();
     world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
 
     let mut game = GameLoop::new(world);
