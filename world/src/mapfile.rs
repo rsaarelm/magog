@@ -32,10 +32,13 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab = prefab.map(|e| e.unwrap());
 
-    let map = format!("{}", prefab.hexmap_display());
+    // Add a leading newline because the first line of a multiline string literal in the
+    // serialization might be indented to a different depth and mess up how the top of the map
+    // looks to humans.
+    let map = format!("\n{}", prefab.hexmap_display());
     let legend = legend_builder.legend;
 
-    write!(output, "{}", ron::ser::to_string(&MapSave { map, legend })?)?;
+    write!(output, "{}", ron::ser::pretty::to_string(&MapSave { map, legend })?)?;
     Ok(())
 }
 
