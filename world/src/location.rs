@@ -3,6 +3,7 @@ use calx_grid::{Dir6, GridNode, HexGeom};
 use euclid::{Vector2D, vec2};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
+use terraform::TerrainQuery;
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
@@ -83,6 +84,12 @@ impl Location {
     ///
     /// Is always the same for the same location value.
     pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
+
+    /// Offset location and follow any portals in target site.
+    pub fn jump<T: TerrainQuery, V: Into<Vector2D<i32>> + Sized>(self, ctx: &T, offset: V) -> Location {
+        let loc = self + offset.into();
+        ctx.portal(loc).unwrap_or(loc)
+    }
 }
 
 impl Add<Vector2D<i32>> for Location {

@@ -17,7 +17,7 @@ use terrain::Terrain;
 use world::Ecs;
 
 /// Immutable querying of game world state.
-pub trait Query: TerrainQuery {
+pub trait Query: TerrainQuery + Sized {
     /// Return the location of an entity.
     ///
     /// Returns the location of the containing entity for entities inside
@@ -129,7 +129,7 @@ pub trait Query: TerrainQuery {
     /// Return whether the entity can move in a direction.
     fn can_step(&self, e: Entity, dir: Dir6) -> bool {
         self.location(e).map_or(false, |loc| {
-            self.can_enter(e, loc + dir.to_v2())
+            self.can_enter(e, loc.jump(self, dir))
         })
     }
 
@@ -253,8 +253,9 @@ pub trait Query: TerrainQuery {
     /// Look for targets to shoot in a direction.
     fn find_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
         let origin = self.location(shooter).unwrap();
-        for i in 1..(range + 1) {
-            let loc = origin + dir.to_v2() * (i as i32);
+        let mut loc = origin;
+        for _ in 1..(range + 1) {
+            loc = loc.jump(self, dir);
             if self.terrain(loc).blocks_shot() {
                 break;
             }
@@ -374,7 +375,7 @@ pub trait Query: TerrainQuery {
     fn empty_item_drop_location(&self, starting_point: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
         let is_valid = |v: Vector2D<i32>| {
-            self.can_drop_item_at(starting_point + v) && v.hex_dist() <= MAX_SPREAD_DISTANCE
+            self.can_drop_item_at(starting_point.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
         };
         let mut seen = HashSet::new();
         let mut incoming = VecDeque::new();
@@ -387,8 +388,9 @@ pub trait Query: TerrainQuery {
                 seen.insert(offset);
             }
 
-            if self.item_at(starting_point + offset).is_none() {
-                return starting_point + offset;
+            let loc = starting_point.jump(self, offset);
+            if self.item_at(loc).is_none() {
+                return loc;
             }
 
             let current_dist = offset.hex_dist();

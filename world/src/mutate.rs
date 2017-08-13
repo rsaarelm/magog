@@ -91,7 +91,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
-        let loc = try!(self.location(e).ok_or(())) + dir;
+        let loc = try!(self.location(e).ok_or(())).jump(self, dir);
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
             return Ok(());
@@ -102,7 +102,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
         if let Some(loc) = self.location(e) {
-            if let Some(target) = self.mob_at(loc + dir) {
+            if let Some(target) = self.mob_at(loc.jump(self, dir)) {
 
                 // XXX: Using power stat for damage, should this be different?
                 let damage = ::attack_damage(
