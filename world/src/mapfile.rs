@@ -3,9 +3,7 @@ use calx_grid;
 use errors::*;
 use form::Form;
 use std::collections::BTreeMap;
-use std::fmt;
 use std::io;
-use std::str::FromStr;
 use terrain::Terrain;
 use ron;
 
@@ -44,11 +42,7 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
 pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     let mut s = String::new();
     input.read_to_string(&mut s)?;
-    let save_old: MapSaveOld = ron::de::from_str(&s)?;
-    let save = MapSave {
-        map: save_old.map,
-        legend: save_old.legend.into_iter().map(|(k, v)| (k, (Terrain::from_str(&v.t).unwrap(), v.e))).collect()
-    };
+    let save: MapSave = ron::de::from_str(&s)?;
 
     // Validate the prefab
     for i in save.legend.values() {
@@ -70,21 +64,6 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Turn map into prefab.
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
     Ok(prefab.map(|item| { save.legend[&item].clone() }))
-}
-
-/// Type for maps saved into disk.
-#[derive(Debug, Serialize, Deserialize)]
-struct MapSaveOld {
-    pub map: String,
-    pub legend: BTreeMap<char, LegendItem>,
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
-struct LegendItem {
-    /// Terrain
-    pub t: String,
-    /// Entities
-    pub e: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

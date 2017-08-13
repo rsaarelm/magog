@@ -1,5 +1,4 @@
 use std::slice;
-use std::str::FromStr;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -148,16 +147,4 @@ impl Terrain {
 
     /// For constructing text maps.
     pub fn preferred_map_chars(self) -> &'static str { TERRAIN_DATA[self as usize].map_chars }
-}
-
-impl FromStr for Terrain {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        for t in Terrain::iter() {
-            if format!("{:?}", t) == s {
-                return Ok(*t);
-            }
-        }
-        Err(format!("Unknown terrain '{}'", s))
-    }
 }
