@@ -34,41 +34,25 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab = prefab.map(|e| e.unwrap());
 
-    let legend = legend_builder
-        .legend
-        .into_iter()
-        .map(|(c, t)| {
-            (
-                c,
-                LegendItem {
-                    t: format!("{:?}", t.0),
-                    e: t.1.clone(),
-                },
-            )
-        })
-        .collect::<BTreeMap<char, LegendItem>>();
+    let map = format!("{}", prefab.hexmap_display());
+    let legend = legend_builder.legend;
 
-    let save = MapSave {
-        map: format!("{}", prefab.hexmap_display()),
-        legend: legend,
-    };
-
-    write!(output, "{}", ron::ser::to_string(&save)?)?;
+    write!(output, "{}", ron::ser::to_string(&MapSave { map, legend })?)?;
     Ok(())
 }
 
 pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     let mut s = String::new();
     input.read_to_string(&mut s)?;
-    let save: MapSave = ron::de::from_str(&s)?;
+    let save_old: MapSaveOld = ron::de::from_str(&s)?;
+    let save = MapSave {
+        map: save_old.map,
+        legend: save_old.legend.into_iter().map(|(k, v)| (k, (Terrain::from_str(&v.t).unwrap(), v.e))).collect()
+    };
 
     // Validate the prefab
     for i in save.legend.values() {
-        if Terrain::from_str(&i.t).is_err() {
-            return Err(format!("Unknown terrain type '{}'", i.t).into());
-        }
-
-        for e in &i.e {
+        for e in &i.1 {
             if Form::named(e).is_none() {
                 return Err(format!("Unknown entity spawn '{}'", e).into());
             }
@@ -85,17 +69,12 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
 
     // Turn map into prefab.
     let prefab: calx_grid::Prefab<char> = calx_grid::Prefab::from_text_hexmap(&save.map);
-    Ok(prefab.map(|item| {
-        let e = &save.legend[&item];
-        let terrain = Terrain::from_str(&e.t).unwrap();
-        let spawns = e.e.clone();
-        (terrain, spawns)
-    }))
+    Ok(prefab.map(|item| { save.legend[&item].clone() }))
 }
 
 /// Type for maps saved into disk.
 #[derive(Debug, Serialize, Deserialize)]
-struct MapSave {
+struct MapSaveOld {
     pub map: String,
     pub legend: BTreeMap<char, LegendItem>,
 }
@@ -106,4 +85,10 @@ struct LegendItem {
     pub t: String,
     /// Entities
     pub e: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct MapSave {
+    pub map: String,
+    pub legend: BTreeMap<char, (Terrain, Vec<String>)>,
 }
