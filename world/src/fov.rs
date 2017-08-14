@@ -94,11 +94,16 @@ impl<'a> FovValue for SphereVolumeFov<'a> {
         }
 
         let mut ret = self.clone();
+        // NB: Sphere volumes don't spread over non-visible portals. Not sure if this is the right
+        // choice but it would probably be annoying and surprising if they did.
         if let Some(dest) = self.w.visible_portal(self.origin + offset) {
             ret.origin = dest - offset;
         }
 
         // Unlike with sight fov, the blocking cells won't be included in the result set.
+
+        // TODO: Stopping criteria should be generalized to a function, don't just assume
+        // `blocks_shot` is good.
         if self.w.terrain(self.origin + offset).blocks_shot() {
             return None;
         }

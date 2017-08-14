@@ -13,6 +13,12 @@ pub struct Location {
     pub z: i8,
 }
 
+/// The type for a unique location in the game world.
+///
+/// IMPORTANT: Be careful where you use the simple "location + vec" algebra. That does not take
+/// portals into account, and will usually cause unwanted effects near them in high-level code.
+/// Most high-level logic should use `Location::jump` to displace locations. This will correctly
+/// traverse portals.
 impl Location {
     pub fn origin() -> Location { Location { x: 0, y: 0, z: 0 } }
 
