@@ -14,6 +14,7 @@ use std::iter::FromIterator;
 use std::slice;
 use terraform::TerrainQuery;
 use terrain::Terrain;
+use volume::Volume;
 use world::Ecs;
 
 /// Immutable querying of game world state.
@@ -52,6 +53,8 @@ pub trait Query: TerrainQuery + Sized {
     fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity>;
 
     fn entity_contains(&self, parent: Entity, child: Entity) -> bool;
+
+    fn sphere_volume(&self, origin: Location, radius: u32) -> Volume;
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
@@ -403,5 +406,27 @@ pub trait Query: TerrainQuery + Sized {
         }
 
         return origin;
+    }
+
+    /// Find a location for spell explosion.
+    ///
+    /// Explosion centers will penetrate and hit cells with mobs, they will stop before cells with
+    /// blocking terrain.
+    fn projected_explosion_center(&self, origin: Location, dir: Dir6, range: u32) -> Location {
+        let mut loc = origin;
+        for _ in 0..range {
+            let new_loc = loc.jump(self, dir);
+
+            if self.has_mobs(new_loc) {
+                return new_loc;
+            }
+
+            if self.terrain(new_loc).blocks_shot() {
+                return loc;
+            }
+
+            loc = new_loc;
+        }
+        return loc;
     }
 }

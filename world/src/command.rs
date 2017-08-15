@@ -76,7 +76,7 @@ pub trait Command: Mutate + Sized {
         let player = self.player().ok_or(())?;
         let location = self.location(player).ok_or(())?;
         let item = self.entity_equipped(player, slot).ok_or(())?;
-        self.cast_spell(location, item)?;
+        self.cast_spell(location, item, Some(player))?;
         self.next_tick()
     }
 
@@ -85,7 +85,7 @@ pub trait Command: Mutate + Sized {
         let player = self.player().ok_or(())?;
         let location = self.location(player).ok_or(())?;
         let item = self.entity_equipped(player, slot).ok_or(())?;
-        self.cast_directed_spell(location, dir, item)?;
+        self.cast_directed_spell(location, dir, item, Some(player))?;
         self.next_tick()
     }
 }

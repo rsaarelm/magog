@@ -5,7 +5,7 @@ use command::CommandResult;
 use effect::{Damage, Effect};
 use event::Event;
 use form::Form;
-use item::{ItemType, Slot};
+use item::{MagicEffect, ItemType, Slot};
 use location::Location;
 use query::Query;
 use rand::Rng;
@@ -223,9 +223,20 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     /// Cast an undirected spell
-    fn cast_spell(&mut self, _origin: Location, effect: Entity) -> Result<(), ()> {
-        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type {
-            msg!(self, "TODO cast untargeted spell {:?}", effect);
+    fn cast_spell(
+        &mut self,
+        _origin: Location,
+        effect: Entity,
+        _caster: Option<Entity>,
+    ) -> Result<(), ()> {
+        if let ItemType::UntargetedUsable(effect) =
+            self.ecs().item.get(effect).ok_or(())?.item_type
+        {
+            match effect {
+                _ => {
+                    msg!(self, "TODO cast untargeted spell {:?}", effect);
+                }
+            }
             Ok(())
         } else {
             Err(())
@@ -233,42 +244,63 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     /// Cast a directed spell
-    fn cast_directed_spell(&mut self, _origin: Location, _dir: Dir6, effect: Entity) -> Result<(), ()> {
+    fn cast_directed_spell(
+        &mut self,
+        origin: Location,
+        dir: Dir6,
+        effect: Entity,
+        caster: Option<Entity>,
+    ) -> Result<(), ()> {
         if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type {
-            msg!(self, "TODO cast targeted spell {:?}", effect);
+            match effect {
+                MagicEffect::Fireball => {
+                    const FIREBALL_RANGE: u32 = 9;
+                    const FIREBALL_RADIUS: u32 = 2;
+                    const FIREBALL_EFFECT: Effect = Effect::Hit {
+                        amount: 6,
+                        damage: Damage::Fire,
+                    };
+                    let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
+                    let volume = self.sphere_volume(center, FIREBALL_RADIUS);
+                    self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
+                }
+                _ => {
+                    msg!(self, "TODO cast untargeted spell {:?}", effect);
+                }
+            }
             Ok(())
         } else {
             Err(())
         }
     }
 
-    fn apply_effect_to_entity(&mut self, effect: Effect, target: Entity, source: Option<Entity>) {
+    fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
         use effect::Effect::*;
         match effect {
-            Heal(_amount) => {
+            &Heal(_amount) => {
                 unimplemented!();
             }
-            Hit { amount, damage } => {
+            &Hit { amount, damage } => {
                 self.damage(target, amount as i32, damage, source);
             }
-            Confuse => {
+            &Confuse => {
                 unimplemented!();
             }
-            MagicMap => {
+            &MagicMap => {
                 unimplemented!();
             }
         }
     }
 
-    fn apply_effect_to(&mut self, effect: Effect, loc: Location, source: Option<Entity>) {
+    fn apply_effect_to(&mut self, effect: &Effect, loc: Location, source: Option<Entity>) {
         if let Some(mob) = self.mob_at(loc) {
             self.apply_effect_to_entity(effect, mob, source);
         }
     }
 
-    fn apply_effect(&mut self, effect: Effect, volume: Volume, source: Option<Entity>) {
-        for loc in volume.0 {
-            self.apply_effect_to(effect, loc, source);
+    fn apply_effect(&mut self, effect: &Effect, volume: &Volume, source: Option<Entity>) {
+        for loc in &volume.0 {
+            self.apply_effect_to(effect, *loc, source);
         }
     }
 }

@@ -1,10 +1,9 @@
 use Rng;
-use ron;
-use errors::*;
 use calx_ecs::Entity;
 use calx_grid::HexFov;
 use command::{Command, CommandResult};
 use components;
+use errors::*;
 use event::Event;
 use field::Field;
 use flags::Flags;
@@ -13,6 +12,7 @@ use item::Slot;
 use location::{Location, Portal};
 use mutate::Mutate;
 use query::Query;
+use ron;
 use spatial::{Place, Spatial};
 use stats;
 use std::collections::{HashMap, HashSet};
@@ -21,6 +21,7 @@ use std::iter::FromIterator;
 use std::slice;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
+use volume::Volume;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -145,6 +146,10 @@ impl Query for World {
 
     fn entity_contains(&self, parent: Entity, child: Entity) -> bool {
         self.spatial.contains(parent, child)
+    }
+
+    fn sphere_volume(&self, origin: Location, radius: u32) -> Volume {
+        Volume::sphere(self, origin, radius)
     }
 }
 
