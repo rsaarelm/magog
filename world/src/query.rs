@@ -372,10 +372,10 @@ pub trait Query: TerrainQuery + Sized {
     /// Dropping several items in the same location will cause them to spread out to the adjacent
     /// cells. If there is no room for the items to spread out, they will be stacked on the initial
     /// drop site.
-    fn empty_item_drop_location(&self, starting_point: Location) -> Location {
+    fn empty_item_drop_location(&self, origin: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
         let is_valid = |v: Vector2D<i32>| {
-            self.can_drop_item_at(starting_point.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
+            self.can_drop_item_at(origin.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
         };
         let mut seen = HashSet::new();
         let mut incoming = VecDeque::new();
@@ -388,7 +388,7 @@ pub trait Query: TerrainQuery + Sized {
                 seen.insert(offset);
             }
 
-            let loc = starting_point.jump(self, offset);
+            let loc = origin.jump(self, offset);
             if self.item_at(loc).is_none() {
                 return loc;
             }
@@ -402,6 +402,6 @@ pub trait Query: TerrainQuery + Sized {
             }
         }
 
-        return starting_point;
+        return origin;
     }
 }
