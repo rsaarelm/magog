@@ -429,4 +429,6 @@ pub trait Query: TerrainQuery + Sized {
         }
         return loc;
     }
+
+    fn player_sees(&self, loc: Location) -> bool { self.fov_status(loc) == Some(FovStatus::Seen) }
 }

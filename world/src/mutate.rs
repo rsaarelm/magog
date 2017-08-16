@@ -120,7 +120,7 @@ pub trait Mutate: Query + Terraform + Sized {
         Err(())
     }
 
-    fn damage(&mut self, e: Entity, amount: i32, _damage_type: Damage, source: Option<Entity>) {
+    fn damage(&mut self, e: Entity, amount: i32, damage_type: Damage, source: Option<Entity>) {
         if let Some(attacker) = source {
             self.notify_attacked_by(e, attacker);
         }
@@ -139,6 +139,22 @@ pub trait Mutate: Query + Terraform + Sized {
         }
 
         if kill {
+            if let Some(loc) = self.location(e) {
+                if self.player_sees(loc) {
+                    // TODO: message templating
+                    msg!(
+                        self,
+                        "The {} {}.",
+                        self.entity_name(e),
+                        match damage_type {
+                            Damage::Physical => "is killed",
+                            Damage::Fire => "is burnt to ash",
+                            Damage::Electricity => "is electrocuted",
+                            Damage::Cold => "shatters to frozen pieces",
+                        }
+                    );
+                }
+            }
             self.kill_entity(e);
         }
     }
