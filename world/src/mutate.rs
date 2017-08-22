@@ -2,6 +2,7 @@ use calx_alg::{Deciban, clamp};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
+use components::BrainState;
 use effect::{Damage, Effect};
 use event::Event;
 use form::Form;
@@ -55,7 +56,41 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
-        unimplemented!();
+        for npc in self.active_mobs().into_iter() {
+            if !self.is_npc(npc) {
+                continue;
+            }
+            if self.acts_this_frame(npc) {
+                self.run_ai_for(npc)
+            }
+        }
+    }
+
+    /// Run AI for one non-player-controlled creature.
+    fn run_ai_for(&mut self, npc: Entity) {
+        use components::BrainState::*;
+        let brain_state = self.brain_state(npc).expect("Running AI for non-mob");
+        match brain_state {
+            Asleep => {
+                // No-op designator
+            }
+            Hunting(target) => {
+                if let (Some(my_loc), Some(target_loc)) =
+                    (self.location(npc), self.location(target))
+                {
+                    // TODO: Pathfind around obstacles
+                    if let Some(move_dir) = my_loc.dir6_towards(target_loc) {
+                        let dest = my_loc.jump(self, move_dir);
+                        if dest == target_loc {
+                            let _ = self.entity_melee(npc, move_dir);
+                        } else {
+                            let _ = self.entity_step(npc, move_dir);
+                        }
+                    }
+                }
+            }
+            PlayerControl => {}
+        }
     }
 
     fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
@@ -64,8 +99,19 @@ pub trait Mutate: Query + Terraform + Sized {
         self.designate_enemy(victim, attacker);
     }
 
-    fn designate_enemy(&mut self, _e: Entity, _target: Entity) {
-        // TODO
+    fn designate_enemy(&mut self, e: Entity, target: Entity) {
+        // TODO: Probably want this logic to be more complex eventually.
+        if self.is_npc(e) {
+            if self.brain_state(e) == Some(BrainState::Asleep) {
+                // TODO: Depends on the monster type whether it can physically shout.
+                // TODO: This should be a separate method that also trips when monster notices
+                // player
+                msg!(self, "The {} shouts angrily.", self.entity_name(e));
+            }
+            if let Some(brain) = self.ecs_mut().brain.get_mut(e) {
+                brain.state = BrainState::Hunting(target);
+            }
+        }
     }
 
     /// Remove destroyed entities from system
@@ -113,6 +159,22 @@ pub trait Mutate: Query + Terraform + Sized {
                     self.stats(target).armor,
                 );
 
+                if damage == 0 {
+                    msg!(
+                        self,
+                        "{} misses {}.",
+                        self.entity_name(e),
+                        self.entity_name(target)
+                    );
+                } else {
+                    msg!(
+                        self,
+                        "{} hits {} for {}.",
+                        self.entity_name(e),
+                        self.entity_name(target),
+                        damage
+                    );
+                }
                 self.damage(target, damage, Damage::Physical, Some(e));
                 return Ok(());
             }

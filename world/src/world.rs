@@ -157,7 +157,8 @@ impl Mutate for World {
     fn next_tick(&mut self) -> CommandResult {
         use std::mem;
 
-        // TODO: Run AI
+        self.ai_main();
+
         self.clean_dead();
         self.flags.tick += 1;
 

@@ -1,4 +1,5 @@
 use FovStatus;
+use calx_ecs::Entity;
 use item::ItemType;
 use location::Location;
 use location_set::LocationSet;
@@ -91,7 +92,7 @@ pub enum BrainState {
     /// motion.
     Asleep,
     /// AI mob is looking for a fight.
-    Hunting,
+    Hunting(Entity),
     /// Mob is under player control.
     PlayerControl,
 }

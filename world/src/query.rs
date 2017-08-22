@@ -236,6 +236,9 @@ pub trait Query: TerrainQuery + Sized {
         self.brain_state(e) == Some(BrainState::PlayerControl) && self.is_alive(e)
     }
 
+    /// Return whether an entity is under computer control
+    fn is_npc(&self, e: Entity) -> bool { self.is_mob(e) && !self.is_player(e) }
+
     /// Return whether the entity is an awake mob.
     fn is_active(&self, e: Entity) -> bool {
         match self.brain_state(e) {
@@ -430,5 +433,16 @@ pub trait Query: TerrainQuery + Sized {
         return loc;
     }
 
+    /// Return whether the player can currently directly see the given location.
     fn player_sees(&self, loc: Location) -> bool { self.fov_status(loc) == Some(FovStatus::Seen) }
+
+    /// Return the set of mobs that are in update range.
+    ///
+    /// In a large game world, the active set is limited to the player's surroundings.
+    fn active_mobs(&self) -> Vec<Entity> {
+        self.entities()
+            .filter(|&&e| self.is_mob(e))
+            .cloned()
+            .collect()
+    }
 }
