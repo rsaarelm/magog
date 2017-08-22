@@ -129,6 +129,13 @@ impl Builder {
     /// Add a single-frame splat for a standard tile to the splat matrix.
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
+    /// Add a simple mob that has a bobbing animation
+    pub fn mob(self, x: u32, y: u32) -> Builder {
+        self.splat(Some(Geom::new(16, 16, x, y, 32, 32)))
+            .merge()
+            .splat(Some(Geom::new(16, 18, x, y, 32, 32)))
+    }
+
     /// Add a blobform splat column to the splat matrix.
     ///
     /// Blobs are built from three 96x32 strips. First one contains the vertical edges, the second

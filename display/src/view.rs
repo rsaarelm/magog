@@ -1,6 +1,7 @@
 use Icon;
 use backend::MagogContext;
 use cache;
+use calx_alg::timing;
 use calx_grid::{Dir6, FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
@@ -109,7 +110,11 @@ impl WorldView {
                     } else {
                         Layer::Items
                     };
-                    let frame_idx = if world.is_bobbing(i) { 1 } else { 0 };
+                    let frame_idx = if world.is_bobbing(i) {
+                        timing::cycle_anim(1.0 / 3.0, 2)
+                    } else {
+                        0
+                    };
                     sprites.push(Sprite {
                         layer: layer,
                         offset: [screen_pos.x as i32, screen_pos.y as i32],
