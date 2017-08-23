@@ -70,11 +70,7 @@ pub struct SphereVolumeFov<'a> {
 
 impl<'a> SphereVolumeFov<'a> {
     pub fn new(w: &'a World, range: u32, origin: Location) -> SphereVolumeFov<'a> {
-        SphereVolumeFov {
-            w,
-            range,
-            origin,
-        }
+        SphereVolumeFov { w, range, origin }
     }
 }
 

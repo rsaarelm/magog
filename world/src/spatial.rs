@@ -250,10 +250,8 @@ mod test {
         spatial.insert(e1, p1);
         spatial.insert(e2, p2);
 
-        let saved =
-            ser::to_string(&spatial).expect("Spatial serialization failed");
-        let spatial2: Spatial =
-            de::from_str(&saved).expect("Spatial deserialization failed");
+        let saved = ser::to_string(&spatial).expect("Spatial serialization failed");
+        let spatial2: Spatial = de::from_str(&saved).expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(e1), Some(p1));
         assert_eq!(spatial2.get(e2), Some(p2));

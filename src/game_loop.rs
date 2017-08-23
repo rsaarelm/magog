@@ -6,7 +6,8 @@ use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
-use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, TerrainQuery, World, on_screen};
+use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, TerrainQuery, World,
+            on_screen};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {

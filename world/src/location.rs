@@ -92,7 +92,11 @@ impl Location {
     pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
 
     /// Offset location and follow any portals in target site.
-    pub fn jump<T: TerrainQuery, V: Into<Vector2D<i32>> + Sized>(self, ctx: &T, offset: V) -> Location {
+    pub fn jump<T: TerrainQuery, V: Into<Vector2D<i32>> + Sized>(
+        self,
+        ctx: &T,
+        offset: V,
+    ) -> Location {
         let loc = self + offset.into();
         ctx.portal(loc).unwrap_or(loc)
     }
