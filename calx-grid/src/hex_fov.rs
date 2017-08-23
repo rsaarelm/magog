@@ -89,7 +89,7 @@ impl<T: FovValue> Iterator for HexFov<T> {
                 return self.next();
             }
 
-            assert!(current.group_value == current.prev_value.advance(current.pt.to_v2()));
+            debug_assert!(current.group_value == current.prev_value.advance(current.pt.to_v2()));
 
             self.make_corners_visible(&current);
 
