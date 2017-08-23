@@ -96,9 +96,9 @@ impl<T: Clone + Eq + Hash> FromIterator<(Vector2D<i32>, T)> for Prefab<T> {
 
         for (mut p, e) in temp_buffer {
             p.x -= min_x;
-            assert!(p.x >= 0);
+            debug_assert!(p.x >= 0);
             p.y -= min_y;
-            assert!(p.y >= 0);
+            debug_assert!(p.y >= 0);
 
             max_x = max(p.x as u32, max_x);
             max_y = max(p.y as u32, max_y);

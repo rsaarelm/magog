@@ -121,7 +121,7 @@ impl FromStr for SRgba {
                 }
             }
 
-            assert!(digits == 1 || digits == 2);
+            debug_assert!(digits == 1 || digits == 2);
 
             let r = Num::from_str_radix(&s[0..(digits)], 16);
             let g = Num::from_str_radix(&s[(digits)..(2 * digits)], 16);

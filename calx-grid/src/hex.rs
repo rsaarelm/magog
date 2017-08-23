@@ -163,12 +163,12 @@ impl Dir12 {
         } else {
             end - begin
         };
-        assert!(cluster_size > 0);
+        debug_assert!(cluster_size > 0);
 
         // Dir12 in use from here on.
         let center_dir = begin * 2 + (cluster_size - 1);
         let away_dir: u8 = ((center_dir + 6) % 12) as u8;
-        assert!(away_dir < 12);
+        debug_assert!(away_dir < 12);
 
         // XXX: Unsafe because I'm too lazy to do int conversion func by hand.
         return Some(unsafe { mem::transmute(away_dir) });
@@ -193,7 +193,7 @@ impl Dir12 {
                 return None;
             }
 
-            assert!(cluster_end.is_some()); // Must be some if start is some.
+            debug_assert!(cluster_end.is_some()); // Must be some if start is some.
 
             Some((cluster_start.unwrap(), cluster_end.unwrap()))
         }

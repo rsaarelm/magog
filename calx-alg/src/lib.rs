@@ -66,7 +66,7 @@ impl rand::Rand for Deciban {
 impl Deciban {
     /// Build a deciban value from a probability in [0, 1).
     pub fn new(p: f32) -> Deciban {
-        assert!(p >= 0.0 && p < 1.0);
+        debug_assert!(p >= 0.0 && p < 1.0);
         Deciban(10.0 * (p / (1.0 - p)).log(10.0))
     }
 
@@ -137,7 +137,7 @@ impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
     {
         let (_, ret) = self.fold((0.0, None), |(weight_sum, prev_item), item| {
             let item_weight = weight_fn(&item);
-            assert!(item_weight >= 0.0);
+            debug_assert!(item_weight >= 0.0);
             let p = item_weight / (weight_sum + item_weight);
             let next_item = if rng.next_f32() < p {
                 Some(item)

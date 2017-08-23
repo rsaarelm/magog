@@ -80,7 +80,7 @@ pub struct TimePerFrame {
 
 impl TimePerFrame {
     pub fn new(update_weight: f64) -> TimePerFrame {
-        assert!(update_weight >= 0.0 && update_weight <= 1.0);
+        debug_assert!(update_weight >= 0.0 && update_weight <= 1.0);
         TimePerFrame {
             update_weight: update_weight,
             start_t: time::precise_time_s(),
@@ -110,7 +110,7 @@ impl AverageDuration {
     /// indicates how fast the older values should decay. Weight 1.0 causes
     /// old values to decay immediately.
     pub fn new(init: f64, weight: f64) -> AverageDuration {
-        assert!(weight > 0.0 && weight <= 1.0);
+        debug_assert!(weight > 0.0 && weight <= 1.0);
         AverageDuration {
             weight: weight,
             last_time: time::precise_time_s(),
