@@ -65,14 +65,14 @@ impl MapMemory {
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment,
+    pub shout: ShoutType,
 }
 
 impl Brain {
     /// Create default enemy brain.
     pub fn enemy() -> Brain {
         Brain {
-            state: BrainState::Asleep,
-            alignment: Alignment::Evil,
+            ..Default::default()
         }
     }
 
@@ -81,6 +81,17 @@ impl Brain {
         Brain {
             state: BrainState::PlayerControl,
             alignment: Alignment::Good,
+            ..Default::default()
+        }
+    }
+}
+
+impl Default for Brain {
+    fn default() -> Brain {
+        Brain {
+            state: BrainState::Asleep,
+            alignment: Alignment::Evil,
+            shout: ShoutType::Shout,
         }
     }
 }
@@ -95,6 +106,22 @@ pub enum BrainState {
     Hunting(Entity),
     /// Mob is under player control.
     PlayerControl,
+}
+
+/// How does a mob vocalize when alerted?
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+pub enum ShoutType {
+    /// Humanoids
+    Shout,
+    /// Reptiles
+    Hiss,
+    /// Insects
+    Buzz,
+    /// Large monsters
+    Roar,
+    /// Slimes
+    Gurgle,
+    Silent,
 }
 
 /// Used to determine who tries to fight whom.

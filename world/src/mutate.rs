@@ -103,13 +103,36 @@ pub trait Mutate: Query + Terraform + Sized {
         // TODO: Probably want this logic to be more complex eventually.
         if self.is_npc(e) {
             if self.brain_state(e) == Some(BrainState::Asleep) {
-                // TODO: Depends on the monster type whether it can physically shout.
-                // TODO: This should be a separate method that also trips when monster notices
-                // player
-                msg!(self, "The {} shouts angrily.", self.entity_name(e));
+                self.shout(e);
             }
             if let Some(brain) = self.ecs_mut().brain.get_mut(e) {
                 brain.state = BrainState::Hunting(target);
+            }
+        }
+    }
+
+    /// Make a mob shout according to its type.
+    fn shout(&mut self, e: Entity) {
+        // TODO: Create noise, wake up other nearby monsters.
+        use components::ShoutType;
+        if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
+            match shout {
+                ShoutType::Shout => {
+                    msg!(self, "The {} shouts angrily.", self.entity_name(e));
+                }
+                ShoutType::Hiss => {
+                    msg!(self, "The {} hisses angrily.", self.entity_name(e));
+                }
+                ShoutType::Buzz => {
+                    msg!(self, "The {} buzzes loudly.", self.entity_name(e));
+                }
+                ShoutType::Roar => {
+                    msg!(self, "The {} roars angrily.", self.entity_name(e));
+                }
+                ShoutType::Gurgle => {
+                    msg!(self, "The {} gurgles loudly.", self.entity_name(e));
+                }
+                ShoutType::Silent => {}
             }
         }
     }

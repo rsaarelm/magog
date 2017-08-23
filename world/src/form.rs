@@ -1,4 +1,4 @@
-use components::{Icon, Brain, Desc, Health, Item, MapMemory};
+use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType};
 use item::ItemType;
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
@@ -66,6 +66,14 @@ impl Form {
         self
     }
 
+    pub fn reptile(mut self) -> Form {
+        let mut brain = self.loadout.brain.expect("Must be mob");
+        brain.shout = ShoutType::Hiss;
+        self.loadout.brain = Some(brain);
+        self
+    }
+
+
     /// Return the name of the form if it has one.
     pub fn name(&self) -> Option<&str> {
         match self.loadout.desc {
@@ -87,7 +95,7 @@ lazy_static! {
         Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
             .c(MapMemory::default()),
         Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
-        Form::mob("snake",      Icon::Snake,      1,  &[]),
+        Form::mob("snake",      Icon::Snake,      1,  &[]).reptile(),
 
         Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon),
         Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)),
