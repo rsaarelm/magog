@@ -1,0 +1,88 @@
+use location::{Location, Portal};
+use field::Field;
+use std::collections::HashMap;
+use mapfile;
+use serde;
+use std::io::Cursor;
+use std::slice;
+use terrain::Terrain;
+use world::Loadout;
+use form::Form;
+use Prefab;
+
+/// Static generated world.
+pub struct WorldGen {
+    seed: u32,
+    terrain: Field<Terrain>,
+    portals: HashMap<Location, Portal>,
+    spawns: Vec<(Location, Loadout)>,
+    player_entry: Location,
+}
+
+impl WorldGen {
+    pub fn new(seed: u32) -> WorldGen {
+        let mut ret = WorldGen {
+            seed: seed,
+            terrain: Field::new(Terrain::Empty),
+            portals: HashMap::new(),
+            spawns: Vec::new(),
+            player_entry: Location::new(0, 0, 0),
+        };
+
+        ret.sprint_map();
+
+        ret
+    }
+
+    fn sprint_map(&mut self) {
+        const SPRINT_PREFAB: &'static str = include_str!("../../sprint.ron");
+
+        let sprint_prefab = mapfile::load_prefab(&mut Cursor::new(SPRINT_PREFAB))
+            .expect("Corrupt sprint file");
+
+        // Top-left of the default on-screen area.
+        let origin = Location::new(-21, -22, 0);
+        self.load_prefab(origin, &sprint_prefab);
+    }
+
+    fn load_prefab(&mut self, origin: Location, prefab: &Prefab) {
+        for (p, &(ref terrain, ref entities)) in prefab.iter() {
+            let loc = origin + p;
+
+            self.terrain.set(loc, *terrain);
+
+            for spawn in entities.iter() {
+                if spawn == "player" {
+                    self.player_entry = loc;
+                } else {
+                    let form = Form::named(spawn).expect(&format!("Bad prefab: Form '{}' not found!", spawn));
+                    self.spawns.push((loc, form.loadout.clone()));
+                }
+            }
+        }
+    }
+
+    pub fn get_terrain(&self, loc: Location) -> Terrain {
+        self.terrain.get(loc)
+    }
+
+    pub fn get_portal(&self, loc: Location) -> Option<Location> {
+        self.portals.get(&loc).map(|&p| loc + p)
+    }
+
+    pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> {
+        self.spawns.iter()
+    }
+}
+
+impl serde::Serialize for WorldGen {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.seed.serialize(s)
+    }
+}
+
+impl<'a> serde::Deserialize<'a> for WorldGen {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
+        Ok(WorldGen::new(serde::Deserialize::deserialize(d)?))
+    }
+}

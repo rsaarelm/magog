@@ -83,6 +83,8 @@ mod volume;
 mod world;
 pub use world::{Ecs, World};
 
+mod world_gen;
+
 /// Standard Prefab type, terrain type and spawn name list.
 pub type Prefab = calx_grid::Prefab<(Terrain, Vec<String>)>;
 

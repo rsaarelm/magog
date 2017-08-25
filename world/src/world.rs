@@ -22,6 +22,7 @@ use std::slice;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
 use volume::Volume;
+use world_gen::WorldGen;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -43,6 +44,8 @@ pub struct World {
     version: String,
     /// Entity component system.
     ecs: Ecs,
+    /// Static startup game world
+    world_gen: WorldGen,
     /// Terrain data.
     terrain: Field<Terrain>,
     /// Optional portals between map zones.
@@ -60,6 +63,7 @@ impl<'a> World {
         World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
+            world_gen: WorldGen::new(seed),
             terrain: Field::new(Terrain::Empty),
             portals: HashMap::new(),
             spatial: Spatial::new(),
