@@ -233,7 +233,7 @@ pub trait Mutate: Query + Terraform + Sized {
                         self.entity_name(e),
                         match damage_type {
                             Damage::Physical => "is killed",
-                            Damage::Fire => "is burnt to ash",
+                            Damage::Fire => "is burned to ash",
                             Damage::Electricity => "is electrocuted",
                             Damage::Cold => "shatters to frozen pieces",
                         }
