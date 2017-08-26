@@ -17,7 +17,7 @@ impl<T: Copy + PartialEq> Field<T> {
 
     pub fn get(&self, pos: Location) -> T { self.patch.get(&pos).cloned().unwrap_or(self.default) }
 
-    pub fn overrides(&self, pos: Location) -> bool { self.patch.contains_key(&pos) }
+    pub fn _overrides(&self, pos: Location) -> bool { self.patch.contains_key(&pos) }
 
     pub fn set(&mut self, pos: Location, val: T) {
         if val == self.default {

@@ -18,9 +18,8 @@ pub mod game_loop;
 use euclid::{Point2D, Rect, Size2D};
 use game_loop::GameLoop;
 use glium::{DisplayBuild, glutin};
-use std::fs::File;
 use vitral::Context;
-use world::{Location, Mutate, World};
+use world::World;
 
 pub fn main() {
     // Construct display and Vitral context.
@@ -35,13 +34,7 @@ pub fn main() {
 
     let seed = 1;
 
-    let mut world = World::new(seed);
-
-    /// TODO error handling.
-    let prefab = world::load_prefab(&mut File::open("sprint.ron").unwrap()).unwrap();
-    world.deploy_prefab(Location::new(-21, -22, 0), &prefab);
-
-    let mut game = GameLoop::new(world);
+    let mut game = GameLoop::new(World::new(seed));
 
     loop {
         backend.begin_frame();

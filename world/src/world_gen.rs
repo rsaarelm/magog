@@ -1,14 +1,15 @@
-use location::{Location, Portal};
+
+use Prefab;
 use field::Field;
-use std::collections::HashMap;
+use form::Form;
+use location::{Location, Portal};
 use mapfile;
 use serde;
+use std::collections::HashMap;
 use std::io::Cursor;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
-use form::Form;
-use Prefab;
 
 /// Static generated world.
 pub struct WorldGen {
@@ -55,24 +56,25 @@ impl WorldGen {
                 if spawn == "player" {
                     self.player_entry = loc;
                 } else {
-                    let form = Form::named(spawn).expect(&format!("Bad prefab: Form '{}' not found!", spawn));
+                    let form = Form::named(spawn).expect(&format!(
+                        "Bad prefab: Form '{}' not found!",
+                        spawn
+                    ));
                     self.spawns.push((loc, form.loadout.clone()));
                 }
             }
         }
     }
 
-    pub fn get_terrain(&self, loc: Location) -> Terrain {
-        self.terrain.get(loc)
-    }
+    pub fn get_terrain(&self, loc: Location) -> Terrain { self.terrain.get(loc) }
 
     pub fn get_portal(&self, loc: Location) -> Option<Location> {
         self.portals.get(&loc).map(|&p| loc + p)
     }
 
-    pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> {
-        self.spawns.iter()
-    }
+    pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
+
+    pub fn player_entry(&self) -> Location { self.player_entry }
 }
 
 impl serde::Serialize for WorldGen {
