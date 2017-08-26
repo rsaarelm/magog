@@ -66,6 +66,8 @@ impl WorldGen {
         }
     }
 
+    pub fn seed(&self) -> u32 { self.seed }
+
     pub fn get_terrain(&self, loc: Location) -> Terrain { self.terrain.get(loc) }
 
     pub fn get_portal(&self, loc: Location) -> Option<Location> {

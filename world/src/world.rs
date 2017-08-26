@@ -1,5 +1,6 @@
 use Rng;
 use calx_ecs::Entity;
+use rand::SeedableRng;
 use calx_grid::HexFov;
 use command::{Command, CommandResult};
 use components;
@@ -49,6 +50,8 @@ pub struct World {
     spatial: Spatial,
     /// Global gamestate flags.
     flags: Flags,
+    /// Persistent random number generator.
+    rng: Rng,
     /// Event queue
     events: Vec<Event>,
 }
@@ -60,7 +63,8 @@ impl<'a> World {
             ecs: Ecs::new(),
             world_gen: WorldGen::new(seed),
             spatial: Spatial::new(),
-            flags: Flags::new(seed),
+            flags: Flags::new(),
+            rng: SeedableRng::from_seed([seed, seed, seed, seed]),
             events: Vec::new(),
         };
 
@@ -144,7 +148,7 @@ impl Query for World {
 
     fn tick(&self) -> u64 { self.flags.tick }
 
-    fn rng_seed(&self) -> u32 { self.flags.seed }
+    fn rng_seed(&self) -> u32 { self.world_gen.seed() }
 
     fn entities(&self) -> slice::Iter<Entity> { self.ecs.iter() }
 
@@ -223,7 +227,7 @@ impl Mutate for World {
 
     fn push_event(&mut self, event: Event) { self.events.push(event); }
 
-    fn rng(&mut self) -> &mut Rng { self.flags.rng() }
+    fn rng(&mut self) -> &mut Rng { &mut self.rng }
 
     fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 }
