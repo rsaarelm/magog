@@ -165,3 +165,40 @@ pub mod errors {
         }
     }
 }
+
+/// Wrapper class for things that should not be serialized.
+struct Cache<T> {
+    inner: T
+}
+
+impl<T: Default> Cache<T> {
+    pub fn new() -> Cache<T> {
+        Cache { inner: Default::default() }
+    }
+}
+
+impl<T> ::std::ops::Deref for Cache<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &self.inner
+    }
+}
+
+impl<T> ::std::ops::DerefMut for Cache<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        &mut self.inner
+    }
+}
+impl<T: Default> serde::Serialize for Cache<T> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        ().serialize(s)
+    }
+}
+
+impl<'a, T: Default> serde::Deserialize<'a> for Cache<T> {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
+        let _: () = serde::Deserialize::deserialize(d)?;
+        Ok(Cache::new())
+    }
+}
