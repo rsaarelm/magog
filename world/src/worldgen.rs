@@ -1,4 +1,3 @@
-
 use Prefab;
 use field::Field;
 use form::Form;
@@ -12,7 +11,7 @@ use terrain::Terrain;
 use world::Loadout;
 
 /// Static generated world.
-pub struct WorldGen {
+pub struct Worldgen {
     seed: u32,
     terrain: Field<Terrain>,
     portals: HashMap<Location, Portal>,
@@ -20,9 +19,9 @@ pub struct WorldGen {
     player_entry: Location,
 }
 
-impl WorldGen {
-    pub fn new(seed: u32) -> WorldGen {
-        let mut ret = WorldGen {
+impl Worldgen {
+    pub fn new(seed: u32) -> Worldgen {
+        let mut ret = Worldgen {
             seed: seed,
             terrain: Field::new(Terrain::Empty),
             portals: HashMap::new(),
@@ -79,14 +78,14 @@ impl WorldGen {
     pub fn player_entry(&self) -> Location { self.player_entry }
 }
 
-impl serde::Serialize for WorldGen {
+impl serde::Serialize for Worldgen {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         self.seed.serialize(s)
     }
 }
 
-impl<'a> serde::Deserialize<'a> for WorldGen {
+impl<'a> serde::Deserialize<'a> for Worldgen {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
-        Ok(WorldGen::new(serde::Deserialize::deserialize(d)?))
+        Ok(Worldgen::new(serde::Deserialize::deserialize(d)?))
     }
 }

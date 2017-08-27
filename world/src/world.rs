@@ -22,7 +22,7 @@ use std::slice;
 use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
 use volume::Volume;
-use world_gen::WorldGen;
+use worldgen::Worldgen;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 
@@ -45,7 +45,7 @@ pub struct World {
     /// Entity component system.
     ecs: Ecs,
     /// Static startup game world
-    world_gen: WorldGen,
+    worldgen: Worldgen,
     /// Spatial index for game entities.
     spatial: Spatial,
     /// Global gamestate flags.
@@ -61,7 +61,7 @@ impl<'a> World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            world_gen: WorldGen::new(seed),
+            worldgen: Worldgen::new(seed),
             spatial: Spatial::new(),
             flags: Flags::new(),
             rng: SeedableRng::from_seed([seed, seed, seed, seed]),
@@ -69,7 +69,7 @@ impl<'a> World {
         };
 
         // XXX: Clone to not run into borrow checker...
-        for (loc, spawn) in ret.world_gen
+        for (loc, spawn) in ret.worldgen
             .spawns()
             .cloned()
             .collect::<Vec<(Location, Loadout)>>()
@@ -78,7 +78,7 @@ impl<'a> World {
             ret.spawn(&spawn, loc);
         }
 
-        let player_entry = ret.world_gen.player_entry();
+        let player_entry = ret.worldgen.player_entry();
         ret.spawn_player(player_entry);
 
         ret
@@ -112,7 +112,7 @@ impl TerrainQuery for World {
     }
 
     fn terrain(&self, loc: Location) -> Terrain {
-        let mut t = self.world_gen.get_terrain(loc);
+        let mut t = self.worldgen.get_terrain(loc);
 
         if t == Terrain::Door && self.has_mobs(loc) {
             // Standing in the doorway opens the door.
@@ -122,7 +122,7 @@ impl TerrainQuery for World {
         t
     }
 
-    fn portal(&self, loc: Location) -> Option<Location> { self.world_gen.get_portal(loc) }
+    fn portal(&self, loc: Location) -> Option<Location> { self.worldgen.get_portal(loc) }
 
     fn is_untouched(&self, _loc: Location) -> bool { unimplemented!() }
 }
@@ -148,7 +148,7 @@ impl Query for World {
 
     fn tick(&self) -> u64 { self.flags.tick }
 
-    fn rng_seed(&self) -> u32 { self.world_gen.seed() }
+    fn rng_seed(&self) -> u32 { self.worldgen.seed() }
 
     fn entities(&self) -> slice::Iter<Entity> { self.ecs.iter() }
 
