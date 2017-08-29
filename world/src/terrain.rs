@@ -148,3 +148,7 @@ impl Terrain {
     /// For constructing text maps.
     pub fn preferred_map_chars(self) -> &'static str { TERRAIN_DATA[self as usize].map_chars }
 }
+
+impl Default for Terrain {
+    fn default() -> Self { Terrain::Empty }
+}

@@ -3,27 +3,24 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Field<T: PartialEq> {
-    pub default: T,
     patch: BTreeMap<Location, T>,
 }
 
-impl<T: Copy + PartialEq> Field<T> {
-    pub fn new(default: T) -> Field<T> {
-        Field {
-            patch: BTreeMap::new(),
-            default,
-        }
+impl<T: Copy + PartialEq + Default> Field<T> {
+    pub fn new() -> Field<T> { Field { patch: BTreeMap::new() } }
+
+    pub fn get(&self, loc: Location) -> T {
+        self.patch.get(&loc).cloned().unwrap_or(Default::default())
     }
 
-    pub fn get(&self, pos: Location) -> T { self.patch.get(&pos).cloned().unwrap_or(self.default) }
-
-    pub fn _overrides(&self, pos: Location) -> bool { self.patch.contains_key(&pos) }
-
-    pub fn set(&mut self, pos: Location, val: T) {
-        if val == self.default {
-            self.patch.remove(&pos);
+    pub fn set(&mut self, loc: Location, val: T) {
+        if val == Default::default() {
+            self.patch.remove(&loc);
         } else {
-            self.patch.insert(pos, val);
+            self.patch.insert(loc, val);
         }
     }
+
+    /// Iterate non-default cells.
+    pub fn _iter(&self) -> ::std::collections::btree_map::Iter<Location, T> { self.patch.iter() }
 }

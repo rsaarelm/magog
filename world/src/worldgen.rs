@@ -23,7 +23,7 @@ impl Worldgen {
     pub fn new(seed: u32) -> Worldgen {
         let mut ret = Worldgen {
             seed: seed,
-            terrain: Field::new(Terrain::Empty),
+            terrain: Field::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
             player_entry: Location::new(0, 0, 0),
