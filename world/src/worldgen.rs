@@ -1,9 +1,14 @@
 use Prefab;
+use Rng;
+use calx_grid::Dir6;
 use field::Field;
 use form::Form;
 use location::{Location, Portal};
 use mapfile;
+use rand::{self, Rand, SeedableRng};
 use serde;
+use std::cmp;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::slice;
@@ -29,7 +34,9 @@ impl Worldgen {
             player_entry: Location::new(0, 0, 0),
         };
 
-        ret.sprint_map();
+        let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
+        //ret.sprint_map();
+        ret.gen_caves(&mut rng);
 
         ret
     }
@@ -76,6 +83,63 @@ impl Worldgen {
     pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
 
     pub fn player_entry(&self) -> Location { self.player_entry }
+
+    fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R) {
+        use self::Prototerrain::*;
+
+        let mut cells_to_dig = 500;
+
+        let mut map = screen_map(Location::new(0, 0, 0));
+
+        let start = *rand::sample(rng, map.iter().filter(|x| *x.1 == Unused), 1)[0].0;
+        map.set(start, Floor);
+        let mut edge: BTreeSet<Location> = Dir6::iter()
+            .map(|&d| start + d)
+            .filter(|&loc| map.get(loc) == Unused)
+            .collect();
+
+        // Arbitrary long iteration, should break after digging a sufficient number of cells before
+        // this.
+        for _ in 0..10000 {
+            if edge.is_empty() {
+                break;
+            }
+
+            let dig_loc = *rand::sample(rng, edge.iter(), 1)[0];
+
+            // Prefer digging narrow corridors, there's an increasing chance to abort the dig when the
+            // selected location is in a very open space.
+            let adjacent_floors = Dir6::iter()
+                .filter(|d| map.get(dig_loc + **d) == Floor)
+                .count();
+            if rng.gen_range(0, cmp::max(1, adjacent_floors * 2)) != 0 {
+                continue;
+            }
+
+            map.set(dig_loc, Floor);
+            edge.extend(Dir6::iter().map(|&d| dig_loc + d).filter(|&loc| {
+                map.get(loc) == Unused
+            }));
+
+            cells_to_dig -= 1;
+            if cells_to_dig == 0 {
+                break;
+            }
+        }
+
+        self.terrain.extend(map.iter().map(|(&loc, &t)| {
+            let t = match t {
+                Outside => Terrain::Empty,
+                Unused => Terrain::Rock,
+                Border => Terrain::Rock,
+                Floor => Terrain::Ground,
+                Wall => Terrain::Rock,
+                Door => Terrain::Door,
+            };
+            (loc, t)
+        }));
+
+    }
 }
 
 impl serde::Serialize for Worldgen {
@@ -88,4 +152,38 @@ impl<'a> serde::Deserialize<'a> for Worldgen {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         Ok(Worldgen::new(serde::Deserialize::deserialize(d)?))
     }
+}
+
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+enum Prototerrain {
+    /// Area completely outside the map to be generated.
+    Outside,
+    /// Area that should be filled with map content but hasn't been yet.
+    Unused,
+    /// Area that the player cannot enter but that may be visible on screen.
+    Border,
+    Floor,
+    Wall,
+    Door,
+}
+
+impl Default for Prototerrain {
+    fn default() -> Self { Prototerrain::Outside }
+}
+
+fn screen_map(origin: Location) -> Field<Prototerrain> {
+    let mut ret = Field::new();
+
+    for &v in ::onscreen_locations() {
+        let loc = origin + v;
+        for &d in Dir6::iter() {
+            if ret.get(loc + d) == Default::default() {
+                ret.set(loc + d, Prototerrain::Border);
+            }
+            ret.set(loc, Prototerrain::Unused);
+        }
+    }
+
+    ret
 }
