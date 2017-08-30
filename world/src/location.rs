@@ -102,20 +102,16 @@ impl Location {
     }
 }
 
-impl Add<Vector2D<i32>> for Location {
+impl<V: Into<Vector2D<i32>>> Add<V> for Location {
     type Output = Location;
-    fn add(self, other: Vector2D<i32>) -> Location {
+    fn add(self, other: V) -> Location {
+        let other = other.into();
         Location {
             x: (self.x as i32 + other.x) as i8,
             y: (self.y as i32 + other.y) as i8,
             z: self.z,
         }
     }
-}
-
-impl Add<Dir6> for Location {
-    type Output = Location;
-    fn add(self, other: Dir6) -> Location { self + other.to_v2() }
 }
 
 impl Add<Portal> for Location {
@@ -129,9 +125,10 @@ impl Add<Portal> for Location {
     }
 }
 
-impl Sub<Vector2D<i32>> for Location {
+impl<V: Into<Vector2D<i32>>> Sub<V> for Location {
     type Output = Location;
-    fn sub(self, other: Vector2D<i32>) -> Location {
+    fn sub(self, other: V) -> Location {
+        let other = other.into();
         Location {
             x: (self.x as i32 - other.x) as i8,
             y: (self.y as i32 - other.y) as i8,
