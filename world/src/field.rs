@@ -1,5 +1,6 @@
 use location::Location;
 use std::collections::BTreeMap;
+use std::iter::{Extend, FromIterator};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Field<T: PartialEq> {
@@ -22,5 +23,19 @@ impl<T: Copy + PartialEq + Default> Field<T> {
     }
 
     /// Iterate non-default cells.
-    pub fn _iter(&self) -> ::std::collections::btree_map::Iter<Location, T> { self.patch.iter() }
+    pub fn iter(&self) -> ::std::collections::btree_map::Iter<Location, T> { self.patch.iter() }
+}
+
+impl<T: Copy + PartialEq + Default> FromIterator<(Location, T)> for Field<T> {
+    fn from_iter<I: IntoIterator<Item = (Location, T)>>(iter: I) -> Self {
+        Field { patch: iter.into_iter().collect() }
+    }
+}
+
+impl<T: Copy + PartialEq + Default> Extend<(Location, T)> for Field<T> {
+    fn extend<I: IntoIterator<Item = (Location, T)>>(&mut self, iter: I) {
+        for (loc, val) in iter.into_iter() {
+            self.set(loc, val);
+        }
+    }
 }
