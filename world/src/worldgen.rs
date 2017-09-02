@@ -1,7 +1,8 @@
 use Prefab;
 use Rng;
+use calx_grid;
 use calx_grid::Dir6;
-use euclid::vec2;
+use euclid::{vec2, Vector2D};
 use field::Field;
 use form::Form;
 use location::{Location, Portal};
@@ -37,7 +38,7 @@ impl Worldgen {
 
         let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
         //ret.sprint_map();
-        ret.gen_caves(&mut rng);
+        ret.gen_caves(&mut rng, Location::new(0, 0, 0));
 
         ret
     }
@@ -85,17 +86,23 @@ impl Worldgen {
 
     pub fn player_entry(&self) -> Location { self.player_entry }
 
-    fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R) {
+    fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R, entrance: Location) {
         use self::Prototerrain::*;
 
         let mut cells_to_dig = 700;
 
-        let mut map = screen_map(Location::new(0, 0, 0));
+        let mut map = screen_map(Location::new(0, 0, entrance.z));
 
-        let start = *rand::sample(rng, map.iter().filter(|x| *x.1 == Unused), 1)[0].0;
-        map.set(start, Floor);
+        debug_assert!(map.get(entrance) == Unused);
+
+        // Create portal enclosure
+        // TODO: Backportal
+        entry_cave_enclosure(&mut map, entrance);
+
+        let entrance = entrance + vec2(1, 1);
+
         let mut edge: BTreeSet<Location> = Dir6::iter()
-            .map(|&d| start + d)
+            .map(|&d| entrance + vec2(2, 2) + d)
             .filter(|&loc| map.get(loc) == Unused)
             .collect();
 
@@ -153,7 +160,6 @@ impl Worldgen {
             };
             (loc, t)
         }));
-
     }
 }
 
@@ -219,4 +225,32 @@ fn screen_map(origin: Location) -> Field<Prototerrain> {
     }
 
     ret
+}
+
+fn entry_cave_enclosure(map: &mut Field<Prototerrain>, entrance: Location) {
+    use self::Prototerrain::*;
+
+    debug_assert!(map.get(entrance) == Unused);
+
+    const DOWNBOUND_ENCLOSURE: [(i32, i32); 7] = [
+        (-2, -2),
+        (-1, -2),
+        (0, -1),
+        (-1, 0),
+        (-2, -1),
+        (1, 0),
+        (0, 1),
+    ];
+
+    for &v in &DOWNBOUND_ENCLOSURE {
+        let loc = entrance + vec2(v.0, v.1);
+        map.set(loc, Wall);
+    }
+
+    // Portal site
+    map.set(entrance - vec2(1, 1), Floor);
+    // Entrance cell
+    map.set(entrance, Floor);
+    // Enclosure mouth
+    map.set(entrance + vec2(1, 1), Floor);
 }
