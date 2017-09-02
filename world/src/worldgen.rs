@@ -1,8 +1,7 @@
 use Prefab;
 use Rng;
-use calx_grid;
 use calx_grid::Dir6;
-use euclid::{vec2, Vector2D};
+use euclid::vec2;
 use field::Field;
 use form::Form;
 use location::{Location, Portal};
@@ -38,7 +37,7 @@ impl Worldgen {
 
         let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
         ret.gen_overworld(&mut rng);
-        //ret.sprint_map();
+        ret.cave_entrance(Location::new(10, 0, 0), Location::new(0, 0, 1));
         ret.gen_caves(&mut rng, Location::new(0, 0, 1));
 
         ret
@@ -92,8 +91,8 @@ impl Worldgen {
 
         let noise_offset = rng.gen_range(0, 100);
 
-        for y in -128..128 {
-            for x in -128..128 {
+        for y in -40..40 {
+            for x in -40..40 {
                 let x = x as i8;
                 let y = y as i8;
                 let loc = Location::new(x, y, 0);
@@ -121,7 +120,6 @@ impl Worldgen {
         debug_assert!(map.get(entrance) == Unused);
 
         // Create portal enclosure
-        // TODO: Backportal
         entry_cave_enclosure(&mut map, entrance);
 
         let entrance = entrance + vec2(1, 1);
@@ -185,6 +183,36 @@ impl Worldgen {
             };
             (loc, t)
         }));
+
+        // XXX: This thing needs to be more automatic
+        // Make the backportal cell have transparent terrain
+        self.terrain.set(entrance - vec2(1, 1), Terrain::Empty);
+    }
+
+    /// Make a cave entrance going down.
+    fn cave_entrance(&mut self, loc: Location, cave_start: Location) {
+        const DOWNBOUND_ENCLOSURE: [(i32, i32); 5] = [(1, 0), (0, 1), (2, 1), (1, 2), (2, 2)];
+
+        for &v in &DOWNBOUND_ENCLOSURE {
+            let loc = loc + vec2(v.0, v.1);
+            self.terrain.set(loc, Terrain::Rock);
+        }
+
+        self.terrain.set(loc, Terrain::Ground);
+        self.terrain.set(loc + vec2(1, 1), Terrain::Ground);
+
+        // Connect the points
+        self.portal(loc + vec2(1, 1), cave_start);
+        self.portal(cave_start - vec2(1, 1), loc);
+    }
+
+    /// Punch a (one-way) portal between two points.
+    fn portal(&mut self, origin: Location, destination: Location) {
+        self.portals.insert(
+            origin,
+            Portal::new(origin, destination),
+        );
+        self.terrain.set(origin, Terrain::Empty);
     }
 }
 
@@ -257,7 +285,7 @@ fn entry_cave_enclosure(map: &mut Field<Prototerrain>, entrance: Location) {
 
     debug_assert!(map.get(entrance) == Unused);
 
-    const DOWNBOUND_ENCLOSURE: [(i32, i32); 7] = [
+    const UPBOUND_ENCLOSURE: [(i32, i32); 7] = [
         (-2, -2),
         (-1, -2),
         (0, -1),
@@ -267,7 +295,7 @@ fn entry_cave_enclosure(map: &mut Field<Prototerrain>, entrance: Location) {
         (0, 1),
     ];
 
-    for &v in &DOWNBOUND_ENCLOSURE {
+    for &v in &UPBOUND_ENCLOSURE {
         let loc = entrance + vec2(v.0, v.1);
         map.set(loc, Wall);
     }
