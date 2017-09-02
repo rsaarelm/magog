@@ -86,9 +86,9 @@ impl Location {
         }
     }
 
-    /// A pseudorandom value corresponding to this specific location.
+    /// A pseudorandom value in [-1.0, 1.0] corresponding to this specific location.
     ///
-    /// Is always the same for the same location value.
+    /// Is always the same for the same `Location`.
     pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
 
     /// Offset location and follow any portals in target site.

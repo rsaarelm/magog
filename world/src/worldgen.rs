@@ -37,8 +37,9 @@ impl Worldgen {
         };
 
         let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
+        ret.gen_overworld(&mut rng);
         //ret.sprint_map();
-        ret.gen_caves(&mut rng, Location::new(0, 0, 0));
+        ret.gen_caves(&mut rng, Location::new(0, 0, 1));
 
         ret
     }
@@ -85,6 +86,30 @@ impl Worldgen {
     pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
 
     pub fn player_entry(&self) -> Location { self.player_entry }
+
+    fn gen_overworld<R: rand::Rng>(&mut self, rng: &mut R) {
+        use Terrain::*;
+
+        let noise_offset = rng.gen_range(0, 100);
+
+        for y in -128..128 {
+            for x in -128..128 {
+                let x = x as i8;
+                let y = y as i8;
+                let loc = Location::new(x, y, 0);
+                let noise = Location::new(x, y, noise_offset).noise();
+
+                self.terrain.set(
+                    loc,
+                    match noise {
+                        n if n > 0.8 => Tree,
+                        n if n > -0.8 => Grass,
+                        _ => Water,
+                    },
+                );
+            }
+        }
+    }
 
     fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R, entrance: Location) {
         use self::Prototerrain::*;
