@@ -1,6 +1,7 @@
 use Prefab;
 use Rng;
 use calx_grid::Dir6;
+use euclid::vec2;
 use field::Field;
 use form::Form;
 use location::{Location, Portal};
@@ -87,7 +88,7 @@ impl Worldgen {
     fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R) {
         use self::Prototerrain::*;
 
-        let mut cells_to_dig = 500;
+        let mut cells_to_dig = 700;
 
         let mut map = screen_map(Location::new(0, 0, 0));
 
@@ -112,7 +113,7 @@ impl Worldgen {
             let adjacent_floors = Dir6::iter()
                 .filter(|d| map.get(dig_loc + **d) == Floor)
                 .count();
-            if rng.gen_range(0, cmp::max(1, adjacent_floors * 2)) != 0 {
+            if rng.gen_range(0, cmp::max(1, adjacent_floors * adjacent_floors)) != 0 {
                 continue;
             }
 
@@ -127,6 +128,20 @@ impl Worldgen {
             }
         }
 
+        // Postprocess
+        let cells: Vec<_> = map.iter().map(|(&loc, &c)| (loc, c)).collect();
+        for (loc, c) in cells.into_iter() {
+            // Clear pillars
+            if c == Unused {
+                let adjacent_floors = Dir6::iter().filter(|d| map.get(loc + **d) == Floor).count();
+
+                if adjacent_floors == 6 {
+                    map.set(loc, Floor);
+                }
+            }
+        }
+
+        // Map to actual terrains
         self.terrain.extend(map.iter().map(|(&loc, &t)| {
             let t = match t {
                 Outside => Terrain::Empty,
@@ -175,14 +190,32 @@ impl Default for Prototerrain {
 fn screen_map(origin: Location) -> Field<Prototerrain> {
     let mut ret = Field::new();
 
+    // Cells two cells away from the live area at the bottom of the screen can still affect
+    // the visible terrain via cell reshaping, so add those as well to the border.
+    const BORDER_MASK: [(i32, i32); 9] = [
+        (-1, -1),
+        (0, -1),
+        (1, 0),
+        (1, 1),
+        (0, 1),
+        (-1, 0),
+        (2, 1),
+        (2, 2),
+        (1, 2),
+    ];
+
     for &v in ::onscreen_locations() {
         let loc = origin + v;
-        for &d in Dir6::iter() {
-            if ret.get(loc + d) == Default::default() {
-                ret.set(loc + d, Prototerrain::Border);
+        // Paint border for every cell, all except the one from the cells at the actual border will
+        // be overwritten.
+        for d in &BORDER_MASK {
+            let vec = vec2(d.0, d.1);
+            if ret.get(loc + vec) == Default::default() {
+                ret.set(loc + vec, Prototerrain::Border);
             }
-            ret.set(loc, Prototerrain::Unused);
         }
+
+        ret.set(loc, Prototerrain::Unused);
     }
 
     ret
