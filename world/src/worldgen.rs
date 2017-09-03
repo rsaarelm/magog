@@ -186,7 +186,7 @@ impl Worldgen {
 
         // XXX: This thing needs to be more automatic
         // Make the backportal cell have transparent terrain
-        self.terrain.set(entrance - vec2(1, 1), Terrain::Empty);
+        self.terrain.set(entrance - vec2(2, 2), Terrain::Empty);
     }
 
     /// Make a cave entrance going down.
