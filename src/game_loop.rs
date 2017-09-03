@@ -33,6 +33,7 @@ enum AimAction {
 pub struct GameLoop {
     pub world: World,
     pub console: display::Console,
+    camera_loc: Location,
     state: State,
 }
 
@@ -41,6 +42,7 @@ impl GameLoop {
         GameLoop {
             world,
             console: display::Console::default(),
+            camera_loc: Location::new(0, 0, 0),
             state: State::Main,
         }
     }
@@ -290,8 +292,10 @@ impl GameLoop {
     }
 
     pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
-        let camera_loc = Location::new(0, 0, 0);
-        let mut view = display::WorldView::new(camera_loc, *screen_area);
+        // Ugh
+        self.world.player().map(|x| self.world.location(x).map(|l| self.camera_loc = l));
+
+        let mut view = display::WorldView::new(self.camera_loc, *screen_area);
         view.show_cursor = true;
 
         view.draw(&self.world, context);
