@@ -84,14 +84,10 @@ impl WorldView {
                 in_map_memory = false;
             } else {
                 in_map_memory = true;
-                if let Some(&remembered) =
-                    origins.iter().rev().find(|&&orig| {
-                        get_fov(world, orig + chart_pos) == Some(FovStatus::Remembered)
-                    })
-                {
-                    loc = remembered + chart_pos;
-                } else {
-                    // Got nothing, bail out.
+                // Only accept map memory from the base layer (top of origins stack)
+                loc = origins[origins.len() - 1] + chart_pos;
+                if get_fov(world, loc) != Some(FovStatus::Remembered) {
+                    // Bail out if there's no memory
                     continue;
                 }
             }
