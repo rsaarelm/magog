@@ -47,7 +47,7 @@ impl<'a> FovValue for SightFov<'a> {
             ret.origin = dest - offset;
         }
 
-        if self.w.terrain(self.origin + offset).blocks_sight() {
+        if self.w.terrain(ret.origin + offset).blocks_sight() {
             ret.is_edge = true;
         }
 
