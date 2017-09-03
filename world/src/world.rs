@@ -107,8 +107,9 @@ impl<'a> World {
 }
 
 impl TerrainQuery for World {
-    fn is_valid_location(&self, loc: Location) -> bool {
-        Location::origin().v2_at(loc).map_or(false, ::on_screen)
+    fn is_valid_location(&self, _loc: Location) -> bool {
+        //Location::origin().v2_at(loc).map_or(false, ::on_screen)
+        true
     }
 
     fn terrain(&self, loc: Location) -> Terrain {
