@@ -94,6 +94,11 @@ impl Builder {
         self
     }
 
+    pub fn sheet(mut self, sheet_name: &str) -> Builder {
+        self.sheet_name = sheet_name.to_string();
+        self
+    }
+
     /// Set the foreground and background colors for the brush.
     pub fn colors<C: Into<Rgba>, D: Into<Rgba>>(mut self, color: C, back_color: D) -> Builder {
         self.color = color.into();
