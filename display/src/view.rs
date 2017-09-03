@@ -1,13 +1,16 @@
 use Icon;
 use backend::MagogContext;
+use brush::Frame;
 use cache;
 use calx_alg::timing;
+use calx_color::color;
 use calx_grid::{Dir6, FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
 use sprite::Sprite;
 use std::collections::HashMap;
 use std::iter::FromIterator;
+use std::rc::Rc;
 use world::{self, FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
@@ -67,28 +70,30 @@ impl WorldView {
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(context.mouse_pos() - center);
 
-        let mut fov_status = Some(FovStatus::Seen);
-
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
 
-            let loc = origins[0] + chart_pos;
+            let mut loc = origins[0] + chart_pos;
 
-            // Always draw FOV if there's an active player with a map memory component.
-            if let Some(player) = world.player() {
-                fov_status = world.ecs().map_memory.get(player).map_or(
-                    None,
-                    |fov| fov.status(loc),
-                );
-            }
+            let in_map_memory;
 
-            if fov_status.is_none() {
-                continue;
-            }
-
-            if fov_status == Some(FovStatus::Remembered) {
-                // TODO: Map memory display.
-                continue;
+            // If the chart position is in live FOV, we want to show the deepest stack coordinate.
+            // If it's not, we want to start looking for the map memory one from the top of the
+            // stack.
+            if get_fov(world, loc) == Some(FovStatus::Seen) {
+                in_map_memory = false;
+            } else {
+                in_map_memory = true;
+                if let Some(&remembered) =
+                    origins.iter().rev().find(|&&orig| {
+                        get_fov(world, orig + chart_pos) == Some(FovStatus::Remembered)
+                    })
+                {
+                    loc = remembered + chart_pos;
+                } else {
+                    // Got nothing, bail out.
+                    continue;
+                }
             }
 
             let screen_pos = chart_to_view(chart_pos.to_point()) + center;
@@ -98,29 +103,35 @@ impl WorldView {
                 sprites.push(Sprite {
                     layer: layer,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: brush.clone(),
+                    brush: if in_map_memory {
+                        map_memory_colorize(brush.clone())
+                    } else {
+                        brush.clone()
+                    },
                     frame_idx: frame_idx,
                 })
             });
 
-            for &i in &world.entities_at(loc) {
-                if let Some(desc) = world.ecs().desc.get(i) {
-                    let layer = if world.is_mob(i) {
-                        Layer::Object
-                    } else {
-                        Layer::Items
-                    };
-                    let frame_idx = if world.is_bobbing(i) {
-                        timing::cycle_anim(1.0 / 3.0, 2)
-                    } else {
-                        0
-                    };
-                    sprites.push(Sprite {
-                        layer: layer,
-                        offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: cache::entity(desc.icon),
-                        frame_idx: frame_idx,
-                    });
+            if !in_map_memory {
+                for &i in &world.entities_at(loc) {
+                    if let Some(desc) = world.ecs().desc.get(i) {
+                        let layer = if world.is_mob(i) {
+                            Layer::Object
+                        } else {
+                            Layer::Items
+                        };
+                        let frame_idx = if world.is_bobbing(i) {
+                            timing::cycle_anim(1.0 / 3.0, 2)
+                        } else {
+                            0
+                        };
+                        sprites.push(Sprite {
+                            layer: layer,
+                            offset: [screen_pos.x as i32, screen_pos.y as i32],
+                            brush: cache::entity(desc.icon),
+                            frame_idx: frame_idx,
+                        });
+                    }
                 }
             }
 
@@ -176,6 +187,32 @@ impl WorldView {
 
         for i in &sprites {
             i.draw(context)
+        }
+
+        fn get_fov(world: &World, loc: Location) -> Option<FovStatus> {
+            if let Some(player) = world.player() {
+                world.ecs().map_memory.get(player).map_or(
+                    Some(FovStatus::Seen),
+                    |fov| fov.status(loc),
+                )
+            } else {
+                Some(FovStatus::Seen)
+            }
+        }
+
+        fn map_memory_colorize(brush: Rc<Vec<Frame>>) -> Rc<Vec<Frame>> {
+            // XXX: This is horribly wasteful memory churning.
+            use std::ops::Deref;
+
+            let mut ret: Vec<Frame> = brush.deref().clone();
+            for frame in ret.iter_mut() {
+                for splat in frame.iter_mut() {
+                    splat.color = color::BLACK.into_array();
+                    splat.back_color = color::BROWN.into_array();
+                }
+            }
+
+            Rc::new(ret)
         }
     }
 }
