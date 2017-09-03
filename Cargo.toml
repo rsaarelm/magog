@@ -9,9 +9,6 @@ license = "GPL3"
 [workspace]
 members = ["world", "display"]
 
-[profile.release]
-lto = true
-
 [dependencies]
 rand = "0.3"
 euclid = "0.15"
