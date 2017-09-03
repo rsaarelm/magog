@@ -51,7 +51,7 @@ impl GameLoop {
     fn smart_step(&mut self, dir: Dir6) -> CommandResult {
         let player = self.world.player().ok_or(())?;
         let loc = self.world.location(player).ok_or(())?;
-        let destination = loc + dir;
+        let destination = loc.jump(&self.world, dir);
 
         if let Some(mob) = self.world.mob_at(destination) {
             if self.world.is_hostile_to(player, mob) {
