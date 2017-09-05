@@ -219,9 +219,13 @@ where
             }
         }
         terrain::Form::Prop => {
+            draw(Layer::Floor, Up, &cache::terrain(Terrain::Empty), 0);
+
             draw(Layer::Object, South, &brush, 0);
         }
         terrain::Form::Blob => {
+            draw(Layer::Floor, Up, &cache::terrain(Terrain::Empty), 0);
+
             // Draw the solid blob first to block out other stuff.
             let solid = cache::misc(Icon::SolidBlob);
             blobform(&kernel, &solid, true, &mut draw);
@@ -229,6 +233,8 @@ where
             blobform(&kernel, &brush, false, &mut draw);
         }
         terrain::Form::Wall => {
+            draw(Layer::Floor, Up, &cache::terrain(Terrain::Empty), 0);
+
             let extends = kernel.wall_extends();
             if extends[0] {
                 draw(Layer::Object, XWall, &brush, 2);
