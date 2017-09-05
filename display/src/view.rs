@@ -3,7 +3,7 @@ use backend::MagogContext;
 use brush::Frame;
 use cache;
 use calx_alg::timing;
-use calx_color::color;
+use calx_color::{Rgba, color};
 use calx_grid::{Dir6, FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
@@ -204,7 +204,7 @@ impl WorldView {
             for frame in ret.iter_mut() {
                 for splat in frame.iter_mut() {
                     splat.color = color::BLACK.into_array();
-                    splat.back_color = color::BROWN.into_array();
+                    splat.back_color = Rgba::from(0x332200ff).into_array();
                 }
             }
 
