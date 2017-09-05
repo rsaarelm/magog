@@ -12,6 +12,20 @@ pub trait TerrainQuery {
     /// If location contains a portal, return the destination of the portal.
     fn portal(&self, loc: Location) -> Option<Location>;
 
+    /// Return whether location has a border portals.
+    ///
+    /// Portals are divided into border and hole portals. A hole portal is usually surrounded by
+    /// local scenery at all sides, while border portals are assumed to be at the edges of a convex
+    /// patch of local terrain with nothing local past them.
+    ///
+    /// The difference between the two is important in how map memory works, map memory display
+    /// goes through border portals normally, but ignores hole portals.
+    fn is_border_portal(&self, loc: Location) -> bool {
+        // TODO: Implement internal data for border portals
+        // Turn type Portal in the internal portal data into enum { Border(Portal), Edge(Portal) }
+        false
+    }
+
     /// The cell has not (probably) been touched by map generation yet.
     fn is_untouched(&self, loc: Location) -> bool;
 

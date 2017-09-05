@@ -262,7 +262,16 @@ impl<'a> FovValue for ScreenFov<'a> {
         // With non-void terrain on top of the portal, just show our side and stay on the current
         // frame as far as FOV is concerned.
         if let Some(dest) = self.w.visible_portal(loc) {
-            ret.origins.insert(0, dest - offset);
+            if self.w.is_border_portal(loc) {
+                // A border portal will just overwrite the current origin. Map memory will
+                // transition seamlessly to show the things past the border portal
+                ret.origins[0] = dest - offset;
+            } else {
+                // A hole portal will add a new layer to the origins stack,
+                // we still need to be able to show the previous layer when
+                // showing map memory.
+                ret.origins.insert(0, dest - offset);
+            }
         }
 
         Some(ret)
