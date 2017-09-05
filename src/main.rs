@@ -7,7 +7,6 @@ extern crate glium;
 extern crate scancode;
 extern crate vitral;
 extern crate calx_grid;
-extern crate calx_ecs;
 #[macro_use]
 extern crate calx_alg;
 extern crate world;

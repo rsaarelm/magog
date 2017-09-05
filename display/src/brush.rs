@@ -95,7 +95,7 @@ impl Builder {
         self
     }
 
-    pub fn sheet(mut self, sheet_name: &str) -> Builder {
+    pub fn _sheet(mut self, sheet_name: &str) -> Builder {
         self.sheet_name = sheet_name.to_string();
         self
     }
@@ -137,7 +137,7 @@ impl Builder {
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
     /// Add a multiple frame splat for a standard tile to the splat matrix.
-    pub fn tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
+    pub fn _tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
 
     /// Add a simple mob that has a bobbing animation
     pub fn mob(self, x: u32, y: u32) -> Builder {
