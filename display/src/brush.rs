@@ -5,6 +5,7 @@ use calx_color::color::*;
 use euclid::{Rect, rect, Vector2D, vec2};
 use std::fmt;
 use std::rc::Rc;
+use std::iter::{self, Take, Repeat};
 use vitral;
 
 pub type Color = [f32; 4];
@@ -125,7 +126,8 @@ impl Builder {
             .collect::<Vec<Splat>>();
         assert!(
             self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
-            "Splat frame count does not match previous parallel splats"
+            "Splat frame count {} does not match previous parallel splats with count {}",
+            matrix_column.len(), self.splat_matrix[0].len()
         );
         self.splat_matrix.push(matrix_column);
         self
@@ -133,6 +135,9 @@ impl Builder {
 
     /// Add a single-frame splat for a standard tile to the splat matrix.
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
+
+    /// Add a multiple frame splat for a standard tile to the splat matrix.
+    pub fn tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
 
     /// Add a simple mob that has a bobbing animation
     pub fn mob(self, x: u32, y: u32) -> Builder {
@@ -200,6 +205,7 @@ impl Builder {
     }
 }
 
+#[derive(Clone)]
 pub struct Geom {
     offset: Vector2D<f32>,
     bounds: Rect<u32>,
@@ -224,6 +230,12 @@ impl Geom {
         // The BrushBuilder API expects all geom stuff to be IntoIter, so this returns Option for
         // one-shot iterable instead of a naked value.
         Some(Geom::new(16, 16, x, y, 32, 32))
+    }
+
+    pub fn tiles(n: usize, x: u32, y: u32) -> Take<Repeat<Geom>> {
+        // The BrushBuilder API expects all geom stuff to be IntoIter, so this returns Option for
+        // one-shot iterable instead of a naked value.
+        iter::repeat(Geom::new(16, 16, x, y, 32, 32)).take(n)
     }
 
     pub fn blob(vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Vec<Geom> {
