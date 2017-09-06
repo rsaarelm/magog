@@ -19,7 +19,7 @@ use world::Loadout;
 /// Static generated world.
 pub struct Worldgen {
     seed: u32,
-    terrain: Field<Terrain>,
+    terrain: HashMap<Location, Terrain>,
     portals: HashMap<Location, Portal>,
     spawns: Vec<(Location, Loadout)>,
     player_entry: Location,
@@ -29,15 +29,14 @@ impl Worldgen {
     pub fn new(seed: u32) -> Worldgen {
         let mut ret = Worldgen {
             seed: seed,
-            terrain: Field::new(),
+            terrain: HashMap::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
             player_entry: Location::new(0, 0, 0),
         };
 
         let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
-        ret.gen_overworld(&mut rng);
-        ret.cave_entrance(Location::new(10, 0, 0), Location::new(0, 0, 1));
+        ret.cave_entrance(Location::new(9, 0, 0), Location::new(0, 0, 1));
         ret.gen_caves(&mut rng, Location::new(0, 0, 1));
 
         ret
@@ -58,7 +57,7 @@ impl Worldgen {
         for (p, &(ref terrain, ref entities)) in prefab.iter() {
             let loc = origin + p;
 
-            self.terrain.set(loc, *terrain);
+            self.terrain.insert(loc, *terrain);
 
             for spawn in entities.iter() {
                 if spawn == "player" {
@@ -76,7 +75,26 @@ impl Worldgen {
 
     pub fn seed(&self) -> u32 { self.seed }
 
-    pub fn get_terrain(&self, loc: Location) -> Terrain { self.terrain.get(loc) }
+    pub fn get_terrain(&self, loc: Location) -> Terrain {
+        if let Some(&t) = self.terrain.get(&loc) {
+            t
+        } else {
+            self.default_terrain(loc)
+        }
+    }
+
+    fn default_terrain(&self, loc: Location) -> Terrain {
+        use Terrain::*;
+        if loc.z == 0 {
+            match loc.noise() {
+                n if n > 0.8 => Tree,
+                n if n > -0.8 => Grass,
+                _ => Water,
+            }
+        } else {
+            Terrain::Rock
+        }
+    }
 
     pub fn get_portal(&self, loc: Location) -> Option<Location> {
         self.portals.get(&loc).map(|&p| loc + p)
@@ -85,30 +103,6 @@ impl Worldgen {
     pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
 
     pub fn player_entry(&self) -> Location { self.player_entry }
-
-    fn gen_overworld<R: rand::Rng>(&mut self, rng: &mut R) {
-        use Terrain::*;
-
-        let noise_offset = rng.gen_range(0, 100);
-
-        for y in -40..40 {
-            for x in -40..40 {
-                let x = x as i8;
-                let y = y as i8;
-                let loc = Location::new(x, y, 0);
-                let noise = Location::new(x, y, noise_offset).noise();
-
-                self.terrain.set(
-                    loc,
-                    match noise {
-                        n if n > 0.8 => Tree,
-                        n if n > -0.8 => Grass,
-                        _ => Water,
-                    },
-                );
-            }
-        }
-    }
 
     fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R, entrance: Location) {
         use self::Prototerrain::*;
@@ -186,7 +180,7 @@ impl Worldgen {
 
         // XXX: This thing needs to be more automatic
         // Make the backportal cell have transparent terrain
-        self.terrain.set(entrance - vec2(2, 2), Terrain::Empty);
+        self.terrain.insert(entrance - vec2(2, 2), Terrain::Empty);
     }
 
     /// Make a cave entrance going down.
@@ -195,11 +189,11 @@ impl Worldgen {
 
         for &v in &DOWNBOUND_ENCLOSURE {
             let loc = loc + vec2(v.0, v.1);
-            self.terrain.set(loc, Terrain::Rock);
+            self.terrain.insert(loc, Terrain::Rock);
         }
 
-        self.terrain.set(loc, Terrain::Ground);
-        self.terrain.set(loc + vec2(1, 1), Terrain::Ground);
+        self.terrain.insert(loc, Terrain::Ground);
+        self.terrain.insert(loc + vec2(1, 1), Terrain::Ground);
 
         // Connect the points
         self.portal(loc + vec2(1, 1), cave_start);
@@ -212,7 +206,7 @@ impl Worldgen {
             origin,
             Portal::new(origin, destination),
         );
-        self.terrain.set(origin, Terrain::Empty);
+        self.terrain.insert(origin, Terrain::Empty);
     }
 }
 
