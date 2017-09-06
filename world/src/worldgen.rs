@@ -5,13 +5,11 @@ use euclid::vec2;
 use field::Field;
 use form::Form;
 use location::{Location, Portal};
-use mapfile;
-use rand::{self, Rand, SeedableRng};
+use rand::{self, SeedableRng};
 use serde;
 use std::cmp;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::io::Cursor;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
@@ -40,17 +38,6 @@ impl Worldgen {
         ret.gen_caves(&mut rng, Location::new(0, 0, 1));
 
         ret
-    }
-
-    fn sprint_map(&mut self) {
-        const SPRINT_PREFAB: &'static str = include_str!("../../sprint.ron");
-
-        let sprint_prefab = mapfile::load_prefab(&mut Cursor::new(SPRINT_PREFAB))
-            .expect("Corrupt sprint file");
-
-        // Top-left of the default on-screen area.
-        let origin = Location::new(-21, -22, 0);
-        self.load_prefab(origin, &sprint_prefab);
     }
 
     fn load_prefab(&mut self, origin: Location, prefab: &Prefab) {

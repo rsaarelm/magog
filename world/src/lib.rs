@@ -1,10 +1,8 @@
-extern crate num;
 extern crate rand;
 extern crate ron;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate vec_map;
 extern crate euclid;
 #[macro_use]
 extern crate lazy_static;
@@ -12,7 +10,6 @@ extern crate lazy_static;
 extern crate error_chain;
 extern crate calx_alg;
 extern crate calx_grid;
-extern crate calx_color;
 #[macro_use]
 extern crate calx_ecs;
 

@@ -20,7 +20,7 @@ pub trait TerrainQuery {
     ///
     /// The difference between the two is important in how map memory works, map memory display
     /// goes through border portals normally, but ignores hole portals.
-    fn is_border_portal(&self, loc: Location) -> bool {
+    fn is_border_portal(&self, _loc: Location) -> bool {
         // TODO: Implement internal data for border portals
         // Turn type Portal in the internal portal data into enum { Border(Portal), Edge(Portal) }
         false
