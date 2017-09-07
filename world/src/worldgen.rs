@@ -34,8 +34,13 @@ impl Worldgen {
         };
 
         let mut rng: Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
-        ret.cave_entrance(Location::new(9, 0, 0), Location::new(0, 0, 1));
-        ret.gen_caves(&mut rng, Location::new(0, 0, 1));
+
+        let mut cave_entrance = Location::new(9, 0, 0);
+
+        for cave_z in 1..11 {
+            ret.cave_entrance(cave_entrance, Location::new(0, 0, cave_z));
+            cave_entrance = ret.gen_caves(&mut rng, Location::new(0, 0, cave_z));
+        }
 
         ret
     }
@@ -91,7 +96,7 @@ impl Worldgen {
 
     pub fn player_entry(&self) -> Location { self.player_entry }
 
-    fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R, entrance: Location) {
+    fn gen_caves<R: rand::Rng>(&mut self, rng: &mut R, entrance: Location) -> Location {
         use self::Prototerrain::*;
 
         let mut cells_to_dig = 700;
@@ -152,6 +157,17 @@ impl Worldgen {
             }
         }
 
+        // Find opening for next map
+        let mut openings: Vec<Location> = map.iter()
+            .map(|(&loc, _)| loc)
+            .filter(|&loc| can_be_path_down_opening(&map, entrance, loc))
+            .collect();
+        // XXX FIXME: There's actually no guarantees made that this can't fail
+        // Fallback should be something like carving the exit to the bottom edge of the map
+        assert!(!openings.is_empty(), "No exit candidates");
+        let exit_loc = rand::sample(rng, openings, 1)[0];
+
+
         // Map to actual terrains
         self.terrain.extend(map.iter().map(|(&loc, &t)| {
             let t = match t {
@@ -168,6 +184,25 @@ impl Worldgen {
         // XXX: This thing needs to be more automatic
         // Make the backportal cell have transparent terrain
         self.terrain.insert(entrance - vec2(2, 2), Terrain::Empty);
+
+
+        return exit_loc;
+
+        fn can_be_path_down_opening(
+            map: &Field<Prototerrain>,
+            origin: Location,
+            loc: Location,
+        ) -> bool {
+            const MIN_EXIT_DISTANCE: i32 = 12;
+
+            loc.metric_distance(origin) > MIN_EXIT_DISTANCE && map.get(loc) == Floor &&
+                map.get(loc + Dir6::North) == Floor &&
+                map.get(loc + Dir6::Northeast) != Floor &&
+                map.get(loc + Dir6::Southeast) != Floor &&
+                map.get(loc + Dir6::South) != Floor &&
+                map.get(loc + Dir6::Southwest) != Floor &&
+                map.get(loc + Dir6::Northwest) != Floor
+        }
     }
 
     /// Make a cave entrance going down.

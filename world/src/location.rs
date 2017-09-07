@@ -78,6 +78,13 @@ impl Location {
         }
     }
 
+    /// Distance that defaults to max integer value for separate zones.
+    ///
+    /// Can be used for situations that want a straightforward metric function like A* search.
+    pub fn metric_distance(&self, other: Location) -> i32 {
+        self.distance_from(other).unwrap_or(i32::max_value())
+    }
+
     pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
         if let Some(v) = self.v2_at(other) {
             Some(Dir6::from_v2(v))
