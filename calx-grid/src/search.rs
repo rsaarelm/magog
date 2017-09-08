@@ -18,7 +18,7 @@ pub trait GridNode: PartialEq + Eq + Clone + Hash + PartialOrd + Ord {
 /// only supports underlying graphs with a fixed grid graph where the
 /// neighbors of each node must be the adjacent grid cells of that node.
 pub struct Dijkstra<N> {
-    weights: HashMap<N, u32>,
+    pub weights: HashMap<N, u32>,
 }
 
 impl<N: GridNode> Dijkstra<N> {
