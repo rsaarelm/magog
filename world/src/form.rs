@@ -1,5 +1,7 @@
+use calx_alg::WeightedChoice;
 use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType};
 use item::ItemType;
+use rand::Rng;
 use stats::{Intrinsic, Stats};
 use stats::Intrinsic::*;
 use world::{Component, Loadout};
@@ -21,9 +23,24 @@ pub struct Form {
     pub loadout: Loadout,
 }
 
+/// Sample a weighted choice from a filtered Form selection.
+pub fn rand<R: Rng>(rng: &mut R, selection: &Vec<&'static Form>) -> Option<&'static Form> {
+    selection
+        .weighted_choice(rng, |item| if item.rarity == 0.0 {
+            0.0
+        } else {
+            1.0 / item.rarity
+        })
+        .cloned()
+}
+
 impl Form {
     pub fn named(name: &str) -> Option<&'static Form> {
         FORMS.iter().find(|x| x.name() == Some(name))
+    }
+
+    pub fn filter<F: Fn(&Form) -> bool>(p: F) -> Vec<&'static Form> {
+        FORMS.iter().filter(|&x| p(x)).collect()
     }
 
     /// Create a standard form for a living creature.
@@ -82,6 +99,12 @@ impl Form {
         }
     }
 
+    pub fn is_item(&self) -> bool { self.loadout.item.is_some() }
+
+    pub fn is_mob(&self) -> bool { self.loadout.brain.is_some() }
+
+    pub fn at_depth(&self, depth: i32) -> bool { self.min_depth <= depth }
+
     pub fn c<C: Component>(mut self, comp: C) -> Form {
         self.loadout = self.loadout.c(comp);
         self
@@ -97,8 +120,8 @@ lazy_static! {
         Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
         Form::mob("snake",      Icon::Snake,      1,  &[]).reptile(),
 
-        Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon),
-        Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)),
+        Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon).rarity(10.0),
+        Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)).depth(3),
         Form::item("wand of confusion",   Icon::Wand2,     5,  ItemType::TargetedUsable(Confuse)),
         Form::item("scroll of lightning", Icon::Scroll1,   1,  ItemType::UntargetedUsable(Lightning)),
         ]

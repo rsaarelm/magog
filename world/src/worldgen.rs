@@ -1,9 +1,9 @@
 use Prefab;
 use Rng;
-use calx_grid::Dir6;
+use calx_grid::{Dijkstra, Dir6};
 use euclid::vec2;
 use field::Field;
-use form::Form;
+use form::{self, Form};
 use location::{Location, Portal};
 use rand::{self, SeedableRng};
 use serde;
@@ -157,8 +157,9 @@ impl Worldgen {
             }
         }
 
+
         // Find opening for next map
-        let mut openings: Vec<Location> = map.iter()
+        let openings: Vec<Location> = map.iter()
             .map(|(&loc, _)| loc)
             .filter(|&loc| can_be_path_down_opening(&map, entrance, loc))
             .collect();
@@ -166,6 +167,48 @@ impl Worldgen {
         // Fallback should be something like carving the exit to the bottom edge of the map
         assert!(!openings.is_empty(), "No exit candidates");
         let exit_loc = rand::sample(rng, openings, 1)[0];
+
+
+        // Spawns
+        const MIN_DISTANCE_FROM_ENTRANCE: u32 = 10;
+        let depth = entrance.z as i32;
+        // Flood-fill the new map
+        let mut spawn_map = Dijkstra::new(vec![entrance], |&loc| map.get(loc) == Floor, 10000)
+            .weights;
+        // Filter stuff too close to entrance
+        spawn_map.retain(|_, &mut w| w >= MIN_DISTANCE_FROM_ENTRANCE);
+        // Don't need weights anymore, convert to Vec.
+        let mut spawn_locs: Vec<Location> = spawn_map.into_iter().map(|(loc, _)| loc).collect();
+        // Filter stuff next to walls, only spawn in open areas
+        spawn_locs.retain(|&loc| {
+            Dir6::iter()
+                .map(|&d| (map.get(loc + d) == Floor) as u32)
+                .sum::<u32>() > 3
+        });
+
+        let mut spawn_locs = rand::sample(rng, spawn_locs.iter(), 20);
+
+        let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
+        for &loc in spawn_locs.drain(0..10) {
+            self.spawns.push((
+                loc,
+                form::rand(rng, &items)
+                    .expect("No item spawn")
+                    .loadout
+                    .clone(),
+            ))
+        }
+
+        let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
+        for &loc in spawn_locs.drain(0..10) {
+            self.spawns.push((
+                loc,
+                form::rand(rng, &mobs)
+                    .expect("No mob spawn")
+                    .loadout
+                    .clone(),
+            ))
+        }
 
 
         // Map to actual terrains
