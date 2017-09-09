@@ -128,14 +128,14 @@ pub trait WeightedChoice {
         F: Fn(&Self::Item) -> f32;
 }
 
-impl<T, I: Iterator<Item = T> + Sized> WeightedChoice for I {
+impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     type Item = T;
 
     fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
     where
         F: Fn(&Self::Item) -> f32,
     {
-        let (_, ret) = self.fold((0.0, None), |(weight_sum, prev_item), item| {
+        let (_, ret) = self.into_iter().fold((0.0, None), |(weight_sum, prev_item), item| {
             let item_weight = weight_fn(&item);
             debug_assert!(item_weight >= 0.0);
             let p = item_weight / (weight_sum + item_weight);
