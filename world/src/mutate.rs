@@ -60,7 +60,7 @@ pub trait Mutate: Query + Terraform + Sized {
             if !self.is_npc(npc) {
                 continue;
             }
-            if self.acts_this_frame(npc) {
+            if self.ticks_this_frame(npc) {
                 self.run_ai_for(npc)
             }
         }
@@ -68,11 +68,28 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Run AI for one non-player-controlled creature.
     fn run_ai_for(&mut self, npc: Entity) {
+        const WAKEUP_DISTANCE: i32 = 5;
+
         use components::BrainState::*;
         let brain_state = self.brain_state(npc).expect("Running AI for non-mob");
         match brain_state {
             Asleep => {
-                // No-op designator
+                // XXX: Only treat player mob as potential hostile.
+                if let (Some(loc), Some(player), Some(player_loc)) = (self.location(npc), self.player(), self.player().map(|p| self.location(p)).unwrap_or(None)) {
+                    if self.player_sees(loc) {
+                        // Okay, tricky spot. Player might be seeing mob across a portal, in
+                        // which case we can't do naive distance check.
+                        // This could have a helper method that finds chart distance to self in
+                        // player's map memory.
+                        //
+                        // For now, let's just go with mobs past portals not waking up to
+                        // player.
+
+                        if loc.metric_distance(player_loc) <= WAKEUP_DISTANCE {
+                            self.designate_enemy(npc, player);
+                        }
+                    }
+                }
             }
             Hunting(target) => {
                 if let (Some(my_loc), Some(target_loc)) =
