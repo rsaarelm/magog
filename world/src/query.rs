@@ -303,6 +303,12 @@ pub trait Query: TerrainQuery + Sized {
         use Terrain::*;
 
         let mut t = self.terrain(loc);
+
+        // Draw gates under portals when drawing non-portaled stuff
+        if t == Empty && self.portal(loc).is_some() {
+            return Gate;
+        }
+
         // Floor terrain dot means "you can step here". So if the floor is outside the valid play
         // area, don't show the dot.
         //

@@ -212,7 +212,7 @@ where
             draw(Layer::Floor, Up, &brush, 0);
         }
         terrain::Form::Gate => {
-            if let Some(d12) = Dir12::away_from(&kernel.void_mask()) {
+            if let Some(d12) = Dir12::away_from(&kernel.walk_mask()) {
                 draw(Layer::Floor, Up, &brush, d12 as usize + 1);
             } else {
                 draw(Layer::Floor, Up, &brush, 0);
@@ -309,15 +309,15 @@ impl Kernel {
         ]
     }
 
-    /// Mark neighbors that are not void terrain as true.
-    pub fn void_mask(&self) -> [bool; 6] {
+    /// Mark neighbors that are walkable terrain as true.
+    pub fn walk_mask(&self) -> [bool; 6] {
         [
-            self.n.form() != terrain::Form::Void,
-            self.ne.form() != terrain::Form::Void,
-            self.se.form() != terrain::Form::Void,
-            self.s.form() != terrain::Form::Void,
-            self.sw.form() != terrain::Form::Void,
-            self.nw.form() != terrain::Form::Void,
+            !self.n.blocks_walk(),
+            !self.ne.blocks_walk(),
+            !self.se.blocks_walk(),
+            !self.s.blocks_walk(),
+            !self.sw.blocks_walk(),
+            !self.nw.blocks_walk(),
         ]
     }
 }

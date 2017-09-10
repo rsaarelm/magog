@@ -86,7 +86,17 @@ impl WorldView {
                 in_map_memory = true;
                 // Only accept map memory from the base layer (top of origins stack)
                 loc = origins[origins.len() - 1] + chart_pos;
-                if get_fov(world, loc) != Some(FovStatus::Remembered) {
+
+                let mut gate_point = false;
+                // Special case for terrain immediately below a portal when the portal destination
+                // is in map memory, it should be drawn as a gate icon in map memory.
+                if let Some(endpoint) = world.portal(loc) {
+                    if get_fov(world, endpoint) == Some(FovStatus::Remembered) {
+                        gate_point = true;
+                    }
+                }
+
+                if !gate_point && get_fov(world, loc) != Some(FovStatus::Remembered) {
                     // Bail out if there's no memory
                     continue;
                 }
@@ -108,6 +118,8 @@ impl WorldView {
                 })
             });
 
+            // Draw entities in directly seen cells
+            // TODO: Items should be drawn even in map memory
             if !in_map_memory {
                 for &i in &world.entities_at(loc) {
                     if let Some(desc) = world.ecs().desc.get(i) {
@@ -131,6 +143,7 @@ impl WorldView {
                 }
             }
 
+            // XXX: This doesn't belong here, figure out a better place for debug visualizations
             if self.highlight_offscreen_tiles {
                 if let Some(loc) = Location::origin().v2_at(loc) {
                     if !world::on_screen(loc) {
