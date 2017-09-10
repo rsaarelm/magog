@@ -197,10 +197,11 @@ pub trait Mutate: Query + Terraform + Sized {
             if let Some(target) = self.mob_at(loc.jump(self, dir)) {
 
                 // XXX: Using power stat for damage, should this be different?
+                // Do +5 since dmg 1 is really, really useless.
                 let damage = ::attack_damage(
                     self.roll(),
                     self.stats(e).attack,
-                    self.stats(e).power,
+                    5 + self.stats(e).power,
                     self.stats(target).defense,
                     self.stats(target).armor,
                 );
