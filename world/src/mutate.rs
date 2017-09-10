@@ -75,7 +75,13 @@ pub trait Mutate: Query + Terraform + Sized {
         match brain_state {
             Asleep => {
                 // XXX: Only treat player mob as potential hostile.
-                if let (Some(loc), Some(player), Some(player_loc)) = (self.location(npc), self.player(), self.player().map(|p| self.location(p)).unwrap_or(None)) {
+                if let (Some(loc), Some(player), Some(player_loc)) =
+                    (
+                        self.location(npc),
+                        self.player(),
+                        self.player().map(|p| self.location(p)).unwrap_or(None),
+                    )
+                {
                     if self.player_sees(loc) {
                         // Okay, tricky spot. Player might be seeing mob across a portal, in
                         // which case we can't do naive distance check.

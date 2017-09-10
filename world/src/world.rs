@@ -1,6 +1,5 @@
 use Rng;
 use calx_ecs::Entity;
-use rand::SeedableRng;
 use calx_grid::HexFov;
 use command::{Command, CommandResult};
 use components;
@@ -12,6 +11,7 @@ use item::Slot;
 use location::{Location, Portal};
 use mutate::Mutate;
 use query::Query;
+use rand::SeedableRng;
 use ron;
 use spatial::{Place, Spatial};
 use stats;
