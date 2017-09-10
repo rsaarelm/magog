@@ -187,9 +187,10 @@ impl Worldgen {
         });
 
         let mut spawn_locs = rand::sample(rng, spawn_locs.iter(), 20);
+        let n_spawns = spawn_locs.len();
 
         let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
-        for &loc in spawn_locs.drain(0..10) {
+        for &loc in spawn_locs.drain(0..n_spawns / 2) {
             self.spawns.push((
                 loc,
                 form::rand(rng, &items)
@@ -200,7 +201,7 @@ impl Worldgen {
         }
 
         let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
-        for &loc in spawn_locs.drain(0..10) {
+        for &loc in spawn_locs.into_iter() {
             self.spawns.push((
                 loc,
                 form::rand(rng, &mobs)
