@@ -19,6 +19,7 @@ use game_loop::GameLoop;
 use glium::{DisplayBuild, glutin};
 use vitral::Context;
 use world::World;
+use rand::Rng;
 
 pub fn main() {
     // Construct display and Vitral context.
@@ -31,7 +32,9 @@ pub fn main() {
         screen_area.size.height as u32,
     );
 
-    let seed = 1;
+    let seed = rand::thread_rng().gen();
+    // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
+    println!("Seed: {}", seed);
 
     let mut game = GameLoop::new(World::new(seed));
 
