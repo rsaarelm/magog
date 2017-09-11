@@ -167,6 +167,7 @@ impl Worldgen {
         // Fallback should be something like carving the exit to the bottom edge of the map
         assert!(!openings.is_empty(), "No exit candidates");
         let exit_loc = rand::sample(rng, openings, 1)[0];
+        map.set(exit_loc, Border);
 
 
         // Spawns
@@ -239,7 +240,7 @@ impl Worldgen {
         ) -> bool {
             const MIN_EXIT_DISTANCE: i32 = 12;
 
-            loc.metric_distance(origin) > MIN_EXIT_DISTANCE && map.get(loc) == Floor &&
+            loc.metric_distance(origin) > MIN_EXIT_DISTANCE &&
                 map.get(loc + Dir6::North) == Floor &&
                 map.get(loc + Dir6::Northeast) != Floor &&
                 map.get(loc + Dir6::Southeast) != Floor &&
