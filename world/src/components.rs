@@ -13,6 +13,7 @@ pub enum Icon {
     Player,
     Snake,
     Dreg,
+    Ogre,
 
     Sword,
     Wand1,

@@ -117,8 +117,9 @@ lazy_static! {
         vec![
         Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
             .c(MapMemory::default()),
-        Form::mob("dreg",       Icon::Dreg,       1,  &[Hands]),
+        Form::mob("dreg",       Icon::Dreg,       2,  &[Hands]),
         Form::mob("snake",      Icon::Snake,      1,  &[]).reptile(),
+        Form::mob("ogre",       Icon::Ogre,       5,  &[Hands]).depth(2),
 
         Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon).rarity(10.0),
         Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)).depth(3),

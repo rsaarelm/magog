@@ -59,6 +59,7 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
     ret.insert(Player as usize, Builder::new("assets/mobs.png").color(AZURE).mob(0, 0).finish());
     ret.insert(Snake as usize, Builder::new("assets/mobs.png").color(GREEN).mob(32, 0).finish());
     ret.insert(Dreg as usize, Builder::new("assets/mobs.png").color(OLIVE).mob(64, 0).finish());
+    ret.insert(Ogre as usize, Builder::new("assets/mobs.png").color(DARKCYAN).mob(96, 0).finish());
 
     ret.insert(Sword as usize, Builder::new("assets/props.png").color(WHITE).tile(128, 32).finish());
 
