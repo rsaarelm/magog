@@ -202,8 +202,7 @@ pub trait Mutate: Query + Terraform + Sized {
                     self.roll(),
                     self.stats(e).attack,
                     5 + self.stats(e).power,
-                    self.stats(target).defense,
-                    self.stats(target).armor,
+                    self.stats(target).defense + 2 * self.stats(target).armor,
                 );
 
                 if damage == 0 {
