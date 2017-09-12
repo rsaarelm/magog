@@ -70,6 +70,8 @@ impl Canvas {
     pub fn draw(&mut self, display: &glium::Display, zoom: CanvasZoom) {
         let mut target = display.draw();
 
+        target.clear_color(0.0, 0.0, 0.0, 0.0);
+
         let (w, h) = display.get_framebuffer_dimensions();
 
         // Build the geometry for the on-screen rectangle.
