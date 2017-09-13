@@ -136,6 +136,9 @@ impl Builder {
     /// Add a single-frame splat for a standard tile to the splat matrix.
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
+    /// Add an arbitrary sized rectangle.
+    pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder { self.splat(Some(Geom::new(0, 0, x, y, w, h))) }
+
     /// Add a multiple frame splat for a standard tile to the splat matrix.
     pub fn _tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
 

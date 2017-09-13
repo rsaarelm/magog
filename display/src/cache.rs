@@ -15,6 +15,7 @@ thread_local! {
         // must resolve at compile time.
         ret.load_png("assets/blobs.png".to_string(), include_bytes!("../assets/blobs.png")).expect("Error loading blobs.png");
         ret.load_png("assets/floors.png".to_string(), include_bytes!("../assets/floors.png")).expect("Error loading floors.png");
+        ret.load_png("assets/gui.png".to_string(), include_bytes!("../assets/gui.png")).expect("Error loading gui.png");
         ret.load_png("assets/logo.png".to_string(), include_bytes!("../assets/logo.png")).expect("Error loading logo.png");
         ret.load_png("assets/mobs.png".to_string(), include_bytes!("../assets/mobs.png")).expect("Error loading mobs.png");
         ret.load_png("assets/portals.png".to_string(), include_bytes!("../assets/portals.png")).expect("Error loading portals.png");

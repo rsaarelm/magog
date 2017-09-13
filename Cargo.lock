@@ -258,6 +258,7 @@ version = "0.1.0"
 dependencies = [
  "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "euclid 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",

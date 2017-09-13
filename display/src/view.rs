@@ -4,6 +4,7 @@ use brush::Frame;
 use cache;
 use calx_alg::timing;
 use calx_color::Rgba;
+use calx_ecs::Entity;
 use calx_grid::{Dir6, FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
@@ -139,6 +140,8 @@ impl WorldView {
                             brush: cache::entity(desc.icon),
                             frame_idx: frame_idx,
                         });
+
+                        draw_health_pips(&mut sprites, world, i, screen_pos);
                     }
                 }
             }
@@ -222,6 +225,40 @@ impl WorldView {
             }
 
             Rc::new(ret)
+        }
+
+        fn draw_health_pips(
+            sprites: &mut Vec<Sprite>,
+            world: &World,
+            e: Entity,
+            screen_pos: Point2D<f32>,
+        ) {
+            if !world.is_mob(e) {
+                return;
+            }
+
+            let hp = world.hp(e);
+            let max_hp = world.max_hp(e);
+
+            if hp == max_hp {
+                // Perfect health, draw nothing
+                return;
+            }
+
+            let limit = ((hp * 5) as f32 / max_hp as f32).ceil() as i32;
+
+            for x in 0..5 {
+                sprites.push(Sprite {
+                    layer: Layer::Effect,
+                    offset: [screen_pos.x as i32 + x * 4 - 10, screen_pos.y as i32 - 10],
+                    brush: cache::misc(if x < limit {
+                        Icon::HealthPip
+                    } else {
+                        Icon::DarkHealthPip
+                    }),
+                    frame_idx: 0,
+                });
+            }
         }
     }
 }

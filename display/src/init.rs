@@ -78,6 +78,8 @@ pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     ret.insert(CursorTop as usize, Builder::new("assets/props.png").color(RED).tile(32, 0).finish());
     ret.insert(CursorBottom as usize, Builder::new("assets/props.png").color(RED).tile(0, 0).finish());
     ret.insert(Portal as usize, Builder::new("assets/props.png").color(Rgba::from_str("#fa08").unwrap()).tile(0, 0).finish());
+    ret.insert(HealthPip as usize, Builder::new("assets/gui.png").color(LIMEGREEN).rect(0, 8, 4, 4).finish());
+    ret.insert(DarkHealthPip as usize, Builder::new("assets/gui.png").color(DARKSLATEGRAY).rect(0, 8, 4, 4).finish());
 
     ret
 }

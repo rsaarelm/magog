@@ -7,6 +7,7 @@ extern crate vec_map;
 extern crate vitral;
 extern crate vitral_atlas;
 extern crate world;
+extern crate calx_ecs;
 extern crate calx_grid;
 extern crate calx_color;
 extern crate calx_alg;
@@ -35,4 +36,6 @@ pub enum Icon {
     CursorTop,
     CursorBottom,
     Portal,
+    HealthPip,
+    DarkHealthPip,
 }
