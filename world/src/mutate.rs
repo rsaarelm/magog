@@ -9,7 +9,7 @@ use form::Form;
 use item::{MagicEffect, ItemType, Slot};
 use location::Location;
 use query::Query;
-use rand::Rng;
+use rand::{self, Rng};
 use terraform::Terraform;
 use terrain::Terrain;
 use volume::Volume;
@@ -349,14 +349,37 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Cast an undirected spell
     fn cast_spell(
         &mut self,
-        _origin: Location,
+        origin: Location,
         effect: Entity,
-        _caster: Option<Entity>,
+        caster: Option<Entity>,
     ) -> Result<(), ()> {
         if let ItemType::UntargetedUsable(effect) =
             self.ecs().item.get(effect).ok_or(())?.item_type
         {
             match effect {
+                MagicEffect::Lightning => {
+                    const LIGHTNING_RANGE: u32 = 4;
+                    const LIGHTNING_EFFECT: Effect = Effect::Hit {
+                        amount: 12,
+                        damage: Damage::Electricity,
+                    };
+
+                    // TODO: Make an API, more efficient lookup of entities within an area
+
+                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE).0.into_iter()
+                        .flat_map(|loc| self.entities_at(loc))
+                        .filter(|&e| self.is_mob(e) && Some(e) != caster).collect();
+
+                    let mut target = rand::sample(self.rng(), &targets, 1);
+
+                    if let Some(target) = target.pop() {
+                        msg!(self, "There is a peal of thunder.");
+                        let loc = self.location(*target).unwrap();
+                        self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);
+                    } else {
+                        msg!(self, "The spell fizzles.");
+                    }
+                }
                 _ => {
                     msg!(self, "TODO cast untargeted spell {:?}", effect);
                 }
