@@ -18,7 +18,7 @@ use euclid::Vector2D;
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
     ($ctx: expr, $fmt:expr) => {
-        let __event = Event::Msg($fmt);
+        let __event = Event::Msg($fmt.to_string());
         $ctx.push_event(__event);
     };
 
