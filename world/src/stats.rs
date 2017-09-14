@@ -28,7 +28,7 @@ pub struct Stats {
 
 impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
-        let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | i as u32);
+        let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
         Stats {
             power,
             intrinsics,
@@ -77,17 +77,18 @@ impl Add<Stats> for Stats {
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+/// Permanent creature properties.
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
-    Slow = 0b1,
+    Slow,
     /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast = 0b10,
+    Fast,
     /// Moves 1/3 faster than usual, stacks with Fast status.
-    Quick = 0b100,
+    Quick,
     /// Can manipulate objects and doors.
-    Hands = 0b1000,
+    Hands,
     /// Explodes on death
-    Deathsplosion = 0b10000,
+    Deathsplosion,
     /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
-    Dead = 0b100000,
+    Dead,
 }

@@ -199,7 +199,7 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
     fn has_intrinsic(&self, e: Entity, intrinsic: Intrinsic) -> bool {
-        self.stats(e).intrinsics & intrinsic as u32 != 0
+        self.stats(e).intrinsics & (1 << intrinsic as u32) != 0
     }
 
     /// Return if the entity is a mob that should get an update this frame
