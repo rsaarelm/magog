@@ -155,6 +155,8 @@ impl Health {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
     pub item_type: ItemType,
+    /// How many uses a wand or similar has left.
+    pub charges: u32,
 }
 
 

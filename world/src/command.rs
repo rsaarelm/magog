@@ -76,7 +76,12 @@ pub trait Command: Mutate + Sized {
         let player = self.player().ok_or(())?;
         let location = self.location(player).ok_or(())?;
         let item = self.entity_equipped(player, slot).ok_or(())?;
-        self.cast_spell(location, item, Some(player))?;
+        if self.uses_left(item) > 0 {
+            self.cast_spell(location, item, Some(player))?;
+            self.drain_charge(item);
+        } else {
+            msg!(self, "Nothing happens.");
+        }
         self.next_tick()
     }
 

@@ -451,4 +451,21 @@ pub trait Query: TerrainQuery + Sized {
             .cloned()
             .collect()
     }
+
+    /// Return number of times item can be used.
+    fn uses_left(&self, item: Entity) -> u32 { self.ecs().item.get(item).map_or(0, |i| i.charges) }
+
+    fn destroy_after_use(&self, item: Entity) -> bool {
+        // XXX: Fragile. What we want here is to tag potions and scrolls as destroyed when used and
+        // wands to stick around. Current item data doesn't have is_potion or is_scroll, but
+        // coincidentally the scrolls tend to be untargeted and the wands tend to be targeted
+        // spells, so we'll just use that as proxy.
+        self.ecs().item.get(item).map_or(false, |i| {
+            if let ItemType::UntargetedUsable(_) = i.item_type {
+                true
+            } else {
+                false
+            }
+        })
+    }
 }

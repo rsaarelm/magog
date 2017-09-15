@@ -366,9 +366,12 @@ pub trait Mutate: Query + Terraform + Sized {
 
                     // TODO: Make an API, more efficient lookup of entities within an area
 
-                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE).0.into_iter()
+                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE)
+                        .0
+                        .into_iter()
                         .flat_map(|loc| self.entities_at(loc))
-                        .filter(|&e| self.is_mob(e) && Some(e) != caster).collect();
+                        .filter(|&e| self.is_mob(e) && Some(e) != caster)
+                        .collect();
 
                     let mut target = rand::sample(self.rng(), &targets, 1);
 
@@ -448,6 +451,25 @@ pub trait Mutate: Query + Terraform + Sized {
     fn apply_effect(&mut self, effect: &Effect, volume: &Volume, source: Option<Entity>) {
         for loc in &volume.0 {
             self.apply_effect_to(effect, *loc, source);
+        }
+    }
+
+    fn drain_charge(&mut self, item: Entity) {
+        let mut emptied = false;
+        if let Some(i) = self.ecs_mut().item.get_mut(item) {
+            if i.charges > 0 {
+                i.charges -= 1;
+
+                if i.charges == 0 {
+                    emptied = true;
+                }
+            }
+        }
+
+        if emptied {
+            if self.destroy_after_use(item) {
+                self.kill_entity(item);
+            }
         }
     }
 }

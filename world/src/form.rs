@@ -64,7 +64,7 @@ impl Form {
             loadout: Loadout::new()
                 .c(Stats::new(power, &[]))
                 .c(Desc::new(name, brush))
-                .c(Item { item_type }),
+                .c(Item { item_type, charges: 1 }),
         }
     }
 
