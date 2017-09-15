@@ -2,7 +2,7 @@ use FovStatus;
 use Prefab;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexGeom};
-use components::{Alignment, BrainState, Icon};
+use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
 use item::{ItemType, Slot};
@@ -202,6 +202,14 @@ pub trait Query: TerrainQuery + Sized {
         self.stats(e).intrinsics & (1 << intrinsic as u32) != 0
     }
 
+    /// Return whether the entity has a specific temporary status
+    fn has_status(&self, e: Entity, status: Status) -> bool {
+        self.ecs().status.get(e).map_or(
+            false,
+            |s| s.contains_key(&status),
+        )
+    }
+
     /// Return if the entity is a mob that should get an update this frame
     /// based on its speed properties. Does not check for status effects like
     /// sleep that might prevent actual action.
@@ -215,7 +223,7 @@ pub trait Query: TerrainQuery + Sized {
         let phase = self.tick() % 5;
         match phase {
             0 => true,
-            1 => self.has_intrinsic(e, Intrinsic::Fast),
+            1 => self.has_status(e, Status::Fast),
             2 => true,
             3 => self.has_intrinsic(e, Intrinsic::Quick),
             4 => !self.has_intrinsic(e, Intrinsic::Slow),

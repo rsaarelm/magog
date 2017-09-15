@@ -4,6 +4,7 @@ use item::ItemType;
 use location::Location;
 use location_set::LocationSet;
 use stats::Stats;
+use std::collections::HashMap;
 
 /// The visual representation for an entity
 ///
@@ -166,3 +167,16 @@ pub struct Item {
 /// changes.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CompositeStats(pub Stats);
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+/// Temporary creature properties
+pub enum Status {
+    /// Creature is acting erratically
+    Confused,
+    /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
+    Dead,
+    /// Moves 1/3 faster than usual, stacks with Quick status.
+    Fast,
+}
+
+pub type Statuses = HashMap<Status, u32>;

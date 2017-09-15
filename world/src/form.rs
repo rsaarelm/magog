@@ -1,5 +1,5 @@
 use calx_alg::WeightedChoice;
-use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType};
+use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType, Statuses};
 use item::ItemType;
 use rand::Rng;
 use stats::{Intrinsic, Stats};
@@ -53,7 +53,8 @@ impl Form {
                 .c(Stats::new(power, intrinsics))
                 .c(Desc::new(name, brush))
                 .c(Brain::enemy())
-                .c(Health::new()),
+                .c(Health::new())
+                .c(Statuses::new()),
         }
     }
 
@@ -64,7 +65,10 @@ impl Form {
             loadout: Loadout::new()
                 .c(Stats::new(power, &[]))
                 .c(Desc::new(name, brush))
-                .c(Item { item_type, charges: 1 }),
+                .c(Item {
+                    item_type,
+                    charges: 1,
+                }),
         }
     }
 

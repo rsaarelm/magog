@@ -1,8 +1,8 @@
-use calx_alg::{Deciban, clamp};
+use calx_alg::{Deciban, clamp, RngExt};
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
-use components::BrainState;
+use components::{BrainState, Status};
 use effect::{Damage, Effect};
 use event::Event;
 use form::Form;
@@ -10,6 +10,7 @@ use item::{MagicEffect, ItemType, Slot};
 use location::Location;
 use query::Query;
 use rand::{self, Rng};
+use rand::Rand;
 use terraform::Terraform;
 use terrain::Terrain;
 use volume::Volume;
@@ -57,6 +58,8 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
         for npc in self.active_mobs().into_iter() {
+            self.heartbeat(npc);
+
             if !self.is_npc(npc) {
                 continue;
             }
@@ -183,6 +186,9 @@ pub trait Mutate: Query + Terraform + Sized {
     fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+        if self.confused_move(e) {
+            return Ok(());
+        }
         let loc = self.location(e).ok_or(())?.jump(self, dir);
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
@@ -193,6 +199,9 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+        if self.confused_move(e) {
+            return Ok(());
+        }
         if let Some(loc) = self.location(e) {
             if let Some(target) = self.mob_at(loc.jump(self, dir)) {
 
@@ -226,6 +235,36 @@ pub trait Mutate: Query + Terraform + Sized {
             }
         }
         Err(())
+    }
+
+    /// Randomly make a confused mob move erratically.
+    ///
+    /// Return true if confusion kicked in.
+    fn confused_move(&mut self, e: Entity) -> bool {
+        const CONFUSE_CHANCE_ONE_IN: u32 = 3;
+
+        if !self.has_status(e, Status::Confused) {
+            return false;
+        }
+
+        if self.rng().one_chance_in(CONFUSE_CHANCE_ONE_IN) {
+            let dir = Dir6::rand(self.rng());
+            let loc = if let Some(loc) = self.location(e) {
+                loc
+            } else {
+                return false;
+            };
+            let destination = loc.jump(self, dir);
+
+            if self.mob_at(destination).is_some() {
+                self.entity_melee(e, dir);
+            } else {
+                self.entity_step(e, dir);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     fn damage(&mut self, e: Entity, amount: i32, damage_type: Damage, source: Option<Entity>) {
@@ -414,8 +453,14 @@ pub trait Mutate: Query + Terraform + Sized {
                     let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                     self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
                 }
+                MagicEffect::Confuse => {
+                    const CONFUSION_RANGE: u32 = 9;
+
+                    let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
+                    self.apply_effect(&Effect::Confuse, &Volume::point(center), caster);
+                }
                 _ => {
-                    msg!(self, "TODO cast untargeted spell {:?}", effect);
+                    msg!(self, "TODO cast directed spell {:?}", effect);
                 }
             }
             Ok(())
@@ -434,7 +479,7 @@ pub trait Mutate: Query + Terraform + Sized {
                 self.damage(target, amount as i32, damage, source);
             }
             &Confuse => {
-                unimplemented!();
+                self.gain_status(target, Status::Confused, 40);
             }
             &MagicMap => {
                 unimplemented!();
@@ -470,6 +515,41 @@ pub trait Mutate: Query + Terraform + Sized {
             if self.destroy_after_use(item) {
                 self.kill_entity(item);
             }
+        }
+    }
+
+    /// Run autonomous updates on entity that happen each turn
+    ///
+    /// This runs regardless of the action speed or awakeness status of the entity. The exact same
+    /// is run for player and AI entities.
+    fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
+
+    fn gain_status(&mut self, e: Entity, status: Status, duration: u32) {
+        if duration == 0 {
+            return;
+        }
+
+        if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
+            if let Some(current_duration) = statuses.get(&status).cloned() {
+                if duration > current_duration {
+                    // Pump up the duration.
+                    statuses.insert(status, duration);
+                }
+            } else {
+                // TODO: Special stuff when status first goes into effect goes here
+                statuses.insert(status, duration);
+            }
+        }
+    }
+
+    fn tick_statuses(&mut self, e: Entity) {
+        if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
+            for (_, d) in statuses.iter_mut() {
+                *d -= 1;
+            }
+
+            // TODO: Special stuff when status goes out of effect for dropped statuses.
+            statuses.retain(|_, d| *d > 0);
         }
     }
 }

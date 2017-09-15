@@ -81,14 +81,10 @@ impl Add<Stats> for Stats {
 pub enum Intrinsic {
     /// Moves 1/3 slower than usual.
     Slow,
-    /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast,
     /// Moves 1/3 faster than usual, stacks with Fast status.
     Quick,
     /// Can manipulate objects and doors.
     Hands,
     /// Explodes on death
     Deathsplosion,
-    /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
-    Dead,
 }

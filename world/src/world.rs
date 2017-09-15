@@ -34,6 +34,7 @@ Ecs! {
     item: components::Item,
     composite_stats: components::CompositeStats,
     stats: stats::Stats,
+    status: components::Statuses,
 }
 
 /// Toplevel game state object.
