@@ -293,7 +293,9 @@ impl GameLoop {
 
     pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
         // Ugh
-        self.world.player().map(|x| self.world.location(x).map(|l| self.camera_loc = l));
+        self.world.player().map(|x| {
+            self.world.location(x).map(|l| self.camera_loc = l)
+        });
 
         let mut view = display::WorldView::new(self.camera_loc, *screen_area);
         view.show_cursor = true;
