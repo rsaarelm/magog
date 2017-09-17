@@ -17,7 +17,7 @@ lazy_static = "0.2"
 serde = "1.0"
 serde_derive = "1.0"
 calx-ecs = "0.6"
-error-chain = "0.10"
+error-chain = "0.11"
 calx-alg = { git = "https://github.com/rsaarelm/calx" }
 calx-grid = { git = "https://github.com/rsaarelm/calx" }
 calx-color = { git = "https://github.com/rsaarelm/calx" }

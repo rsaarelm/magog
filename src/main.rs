@@ -16,18 +16,28 @@ pub mod game_loop;
 
 use euclid::{Point2D, Rect, Size2D};
 use game_loop::GameLoop;
-use glium::{DisplayBuild, glutin};
+use glium::glutin;
+use rand::Rng;
 use vitral::Context;
 use world::World;
-use rand::Rng;
 
 pub fn main() {
     // Construct display and Vitral context.
-    let glium = glutin::WindowBuilder::new().build_glium().unwrap();
+    // XXX: Glium stuff needs to go into backend module...
+    let events = glutin::EventsLoop::new();
+    let window = glutin::WindowBuilder::new();
+    let context = glutin::ContextBuilder::new().with_gl(
+        glutin::GlRequest::Specific(
+            glutin::Api::OpenGl,
+            (3, 2),
+        ),
+    );
+    let display = glium::Display::new(window, context, &events).unwrap();
 
     let screen_area = Rect::new(Point2D::new(0.0, 0.0), Size2D::new(640.0f32, 360.0f32));
     let mut backend = display::Backend::new(
-        &glium,
+        &display,
+        events,
         screen_area.size.width as u32,
         screen_area.size.height as u32,
     );
@@ -41,7 +51,7 @@ pub fn main() {
     loop {
         backend.begin_frame();
         game.draw(&mut backend, &screen_area);
-        if !backend.update(&glium) {
+        if !backend.update(&display) {
             return;
         }
     }

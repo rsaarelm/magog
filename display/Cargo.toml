@@ -10,7 +10,7 @@ name = "display"
 time = "0.1"
 euclid = "0.15"
 image = "0.15"
-glium = "0.16"
+glium = "0.17"
 vec_map = "0.8"
 calx-ecs = "0.6"
 vitral = { git = "https://github.com/rsaarelm/vitral" }

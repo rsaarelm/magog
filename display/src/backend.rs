@@ -3,7 +3,7 @@ use canvas::Canvas;
 use canvas_zoom::CanvasZoom;
 use euclid::{Point2D, Rect, Size2D, TypedPoint2D};
 use glium::{self, Surface};
-use glium::glutin;
+use glium::glutin::{self, EventsLoop};
 use glium::index::PrimitiveType;
 use vitral::{self, Context};
 
@@ -21,6 +21,7 @@ pub trait MagogContext: Context {
 }
 
 pub struct Backend {
+    events: EventsLoop,
     program: glium::Program,
     textures: Vec<GliumTexture>,
 
@@ -34,7 +35,7 @@ pub struct Backend {
 }
 
 impl Backend {
-    pub fn new(display: &glium::Display, width: u32, height: u32) -> Backend {
+    pub fn new(display: &glium::Display, events: EventsLoop, width: u32, height: u32) -> Backend {
         let program = program!(
             display,
             150 => {
@@ -83,7 +84,7 @@ impl Backend {
 
         let mut textures = Vec::new();
 
-        let state = vitral::Builder::new()
+        let ui_state = vitral::Builder::new()
             .default_font(cache::font())
             .solid_texture(cache::solid())
             .build(Size2D::new(width as f32, height as f32), |img| {
@@ -91,15 +92,16 @@ impl Backend {
             });
 
         Backend {
-            program: program,
-            textures: textures,
+            events,
+            program,
+            textures,
 
             keypress: Vec::new(),
             canvas: Canvas::new(display, width, height),
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
 
-            ui_state: state,
+            ui_state,
         }
     }
 
@@ -120,11 +122,13 @@ impl Backend {
             width: img.size.width,
             height: img.size.height,
         };
-        let data = glium::texture::RawImage2d::from_raw_rgba(
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
             img.pixels.clone(),
             (img.size.width, img.size.height),
         );
-        self.textures[texture].write(rect, data);
+        raw.format = glium::texture::ClientFormat::U8U8U8U8;
+
+        self.textures[texture].write(rect, raw);
     }
 
     fn make_texture(
@@ -132,70 +136,81 @@ impl Backend {
         display: &glium::Display,
         img: vitral::ImageBuffer,
     ) -> usize {
-        let raw = glium::texture::RawImage2d::from_raw_rgba(
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
             img.pixels,
             (img.size.width, img.size.height),
         );
-        let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
+        raw.format = glium::texture::ClientFormat::U8U8U8U8;
+
+        let tex = GliumTexture::new(display, raw).unwrap();
         textures.push(tex);
         textures.len() - 1
     }
 
-    fn process_events(&mut self, display: &glium::Display) -> bool {
+    fn process_events(&mut self) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
-        for event in display.poll_events() {
+        let mut event_list = Vec::new();
+        self.events.poll_events(|event| event_list.push(event));
+
+        for event in event_list {
             match event {
-                glutin::Event::Closed => return false,
-                glutin::Event::MouseMoved(x, y) => {
-                    let pos = self.zoom.screen_to_canvas(
-                        self.window_size,
-                        self.canvas.size(),
-                        Point2D::new(x as f32, y as f32),
-                    );
-                    self.input_mouse_move(pos.x as i32, pos.y as i32);
-                }
-                glutin::Event::MouseInput(state, button) => {
-                    self.input_mouse_button(
-                        match button {
-                            glutin::MouseButton::Left => vitral::MouseButton::Left,
-                            glutin::MouseButton::Right => vitral::MouseButton::Right,
-                            _ => vitral::MouseButton::Middle,
-                        },
-                        state == glutin::ElementState::Pressed,
-                    )
-                }
-                glutin::Event::ReceivedCharacter(c) => self.input_char(c),
-                glutin::Event::KeyboardInput(s, scancode, Some(vk)) => {
-                    let is_down = s == glutin::ElementState::Pressed;
+                glutin::Event::WindowEvent{ event, .. } => match event {
+                    glutin::WindowEvent::Closed => { return false; }
+                    glutin::WindowEvent::MouseMoved{ position:(x, y), ..} => {
+                        let pos = self.zoom.screen_to_canvas(
+                            self.window_size,
+                            self.canvas.size(),
+                            Point2D::new(x as f32, y as f32),
+                            );
+                        self.input_mouse_move(pos.x as i32, pos.y as i32);
+                    }
+                    glutin::WindowEvent::MouseInput{state, button, ..} => {
+                        self.input_mouse_button(
+                            match button {
+                                glutin::MouseButton::Left => vitral::MouseButton::Left,
+                                glutin::MouseButton::Right => vitral::MouseButton::Right,
+                                _ => vitral::MouseButton::Middle,
+                            },
+                            state == glutin::ElementState::Pressed,
+                            )
+                    }
+                    glutin::WindowEvent::ReceivedCharacter(c) => self.input_char(c),
+                    glutin::WindowEvent::KeyboardInput{ input: glutin::KeyboardInput{state, scancode, virtual_keycode: Some(vk), ..}, ..} => {
+                        let is_down = state == glutin::ElementState::Pressed;
 
-                    if is_down {
-                        self.keypress.push(KeyEvent {
-                            key_code: vk,
-                            scancode: scancode,
-                        });
-                    }
+                        if is_down {
+                            self.keypress.push(KeyEvent {
+                                key_code: vk,
+                                scancode: scancode as u8,
+                            });
+                        }
 
-                    use glium::glutin::VirtualKeyCode::*;
-                    if let Some(vk) = match vk {
-                        Tab => Some(vitral::Keycode::Tab),
-                        LShift | RShift => Some(vitral::Keycode::Shift),
-                        LControl | RControl => Some(vitral::Keycode::Ctrl),
-                        NumpadEnter | Return => Some(vitral::Keycode::Enter),
-                        Back => Some(vitral::Keycode::Backspace),
-                        Delete => Some(vitral::Keycode::Del),
-                        Numpad8 | Up => Some(vitral::Keycode::Up),
-                        Numpad2 | Down => Some(vitral::Keycode::Down),
-                        Numpad4 | Left => Some(vitral::Keycode::Left),
-                        Numpad6 | Right => Some(vitral::Keycode::Right),
-                        _ => None,
+                        use glium::glutin::VirtualKeyCode::*;
+                        if let Some(vk) = match vk {
+                            Tab => Some(vitral::Keycode::Tab),
+                            LShift | RShift => Some(vitral::Keycode::Shift),
+                            LControl | RControl => Some(vitral::Keycode::Ctrl),
+                            NumpadEnter | Return => Some(vitral::Keycode::Enter),
+                            Back => Some(vitral::Keycode::Backspace),
+                            Delete => Some(vitral::Keycode::Del),
+                            Numpad8 | Up => Some(vitral::Keycode::Up),
+                            Numpad2 | Down => Some(vitral::Keycode::Down),
+                            Numpad4 | Left => Some(vitral::Keycode::Left),
+                            Numpad6 | Right => Some(vitral::Keycode::Right),
+                            _ => None,
+                        }
+                        {
+                            self.input_key_state(vk, is_down);
+                        }
                     }
-                    {
-                        self.input_key_state(vk, is_down);
-                    }
+                    _ => (),
                 }
-                _ => (),
+                glutin::Event::Awakened => {
+                    // TODO: Suspend/awaken behavior
+                }
+                glutin::Event::DeviceEvent{ .. } => {}
             }
         }
 
@@ -289,7 +304,7 @@ impl Backend {
         self.update_window_size(display);
         self.render(display);
         self.canvas.draw(display, self.zoom);
-        self.process_events(display)
+        self.process_events()
     }
 
     pub fn save_screenshot(&mut self, basename: &str) {
