@@ -26,6 +26,26 @@ pub struct Stats {
     pub intrinsics: u32,
 }
 
+/// Stats component in the ECS that supports caching applied modifiers for efficiency.
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+pub struct StatsComponent {
+    /// Base stats that are intrinsic to this entity
+    pub base: Stats,
+    /// Modified stats derived from base and various effects that apply.
+    ///
+    /// Must be explicitly regenerated whenever an attached stats-affecting entity changes.
+    pub actual: Stats,
+}
+
+impl StatsComponent {
+    pub fn new(base: Stats) -> StatsComponent {
+        StatsComponent {
+            base,
+            actual: base,
+        }
+    }
+}
+
 impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
         let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
