@@ -78,6 +78,7 @@ pub trait Mutate: Query + Terraform + Sized {
         match brain_state {
             Asleep => {
                 // XXX: Only treat player mob as potential hostile.
+                // Can't model area conflict effects yet.
                 if let (Some(loc), Some(player), Some(player_loc)) =
                     (
                         self.location(npc),
