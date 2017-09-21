@@ -14,7 +14,6 @@ use query::Query;
 use rand::SeedableRng;
 use ron;
 use spatial::{Place, Spatial};
-use stats;
 use std::collections::HashSet;
 use std::io::{Read, Write};
 use std::iter::FromIterator;
@@ -32,8 +31,7 @@ Ecs! {
     health: components::Health,
     brain: components::Brain,
     item: components::Item,
-    composite_stats: components::CompositeStats,
-    stats: stats::Stats,
+    stats: components::StatsComponent,
     status: components::Statuses,
 }
 

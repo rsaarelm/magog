@@ -161,13 +161,6 @@ pub struct Item {
 }
 
 
-/// Composite stats are generated from adding up a mob's intrinsic base stats
-/// and stat bonuses from equipment it is wearing and any other transient
-/// effects. They need to be updated whenever the relevant state of the entity
-/// changes.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CompositeStats(pub Stats);
-
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 /// Temporary creature properties
 pub enum Status {
@@ -180,3 +173,18 @@ pub enum Status {
 }
 
 pub type Statuses = HashMap<Status, u32>;
+
+/// Stats component in the ECS that supports caching applied modifiers for efficiency.
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+pub struct StatsComponent {
+    /// Base stats that are intrinsic to this entity
+    pub base: Stats,
+    /// Modified stats derived from base and various effects that apply.
+    ///
+    /// Must be explicitly regenerated whenever an attached stats-affecting entity changes.
+    pub actual: Stats,
+}
+
+impl StatsComponent {
+    pub fn new(base: Stats) -> StatsComponent { StatsComponent { base, actual: base } }
+}

@@ -553,4 +553,12 @@ pub trait Mutate: Query + Terraform + Sized {
             statuses.retain(|_, d| *d > 0);
         }
     }
+
+    fn regenerate_stats(&mut self, e: Entity) {
+        if !self.ecs().stats.contains(e) {
+            return;
+        }
+
+        unimplemented!();
+    }
 }

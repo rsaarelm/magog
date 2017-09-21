@@ -116,17 +116,18 @@ pub trait Query: TerrainQuery + Sized {
     /// Will return the default value for the Stats type (additive identity in the stat algebra)
     /// for entities that have no stats component defined.
     fn stats(&self, e: Entity) -> stats::Stats {
-        self.ecs().composite_stats.get(e).map_or_else(
-            || self.base_stats(e),
-            |x| x.0,
-        )
+        self.ecs()
+            .stats
+            .get(e)
+            .map(|s| s.actual)
+            .unwrap_or_default()
     }
 
     /// Return the base stats of the entity. Does not include any added effects.
     ///
     /// You usually want to use the `stats` method instead of this one.
     fn base_stats(&self, e: Entity) -> stats::Stats {
-        self.ecs().stats.get(e).cloned().unwrap_or_default()
+        self.ecs().stats.get(e).map(|s| s.base).unwrap_or_default()
     }
 
     /// Return whether the entity can move in a direction.
