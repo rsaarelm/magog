@@ -554,11 +554,22 @@ pub trait Mutate: Query + Terraform + Sized {
         }
     }
 
+    /// Rebuild cached derived stats of an entity.
+    ///
+    /// Must be explicitly called any time either the entity's base stats or anything relating to
+    /// attached stat-affecting entities like equipped items is changed.
     fn regenerate_stats(&mut self, e: Entity) {
         if !self.ecs().stats.contains(e) {
             return;
         }
 
-        unimplemented!();
+        let mut stats = self.stats(e);
+        for &slot in Slot::equipped_iter() {
+            if let Some(item) = self.entity_equipped(e, slot) {
+                stats = stats + self.stats(item);
+            }
+        }
+
+        self.ecs_mut().stats[e].actual = stats;
     }
 }

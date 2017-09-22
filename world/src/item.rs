@@ -42,6 +42,31 @@ pub enum Slot {
 impl Slot {
     pub fn is_equipment_slot(self) -> bool { (self as u32) <= (Slot::TrinketI as u32) }
 
+    pub fn equipped_iter() -> slice::Iter<'static, Slot> {
+        use Slot::*;
+        static EQUIPPED: [Slot; 17] = [
+            Spell1,
+            Spell2,
+            Spell3,
+            Spell4,
+            Spell5,
+            Spell6,
+            Spell7,
+            Spell8,
+            Melee,
+            Ranged,
+            Head,
+            Body,
+            Feet,
+            TrinketF,
+            TrinketG,
+            TrinketH,
+            TrinketI,
+        ];
+
+        EQUIPPED.iter()
+    }
+
     pub fn iter() -> slice::Iter<'static, Slot> {
         use Slot::*;
         static ALL: [Slot; 34] = [
