@@ -5,7 +5,7 @@ use calx_grid::{Dir6, HexGeom};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
-use item::{ItemType, Slot};
+use item::{EquipType, ItemType, Slot};
 use location::Location;
 use stats;
 use stats::Intrinsic;
@@ -391,6 +391,19 @@ pub trait Query: TerrainQuery + Sized {
             .cloned()
     }
 
+    fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
+        if let Some(equip_type) = self.equip_type(item) {
+            Slot::iter()
+                .filter(|&&x| {
+                    x.accepts(equip_type) && self.entity_equipped(e, x).is_none()
+                })
+                .next()
+                .cloned()
+        } else {
+            None
+        }
+    }
+
     /// Find a drop position for an item, trying to keep one item per cell.
     ///
     /// Dropping several items in the same location will cause them to spread out to the adjacent
@@ -479,5 +492,19 @@ pub trait Query: TerrainQuery + Sized {
                 false
             }
         })
+    }
+
+    fn equip_type(&self, item: Entity) -> Option<EquipType> {
+        use ItemType::*;
+        match self.item_type(item) {
+            Some(MeleeWeapon) => Some(EquipType::Melee),
+            Some(RangedWeapon) => Some(EquipType::Ranged),
+            Some(Helmet) => Some(EquipType::Head),
+            Some(Armor) => Some(EquipType::Body),
+            Some(Boots) => Some(EquipType::Feet),
+            Some(Spell) => Some(EquipType::Spell),
+            Some(Trinket) => Some(EquipType::Trinket),
+            _ => None,
+        }
     }
 }

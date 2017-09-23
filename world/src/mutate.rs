@@ -563,13 +563,17 @@ pub trait Mutate: Query + Terraform + Sized {
             return;
         }
 
-        let mut stats = self.stats(e);
+        // Start with the entity's base stats.
+        let mut stats = self.base_stats(e);
+
+        // Add in stat modifiers from equipped items.
         for &slot in Slot::equipped_iter() {
             if let Some(item) = self.entity_equipped(e, slot) {
                 stats = stats + self.stats(item);
             }
         }
 
+        // Set the derived stats.
         self.ecs_mut().stats[e].actual = stats;
     }
 }
