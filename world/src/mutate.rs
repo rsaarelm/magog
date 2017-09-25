@@ -1,4 +1,5 @@
-use calx_alg::{Deciban, clamp, RngExt};
+use {attack_damage, roll};
+use calx_alg::RngExt;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, Prefab};
 use command::CommandResult;
@@ -9,8 +10,7 @@ use form::Form;
 use item::{MagicEffect, ItemType, Slot};
 use location::Location;
 use query::Query;
-use rand::{self, Rng};
-use rand::Rand;
+use rand::{self, Rand};
 use terraform::Terraform;
 use terrain::Terrain;
 use volume::Volume;
@@ -51,9 +51,6 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Mutable access to ecs
     fn ecs_mut(&mut self) -> &mut Ecs;
-
-    /// Standard deciban roll, convert to i32 and clamp out extremes.
-    fn roll(&mut self) -> f32 { clamp(-20.0, 20.0, self.rng().gen::<Deciban>().0.round()) }
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
@@ -208,12 +205,9 @@ pub trait Mutate: Query + Terraform + Sized {
 
                 // XXX: Using power stat for damage, should this be different?
                 // Do +5 since dmg 1 is really, really useless.
-                let damage = ::attack_damage(
-                    self.roll(),
-                    self.stats(e).attack,
-                    5 + self.stats(e).power,
-                    self.stats(target).defense + 2 * self.stats(target).armor,
-                );
+                let advantage = self.stats(e).attack - self.stats(target).defense +
+                    2 * self.stats(target).armor;
+                let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
 
                 if damage == 0 {
                     msg!(

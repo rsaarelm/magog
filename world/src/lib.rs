@@ -13,6 +13,7 @@ extern crate calx_grid;
 #[macro_use]
 extern crate calx_ecs;
 
+use calx_alg::Deciban;
 use euclid::Vector2D;
 
 /// Helper macro for formatting textual event messages.
@@ -135,11 +136,17 @@ pub fn onscreen_locations() -> &'static Vec<Vector2D<i32>> {
 /// The combat formula.
 ///
 /// Given a deciban roll and the relevant stats, determine amount of damage dealt.
-pub fn attack_damage(roll: f32, attack: i32, weapon_power: i32, target_defense: i32) -> i32 {
+/// Advantage is attacker skill - target defense.
+pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
     const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
 
-    let roll = roll + (attack - target_defense) as f32;
+    let roll = roll + advantage as f32;
     (weapon_power as f32 * calx_alg::clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05)) as i32
+}
+
+/// Standard deciban roll, clamp into [-20, 20].
+pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 {
+    calx_alg::clamp(-20.0, 20.0, rng.gen::<Deciban>().0)
 }
 
 pub mod errors {
