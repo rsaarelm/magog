@@ -102,12 +102,10 @@ pub trait Mutate: Query + Terraform + Sized {
                 if let (Some(my_loc), Some(target_loc)) =
                     (self.location(npc), self.location(target))
                 {
-                    // TODO: Pathfind around obstacles
-                    if let Some(move_dir) = my_loc.dir6_towards(target_loc) {
-                        let dest = my_loc.jump(self, move_dir);
-                        if dest == target_loc {
-                            let _ = self.entity_melee(npc, move_dir);
-                        } else {
+                    if my_loc.metric_distance(target_loc) == 1 {
+                        let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
+                    } else {
+                        if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
                             let _ = self.entity_step(npc, move_dir);
                         }
                     }

@@ -286,6 +286,28 @@ pub trait Query: TerrainQuery + Sized {
         None
     }
 
+    /// Try to get the next step on the path from origin towards destination.
+    ///
+    /// Tries to be fast, not necessarily doing proper pathfinding.
+    fn pathing_dir_towards(&self, e: Entity, destination: Location) -> Option<Dir6> {
+        // Could do all sorts of cool things here eventually like a Dijkstra map cache, but for now
+        // just doing very simple stuff.
+        if let Some(origin) = self.location(e) {
+            if let Some(dir) = origin.dir6_towards(destination) {
+                // Try direct approach, the the other directions.
+                for &turn in &[0, 1, -1, 2, -2, 3] {
+                    let dir = dir + turn;
+                    let next_loc = origin.jump(self, dir);
+                    if self.can_enter(e, next_loc) {
+                        return Some(dir);
+                    }
+                }
+                return None;
+            }
+        }
+        None
+    }
+
     /// Return whether the entity wants to fight the other entity.
     fn is_hostile_to(&self, e: Entity, other: Entity) -> bool {
         let (a, b) = (self.alignment(e), self.alignment(other));
