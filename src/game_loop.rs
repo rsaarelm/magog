@@ -94,6 +94,7 @@ impl GameLoop {
                 Ok(Vec::new())
             }
             G => self.world.take(),
+            Space => self.world.pass(),
             F5 => {
                 self.world
                     .save(&mut File::create("save.gam").unwrap())
