@@ -115,3 +115,12 @@ fn test_bit_spread() {
         assert_eq!(compact_bits_by_2(spread_bits_by_2(x)), x);
     }
 }
+
+#[test]
+fn test_modulo() {
+    use calx_alg::modulo;
+
+    assert_eq!(modulo(9, 5), 4);
+    assert_eq!(modulo(-2, 5), 3);
+    assert_eq!(modulo(-22, 5), 3);
+}
