@@ -135,17 +135,20 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     where
         F: Fn(&Self::Item) -> f32,
     {
-        let (_, ret) = self.into_iter().fold((0.0, None), |(weight_sum, prev_item), item| {
-            let item_weight = weight_fn(&item);
-            debug_assert!(item_weight >= 0.0);
-            let p = item_weight / (weight_sum + item_weight);
-            let next_item = if rng.next_f32() < p {
-                Some(item)
-            } else {
-                prev_item
-            };
-            (weight_sum + item_weight, next_item)
-        });
+        let (_, ret) = self.into_iter().fold(
+            (0.0, None),
+            |(weight_sum, prev_item), item| {
+                let item_weight = weight_fn(&item);
+                debug_assert!(item_weight >= 0.0);
+                let p = item_weight / (weight_sum + item_weight);
+                let next_item = if rng.next_f32() < p {
+                    Some(item)
+                } else {
+                    prev_item
+                };
+                (weight_sum + item_weight, next_item)
+            },
+        );
         ret
     }
 }

@@ -14,8 +14,8 @@ fn test_serialize_rng() {
     let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
     let saved = serde_json::to_string(&rng).expect("Serialization failed");
-    let mut rng2: EncodeRng<XorShiftRng> = serde_json::from_str(&saved)
-        .expect("Deserialization failed");
+    let mut rng2: EncodeRng<XorShiftRng> =
+        serde_json::from_str(&saved).expect("Deserialization failed");
 
     assert_eq!(rng.next_u32(), rng2.next_u32());
 }
@@ -32,12 +32,12 @@ fn test_noise() {
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx_alg::split_line;
 
-    split_line(line, |_| 1.0, space as f32)
-        .zip(parts)
-        .all(|(actual, &expected)| {
-                 assert_eq!(expected, actual);
-                 true
-             });
+    split_line(line, |_| 1.0, space as f32).zip(parts).all(
+        |(actual, &expected)| {
+            assert_eq!(expected, actual);
+            true
+        },
+    );
 
     assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
 }
@@ -66,16 +66,18 @@ fn test_weighted_choice() {
 
     for _ in 0..n {
         let choice = *items
-                          .iter()
-                          .weighted_choice(&mut rng, |&&x| x as f32)
-                          .unwrap();
+            .iter()
+            .weighted_choice(&mut rng, |&&x| x as f32)
+            .unwrap();
         *histogram.entry(choice).or_insert(0.0) += 1.0;
     }
 
-    let measurement = vec![histogram[&1] / n as f32,
-                           histogram[&2] / n as f32,
-                           histogram[&3] / n as f32,
-                           histogram[&4] / n as f32];
+    let measurement = vec![
+        histogram[&1] / n as f32,
+        histogram[&2] / n as f32,
+        histogram[&3] / n as f32,
+        histogram[&4] / n as f32,
+    ];
 
     // The weights match the values because 1+2+3+4 = 10.
     let ideal = vec![0.1, 0.2, 0.3, 0.4];
