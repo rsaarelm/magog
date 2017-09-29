@@ -66,7 +66,7 @@ impl WorldView {
         self.ensure_fov(world);
 
         let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
-                          vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
+                          vec2(PIXEL_UNIT / 2.0, 10.0)).to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(context.mouse_pos() - center);
