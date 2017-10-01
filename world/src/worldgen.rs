@@ -228,7 +228,6 @@ impl Worldgen {
 
         // XXX: This thing needs to be more automatic
         // Make the backportal cell have transparent terrain
-        self.terrain.insert(entrance - vec2(2, 2), Terrain::Empty);
 
 
         return exit_loc;
@@ -273,7 +272,6 @@ impl Worldgen {
             origin,
             Portal::new(origin, destination),
         );
-        self.terrain.insert(origin, Terrain::Empty);
     }
 }
 
