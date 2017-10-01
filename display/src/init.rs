@@ -80,6 +80,7 @@ pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     ret.insert(Portal as usize, Builder::new("assets/props.png").color(Rgba::from_str("#fa08").unwrap()).tile(0, 0).finish());
     ret.insert(HealthPip as usize, Builder::new("assets/gui.png").color(LIMEGREEN).rect(0, 8, 4, 4).finish());
     ret.insert(DarkHealthPip as usize, Builder::new("assets/gui.png").color(DARKSLATEGRAY).rect(0, 8, 4, 4).finish());
+    ret.insert(BlockedOffSectorCell as usize, Builder::new("assets/floors.png").color(LIGHTGRAY).tile(0, 32).finish());
 
     ret
 }

@@ -63,6 +63,9 @@ impl WorldView {
     }
 
     pub fn draw<C: MagogContext>(&mut self, world: &World, context: &mut C) {
+        let current_sector = self.camera_loc.sector();
+        self.camera_loc = current_sector.center();
+
         self.ensure_fov(world);
 
         let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
@@ -105,19 +108,33 @@ impl WorldView {
 
             let screen_pos = chart_to_view(chart_pos.to_point()) + center;
 
-            // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
-            render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
+            // Tile is outside current sector and can't be entered, graphical cues to point this
+            // out may be needed.
+            let blocked_offsector =
+                world.player().map_or(false, |p| loc.sector() != current_sector && !world.can_enter(p, loc));
+
+            if blocked_offsector && !in_map_memory {
                 sprites.push(Sprite {
-                    layer: layer,
+                    layer: Layer::Floor,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: if in_map_memory {
-                        map_memory_colorize(brush.clone())
-                    } else {
-                        brush.clone()
-                    },
-                    frame_idx: frame_idx,
-                })
-            });
+                    brush: cache::misc(Icon::BlockedOffSectorCell),
+                    frame_idx: 0,
+                });
+            } else {
+                // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
+                render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
+                    sprites.push(Sprite {
+                        layer: layer,
+                        offset: [screen_pos.x as i32, screen_pos.y as i32],
+                        brush: if in_map_memory {
+                            map_memory_colorize(brush.clone())
+                        } else {
+                            brush.clone()
+                        },
+                        frame_idx: frame_idx,
+                    })
+                });
+            }
 
             // Draw entities in directly seen cells
             // TODO: Items should be drawn even in map memory

@@ -38,4 +38,5 @@ pub enum Icon {
     Portal,
     HealthPip,
     DarkHealthPip,
+    BlockedOffSectorCell,
 }
