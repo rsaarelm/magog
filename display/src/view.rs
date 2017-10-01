@@ -110,31 +110,31 @@ impl WorldView {
 
             // Tile is outside current sector and can't be entered, graphical cues to point this
             // out may be needed.
-            let blocked_offsector =
-                world.player().map_or(false, |p| loc.sector() != current_sector && !world.can_enter(p, loc));
+            let blocked_offsector = loc.sector() != current_sector &&
+                world.terrain(loc).is_narrow_obstacle();
 
             if blocked_offsector && !in_map_memory {
                 sprites.push(Sprite {
-                    layer: Layer::Floor,
+                    layer: Layer::Decal,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
                     brush: cache::misc(Icon::BlockedOffSectorCell),
                     frame_idx: 0,
                 });
-            } else {
-                // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
-                render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
-                    sprites.push(Sprite {
-                        layer: layer,
-                        offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: if in_map_memory {
-                            map_memory_colorize(brush.clone())
-                        } else {
-                            brush.clone()
-                        },
-                        frame_idx: frame_idx,
-                    })
-                });
             }
+
+            // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
+            render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
+                sprites.push(Sprite {
+                    layer: layer,
+                    offset: [screen_pos.x as i32, screen_pos.y as i32],
+                    brush: if in_map_memory {
+                        map_memory_colorize(brush.clone())
+                    } else {
+                        brush.clone()
+                    },
+                    frame_idx: frame_idx,
+                })
+            });
 
             // Draw entities in directly seen cells
             // TODO: Items should be drawn even in map memory
