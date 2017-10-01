@@ -69,16 +69,16 @@ pub trait Command: Mutate + Sized {
         let player = self.player().ok_or(())?;
         let item = self.entity_equipped(player, slot).ok_or(())?;
 
-        let swap_slot;
-        if slot.is_equipment_slot() {
+        let swap_slot = if slot.is_equipment_slot() {
             // Remove equipped.
             // TODO: Items that can't be removed because of curses etc. trip here.
-            swap_slot = self.free_bag_slot(player).ok_or(())?;
+            self.free_bag_slot(player).ok_or(())?
         } else {
             // Equip from bag.
             // TODO: Inability to equip item because stats limits etc. trips here.
-            swap_slot = self.free_equip_slot(player, item).ok_or(())?;
-        }
+            self.free_equip_slot(player, item).ok_or(())?
+        };
+
         self.equip_item(item, player, swap_slot);
         self.regenerate_stats(player);
         self.next_tick()

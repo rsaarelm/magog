@@ -103,7 +103,7 @@ impl Worldgen {
 
         let mut map = screen_map(Location::new(0, 0, entrance.z));
 
-        debug_assert!(map.get(entrance) == Unused);
+        debug_assert_eq!(map.get(entrance), Unused);
 
         // Create portal enclosure
         entry_cave_enclosure(&mut map, entrance);
@@ -117,7 +117,7 @@ impl Worldgen {
 
         // Arbitrary long iteration, should break after digging a sufficient number of cells before
         // this.
-        for _ in 0..10000 {
+        for _ in 0..10_000 {
             if edge.is_empty() {
                 break;
             }
@@ -146,7 +146,7 @@ impl Worldgen {
 
         // Postprocess
         let cells: Vec<_> = map.iter().map(|(&loc, &c)| (loc, c)).collect();
-        for (loc, c) in cells.into_iter() {
+        for (loc, c) in cells {
             // Clear pillars
             if c == Unused {
                 let adjacent_floors = Dir6::iter().filter(|d| map.get(loc + **d) == Floor).count();
@@ -174,7 +174,7 @@ impl Worldgen {
         const MIN_DISTANCE_FROM_ENTRANCE: u32 = 10;
         let depth = entrance.z as i32;
         // Flood-fill the new map
-        let mut spawn_map = Dijkstra::new(vec![entrance], |&loc| map.get(loc) == Floor, 10000)
+        let mut spawn_map = Dijkstra::new(vec![entrance], |&loc| map.get(loc) == Floor, 10_000)
             .weights;
         // Filter stuff too close to entrance
         spawn_map.retain(|_, &mut w| w >= MIN_DISTANCE_FROM_ENTRANCE);
@@ -202,7 +202,7 @@ impl Worldgen {
         }
 
         let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
-        for &loc in spawn_locs.into_iter() {
+        for &loc in spawn_locs {
             self.spawns.push((
                 loc,
                 form::rand(rng, &mobs)
@@ -217,10 +217,8 @@ impl Worldgen {
         self.terrain.extend(map.iter().map(|(&loc, &t)| {
             let t = match t {
                 Outside => Terrain::Empty,
-                Unused => Terrain::Rock,
-                Border => Terrain::Rock,
+                Unused | Border | Wall => Terrain::Rock,
                 Floor => Terrain::Ground,
-                Wall => Terrain::Rock,
                 Door => Terrain::Door,
             };
             (loc, t)
@@ -342,7 +340,7 @@ fn screen_map(origin: Location) -> Field<Prototerrain> {
 fn entry_cave_enclosure(map: &mut Field<Prototerrain>, entrance: Location) {
     use self::Prototerrain::*;
 
-    debug_assert!(map.get(entrance) == Unused);
+    debug_assert_eq!(map.get(entrance), Unused);
 
     const UPBOUND_ENCLOSURE: [(i32, i32); 7] = [
         (-2, -2),

@@ -1,7 +1,6 @@
 use euclid::{Rect, rect, size2};
 use image::{self, GenericImage};
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
 use std::io::Cursor;
 use std::slice;
 use tilesheet;
@@ -9,7 +8,7 @@ use vitral::{self, ImageBuffer};
 use vitral_atlas::Atlas;
 
 /// Fetch key for atlas images.
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct SubImageSpec {
     pub sheet_name: String,
     pub bounds: Rect<u32>,
@@ -21,14 +20,6 @@ impl SubImageSpec {
             sheet_name: name.to_string(),
             bounds: rect(x, y, width, height),
         }
-    }
-}
-
-impl Hash for SubImageSpec {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.sheet_name.hash(state);
-        self.bounds.origin.hash(state);
-        self.bounds.size.hash(state);
     }
 }
 

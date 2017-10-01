@@ -19,7 +19,7 @@ where
 }
 
 fn expected_dmg(advantage: i32) -> f32 {
-    const REPEAT_ROLLS: usize = 1000000;
+    const REPEAT_ROLLS: usize = 1_000_000;
 
     ev(REPEAT_ROLLS, |rng| {
         let roll = roll(rng);
@@ -40,11 +40,11 @@ fn main() {
         for ones in 0..10 {
             let n = tens * 10 + ones;
             print!("{:.3} ", expected_dmg(n));
-            ::std::io::stdout().flush();
+            let _ = ::std::io::stdout().flush();
         }
         println!("");
     }
-    let e = ev(1000000, |rng| {
+    let e = ev(1_000_000, |rng| {
         let roll = roll(rng);
         let dmg = attack_damage(roll, 0, 100);
         dmg as f32 / 100.0

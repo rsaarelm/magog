@@ -45,23 +45,15 @@ impl Slot {
     pub fn accepts(self, equip_type: EquipType) -> bool {
         use Slot::*;
         match self {
-            Spell1 => equip_type == EquipType::Spell,
-            Spell2 => equip_type == EquipType::Spell,
-            Spell3 => equip_type == EquipType::Spell,
-            Spell4 => equip_type == EquipType::Spell,
-            Spell5 => equip_type == EquipType::Spell,
-            Spell6 => equip_type == EquipType::Spell,
-            Spell7 => equip_type == EquipType::Spell,
-            Spell8 => equip_type == EquipType::Spell,
+            Spell1 | Spell2 | Spell3 | Spell4 | Spell5 | Spell6 | Spell7 | Spell8 => {
+                equip_type == EquipType::Spell
+            }
             Melee => equip_type == EquipType::Melee,
             Ranged => equip_type == EquipType::Ranged,
             Head => equip_type == EquipType::Head,
             Body => equip_type == EquipType::Body,
             Feet => equip_type == EquipType::Feet,
-            TrinketF => equip_type == EquipType::Trinket,
-            TrinketG => equip_type == EquipType::Trinket,
-            TrinketH => equip_type == EquipType::Trinket,
-            TrinketI => equip_type == EquipType::Trinket,
+            TrinketF | TrinketG | TrinketH | TrinketI => equip_type == EquipType::Trinket,
             _ => false,
         }
     }

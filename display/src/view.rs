@@ -128,9 +128,9 @@ impl WorldView {
                     layer: layer,
                     offset: [screen_pos.x as i32, screen_pos.y as i32],
                     brush: if in_map_memory {
-                        map_memory_colorize(brush.clone())
+                        map_memory_colorize(Rc::clone(brush))
                     } else {
-                        brush.clone()
+                        Rc::clone(brush)
                     },
                     frame_idx: frame_idx,
                 })
@@ -223,10 +223,10 @@ impl WorldView {
             use std::ops::Deref;
 
             let mut ret: Vec<Frame> = brush.deref().clone();
-            for frame in ret.iter_mut() {
+            for frame in &mut ret {
                 for splat in frame.iter_mut() {
-                    splat.color = Rgba::from(0x080400ff).into_array();
-                    splat.back_color = Rgba::from(0x332200ff).into_array();
+                    splat.color = Rgba::from(0x0804_00ff).into_array();
+                    splat.back_color = Rgba::from(0x3322_00ff).into_array();
                 }
             }
 

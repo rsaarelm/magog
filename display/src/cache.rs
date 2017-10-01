@@ -22,7 +22,7 @@ thread_local! {
         ret.load_png("assets/props.png".to_string(), include_bytes!("../assets/props.png")).expect("Error loading props.png");
         ret.load_png("assets/splatter.png".to_string(), include_bytes!("../assets/splatter.png")).expect("Error loading splatter.png");
         ret.load_png("assets/walls.png".to_string(), include_bytes!("../assets/walls.png")).expect("Error loading walls.png");
-        ret.add_sheet("solid".to_string(), ImageBuffer::from_fn(1, 1, |_, _| 0xffffffff));
+        ret.add_sheet("solid".to_string(), ImageBuffer::from_fn(1, 1, |_, _| 0xffff_ffff));
         RefCell::new(ret)
     };
 
@@ -39,25 +39,25 @@ pub fn get(key: &SubImageSpec) -> vitral::ImageData<usize> {
 
 pub fn terrain(t: world::Terrain) -> Rc<Brush> {
     TERRAIN_BRUSHES.with(|b| {
-        b.get(t as usize)
-            .expect(&format!("No brush for terrain {:?}", t))
-            .clone()
+        Rc::clone(b.get(t as usize).expect(
+            &format!("No brush for terrain {:?}", t),
+        ))
     })
 }
 
 pub fn entity(e: world::Icon) -> Rc<Brush> {
     ENTITY_BRUSHES.with(|b| {
-        b.get(e as usize)
-            .expect(&format!("No brush for entity {:?}", e))
-            .clone()
+        Rc::clone(b.get(e as usize).expect(
+            &format!("No brush for entity {:?}", e),
+        ))
     })
 }
 
 pub fn misc(e: Icon) -> Rc<Brush> {
     MISC_BRUSHES.with(|b| {
-        b.get(e as usize)
-            .expect(&format!("No brush for icon {:?}", e))
-            .clone()
+        Rc::clone(b.get(e as usize).expect(
+            &format!("No brush for icon {:?}", e),
+        ))
     })
 }
 
@@ -70,4 +70,4 @@ pub fn solid() -> vitral::ImageData<usize> {
     })
 }
 
-pub fn font() -> Rc<vitral::FontData<usize>> { FONT.with(|f| f.clone()) }
+pub fn font() -> Rc<vitral::FontData<usize>> { FONT.with(|f| Rc::clone(f)) }

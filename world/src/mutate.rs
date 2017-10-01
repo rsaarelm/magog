@@ -54,7 +54,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
-        for npc in self.active_mobs().into_iter() {
+        for npc in self.active_mobs() {
             self.heartbeat(npc);
 
             if !self.is_npc(npc) {
@@ -104,10 +104,8 @@ pub trait Mutate: Query + Terraform + Sized {
                 {
                     if my_loc.metric_distance(target_loc) == 1 {
                         let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
-                    } else {
-                        if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
-                            let _ = self.entity_step(npc, move_dir);
-                        }
+                    } else if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
+                        let _ = self.entity_step(npc, move_dir);
                     }
                 }
             }
@@ -250,13 +248,13 @@ pub trait Mutate: Query + Terraform + Sized {
             let destination = loc.jump(self, dir);
 
             if self.mob_at(destination).is_some() {
-                self.entity_melee(e, dir);
+                let _ = self.entity_melee(e, dir);
             } else {
-                self.entity_step(e, dir);
+                let _ = self.entity_step(e, dir);
             }
-            return true;
+            true
         } else {
-            return false;
+            false
         }
     }
 
@@ -464,17 +462,17 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
         use effect::Effect::*;
-        match effect {
-            &Heal(_amount) => {
+        match *effect {
+            Heal(_amount) => {
                 unimplemented!();
             }
-            &Hit { amount, damage } => {
+            Hit { amount, damage } => {
                 self.damage(target, amount as i32, damage, source);
             }
-            &Confuse => {
+            Confuse => {
                 self.gain_status(target, Status::Confused, 40);
             }
-            &MagicMap => {
+            MagicMap => {
                 unimplemented!();
             }
         }

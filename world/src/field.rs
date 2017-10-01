@@ -10,9 +10,7 @@ pub struct Field<T: PartialEq> {
 impl<T: Copy + PartialEq + Default> Field<T> {
     pub fn new() -> Field<T> { Field { patch: BTreeMap::new() } }
 
-    pub fn get(&self, loc: Location) -> T {
-        self.patch.get(&loc).cloned().unwrap_or(Default::default())
-    }
+    pub fn get(&self, loc: Location) -> T { self.patch.get(&loc).cloned().unwrap_or_default() }
 
     pub fn set(&mut self, loc: Location, val: T) {
         if val == Default::default() {
@@ -34,7 +32,7 @@ impl<T: Copy + PartialEq + Default> FromIterator<(Location, T)> for Field<T> {
 
 impl<T: Copy + PartialEq + Default> Extend<(Location, T)> for Field<T> {
     fn extend<I: IntoIterator<Item = (Location, T)>>(&mut self, iter: I) {
-        for (loc, val) in iter.into_iter() {
+        for (loc, val) in iter {
             self.set(loc, val);
         }
     }

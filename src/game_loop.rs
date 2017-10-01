@@ -197,7 +197,7 @@ impl GameLoop {
                         _ => {}
                     }
                 }
-                return Err(());
+                Err(())
             }
         }
     }

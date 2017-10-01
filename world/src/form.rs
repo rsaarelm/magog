@@ -24,7 +24,7 @@ pub struct Form {
 }
 
 /// Sample a weighted choice from a filtered Form selection.
-pub fn rand<R: Rng>(rng: &mut R, selection: &Vec<&'static Form>) -> Option<&'static Form> {
+pub fn rand<R: Rng>(rng: &mut R, selection: &[&'static Form]) -> Option<&'static Form> {
     selection
         .weighted_choice(rng, |item| if item.rarity == 0.0 {
             0.0

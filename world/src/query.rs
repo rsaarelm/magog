@@ -406,20 +406,18 @@ pub trait Query: TerrainQuery + Sized {
 
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
         Slot::iter()
-            .filter(|&&x| {
+            .find(|&&x| {
                 !x.is_equipment_slot() && self.entity_equipped(e, x).is_none()
             })
-            .next()
             .cloned()
     }
 
     fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
         if let Some(equip_type) = self.equip_type(item) {
             Slot::iter()
-                .filter(|&&x| {
+                .find(|&&x| {
                     x.accepts(equip_type) && self.entity_equipped(e, x).is_none()
                 })
-                .next()
                 .cloned()
         } else {
             None
@@ -443,9 +441,9 @@ pub trait Query: TerrainQuery + Sized {
         while let Some(offset) = incoming.pop_front() {
             if seen.contains(&offset) {
                 continue;
-            } else {
-                seen.insert(offset);
             }
+
+            seen.insert(offset);
 
             let loc = origin.jump(self, offset);
             if self.item_at(loc).is_none() {
@@ -461,7 +459,7 @@ pub trait Query: TerrainQuery + Sized {
             }
         }
 
-        return origin;
+        origin
     }
 
     /// Find a location for spell explosion.
@@ -483,7 +481,7 @@ pub trait Query: TerrainQuery + Sized {
 
             loc = new_loc;
         }
-        return loc;
+        loc
     }
 
     /// Return whether the player can currently directly see the given location.
