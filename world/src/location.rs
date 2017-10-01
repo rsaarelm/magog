@@ -237,7 +237,7 @@ impl Sector {
     /// Usually you want the camera positioned here.
     pub fn center(self) -> Location {
         // XXX: If the width/height are even (as they currently are), there isn't a centered cell.
-        self.rect_coord_loc(SECTOR_WIDTH / 2, SECTOR_HEIGHT / 2)
+        self.rect_coord_loc(SECTOR_WIDTH / 2 - 1, SECTOR_HEIGHT / 2 - 1)
     }
 
     // TODO: Use impl Trait instead of box for return type once it's stable.
