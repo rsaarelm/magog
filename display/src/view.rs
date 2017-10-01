@@ -5,14 +5,14 @@ use cache;
 use calx_alg::timing;
 use calx_color::Rgba;
 use calx_ecs::Entity;
-use calx_grid::{Dir6, FovValue, HexFov};
+use calx_grid::{FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, vec2, Rect};
 use render::{self, Layer};
 use sprite::Sprite;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
-use world::{self, FovStatus, Location, Query, TerrainQuery, World};
+use world::{FovStatus, Location, Query, Sector, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
@@ -148,24 +148,13 @@ impl WorldView {
 
             // XXX: This doesn't belong here, figure out a better place for debug visualizations
             if self.highlight_offscreen_tiles {
-                if let Some(loc) = Location::origin().v2_at(loc) {
-                    if !world::on_screen(loc) {
-                        if Dir6::iter().any(|d| world::on_screen(loc + d.to_v2())) {
-                            sprites.push(Sprite {
-                                layer: Layer::Effect,
-                                offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: cache::misc(Icon::Portal),
-                                frame_idx: 0,
-                            });
-                        } else {
-                            sprites.push(Sprite {
-                                layer: Layer::Effect,
-                                offset: [screen_pos.x as i32, screen_pos.y as i32],
-                                brush: cache::misc(Icon::CursorBottom),
-                                frame_idx: 0,
-                            });
-                        }
-                    }
+                if loc.sector() == Sector::new(0, 0, 0) {
+                    sprites.push(Sprite {
+                        layer: Layer::Effect,
+                        offset: [screen_pos.x as i32, screen_pos.y as i32],
+                        brush: cache::misc(Icon::CursorBottom),
+                        frame_idx: 0,
+                    });
                 }
             }
         }
