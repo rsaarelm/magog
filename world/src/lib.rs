@@ -52,7 +52,7 @@ mod item;
 pub use item::{Slot, ItemType};
 
 mod location;
-pub use location::{Location, Portal};
+pub use location::{Location, Portal, Sector};
 
 mod location_set;
 // TODO: Make private, trigger mapgen internally using higher-level API
@@ -100,6 +100,7 @@ pub type Rng = calx_alg::EncodeRng<rand::XorShiftRng>;
 ///
 /// Since various bits of game logic are tied to the screen boundaries, the screen size is fixed as
 /// a constant.
+#[deprecated]
 pub fn on_screen(chart_pos: Vector2D<i32>) -> bool {
     const W: i32 = 39;
     const H: i32 = 22;
@@ -112,6 +113,7 @@ pub fn on_screen(chart_pos: Vector2D<i32>) -> bool {
 }
 
 /// List of all points for which `on_screen` is true.
+#[deprecated]
 pub fn onscreen_locations() -> &'static Vec<Vector2D<i32>> {
     lazy_static! {
         static ref ONSCREEN_LOCATIONS: Vec<Vector2D<i32>> = {

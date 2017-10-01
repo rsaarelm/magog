@@ -5,6 +5,9 @@ use std::num::Wrapping;
 use std::ops::{Add, Sub};
 use terraform::TerrainQuery;
 
+pub const SECTOR_WIDTH: i32 = 40;
+pub const SECTOR_HEIGHT: i32 = 22;
+
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Location {
@@ -107,6 +110,35 @@ impl Location {
         let loc = self + offset.into();
         ctx.portal(loc).unwrap_or(loc)
     }
+
+    /// Return `Sector` this location is in.
+    pub fn sector(self) -> Sector {
+        let (u, v) = self.to_rect_coords();
+
+        Sector::new(
+            (u as f32 / SECTOR_WIDTH as f32).floor() as i8,
+            (v as f32 / SECTOR_HEIGHT as f32).floor() as i8,
+            self.z,
+        )
+    }
+
+    /// Map location's x, y to rectangular (offset) coordinates.
+    pub fn to_rect_coords(self) -> (i32, i32) {
+        let u = self.x as i32 - self.y as i32;
+        let v = ((self.x as f32 + self.y as f32) / 2.0).floor() as i32;
+        (u, v)
+    }
+
+    pub fn from_rect_coords(u: i32, v: i32, z: i8) -> Location {
+        // Yeah I don't know either how you're supposed to come up with the right ceil/floor
+        // juggling, just tweaked it around until it passed all the unit tests.
+        let half_u = u as f32 / 2.0;
+        Location::new(
+            (half_u.ceil() as i32 + v) as i8,
+            (v - half_u.floor() as i32) as i8,
+            z,
+        )
+    }
 }
 
 impl<V: Into<Vector2D<i32>>> Add<V> for Location {
@@ -176,9 +208,51 @@ impl Add<Portal> for Portal {
     }
 }
 
+/// Non-scrolling screen.
+///
+/// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
+/// coordinates form their own sector space that tiles the location space with sectors.
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+pub struct Sector {
+    pub x: i8,
+    pub y: i8,
+    pub z: i8,
+}
+
+impl Sector {
+    pub fn new(x: i8, y: i8, z: i8) -> Sector { Sector { x, y, z } }
+
+    pub fn origin(self) -> Location { self.rect_coord_loc(0, 0) }
+
+    pub fn rect_coord_loc(self, u: i32, v: i32) -> Location {
+        Location::from_rect_coords(
+            self.x as i32 * SECTOR_WIDTH + u,
+            self.y as i32 * SECTOR_HEIGHT + v,
+            self.z,
+        )
+    }
+
+    /// Center location for this sector.
+    ///
+    /// Usually you want the camera positioned here.
+    pub fn center(self) -> Location {
+        // XXX: If the width/height are even (as they currently are), there isn't a centered cell.
+        self.rect_coord_loc(SECTOR_WIDTH / 2, SECTOR_HEIGHT / 2)
+    }
+
+    // TODO: Use impl Trait instead of box for return type once it's stable.
+    pub fn iter(self) -> Box<Iterator<Item = Location>> {
+        let n = SECTOR_WIDTH * SECTOR_HEIGHT;
+        let pitch = SECTOR_WIDTH;
+        Box::new((0..n).map(
+            move |i| self.rect_coord_loc(i % pitch, i / pitch),
+        ))
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use super::Location;
+    use super::{Location, Sector};
     use euclid::vec2;
 
     #[test]
@@ -196,6 +270,46 @@ mod test {
         for _ in 0..1000 {
             let x = rng.gen::<u32>() & 0xff_ffff;
             assert_eq!(x, Location::from_morton(x).to_morton());
+        }
+    }
+
+    #[test]
+    fn test_location_to_sector() {
+        let s = Sector::new(0, 0, 0);
+        assert_eq!(s.origin(), Location::new(0, 0, 0));
+
+        // Sector division near origin
+        assert_eq!(Location::new(0, 0, 0).sector(), Sector::new(0, 0, 0));
+        assert_eq!(Location::new(-1, -1, 0).sector(), Sector::new(0, -1, 0));
+        assert_eq!(Location::new(0, 1, 0).sector(), Sector::new(-1, 0, 0));
+        assert_eq!(Location::new(-1, 0, 0).sector(), Sector::new(-1, -1, 0));
+
+        for y in -100..100 {
+            for x in -100..100 {
+                let loc = Location::new(x, y, 0);
+                let (u, v) = loc.to_rect_coords();
+                assert_eq!(
+                    loc,
+                    Location::from_rect_coords(u, v, loc.z),
+                    "u: {}, v: {}",
+                    u,
+                    v
+                );
+
+                assert!(
+                    loc.sector().iter().find(|&x| x == loc).is_some(),
+                    format!("{:?} not found in sector {:?}", loc, loc.sector())
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_sector_iter() {
+        let s = Sector::new(0, 0, 0);
+
+        for loc in s.iter() {
+            assert_eq!(s, loc.sector(), "Location: {:?}", loc);
         }
     }
 }
