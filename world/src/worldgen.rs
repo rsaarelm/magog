@@ -320,8 +320,7 @@ fn screen_map(origin: Location) -> Field<Prototerrain> {
         (1, 2),
     ];
 
-    for &v in ::onscreen_locations() {
-        let loc = origin + v;
+    for loc in origin.sector().iter() {
         // Paint border for every cell, all except the one from the cells at the actual border will
         // be overwritten.
         for d in &BORDER_MASK {

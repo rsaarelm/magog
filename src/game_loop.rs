@@ -1,13 +1,11 @@
 use calx_grid::Dir6;
 use display;
-use euclid::{Point2D, Rect, vec2};
-use rand;
+use euclid::{Point2D, Rect};
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
-use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, TerrainQuery, World,
-            on_screen};
+use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
@@ -221,40 +219,12 @@ impl GameLoop {
         }
     }
 
-    fn dump(&mut self) { dump_map(&self.world); }
-
-    /// Generate a new random cave map.
-    fn cave(&mut self) {
-        use world::mapgen;
-        self.world = World::new(1);
-        mapgen::caves(
-            &mut self.world,
-            &mut rand::thread_rng(),
-            Location::new(0, 0, 0),
-            300,
-        );
-    }
-
-    /// Generate a new random maze map.
-    fn maze(&mut self, sparseness: usize) {
-        use world::mapgen;
-        self.world = World::new(1);
-        mapgen::maze(&mut self.world, &mut rand::thread_rng(), sparseness);
-    }
-
-    /// Generate a new random rooms and corridors
-    fn rooms(&mut self) {
-        use world::mapgen;
-        self.world = World::new(1);
-        mapgen::rooms(&mut self.world, &mut rand::thread_rng());
+    fn todo(&mut self) {
+        // TODO: Bring back some debug commands
     }
 
     command_parser!{
-        fn cave(&mut self);
-        fn maze(&mut self, sparseness: usize);
-        fn rooms(&mut self);
-
-        fn dump(&mut self);
+        fn todo(&mut self);
     }
 
     fn draw_inventory(&mut self, c: &mut display::Backend) -> Result<(), ()> {
@@ -339,34 +309,6 @@ impl GameLoop {
                 }
             }
         }
-    }
-}
-
-/// Print the world map as ASCII.
-fn dump_map(world: &World) {
-    for y in -21..21 {
-        for x in -39..41 {
-            if (x + y) % 2 != 0 {
-                print!(" ");
-                continue;
-            }
-            let pos = vec2((x + y) / 2, y);
-            if on_screen(pos) {
-                let t = world.terrain(Location::new(0, 0, 0) + pos);
-                if t.is_open() {
-                    print!(".");
-                } else if t.is_door() {
-                    print!("+");
-                } else if t.is_wall() {
-                    print!("#");
-                } else {
-                    print!("*");
-                }
-            } else {
-                print!(" ");
-            }
-        }
-        println!("");
     }
 }
 
