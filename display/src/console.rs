@@ -36,7 +36,7 @@ impl Console {
     /// Draw the console as a regular message display.
     pub fn draw_small<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
         // TODO: Store color in draw context.
-        let color = [1.0, 1.0, 1.0, 1.0];
+        let color = [1.0, 1.0, 1.0, 0.4];
 
         let t = time::precise_time_s();
         let h = context.current_font().height;
