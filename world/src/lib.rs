@@ -58,6 +58,8 @@ mod location_set;
 mod mapfile;
 pub use mapfile::{save_prefab, load_prefab};
 
+pub mod mapgen;
+
 mod mutate;
 pub use mutate::Mutate;
 

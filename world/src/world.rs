@@ -77,6 +77,7 @@ impl<'a> World {
             ret.spawn(&spawn, loc);
         }
 
+        // TODO non-lexical borrow
         let player_entry = ret.worldgen.player_entry();
         ret.spawn_player(player_entry);
 

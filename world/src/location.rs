@@ -240,7 +240,7 @@ impl Sector {
         self.rect_coord_loc(SECTOR_WIDTH / 2 - 1, SECTOR_HEIGHT / 2 - 1)
     }
 
-    // TODO: Use impl Trait instead of box for return type once it's stable.
+    // TODO return impl
     pub fn iter(self) -> Box<Iterator<Item = Location>> {
         let n = SECTOR_WIDTH * SECTOR_HEIGHT;
         let pitch = SECTOR_WIDTH;
