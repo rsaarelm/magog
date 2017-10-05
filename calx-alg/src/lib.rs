@@ -197,3 +197,19 @@ where
         ret
     }
 }
+
+/// Repeatedly run a random generator that may fail until it succeeds.
+pub fn retry_gen<R: Rng, F, T, E>(n_tries: usize, rng: &mut R, gen: F) -> Result<T, E>
+where
+    F: Fn(&mut R) -> Result<T, E>,
+{
+    let mut ret = gen(rng);
+    for _ in 0..(n_tries - 1) {
+        if ret.is_ok() {
+            return ret;
+        }
+        ret = gen(rng);
+    }
+
+    ret
+}

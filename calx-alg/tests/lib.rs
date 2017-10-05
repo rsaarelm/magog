@@ -2,7 +2,6 @@ extern crate serde_json;
 extern crate calx_alg;
 extern crate rand;
 
-
 use calx_alg::WeightedChoice;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use std::collections::HashMap;
@@ -125,4 +124,16 @@ fn test_modulo() {
     assert_eq!(modulo(9, 5), 4);
     assert_eq!(modulo(-2, 5), 3);
     assert_eq!(modulo(-22, 5), 3);
+}
+
+#[test]
+fn test_retry_gen() {
+    use calx_alg::retry_gen;
+
+    fn failing_gen<R: Rng>(rng: &mut R) -> Result<f32, ()> {
+        let x = rng.next_f32();
+        if x < 0.1 { Ok(x) } else { Err(()) }
+    }
+
+    assert!(retry_gen(1000, &mut rand::thread_rng(), failing_gen).is_ok());
 }
