@@ -110,7 +110,7 @@ pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 {
 pub mod errors {
     error_chain! {
         foreign_links {
-            Io(::std::io::Error) #[cfg(unix)];
+            Io(::std::io::Error);
             RonSerialize(::ron::ser::Error);
             RonDeserialize(::ron::de::Error);
         }
