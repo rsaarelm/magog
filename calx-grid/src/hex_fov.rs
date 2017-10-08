@@ -205,7 +205,7 @@ impl PolarPoint {
         let offset = index.mod_floor(&(self.radius as i32));
 
         let rod = Dir6::from_int(sector).to_v2();
-        let tangent = Dir6::from_int((sector + 2) % 6).to_v2();
+        let tangent = Dir6::from_int(sector + 2).to_v2();
 
         rod * (self.radius as i32) + tangent * offset
     }
