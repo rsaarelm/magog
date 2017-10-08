@@ -98,7 +98,7 @@ impl<'a> World {
     }
 
     pub fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
-        let enc = ron::ser::to_string(self)?;
+        let enc = ron::ser::pretty::to_string(self)?;
         // TODO: Handle error from writer too...
         writeln!(writer, "{}", enc)?;
         Ok(())
