@@ -248,6 +248,12 @@ impl Sector {
             move |i| self.rect_coord_loc(i % pitch, i / pitch),
         ))
     }
+
+    pub fn taxicab_distance(self, other: Sector) -> i32 {
+        ((self.x as i32) - (other.x as i32)).abs() +
+        ((self.y as i32) - (other.y as i32)).abs() +
+        ((self.z as i32) - (other.z as i32)).abs()
+    }
 }
 
 #[cfg(test)]
@@ -311,5 +317,13 @@ mod test {
         for loc in s.iter() {
             assert_eq!(s, loc.sector(), "Location: {:?}", loc);
         }
+    }
+
+    #[test]
+    fn test_distance() {
+        let s = Sector::new(1, 2, 3);
+        assert_eq!(s.taxicab_distance(s), 0);
+        assert_eq!(s.taxicab_distance(Sector::new(3, 2, 1)), 4);
+        assert_eq!(Sector::new(3, 2, 1).taxicab_distance(s), 4);
     }
 }
