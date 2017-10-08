@@ -1,4 +1,4 @@
-use euclid::{Vector2D, vec2};
+use euclid::{Vector2D, vec2, Point2D, point2};
 use num::Integer;
 use rand::{Rand, Rng};
 use std::cmp::max;
@@ -19,6 +19,46 @@ impl HexGeom for Vector2D<i32> {
         } else {
             self.x.abs() + self.y.abs()
         }
+    }
+}
+
+/// Return an iterator for all the points in the hex disc with the given radius.
+pub fn hex_disc(radius: i32) -> HexDiscIterator { HexDiscIterator { radius, i: 0, r: 0 } }
+
+pub struct HexDiscIterator {
+    radius: i32,
+    i: i32,
+    r: i32,
+}
+
+impl Iterator for HexDiscIterator {
+    type Item = Point2D<i32>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.r > self.radius {
+            return None;
+        }
+
+        if self.r == 0 {
+            self.r += 1;
+            self.i = 0;
+            return Some(point2(0, 0));
+        }
+
+        let sector = self.i / self.r;
+        let offset = self.i % self.r;
+        let rod = Dir6::from_int(sector);
+        let tangent = Dir6::from_int(sector + 2);
+
+        let ret = point2(0, 0) + rod.to_v2() * self.r + tangent.to_v2() * offset;
+
+        self.i += 1;
+        if self.i >= 6 * self.r {
+            self.i = 0;
+            self.r += 1;
+        }
+
+        Some(ret)
     }
 }
 
@@ -103,14 +143,7 @@ impl Rand for Dir6 {
 
 impl From<Dir6> for Vector2D<i32> {
     fn from(d: Dir6) -> Self {
-        const DIRS: [(i32, i32); 6] = [
-            (-1, -1),
-            (0,  -1),
-            (1,  0),
-            (1,  1),
-            (0,  1),
-            (-1, 0),
-        ];
+        const DIRS: [(i32, i32); 6] = [(-1, -1), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 0)];
 
         let (x, y) = DIRS[d as usize];
         vec2(x, y)
@@ -222,6 +255,7 @@ mod test {
     use super::Dir12;
     use super::Dir6;
     use super::Dir6::*;
+    use super::hex_disc;
     use euclid::vec2;
 
     #[test]
@@ -300,5 +334,22 @@ mod test {
             Some(Dir12::SouthSoutheast),
             Dir12::away_from(&[true, true, false, false, true, true])
         );
+    }
+
+    #[test]
+    fn test_hex_disc() {
+        use euclid::{Point2D, point2};
+        use super::HexGeom;
+
+        for y in -8i32..8 {
+            for x in -8i32..8 {
+                let pos = point2(x, y);
+                let d = (pos - Point2D::zero()).hex_dist();
+
+                for r in 0..8 {
+                    assert_eq!(d <= r, hex_disc(r).find(|&p| pos == p).is_some());
+                }
+            }
+        }
     }
 }
