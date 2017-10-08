@@ -45,8 +45,10 @@
 #[macro_export]
 macro_rules! command_parser {
     {
-        $(fn $method:ident(&mut self$(, $argname:ident: $argtype:ty)*);)+
+        // TODO: Should support immutable self methods too.
+        $(fn $method:ident(&mut self$(, $argname:ident: $argtype:ty)*);)*
     } => {
+        #[allow(unused)]
         fn parse(&mut self, input: &str) -> ::std::result::Result<(), Box<::std::error::Error>> {
             #[derive(Debug)]
             struct ParseError(String);
@@ -85,7 +87,7 @@ macro_rules! command_parser {
                         );
                         Ok(())
                     }
-                    )+
+                    )*
                     x => parse_err(format!("Unknown command {}", x)),
                 }
             } else {
