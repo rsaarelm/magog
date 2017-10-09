@@ -1,4 +1,4 @@
-use euclid::{Vector2D, vec2, Point2D, point2};
+use euclid::{Vector2D, vec2};
 use num::Integer;
 use rand::{Rand, Rng};
 use std::cmp::max;
@@ -32,7 +32,7 @@ pub struct HexDiscIterator {
 }
 
 impl Iterator for HexDiscIterator {
-    type Item = Point2D<i32>;
+    type Item = Vector2D<i32>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.r > self.radius {
@@ -42,7 +42,7 @@ impl Iterator for HexDiscIterator {
         if self.r == 0 {
             self.r += 1;
             self.i = 0;
-            return Some(point2(0, 0));
+            return Some(vec2(0, 0));
         }
 
         let sector = self.i / self.r;
@@ -50,7 +50,7 @@ impl Iterator for HexDiscIterator {
         let rod = Dir6::from_int(sector);
         let tangent = Dir6::from_int(sector + 2);
 
-        let ret = point2(0, 0) + rod.to_v2() * self.r + tangent.to_v2() * offset;
+        let ret = rod.to_v2() * self.r + tangent.to_v2() * offset;
 
         self.i += 1;
         if self.i >= 6 * self.r {
@@ -338,16 +338,15 @@ mod test {
 
     #[test]
     fn test_hex_disc() {
-        use euclid::{Point2D, point2};
+        use euclid::vec2;
         use super::HexGeom;
 
         for y in -8i32..8 {
             for x in -8i32..8 {
-                let pos = point2(x, y);
-                let d = (pos - Point2D::zero()).hex_dist();
+                let vec = vec2(x, y);
 
                 for r in 0..8 {
-                    assert_eq!(d <= r, hex_disc(r).find(|&p| pos == p).is_some());
+                    assert_eq!(vec.hex_dist() <= r, hex_disc(r).find(|&v| vec == v).is_some());
                 }
             }
         }
