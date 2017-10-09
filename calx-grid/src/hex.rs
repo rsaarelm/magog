@@ -22,6 +22,27 @@ impl HexGeom for Vector2D<i32> {
     }
 }
 
+// TODO return impl
+// No need to muck with custom return iter type then...
+/// Return offsets to neighboring hexes.
+pub fn hex_neighbors() -> HexNeighborIter { HexNeighborIter(0) }
+
+pub struct HexNeighborIter(i32);
+
+impl Iterator for HexNeighborIter {
+    type Item = Vector2D<i32>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 >= 6 {
+            None
+        } else {
+            let ret = Some(Dir6::from_int(self.0).to_v2());
+            self.0 += 1;
+            ret
+        }
+    }
+}
+
 /// Return an iterator for all the points in the hex disc with the given radius.
 pub fn hex_disc(radius: i32) -> HexDiscIterator { HexDiscIterator { radius, i: 0, r: 0 } }
 
@@ -346,7 +367,10 @@ mod test {
                 let vec = vec2(x, y);
 
                 for r in 0..8 {
-                    assert_eq!(vec.hex_dist() <= r, hex_disc(r).find(|&v| vec == v).is_some());
+                    assert_eq!(
+                        vec.hex_dist() <= r,
+                        hex_disc(r).find(|&v| vec == v).is_some()
+                    );
                 }
             }
         }
