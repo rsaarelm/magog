@@ -25,35 +25,60 @@ impl HexGeom for Vector2D<i32> {
 // TODO return impl
 // No need to muck with custom return iter type then...
 /// Return offsets to neighboring hexes.
-pub fn hex_neighbors() -> HexNeighborIter { HexNeighborIter(0) }
+pub fn hex_neighbors<P, R>(origin: P) -> HexNeighborIter<P>
+where
+    P: Clone + Add<Vector2D<i32>, Output = R>,
+{
+    HexNeighborIter { origin, i: 0 }
+}
 
-pub struct HexNeighborIter(i32);
+pub struct HexNeighborIter<P> {
+    origin: P,
+    i: i32,
+}
 
-impl Iterator for HexNeighborIter {
-    type Item = Vector2D<i32>;
+impl<P, R> Iterator for HexNeighborIter<P>
+where
+    P: Clone + Add<Vector2D<i32>, Output = R>,
+{
+    type Item = R;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0 >= 6 {
+        if self.i >= 6 {
             None
         } else {
-            let ret = Some(Dir6::from_int(self.0).to_v2());
-            self.0 += 1;
+            let ret = Some(self.origin.clone() + Dir6::from_int(self.i).to_v2());
+            self.i += 1;
             ret
         }
     }
 }
 
 /// Return an iterator for all the points in the hex disc with the given radius.
-pub fn hex_disc(radius: i32) -> HexDiscIterator { HexDiscIterator { radius, i: 0, r: 0 } }
+pub fn hex_disc<P, R>(origin: P, radius: i32) -> HexDiscIterator<P>
+where
+    P: Clone + Add<Vector2D<i32>, Output = R>,
+{
+    HexDiscIterator {
+        origin,
+        radius,
+        i: 0,
+        r: 0,
+    }
+}
 
-pub struct HexDiscIterator {
+pub struct HexDiscIterator<P> {
+    origin: P,
     radius: i32,
     i: i32,
     r: i32,
 }
 
-impl Iterator for HexDiscIterator {
-    type Item = Vector2D<i32>;
+impl<P, R> Iterator for HexDiscIterator<P>
+where
+    P: Clone + Add<Vector2D<i32>, Output = R>,
+{
+    type Item = R;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.r > self.radius {
@@ -63,7 +88,7 @@ impl Iterator for HexDiscIterator {
         if self.r == 0 {
             self.r += 1;
             self.i = 0;
-            return Some(vec2(0, 0));
+            return Some(self.origin.clone() + vec2(0, 0));
         }
 
         let sector = self.i / self.r;
@@ -79,7 +104,7 @@ impl Iterator for HexDiscIterator {
             self.r += 1;
         }
 
-        Some(ret)
+        Some(self.origin.clone() + ret)
     }
 }
 
@@ -369,7 +394,7 @@ mod test {
                 for r in 0..8 {
                     assert_eq!(
                         vec.hex_dist() <= r,
-                        hex_disc(r).find(|&v| vec == v).is_some()
+                        hex_disc(vec2(0, 0), r).find(|&v| vec == v).is_some()
                     );
                 }
             }
