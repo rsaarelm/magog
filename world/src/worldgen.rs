@@ -38,19 +38,51 @@ impl Worldgen {
         let mut cave_entrance = Location::new(9, 0, 0);
         ret.terrain.insert(cave_entrance, Terrain::Gate);
 
-        for cave_z in 1..11 {
+        for depth in 1..11 {
             let up_stairs;
             let down_stairs;
+            let mut spawns = Vec::new();
 
             {
-                let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, cave_z));
+                let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, depth as i8));
                 let gen = DigCavesGen::new(digger.domain());
                 gen.dig(&mut rng, &mut digger);
 
                 up_stairs = digger.up_portal.expect("Mapgen didn't create stairs up");
-                down_stairs = digger.down_portal.expect("Mapgen didn't create stairs down");
+                down_stairs = digger.down_portal.expect(
+                    "Mapgen didn't create stairs down",
+                );
+
+                // Spawn
+                digger.clear_spawns_near_entrance(12);
+
+                let mut spawn_locs = rand::sample(&mut rng, digger.spawn_region.iter(), 20);
+                let n_spawns = spawn_locs.len();
+
+                let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
+                for &loc in spawn_locs.drain(0..n_spawns / 2) {
+                    spawns.push((
+                            loc,
+                            form::rand(&mut rng, &items)
+                            .expect("No item spawn")
+                            .loadout
+                            .clone(),
+                            ))
+                }
+
+                let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
+                for &loc in spawn_locs {
+                    spawns.push((
+                            loc,
+                            form::rand(&mut rng, &mobs)
+                            .expect("No mob spawn")
+                            .loadout
+                            .clone(),
+                            ))
+                }
             }
 
+            ret.spawns.extend(spawns.into_iter());
             ret.portal(cave_entrance, up_stairs + vec2(1, 1));
             ret.portal(up_stairs, cave_entrance - vec2(1, 1));
             cave_entrance = down_stairs;
@@ -416,7 +448,9 @@ impl<'a> SectorDigger<'a> {
 
         for loc in self.sector.iter() {
             let pos = mapgen_origin +
-                sector_origin.v2_at(loc).expect("Sector points are not Euclidean");
+                sector_origin.v2_at(loc).expect(
+                    "Sector points are not Euclidean",
+                );
 
             // Okay, this part is a bit hairy, hang on.
             // Sectors are arranged in a rectangular grid, so there are some cells where you can
@@ -442,6 +476,26 @@ impl<'a> SectorDigger<'a> {
         }
         self.worldgen.terrain.insert(loc, terrain);
     }
+
+    fn clear_spawns_near_entrance(&mut self, range: u32) {
+        for loc in Dijkstra::new(
+            vec![self.up_portal.expect("No entrance generated")],
+            |loc| {
+                self.worldgen
+                    .terrain
+                    .get(loc)
+                    .cloned()
+                    .unwrap_or(Terrain::Empty)
+                    .is_open()
+            },
+            10_000,
+        ).weights
+            .iter()
+            .filter_map(|(loc, &w)| if w <= range { Some(loc) } else { None })
+        {
+            self.spawn_region.remove(&loc);
+        }
+    }
 }
 
 impl<'a> mapgen::Dungeon for SectorDigger<'a> {
@@ -451,7 +505,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Prefab { rng.gen() }
 
     /// Add a large open continuous region to dungeon.
-    fn dig_chamber<I: IntoIterator<Item=mapgen::Point2D>>(&mut self, area: I) {
+    fn dig_chamber<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, area: I) {
         for pos in area.into_iter() {
             let loc = self.loc(pos);
             self.spawn_region.insert(loc);
@@ -460,7 +514,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     }
 
     /// Add a narrow corridor to dungeon.
-    fn dig_corridor<I: IntoIterator<Item=mapgen::Point2D>>(&mut self, path: I) {
+    fn dig_corridor<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, path: I) {
         for pos in path.into_iter() {
             let loc = self.loc(pos);
             // Do not spawn things in corridors.
