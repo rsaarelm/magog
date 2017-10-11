@@ -122,7 +122,6 @@ impl DigCavesGen {
             .filter(|&&p| is_downstair_pos(&dug, p))
             .cloned()
             .collect();
-        let sample = rand::sample(rng, dug, 2);
         d.add_up_stairs(rand::sample(rng, upstair_sites.into_iter(), 1)[0]);
         d.add_down_stairs(rand::sample(rng, downstair_sites.into_iter(), 1)[0]);
 

@@ -39,7 +39,6 @@ mod effect;
 mod event;
 pub use event::Event;
 
-mod field;
 mod flags;
 
 mod form;

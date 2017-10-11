@@ -1,13 +1,11 @@
 use Prefab;
 use calx_grid::{Dijkstra, Dir6};
 use euclid::{vec2, Size2D};
-use field::Field;
 use form::{self, Form};
 use location::{Location, Portal, Sector};
 use mapgen::{self, DigCavesGen};
 use rand::{self, Rand, Rng, SeedableRng};
 use serde;
-use std::cmp;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::slice;
@@ -36,7 +34,11 @@ impl Worldgen {
         let mut rng: ::Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
 
         let mut cave_entrance = Location::new(9, 0, 0);
-        ret.terrain.insert(cave_entrance, Terrain::Gate);
+        ret.cave_entrance(cave_entrance);
+        ret.terrain.insert(
+            cave_entrance + vec2(1, 1),
+            Terrain::Gate,
+        );
 
         for depth in 1..11 {
             let up_stairs;
@@ -62,23 +64,23 @@ impl Worldgen {
                 let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
                 for &loc in spawn_locs.drain(0..n_spawns / 2) {
                     spawns.push((
-                            loc,
-                            form::rand(&mut rng, &items)
+                        loc,
+                        form::rand(&mut rng, &items)
                             .expect("No item spawn")
                             .loadout
                             .clone(),
-                            ))
+                    ))
                 }
 
                 let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
                 for &loc in spawn_locs {
                     spawns.push((
-                            loc,
-                            form::rand(&mut rng, &mobs)
+                        loc,
+                        form::rand(&mut rng, &mobs)
                             .expect("No mob spawn")
                             .loadout
                             .clone(),
-                            ))
+                    ))
                 }
             }
 
@@ -144,161 +146,8 @@ impl Worldgen {
 
     pub fn player_entry(&self) -> Location { self.player_entry }
 
-    // TODO Move to mapgen
-    #[deprecated]
-    fn gen_caves<R: Rng>(&mut self, rng: &mut R, entrance: Location) -> Location {
-        use self::Prototerrain::*;
-
-        let mut cells_to_dig = 700;
-
-        let mut map = screen_map(Location::new(0, 0, entrance.z));
-
-        debug_assert_eq!(map.get(entrance), Unused);
-
-        // Create portal enclosure
-        entry_cave_enclosure(&mut map, entrance);
-
-        let entrance = entrance + vec2(1, 1);
-
-        let mut edge: BTreeSet<Location> = Dir6::iter()
-            .map(|&d| entrance + vec2(2, 2) + d)
-            .filter(|&loc| map.get(loc) == Unused)
-            .collect();
-
-        // Arbitrary long iteration, should break after digging a sufficient number of cells before
-        // this.
-        for _ in 0..10_000 {
-            if edge.is_empty() {
-                break;
-            }
-
-            let dig_loc = *rand::sample(rng, edge.iter(), 1)[0];
-
-            // Prefer digging narrow corridors, there's an increasing chance to abort the dig when the
-            // selected location is in a very open space.
-            let adjacent_floors = Dir6::iter()
-                .filter(|d| map.get(dig_loc + **d) == Floor)
-                .count();
-            if rng.gen_range(0, cmp::max(1, adjacent_floors * adjacent_floors)) != 0 {
-                continue;
-            }
-
-            map.set(dig_loc, Floor);
-            edge.extend(Dir6::iter().map(|&d| dig_loc + d).filter(|&loc| {
-                map.get(loc) == Unused
-            }));
-
-            cells_to_dig -= 1;
-            if cells_to_dig == 0 {
-                break;
-            }
-        }
-
-        // Postprocess
-        let cells: Vec<_> = map.iter().map(|(&loc, &c)| (loc, c)).collect();
-        for (loc, c) in cells {
-            // Clear pillars
-            if c == Unused {
-                let adjacent_floors = Dir6::iter().filter(|d| map.get(loc + **d) == Floor).count();
-
-                if adjacent_floors == 6 {
-                    map.set(loc, Floor);
-                }
-            }
-        }
-
-
-        // Find opening for next map
-        let openings: Vec<Location> = map.iter()
-            .map(|(&loc, _)| loc)
-            .filter(|&loc| can_be_path_down_opening(&map, entrance, loc))
-            .collect();
-        // XXX FIXME: There's actually no guarantees made that this can't fail
-        // Fallback should be something like carving the exit to the bottom edge of the map
-        assert!(!openings.is_empty(), "No exit candidates");
-        let exit_loc = rand::sample(rng, openings, 1)[0];
-        map.set(exit_loc, Border);
-
-
-        // Spawns
-        const MIN_DISTANCE_FROM_ENTRANCE: u32 = 10;
-        let depth = entrance.z as i32;
-        // Flood-fill the new map
-        let mut spawn_map = Dijkstra::new(vec![entrance], |&loc| map.get(loc) == Floor, 10_000)
-            .weights;
-        // Filter stuff too close to entrance
-        spawn_map.retain(|_, &mut w| w >= MIN_DISTANCE_FROM_ENTRANCE);
-        // Don't need weights anymore, convert to Vec.
-        let mut spawn_locs: Vec<Location> = spawn_map.into_iter().map(|(loc, _)| loc).collect();
-        // Filter stuff next to walls, only spawn in open areas
-        spawn_locs.retain(|&loc| {
-            Dir6::iter()
-                .map(|&d| (map.get(loc + d) == Floor) as u32)
-                .sum::<u32>() > 3
-        });
-
-        let mut spawn_locs = rand::sample(rng, spawn_locs.iter(), 20);
-        let n_spawns = spawn_locs.len();
-
-        let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
-        for &loc in spawn_locs.drain(0..n_spawns / 2) {
-            self.spawns.push((
-                loc,
-                form::rand(rng, &items)
-                    .expect("No item spawn")
-                    .loadout
-                    .clone(),
-            ))
-        }
-
-        let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
-        for &loc in spawn_locs {
-            self.spawns.push((
-                loc,
-                form::rand(rng, &mobs)
-                    .expect("No mob spawn")
-                    .loadout
-                    .clone(),
-            ))
-        }
-
-
-        // Map to actual terrains
-        self.terrain.extend(map.iter().map(|(&loc, &t)| {
-            let t = match t {
-                Outside => Terrain::Empty,
-                Unused | Border | Wall => Terrain::Rock,
-                Floor => Terrain::Ground,
-                Door => Terrain::Door,
-            };
-            (loc, t)
-        }));
-
-        // XXX: This thing needs to be more automatic
-        // Make the backportal cell have transparent terrain
-
-
-        return exit_loc;
-
-        fn can_be_path_down_opening(
-            map: &Field<Prototerrain>,
-            origin: Location,
-            loc: Location,
-        ) -> bool {
-            const MIN_EXIT_DISTANCE: i32 = 12;
-
-            loc.metric_distance(origin) > MIN_EXIT_DISTANCE &&
-                map.get(loc + Dir6::North) == Floor &&
-                map.get(loc + Dir6::Northeast) != Floor &&
-                map.get(loc + Dir6::Southeast) != Floor &&
-                map.get(loc + Dir6::South) != Floor &&
-                map.get(loc + Dir6::Southwest) != Floor &&
-                map.get(loc + Dir6::Northwest) != Floor
-        }
-    }
-
     /// Make a cave entrance going down.
-    fn cave_entrance(&mut self, loc: Location, cave_start: Location) {
+    fn cave_entrance(&mut self, loc: Location) {
         const DOWNBOUND_ENCLOSURE: [(i32, i32); 5] = [(1, 0), (0, 1), (2, 1), (1, 2), (2, 2)];
 
         for &v in &DOWNBOUND_ENCLOSURE {
@@ -308,10 +157,6 @@ impl Worldgen {
 
         self.terrain.insert(loc, Terrain::Ground);
         self.terrain.insert(loc + vec2(1, 1), Terrain::Ground);
-
-        // Connect the points
-        self.portal(loc + vec2(1, 1), cave_start);
-        self.portal(cave_start - vec2(1, 1), loc);
     }
 
     /// Punch a (one-way) portal between two points.
@@ -333,85 +178,6 @@ impl<'a> serde::Deserialize<'a> for Worldgen {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         Ok(Worldgen::new(serde::Deserialize::deserialize(d)?))
     }
-}
-
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-enum Prototerrain {
-    /// Area completely outside the map to be generated.
-    Outside,
-    /// Area that should be filled with map content but hasn't been yet.
-    Unused,
-    /// Area that the player cannot enter but that may be visible on screen.
-    Border,
-    Floor,
-    Wall,
-    Door,
-}
-
-impl Default for Prototerrain {
-    fn default() -> Self { Prototerrain::Outside }
-}
-
-fn screen_map(origin: Location) -> Field<Prototerrain> {
-    let mut ret = Field::new();
-
-    // Cells two cells away from the live area at the bottom of the screen can still affect
-    // the visible terrain via cell reshaping, so add those as well to the border.
-    const BORDER_MASK: [(i32, i32); 9] = [
-        (-1, -1),
-        (0, -1),
-        (1, 0),
-        (1, 1),
-        (0, 1),
-        (-1, 0),
-        (2, 1),
-        (2, 2),
-        (1, 2),
-    ];
-
-    for loc in origin.sector().iter() {
-        // Paint border for every cell, all except the one from the cells at the actual border will
-        // be overwritten.
-        for d in &BORDER_MASK {
-            let vec = vec2(d.0, d.1);
-            if ret.get(loc + vec) == Default::default() {
-                ret.set(loc + vec, Prototerrain::Border);
-            }
-        }
-
-        ret.set(loc, Prototerrain::Unused);
-    }
-
-    ret
-}
-
-fn entry_cave_enclosure(map: &mut Field<Prototerrain>, entrance: Location) {
-    use self::Prototerrain::*;
-
-    debug_assert_eq!(map.get(entrance), Unused);
-
-    const UPBOUND_ENCLOSURE: [(i32, i32); 7] = [
-        (-2, -2),
-        (-1, -2),
-        (0, -1),
-        (-1, 0),
-        (-2, -1),
-        (1, 0),
-        (0, 1),
-    ];
-
-    for &v in &UPBOUND_ENCLOSURE {
-        let loc = entrance + vec2(v.0, v.1);
-        map.set(loc, Wall);
-    }
-
-    // Portal site
-    map.set(entrance - vec2(1, 1), Floor);
-    // Entrance cell
-    map.set(entrance, Floor);
-    // Enclosure mouth
-    map.set(entrance + vec2(1, 1), Floor);
 }
 
 struct SectorDigger<'a> {
