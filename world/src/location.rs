@@ -11,9 +11,9 @@ pub const SECTOR_HEIGHT: i32 = 22;
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Location {
-    pub x: i8,
-    pub y: i8,
-    pub z: i8,
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
 }
 
 /// The type for a unique location in the game world.
@@ -25,17 +25,18 @@ pub struct Location {
 impl Location {
     pub fn origin() -> Location { Location { x: 0, y: 0, z: 0 } }
 
-    pub fn new(x: i8, y: i8, z: i8) -> Location { Location { x, y, z } }
+    pub fn new(x: i16, y: i16, z: i16) -> Location { Location { x, y, z } }
 
     /// Construct a Location from a Morton code representation.
     ///
-    /// Use the representation generated with `to_morton`. The odd low 16 bits are compacted to x
-    /// value, the even low 16 bits to z and the first 8 of the high 16 bits become z.
-    pub fn from_morton(morton_code: u32) -> Location {
-        let xy = morton_code & 0xffff_ffff;
-        let x = compact_bits_by_2(xy) as u8;
-        let y = compact_bits_by_2(xy >> 1) as u8;
-        let z = (morton_code >> 16) as u8;
+    /// Use the representation generated with `to_morton`. The odd bits of the low 32 bits are
+    /// compacted to x value, the even bits of the low 32 bits to y and the first 16 of the high 32
+    /// bits become z.
+    pub fn from_morton(morton_code: u64) -> Location {
+        let xy = (morton_code & 0xffff_ffff) as u32;
+        let x = compact_bits_by_2(xy) as u16;
+        let y = compact_bits_by_2(xy >> 1) as u16;
+        let z = (morton_code >> 32) as u16;
 
         unsafe {
             Location {
@@ -50,14 +51,14 @@ impl Location {
     ///
     /// Spatially close locations are often numerically close in Morton codes, these are useful for
     /// quadtree-like structures.
-    pub fn to_morton(&self) -> u32 {
+    pub fn to_morton(&self) -> u64 {
         let mut ret = 0;
-        let x: u8 = unsafe { ::std::mem::transmute(self.x) };
-        let y: u8 = unsafe { ::std::mem::transmute(self.y) };
-        let z: u8 = unsafe { ::std::mem::transmute(self.z) };
-        ret ^= spread_bits_by_2(x as u32);
-        ret ^= spread_bits_by_2(y as u32) << 1;
-        ret ^= (z as u32) << 16;
+        let x: u16 = unsafe { ::std::mem::transmute(self.x) };
+        let y: u16 = unsafe { ::std::mem::transmute(self.y) };
+        let z: u16 = unsafe { ::std::mem::transmute(self.z) };
+        ret ^= spread_bits_by_2(x as u32) as u64;
+        ret ^= (spread_bits_by_2(y as u32) << 1) as u64;
+        ret ^= (z as u64) << 32;
         ret
     }
 
@@ -116,8 +117,8 @@ impl Location {
         let (u, v) = self.to_rect_coords();
 
         Sector::new(
-            (u as f32 / SECTOR_WIDTH as f32).floor() as i8,
-            (v as f32 / SECTOR_HEIGHT as f32).floor() as i8,
+            (u as f32 / SECTOR_WIDTH as f32).floor() as i16,
+            (v as f32 / SECTOR_HEIGHT as f32).floor() as i16,
             self.z,
         )
     }
@@ -129,13 +130,13 @@ impl Location {
         (u, v)
     }
 
-    pub fn from_rect_coords(u: i32, v: i32, z: i8) -> Location {
+    pub fn from_rect_coords(u: i32, v: i32, z: i16) -> Location {
         // Yeah I don't know either how you're supposed to come up with the right ceil/floor
         // juggling, just tweaked it around until it passed all the unit tests.
         let half_u = u as f32 / 2.0;
         Location::new(
-            (half_u.ceil() as i32 + v) as i8,
-            (v - half_u.floor() as i32) as i8,
+            (half_u.ceil() as i32 + v) as i16,
+            (v - half_u.floor() as i32) as i16,
             z,
         )
     }
@@ -146,8 +147,8 @@ impl<V: Into<Vector2D<i32>>> Add<V> for Location {
     fn add(self, other: V) -> Location {
         let other = other.into();
         Location {
-            x: (self.x as i32 + other.x) as i8,
-            y: (self.y as i32 + other.y) as i8,
+            x: (self.x as i32 + other.x) as i16,
+            y: (self.y as i32 + other.y) as i16,
             z: self.z,
         }
     }
@@ -169,8 +170,8 @@ impl<V: Into<Vector2D<i32>>> Sub<V> for Location {
     fn sub(self, other: V) -> Location {
         let other = other.into();
         Location {
-            x: (self.x as i32 - other.x) as i8,
-            y: (self.y as i32 - other.y) as i8,
+            x: (self.x as i32 - other.x) as i16,
+            y: (self.y as i32 - other.y) as i16,
             z: self.z,
         }
     }
@@ -182,9 +183,9 @@ impl GridNode for Location {
 
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Portal {
-    pub dx: i8,
-    pub dy: i8,
-    pub z: i8,
+    pub dx: i16,
+    pub dy: i16,
+    pub z: i16,
 }
 
 impl Portal {
@@ -214,13 +215,13 @@ impl Add<Portal> for Portal {
 /// coordinates form their own sector space that tiles the location space with sectors.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Sector {
-    pub x: i8,
-    pub y: i8,
-    pub z: i8,
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
 }
 
 impl Sector {
-    pub fn new(x: i8, y: i8, z: i8) -> Sector { Sector { x, y, z } }
+    pub fn new(x: i16, y: i16, z: i16) -> Sector { Sector { x, y, z } }
 
     pub fn origin(self) -> Location { self.rect_coord_loc(0, 0) }
 
@@ -250,9 +251,8 @@ impl Sector {
     }
 
     pub fn taxicab_distance(self, other: Sector) -> i32 {
-        ((self.x as i32) - (other.x as i32)).abs() +
-        ((self.y as i32) - (other.y as i32)).abs() +
-        ((self.z as i32) - (other.z as i32)).abs()
+        ((self.x as i32) - (other.x as i32)).abs() + ((self.y as i32) - (other.y as i32)).abs() +
+            ((self.z as i32) - (other.z as i32)).abs()
     }
 }
 
@@ -264,8 +264,8 @@ mod test {
     #[test]
     fn test_wraparound() {
         let l1 = Location::new(0, 0, 0);
-        let l2 = l1 + vec2(300, 300);
-        assert_eq!((44, 44), (l2.x, l2.y));
+        let l2 = l1 + vec2(66000, 66000);
+        assert_eq!((464, 464), (l2.x, l2.y));
     }
 
     #[test]
@@ -274,7 +274,7 @@ mod test {
         let mut rng = rand::thread_rng();
 
         for _ in 0..1000 {
-            let x = rng.gen::<u32>() & 0xff_ffff;
+            let x = rng.gen::<u64>() & 0xffff_ffff_ffff;
             assert_eq!(x, Location::from_morton(x).to_morton());
         }
     }

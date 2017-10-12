@@ -303,7 +303,7 @@ impl View {
         }
     }
 
-    fn move_camera(&mut self, delta: Vector2D<i32>, dz: i8) {
+    fn move_camera(&mut self, delta: Vector2D<i32>, dz: i16) {
         let second_delta = if self.camera_lock { delta } else { vec2(0, 0) };
 
         let (a, b) = self.camera;

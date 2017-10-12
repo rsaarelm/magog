@@ -46,7 +46,7 @@ impl Worldgen {
             let mut spawns = Vec::new();
 
             {
-                let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, depth as i8));
+                let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, depth as i16));
                 let gen = DigCavesGen::new(digger.domain());
                 gen.dig(&mut rng, &mut digger);
 

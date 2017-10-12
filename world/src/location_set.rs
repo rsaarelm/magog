@@ -10,13 +10,13 @@ pub struct LocationSet {
     /// 6 bits in the Morton code assign the position in the chunk and the higher bits give the
     /// chunk index. Sequences of 6 low bits in 2D Morton coding correspond to 8x8 squares on the
     /// map grid.
-    chunks: HashMap<u32, u64>,
+    chunks: HashMap<u64, u64>,
 }
 
 impl LocationSet {
     /// Return the chunk index and the bit offset for a location.
     #[inline]
-    fn chunk(loc: &Location) -> (u32, u64) {
+    fn chunk(loc: &Location) -> (u64, u64) {
         let morton = loc.to_morton();
         (morton >> 6, 1 << (morton % 64))
     }
