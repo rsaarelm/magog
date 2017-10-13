@@ -58,8 +58,35 @@ impl fmt::Display for SRgba {
     }
 }
 
+impl From<[u8; 4]> for SRgba {
+    fn from(c: [u8; 4]) -> SRgba {
+        SRgba {
+            r: c[0],
+            g: c[1],
+            b: c[2],
+            a: c[3],
+        }
+    }
+}
+
+impl From<[u8; 3]> for SRgba {
+    fn from(c: [u8; 3]) -> SRgba {
+        SRgba {
+            r: c[0],
+            g: c[1],
+            b: c[2],
+            a: 255,
+        }
+    }
+}
+
+impl From<u32> for SRgba {
+    fn from(c: u32) -> SRgba {
+        SRgba::new((c >> 24) as u8, (c >> 16) as u8, (c >> 8) as u8, c as u8)
+    }
+}
+
 impl From<Rgba> for SRgba {
-    #[inline]
     fn from(c: Rgba) -> SRgba {
         SRgba::new(
             (to_srgb(c.r) * 255.0).round() as u8,
@@ -70,14 +97,12 @@ impl From<Rgba> for SRgba {
     }
 }
 
-impl From<u32> for SRgba {
-    fn from(u: u32) -> SRgba {
-        SRgba::new((u >> 24) as u8, (u >> 16) as u8, (u >> 8) as u8, u as u8)
-    }
+impl From<image::Rgba<u8>> for SRgba {
+    fn from(c: image::Rgba<u8>) -> SRgba { SRgba::new(c.data[0], c.data[1], c.data[2], c.data[3]) }
 }
 
-impl Into<image::Rgba<u8>> for SRgba {
-    fn into(self) -> image::Rgba<u8> { image::Rgba { data: [self.r, self.g, self.b, self.a] } }
+impl From<SRgba> for image::Rgba<u8> {
+    fn from(c: SRgba) -> image::Rgba<u8> { image::Rgba { data: [c.r, c.g, c.b, c.a] } }
 }
 
 impl FromStr for SRgba {
@@ -184,11 +209,6 @@ impl Rgba {
         let luma = self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722;
         Rgba::new(luma, luma, luma, self.a)
     }
-
-    pub fn into_array(self) -> [f32; 4] {
-        use std::mem;
-        unsafe { mem::transmute(self) }
-    }
 }
 
 impl FromStr for Rgba {
@@ -203,19 +223,30 @@ impl FromStr for Rgba {
 }
 
 impl From<SRgba> for Rgba {
-    #[inline]
-    fn from(s: SRgba) -> Rgba {
+    fn from(c: SRgba) -> Rgba {
         Rgba::new(
-            to_linear(s.r as f32 / 255.0),
-            to_linear(s.g as f32 / 255.0),
-            to_linear(s.b as f32 / 255.0),
-            to_linear(s.a as f32 / 255.0),
+            to_linear(c.r as f32 / 255.0),
+            to_linear(c.g as f32 / 255.0),
+            to_linear(c.b as f32 / 255.0),
+            to_linear(c.a as f32 / 255.0),
         )
     }
 }
 
+impl From<[f32; 4]> for Rgba {
+    fn from(c: [f32; 4]) -> Rgba { Rgba::new(c[0], c[1], c[2], c[3]) }
+}
+
+impl From<[f32; 3]> for Rgba {
+    fn from(c: [f32; 3]) -> Rgba { Rgba::new(c[0], c[1], c[2], 1.0) }
+}
+
 impl From<u32> for Rgba {
-    fn from(u: u32) -> Rgba { SRgba::from(u).into() }
+    fn from(c: u32) -> Rgba { SRgba::from(c).into() }
+}
+
+impl From<Rgba> for [f32; 4] {
+    fn from(c: Rgba) -> [f32; 4] { [c.r, c.g, c.b, c.a] }
 }
 
 impl Add<Rgba> for Rgba {
@@ -482,7 +513,6 @@ color_constants! {
 mod test {
     #[test]
     fn test_parse_color() {
-        use std::convert::From;
         use std::str::FromStr;
         use super::{Rgba, SRgba};
 
@@ -529,7 +559,7 @@ mod test {
         );
         assert_eq!(Ok(Rgba::new(1.0, 0.0, 0.0, 1.0)), Rgba::from_str("RED"));
 
-        assert_eq!(SRgba::new(0x33, 0x77, 0xbb, 0xff), SRgba::from(0x3377bbff));
+        assert_eq!(SRgba::new(0x33, 0x77, 0xbb, 0xff), 0x3377bbff.into());
 
         assert_eq!(0x00, SRgba::from_str("#000").unwrap().r);
         assert_eq!(0x22, SRgba::from_str("#200").unwrap().r);
