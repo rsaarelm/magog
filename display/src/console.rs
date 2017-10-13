@@ -14,7 +14,7 @@ struct Message {
 
 impl Message {
     fn new(text: String, time_start_s: f64) -> Message {
-        const TIME_TO_READ_CHAR_S: f64 = 0.2;
+        const TIME_TO_READ_CHAR_S: f64 = 0.1;
         let expire_time_s = time_start_s + text.len() as f64 * TIME_TO_READ_CHAR_S;
         Message {
             expire_time_s: expire_time_s,
@@ -39,22 +39,22 @@ impl Console {
         let color = [1.0, 1.0, 1.0, 0.4];
 
         let t = time::precise_time_s();
-        let h = context.current_font().height;
-        let mut y = screen_area.max_y() - h;
+        let mut lines = Vec::new();
         // The log can be very long, and we're always most interested in the latest ones, so
         // do a backwards iteration with an early exist once we hit a sufficiently old item.
         for msg in self.lines.iter().rev().take_while(|m| m.expire_time_s > t) {
             // The split_line iterator can't be reversed, need to do a bit of caching here.
-            let fragments = split_line(
+            lines.extend(split_line(
                 &msg.text,
                 |c| context.current_font().char_width(c).unwrap_or(0.0),
                 screen_area.size.width,
-            ).map(|x| x.to_string())
-                .collect::<Vec<String>>();
-            for line in fragments.iter().rev() {
-                context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
-                y -= h;
-            }
+            ).map(|x| x.to_string()));
+        }
+
+        // Draw the lines
+        let mut pos = screen_area.origin;
+        for line in lines.iter().rev() {
+            pos = context.draw_text(pos, Align::Left, color, line);
         }
     }
 
@@ -87,7 +87,7 @@ impl Console {
             ).map(|x| x.to_string())
                 .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                context.draw_text(Point2D::new(0.0, y), Align::Left, color, line);
+                context.draw_text(Point2D::new(0.0f32, y), Align::Left, color, line);
                 y -= h;
                 lines_left -= 1;
             }
@@ -107,8 +107,7 @@ impl Console {
             self.done_reading_s = now;
         }
 
-        let message = Message::new(message_text, self.done_reading_s);
-        assert!(message.expire_time_s >= self.done_reading_s);
+        let message = Message::new(message_text, now);
         self.done_reading_s = message.expire_time_s;
         self.lines.push(message);
     }

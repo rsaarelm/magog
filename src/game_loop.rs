@@ -279,12 +279,12 @@ impl GameLoop {
             }
             State::Console => {
                 let mut console_area = *screen_area;
-                console_area.size.height /= 2.0;
+                console_area.size.height = 184.0;
                 self.console.draw_large(context, &console_area);
             }
             _ => {
                 let mut console_area = *screen_area;
-                console_area.size.height /= 8.0;
+                console_area.size.height = 32.0;
                 self.console.draw_small(context, &console_area);
             }
         }
