@@ -225,8 +225,8 @@ impl WorldView {
             let mut ret: Vec<Frame> = brush.deref().clone();
             for frame in &mut ret {
                 for splat in frame.iter_mut() {
-                    splat.color = Rgba::from(0x0804_00ff).into_array();
-                    splat.back_color = Rgba::from(0x3322_00ff).into_array();
+                    splat.color = Rgba::from(0x0804_00ffu32).into();
+                    splat.back_color = Rgba::from(0x3322_00ff).into();
                 }
             }
 

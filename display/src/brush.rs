@@ -111,8 +111,8 @@ impl Builder {
         Splat::new(
             geom,
             self.sheet_name.clone(),
-            self.color.into_array(),
-            self.back_color.into_array(),
+            self.color.into(),
+            self.back_color.into(),
         )
     }
 
