@@ -25,7 +25,7 @@ pub fn main() {
     // Construct display and Vitral context.
     // XXX: Glium stuff needs to go into backend module...
     let events = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new();
+    let window = glutin::WindowBuilder::new().with_title("Magog");
     let context = glutin::ContextBuilder::new().with_gl(
         glutin::GlRequest::Specific(
             glutin::Api::OpenGl,
