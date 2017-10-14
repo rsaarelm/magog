@@ -136,23 +136,44 @@ impl WorldView {
                 })
             });
 
-            // Draw entities in directly seen cells
-            // TODO: Items should be drawn even in map memory
-            if !in_map_memory {
-                for &i in &world.entities_at(loc) {
-                    if let Some(desc) = world.ecs().desc.get(i) {
-                        let layer = if world.is_mob(i) {
-                            Layer::Object
+            let (mobs, items): (Vec<Entity>, Vec<Entity>) = world
+                .entities_at(loc)
+                .into_iter()
+                .partition(|&e| world.is_mob(e));
+
+            // Draw non-mob entities, these are static and shown in map memory
+            // FIXME: This should not use live entity data for the remembered objects, since it
+            // will then show the object moving around without the player observing it.
+            for &i in &items {
+                if let Some(desc) = world.ecs().desc.get(i) {
+                    let brush = cache::entity(desc.icon);
+
+                    sprites.push(Sprite {
+                        layer: Layer::Object,
+                        offset: [screen_pos.x as i32, screen_pos.y as i32],
+                        brush: if in_map_memory {
+                            map_memory_colorize(brush)
                         } else {
-                            Layer::Items
-                        };
+                            brush
+                        },
+                        frame_idx: 0,
+                    });
+
+                    draw_health_pips(&mut sprites, world, i, screen_pos);
+                }
+            }
+
+            // Draw mobs in directly seen cells
+            if !in_map_memory {
+                for &i in &mobs {
+                    if let Some(desc) = world.ecs().desc.get(i) {
                         let frame_idx = if world.is_bobbing(i) {
                             timing::cycle_anim(1.0 / 3.0, 2)
                         } else {
                             0
                         };
                         sprites.push(Sprite {
-                            layer: layer,
+                            layer: Layer::Object,
                             offset: [screen_pos.x as i32, screen_pos.y as i32],
                             brush: cache::entity(desc.icon),
                             frame_idx: frame_idx,
