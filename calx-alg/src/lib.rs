@@ -8,7 +8,7 @@ use num::Float;
 use rand::Rng;
 pub use rng::{EncodeRng, RandomPermutation, RngExt};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign, Rem};
-pub use text::{LineSplit, split_line};
+pub use text::{LineSplit, split_line, templatize};
 
 mod parser;
 mod rng;

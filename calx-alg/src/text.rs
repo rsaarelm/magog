@@ -106,3 +106,74 @@ where
         Some(ret)
     }
 }
+
+/// Translate segments in square brackets in string with the given function.
+///
+/// Square brackets can be escaped by doubling them, `[[` becomes a literal `[` and `]]` becomes a
+/// literal `]`.
+///
+/// If your opening and closing brackets don't match, the formatting behavior is unspecified.
+///
+/// # Examples
+///
+/// ```
+/// use calx_alg::templatize;
+///
+/// fn translate(word: &str) -> Result<String, ()> {
+///     match word {
+///         "foo" => Ok("bar"),
+///         _ => Err(())
+///     }.map(|x| x.to_string())
+/// }
+///
+/// assert_eq!(Ok("foo bar baz".to_string()), templatize(translate, "foo [foo] baz"));
+/// assert_eq!(Err(()), templatize(translate, "foo [bar] baz"));
+/// assert_eq!(Ok("foo [foo] baz".to_string()), templatize(translate, "foo [[foo]] baz"));
+/// ```
+pub fn templatize<F, E>(mapper: F, mut text: &str) -> Result<String, E>
+where
+    F: Fn(&str) -> Result<String, E>,
+{
+    // I'm going to do some fun corner-cutting here.
+    //
+    // Instead of being all proper-like with the opening and closing bracket, I'll just treat them
+    // both as a generic separator char, so the string will start in verbatim mode and a lone
+    // bracket in either direction will toggle modes between verbatim and templatize.
+
+    fn next_chunk(text: &str) -> (String, &str) {
+        let mut acc = String::new();
+        let mut prev = '\0';
+        for (i, c) in text.char_indices() {
+            // Escaped bracket, emit one.
+            if (c == '[' || c == ']') && prev == c {
+                acc.push(c);
+                prev = '\0';
+                continue;
+            }
+            // Actual bracket, end chunk here and return remain.
+            if prev == '[' || prev == ']' {
+                return (acc, &text[i..]);
+            }
+            if c != '[' && c != ']' {
+                acc.push(c);
+            }
+            prev = c;
+        }
+        (acc, &text[text.len()..])
+    }
+
+    let mut ret = String::new();
+    let mut templating = false;
+    while !text.is_empty() {
+        let (mut chunk, remain) = next_chunk(text);
+        text = remain;
+
+        if templating {
+            chunk = mapper(&chunk)?;
+        }
+
+        ret += &chunk;
+        templating = !templating;
+    }
+    Ok(ret)
+}
