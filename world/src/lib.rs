@@ -18,12 +18,12 @@ use calx_alg::Deciban;
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
     ($ctx: expr, $fmt:expr) => {
-        let __event = Event::Msg($fmt.to_string());
+        let __event = Event::Msg($ctx.expand_template($fmt));
         $ctx.push_event(__event);
     };
 
     ($ctx: expr, $fmt:expr, $($arg:expr),*) => {
-        let __event = Event::Msg(format!($fmt, $($arg),*));
+        let __event = Event::Msg($ctx.expand_template(&format!($fmt, $($arg),*)));
         $ctx.push_event(__event);
     };
 }
@@ -45,6 +45,8 @@ mod form;
 pub use form::{Form, FORMS};
 
 mod fov;
+
+mod grammar;
 
 mod item;
 pub use item::{Slot, ItemType};

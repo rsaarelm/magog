@@ -5,6 +5,7 @@ use calx_grid::{Dir6, HexGeom};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
+use grammar::Pronoun;
 use item::{EquipType, ItemType, Slot};
 use location::Location;
 use stats;
@@ -112,6 +113,15 @@ pub trait Query: TerrainQuery + Sized {
             || "N/A".to_string(),
             |x| x.name.clone(),
         )
+    }
+
+    fn pronoun(&self, e: Entity) -> Pronoun {
+        // TODO: Human/humanoid mobs get he/she
+        if self.is_player(e) {
+            Pronoun::They
+        } else {
+            Pronoun::It
+        }
     }
 
     /// Return the (composite) stats for an entity.
@@ -526,5 +536,10 @@ pub trait Query: TerrainQuery + Sized {
             Some(Trinket) => Some(EquipType::Trinket),
             _ => None,
         }
+    }
+
+    fn expand_template(&self, text: &str) -> String {
+        // TODO: Move to special context object, use the templater
+        text.to_string()
     }
 }
