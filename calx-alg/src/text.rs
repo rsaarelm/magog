@@ -130,9 +130,9 @@ where
 /// assert_eq!(Err(()), templatize(translate, "foo [bar] baz"));
 /// assert_eq!(Ok("foo [foo] baz".to_string()), templatize(translate, "foo [[foo]] baz"));
 /// ```
-pub fn templatize<F, E>(mapper: F, mut text: &str) -> Result<String, E>
+pub fn templatize<F, E>(mut mapper: F, mut text: &str) -> Result<String, E>
 where
-    F: Fn(&str) -> Result<String, E>,
+    F: FnMut(&str) -> Result<String, E>,
 {
     // I'm going to do some fun corner-cutting here.
     //
