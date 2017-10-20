@@ -16,11 +16,11 @@ pub struct Noun {
 }
 
 impl Noun {
-    pub fn new(name: &str) -> Noun {
+    pub fn new(name: String) -> Noun {
         Noun {
             is_you: false,
             pronoun: Pronoun::It,
-            name: name.to_string(),
+            name
         }
     }
 
@@ -197,14 +197,14 @@ impl Templater for SubjectTemplater {
                     "ies".to_string()
                 }
             }
-            "is" => {
+            "is" | "are" => {
                 if self.subject.is_you || self.used_pronoun_they {
                     "are".to_string()
                 } else {
                     "is".to_string()
                 }
             }
-            "has" => {
+            "has" | "have" => {
                 if self.subject.is_you || self.used_pronoun_they {
                     "have".to_string()
                 } else {
@@ -300,7 +300,7 @@ mod test {
     }
 
     fn make_noun(name: &str) -> Noun {
-        let mut ret = Noun::new(name);
+        let mut ret = Noun::new(name.to_string());
 
         match name {
             "PLAYER" => ret.you(),
@@ -370,16 +370,16 @@ mod test {
                  The spear runs Alexander through.
 
                  PLAYER
-                 [One] [is] the chosen one. [They] [has] a rock.
+                 [One] [is] the chosen one. [They] [have] a rock.
                  You are the chosen one. You have a rock.
 
                  Athena
-                 [One] [is] the chosen one. [They] [has] a rock.
+                 [One] [is] the chosen one. [They] [have] a rock.
                  Athena is the chosen one. She has a rock.
 
                  Tiresias
-                 [One] [is] the chosen one. [They] [has] a rock.
-                 Tiresias is the chosen one. They have a rock.
+                 [One] [has] a rock. [They] [are] the chosen one.
+                 Tiresias has a rock. They are the chosen one.
 
                  PLAYER
                  [One] nimbly parr[ies] the blow.

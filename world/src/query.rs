@@ -5,7 +5,7 @@ use calx_grid::{Dir6, HexGeom};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
-use grammar::Pronoun;
+use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
 use location::Location;
 use stats;
@@ -115,13 +115,13 @@ pub trait Query: TerrainQuery + Sized {
         )
     }
 
-    fn pronoun(&self, e: Entity) -> Pronoun {
-        // TODO: Human/humanoid mobs get he/she
+    fn noun(&self, e: Entity) -> Noun {
+        let mut ret = Noun::new(self.entity_name(e));
         if self.is_player(e) {
-            Pronoun::They
-        } else {
-            Pronoun::It
+            ret = ret.you().pronoun(Pronoun::They);
         }
+        // TODO: Human mobs get he/she pronoun instead of it.
+        ret
     }
 
     /// Return the (composite) stats for an entity.
