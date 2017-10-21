@@ -183,12 +183,18 @@ impl Backend {
                         glutin::WindowEvent::KeyboardInput {
                             input: glutin::KeyboardInput {
                                 state,
-                                scancode,
+                                mut scancode,
                                 virtual_keycode: Some(vk),
                                 ..
                             },
                             ..
                         } => {
+                            // XXX: winit has introduced a correction to scancodes, which makes it
+                            // incompatible with my scancode interpreter. Need to de-correct here.
+                            if cfg!(target_os = "linux") {
+                                scancode += 8;
+                            }
+
                             let is_down = state == glutin::ElementState::Pressed;
 
                             if is_down {
@@ -223,6 +229,7 @@ impl Backend {
                     // TODO: Suspend/awaken behavior
                 }
                 glutin::Event::DeviceEvent { .. } => {}
+                glutin::Event::Suspended(_) => {}
             }
         }
 
