@@ -156,61 +156,73 @@ impl Backend {
 
         for event in event_list {
             match event {
-                glutin::Event::WindowEvent{ event, .. } => match event {
-                    glutin::WindowEvent::Closed => { return false; }
-                    glutin::WindowEvent::MouseMoved{ position:(x, y), ..} => {
-                        let pos = self.zoom.screen_to_canvas(
-                            self.window_size,
-                            self.canvas.size(),
-                            Point2D::new(x as f32, y as f32),
+                glutin::Event::WindowEvent { event, .. } => {
+                    match event {
+                        glutin::WindowEvent::Closed => {
+                            return false;
+                        }
+                        glutin::WindowEvent::MouseMoved { position: (x, y), .. } => {
+                            let pos = self.zoom.screen_to_canvas(
+                                self.window_size,
+                                self.canvas.size(),
+                                Point2D::new(x as f32, y as f32),
                             );
-                        self.input_mouse_move(pos.x as i32, pos.y as i32);
-                    }
-                    glutin::WindowEvent::MouseInput{state, button, ..} => {
-                        self.input_mouse_button(
-                            match button {
-                                glutin::MouseButton::Left => vitral::MouseButton::Left,
-                                glutin::MouseButton::Right => vitral::MouseButton::Right,
-                                _ => vitral::MouseButton::Middle,
-                            },
-                            state == glutin::ElementState::Pressed,
+                            self.input_mouse_move(pos.x as i32, pos.y as i32);
+                        }
+                        glutin::WindowEvent::MouseInput { state, button, .. } => {
+                            self.input_mouse_button(
+                                match button {
+                                    glutin::MouseButton::Left => vitral::MouseButton::Left,
+                                    glutin::MouseButton::Right => vitral::MouseButton::Right,
+                                    _ => vitral::MouseButton::Middle,
+                                },
+                                state == glutin::ElementState::Pressed,
                             )
-                    }
-                    glutin::WindowEvent::ReceivedCharacter(c) => self.input_char(c),
-                    glutin::WindowEvent::KeyboardInput{ input: glutin::KeyboardInput{state, scancode, virtual_keycode: Some(vk), ..}, ..} => {
-                        let is_down = state == glutin::ElementState::Pressed;
+                        }
+                        glutin::WindowEvent::ReceivedCharacter(c) => self.input_char(c),
+                        glutin::WindowEvent::KeyboardInput {
+                            input: glutin::KeyboardInput {
+                                state,
+                                scancode,
+                                virtual_keycode: Some(vk),
+                                ..
+                            },
+                            ..
+                        } => {
+                            let is_down = state == glutin::ElementState::Pressed;
 
-                        if is_down {
-                            self.keypress.push(KeyEvent {
-                                key_code: vk,
-                                scancode: scancode as u8,
-                            });
-                        }
+                            if is_down {
+                                self.keypress.push(KeyEvent {
+                                    key_code: vk,
+                                    scancode: scancode as u8,
+                                });
+                            }
 
-                        use glium::glutin::VirtualKeyCode::*;
-                        if let Some(vk) = match vk {
-                            Tab => Some(vitral::Keycode::Tab),
-                            LShift | RShift => Some(vitral::Keycode::Shift),
-                            LControl | RControl => Some(vitral::Keycode::Ctrl),
-                            NumpadEnter | Return => Some(vitral::Keycode::Enter),
-                            Back => Some(vitral::Keycode::Backspace),
-                            Delete => Some(vitral::Keycode::Del),
-                            Numpad8 | Up => Some(vitral::Keycode::Up),
-                            Numpad2 | Down => Some(vitral::Keycode::Down),
-                            Numpad4 | Left => Some(vitral::Keycode::Left),
-                            Numpad6 | Right => Some(vitral::Keycode::Right),
-                            _ => None,
+                            use glium::glutin::VirtualKeyCode::*;
+                            if let Some(vk) = match vk {
+                                Tab => Some(vitral::Keycode::Tab),
+                                LShift | RShift => Some(vitral::Keycode::Shift),
+                                LControl | RControl => Some(vitral::Keycode::Ctrl),
+                                NumpadEnter | Return => Some(vitral::Keycode::Enter),
+                                Back => Some(vitral::Keycode::Backspace),
+                                Delete => Some(vitral::Keycode::Del),
+                                Numpad8 | Up => Some(vitral::Keycode::Up),
+                                Numpad2 | Down => Some(vitral::Keycode::Down),
+                                Numpad4 | Left => Some(vitral::Keycode::Left),
+                                Numpad6 | Right => Some(vitral::Keycode::Right),
+                                _ => None,
+                            }
+                            {
+                                self.input_key_state(vk, is_down);
+                            }
                         }
-                        {
-                            self.input_key_state(vk, is_down);
-                        }
+                        _ => (),
                     }
-                    _ => (),
                 }
                 glutin::Event::Awakened => {
                     // TODO: Suspend/awaken behavior
                 }
-                glutin::Event::DeviceEvent{ .. } => {}
+                glutin::Event::DeviceEvent { .. } => {}
             }
         }
 
