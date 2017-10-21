@@ -152,9 +152,7 @@ impl Terrain {
     ///
     /// Prop obstacles might not be distinguishable from floors if you only see a corner of the
     /// terrain tile. Use this if there's need to highlight partially visible terrain as obstacles.
-    pub fn is_narrow_obstacle(self) -> bool {
-        self.blocks_walk() && self.form() == Form::Prop
-    }
+    pub fn is_narrow_obstacle(self) -> bool { self.blocks_walk() && self.form() == Form::Prop }
 }
 
 impl Default for Terrain {
