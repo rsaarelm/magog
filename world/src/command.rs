@@ -93,7 +93,7 @@ pub trait Command: Mutate + Sized {
             self.cast_spell(location, item, Some(player))?;
             self.drain_charge(item);
         } else {
-            msg!(self, "Nothing happens.");
+            msg!(self, "Nothing happens.").send();
         }
         self.next_tick()
     }

@@ -138,19 +138,19 @@ pub trait Mutate: Query + Terraform + Sized {
         if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
             match shout {
                 ShoutType::Shout => {
-                    msg!(self, "The {} shouts angrily.", self.entity_name(e));
+                    msg!(self, "[One] shout[s] angrily.").subject(e).send();
                 }
                 ShoutType::Hiss => {
-                    msg!(self, "The {} hisses angrily.", self.entity_name(e));
+                    msg!(self, "[One] hiss[es] angrily.").subject(e).send();
                 }
                 ShoutType::Buzz => {
-                    msg!(self, "The {} buzzes loudly.", self.entity_name(e));
+                    msg!(self, "[One] buzz[es] loudly.").subject(e).send();
                 }
                 ShoutType::Roar => {
-                    msg!(self, "The {} roars angrily.", self.entity_name(e));
+                    msg!(self, "[One] roar[s] angrily.").subject(e).send();
                 }
                 ShoutType::Gurgle => {
-                    msg!(self, "The {} gurgles loudly.", self.entity_name(e));
+                    msg!(self, "[One] gurgle[s] loudly.").subject(e).send();
                 }
                 ShoutType::Silent => {}
             }
@@ -206,20 +206,15 @@ pub trait Mutate: Query + Terraform + Sized {
                 let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
 
                 if damage == 0 {
-                    msg!(
-                        self,
-                        "{} misses {}.",
-                        self.entity_name(e),
-                        self.entity_name(target)
-                    );
+                    msg!(self, "[One] miss[es] [another].")
+                        .subject(e)
+                        .object(target)
+                        .send();
                 } else {
-                    msg!(
-                        self,
-                        "{} hits {} for {}.",
-                        self.entity_name(e),
-                        self.entity_name(target),
-                        damage
-                    );
+                    msg!(self, "[One] hit[s] [another] for {}.", damage)
+                        .subject(e)
+                        .object(target)
+                        .send();
                 }
                 self.damage(target, damage, Damage::Physical, Some(e));
                 return Ok(());
@@ -282,15 +277,15 @@ pub trait Mutate: Query + Terraform + Sized {
                     // TODO: message templating
                     msg!(
                         self,
-                        "The {} {}.",
-                        self.entity_name(e),
+                        "[One] {}.",
                         match damage_type {
-                            Damage::Physical => "is killed",
-                            Damage::Fire => "is burned to ash",
-                            Damage::Electricity => "is electrocuted",
-                            Damage::Cold => "shatters to frozen pieces",
+                            Damage::Physical => "[is] killed",
+                            Damage::Fire => "[is] burned to ash",
+                            Damage::Electricity => "[is] electrocuted",
+                            Damage::Cold => "shatter[s] to frozen pieces",
                         }
-                    );
+                    ).subject(e)
+                        .send();
                 }
             }
             self.kill_entity(e);
@@ -366,7 +361,10 @@ pub trait Mutate: Query + Terraform + Sized {
         if let Some(slot) = self.free_bag_slot(e) {
             self.equip_item(item, e, slot);
             if self.is_player(e) {
-                msg!(self, "Picked up {}", self.entity_name(item));
+                msg!(self, "[One] pick[s] up [another].")
+                    .subject(e)
+                    .object(item)
+                    .send();
             }
 
             Ok(())
@@ -406,15 +404,15 @@ pub trait Mutate: Query + Terraform + Sized {
                     let mut target = rand::sample(self.rng(), &targets, 1);
 
                     if let Some(target) = target.pop() {
-                        msg!(self, "There is a peal of thunder.");
+                        msg!(self, "There is a peal of thunder.").send();
                         let loc = self.location(*target).unwrap();
                         self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);
                     } else {
-                        msg!(self, "The spell fizzles.");
+                        msg!(self, "The spell fizzles.").send();
                     }
                 }
                 _ => {
-                    msg!(self, "TODO cast untargeted spell {:?}", effect);
+                    msg!(self, "TODO cast untargeted spell {:?}", effect).send();
                 }
             }
             Ok(())
@@ -451,7 +449,7 @@ pub trait Mutate: Query + Terraform + Sized {
                     self.apply_effect(&Effect::Confuse, &Volume::point(center), caster);
                 }
                 _ => {
-                    msg!(self, "TODO cast directed spell {:?}", effect);
+                    msg!(self, "TODO cast directed spell {:?}", effect).send();
                 }
             }
             Ok(())
