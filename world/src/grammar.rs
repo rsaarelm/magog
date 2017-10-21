@@ -20,7 +20,7 @@ impl Noun {
         Noun {
             is_you: false,
             pronoun: Pronoun::It,
-            name
+            name,
         }
     }
 
@@ -137,7 +137,11 @@ pub trait Templater {
     }
 }
 
-struct SubjectTemplater {
+pub struct EmptyTemplater;
+
+impl Templater for EmptyTemplater {}
+
+pub struct SubjectTemplater {
     subject: Noun,
     used_pronoun_they: bool,
 }
@@ -212,7 +216,7 @@ impl Templater for SubjectTemplater {
                 }
             }
 
-            x => {
+            _ => {
                 return None;
             }
         };
@@ -220,7 +224,7 @@ impl Templater for SubjectTemplater {
     }
 }
 
-struct ObjectTemplater {
+pub struct ObjectTemplater {
     parent: SubjectTemplater,
     object: Noun,
 }
@@ -240,7 +244,7 @@ impl Templater for ObjectTemplater {
             "another's" => self.object.possessive(),
             "them" => self.object.them(),
 
-            x => {
+            _ => {
                 return self.parent.convert(token);
             }
         };

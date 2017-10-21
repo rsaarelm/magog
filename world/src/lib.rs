@@ -18,15 +18,96 @@ use calx_alg::Deciban;
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
     ($ctx: expr, $fmt:expr) => {
-        let __event = Event::Msg($ctx.expand_template($fmt));
-        $ctx.push_event(__event);
+        $crate::MessageFormatter0::new($ctx, $fmt.to_string())
     };
 
     ($ctx: expr, $fmt:expr, $($arg:expr),*) => {
-        let __event = Event::Msg($ctx.expand_template(&format!($fmt, $($arg),*)));
-        $ctx.push_event(__event);
+        {
+            let __txt = format!($fmt, $($arg),*);
+            $crate::MessageFormatter0::new($ctx, __txt)
+        }
     };
 }
+
+// XXX: Lots of code for pretty simple end result on the MessageFormatter...
+#[must_use]
+pub struct MessageFormatter0<'a, W: 'a> {
+    world: &'a mut W,
+    msg: String,
+}
+
+#[must_use]
+pub struct MessageFormatter1<'a, W: 'a> {
+    world: &'a mut W,
+    subject: grammar::Noun,
+    msg: String,
+}
+
+#[must_use]
+pub struct MessageFormatter2<'a, W: 'a> {
+    world: &'a mut W,
+    subject: grammar::Noun,
+    object: grammar::Noun,
+    msg: String,
+}
+
+impl<'a, W: mutate::Mutate> MessageFormatter0<'a, W> {
+    pub fn new(world: &'a mut W, msg: String) -> MessageFormatter0<'a, W> {
+        MessageFormatter0 { world, msg }
+    }
+
+    pub fn subject(self, e: calx_ecs::Entity) -> MessageFormatter1<'a, W> {
+        let subject = self.world.noun(e);
+        MessageFormatter1 {
+            world: self.world,
+            subject,
+            msg: self.msg,
+        }
+    }
+
+    pub fn send(self) {
+        use grammar::Templater;
+        let event = Event::Msg(grammar::EmptyTemplater.format(&self.msg).unwrap());
+        self.world.push_event(event);
+    }
+}
+
+impl<'a, W: mutate::Mutate> MessageFormatter1<'a, W> {
+    pub fn object(self, e: calx_ecs::Entity) -> MessageFormatter2<'a, W> {
+        let object = self.world.noun(e);
+        MessageFormatter2 {
+            world: self.world,
+            subject: self.subject,
+            object,
+            msg: self.msg,
+        }
+    }
+
+    pub fn send(self) {
+        use grammar::Templater;
+        let event = Event::Msg(
+            grammar::SubjectTemplater::new(self.subject)
+                .format(&self.msg)
+                .unwrap(),
+        );
+        self.world.push_event(event);
+    }
+}
+
+impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
+    pub fn send(self) {
+        use grammar::Templater;
+        let event = Event::Msg(
+            grammar::ObjectTemplater::new(
+                grammar::SubjectTemplater::new(self.subject),
+                self.object,
+            ).format(&self.msg)
+                .unwrap(),
+        );
+        self.world.push_event(event);
+    }
+}
+
 
 mod command;
 pub use command::{Command, CommandResult};

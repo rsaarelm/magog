@@ -537,9 +537,4 @@ pub trait Query: TerrainQuery + Sized {
             _ => None,
         }
     }
-
-    fn expand_template(&self, text: &str) -> String {
-        // TODO: Move to special context object, use the templater
-        text.to_string()
-    }
 }
