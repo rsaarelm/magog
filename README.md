@@ -13,10 +13,10 @@ dependencies.
 Screenshots
 -----------
 
-From December 2014
+From October 2017
 
-![shot1](doc/shot1.png)
+![shot1](doc/shot4.png)
 
-![shot2](doc/shot2.png)
+![shot2](doc/shot5.png)
 
-![shot3](doc/shot3.png)
+![shot3](doc/shot6.png)
