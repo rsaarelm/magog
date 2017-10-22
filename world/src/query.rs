@@ -1,5 +1,6 @@
 use FovStatus;
 use Prefab;
+use calx_alg::clamp;
 use calx_ecs::Entity;
 use calx_grid::{Dir6, HexGeom};
 use components::{Alignment, BrainState, Icon, Status};
@@ -536,5 +537,30 @@ pub trait Query: TerrainQuery + Sized {
             Some(Trinket) => Some(EquipType::Trinket),
             _ => None,
         }
+    }
+
+    fn is_underground(&self, loc: Location) -> bool { loc.z > 0 }
+
+    fn light_level(&self, loc: Location) -> f32 {
+        // Lit terrain is lit.
+        if self.terrain(loc).is_luminous() {
+            return 1.0;
+        }
+
+        // In dark arears, far-away things are dim.
+        if self.is_underground(loc) {
+            if let Some(player) = self.player() {
+                if let Some(player_loc) = self.location(player) {
+                    // XXX: This is going to get so messed up with portals, should be done in
+                    // player chart space, not here...
+                    if let Some(dist) = player_loc.distance_from(loc) {
+                        return clamp(0.0, 1.0, 1.0 - (dist as f32 / 8.0));
+                    }
+                }
+            }
+        }
+
+        // Otherwise things are bright.
+        1.0
     }
 }

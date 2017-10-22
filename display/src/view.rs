@@ -4,7 +4,7 @@ use cache;
 use calx_alg::{clamp, timing};
 use calx_ecs::Entity;
 use calx_grid::{FovValue, HexFov};
-use euclid::{Point2D, point2, Vector2D, vec2, vec3, Rect};
+use euclid::{Point2D, point2, Vector2D, Vector3D, vec2, vec3, Rect};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
@@ -73,6 +73,16 @@ impl WorldView {
 
             let mut loc = origins[0] + chart_pos;
 
+            // Relative player pos to currently drawn thing.
+            let mut player_pos = None;
+            if let Some(player) = world.player() {
+                if let Some(player_loc) = world.location(player) {
+                    if let Some(vec) = player_loc.v2_at(loc) {
+                        player_pos = Some(vec);
+                    }
+                }
+            }
+
             let in_map_memory;
 
             // If the chart position is in live FOV, we want to show the deepest stack coordinate.
@@ -102,6 +112,8 @@ impl WorldView {
 
             let screen_pos = chart_to_view(chart_pos.to_point()) + center;
 
+            let ambient = world.light_level(loc);
+
             // Tile is outside current sector and can't be entered, graphical cues to point this
             // out may be needed.
             let blocked_offsector = loc.sector() != current_sector &&
@@ -119,14 +131,23 @@ impl WorldView {
             render::draw_terrain_sprites(world, loc, |layer, angle, brush, frame_idx| {
                 let color = if in_map_memory {
                     Coloring::MapMemory
-                } else if angle == Angle::Up || angle == Angle::South {
-                    // Angle::South is for all the non-wall props, don't shade them
-                    Coloring::default()
                 } else {
-                    let normal = angle.normal();
-                    let light_dir = vec3(-2.0f32.sqrt() / 2.0, 2.0f32.sqrt() / 2.0, 0.0);
-                    let mut c = clamp(0.1, 1.0, -light_dir.dot(normal));
-                    Coloring::Shaded(c)
+                    let diffuse = if angle == Angle::Up || angle == Angle::South {
+                        // Angle::South is for all the non-wall props, don't shade them
+                        1.0
+                    } else {
+                        let normal = angle.normal();
+                        // When underground, use the player position as light position instead of
+                        // constant-dir sunlight.
+                        let light_dir = if world.is_underground(loc) && player_pos.is_some() {
+                            chart_to_physics(player_pos.unwrap()).normalize()
+                        } else {
+                            vec3(-2.0f32.sqrt() / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
+                        };
+                        clamp(0.1, 1.0, -light_dir.dot(normal))
+                    };
+
+                    Coloring::Shaded { ambient, diffuse }
                 };
                 sprites.push(
                     Sprite::new(layer, screen_pos, Rc::clone(brush))
@@ -148,8 +169,7 @@ impl WorldView {
                     let color = if in_map_memory {
                         Coloring::MapMemory
                     } else {
-                        // TODO: Use lighting
-                        Coloring::default()
+                        Coloring::Shaded { ambient, diffuse: 1.0 }
                     };
                     sprites.push(
                         Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
@@ -169,7 +189,8 @@ impl WorldView {
                         };
                         sprites.push(
                             Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
-                                .idx(frame_idx),
+                                .idx(frame_idx)
+                                .color(Coloring::Shaded { ambient, diffuse: 1.0 }),
                         );
                         draw_health_pips(&mut sprites, world, i, screen_pos);
                     }
@@ -267,6 +288,12 @@ pub fn view_to_chart(view_pos: Point2D<f32>) -> Point2D<i32> {
     point2((column + row) as i32, row as i32)
 }
 
+/// Tranform chart space vector to physics space vector
+pub fn chart_to_physics(chart_vec: Vector2D<i32>) -> Vector3D<f32> {
+    vec3(chart_vec.x as f32 - chart_vec.y as f32,
+         -chart_vec.x as f32 / 2.0 - chart_vec.y as f32 / 2.0,
+         0.0)
+}
 
 #[derive(Clone)]
 struct ScreenFov<'a> {

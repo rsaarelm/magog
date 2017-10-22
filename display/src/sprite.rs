@@ -12,11 +12,11 @@ pub enum Coloring {
     /// Use map memory coloring for this sprite.
     MapMemory,
     /// Use the darkness level in [0.0, 1.0] for this sprite.
-    Shaded(f32),
+    Shaded { ambient: f32, diffuse: f32 },
 }
 
 impl Default for Coloring {
-    fn default() -> Self { Coloring::Shaded(1.0) }
+    fn default() -> Self { Coloring::Shaded { ambient: 1.0, diffuse: 1.0 } }
 }
 
 impl Eq for Coloring {}
@@ -24,9 +24,25 @@ impl Eq for Coloring {}
 impl Coloring {
     // XXX: Maybe we should still be using calx::Rgba here?
     pub fn apply(self, fore: Rgba, back: Rgba) -> (Rgba, Rgba) {
+        fn darken(c: f32, col: Rgba) -> Rgba {
+            Rgba::new(
+                col.r * c,
+                col.g * lerp(0.2, 1.0, c),
+                col.b * lerp(0.4, 1.0, c),
+                col.a,
+            )
+        }
+
         match self {
             Coloring::MapMemory => (Rgba::from(0x0804_00ffu32), Rgba::from(0x3322_00ff)),
-            Coloring::Shaded(a) => (lerp(color::BLACK, fore, a), lerp(color::BLACK, back, a)),
+            Coloring::Shaded { ambient, diffuse } => {
+                let (fore, back) = (
+                    lerp(color::BLACK, fore, diffuse),
+                    lerp(color::BLACK, back, diffuse),
+                );
+                let (fore, back) = (darken(ambient, fore), darken(ambient, back));
+                (fore, back)
+            }
         }
     }
 }
