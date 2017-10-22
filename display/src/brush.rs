@@ -4,19 +4,17 @@ use calx_color::Rgba;
 use calx_color::color::*;
 use euclid::{Rect, rect, Vector2D, vec2};
 use std::fmt;
-use std::iter::{self, Take, Repeat};
 use std::rc::Rc;
 use vitral;
-
-pub type Color = [f32; 4];
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]
 pub struct Splat {
     pub image: vitral::ImageData<usize>,
+    /// Draw offset for the splat.
     pub offset: Vector2D<f32>,
-    pub color: Color,
-    pub back_color: Color,
+    pub color: Rgba,
+    pub back_color: Rgba,
 }
 
 impl fmt::Debug for Splat {
@@ -33,7 +31,7 @@ impl fmt::Debug for Splat {
 }
 
 impl Splat {
-    pub fn new(geom: &Geom, sheet: String, color: [f32; 4], back_color: [f32; 4]) -> Splat {
+    pub fn new(geom: &Geom, sheet: String, color: Rgba, back_color: Rgba) -> Splat {
         Splat {
             image: cache::get(&SubImageSpec {
                 sheet_name: sheet,
@@ -108,12 +106,7 @@ impl Builder {
     }
 
     fn make_splat(&self, geom: &Geom) -> Splat {
-        Splat::new(
-            geom,
-            self.sheet_name.clone(),
-            self.color.into(),
-            self.back_color.into(),
-        )
+        Splat::new(geom, self.sheet_name.clone(), self.color, self.back_color)
     }
 
     /// Add a splat columnn to the current splat matrix.
@@ -141,9 +134,6 @@ impl Builder {
     pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder {
         self.splat(Some(Geom::new(0, 0, x, y, w, h)))
     }
-
-    /// Add a multiple frame splat for a standard tile to the splat matrix.
-    pub fn _tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
 
     /// Add a simple mob that has a bobbing animation
     pub fn mob(self, x: u32, y: u32) -> Builder {
@@ -211,9 +201,12 @@ impl Builder {
     }
 }
 
+/// Descriptor for extracting splats from a sprite sheet.
 #[derive(Clone)]
 pub struct Geom {
+    /// Draw offset.
     offset: Vector2D<f32>,
+    /// Coordinates on the sprite sheet image.
     bounds: Rect<u32>,
 }
 
@@ -232,18 +225,14 @@ impl Geom {
         }
     }
 
+    /// Single default sized tile.
     pub fn tile(x: u32, y: u32) -> Option<Geom> {
         // The BrushBuilder API expects all geom stuff to be IntoIter, so this returns Option for
         // one-shot iterable instead of a naked value.
         Some(Geom::new(16, 16, x, y, 32, 32))
     }
 
-    pub fn tiles(n: usize, x: u32, y: u32) -> Take<Repeat<Geom>> {
-        // The BrushBuilder API expects all geom stuff to be IntoIter, so this returns Option for
-        // one-shot iterable instead of a naked value.
-        iter::repeat(Geom::new(16, 16, x, y, 32, 32)).take(n)
-    }
-
+    /// Standard blobform tileset.
     pub fn blob(vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, vert_x, vert_y, 16, 32),       // 0: Top left    VERTICAL SIDES
@@ -289,6 +278,7 @@ impl Geom {
         ]
     }
 
+    /// Standard wallform tileset.
     pub fn wall(center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, center_x, center_y, 16, 32),       // 0

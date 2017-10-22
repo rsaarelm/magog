@@ -4,6 +4,7 @@ use Icon;
 use brush::Brush;
 use cache;
 use calx_grid::{Dir12, Dir6};
+use euclid::{Vector3D, vec3};
 use std::rc::Rc;
 use world::{Location, World, Query, TerrainQuery, Terrain, terrain};
 
@@ -36,6 +37,42 @@ pub enum Angle {
     West,
     Northwest,
     YWallBack,
+}
+
+impl Angle {
+    fn degree(self) -> Option<f32> {
+        use self::Angle::*;
+        Some(match self {
+            North => 0.0,
+            XWallBack => 30.0,
+            Northeast => 60.0,
+            East => 90.0,
+            Southeast => 120.0,
+            YWall => 150.0,
+            South => 180.0,
+            XWall => 210.0,
+            Southwest => 240.0,
+            West => 270.0,
+            Northwest => 300.0,
+            YWallBack => 330.0,
+            _ => {
+                return None;
+            }
+        })
+    }
+
+    /// Return the wall normal in physics space.
+    ///
+    /// Physics space x is right on screen, y is up on screen and z is towards viewer.
+    pub fn normal(self) -> Vector3D<f32> {
+        if let Some(deg) = self.degree() {
+            let rad = deg.to_radians();
+            vec3(rad.sin(), rad.cos(), 0.0)
+        } else {
+            debug_assert!(self == Angle::Up);
+            vec3(0.0, 0.0, 1.0)
+        }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]

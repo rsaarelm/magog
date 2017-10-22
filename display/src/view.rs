@@ -1,18 +1,16 @@
 use Icon;
 use backend::MagogContext;
-use brush::Frame;
 use cache;
-use calx_alg::timing;
-use calx_color::Rgba;
+use calx_alg::{clamp, timing};
 use calx_ecs::Entity;
 use calx_grid::{FovValue, HexFov};
-use euclid::{Point2D, point2, Vector2D, vec2, Rect};
-use render::{self, Layer};
-use sprite::Sprite;
+use euclid::{Point2D, point2, Vector2D, vec2, vec3, Rect};
+use render::{self, Angle, Layer};
+use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
-use world::{FovStatus, Location, Query, Sector, TerrainQuery, World};
+use world::{FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;
@@ -23,9 +21,6 @@ pub struct WorldView {
     camera_loc: Location,
     screen_area: Rect<f32>,
     fov: Option<HashMap<Vector2D<i32>, Vec<Location>>>,
-
-    /// Mostly used in mapedit
-    pub highlight_offscreen_tiles: bool,
 }
 
 impl WorldView {
@@ -36,7 +31,6 @@ impl WorldView {
             camera_loc: camera_loc,
             screen_area: screen_area,
             fov: None,
-            highlight_offscreen_tiles: false,
         }
     }
 
@@ -114,26 +108,31 @@ impl WorldView {
                 world.terrain(loc).is_narrow_obstacle();
 
             if blocked_offsector && !in_map_memory {
-                sprites.push(Sprite {
-                    layer: Layer::Decal,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: cache::misc(Icon::BlockedOffSectorCell),
-                    frame_idx: 0,
-                });
+                sprites.push(Sprite::new(
+                    Layer::Decal,
+                    screen_pos,
+                    cache::misc(Icon::BlockedOffSectorCell),
+                ));
             }
 
             // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
-            render::draw_terrain_sprites(world, loc, |layer, _angle, brush, frame_idx| {
-                sprites.push(Sprite {
-                    layer: layer,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: if in_map_memory {
-                        map_memory_colorize(Rc::clone(brush))
-                    } else {
-                        Rc::clone(brush)
-                    },
-                    frame_idx: frame_idx,
-                })
+            render::draw_terrain_sprites(world, loc, |layer, angle, brush, frame_idx| {
+                let color = if in_map_memory {
+                    Coloring::MapMemory
+                } else if angle == Angle::Up || angle == Angle::South {
+                    // Angle::South is for all the non-wall props, don't shade them
+                    Coloring::default()
+                } else {
+                    let normal = angle.normal();
+                    let light_dir = vec3(-2.0f32.sqrt() / 2.0, 2.0f32.sqrt() / 2.0, 0.0);
+                    let mut c = clamp(0.1, 1.0, -light_dir.dot(normal));
+                    Coloring::Shaded(c)
+                };
+                sprites.push(
+                    Sprite::new(layer, screen_pos, Rc::clone(brush))
+                        .idx(frame_idx)
+                        .color(color),
+                );
             });
 
             let (mobs, items): (Vec<Entity>, Vec<Entity>) = world
@@ -146,20 +145,16 @@ impl WorldView {
             // will then show the object moving around without the player observing it.
             for &i in &items {
                 if let Some(desc) = world.ecs().desc.get(i) {
-                    let brush = cache::entity(desc.icon);
-
-                    sprites.push(Sprite {
-                        layer: Layer::Object,
-                        offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: if in_map_memory {
-                            map_memory_colorize(brush)
-                        } else {
-                            brush
-                        },
-                        frame_idx: 0,
-                    });
-
-                    draw_health_pips(&mut sprites, world, i, screen_pos);
+                    let color = if in_map_memory {
+                        Coloring::MapMemory
+                    } else {
+                        // TODO: Use lighting
+                        Coloring::default()
+                    };
+                    sprites.push(
+                        Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
+                            .color(color),
+                    );
                 }
             }
 
@@ -172,27 +167,12 @@ impl WorldView {
                         } else {
                             0
                         };
-                        sprites.push(Sprite {
-                            layer: Layer::Object,
-                            offset: [screen_pos.x as i32, screen_pos.y as i32],
-                            brush: cache::entity(desc.icon),
-                            frame_idx: frame_idx,
-                        });
-
+                        sprites.push(
+                            Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
+                                .idx(frame_idx),
+                        );
                         draw_health_pips(&mut sprites, world, i, screen_pos);
                     }
-                }
-            }
-
-            // XXX: This doesn't belong here, figure out a better place for debug visualizations
-            if self.highlight_offscreen_tiles {
-                if loc.sector() == Sector::new(0, 0, 0) {
-                    sprites.push(Sprite {
-                        layer: Layer::Effect,
-                        offset: [screen_pos.x as i32, screen_pos.y as i32],
-                        brush: cache::misc(Icon::CursorBottom),
-                        frame_idx: 0,
-                    });
                 }
             }
         }
@@ -204,19 +184,16 @@ impl WorldView {
             self.cursor_loc = Some(loc);
 
             if self.show_cursor {
-                // TODO: Need a LOT less verbose API to add stuff to the sprite set.
-                sprites.push(Sprite {
-                    layer: Layer::Decal,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: cache::misc(Icon::CursorBottom),
-                    frame_idx: 0,
-                });
-                sprites.push(Sprite {
-                    layer: Layer::Effect,
-                    offset: [screen_pos.x as i32, screen_pos.y as i32],
-                    brush: cache::misc(Icon::CursorTop),
-                    frame_idx: 0,
-                });
+                sprites.push(Sprite::new(
+                    Layer::Decal,
+                    screen_pos,
+                    cache::misc(Icon::CursorBottom),
+                ));
+                sprites.push(Sprite::new(
+                    Layer::Effect,
+                    screen_pos,
+                    cache::misc(Icon::CursorTop),
+                ));
             }
         } else {
             self.cursor_loc = None;
@@ -237,21 +214,6 @@ impl WorldView {
             } else {
                 Some(FovStatus::Seen)
             }
-        }
-
-        fn map_memory_colorize(brush: Rc<Vec<Frame>>) -> Rc<Vec<Frame>> {
-            // XXX: This is horribly wasteful memory churning.
-            use std::ops::Deref;
-
-            let mut ret: Vec<Frame> = brush.deref().clone();
-            for frame in &mut ret {
-                for splat in frame.iter_mut() {
-                    splat.color = Rgba::from(0x0804_00ffu32).into();
-                    splat.back_color = Rgba::from(0x3322_00ff).into();
-                }
-            }
-
-            Rc::new(ret)
         }
 
         fn draw_health_pips(
@@ -275,16 +237,13 @@ impl WorldView {
             let limit = ((hp * 5) as f32 / max_hp as f32).ceil() as i32;
 
             for x in 0..5 {
-                sprites.push(Sprite {
-                    layer: Layer::Effect,
-                    offset: [screen_pos.x as i32 + x * 4 - 10, screen_pos.y as i32 - 10],
-                    brush: cache::misc(if x < limit {
-                        Icon::HealthPip
-                    } else {
-                        Icon::DarkHealthPip
-                    }),
-                    frame_idx: 0,
+                let pos = screen_pos + vec2(x as f32 * 4.0 - 10.0, -10.0);
+                let brush = cache::misc(if x < limit {
+                    Icon::HealthPip
+                } else {
+                    Icon::DarkHealthPip
                 });
+                sprites.push(Sprite::new(Layer::Effect, pos, brush));
             }
         }
     }
