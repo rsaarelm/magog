@@ -4,8 +4,8 @@ use calx_color::Rgba;
 use calx_color::color::*;
 use euclid::{Rect, rect, Vector2D, vec2};
 use std::fmt;
-use std::rc::Rc;
 use std::iter::{self, Take, Repeat};
+use std::rc::Rc;
 use vitral;
 
 pub type Color = [f32; 4];
@@ -127,7 +127,8 @@ impl Builder {
         assert!(
             self.splat_matrix.is_empty() || matrix_column.len() == self.splat_matrix[0].len(),
             "Splat frame count {} does not match previous parallel splats with count {}",
-            matrix_column.len(), self.splat_matrix[0].len()
+            matrix_column.len(),
+            self.splat_matrix[0].len()
         );
         self.splat_matrix.push(matrix_column);
         self
@@ -137,7 +138,9 @@ impl Builder {
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
     /// Add an arbitrary sized rectangle.
-    pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder { self.splat(Some(Geom::new(0, 0, x, y, w, h))) }
+    pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder {
+        self.splat(Some(Geom::new(0, 0, x, y, w, h)))
+    }
 
     /// Add a multiple frame splat for a standard tile to the splat matrix.
     pub fn _tiles(self, n: usize, x: u32, y: u32) -> Builder { self.splat(Geom::tiles(n, x, y)) }
