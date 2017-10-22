@@ -118,7 +118,10 @@ pub trait Templater {
     fn reset(&mut self) {}
 
     /// Convert a token.
-    fn convert(&mut self, token: &str) -> Option<String> { None }
+    fn convert(&mut self, token: &str) -> Option<String> {
+        let _ = token;
+        None
+    }
 
     fn format(&mut self, text: &str) -> Result<String, String> {
         let ret = templatize(
