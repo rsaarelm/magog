@@ -65,7 +65,7 @@ impl GameLoop {
         }
     }
 
-    fn game_input(&mut self, scancode: Scancode) -> CommandResult {
+    fn game_input(&mut self, context: &mut display::Backend, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -102,6 +102,10 @@ impl GameLoop {
             F9 => {
                 let mut savefile = File::open("save.gam").unwrap();
                 self.world = World::load(&mut savefile).unwrap();
+                Ok(Vec::new())
+            }
+            F12 => {
+                context.save_screenshot("magog");
                 Ok(Vec::new())
             }
             _ => Ok(Vec::new()),
@@ -294,7 +298,7 @@ impl GameLoop {
                 State::Inventory(_) => self.inventory_input(scancode),
                 State::Console => self.console_input(scancode),
                 State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
-                _ => self.game_input(scancode),
+                _ => self.game_input(context, scancode),
             };
 
             if let Ok(events) = ret {
