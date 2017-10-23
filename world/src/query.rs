@@ -2,7 +2,7 @@ use FovStatus;
 use Prefab;
 use calx_alg::clamp;
 use calx_ecs::Entity;
-use calx_grid::{Dir6, HexGeom};
+use calx_grid::{Dir6, HexGeom, hex_neighbors};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
@@ -462,8 +462,7 @@ pub trait Query: TerrainQuery + Sized {
             }
 
             let current_dist = offset.hex_dist();
-            for d in Dir6::iter() {
-                let v = offset + d.to_v2();
+            for v in hex_neighbors(offset) {
                 if v.hex_dist() > current_dist && !seen.contains(&v) && is_valid(v) {
                     incoming.push_back(v);
                 }

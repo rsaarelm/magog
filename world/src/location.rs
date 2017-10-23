@@ -1,5 +1,5 @@
 use calx_alg::{compact_bits_by_2, noise, spread_bits_by_2};
-use calx_grid::{Dir6, GridNode, HexGeom};
+use calx_grid::{Dir6, GridNode, HexGeom, hex_neighbors};
 use euclid::{Vector2D, vec2};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
@@ -178,7 +178,7 @@ impl<V: Into<Vector2D<i32>>> Sub<V> for Location {
 }
 
 impl GridNode for Location {
-    fn neighbors(&self) -> Vec<Location> { Dir6::iter().map(|d| *self + d.to_v2()).collect() }
+    fn neighbors(&self) -> Vec<Location> { hex_neighbors(*self).collect() }
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]

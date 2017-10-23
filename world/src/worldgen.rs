@@ -1,5 +1,5 @@
 use Prefab;
-use calx_grid::{Dijkstra, Dir6};
+use calx_grid::{Dijkstra, hex_neighbors};
 use euclid::{vec2, Size2D};
 use form::{self, Form};
 use location::{Location, Portal, Sector};
@@ -202,8 +202,8 @@ impl<'a> SectorDigger<'a> {
     // TODO return impl
     fn domain(&self) -> Vec<mapgen::Point2D> {
         fn is_next_to_diagonal_sector(loc: Location) -> bool {
-            Dir6::iter()
-                .map(|&d| (loc + d).sector().taxicab_distance(loc.sector()))
+            hex_neighbors(loc)
+                .map(|x| x.sector().taxicab_distance(loc.sector()))
                 .any(|d| d > 1)
         }
 
