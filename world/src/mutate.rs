@@ -469,6 +469,7 @@ pub trait Mutate: Query + Terraform + Sized {
             }
             Confuse => {
                 self.gain_status(target, Status::Confused, 40);
+                msg!(self, "[One] [is] confused.").subject(target).send();
             }
             MagicMap => {
                 unimplemented!();
