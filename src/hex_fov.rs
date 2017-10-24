@@ -6,14 +6,6 @@ use num::Integer;
 pub trait FovValue: PartialEq + Clone {
     /// Construct a new FovValue for a position based on the previous one along the line of sight.
     fn advance(&self, offset: Vector2D<i32>) -> Option<Self>;
-
-    /// Return whether the given offset contains an isometric wall tile.
-    ///
-    /// Optional method for showing acute corners of fake isometric rooms in fov.
-    fn is_fake_isometric_wall(&self, offset: Vector2D<i32>) -> bool {
-        let _ = offset;
-        false
-    }
 }
 
 /// Field of view iterator for a hexagonal map.
@@ -41,38 +33,6 @@ impl<T: FovValue> HexFov<T> {
             side_channel: vec![(vec2(0, 0), init)],
         }
     }
-
-    /// Add visible horizontal corners to fake-isometric rooms.
-    fn make_corners_visible(&mut self, current: &Arc<T>) {
-        // We're moving along a vertical line on the hex circle, so there are side
-        // points to check.
-        if let Some(side_pos) = current.pt.side_point() {
-            let next = current.pt.next();
-            let next_value = current.prev_value.advance(next.to_v2());
-            // If the next cell is within the current span and the current cell is
-            // wallform, and current and next are in the same value group,
-            if next.is_below(current.end) &&
-                current.prev_value.is_fake_isometric_wall(
-                    current.pt.to_v2(),
-                ) && next_value == current.prev_value.advance(current.pt.to_v2())
-            {
-                if let Some(next_value) = next_value {
-                    // and if both the next cell and the third corner point cell are
-                    // wallforms, and the side point would not be otherwise
-                    // visible:
-                    if next_value.is_fake_isometric_wall(next.to_v2()) &&
-                        next_value.advance(side_pos).is_none() &&
-                        next_value.is_fake_isometric_wall(side_pos)
-                    {
-                        // Add the side point to the side channel.
-                        self.side_channel.push(
-                            (side_pos, current.prev_value.clone()),
-                        );
-                    }
-                }
-            }
-        }
-    }
 }
 
 impl<T: FovValue> Iterator for HexFov<T> {
@@ -90,8 +50,6 @@ impl<T: FovValue> Iterator for HexFov<T> {
             }
 
             debug_assert!(current.group_value == current.prev_value.advance(current.pt.to_v2()));
-
-            self.make_corners_visible(&current);
 
             let pos = current.pt.to_v2();
             let ret = current.group_value.clone();
@@ -210,28 +168,6 @@ impl PolarPoint {
         rod * (self.radius as i32) + tangent * offset
     }
 
-    /// If this point and the next point are adjacent vertically (along the xy
-    /// axis), return the point outside of the circle between the two points.
-    ///
-    /// This is a helper function for the FOV special case where acute corners
-    /// of fake isometric rooms are marked visible even though strict hex FOV
-    /// logic would keep them unseen.
-    pub fn side_point(self) -> Option<Vector2D<i32>> {
-        let next = self.next();
-        let a = self.to_v2();
-        let b = next.to_v2();
-
-        if b.x == a.x + 1 && b.y == a.y + 1 {
-            // Going down the right rim.
-            Some(vec2(a.x + 1, a.y))
-        } else if b.x == a.x - 1 && b.y == a.y - 1 {
-            // Going up the left rim.
-            Some(vec2(a.x - 1, a.y))
-        } else {
-            None
-        }
-    }
-
     /// The point corresponding to this one on the hex circle with radius +1.
     pub fn further(self) -> PolarPoint {
         PolarPoint::new(
@@ -267,26 +203,6 @@ mod test {
         }
     }
 
-    #[derive(PartialEq, Eq, Clone)]
-    struct Cell2 {
-        range: i32,
-    }
-
-    impl FovValue for Cell2 {
-        fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
-            if offset.hex_dist() < self.range {
-                Some(self.clone())
-            } else {
-                None
-            }
-        }
-
-        fn is_fake_isometric_wall(&self, offset: Vector2D<i32>) -> bool {
-            let _ = offset;
-            true
-        }
-    }
-
     #[test]
     fn trivial_fov() {
         // Just draw a small circle.
@@ -294,11 +210,5 @@ mod test {
             HashMap::from_iter(HexFov::new(Cell1 { range: 2 }));
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(!field.contains_key(&vec2(1, -1)));
-
-        // Now test out the fake-isometric corners.
-        let field: HashMap<Vector2D<i32>, Cell2> =
-            HashMap::from_iter(HexFov::new(Cell2 { range: 2 }));
-        assert!(field.contains_key(&vec2(1, 0)));
-        assert!(field.contains_key(&vec2(1, -1)));
     }
 }
