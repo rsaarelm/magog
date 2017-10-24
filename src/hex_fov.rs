@@ -23,8 +23,8 @@ impl<T: FovValue> HexFov<T> {
         HexFov {
             stack: vec![
                 Arc::new(
-                    PolarPoint::new(0.0, 1),
-                    PolarPoint::new(6.0, 1),
+                    HexPolarPoint::new(0.0, 1),
+                    HexPolarPoint::new(6.0, 1),
                     init.clone()
                 ),
             ],
@@ -69,11 +69,11 @@ impl<T: FovValue> Iterator for HexFov<T> {
 
 struct Arc<T> {
     /// Start point of current arc.
-    begin: PolarPoint,
+    begin: HexPolarPoint,
     /// Point currently being processed.
-    pt: PolarPoint,
+    pt: HexPolarPoint,
     /// End point of current arc.
-    end: PolarPoint,
+    end: HexPolarPoint,
     /// The user value from previous iteration.
     prev_value: T,
     /// The user value for this group.
@@ -81,7 +81,7 @@ struct Arc<T> {
 }
 
 impl<T: FovValue> Arc<T> {
-    pub fn new(begin: PolarPoint, end: PolarPoint, prev_value: T) -> Arc<T> {
+    pub fn new(begin: HexPolarPoint, end: HexPolarPoint, prev_value: T) -> Arc<T> {
         let group_value = prev_value.advance(begin.to_v2());
         Arc {
             begin: begin,
@@ -137,20 +137,40 @@ impl<T: FovValue> Arc<T> {
     }
 }
 
+/// Point in FOV arc polar coordinates for the desired geometry.
+pub trait PolarPoint: Sized {
+    /// Create the beginning and end points for radius 1 unit circle.
+    ///
+    /// These are the initial cells checked by the FOV algorithm.
+    fn unit_circle_endpoints() -> (Self, Self);
+
+    /// Return whether this point is earlier in the circle than the other.
+    fn is_below(&self, other: &Self) -> bool;
+
+    /// Return the vector offset for this point.
+    fn to_v2(&self) -> Vector2D<i32>;
+
+    /// Return the point corresponding to this one on the next circle with +1 radius.
+    fn expand(&self) -> Self;
+
+    /// Step forward on the current radius.
+    fn advance(&mut self);
+}
+
 /// Points on a hex circle expressed in polar coordinates.
 #[derive(Copy, Clone, PartialEq)]
-struct PolarPoint {
+struct HexPolarPoint {
     pos: f32,
     radius: u32,
 }
 
-impl PolarPoint {
-    pub fn new(pos: f32, radius: u32) -> PolarPoint { PolarPoint { pos, radius } }
+impl HexPolarPoint {
+    pub fn new(pos: f32, radius: u32) -> HexPolarPoint { HexPolarPoint { pos, radius } }
 
     /// Index of the discrete hex cell along the circle that corresponds to this point.
     fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
 
-    pub fn is_below(self, other: PolarPoint) -> bool { self.winding_index() < other.end_index() }
+    pub fn is_below(self, other: HexPolarPoint) -> bool { self.winding_index() < other.end_index() }
 
     fn end_index(self) -> i32 { (self.pos + 0.5).ceil() as i32 }
 
@@ -169,15 +189,15 @@ impl PolarPoint {
     }
 
     /// The point corresponding to this one on the hex circle with radius +1.
-    pub fn further(self) -> PolarPoint {
-        PolarPoint::new(
+    pub fn further(self) -> HexPolarPoint {
+        HexPolarPoint::new(
             self.pos * (self.radius + 1) as f32 / self.radius as f32,
             self.radius + 1,
         )
     }
 
     /// The point next to this one along the hex circle.
-    pub fn next(self) -> PolarPoint { PolarPoint::new((self.pos + 0.5).floor() + 0.5, self.radius) }
+    pub fn next(self) -> HexPolarPoint { HexPolarPoint::new((self.pos + 0.5).floor() + 0.5, self.radius) }
 }
 
 #[cfg(test)]
