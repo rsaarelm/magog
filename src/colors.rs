@@ -1,9 +1,4 @@
-extern crate num;
-extern crate image;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-
+use image;
 use num::Num;
 use std::ascii::AsciiExt;
 use std::fmt;

@@ -1,14 +1,14 @@
 extern crate serde_json;
-extern crate calx_alg;
+extern crate calx;
 extern crate rand;
 
-use calx_alg::WeightedChoice;
+use calx::WeightedChoice;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use std::collections::HashMap;
 
 #[test]
 fn test_serialize_rng() {
-    use calx_alg::EncodeRng;
+    use calx::EncodeRng;
 
     let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
 
@@ -21,7 +21,7 @@ fn test_serialize_rng() {
 
 #[test]
 fn test_noise() {
-    use calx_alg::noise;
+    use calx::noise;
 
     for i in 0i32..100 {
         assert!(noise(i) >= -1.0 && noise(i) <= 1.0);
@@ -29,7 +29,7 @@ fn test_noise() {
 }
 
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
-    use calx_alg::split_line;
+    use calx::split_line;
 
     split_line(line, |_| 1.0, space as f32).zip(parts).all(
         |(actual, &expected)| {
@@ -92,7 +92,7 @@ fn test_weighted_choice() {
 
 #[test]
 fn test_random_permutation() {
-    use calx_alg::RandomPermutation;
+    use calx::RandomPermutation;
     let perm: Vec<usize> = RandomPermutation::new(&mut rand::thread_rng(), 100).collect();
     let mut sorted = perm.clone();
     sorted.sort();
@@ -107,7 +107,7 @@ fn test_random_permutation() {
 
 #[test]
 fn test_bit_spread() {
-    use calx_alg::{compact_bits_by_2, spread_bits_by_2};
+    use calx::{compact_bits_by_2, spread_bits_by_2};
     let mut rng = rand::thread_rng();
 
     for _ in 0..1000 {
@@ -118,17 +118,8 @@ fn test_bit_spread() {
 }
 
 #[test]
-fn test_modulo() {
-    use calx_alg::modulo;
-
-    assert_eq!(modulo(9, 5), 4);
-    assert_eq!(modulo(-2, 5), 3);
-    assert_eq!(modulo(-22, 5), 3);
-}
-
-#[test]
 fn test_retry_gen() {
-    use calx_alg::retry_gen;
+    use calx::retry_gen;
 
     fn failing_gen<R: Rng>(rng: &mut R) -> Result<f32, ()> {
         let x = rng.next_f32();

@@ -1,17 +1,1 @@
-Rust language game programming libraries:
-
-alg: Various standalone utility functions
-
-color: Color type and constants
-
-ecs: Small complete serializable entity component system
-
-grid: Utilities for grid maps, especially hex maps
-
-layout: 2D geometric layout, rectangle type
-
-system: Various utilities that tie into the underlying operating
-system
-
-window: Opening a game window, general graphics rendering and
-reading input
+Rust language game programming grab bag library

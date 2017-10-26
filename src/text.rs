@@ -117,7 +117,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use calx_alg::templatize;
+/// use calx::templatize;
 ///
 /// fn translate(word: &str) -> Result<String, ()> {
 ///     match word {

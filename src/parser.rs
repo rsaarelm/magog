@@ -5,7 +5,7 @@
 /// input strings like "method_name 4 foo" into calls of `self.method_name(FromStr::from_str("4")?,
 /// FromStr::from_str("foo")?)`.
 ///
-///     # #[macro_use] extern crate calx_alg;
+///     # #[macro_use] extern crate calx;
 ///     # fn main() {
 ///
 ///     struct Adder {

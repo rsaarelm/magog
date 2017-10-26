@@ -25,19 +25,19 @@ impl HexGeom for Vector2D<i32> {
 // TODO return impl
 // No need to muck with custom return iter type then...
 /// Return offsets to neighboring hexes.
-pub fn hex_neighbors<P, R>(origin: P) -> HexNeighborIter<P>
+pub fn hex_neighbors<P, R>(origin: P) -> HexNeighbor<P>
 where
     P: Clone + Add<Vector2D<i32>, Output = R>,
 {
-    HexNeighborIter { origin, i: 0 }
+    HexNeighbor { origin, i: 0 }
 }
 
-pub struct HexNeighborIter<P> {
+pub struct HexNeighbor<P> {
     origin: P,
     i: i32,
 }
 
-impl<P, R> Iterator for HexNeighborIter<P>
+impl<P, R> Iterator for HexNeighbor<P>
 where
     P: Clone + Add<Vector2D<i32>, Output = R>,
 {
@@ -55,11 +55,11 @@ where
 }
 
 /// Return an iterator for all the points in the hex disc with the given radius.
-pub fn hex_disc<P, R>(origin: P, radius: i32) -> HexDiscIterator<P>
+pub fn hex_disc<P, R>(origin: P, radius: i32) -> HexDisc<P>
 where
     P: Clone + Add<Vector2D<i32>, Output = R>,
 {
-    HexDiscIterator {
+    HexDisc {
         origin,
         radius,
         i: 0,
@@ -67,14 +67,14 @@ where
     }
 }
 
-pub struct HexDiscIterator<P> {
+pub struct HexDisc<P> {
     origin: P,
     radius: i32,
     i: i32,
     r: i32,
 }
 
-impl<P, R> Iterator for HexDiscIterator<P>
+impl<P, R> Iterator for HexDisc<P>
 where
     P: Clone + Add<Vector2D<i32>, Output = R>,
 {

@@ -1,21 +1,6 @@
-extern crate num;
-extern crate rand;
-extern crate time;
-extern crate vec_map;
-extern crate serde;
-
 use num::Float;
-use rand::Rng;
-pub use rng::{EncodeRng, RandomPermutation, RngExt};
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign, Rem};
-pub use text::{LineSplit, split_line, templatize};
-
-mod parser;
-mod rng;
-mod text;
-pub mod timing;
-
-pub mod ease;
+use rand::{Rand, Rng};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
@@ -49,7 +34,7 @@ pub fn noise(n: i32) -> f32 {
 /// # Examples
 ///
 /// ```
-/// use calx_alg::Deciban;
+/// use calx::Deciban;
 /// assert_eq!(0.0, Deciban::new(0.5).0);
 /// assert_eq!(10, Deciban::new(0.909091).0 as i32);
 ///
@@ -59,7 +44,7 @@ pub fn noise(n: i32) -> f32 {
 #[derive(Copy, Clone, PartialEq, PartialOrd, Default, Debug)]
 pub struct Deciban(pub f32);
 
-impl rand::Rand for Deciban {
+impl Rand for Deciban {
     fn rand<R: Rng>(rng: &mut R) -> Self { Deciban::new(rng.next_f32()) }
 }
 
@@ -179,23 +164,6 @@ pub fn compact_bits_by_2(mut bits: u32) -> u32 {
     bits = (bits ^ (bits >> 4)) & 0b00000000_11111111_00000000_11111111;
     bits = (bits ^ (bits >> 8)) & 0b00000000_00000000_11111111_11111111;
     bits
-}
-
-/// Modulo operation.
-///
-/// Unlike the remainder with `%`, this works as you would expect for negative values.
-pub fn modulo<A, B, C>(dividend: A, divisor: B) -> C
-where
-    A: Rem<B, Output = C>,
-    B: Clone,
-    C: Add<B, Output = C> + Default + PartialOrd,
-{
-    let ret = dividend % divisor.clone();
-    if ret < C::default() {
-        ret + divisor
-    } else {
-        ret
-    }
 }
 
 /// Repeatedly run a random generator that may fail until it succeeds.

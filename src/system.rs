@@ -1,13 +1,11 @@
-extern crate time;
-extern crate tempdir;
-extern crate image;
-
+use image;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
+use time;
 
 /// Return the application data directory path for the current platform.
 pub fn app_data_path(app_name: &str) -> PathBuf {
