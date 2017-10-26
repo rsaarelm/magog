@@ -1,6 +1,6 @@
 use Rng;
 use calx_ecs::Entity;
-use calx_grid::HexFov;
+use calx::HexFov;
 use command::{Command, CommandResult};
 use components;
 use errors::*;

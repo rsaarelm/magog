@@ -1,9 +1,8 @@
 use Icon;
 use backend::MagogContext;
 use cache;
-use calx_alg::{clamp, timing};
 use calx_ecs::Entity;
-use calx_grid::{FovValue, HexFov};
+use calx::{clamp, cycle_anim, FovValue, HexFov};
 use euclid::{Point2D, point2, Vector2D, Vector3D, vec2, vec3, Rect};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
@@ -183,7 +182,7 @@ impl WorldView {
                 for &i in &mobs {
                     if let Some(desc) = world.ecs().desc.get(i) {
                         let frame_idx = if world.is_bobbing(i) {
-                            timing::cycle_anim(1.0 / 3.0, 2)
+                            cycle_anim(1.0 / 3.0, 2)
                         } else {
                             0
                         };

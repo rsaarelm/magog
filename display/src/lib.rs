@@ -8,9 +8,7 @@ extern crate vitral;
 extern crate vitral_atlas;
 extern crate world;
 extern crate calx_ecs;
-extern crate calx_grid;
-extern crate calx_color;
-extern crate calx_alg;
+extern crate calx;
 
 mod atlas_cache;
 mod backend;

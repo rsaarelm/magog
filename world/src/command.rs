@@ -1,4 +1,4 @@
-use calx_grid::Dir6;
+use calx::Dir6;
 use event::Event;
 use item::Slot;
 use mutate::Mutate;

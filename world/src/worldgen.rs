@@ -1,5 +1,5 @@
 use Prefab;
-use calx_grid::{Dijkstra, hex_neighbors};
+use calx::{Dijkstra, hex_neighbors};
 use euclid::{vec2, Size2D};
 use form::{self, Form};
 use location::{Location, Portal, Sector};

@@ -1,4 +1,4 @@
-use calx_alg::templatize;
+use calx::templatize;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Pronoun {

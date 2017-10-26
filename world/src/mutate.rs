@@ -1,7 +1,6 @@
 use {attack_damage, roll};
-use calx_alg::RngExt;
 use calx_ecs::Entity;
-use calx_grid::{Dir6, Prefab};
+use calx::{Dir6, Prefab, RngExt};
 use command::CommandResult;
 use components::{BrainState, Status};
 use effect::{Damage, Effect};

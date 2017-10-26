@@ -1,4 +1,4 @@
-use calx_alg::WeightedChoice;
+use calx::WeightedChoice;
 use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType, StatsComponent, Statuses};
 use item::ItemType;
 use rand::Rng;

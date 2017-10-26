@@ -18,8 +18,6 @@ scancode = "0.1"
 serde = "1.0"
 calx-ecs = "0.6"
 vitral = { git = "https://github.com/rsaarelm/vitral" }
-calx-color = { git = "https://github.com/rsaarelm/calx" }
-calx-grid = { git = "https://github.com/rsaarelm/calx" }
-calx-alg = { git = "https://github.com/rsaarelm/calx" }
+calx = { git = "https://github.com/rsaarelm/calx" }
 world = { path = "world" }
 display = { path = "display" }

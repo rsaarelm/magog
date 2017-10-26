@@ -3,7 +3,7 @@
 use Icon;
 use brush::Brush;
 use cache;
-use calx_grid::{Dir12, Dir6};
+use calx::{Dir12, Dir6};
 use euclid::{Vector3D, vec3};
 use std::rc::Rc;
 use world::{Location, World, Query, TerrainQuery, Terrain, terrain};

@@ -1,7 +1,6 @@
 use backend::MagogContext;
 use brush::Brush;
-use calx_alg::lerp;
-use calx_color::{color, Rgba};
+use calx::{lerp, color, Rgba};
 use euclid::{Point2D, point2};
 use render::Layer;
 use std::cmp::Ordering;

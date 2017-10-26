@@ -6,9 +6,8 @@ extern crate euclid;
 extern crate glium;
 extern crate scancode;
 extern crate vitral;
-extern crate calx_grid;
 #[macro_use]
-extern crate calx_alg;
+extern crate calx;
 extern crate world;
 extern crate display;
 

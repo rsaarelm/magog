@@ -8,12 +8,11 @@ extern crate euclid;
 extern crate lazy_static;
 #[macro_use]
 extern crate error_chain;
-extern crate calx_alg;
-extern crate calx_grid;
+extern crate calx;
 #[macro_use]
 extern crate calx_ecs;
 
-use calx_alg::Deciban;
+use calx::Deciban;
 
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
@@ -165,7 +164,7 @@ pub use world::{Ecs, World};
 mod worldgen;
 
 /// Standard Prefab type, terrain type and spawn name list.
-pub type Prefab = calx_grid::Prefab<(Terrain, Vec<String>)>;
+pub type Prefab = calx::Prefab<(Terrain, Vec<String>)>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
@@ -173,7 +172,7 @@ pub enum FovStatus {
     Remembered,
 }
 
-pub type Rng = calx_alg::EncodeRng<rand::XorShiftRng>;
+pub type Rng = calx::EncodeRng<rand::XorShiftRng>;
 
 /// The combat formula.
 ///
@@ -183,12 +182,12 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
     const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
 
     let roll = roll + advantage as f32;
-    (weapon_power as f32 * calx_alg::clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05)) as i32
+    (weapon_power as f32 * calx::clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05)) as i32
 }
 
 /// Standard deciban roll, clamp into [-20, 20].
 pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 {
-    calx_alg::clamp(-20.0, 20.0, rng.gen::<Deciban>().0)
+    calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0)
 }
 
 pub mod errors {

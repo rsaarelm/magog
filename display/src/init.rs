@@ -2,8 +2,8 @@
 
 use brush::{Brush, Builder};
 use cache;
-use calx_color::Rgba;
-use calx_color::color::*;
+use calx::Rgba;
+use calx::color::*;
 use euclid::vec2;
 use std::collections::HashMap;
 use std::rc::Rc;

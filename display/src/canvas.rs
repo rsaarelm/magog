@@ -157,7 +157,7 @@ impl Canvas {
     pub fn size(&self) -> Size2D<u32> { self.size }
 
     pub fn screenshot(&self) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
-        use calx_color::to_srgb;
+        use calx::to_srgb;
 
         let image: glium::texture::RawImage2d<u8> = self.buffer.read();
         let image =

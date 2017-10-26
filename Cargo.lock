@@ -2,10 +2,8 @@
 name = "world"
 version = "0.1.0"
 dependencies = [
- "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
- "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "euclid 0.15.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -76,26 +74,19 @@ version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "calx-alg"
+name = "calx"
 version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#4d067252784c2c0a37f21ce4592488161e1de7d3"
+source = "git+https://github.com/rsaarelm/calx#44263e117745b65660e94fcdb9e90557a2ef9b0b"
 dependencies = [
+ "euclid 0.15.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tempdir 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
  "vec_map 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "calx-color"
-version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#4d067252784c2c0a37f21ce4592488161e1de7d3"
-dependencies = [
- "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -103,18 +94,6 @@ name = "calx-ecs"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "serde 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "calx-grid"
-version = "0.3.0-alpha"
-source = "git+https://github.com/rsaarelm/calx#4d067252784c2c0a37f21ce4592488161e1de7d3"
-dependencies = [
- "euclid 0.15.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -230,10 +209,8 @@ dependencies = [
 name = "display"
 version = "0.1.0"
 dependencies = [
- "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
- "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "euclid 0.15.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -505,10 +482,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "magog"
 version = "0.1.0"
 dependencies = [
- "calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
- "calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
+ "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "display 0.1.0",
  "euclid 0.15.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -855,6 +830,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tempdir"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "rand 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "tempfile"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1039,10 +1022,8 @@ dependencies = [
 "checksum bitflags 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f5cde24d1b2e2216a726368b2363a273739c91f4e3eb4e0dd12d672d396ad989"
 "checksum block 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 "checksum byteorder 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ff81738b726f5d099632ceaffe7fb65b90212e8dce59d518729e7e8634032d3d"
-"checksum calx-alg 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
-"checksum calx-color 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
+"checksum calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
 "checksum calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "99aefef7868465cbf9ba0b1e8222bc8873b4fb66dc2ef9eeb198e61ef8642ce1"
-"checksum calx-grid 0.3.0-alpha (git+https://github.com/rsaarelm/calx)" = "<none>"
 "checksum cc 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2c674f0870e3dbd4105184ea035acb1c32c8ae69939c9e228d2b11bbfe29efad"
 "checksum cfg-if 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d4c819a1287eb618df47cc647173c5c4c66ba19d888a6e50d605672aed3140de"
 "checksum cgl 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "86765cb42c2a2c497e142af72517c1b4d7ae5bb2f25dfa77a5c69642f2342d89"
@@ -1127,6 +1108,7 @@ dependencies = [
 "checksum syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)" = "d3b891b9015c88c576343b9b3e41c2c11a51c219ef067b264bd9c8aa9b441dad"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum target_build_utils 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "013d134ae4a25ee744ad6129db589018558f620ddfa44043887cdd45fa08e75c"
+"checksum tempdir 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "87974a6f5c1dfb344d733055601650059a3363de2a6104819293baff662132d6"
 "checksum tempfile 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "11ce2fe9db64b842314052e2421ac61a73ce41b898dc8e3750398b219c5fc1e0"
 "checksum time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)" = "d5d788d3aa77bc0ef3e9621256885555368b47bd495c13dd2e7413c89f845520"
 "checksum unicode-xid 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f860d7d29cf02cb2f3f359fd35991af3d30bac52c57d265a3c461074cb4dc"

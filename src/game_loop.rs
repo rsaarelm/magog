@@ -1,4 +1,4 @@
-use calx_grid::Dir6;
+use calx::Dir6;
 use display;
 use euclid::{Point2D, Rect};
 use scancode::Scancode;

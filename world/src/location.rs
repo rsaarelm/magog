@@ -1,5 +1,4 @@
-use calx_alg::{compact_bits_by_2, noise, spread_bits_by_2};
-use calx_grid::{Dir6, GridNode, HexGeom, hex_neighbors};
+use calx::{compact_bits_by_2, noise, spread_bits_by_2, Dir6, GridNode, HexGeom, hex_neighbors};
 use euclid::{Vector2D, vec2};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};

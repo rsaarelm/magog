@@ -1,4 +1,4 @@
-use calx_grid::{FovValue, HexGeom};
+use calx::{FovValue, HexGeom};
 use euclid::Vector2D;
 use location::Location;
 use terraform::TerrainQuery;

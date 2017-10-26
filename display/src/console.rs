@@ -1,4 +1,4 @@
-use calx_alg::split_line;
+use calx::split_line;
 use euclid::{Point2D, Rect};
 use std::io;
 use std::io::prelude::*;

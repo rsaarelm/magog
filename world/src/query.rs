@@ -1,8 +1,7 @@
 use FovStatus;
 use Prefab;
-use calx_alg::clamp;
 use calx_ecs::Entity;
-use calx_grid::{Dir6, HexGeom, hex_neighbors};
+use calx::{clamp, Dir6, HexGeom, hex_neighbors};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;

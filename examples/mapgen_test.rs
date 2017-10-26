@@ -3,10 +3,10 @@
 ///
 
 extern crate rand;
-extern crate calx_grid;
+extern crate calx;
 extern crate world;
 
-use calx_grid::Prefab;
+use calx::Prefab;
 use rand::Rng;
 use std::collections::HashMap;
 use std::iter::FromIterator;

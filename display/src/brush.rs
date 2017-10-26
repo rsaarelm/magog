@@ -1,7 +1,7 @@
 use atlas_cache::SubImageSpec;
 use cache;
-use calx_color::Rgba;
-use calx_color::color::*;
+use calx::Rgba;
+use calx::color::*;
 use euclid::{Rect, rect, Vector2D, vec2};
 use std::fmt;
 use std::rc::Rc;

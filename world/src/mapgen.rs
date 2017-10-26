@@ -1,5 +1,4 @@
-use calx_alg::RngExt;
-use calx_grid::{self, HexGeom, hex_neighbors};
+use calx::{RngExt, hex_disc, HexGeom, hex_neighbors};
 use euclid::{self, vec2};
 use rand::{self, Rng};
 use std::collections::HashSet;
@@ -65,11 +64,11 @@ impl DigCavesGen {
             let mut dug2 = dug.clone();
 
             for &p in &self.domain {
-                let n_walls: u32 = calx_grid::hex_disc(p, 1)
+                let n_walls: u32 = hex_disc(p, 1)
                     .filter(|&p2| p2 != p)
                     .map(|p2| !dug.contains(&p2) as u32)
                     .sum();
-                let n_walls_2: u32 = calx_grid::hex_disc(p, 2)
+                let n_walls_2: u32 = hex_disc(p, 2)
                     .filter(|&p2| p2 != p)
                     .map(|p2| !dug.contains(&p2) as u32)
                     .sum();

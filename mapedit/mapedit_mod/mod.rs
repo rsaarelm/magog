@@ -1,4 +1,4 @@
-use calx_grid::{Dir6, Prefab};
+use calx::{Dir6, Prefab};
 use display;
 use euclid::{Rect, Vector2D, vec2};
 use scancode::Scancode;

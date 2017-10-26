@@ -1,4 +1,4 @@
-use calx_grid::HexFov;
+use calx::HexFov;
 use fov::SphereVolumeFov;
 use location::Location;
 use std::iter::FromIterator;

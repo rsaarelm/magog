@@ -1,5 +1,4 @@
 extern crate rand;
-extern crate calx_alg;
 extern crate world;
 
 use std::io::Write;
