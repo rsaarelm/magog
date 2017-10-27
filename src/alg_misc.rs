@@ -140,7 +140,7 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
 
 /// Insert a 0 bit between the low 16 bits of a number.
 ///
-/// Useful for https://en.wikipedia.org/wiki/Z-order_curve
+/// Useful for <https://en.wikipedia.org/wiki/Z-order_curve>
 #[inline(always)]
 pub fn spread_bits_by_2(mut bits: u32) -> u32 {
     // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
@@ -154,7 +154,7 @@ pub fn spread_bits_by_2(mut bits: u32) -> u32 {
 
 /// Remove every odd bit and compact the even bits into the lower half of the number.
 ///
-/// Useful for https://en.wikipedia.org/wiki/Z-order_curve
+/// Useful for <https://en.wikipedia.org/wiki/Z-order_curve>
 #[inline(always)]
 pub fn compact_bits_by_2(mut bits: u32) -> u32 {
     // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/

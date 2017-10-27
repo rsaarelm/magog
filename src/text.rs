@@ -4,7 +4,7 @@
 ///
 /// Will treat newlines in the input as regular whitespace, you probably want to split your input
 /// at newlines before using `split_line` on the individual lines.
-pub fn split_line<'a, F>(text: &'a str, char_width: F, max_width: f32) -> LineSplit<'a, F>
+pub fn split_line<F>(text: &str, char_width: F, max_width: f32) -> LineSplit<F>
 where
     F: Fn(char) -> f32,
 {
@@ -81,9 +81,9 @@ where
                     if *is_first {
                         *is_first = false;
                         Some(i)
-                    } else {
-                        if w <= self.max_width { Some(i) } else { None }
-                    }
+                    } else if w <= self.max_width {
+                        Some(i)
+                    } else { None }
                 })
                 .last()
                 .unwrap_or(0)

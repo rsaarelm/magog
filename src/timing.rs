@@ -60,12 +60,9 @@ impl Ticker {
     pub fn get(&mut self) -> bool { self.time_remaining().is_none() }
 
     pub fn wait_for_tick(&mut self) {
-        match self.time_remaining() {
-            Some(t) => {
-                thread::sleep(Duration::from_millis((t * 1e3) as u64));
-                self.last_t += self.period_s;
-            }
-            _ => {}
+        if let Some(t) = self.time_remaining() {
+            thread::sleep(Duration::from_millis((t * 1e3) as u64));
+            self.last_t += self.period_s;
         }
     }
 }

@@ -112,7 +112,6 @@ impl<'a, R: Rng + 'static> Iterator for RandomPermutation<'a, R> {
         self.remain -= 1;
 
         let head = *self.shuffle.get(self.remain).unwrap_or(&self.remain);
-        let ret = Some(self.shuffle.insert(swap_idx, head).unwrap_or(swap_idx));
-        ret
+        Some(self.shuffle.insert(swap_idx, head).unwrap_or(swap_idx))
     }
 }
