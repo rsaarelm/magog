@@ -53,10 +53,6 @@ impl<'a> FovValue for SightFov<'a> {
 
         Some(ret)
     }
-
-    fn is_fake_isometric_wall(&self, offset: Vector2D<i32>) -> bool {
-        self.w.terrain(self.origin + offset).is_wall()
-    }
 }
 
 

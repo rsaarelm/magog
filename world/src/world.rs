@@ -1,6 +1,6 @@
 use Rng;
 use calx_ecs::Entity;
-use calx::HexFov;
+use calx::{HexFov, HexFovIter};
 use command::{Command, CommandResult};
 use components;
 use errors::*;
@@ -215,6 +215,8 @@ impl Mutate for World {
 
             let fov: HashSet<Location> = HashSet::from_iter(
                 HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
+                    .add_fake_isometric_acute_corners(|pos, a|
+                        self.terrain(a.origin + pos).is_wall())
                     .map(|(pos, a)| a.origin + pos),
             );
 
