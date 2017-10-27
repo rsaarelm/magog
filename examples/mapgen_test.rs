@@ -43,15 +43,15 @@ impl mapgen::Dungeon for TestMap {
     fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Prefab { Room }
 
     /// Add a large open continuous region to dungeon.
-    fn dig_chamber<I: IntoIterator<Item=Point2D>>(&mut self, area: I) {
-        for pos in area.into_iter() {
+    fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I) {
+        for pos in area {
             self.terrain.insert(pos, '.');
         }
     }
 
     /// Add a narrow corridor to dungeon.
-    fn dig_corridor<I: IntoIterator<Item=Point2D>>(&mut self, path: I) {
-        for pos in path.into_iter() {
+    fn dig_corridor<I: IntoIterator<Item = Point2D>>(&mut self, path: I) {
+        for pos in path {
             self.terrain.insert(pos, '▒');
         }
     }

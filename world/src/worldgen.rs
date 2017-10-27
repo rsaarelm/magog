@@ -259,7 +259,7 @@ impl<'a> SectorDigger<'a> {
             .iter()
             .filter_map(|(loc, &w)| if w <= range { Some(loc) } else { None })
         {
-            self.spawn_region.remove(&loc);
+            self.spawn_region.remove(loc);
         }
     }
 }
@@ -272,7 +272,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, area: I) {
-        for pos in area.into_iter() {
+        for pos in area {
             let loc = self.loc(pos);
             self.spawn_region.insert(loc);
             self.set(loc, Terrain::Ground);
@@ -281,7 +281,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
 
     /// Add a narrow corridor to dungeon.
     fn dig_corridor<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, path: I) {
-        for pos in path.into_iter() {
+        for pos in path {
             let loc = self.loc(pos);
             // Do not spawn things in corridors.
             self.spawn_region.remove(&loc);

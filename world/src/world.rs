@@ -72,7 +72,6 @@ impl<'a> World {
             .spawns()
             .cloned()
             .collect::<Vec<(Location, Loadout)>>()
-            .into_iter()
         {
             ret.spawn(&spawn, loc);
         }

@@ -62,8 +62,7 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs().brain.get(e).map_or(
-            None,
+        self.ecs().brain.get(e).and_then(
             |brain| Some(brain.state),
         )
     }
@@ -333,8 +332,7 @@ pub trait Query: TerrainQuery + Sized {
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     fn item_type(&self, e: Entity) -> Option<ItemType> {
-        self.ecs().item.get(e).map_or(
-            None,
+        self.ecs().item.get(e).and_then(
             |item| Some(item.item_type),
         )
     }
@@ -374,8 +372,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Return the name that can be used to spawn this entity.
     fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
-        self.ecs().desc.get(e).map_or(
-            None,
+        self.ecs().desc.get(e).and_then(
             |desc| Some(&desc.name[..]),
         )
     }

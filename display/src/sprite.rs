@@ -15,7 +15,12 @@ pub enum Coloring {
 }
 
 impl Default for Coloring {
-    fn default() -> Self { Coloring::Shaded { ambient: 1.0, diffuse: 1.0 } }
+    fn default() -> Self {
+        Coloring::Shaded {
+            ambient: 1.0,
+            diffuse: 1.0,
+        }
+    }
 }
 
 impl Eq for Coloring {}

@@ -1,8 +1,8 @@
 use Icon;
 use backend::MagogContext;
 use cache;
-use calx_ecs::Entity;
 use calx::{clamp, cycle_anim, FovValue, HexFov};
+use calx_ecs::Entity;
 use euclid::{Point2D, point2, Vector2D, Vector3D, vec2, vec3, Rect};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
@@ -43,8 +43,8 @@ impl WorldView {
     /// Recompute the cached screen view if the cache has been invalidated.
     fn ensure_fov(&mut self, world: &World) {
         if self.fov.is_none() {
-            // Chart area, center in origin, inflated by tile width in every direction to get the cells
-            // partially on screen included.
+            // Chart area, center in origin, inflated by tile width in every direction to get the
+            // cells partially on screen included.
             let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
                               vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
             let bounds = self.screen_area
@@ -141,7 +141,7 @@ impl WorldView {
                         let light_dir = if world.is_underground(loc) && player_pos.is_some() {
                             chart_to_physics(player_pos.unwrap()).normalize()
                         } else {
-                            vec3(-2.0f32.sqrt() / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
+                            vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
                         };
                         clamp(0.1, 1.0, -light_dir.dot(normal))
                     };
@@ -168,7 +168,10 @@ impl WorldView {
                     let color = if in_map_memory {
                         Coloring::MapMemory
                     } else {
-                        Coloring::Shaded { ambient, diffuse: 1.0 }
+                        Coloring::Shaded {
+                            ambient,
+                            diffuse: 1.0,
+                        }
                     };
                     sprites.push(
                         Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
@@ -189,7 +192,10 @@ impl WorldView {
                         sprites.push(
                             Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
                                 .idx(frame_idx)
-                                .color(Coloring::Shaded { ambient, diffuse: 1.0 }),
+                                .color(Coloring::Shaded {
+                                    ambient,
+                                    diffuse: 1.0,
+                                }),
                         );
                         draw_health_pips(&mut sprites, world, i, screen_pos);
                     }
@@ -289,9 +295,11 @@ pub fn view_to_chart(view_pos: Point2D<f32>) -> Point2D<i32> {
 
 /// Tranform chart space vector to physics space vector
 pub fn chart_to_physics(chart_vec: Vector2D<i32>) -> Vector3D<f32> {
-    vec3(chart_vec.x as f32 - chart_vec.y as f32,
-         -chart_vec.x as f32 / 2.0 - chart_vec.y as f32 / 2.0,
-         0.0)
+    vec3(
+        chart_vec.x as f32 - chart_vec.y as f32,
+        -chart_vec.x as f32 / 2.0 - chart_vec.y as f32 / 2.0,
+        0.0,
+    )
 }
 
 #[derive(Clone)]

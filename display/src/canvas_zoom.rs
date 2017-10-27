@@ -67,7 +67,6 @@ impl CanvasZoom {
         canvas_size: Size2D<u32>,
         screen_pos: Point2D<f32>,
     ) -> Point2D<f32> {
-        // let Rect { origin: rp, size: rs } = self.screen_rect();
         let rect = self.fit_canvas(window_size, canvas_size);
         let rp = rect.origin.to_untyped();
         let rs = rect.size.to_untyped();

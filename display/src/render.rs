@@ -69,7 +69,7 @@ impl Angle {
             let rad = deg.to_radians();
             vec3(rad.sin(), rad.cos(), 0.0)
         } else {
-            debug_assert!(self == Angle::Up);
+            debug_assert_eq!(self, Angle::Up);
             vec3(0.0, 0.0, 1.0)
         }
     }
