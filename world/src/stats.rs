@@ -53,6 +53,10 @@ impl Stats {
             ..self
         }
     }
+
+    pub fn add_intrinsic(&mut self, intrinsic: Intrinsic) {
+        self.intrinsics |= 1 << intrinsic as u32;
+    }
 }
 
 impl Add<Stats> for Stats {

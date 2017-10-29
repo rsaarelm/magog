@@ -87,10 +87,29 @@ impl Form {
         self
     }
 
+    pub fn folk(mut self) -> Form {
+        self.loadout.brain.as_mut().expect("Must be mob").shout = ShoutType::Shout;
+        self.loadout.stats.as_mut().unwrap().base.add_intrinsic(Intrinsic::Hands);
+        self
+    }
+
     pub fn reptile(mut self) -> Form {
-        let mut brain = self.loadout.brain.expect("Must be mob");
-        brain.shout = ShoutType::Hiss;
-        self.loadout.brain = Some(brain);
+        self.loadout.brain.as_mut().expect("Must be mob").shout = ShoutType::Hiss;
+        self
+    }
+
+    pub fn attack(mut self, bonus: i32) -> Form {
+        self.loadout.stats.as_mut().unwrap().base.attack += bonus;
+        self
+    }
+
+    pub fn defense(mut self, bonus: i32) -> Form {
+        self.loadout.stats.as_mut().unwrap().base.defense += bonus;
+        self
+    }
+
+    pub fn armor(mut self, bonus: i32) -> Form {
+        self.loadout.stats.as_mut().unwrap().base.armor += bonus;
         self
     }
 
@@ -119,13 +138,21 @@ lazy_static! {
     pub static ref FORMS: Vec<Form> = {
         use item::MagicEffect::*;
         vec![
-        Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
+        Form::mob("player",     Icon::Player,     10, &[]).rarity(0.0).player()
             .c(MapMemory::default()),
-        Form::mob("dreg",       Icon::Dreg,       2,  &[Hands]),
+        Form::mob("dreg",       Icon::Dreg,       2,  &[]).folk(),
         Form::mob("snake",      Icon::Snake,      1,  &[]).reptile(),
-        Form::mob("ogre",       Icon::Ogre,       5,  &[Hands]).depth(2),
+        Form::mob("ooze",       Icon::Ooze,       3,  &[]).depth(1),
+        Form::mob("bug",        Icon::Bug,        2,  &[]).depth(2).rarity(10.0),
+        Form::mob("octopus",    Icon::Octopus,    5,  &[Hands]).depth(3),
+        Form::mob("ogre",       Icon::Ogre,       7,  &[]).folk().depth(4),
+        Form::mob("wraith",     Icon::Wraith,     10, &[Hands]).depth(5),
+        Form::mob("efreet",     Icon::Efreet,     14, &[Hands]).depth(7),
+        Form::mob("serpent",    Icon::Serpent,    20, &[]).depth(8).rarity(5.0).reptile(),
 
-        Form::item("sword",     Icon::Sword,     10,  ItemType::MeleeWeapon).rarity(10.0),
+        Form::item("sword",     Icon::Sword,     0,  ItemType::MeleeWeapon).rarity(10.0).attack(6),
+        Form::item("helmet",    Icon::Helmet,    0,  ItemType::Helmet).rarity(10.0).armor(2),
+        Form::item("armor",     Icon::Armor,     0,  ItemType::Armor).rarity(10.0).armor(5),
         Form::item("wand of fireball",    Icon::Wand1,     5,  ItemType::TargetedUsable(Fireball)).depth(3),
         Form::item("wand of confusion",   Icon::Wand2,     5,  ItemType::TargetedUsable(Confuse)),
         Form::item("scroll of lightning", Icon::Scroll1,   1,  ItemType::UntargetedUsable(Lightning)),

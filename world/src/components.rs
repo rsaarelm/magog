@@ -15,8 +15,16 @@ pub enum Icon {
     Snake,
     Dreg,
     Ogre,
+    Wraith,
+    Octopus,
+    Bug,
+    Ooze,
+    Efreet,
+    Serpent,
 
     Sword,
+    Helmet,
+    Armor,
     Wand1,
     Wand2,
     Scroll1,
@@ -89,7 +97,7 @@ impl Default for Brain {
         Brain {
             state: BrainState::Asleep,
             alignment: Alignment::Evil,
-            shout: ShoutType::Shout,
+            shout: ShoutType::Silent,
         }
     }
 }

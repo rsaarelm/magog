@@ -1,6 +1,6 @@
 //! Set up resource content for game.
 
-use brush::{Brush, Builder};
+use brush::{Brush, Builder, Geom};
 use cache;
 use calx::Rgba;
 use calx::color::*;
@@ -57,15 +57,29 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
     let mut ret = VecMap::new();
 
     ret.insert(Player as usize, Builder::new("assets/mobs.png").color(AZURE).mob(0, 0).finish());
-    ret.insert(Snake as usize, Builder::new("assets/mobs.png").color(GREEN).mob(32, 0).finish());
-    ret.insert(Dreg as usize, Builder::new("assets/mobs.png").color(OLIVE).mob(64, 0).finish());
-    ret.insert(Ogre as usize, Builder::new("assets/mobs.png").color(DARKCYAN).mob(96, 0).finish());
+    ret.insert(Snake as usize, Builder::new("assets/mobs.png").color(GREEN).mob(1*32, 0).finish());
+    ret.insert(Dreg as usize, Builder::new("assets/mobs.png").color(OLIVE).mob(2*32, 0).finish());
+    ret.insert(Ogre as usize, Builder::new("assets/mobs.png").color(DARKCYAN).mob(3*32, 0).finish());
+    ret.insert(Wraith as usize, Builder::new("assets/mobs.png").color(GRAY).mob(4*32, 0).finish());
+    ret.insert(Octopus as usize, Builder::new("assets/mobs.png").color(WHEAT).mob(5*32, 0).finish());
+    ret.insert(Bug as usize, Builder::new("assets/mobs.png").color(0xFF00FFFF).mob(6*32, 0).finish());
+    ret.insert(Ooze as usize, Builder::new("assets/mobs.png").color(LIGHTSKYBLUE).mob(7*32, 0).finish());
+    ret.insert(Efreet as usize, Builder::new("assets/mobs.png").color(ORANGE).mob(0, 1*32).finish());
 
-    ret.insert(Sword as usize, Builder::new("assets/props.png").color(WHITE).tile(128, 32).finish());
+    // The serpent has a special sprite structure where it's split to the head and mound parts,
+    // and the mound part doesn't move during the idle animation.
+    ret.insert(Serpent as usize, Builder::new("assets/mobs.png").color(CORAL)
+               .splat(Some(Geom::new(16, 14, 1*32, 32, 32, 32))).tile(2*32, 32).merge()
+               .tile(1*32, 32).tile(2*32, 32).merge()
+               .finish());
 
-    ret.insert(Scroll1 as usize, Builder::new("assets/props.png").color(WHITE).tile(224, 64).finish());
-    ret.insert(Wand1 as usize, Builder::new("assets/props.png").color(RED).tile(224, 32).finish());
-    ret.insert(Wand2 as usize, Builder::new("assets/props.png").color(CYAN).tile(224, 32).finish());
+    ret.insert(Sword as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(4*32, 1*32).finish());
+    ret.insert(Helmet as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(5*32, 1*32).finish());
+    ret.insert(Armor as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(2*32, 2*32).finish());
+
+    ret.insert(Scroll1 as usize, Builder::new("assets/props.png").color(LIGHTYELLOW).tile(7*32, 2*32).finish());
+    ret.insert(Wand1 as usize, Builder::new("assets/props.png").color(RED).tile(7*32, 1*32).finish());
+    ret.insert(Wand2 as usize, Builder::new("assets/props.png").color(CYAN).tile(7*32, 1*32).finish());
     ret
 }
 
