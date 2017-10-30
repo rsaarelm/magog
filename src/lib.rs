@@ -262,7 +262,6 @@ where
     /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
-    #[inline(always)]
     pub fn push_vertex(&mut self, vtx: V) -> u16 {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
@@ -271,7 +270,6 @@ where
         idx_offset
     }
 
-    #[inline(always)]
     pub fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
