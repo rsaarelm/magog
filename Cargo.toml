@@ -1,6 +1,6 @@
 [package]
 name = "vitral"
-version = "0.1.0"
+version = "0.2.0-pre"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 description = "Platform-agnostic immediate mode GUI"
 keywords = ["gui", "vitral"]
@@ -12,6 +12,6 @@ euclid = "0.15"
 time = "0.1"
 
 [dev-dependencies]
-glium = "0.16"
-image = "0.14"
+glium = "0.18"
+image = "0.17"
 vitral-glium = { path = "vitral-glium" }

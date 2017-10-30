@@ -10,17 +10,55 @@ extern crate vitral;
 mod canvas;
 mod canvas_zoom;
 
-use euclid::{Point2D, Size2D};
-use glium::{Surface, glutin};
-use glium::index::PrimitiveType;
 use canvas::Canvas;
 pub use canvas_zoom::CanvasZoom;
+use euclid::{Point2D, Size2D};
+use glium::Surface;
+use glium::glutin::{self, Event, WindowEvent};
+use glium::index::PrimitiveType;
+use std::error::Error;
 
 /// Default texture type used by the backend.
-pub type GliumTexture = glium::texture::SrgbTexture2d;
+type GliumTexture = glium::texture::SrgbTexture2d;
+
+/// Texturet type used to parametrize vitral `Core`.
+pub type TextureHandle = usize;
+
+/// Vitral `Core` using glium vertex type.
+pub type Core<V> = vitral::Core<TextureHandle, V>;
+
+/// Open a Glium window and start a backend for it.
+///
+/// The custom shader must support a uniform named `tex` for texture data.
+pub fn start<'a, V, S, P>(
+    width: u32,
+    height: u32,
+    title: S,
+    shader: P,
+) -> Result<Backend<V>, Box<Error>>
+where
+    V: vitral::Vertex + glium::Vertex,
+    S: Into<String>,
+    P: Into<glium::program::ProgramCreationInput<'a>>,
+{
+    let events = glutin::EventsLoop::new();
+    let window = glutin::WindowBuilder::new().with_title(title.into());
+    let context = glutin::ContextBuilder::new().with_gl(
+        glutin::GlRequest::Specific(
+            glutin::Api::OpenGl,
+            (3, 2),
+        ),
+    );
+    let display = glium::Display::new(window, context, &events)?;
+    let program = glium::Program::new(&display, shader.into())?;
+
+    Ok(Backend::new(display, events, program, width, height))
+}
 
 /// Glium-rendering backend for Vitral.
 pub struct Backend<V> {
+    display: glium::Display,
+    events: glutin::EventsLoop,
     program: glium::Program,
     textures: Vec<GliumTexture>,
 
@@ -33,25 +71,30 @@ pub struct Backend<V> {
     phantom: ::std::marker::PhantomData<V>,
 }
 
-impl<V: glium::Vertex> Backend<V> {
+impl<V: glium::Vertex + vitral::Vertex> Backend<V> {
     /// Create a new Glium backend for Vitral.
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
     /// to render data of that type as argument to the constructor.
-    pub fn new(display: &glium::Display,
-               program: glium::Program,
-               width: u32,
-               height: u32)
-               -> Backend<V> {
+    pub fn new(
+        display: glium::Display,
+        events: glutin::EventsLoop,
+        program: glium::Program,
+        width: u32,
+        height: u32,
+    ) -> Backend<V> {
         let (w, h) = display.get_framebuffer_dimensions();
+        let canvas = Canvas::new(&display, width, height);
 
         Backend {
-            program: program,
+            display,
+            events,
+            program,
             textures: Vec::new(),
 
             keypress: Vec::new(),
 
-            canvas: Canvas::new(display, width, height),
+            canvas,
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
 
@@ -59,70 +102,126 @@ impl<V: glium::Vertex> Backend<V> {
         }
     }
 
-    /// Create a new texture using Vitral's input.
-    pub fn make_texture(&mut self, display: &glium::Display, img: vitral::ImageBuffer) -> usize {
-        let raw = glium::texture::RawImage2d::from_raw_rgba(img.pixels,
-                                                            (img.size.width, img.size.height));
-        let tex = glium::texture::SrgbTexture2d::new(display, raw).unwrap();
+    /// Make a new empty internal texture.
+    pub fn make_empty_texture(&mut self, display: &glium::Display, width: u32, height: u32) -> TextureHandle {
+        let tex = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
 
-    fn process_events<C>(&mut self, display: &glium::Display, context: &mut C) -> bool
-        where C: vitral::Context
-    {
+    /// Rewrite an internal texture.
+    pub fn write_to_texture(&mut self, img: &vitral::ImageBuffer, texture: TextureHandle) {
+        assert!(
+            texture < self.textures.len(),
+            "Trying to write nonexistent texture"
+        );
+        let rect = glium::Rect {
+            left: 0,
+            bottom: 0,
+            width: img.size.width,
+            height: img.size.height,
+        };
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
+            img.pixels.clone(),
+            (img.size.width, img.size.height),
+        );
+        raw.format = glium::texture::ClientFormat::U8U8U8U8;
+
+        self.textures[texture].write(rect, raw);
+    }
+
+    /// Make a new internal texture using image data.
+    pub fn make_texture(&mut self, img: vitral::ImageBuffer) -> TextureHandle {
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
+            img.pixels,
+            (img.size.width, img.size.height),
+        );
+        raw.format = glium::texture::ClientFormat::U8U8U8U8;
+
+        let tex = glium::texture::SrgbTexture2d::new(&self.display, raw).unwrap();
+        self.textures.push(tex);
+        self.textures.len() - 1
+    }
+
+    fn process_events(&mut self, context: &mut Core<V>) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
-        for event in display.poll_events() {
-            match event {
-                glutin::Event::Closed => return false,
-                glutin::Event::MouseMoved(x, y) => {
-                    let pos = self.zoom.screen_to_canvas(self.window_size,
-                                                         self.canvas.size(),
-                                                         Point2D::new(x as f32, y as f32));
-                    context.input_mouse_move(pos.x as i32, pos.y as i32);
-                }
-                glutin::Event::MouseInput(state, button) => {
-                    context.input_mouse_button(match button {
-                                                   glutin::MouseButton::Left => {
-                                                       vitral::MouseButton::Left
-                                                   }
-                                                   glutin::MouseButton::Right => {
-                                                       vitral::MouseButton::Right
-                                                   }
-                                                   _ => vitral::MouseButton::Middle,
-                                               },
-                                               state == glutin::ElementState::Pressed)
-                }
-                glutin::Event::ReceivedCharacter(c) => context.input_char(c),
-                glutin::Event::KeyboardInput(state, scancode, Some(vk)) => {
-                    self.keypress.push(KeyEvent {
-                        state: state,
-                        key_code: vk,
-                        scancode: scancode,
-                    });
+        let mut event_list = Vec::new();
+        self.events.poll_events(|event| event_list.push(event));
 
-                    let is_down = state == glutin::ElementState::Pressed;
+        for e in event_list {
+            match e {
+                Event::WindowEvent {
+                    ref event,
+                    window_id,
+                } if window_id == self.display.gl_window().id() => {
+                    match event {
+                        &WindowEvent::Closed => return false,
+                        &WindowEvent::MouseMoved { position: (x, y), .. } => {
+                            let pos = self.zoom.screen_to_canvas(
+                                self.window_size,
+                                self.canvas.size(),
+                                Point2D::new(x as f32, y as f32),
+                            );
+                            context.input_mouse_move(pos.x as i32, pos.y as i32);
+                        }
+                        &WindowEvent::MouseInput { state, button, .. } => {
+                            context.input_mouse_button(
+                                match button {
+                                    glutin::MouseButton::Left => vitral::MouseButton::Left,
+                                    glutin::MouseButton::Right => vitral::MouseButton::Right,
+                                    _ => vitral::MouseButton::Middle,
+                                },
+                                state == glutin::ElementState::Pressed,
+                            )
+                        }
+                        &WindowEvent::ReceivedCharacter(c) => context.input_char(c),
+                        &WindowEvent::KeyboardInput {
+                            input: glutin::KeyboardInput {
+                                state,
+                                scancode,
+                                virtual_keycode: Some(vk),
+                                ..
+                            },
+                            ..
+                        } => {
+                            self.keypress.push(KeyEvent {
+                                state: state,
+                                key_code: vk,
+                                scancode: scancode as u8,
+                            });
 
-                    use glium::glutin::VirtualKeyCode::*;
-                    if let Some(vk) = match vk {
-                        Tab => Some(vitral::Keycode::Tab),
-                        LShift | RShift => Some(vitral::Keycode::Shift),
-                        LControl | RControl => Some(vitral::Keycode::Ctrl),
-                        NumpadEnter | Return => Some(vitral::Keycode::Enter),
-                        Back => Some(vitral::Keycode::Backspace),
-                        Delete => Some(vitral::Keycode::Del),
-                        Numpad8 | Up => Some(vitral::Keycode::Up),
-                        Numpad2 | Down => Some(vitral::Keycode::Down),
-                        Numpad4 | Left => Some(vitral::Keycode::Left),
-                        Numpad6 | Right => Some(vitral::Keycode::Right),
-                        _ => None,
-                    } {
-                        context.input_key_state(vk, is_down);
+                            let is_down = state == glutin::ElementState::Pressed;
+
+                            use glium::glutin::VirtualKeyCode::*;
+                            if let Some(vk) = match vk {
+                                Tab => Some(vitral::Keycode::Tab),
+                                LShift | RShift => Some(vitral::Keycode::Shift),
+                                LControl | RControl => Some(vitral::Keycode::Ctrl),
+                                NumpadEnter | Return => Some(vitral::Keycode::Enter),
+                                Back => Some(vitral::Keycode::Backspace),
+                                Delete => Some(vitral::Keycode::Del),
+                                Numpad8 | Up => Some(vitral::Keycode::Up),
+                                Numpad2 | Down => Some(vitral::Keycode::Down),
+                                Numpad4 | Left => Some(vitral::Keycode::Left),
+                                Numpad6 | Right => Some(vitral::Keycode::Right),
+                                _ => None,
+                            }
+                            {
+                                context.input_key_state(vk, is_down);
+                            }
+                        }
+                        _ => (),
                     }
                 }
-                _ => (),
+                // Events in other windows, ignore
+                Event::WindowEvent { .. } => {}
+                Event::Awakened => {
+                    // TODO: Suspend/awaken behavior
+                }
+                Event::DeviceEvent { .. } => {}
+                Event::Suspended(_) => {}
             }
         }
 
@@ -130,20 +229,17 @@ impl<V: glium::Vertex> Backend<V> {
     }
 
     /// Return the next keypress event if there is one.
-    pub fn poll_key(&mut self) -> Option<KeyEvent> {
-        self.keypress.pop()
-    }
+    pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
-    fn render<C>(&mut self, display: &glium::Display, context: &mut C)
-        where C: vitral::Context<T = usize, V = V>
-    {
-        let mut target = self.canvas.get_framebuffer_target(display);
+    fn render(&mut self, context: &mut Core<V>) {
+        let mut target = self.canvas.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
         for batch in context.end_frame() {
             // building the uniforms
-            let uniforms = uniform! {
+            let uniforms =
+                uniform! {
                 matrix: [
                     [2.0 / w as f32, 0.0, 0.0, -1.0],
                     [0.0, -2.0 / h as f32, 0.0, 1.0],
@@ -155,14 +251,15 @@ impl<V: glium::Vertex> Backend<V> {
             };
 
             let vertex_buffer = {
-                glium::VertexBuffer::new(display, &batch.vertices).unwrap()
+                glium::VertexBuffer::new(&self.display, &batch.vertices).unwrap()
             };
 
             // building the index buffer
-            let index_buffer = glium::IndexBuffer::new(display,
-                                                       PrimitiveType::TrianglesList,
-                                                       &batch.triangle_indices)
-                                   .unwrap();
+            let index_buffer = glium::IndexBuffer::new(
+                &self.display,
+                PrimitiveType::TrianglesList,
+                &batch.triangle_indices,
+            ).unwrap();
 
             let params = glium::draw_parameters::DrawParameters {
                 scissor: batch.clip.map(|clip| {
@@ -177,28 +274,29 @@ impl<V: glium::Vertex> Backend<V> {
                 ..Default::default()
             };
 
-            target.draw(&vertex_buffer,
-                        &index_buffer,
-                        &self.program,
-                        &uniforms,
-                        &params)
-                  .unwrap();
+            target
+                .draw(
+                    &vertex_buffer,
+                    &index_buffer,
+                    &self.program,
+                    &uniforms,
+                    &params,
+                )
+                .unwrap();
         }
     }
 
-    fn update_window_size(&mut self, display: &glium::Display) {
-        let (w, h) = display.get_framebuffer_dimensions();
+    fn update_window_size(&mut self) {
+        let (w, h) = self.display.get_framebuffer_dimensions();
         self.window_size = Size2D::new(w, h);
     }
 
     /// Display the backend and read input events.
-    pub fn update<C>(&mut self, display: &glium::Display, context: &mut C) -> bool
-        where C: vitral::Context<T = usize, V = V>
-    {
-        self.update_window_size(display);
-        self.render(display, context);
-        self.canvas.draw(display, self.zoom);
-        self.process_events(display, context)
+    pub fn update(&mut self, context: &mut Core<V>) -> bool {
+        self.update_window_size();
+        self.render(context);
+        self.canvas.draw(&self.display, self.zoom);
+        self.process_events(context)
     }
 }
 
@@ -212,13 +310,9 @@ pub struct KeyEvent {
     pub scancode: u8,
 }
 
-/// Create a shader program for the `DefaultVertex` type.
-pub fn default_program(display: &glium::Display)
-                       -> Result<glium::Program, glium::program::ProgramChooserCreationError> {
-    program!(
-        display,
-        150 => {
-        vertex: "
+/// Shader program for the `DefaultVertex` type
+pub const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
+    vertex_shader: "
             #version 150 core
 
             uniform mat4 matrix;
@@ -234,10 +328,8 @@ pub fn default_program(display: &glium::Display)
                 gl_Position = vec4(pos, 0.0, 1.0) * matrix;
                 v_color = color;
                 v_tex_coord = tex_coord;
-            }
-        ",
-
-        fragment: "
+            }",
+    fragment_shader: "
             #version 150 core
             uniform sampler2D tex;
             in vec4 v_color;
@@ -252,18 +344,30 @@ pub fn default_program(display: &glium::Display)
                 if (tex_color.a == 0.0) discard;
 
                 f_color = v_color * tex_color;
-            }
-        "})
-}
+            }",
+    tessellation_control_shader: None,
+    tessellation_evaluation_shader: None,
+    geometry_shader: None,
+};
 
 /// A regular vertex that implements exactly the fields used by Vitral.
 #[derive(Copy, Clone)]
 pub struct DefaultVertex {
     /// 2D position
     pub pos: [f32; 2],
-    /// RGBA color
-    pub color: [f32; 4],
     /// Texture coordinates
     pub tex_coord: [f32; 2],
+    /// RGBA color
+    pub color: [f32; 4],
 }
-implement_vertex!(DefaultVertex, pos, color, tex_coord);
+implement_vertex!(DefaultVertex, pos, tex_coord, color);
+
+impl vitral::Vertex for DefaultVertex {
+    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: [f32; 4]) -> Self {
+        DefaultVertex {
+            pos: [pos.x, pos.y],
+            tex_coord: [tex_coord.x, tex_coord.y],
+            color,
+        }
+    }
+}

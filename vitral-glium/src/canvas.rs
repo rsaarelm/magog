@@ -1,12 +1,12 @@
+use canvas_zoom::CanvasZoom;
 use euclid::Size2D;
 use glium::{self, framebuffer, texture};
 use glium::Surface;
-use canvas_zoom::CanvasZoom;
 
 /// A deferred rendering buffer for pixel-perfect display.
 pub struct Canvas {
     size: Size2D<u32>,
-    buffer: texture::Texture2d,
+    buffer: texture::SrgbTexture2d,
     depth_buffer: framebuffer::DepthRenderBuffer,
     shader: glium::Program,
 }
@@ -40,30 +40,27 @@ impl Canvas {
                     vec4 tex_color = texture(tex, v_tex_coord);
                     tex_color.a = 1.0;
                     f_color = tex_color;
-                }"})
-                         .unwrap();
+                }"}).unwrap();
 
-        let buffer = texture::Texture2d::empty(display, width, height).unwrap();
+        let buffer = texture::SrgbTexture2d::empty(display, width, height).unwrap();
 
-        let depth_buffer = framebuffer::DepthRenderBuffer::new(display,
-                                                               texture::DepthFormat::F32,
-                                                               width,
-                                                               height)
-                               .unwrap();
-
+        let depth_buffer =
+            framebuffer::DepthRenderBuffer::new(display, texture::DepthFormat::F32, width, height)
+                .unwrap();
 
         Canvas {
             size: Size2D::new(width, height),
-            buffer: buffer,
-            depth_buffer: depth_buffer,
-            shader: shader,
+            buffer,
+            depth_buffer,
+            shader,
         }
     }
 
     /// Get the render target to the pixel-perfect framebuffer.
-    pub fn get_framebuffer_target(&mut self,
-                                  display: &glium::Display)
-                                  -> glium::framebuffer::SimpleFrameBuffer {
+    pub fn get_framebuffer_target(
+        &mut self,
+        display: &glium::Display,
+    ) -> glium::framebuffer::SimpleFrameBuffer {
         framebuffer::SimpleFrameBuffer::with_depth_buffer(display, &self.buffer, &self.depth_buffer)
             .unwrap()
     }
@@ -92,30 +89,34 @@ impl Canvas {
             }
             implement_vertex!(BlitVertex, pos, tex_coord);
 
-            glium::VertexBuffer::new(display,
-                                     &[BlitVertex {
-                                           pos: [sx, sy],
-                                           tex_coord: [0.0, 0.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx + sw, sy],
-                                           tex_coord: [1.0, 0.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx + sw, sy + sh],
-                                           tex_coord: [1.0, 1.0],
-                                       },
-                                       BlitVertex {
-                                           pos: [sx, sy + sh],
-                                           tex_coord: [0.0, 1.0],
-                                       }])
-                .unwrap()
+            glium::VertexBuffer::new(
+                display,
+                &[
+                    BlitVertex {
+                        pos: [sx, sy],
+                        tex_coord: [0.0, 0.0],
+                    },
+                    BlitVertex {
+                        pos: [sx + sw, sy],
+                        tex_coord: [1.0, 0.0],
+                    },
+                    BlitVertex {
+                        pos: [sx + sw, sy + sh],
+                        tex_coord: [1.0, 1.0],
+                    },
+                    BlitVertex {
+                        pos: [sx, sy + sh],
+                        tex_coord: [0.0, 1.0],
+                    },
+                ],
+            ).unwrap()
         };
 
-        let indices = glium::IndexBuffer::new(display,
-                                              glium::index::PrimitiveType::TrianglesList,
-                                              &[0u16, 1, 2, 0, 2, 3])
-                          .unwrap();
+        let indices = glium::IndexBuffer::new(
+            display,
+            glium::index::PrimitiveType::TrianglesList,
+            &[0u16, 1, 2, 0, 2, 3],
+        ).unwrap();
 
         // Set up the rest of the draw parameters.
         let mut params: glium::DrawParameters = Default::default();
@@ -131,19 +132,24 @@ impl Canvas {
         // TODO: Option to use smooth filter & non-pixel-perfect scaling
         let mag_filter = glium::uniforms::MagnifySamplerFilter::Nearest;
 
-        let uniforms = glium::uniforms::UniformsStorage::new("tex",
-            glium::uniforms::Sampler(&self.buffer, glium::uniforms::SamplerBehavior {
-                magnify_filter: mag_filter,
-                minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
-                .. Default::default() }));
+        let uniforms = glium::uniforms::UniformsStorage::new(
+            "tex",
+            glium::uniforms::Sampler(
+                &self.buffer,
+                glium::uniforms::SamplerBehavior {
+                    magnify_filter: mag_filter,
+                    minify_filter: glium::uniforms::MinifySamplerFilter::Linear,
+                    ..Default::default()
+                },
+            ),
+        );
 
         // Draw the graphics buffer to the window.
-        target.draw(&vertices, &indices, &self.shader, &uniforms, &params)
-              .unwrap();
+        target
+            .draw(&vertices, &indices, &self.shader, &uniforms, &params)
+            .unwrap();
         target.finish().unwrap();
     }
 
-    pub fn size(&self) -> Size2D<u32> {
-        self.size
-    }
+    pub fn size(&self) -> Size2D<u32> { self.size }
 }
