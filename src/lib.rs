@@ -8,8 +8,8 @@ use std::iter;
 use std::mem;
 use std::rc::Rc;
 
-mod rect_anchor;
-pub use rect_anchor::RectAnchor;
+mod rect_util;
+pub use rect_util::RectUtil;
 
 /// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
