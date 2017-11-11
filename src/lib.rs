@@ -8,6 +8,9 @@ use std::iter;
 use std::mem;
 use std::rc::Rc;
 
+mod rect_anchor;
+pub use rect_anchor::RectAnchor;
+
 /// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
 pub struct ImageData<T> {
