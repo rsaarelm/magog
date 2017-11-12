@@ -1,9 +1,6 @@
-extern crate euclid;
-extern crate vitral;
-
 use std::cmp::max;
 use euclid::{Point2D, Rect, Size2D};
-use vitral::ImageBuffer;
+use {ImageData, ImageBuffer};
 
 /// An incremental texture atlas.
 ///
@@ -32,7 +29,7 @@ impl<T: Clone> Atlas<T> {
         self.placed.is_empty()
     }
 
-    pub fn add(&mut self, image: &ImageBuffer) -> Option<vitral::ImageData<T>> {
+    pub fn add(&mut self, image: &ImageBuffer) -> Option<ImageData<T>> {
         if let Some(area) = self.place(image.size) {
             // Draw the new image into the atlas image.
             self.atlas.copy_from(image, area.origin.x, area.origin.y);
@@ -45,7 +42,7 @@ impl<T: Clone> Atlas<T> {
                                        area.origin.y as f32 * y_scale);
             let tex_size = Size2D::new(area.size.width as f32 * x_scale,
                                        area.size.height as f32 * y_scale);
-            Some(vitral::ImageData {
+            Some(ImageData {
                 texture: self.texture.clone(),
                 size: image.size,
                 tex_coords: Rect::new(tex_pos, tex_size),

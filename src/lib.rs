@@ -9,6 +9,9 @@ use std::collections::HashMap;
 use std::iter;
 use std::mem;
 
+mod atlas;
+pub use atlas::Atlas;
+
 mod rect_util;
 pub use rect_util::RectUtil;
 
