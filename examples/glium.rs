@@ -7,7 +7,6 @@ extern crate vitral_glium;
 
 use euclid::{Rect, Point2D, point2, Size2D, rect, vec2};
 use glium::glutin;
-use image::{GenericImage, Pixel};
 use std::path::Path;
 use vitral::{Align, ButtonAction, RectUtil};
 use vitral_glium::{Backend, DefaultVertex, TextureHandle};
@@ -28,25 +27,13 @@ fn _load_image<V>(backend: &mut vitral_glium::Backend<V>, path: &str) -> vitral:
 where
     V: vitral::Vertex + glium::Vertex,
 {
-    let image = image::open(&Path::new(path)).unwrap();
-    let (w, h) = image.dimensions();
-    let pixels = image
-        .pixels()
-        .map(|(_, _, p)| {
-            let (r, g, b, a) = p.channels4();
-            r as u32 + ((g as u32) << 8) + ((b as u32) << 16) + ((a as u32) << 24)
-        })
-        .collect();
-    let image = vitral::ImageBuffer {
-        size: Size2D::new(w, h),
-        pixels,
-    };
-
-    let id = backend.make_texture(image);
+    let image: vitral::ImageBuffer = image::open(&Path::new(path)).unwrap().into();
+    let size = image.size;
+    let texture = backend.make_texture(image);
 
     vitral::ImageData {
-        texture: id,
-        size: Size2D::new(w, h),
+        texture,
+        size,
         tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
     }
 }

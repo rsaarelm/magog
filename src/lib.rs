@@ -1,3 +1,6 @@
+#[cfg(feature = "image")]
+extern crate image;
+
 extern crate euclid;
 extern crate time;
 
@@ -20,7 +23,7 @@ pub struct ImageData<T> {
 /// Simple 32-bit image container.
 ///
 /// The pixel data structure is RGBA.
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct ImageBuffer {
     /// Image size.
     pub size: Size2D<u32>,
@@ -673,4 +676,59 @@ pub enum ButtonAction {
 impl ButtonAction {
     pub fn left_clicked(&self) -> bool { self == &ButtonAction::LeftClicked }
     pub fn right_clicked(&self) -> bool { self == &ButtonAction::RightClicked }
+}
+
+#[cfg(feature = "image")]
+impl<I, P> From<I> for ImageBuffer
+where
+    I: image::GenericImage<Pixel = P>,
+    P: image::Pixel<Subpixel = u8>,
+{
+    fn from(image: I) -> ImageBuffer {
+        let (w, h) = image.dimensions();
+        let size = Size2D::new(w, h);
+
+        let pixels = image
+            .pixels()
+            .map(|(_, _, p)| {
+                let (r, g, b, a) = p.channels4();
+                r as u32 + ((g as u32) << 8) + ((b as u32) << 16) + ((a as u32) << 24)
+            })
+            .collect();
+
+        ImageBuffer { size, pixels }
+    }
+}
+
+#[cfg(feature = "image")]
+impl From<ImageBuffer> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+    fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+        use image::Pixel;
+
+        image::ImageBuffer::from_fn(image.size.width, image.size.height, |x, y| {
+            let p = image.pixels[(x + y * image.size.width) as usize];
+            image::Rgba::from_channels(p as u8, (p >> 8) as u8, (p >> 16) as u8, (p >> 24) as u8)
+        })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[cfg(feature = "image")]
+    #[test]
+    fn image_roundtrip() {
+        use euclid::size2;
+        use image;
+        use super::ImageBuffer;
+
+        let image = ImageBuffer {
+            pixels: vec![0xca11ab1e, 0x5ca1ab1e, 0xdeadbeef, 0xb01dface],
+            size: size2(2, 2)
+        };
+
+        let image2: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = image.clone().into();
+        let image2: ImageBuffer = image2.into();
+
+        assert!(image == image2);
+    }
 }
