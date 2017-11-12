@@ -1,6 +1,10 @@
 #[cfg(feature = "image")]
 extern crate image;
 
+#[cfg(feature = "glium_backend")]
+#[macro_use]
+extern crate glium;
+
 extern crate euclid;
 extern crate time;
 
@@ -11,6 +15,12 @@ use std::mem;
 
 mod atlas;
 pub use atlas::Atlas;
+
+mod canvas_zoom;
+pub use canvas_zoom::CanvasZoom;
+
+#[cfg(feature="glium_backend")]
+pub mod glium_backend;
 
 mod rect_util;
 pub use rect_util::RectUtil;

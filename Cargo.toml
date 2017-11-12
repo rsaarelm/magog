@@ -12,11 +12,9 @@ euclid = "0.15"
 time = "0.1"
 
 image = { version = "0.17", optional = true }
+glium = { version = "0.18", optional = true }
 
 [features]
 default = ["image"]
 
-[dev-dependencies]
-glium = "0.18"
-image = "0.17"
-vitral-glium = { path = "vitral-glium" }
+glium_backend = ["glium"]

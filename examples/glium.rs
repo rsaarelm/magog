@@ -3,13 +3,14 @@ extern crate image;
 
 extern crate glium;
 extern crate vitral;
-extern crate vitral_glium;
 
 use euclid::{Rect, Point2D, point2, Size2D, rect, vec2};
 use glium::glutin;
 use std::path::Path;
 use vitral::{Align, ButtonAction, RectUtil};
-use vitral_glium::{Backend, DefaultVertex, TextureHandle};
+use vitral::glium_backend as backend;
+
+use backend::{Backend, DefaultVertex, TextureHandle};
 
 type Core = vitral::Core<TextureHandle, DefaultVertex>;
 
@@ -23,7 +24,7 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
     }
 }
 
-fn _load_image<V>(backend: &mut vitral_glium::Backend<V>, path: &str) -> vitral::ImageData<usize>
+fn _load_image<V>(backend: &mut backend::Backend<V>, path: &str) -> vitral::ImageData<usize>
 where
     V: vitral::Vertex + glium::Vertex,
 {
@@ -155,11 +156,11 @@ impl App {
 
 fn main() {
     let size = Size2D::new(640.0, 360.0);
-    let mut backend: Backend<DefaultVertex> = vitral_glium::start(
+    let mut backend: Backend<DefaultVertex> = backend::start(
         size.width as u32,
         size.height as u32,
         "Vitral Demo",
-        vitral_glium::DEFAULT_SHADER,
+        backend::DEFAULT_SHADER,
     ).expect("Failed to start Glium backend!");
 
     let core = vitral::Builder::new().build(size, |img| backend.make_texture(img));
