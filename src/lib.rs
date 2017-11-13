@@ -725,6 +725,18 @@ impl From<ImageBuffer> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
     }
 }
 
+#[cfg(feature = "image")]
+impl From<ImageBuffer> for image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+    fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
+        use image::Pixel;
+
+        image::ImageBuffer::from_fn(image.size.width, image.size.height, |x, y| {
+            let p = image.pixels[(x + y * image.size.width) as usize];
+            image::Rgb::from_channels(p as u8, (p >> 8) as u8, (p >> 16) as u8, 0xff)
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     #[cfg(feature = "image")]
