@@ -294,6 +294,11 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         self.canvas.draw(&self.display, self.zoom);
         self.process_events(context)
     }
+
+    /// Return an image for the current contents of the screen.
+    pub fn screenshot(&self) -> ImageBuffer {
+        self.canvas.screenshot()
+    }
 }
 
 /// Type for key events not handled by Vitral.
@@ -524,4 +529,16 @@ impl Canvas {
     }
 
     pub fn size(&self) -> Size2D<u32> { self.size }
+
+    pub fn screenshot(&self) -> ImageBuffer {
+        let image: glium::texture::RawImage2d<u8> = self.buffer.read();
+
+        ImageBuffer::from_fn(image.width, image.height, |x, y| {
+            let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;
+            image.data[i] as u32 +
+                ((image.data[i + 1] as u32) << 8) +
+                ((image.data[i + 2] as u32) << 16) +
+                ((image.data[i + 3] as u32) << 24)
+        })
+    }
 }

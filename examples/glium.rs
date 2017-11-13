@@ -194,10 +194,19 @@ mod feature {
             }
 
             while let Some(k) = backend.poll_key() {
+                if k.state == glutin::ElementState::Released {
+                    continue;
+                }
+
                 if k.key_code == glutin::VirtualKeyCode::Q {
                     return;
                 }
 
+                if k.key_code == glutin::VirtualKeyCode::F12 {
+                    let screenshot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> = backend.screenshot().into();
+                    image::save_buffer("screenshot.png", &screenshot, screenshot.width(), screenshot.height(), image::ColorType::RGB(8)).unwrap();
+                    println!("Screenshot saved!");
+                }
             }
 
             if !backend.update(&mut app.core) {
