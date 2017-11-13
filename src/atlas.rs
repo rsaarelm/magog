@@ -1,6 +1,6 @@
-use std::cmp::max;
-use euclid::{Point2D, Rect, Size2D};
 use {ImageData, ImageBuffer};
+use euclid::{Point2D, Rect, Size2D};
+use std::cmp::max;
 
 /// An incremental texture atlas.
 ///
@@ -25,9 +25,7 @@ impl<T: Clone> Atlas<T> {
         }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.placed.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.placed.is_empty() }
 
     pub fn add(&mut self, image: &ImageBuffer) -> Option<ImageData<T>> {
         if let Some(area) = self.place(image.size) {
@@ -38,10 +36,14 @@ impl<T: Clone> Atlas<T> {
             let x_scale = 1.0 / self.atlas.size.width as f32;
             let y_scale = 1.0 / self.atlas.size.height as f32;
 
-            let tex_pos = Point2D::new(area.origin.x as f32 * x_scale,
-                                       area.origin.y as f32 * y_scale);
-            let tex_size = Size2D::new(area.size.width as f32 * x_scale,
-                                       area.size.height as f32 * y_scale);
+            let tex_pos = Point2D::new(
+                area.origin.x as f32 * x_scale,
+                area.origin.y as f32 * y_scale,
+            );
+            let tex_size = Size2D::new(
+                area.size.width as f32 * x_scale,
+                area.size.height as f32 * y_scale,
+            );
             Some(ImageData {
                 texture: self.texture.clone(),
                 size: image.size,
@@ -62,7 +64,8 @@ impl<T: Clone> Atlas<T> {
     ///
     /// The texture update function must be provided by the caller.
     pub fn update_texture<F>(&mut self, mut f: F)
-        where F: FnMut(&ImageBuffer, &T)
+    where
+        F: FnMut(&ImageBuffer, &T),
     {
         if self.is_dirty {
             f(&self.atlas, &self.texture);
@@ -75,7 +78,10 @@ impl<T: Clone> Atlas<T> {
     /// Return `None` if the item will not fit in this atlas.
     fn place(&mut self, size: Size2D<u32>) -> Option<Rect<u32>> {
         for i in 0..self.slots.len() {
-            let Rect { origin: slot_pos, size: slot_dim } = self.slots[i];
+            let Rect {
+                origin: slot_pos,
+                size: slot_dim,
+            } = self.slots[i];
             if fits(size, slot_dim) {
                 // Remove the original slot, it gets the item. Add the two new
                 // rectangles that form around the item.
@@ -103,34 +109,50 @@ impl<T: Clone> Atlas<T> {
         /// item is placed in the top left corner.
         fn remaining_rects(dim: Size2D<u32>,
                            Rect { origin: rect_pos, size: rect_dim }: Rect<u32>)
-                           -> (Rect<u32>, Rect<u32>) {
+-> (Rect<u32>, Rect<u32>){
             assert!(fits(dim, rect_dim));
 
             // Choose between making a vertical or a horizontal split
             // based on which leaves a bigger open rectangle.
-            let vert_vol = max(rect_dim.width * (rect_dim.height - dim.height),
-                               (rect_dim.width - dim.width) * dim.height);
-            let horiz_vol = max(dim.width * (rect_dim.height - dim.height),
-                                (rect_dim.width - dim.width) * rect_dim.height);
+            let vert_vol = max(
+                rect_dim.width * (rect_dim.height - dim.height),
+                (rect_dim.width - dim.width) * dim.height,
+            );
+            let horiz_vol = max(
+                dim.width * (rect_dim.height - dim.height),
+                (rect_dim.width - dim.width) * rect_dim.height,
+            );
 
             if vert_vol > horiz_vol {
                 //     |AA
                 // ----+--
                 // BBBBBBB
                 // BBBBBBB
-                (Rect::new(Point2D::new(rect_pos.x + dim.width, rect_pos.y),
-                           Size2D::new(rect_dim.width - dim.width, dim.height)),
-                 Rect::new(Point2D::new(rect_pos.x, rect_pos.y + dim.height),
-                           Size2D::new(rect_dim.width, rect_dim.height - dim.height)))
+                (
+                    Rect::new(
+                        Point2D::new(rect_pos.x + dim.width, rect_pos.y),
+                        Size2D::new(rect_dim.width - dim.width, dim.height),
+                    ),
+                    Rect::new(
+                        Point2D::new(rect_pos.x, rect_pos.y + dim.height),
+                        Size2D::new(rect_dim.width, rect_dim.height - dim.height),
+                    ),
+                )
             } else {
                 //     |BB
                 // ----+BB
                 // AAAA|BB
                 // AAAA|BB
-                (Rect::new(Point2D::new(rect_pos.x, rect_pos.y + dim.height),
-                           Size2D::new(dim.width, rect_dim.height - dim.height)),
-                 Rect::new(Point2D::new(rect_pos.x + dim.width, rect_pos.y),
-                           Size2D::new(rect_dim.width - dim.width, rect_dim.height)))
+                (
+                    Rect::new(
+                        Point2D::new(rect_pos.x, rect_pos.y + dim.height),
+                        Size2D::new(dim.width, rect_dim.height - dim.height),
+                    ),
+                    Rect::new(
+                        Point2D::new(rect_pos.x + dim.width, rect_pos.y),
+                        Size2D::new(rect_dim.width - dim.width, rect_dim.height),
+                    ),
+                )
             }
         }
     }

@@ -9,13 +9,13 @@ fn main() { feature::main(); }
 
 #[cfg(feature = "glium_backend")]
 mod feature {
-    use image;
-    use vitral::glium_backend as backend;
-    use vitral::glium_backend::{DefaultVertex, TextureHandle};
     use euclid::{Rect, Point2D, point2, Size2D, vec2};
     use glium::{self, glutin};
+    use image;
     use std::path::Path;
     use vitral::{self, Align, ButtonAction, RectUtil};
+    use vitral::glium_backend as backend;
+    use vitral::glium_backend::{DefaultVertex, TextureHandle};
 
     type Core = vitral::Core<TextureHandle, DefaultVertex>;
     type Backend = backend::Backend<DefaultVertex>;
@@ -165,7 +165,11 @@ mod feature {
         }
 
         fn render(&mut self) {
-            self.core.draw_image(&self.image, point2(20.0, 20.0), [1.0, 1.0, 1.0, 1.0]);
+            self.core.draw_image(
+                &self.image,
+                point2(20.0, 20.0),
+                [1.0, 1.0, 1.0, 1.0],
+            );
             self.outline_text(point2(22.0, 22.0), "Hello, world!");
         }
     }
@@ -203,8 +207,15 @@ mod feature {
                 }
 
                 if k.key_code == glutin::VirtualKeyCode::F12 {
-                    let screenshot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> = backend.screenshot().into();
-                    image::save_buffer("screenshot.png", &screenshot, screenshot.width(), screenshot.height(), image::ColorType::RGB(8)).unwrap();
+                    let screenshot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> =
+                        backend.screenshot().into();
+                    image::save_buffer(
+                        "screenshot.png",
+                        &screenshot,
+                        screenshot.width(),
+                        screenshot.height(),
+                        image::ColorType::RGB(8),
+                    ).unwrap();
                     println!("Screenshot saved!");
                 }
             }

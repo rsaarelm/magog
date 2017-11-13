@@ -19,7 +19,7 @@ pub use atlas::Atlas;
 mod canvas_zoom;
 pub use canvas_zoom::CanvasZoom;
 
-#[cfg(feature="glium_backend")]
+#[cfg(feature = "glium_backend")]
 pub mod glium_backend;
 
 mod rect_util;
@@ -748,7 +748,7 @@ mod test {
 
         let image = ImageBuffer {
             pixels: vec![0xca11ab1e, 0x5ca1ab1e, 0xdeadbeef, 0xb01dface],
-            size: size2(2, 2)
+            size: size2(2, 2),
         };
 
         let image2: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = image.clone().into();
