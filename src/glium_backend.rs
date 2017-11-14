@@ -311,38 +311,38 @@ pub struct KeyEvent {
 /// Shader program for the `DefaultVertex` type
 pub const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
     vertex_shader: "
-            #version 150 core
+        #version 150 core
 
-            uniform mat4 matrix;
+        uniform mat4 matrix;
 
-            in vec2 pos;
-            in vec4 color;
-            in vec2 tex_coord;
+        in vec2 pos;
+        in vec4 color;
+        in vec2 tex_coord;
 
-            out vec4 v_color;
-            out vec2 v_tex_coord;
+        out vec4 v_color;
+        out vec2 v_tex_coord;
 
-            void main() {
-                gl_Position = vec4(pos, 0.0, 1.0) * matrix;
-                v_color = color;
-                v_tex_coord = tex_coord;
-            }",
+        void main() {
+            gl_Position = vec4(pos, 0.0, 1.0) * matrix;
+            v_color = color;
+            v_tex_coord = tex_coord;
+        }",
     fragment_shader: "
-            #version 150 core
-            uniform sampler2D tex;
-            in vec4 v_color;
-            in vec2 v_tex_coord;
-            out vec4 f_color;
+        #version 150 core
+        uniform sampler2D tex;
+        in vec4 v_color;
+        in vec2 v_tex_coord;
+        out vec4 f_color;
 
-            void main() {
-                vec4 tex_color = texture(tex, v_tex_coord);
+        void main() {
+            vec4 tex_color = texture(tex, v_tex_coord);
 
-                // Discard fully transparent pixels to keep them from
-                // writing into the depth buffer.
-                if (tex_color.a == 0.0) discard;
+            // Discard fully transparent pixels to keep them from
+            // writing into the depth buffer.
+            if (tex_color.a == 0.0) discard;
 
-                f_color = v_color * tex_color;
-            }",
+            f_color = v_color * tex_color;
+        }",
     tessellation_control_shader: None,
     tessellation_evaluation_shader: None,
     geometry_shader: None,
