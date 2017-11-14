@@ -10,7 +10,7 @@ fn main() { feature::main(); }
 #[cfg(feature = "glium_backend")]
 mod feature {
     use euclid::{Rect, Point2D, point2, Size2D, vec2};
-    use glium::{self, glutin};
+    use glium::glutin;
     use image;
     use std::path::Path;
     use vitral::{self, Align, ButtonAction, RectUtil};
@@ -19,6 +19,7 @@ mod feature {
 
     type Core = vitral::Core<TextureHandle, DefaultVertex>;
     type Backend = backend::Backend<DefaultVertex>;
+    type ImageData = vitral::ImageData<TextureHandle>;
 
     pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
         if x < mn {
@@ -30,10 +31,7 @@ mod feature {
         }
     }
 
-    fn load_image<V>(backend: &mut backend::Backend<V>, path: &str) -> vitral::ImageData<usize>
-    where
-        V: vitral::Vertex + glium::Vertex,
-    {
+    fn load_image(backend: &mut Backend, path: &str) -> ImageData {
         let image: vitral::ImageBuffer = image::open(&Path::new(path)).unwrap().into();
         let size = image.size;
         let texture = backend.make_texture(image);
