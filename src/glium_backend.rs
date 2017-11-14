@@ -92,7 +92,13 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         Ok(Backend::new(display, events, program, width, height))
     }
 
+    /// Return the current number of textures.
+    pub fn texture_count(&self) -> usize { self.textures.len() }
+
     /// Make a new empty internal texture.
+    ///
+    /// The new `TextureHandle` must equal the value `self.texture_count()` would have returned
+    /// just before calling this.
     pub fn make_empty_texture(
         &mut self,
         display: &glium::Display,
