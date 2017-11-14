@@ -14,11 +14,10 @@ mod feature {
     use image;
     use std::path::Path;
     use vitral::{self, Align, ButtonAction, RectUtil};
-    use vitral::glium_backend as backend;
     use vitral::glium_backend::{DefaultVertex, TextureHandle};
 
     type Core = vitral::Core<TextureHandle, DefaultVertex>;
-    type Backend = backend::Backend<DefaultVertex>;
+    type Backend = vitral::glium_backend::Backend<DefaultVertex>;
     type ImageData = vitral::ImageData<TextureHandle>;
 
     pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
@@ -174,11 +173,11 @@ mod feature {
 
     pub fn main() {
         let size = Size2D::new(640.0, 360.0);
-        let mut backend: Backend = backend::start(
+        let mut backend: Backend = Backend::start(
             size.width as u32,
             size.height as u32,
             "Vitral Demo",
-            backend::DEFAULT_SHADER,
+            vitral::glium_backend::DEFAULT_SHADER,
         ).expect("Failed to start Glium backend!");
 
         let core = vitral::Builder::new().build(size, |img| backend.make_texture(img));

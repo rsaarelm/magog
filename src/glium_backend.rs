@@ -18,34 +18,6 @@ pub type TextureHandle = usize;
 /// Vitral `Core` using glium vertex type.
 pub type Core<V> = ::Core<TextureHandle, V>;
 
-/// Open a Glium window and start a backend for it.
-///
-/// The custom shader must support a uniform named `tex` for texture data.
-pub fn start<'a, V, S, P>(
-    width: u32,
-    height: u32,
-    title: S,
-    shader: P,
-) -> Result<Backend<V>, Box<Error>>
-where
-    V: Vertex + glium::Vertex,
-    S: Into<String>,
-    P: Into<glium::program::ProgramCreationInput<'a>>,
-{
-    let events = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new().with_title(title.into());
-    let context = glutin::ContextBuilder::new().with_gl(
-        glutin::GlRequest::Specific(
-            glutin::Api::OpenGl,
-            (3, 2),
-        ),
-    );
-    let display = glium::Display::new(window, context, &events)?;
-    let program = glium::Program::new(&display, shader.into())?;
-
-    Ok(Backend::new(display, events, program, width, height))
-}
-
 /// Glium-rendering backend for Vitral.
 pub struct Backend<V> {
     display: glium::Display,
@@ -91,6 +63,33 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
 
             phantom: ::std::marker::PhantomData,
         }
+    }
+
+    /// Open a Glium window and start a backend for it.
+    ///
+    /// The custom shader must support a uniform named `tex` for texture data.
+    pub fn start<'a, S, P>(
+        width: u32,
+        height: u32,
+        title: S,
+        shader: P,
+    ) -> Result<Backend<V>, Box<Error>>
+    where
+        S: Into<String>,
+        P: Into<glium::program::ProgramCreationInput<'a>>,
+    {
+        let events = glutin::EventsLoop::new();
+        let window = glutin::WindowBuilder::new().with_title(title.into());
+        let context = glutin::ContextBuilder::new().with_gl(
+            glutin::GlRequest::Specific(
+                glutin::Api::OpenGl,
+                (3, 2),
+            ),
+        );
+        let display = glium::Display::new(window, context, &events)?;
+        let program = glium::Program::new(&display, shader.into())?;
+
+        Ok(Backend::new(display, events, program, width, height))
     }
 
     /// Make a new empty internal texture.
