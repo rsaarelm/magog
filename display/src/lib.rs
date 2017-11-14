@@ -5,28 +5,34 @@ extern crate glium;
 extern crate image;
 extern crate vec_map;
 extern crate vitral;
-extern crate vitral_atlas;
 extern crate world;
 extern crate calx_ecs;
 extern crate calx;
 
 mod atlas_cache;
+
 mod backend;
+pub use backend::{Backend, Core, KeyEvent};
+
 mod brush;
 mod cache;
-mod canvas;
-mod canvas_zoom;
+pub use cache::font;
 mod console;
+
+mod draw_util;
+pub use draw_util::DrawUtil;
+
 pub mod init;
 mod render;
 mod sprite;
 mod tilesheet;
 mod view;
 
-pub use backend::Backend;
-pub use canvas_zoom::CanvasZoom;
 pub use console::Console;
 pub use view::WorldView;
+
+pub type ImageData = vitral::ImageData<vitral::glium_backend::TextureHandle>;
+pub type FontData = vitral::FontData<vitral::glium_backend::TextureHandle>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Icon {

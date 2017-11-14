@@ -1,5 +1,5 @@
 use Icon;
-use backend::MagogContext;
+use backend::Core;
 use cache;
 use calx::{clamp, cycle_anim, FovValue, HexFov};
 use calx_ecs::Entity;
@@ -55,7 +55,7 @@ impl WorldView {
         }
     }
 
-    pub fn draw<C: MagogContext>(&mut self, world: &World, context: &mut C) {
+    pub fn draw(&mut self, world: &World, core: &mut Core) {
         let current_sector = self.camera_loc.sector();
         self.camera_loc = current_sector.center();
 
@@ -65,7 +65,7 @@ impl WorldView {
                           vec2(PIXEL_UNIT / 2.0, 10.0)).to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
-        let cursor_pos = view_to_chart(context.mouse_pos() - center);
+        let cursor_pos = view_to_chart(core.mouse_pos() - center);
 
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
@@ -228,7 +228,7 @@ impl WorldView {
         sprites.sort();
 
         for i in &sprites {
-            i.draw(context)
+            i.draw(core)
         }
 
         fn get_fov(world: &World, loc: Location) -> Option<FovStatus> {

@@ -17,7 +17,7 @@ glium = "0.18"
 scancode = "0.1"
 serde = "1.0"
 calx-ecs = "0.6"
-vitral = { git = "https://github.com/rsaarelm/vitral" }
+vitral = { git = "https://github.com/rsaarelm/vitral", features = ["glium_backend"] }
 calx = { git = "https://github.com/rsaarelm/calx" }
 world = { path = "world" }
 display = { path = "display" }

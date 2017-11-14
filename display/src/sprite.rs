@@ -1,6 +1,7 @@
-use backend::MagogContext;
+use backend::Core;
 use brush::Brush;
 use calx::{lerp, color, Rgba};
+use draw_util::DrawUtil;
 use euclid::{Point2D, point2};
 use render::Layer;
 use std::cmp::Ordering;
@@ -105,11 +106,11 @@ impl PartialOrd for Sprite {
 }
 
 impl Sprite {
-    pub fn draw<C: MagogContext>(&self, ui: &mut C) {
+    pub fn draw(&self, core: &mut Core) {
         let pos = point2(self.offset[0] as f32, self.offset[1] as f32);
         for splat in &self.brush[self.frame_idx] {
             let (fore, back) = self.color.apply(splat.color, splat.back_color);
-            ui.draw_image_2color(&splat.image, pos - splat.offset, fore.into(), back.into());
+            core.draw_image_2color(&splat.image, pos - splat.offset, fore.into(), back.into());
         }
     }
 }

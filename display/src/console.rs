@@ -1,11 +1,13 @@
+use {Core, FontData};
 use calx::split_line;
 use euclid::{Point2D, Rect};
 use std::io;
 use std::io::prelude::*;
 use std::mem;
+use std::rc::Rc;
 use std::str;
 use time;
-use vitral::{Align, Context};
+use vitral::Align;
 
 struct Message {
     expire_time_s: f64,
@@ -24,8 +26,8 @@ impl Message {
 }
 
 /// Output text container.
-#[derive(Default)]
 pub struct Console {
+    font: Rc<FontData>,
     lines: Vec<Message>,
     input_buffer: String,
     output_buffer: String,
@@ -33,8 +35,18 @@ pub struct Console {
 }
 
 impl Console {
+    pub fn new(font: Rc<FontData>) -> Console {
+        Console {
+            font,
+            lines: Vec::new(),
+            input_buffer: String::new(),
+            output_buffer: String::new(),
+            done_reading_s: 0.0,
+        }
+    }
+
     /// Draw the console as a regular message display.
-    pub fn draw_small<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
+    pub fn draw_small(&mut self, core: &mut Core, screen_area: &Rect<f32>) {
         // TODO: Store color in draw context.
         let color = [1.0, 1.0, 1.0, 0.4];
 
@@ -47,7 +59,7 @@ impl Console {
             lines.extend(
                 split_line(
                     &msg.text,
-                    |c| context.current_font().char_width(c).unwrap_or(0.0),
+                    |c| self.font.char_width(c).unwrap_or(0.0),
                     screen_area.size.width,
                 ).map(|x| x.to_string()),
             );
@@ -56,27 +68,30 @@ impl Console {
         // Draw the lines
         let mut pos = screen_area.origin;
         for line in lines.iter().rev() {
-            pos = context.draw_text(pos, Align::Left, color, line);
+            pos = core.draw_text(&*self.font, pos, Align::Left, color, line);
         }
     }
 
     /// Draw the console as a big drop-down with a command prompt.
-    pub fn draw_large<C: Context>(&mut self, context: &mut C, screen_area: &Rect<f32>) {
+    pub fn draw_large(&mut self, core: &mut Core, screen_area: &Rect<f32>) {
         // TODO: Store color in draw context.
         let color = [0.6, 0.6, 0.6, 1.0];
         let background = [0.0, 0.0, 0.6, 0.8];
 
-        context.fill_rect(*screen_area, background);
+        core.fill_rect(screen_area, background);
 
-        let h = context.current_font().height;
+        let h = self.font.height;
         let mut lines_left = (screen_area.size.height / h).ceil() as i32;
         let mut y = screen_area.max_y() - h;
 
         // TODO: Handle enter with text input.
         // TODO: Command history.
-        context
+        // TODO
+        /*
+        core
             .bound(0, y as u32, screen_area.size.width as u32, h as u32)
             .text_input(color, &mut self.input_buffer);
+        */
         y -= h;
         lines_left -= 1;
 
@@ -84,12 +99,18 @@ impl Console {
             // XXX: Duplicated from draw_small.
             let fragments = split_line(
                 &msg.text,
-                |c| context.current_font().char_width(c).unwrap_or(0.0),
+                |c| self.font.char_width(c).unwrap_or(0.0),
                 screen_area.size.width,
             ).map(|x| x.to_string())
                 .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                context.draw_text(Point2D::new(0.0f32, y), Align::Left, color, line);
+                core.draw_text(
+                    &*self.font,
+                    Point2D::new(0.0f32, y),
+                    Align::Left,
+                    color,
+                    line,
+                );
                 y -= h;
                 lines_left -= 1;
             }

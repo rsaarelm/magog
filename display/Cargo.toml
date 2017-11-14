@@ -13,7 +13,6 @@ image = "0.17"
 glium = "0.18"
 vec_map = "0.8"
 calx-ecs = "0.6"
-vitral = { git = "https://github.com/rsaarelm/vitral" }
-vitral-atlas = { git = "https://github.com/rsaarelm/vitral" }
+vitral = { git = "https://github.com/rsaarelm/vitral", features = ["glium_backend"] }
 calx = { git = "https://github.com/rsaarelm/calx" }
 world = { path = "../world" }

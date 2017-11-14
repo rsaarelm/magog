@@ -1,11 +1,11 @@
-use Icon;
+use {Icon, FontData, ImageData};
 use atlas_cache::{AtlasCache, SubImageSpec};
 use brush::Brush;
 use init;
 use std::cell::RefCell;
 use std::rc::Rc;
 use vec_map::VecMap;
-use vitral::{self, ImageBuffer};
+use vitral::ImageBuffer;
 use world;
 
 thread_local! {
@@ -29,13 +29,11 @@ thread_local! {
     static TERRAIN_BRUSHES: VecMap<Rc<Brush>> = init::terrain_brushes();
     static ENTITY_BRUSHES: VecMap<Rc<Brush>> = init::entity_brushes();
     static MISC_BRUSHES: VecMap<Rc<Brush>> = init::misc_brushes();
-    static FONT: Rc<vitral::FontData<usize>> = Rc::new(
+    static FONT: Rc<FontData> = Rc::new(
         init::font("font".to_string(), include_bytes!("../assets/font.png"), (32u8..128).map(|c| c as char)));
 }
 
-pub fn get(key: &SubImageSpec) -> vitral::ImageData<usize> {
-    ATLAS.with(|a| a.borrow_mut().get(key).clone())
-}
+pub fn get(key: &SubImageSpec) -> ImageData { ATLAS.with(|a| a.borrow_mut().get(key).clone()) }
 
 pub fn terrain(t: world::Terrain) -> Rc<Brush> {
     TERRAIN_BRUSHES.with(|b| {
@@ -62,7 +60,7 @@ pub fn misc(e: Icon) -> Rc<Brush> {
 }
 
 /// Return the single solid pixel texture for Vitral's graphics.
-pub fn solid() -> vitral::ImageData<usize> {
+pub fn solid() -> ImageData {
     ATLAS.with(|a| {
         a.borrow_mut()
             .get(&SubImageSpec::new("solid", 0, 0, 1, 1))
@@ -70,4 +68,4 @@ pub fn solid() -> vitral::ImageData<usize> {
     })
 }
 
-pub fn font() -> Rc<vitral::FontData<usize>> { FONT.with(|f| Rc::clone(f)) }
+pub fn font() -> Rc<FontData> { FONT.with(|f| Rc::clone(f)) }

@@ -4,8 +4,7 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::slice;
 use tilesheet;
-use vitral::{self, ImageBuffer};
-use vitral_atlas::Atlas;
+use vitral::{self, ImageBuffer, Atlas};
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]

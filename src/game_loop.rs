@@ -1,10 +1,12 @@
 use calx::Dir6;
-use display;
-use euclid::{Point2D, Rect};
+use display::{self, Backend, Core, FontData};
+use euclid::Point2D;
+use glium::glutin::ElementState;
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
-use vitral::{Context, FracPoint2D, FracSize2D, FracRect, Align};
+use std::rc::Rc;
+use vitral::Align;
 use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -29,6 +31,8 @@ enum AimAction {
 }
 
 pub struct GameLoop {
+    core: Core,
+    font: Rc<FontData>,
     pub world: World,
     pub console: display::Console,
     camera_loc: Location,
@@ -36,10 +40,13 @@ pub struct GameLoop {
 }
 
 impl GameLoop {
-    pub fn new(world: World) -> GameLoop {
+    pub fn new(backend: &mut Backend, world: World) -> GameLoop {
+        let font = display::font();
         GameLoop {
+            core: backend.new_core(),
+            font: font.clone(),
             world,
-            console: display::Console::default(),
+            console: display::Console::new(font),
             camera_loc: Location::new(0, 0, 0),
             state: State::Main,
         }
@@ -65,7 +72,7 @@ impl GameLoop {
         }
     }
 
-    fn game_input(&mut self, context: &mut display::Backend, scancode: Scancode) -> CommandResult {
+    fn game_input(&mut self, backend: &mut Backend, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
@@ -105,7 +112,7 @@ impl GameLoop {
                 Ok(Vec::new())
             }
             F12 => {
-                context.save_screenshot("magog");
+                backend.save_screenshot("magog");
                 Ok(Vec::new())
             }
             _ => Ok(Vec::new()),
@@ -231,14 +238,12 @@ impl GameLoop {
         fn todo(&mut self);
     }
 
-    fn draw_inventory(&mut self, c: &mut display::Backend) -> Result<(), ()> {
+    fn draw_inventory(&mut self) -> Result<(), ()> {
         let player = self.world.player().ok_or(())?;
 
         // Start with hardcoded invetory data to test the UI logic.
-        c.fill_rect(
-            FracRect::new(FracPoint2D::new(0.0, 0.0), FracSize2D::new(1.0, 1.0)),
-            [0.0, 0.0, 0.0, 0.99],
-        );
+        let bounds = self.core.bounds();
+        self.core.fill_rect(&bounds, [0.0, 0.0, 0.0, 0.99]);
 
         let mut letter_pos = Point2D::new(0.0, 0.0);
         let mut slot_name_pos = Point2D::new(20.0, 0.0);
@@ -247,72 +252,99 @@ impl GameLoop {
 
         for slot in SLOT_DATA.iter() {
             // TODO: Bounding box for these is a button...
-            letter_pos = c.draw_text(
+            letter_pos = self.core.draw_text(
+                &*self.font,
                 letter_pos,
                 Align::Left,
                 text_color,
                 &format!("{})", slot.key),
             );
-            slot_name_pos = c.draw_text(slot_name_pos, Align::Left, text_color, slot.name);
+            slot_name_pos = self.core.draw_text(
+                &*self.font,
+                slot_name_pos,
+                Align::Left,
+                text_color,
+                slot.name,
+            );
             let item_name = if let Some(item) = self.world.entity_equipped(player, slot.slot) {
                 self.world.entity_name(item)
             } else {
                 "".to_string()
             };
 
-            item_name_pos = c.draw_text(item_name_pos, Align::Left, text_color, &item_name);
+            item_name_pos = self.core.draw_text(
+                &*self.font,
+                item_name_pos,
+                Align::Left,
+                text_color,
+                &item_name,
+            );
         }
 
         Ok(())
     }
 
-    pub fn draw(&mut self, context: &mut display::Backend, screen_area: &Rect<f32>) {
+    /// Entry point for game view.
+    pub fn draw(&mut self, backend: &mut Backend) -> bool {
+        self.core.begin_frame();
+        let screen_area = self.core.screen_bounds();
+
         // Ugh
         self.world.player().map(|x| {
             self.world.location(x).map(|l| self.camera_loc = l)
         });
 
-        let mut view = display::WorldView::new(self.camera_loc, *screen_area);
+        let mut view = display::WorldView::new(self.camera_loc, screen_area);
         view.show_cursor = true;
 
-        view.draw(&self.world, context);
+        view.draw(&self.world, &mut self.core);
 
         match self.state {
             State::Inventory(_) => {
-                let _ = self.draw_inventory(context);
+                let _ = self.draw_inventory();
             }
             State::Console => {
-                let mut console_area = *screen_area;
+                let mut console_area = screen_area;
                 console_area.size.height = 184.0;
-                self.console.draw_large(context, &console_area);
+                self.console.draw_large(&mut self.core, &console_area);
             }
             _ => {
-                let mut console_area = *screen_area;
+                let mut console_area = screen_area;
                 console_area.size.height = 32.0;
-                self.console.draw_small(context, &console_area);
+                self.console.draw_small(&mut self.core, &console_area);
             }
         }
 
-        if let Some(scancode) = context.poll_key().and_then(|k| Scancode::new(k.scancode)) {
-            let ret = match self.state {
-                State::Inventory(_) => self.inventory_input(scancode),
-                State::Console => self.console_input(scancode),
-                State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
-                _ => self.game_input(context, scancode),
-            };
+        if let Some(event) = backend.poll_key() {
+            if event.state == ElementState::Pressed {
+                let scancode_adjust = if cfg!(target_os = "linux") { 8 } else { 0 };
+                if let Some(scancode) = Scancode::new(
+                    (event.scancode as i32 + scancode_adjust) as u8,
+                )
+                {
+                    let ret = match self.state {
+                        State::Inventory(_) => self.inventory_input(scancode),
+                        State::Console => self.console_input(scancode),
+                        State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
+                        _ => self.game_input(backend, scancode),
+                    };
 
-            if let Ok(events) = ret {
-                // Input event caused a successful world step and we got an event sequence out.
-                // Convert events into UI display effects.
-                for e in events {
-                    match e {
-                        Event::Msg(text) => {
-                            let _ = writeln!(&mut self.console, "{}", text);
+                    if let Ok(events) = ret {
+                        // Input event caused a successful world step and we got an event sequence out.
+                        // Convert events into UI display effects.
+                        for e in events {
+                            match e {
+                                Event::Msg(text) => {
+                                    let _ = writeln!(&mut self.console, "{}", text);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+
+        backend.update(&mut self.core)
     }
 }
 
