@@ -13,7 +13,7 @@ mod feature {
     use glium::glutin;
     use image;
     use std::path::Path;
-    use vitral::{self, Align, ButtonAction, RectUtil};
+    use vitral::{self, Align, ButtonAction, Color, RectUtil};
     use vitral::glium_backend::{DefaultVertex, TextureHandle};
 
     type Core = vitral::Core<TextureHandle, DefaultVertex>;
@@ -46,8 +46,8 @@ mod feature {
         core: Core,
         font: vitral::FontData<TextureHandle>,
         image: vitral::ImageData<TextureHandle>,
-        fore_color: [f32; 4],
-        back_color: [f32; 4],
+        fore_color: Color,
+        back_color: Color,
         bounds: Rect<f32>,
     }
 
@@ -66,7 +66,7 @@ mod feature {
             }
         }
 
-        fn bright_color(&self) -> [f32; 4] {
+        fn bright_color(&self) -> Color {
             [
                 clamp(0.0, 1.0, self.fore_color[0] * 1.5),
                 clamp(0.0, 1.0, self.fore_color[1] * 1.5),

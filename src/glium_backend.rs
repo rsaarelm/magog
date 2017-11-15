@@ -2,7 +2,7 @@
 
 #![deny(missing_docs)]
 
-use {CanvasZoom, ImageBuffer, Keycode, MouseButton, Vertex};
+use {CanvasZoom, Color, ImageBuffer, Keycode, MouseButton, Vertex};
 use euclid::{Point2D, Size2D};
 use glium::{self, Surface};
 use glium::glutin::{self, Event, WindowEvent};
@@ -362,12 +362,12 @@ pub struct DefaultVertex {
     /// Texture coordinates
     pub tex_coord: [f32; 2],
     /// RGBA color
-    pub color: [f32; 4],
+    pub color: Color,
 }
 implement_vertex!(DefaultVertex, pos, tex_coord, color);
 
 impl Vertex for DefaultVertex {
-    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: [f32; 4]) -> Self {
+    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self {
         DefaultVertex {
             pos: [pos.x, pos.y],
             tex_coord: [tex_coord.x, tex_coord.y],

@@ -25,6 +25,8 @@ pub mod glium_backend;
 mod rect_util;
 pub use rect_util::RectUtil;
 
+pub type Color = [f32; 4];
+
 /// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
 pub struct ImageData<T> {
@@ -202,7 +204,7 @@ where
 
 pub trait Vertex {
     /// Custom constructor with exactly the fields Vitral cares about.
-    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: [f32; 4]) -> Self;
+    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self;
 }
 
 /// An immediate mode graphical user interface context.
@@ -269,7 +271,7 @@ where
         &mut self,
         pos: Point2D<f32>,
         tex_coord: Point2D<f32>,
-        color: [f32; 4],
+        color: Color,
     ) -> u16 {
         self.push_raw_vertex(V::new(pos, tex_coord, color))
     }
@@ -363,7 +365,7 @@ where
     pub fn draw_line(
         &mut self,
         thickness: f32,
-        color: [f32; 4],
+        color: Color,
         p1: Point2D<f32>,
         p2: Point2D<f32>,
     ) {
@@ -393,7 +395,7 @@ where
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn draw_tex_rect(&mut self, area: &Rect<f32>, tex_coords: &Rect<f32>, color: [f32; 4]) {
+    pub fn draw_tex_rect(&mut self, area: &Rect<f32>, tex_coords: &Rect<f32>, color: Color) {
         let idx = self.push_vertex(area.origin, tex_coords.origin, color);
         self.push_vertex(area.top_right(), tex_coords.top_right(), color);
         self.push_vertex(area.bottom_right(), tex_coords.bottom_right(), color);
@@ -403,13 +405,13 @@ where
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn fill_rect(&mut self, area: &Rect<f32>, color: [f32; 4]) {
+    pub fn fill_rect(&mut self, area: &Rect<f32>, color: Color) {
         self.start_solid_texture();
         let p = self.solid_texture_texcoord();
         self.draw_tex_rect(area, &rect(p.x, p.y, 0.0, 0.0), color);
     }
 
-    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: [f32; 4]) {
+    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: Color) {
         self.start_texture(image.texture.clone());
         let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         self.draw_tex_rect(&Rect::new(pos, size), &image.tex_coords, color);
@@ -426,7 +428,7 @@ where
         font: &FontData<T>,
         pos: Point2D<f32>,
         align: Align,
-        color: [f32; 4],
+        color: Color,
         text: &str,
     ) -> Point2D<f32> {
         let mut cursor_pos = pos;
