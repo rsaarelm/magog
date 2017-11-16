@@ -12,7 +12,7 @@ use std::error::Error;
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
 
-/// Texturet type used to parametrize vitral `Core`.
+/// Texture type used to parametrize vitral `Core`.
 pub type TextureHandle = usize;
 
 /// Vitral `Core` using glium vertex type.
@@ -101,11 +101,10 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     /// just before calling this.
     pub fn make_empty_texture(
         &mut self,
-        display: &glium::Display,
         width: u32,
         height: u32,
     ) -> TextureHandle {
-        let tex = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
+        let tex = glium::texture::SrgbTexture2d::empty(&self.display, width, height).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
@@ -144,7 +143,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         self.textures.len() - 1
     }
 
-    fn process_events(&mut self, context: &mut Core<V>) -> bool {
+    fn process_events(&mut self, core: &mut Core<V>) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
@@ -165,10 +164,10 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                                 self.canvas.size(),
                                 Point2D::new(x as f32, y as f32),
                             );
-                            context.input_mouse_move(pos.x as i32, pos.y as i32);
+                            core.input_mouse_move(pos.x as i32, pos.y as i32);
                         }
                         &WindowEvent::MouseInput { state, button, .. } => {
-                            context.input_mouse_button(
+                            core.input_mouse_button(
                                 match button {
                                     glutin::MouseButton::Left => MouseButton::Left,
                                     glutin::MouseButton::Right => MouseButton::Right,
@@ -177,7 +176,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                                 state == glutin::ElementState::Pressed,
                             )
                         }
-                        &WindowEvent::ReceivedCharacter(c) => context.input_char(c),
+                        &WindowEvent::ReceivedCharacter(c) => core.input_char(c),
                         &WindowEvent::KeyboardInput {
                             input: glutin::KeyboardInput {
                                 state,
@@ -210,7 +209,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                                 _ => None,
                             }
                             {
-                                context.input_key_state(vk, is_down);
+                                core.input_key_state(vk, is_down);
                             }
                         }
                         _ => (),
@@ -232,12 +231,12 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     /// Return the next keypress event if there is one.
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
-    fn render(&mut self, context: &mut Core<V>) {
+    fn render(&mut self, core: &mut Core<V>) {
         let mut target = self.canvas.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
-        for batch in context.end_frame() {
+        for batch in core.end_frame() {
             // building the uniforms
             let uniforms =
                 uniform! {
@@ -293,11 +292,11 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self, context: &mut Core<V>) -> bool {
+    pub fn update(&mut self, core: &mut Core<V>) -> bool {
         self.update_window_size();
-        self.render(context);
+        self.render(core);
         self.canvas.draw(&self.display, self.zoom);
-        self.process_events(context)
+        self.process_events(core)
     }
 
     /// Return an image for the current contents of the screen.
