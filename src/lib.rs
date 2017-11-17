@@ -483,7 +483,10 @@ where
         }
     }
 
-    pub fn begin_frame(&mut self) { self.tick += 1; }
+    pub fn begin_frame(&mut self) {
+        self.check_batch(None);
+        self.tick += 1;
+    }
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch<T, V>> {
         // Clean up transient mouse click info.
