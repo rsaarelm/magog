@@ -92,6 +92,14 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         Ok(Backend::new(display, events, program, width, height))
     }
 
+    /// Return the pixel resolution of the backend.
+    ///
+    /// Note that this is the logical size which will stay the same even when the
+    /// desktop window is resized.
+    pub fn canvas_size(&self) -> Size2D<u32> {
+        self.canvas.size
+    }
+
     /// Return the current number of textures.
     pub fn texture_count(&self) -> usize { self.textures.len() }
 
