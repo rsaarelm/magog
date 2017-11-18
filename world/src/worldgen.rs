@@ -201,12 +201,6 @@ impl<'a> SectorDigger<'a> {
 
     // TODO return impl
     fn domain(&self) -> Vec<mapgen::Point2D> {
-        fn is_next_to_diagonal_sector(loc: Location) -> bool {
-            hex_neighbors(loc)
-                .map(|x| x.sector().taxicab_distance(loc.sector()))
-                .any(|d| d > 1)
-        }
-
         let mut ret = Vec::new();
 
         let sector_origin = self.sector.origin();
@@ -223,7 +217,7 @@ impl<'a> SectorDigger<'a> {
             // step diagonally across two sector boundaries. However, we want to pretend that
             // sectors are only connected in the four cardinal directions, so we omit these cells
             // from the domain to prevent surprise holes between two diagonally adjacent shafts.
-            if is_next_to_diagonal_sector(loc) {
+            if Self::is_next_to_diagonal_sector(loc) {
                 continue;
             }
 
@@ -240,6 +234,12 @@ impl<'a> SectorDigger<'a> {
             debug_assert_ne!(self.up_portal, Some(loc), "mapgen overwriting exit");
             debug_assert_ne!(self.down_portal, Some(loc), "mapgen overwriting exit");
         }
+
+        debug_assert!(
+            !Self::is_next_to_diagonal_sector(loc) &&
+            self.sector.iter().find(|x| x == &loc).is_some(),
+            "Setting a location outsides sector area");
+
         self.worldgen.terrain.insert(loc, terrain);
     }
 
@@ -262,6 +262,13 @@ impl<'a> SectorDigger<'a> {
             self.spawn_region.remove(loc);
         }
     }
+
+    fn is_next_to_diagonal_sector(loc: Location) -> bool {
+        hex_neighbors(loc)
+            .map(|x| x.sector().taxicab_distance(loc.sector()))
+            .any(|d| d > 1)
+    }
+
 }
 
 impl<'a> mapgen::Dungeon for SectorDigger<'a> {
