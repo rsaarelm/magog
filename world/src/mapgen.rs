@@ -53,6 +53,8 @@ impl DigCavesGen {
         const WALL_THRESHOLD: u32 = 3;
         const MINIMAL_REGION_SIZE: usize = 8;
 
+        let available: HashSet<Point2D> = self.domain.iter().cloned().collect();
+
         // Initial cellular automata run, produces okay looking but usually not fully connected
         // cave map.
         let mut dug: HashSet<Point2D> = self.domain
@@ -107,7 +109,7 @@ impl DigCavesGen {
             let p2: Point2D = rand::sample(rng, sorted_region.into_iter(), 1)[0];
 
             dug.extend(next_region.into_iter());
-            dug.extend(jaggly_line(rng, p1, p2).into_iter());
+            dug.extend(jaggly_line(rng, &available, p1, p2).into_iter());
         }
 
         debug_assert!(!dug.is_empty());
@@ -199,14 +201,14 @@ fn flood_fill(mut points: HashSet<Point2D>, seed: Point2D) -> HashSet<Point2D> {
 fn is_connected(points: HashSet<Point2D>) -> bool { separate_regions(points).len() <= 1 }
 
 // TODO return impl
-fn jaggly_line<R: Rng>(rng: &mut R, p1: Point2D, p2: Point2D) -> Vec<Point2D> {
+fn jaggly_line<R: Rng>(rng: &mut R, available: &HashSet<Point2D>, p1: Point2D, p2: Point2D) -> Vec<Point2D> {
     let mut ret = Vec::new();
     let mut p = p1;
     ret.push(p);
 
     while p != p2 {
         let dist = (p2 - p).hex_dist();
-        let options = hex_neighbors(p).filter(|&q| (p2 - q).hex_dist() < dist);
+        let options = hex_neighbors(p).filter(|&q| (p2 - q).hex_dist() < dist && available.contains(&q));
         p = rand::sample(rng, options, 1)[0];
         ret.push(p);
     }
