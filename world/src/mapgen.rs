@@ -2,7 +2,6 @@ use calx::{RngExt, hex_disc, HexGeom, hex_neighbors};
 use euclid::{self, vec2};
 use rand::{self, Rng};
 use std::collections::HashSet;
-use std::cmp::Ordering;
 
 pub type Point2D = euclid::Point2D<i32>;
 pub type Size2D = euclid::Size2D<i32>;
@@ -98,15 +97,11 @@ impl DigCavesGen {
         dug = regions.pop().unwrap().into_iter().collect();
 
         while let Some(next_region) = regions.pop() {
-            // FIXME: Get sorted container for points
-            let sorted_dug = sorted(&dug);
-            let sorted_region = sorted(&next_region);
-
             // Add each secondary region to the dug set, carving a tunnel from dug to its random
             // point.
             // XXX: Might be neater to try to minimize the length of the tunnel to carve
-            let p1: Point2D = rand::sample(rng, sorted_dug.into_iter(), 1)[0];
-            let p2: Point2D = rand::sample(rng, sorted_region.into_iter(), 1)[0];
+            let p1: Point2D = *rand::sample(rng, dug.iter(), 1)[0];
+            let p2: Point2D = *rand::sample(rng, next_region.iter(), 1)[0];
 
             dug.extend(next_region.into_iter());
             dug.extend(jaggly_line(rng, &available, p1, p2).into_iter());
@@ -118,20 +113,16 @@ impl DigCavesGen {
         d.dig_chamber(dug.clone());
 
         // Pick stair sites
-        let mut upstair_sites: Vec<Point2D> = self.domain
+        let upstair_sites: Vec<Point2D> = self.domain
             .iter()
             .filter(|&&p| is_upstair_pos(&dug, p))
             .cloned()
             .collect();
-        upstair_sites.sort_by(pt_ord);
-
-        let mut downstair_sites: Vec<Point2D> = self.domain
+        let downstair_sites: Vec<Point2D> = self.domain
             .iter()
             .filter(|&&p| is_downstair_pos(&dug, p))
             .cloned()
             .collect();
-        downstair_sites.sort_by(pt_ord);
-
         d.add_up_stairs(rand::sample(rng, upstair_sites.into_iter(), 1)[0]);
         d.add_down_stairs(rand::sample(rng, downstair_sites.into_iter(), 1)[0]);
 
@@ -161,7 +152,7 @@ fn separate_regions(mut points: HashSet<Point2D>) -> Vec<HashSet<Point2D>> {
     let mut ret = Vec::new();
 
     while !points.is_empty() {
-        let seed = *points.iter().min_by(|a, b| (a.x, a.y).cmp(&(b.x, b.y))).unwrap();
+        let seed = *points.iter().next().unwrap();
         let subset = flood_fill(points.clone(), seed);
         debug_assert!(!subset.is_empty());
         points = points.difference(&subset).cloned().collect();
@@ -214,16 +205,4 @@ fn jaggly_line<R: Rng>(rng: &mut R, available: &HashSet<Point2D>, p1: Point2D, p
     }
 
     ret
-}
-
-// FIXME: Get Points in a fixed-order container to maintain determinism. Failing that, here's a
-// helper function for turning a set into an ordered list.
-fn sorted(set: &HashSet<Point2D>) -> Vec<Point2D> {
-    let mut ret: Vec<Point2D> = set.iter().cloned().collect();
-    ret.sort_by(pt_ord);
-    ret
-}
-
-fn pt_ord(a: &Point2D, b: &Point2D) -> Ordering {
-    (a.x, a.y).cmp(&(b.x, b.y))
 }
