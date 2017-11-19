@@ -1,12 +1,13 @@
+use calx::{Rgba, color};
 use calx::Dir6;
 use display::{self, Backend, Core, FontData};
-use euclid::Point2D;
+use euclid::{Point2D, Rect};
 use glium::glutin::ElementState;
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use std::rc::Rc;
-use vitral::Align;
+use vitral::{Align, RectUtil};
 use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -284,20 +285,39 @@ impl GameLoop {
         Ok(())
     }
 
+    pub fn status_draw(&mut self, area: &Rect<f32>) {
+        self.core.fill_rect(area, Rgba::from(0x33_11_11_ff).into());
+        self.core.draw_text(
+            &*self.font,
+            area.origin,
+            Align::Left,
+            color::RED.into(),
+            "Welcome to status bar",
+        );
+    }
+
     /// Entry point for game view.
     pub fn draw(&mut self, backend: &mut Backend) -> bool {
         self.core.begin_frame();
         let screen_area = self.core.screen_bounds();
+
+        let (view_area, status_area) = screen_area.horizontal_split(-32.0);
 
         // Ugh
         self.world.player().map(|x| {
             self.world.location(x).map(|l| self.camera_loc = l)
         });
 
-        let mut view = display::WorldView::new(self.camera_loc, screen_area);
+        let mut view = display::WorldView::new(self.camera_loc, view_area);
         view.show_cursor = true;
 
+        self.core.set_clip(view_area);
         view.draw(&self.world, &mut self.core);
+        self.core.clear_clip();
+
+        self.core.set_clip(status_area);
+        self.status_draw(&status_area);
+        self.core.clear_clip();
 
         match self.state {
             State::Inventory(_) => {

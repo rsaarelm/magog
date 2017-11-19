@@ -5,7 +5,7 @@ use std::ops::{Add, Sub};
 use terraform::TerrainQuery;
 
 pub const SECTOR_WIDTH: i32 = 40;
-pub const SECTOR_HEIGHT: i32 = 22;
+pub const SECTOR_HEIGHT: i32 = 20;
 
 /// Unambiguous location in the game world.
 #[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
