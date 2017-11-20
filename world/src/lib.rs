@@ -1,3 +1,4 @@
+extern crate image;
 extern crate rand;
 extern crate ron;
 extern crate serde;

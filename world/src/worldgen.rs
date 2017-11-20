@@ -2,6 +2,7 @@ use Prefab;
 use calx::{Dijkstra, hex_neighbors};
 use euclid::{vec2, Size2D};
 use form::{self, Form};
+use image::{self, GenericImage, Pixel};
 use location::{Location, Portal, Sector};
 use mapgen::{self, DigCavesGen};
 use rand::{self, Rand, Rng, SeedableRng};
@@ -110,6 +111,35 @@ impl Worldgen {
                         spawn
                     ));
                     self.spawns.push((loc, form.loadout.clone()));
+                }
+            }
+        }
+    }
+
+    fn load_map_bitmap(&mut self, origin: Location, path: &str) {
+        let image = image::open(path).unwrap();
+
+        for y in 0..image.height() {
+            for x in 0..image.width() {
+                use Terrain::*;
+
+                let loc = origin + vec2(x as i32, y as i32);
+                let (r, g, b, _) = image.get_pixel(x, y).channels4();
+
+                let terrain = match (r, g, b) {
+                    (0, 0, 0) => None,
+                    (0, 231, 86) => Some(Grass),
+                    (0, 135, 81) => Some(Tree),
+                    (95, 87, 79) => Some(Wall),
+                    (194, 195, 199) => Some(Ground),
+                    (171, 82, 54) => Some(NorthMesa),
+                    (255, 163, 0) => Some(SouthMesa),
+                    (29, 43, 83) => Some(Water),
+                    _ => Some(Ground),
+                };
+
+                if let Some(terrain) = terrain {
+                    self.terrain.insert(loc, terrain);
                 }
             }
         }
@@ -269,7 +299,6 @@ impl<'a> SectorDigger<'a> {
             .map(|x| x.sector().taxicab_distance(loc.sector()))
             .any(|d| d > 1)
     }
-
 }
 
 impl<'a> mapgen::Dungeon for SectorDigger<'a> {
