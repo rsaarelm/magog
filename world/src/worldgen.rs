@@ -29,7 +29,7 @@ impl Worldgen {
             terrain: HashMap::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
-            player_entry: Location::new(0, 0, 0),
+            player_entry: Location::new(157, 21, 0),
         };
 
         let mut rng: ::Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
@@ -91,6 +91,8 @@ impl Worldgen {
             // TODO: Generator needs an option to not generate stairs down on bottom level
         }
 
+        ret.load_map_bitmap(Location::new(0, -199, 0), "overland.png");
+
         ret
     }
 
@@ -142,13 +144,16 @@ impl Worldgen {
     fn default_terrain(&self, loc: Location) -> Terrain {
         use Terrain::*;
         if loc.z == 0 {
+            /*
             match loc.noise() {
                 n if n > 0.8 => Tree,
                 n if n > -0.8 => Grass,
                 _ => Water,
             }
+            */
+            Ground
         } else {
-            Terrain::Rock
+            Rock
         }
     }
 
