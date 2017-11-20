@@ -21,3 +21,6 @@ vitral = { git = "https://github.com/rsaarelm/vitral", features = ["glium_backen
 calx = { git = "https://github.com/rsaarelm/calx" }
 world = { path = "world" }
 display = { path = "display" }
+
+[dev-dependencies]
+image = "0.17"
