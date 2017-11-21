@@ -41,8 +41,6 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
         .color(GREEN).tile(192, 64).finish());
     ret.insert(Wall as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 32, 0).finish());
     ret.insert(Rock as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
-    ret.insert(NorthMesa as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
-    ret.insert(SouthMesa as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
     ret.insert(Door as usize, Builder::new("assets/walls.png")
                .color(SADDLEBROWN).wall(128, 0, 160, 0)
                .color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());

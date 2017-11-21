@@ -88,13 +88,12 @@ pub enum Layer {
     Effect,
 }
 
-fn blobform_inner<F>(
-    brush: &Rc<Brush>,
-    is_solid: bool,
-    neighbors: [bool; 6],
-    faces: [bool; 6],
-    draw: &mut F,
-) where
+/// Draw a blobform tile.
+///
+/// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
+/// the blob but doesn't have visible walls.
+fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
+where
     F: FnMut(Layer, Angle, &Rc<Brush>, usize),
 {
     use self::Angle::*;
@@ -106,13 +105,23 @@ fn blobform_inner<F>(
     // Based on how the sprites split up, the processing is done in four vertical
     // segments.
 
+    // Shape the blob based on neighbors that are also blob forms.
+    let neighbors = kernel.blob_neighbors();
+
     // Do we snap to the outer vertices?
-    let ne_vertex = neighbors[0] || neighbors[1];
-    let e_vertex = neighbors[1] || neighbors[2];
-    let se_vertex = neighbors[2] || neighbors[3];
-    let sw_vertex = neighbors[3] || neighbors[4];
-    let w_vertex = neighbors[4] || neighbors[5];
-    let nw_vertex = neighbors[5] || neighbors[0];
+    let ne_vertex = !neighbors[0] || !neighbors[1];
+    let e_vertex = !neighbors[1] || !neighbors[2];
+    let se_vertex = !neighbors[2] || !neighbors[3];
+    let sw_vertex = !neighbors[3] || !neighbors[4];
+    let w_vertex = !neighbors[4] || !neighbors[5];
+    let nw_vertex = !neighbors[5] || !neighbors[0];
+
+    // Show exposed faces if neighbors are not blob and not wall.
+    let faces = if is_solid {
+        [true, true, true, true, true, true]
+    } else {
+        kernel.blob_faces()
+    };
 
     // Segment 2, middle left
     {
@@ -223,27 +232,6 @@ fn blobform_inner<F>(
     }
 }
 
-/// Draw a blobform tile.
-///
-/// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
-/// the blob but doesn't have visible walls.
-fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
-where
-    F: FnMut(Layer, Angle, &Rc<Brush>, usize),
-{
-    // Shape the blob based on neighbors that are also blob forms.
-    let neighbors = kernel.blob_neighbors();
-
-    // Show exposed faces if neighbors are not blob and not wall.
-    let faces = if is_solid {
-        [true; 6]
-    } else {
-        kernel.blob_faces()
-    };
-
-    blobform_inner(brush, is_solid, neighbors, faces, draw);
-}
-
 pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 where
     F: FnMut(Layer, Angle, &Rc<Brush>, usize),
@@ -293,51 +281,6 @@ where
             } else {
                 draw(Layer::Object, YWall, &brush, 1);
             }
-        }
-        terrain::Form::SouthMesa => {
-            let neighbors = [
-                true,
-                kernel.ne.is_mesa(),
-                kernel.se.is_mesa(),
-                kernel.s.is_mesa(),
-                kernel.sw.is_mesa(),
-                kernel.nw.is_mesa(),
-            ];
-
-            let faces = [
-                false,
-                false,
-                !kernel.se.is_mesa(),
-                !kernel.s.is_mesa(),
-                !kernel.sw.is_mesa(),
-                false,
-            ];
-
-            blobform_inner(&brush, false, neighbors, faces, &mut draw);
-        }
-
-        terrain::Form::NorthMesa => {
-            let neighbors = [
-                kernel.n.is_mesa(),
-                kernel.ne.is_mesa(),
-                kernel.se.is_mesa(),
-                true,
-                kernel.sw.is_mesa(),
-                kernel.nw.is_mesa(),
-            ];
-
-            let faces = [
-                !kernel.n.is_mesa(),
-                !kernel.ne.is_mesa(),
-                false,
-                false,
-                false,
-                !kernel.nw.is_mesa(),
-            ];
-
-            let solid = cache::misc(Icon::SolidBlob);
-            blobform_inner(&solid, true, neighbors, [true; 6], &mut draw);
-            blobform_inner(&brush, false, neighbors, faces, &mut draw);
         }
     }
     // TODO: Generate sprites for entities, with tweening state projection.
@@ -392,12 +335,12 @@ impl Kernel {
 
     pub fn blob_neighbors(&self) -> [bool; 6] {
         [
-            self.n.is_blob(),
-            self.ne.is_blob(),
-            self.se.is_blob(),
-            self.s.is_blob(),
-            self.sw.is_blob(),
-            self.nw.is_blob(),
+            !self.n.is_blob(),
+            !self.ne.is_blob(),
+            !self.se.is_blob(),
+            !self.s.is_blob(),
+            !self.sw.is_blob(),
+            !self.nw.is_blob(),
         ]
     }
 

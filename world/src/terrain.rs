@@ -23,8 +23,6 @@ pub enum Kind {
     Water,
     /// Like water, but much more fun.
     Magma,
-    /// Weird hacky bullshit
-    Cliff,
 }
 
 /// Visual form of a terrain tile.
@@ -42,8 +40,6 @@ pub enum Form {
     Blob,
     /// Wall-form on object layer
     Wall,
-    SouthMesa,
-    NorthMesa,
 }
 
 struct TerrainData {
@@ -91,8 +87,6 @@ terrain_enum! {
     Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false },
     Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false },
     Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false },
-    NorthMesa:   TerrainData { name: "cliff",     kind: Kind::Cliff,  form: Form::NorthMesa, map_chars: "^",  is_irregular: false },
-    SouthMesa:   TerrainData { name: "cliff",     kind: Kind::Cliff,  form: Form::SouthMesa, map_chars: "v",  is_irregular: false },
     Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false },
     // TODO: Get rid of corridor, it only makes sense for mapgen bookkeeping and that doesn't
     // belong in persistent map.
@@ -146,10 +140,6 @@ impl Terrain {
     pub fn is_hull(self) -> bool { self.form() == Form::Wall || self.form() == Form::Blob }
 
     pub fn is_blob(self) -> bool { self.form() == Form::Blob }
-
-    pub fn is_mesa(self) -> bool {
-        self.form() == Form::SouthMesa || self.form() == Form::NorthMesa
-    }
 
     pub fn is_block(self) -> bool { self.is_hull() || self.form() == Form::Prop }
 
