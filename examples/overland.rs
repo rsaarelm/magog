@@ -24,17 +24,20 @@ fn overland_locs() -> Vec<Location> {
 
 fn main() {
     let locs = overland_locs();
-    let (min_x, min_y) = locs.iter().fold(
+    let (mut min_x, mut min_y) = locs.iter().fold(
         (0, 0),
         |(x, y), loc| (x.min(loc.x), y.min(loc.y)),
     );
+    min_x -= 1;
+    min_y -= 1;
+
     let (max_x, max_y) = locs.iter().fold(
         (0, 0),
         |(x, y), loc| (x.max(loc.x), y.max(loc.y)),
     );
     println!("{} {} - {} {}", min_x, min_y, max_x, max_y);
 
-    let mut buf = image::ImageBuffer::new((max_x - min_x) as u32, (max_y - min_y) as u32);
+    let mut buf = image::ImageBuffer::new((max_x - min_x + 1) as u32, (max_y - min_y + 1) as u32);
 
     for (x, y, p) in buf.enumerate_pixels_mut() {
         let loc = Location::new(x as i16 + min_x, y as i16 + min_y, 0);
