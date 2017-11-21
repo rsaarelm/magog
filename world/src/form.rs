@@ -138,7 +138,7 @@ lazy_static! {
     pub static ref FORMS: Vec<Form> = {
         use item::MagicEffect::*;
         vec![
-        Form::mob("player",     Icon::Player,     10, &[]).rarity(0.0).player()
+        Form::mob("player",     Icon::Player,     10, &[Hands]).rarity(0.0).player()
             .c(MapMemory::default()),
         Form::mob("dreg",       Icon::Dreg,       2,  &[]).folk(),
         Form::mob("snake",      Icon::Snake,      1,  &[]).reptile(),
