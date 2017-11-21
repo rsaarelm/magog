@@ -209,11 +209,15 @@ impl Mutate for World {
             return;
         }
 
-        if let Some(loc) = self.location(e) {
+        if let Some(origin) = self.location(e) {
             const DEFAULT_FOV_RANGE: u32 = 12;
+            const OVERLAND_FOV_RANGE: u32 = 40;
+
+            // Long-range sight while in overworld.
+            let range = if origin.z == 0 { OVERLAND_FOV_RANGE } else { DEFAULT_FOV_RANGE };
 
             let fov: HashSet<Location> = HashSet::from_iter(
-                HexFov::new(SightFov::new(self, DEFAULT_FOV_RANGE, loc))
+                HexFov::new(SightFov::new(self, range, origin))
                     .add_fake_isometric_acute_corners(|pos, a|
                         self.terrain(a.origin + pos).is_wall())
                     .map(|(pos, a)| a.origin + pos),
@@ -224,7 +228,11 @@ impl Mutate for World {
 
             for &loc in &fov {
                 memory.seen.insert(loc);
-                memory.remembered.insert(loc);
+                // Don't spread map memory to other sectors we haven't "properly" seen yet.
+                // The edges are still shown in visual FOV for display niceness.
+                if loc.sector() == origin.sector() {
+                    memory.remembered.insert(loc);
+                }
             }
         }
     }

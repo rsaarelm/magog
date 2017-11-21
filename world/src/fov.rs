@@ -51,6 +51,12 @@ impl<'a> FovValue for SightFov<'a> {
             ret.is_edge = true;
         }
 
+        // Stop FOV from proceeding more than one layer past sector edges.
+        // (Only use this when gameplay is based on non-scrolling sector-screens.)
+        if (self.origin + offset).sector() != self.origin.sector() {
+            ret.is_edge = true;
+        }
+
         Some(ret)
     }
 }
