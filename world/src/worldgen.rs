@@ -91,7 +91,7 @@ impl Worldgen {
             // TODO: Generator needs an option to not generate stairs down on bottom level
         }
 
-        ret.load_map_bitmap(Location::new(0, -199, 0), "overland.png");
+        ret.load_map_bitmap(Location::new(-1, -200, 0), "overland.png");
 
         ret
     }
