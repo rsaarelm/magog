@@ -38,17 +38,6 @@ pub trait TerrainQuery {
             None
         }
     }
-
-    /// Does this location belong to a placed room in mapgen.
-    fn belongs_to_a_room(&self, loc: Location) -> bool {
-        // XXX: This is dodgy and assumes dungeony maps that start out as undug blocks, plus
-        // assumes that room terrain will not consist of blocks. May want to have more
-        // sophisticated logic here in the future.
-        match self.terrain(loc).kind() {
-            terrain::Kind::Block | terrain::Kind::Corridor => false,
-            _ => true,
-        }
-    }
 }
 
 /// Methods to modify world terrain.

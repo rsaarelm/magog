@@ -5,8 +5,6 @@ use std::slice;
 pub enum Kind {
     /// Regular flat solid ground, can walk across easily.
     Ground,
-    /// Like floor, but map generation treats it differently.
-    Corridor,
     /// An obstacle that fills the entire cell, blocks field of view.
     Block,
     /// An obstacle that can be seen through.
@@ -88,10 +86,8 @@ terrain_enum! {
     Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false },
     Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false },
     Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false },
-    // TODO: Get rid of corridor, it only makes sense for mapgen bookkeeping and that doesn't
-    // belong in persistent map.
-    Corridor:    TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: "_.,", is_irregular: true },
     OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_irregular: true },
+    Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_irregular: false },
     // TODO: Get rid of grass2, give render a coherent noise source for tiles and make it do the
     // variation locally.
     Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_irregular: true },
@@ -122,14 +118,14 @@ impl Terrain {
 
     pub fn blocks_walk(self) -> bool {
         match self.kind() {
-            Kind::Ground | Kind::Corridor | Kind::Door => false,
+            Kind::Ground | Kind::Door => false,
             _ => true,
         }
     }
 
     pub fn name(self) -> &'static str { TERRAIN_DATA[self as usize].name }
 
-    pub fn is_open(self) -> bool { self.kind() == Kind::Ground || self.kind() == Kind::Corridor }
+    pub fn is_open(self) -> bool { self.kind() == Kind::Ground }
 
     pub fn is_door(self) -> bool { self.kind() == Kind::Door }
 
