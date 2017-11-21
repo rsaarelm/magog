@@ -307,7 +307,7 @@ mod test {
     }
 
     fn make_noun(name: &str) -> Noun {
-        let mut ret = Noun::new(name.to_string());
+        let ret = Noun::new(name.to_string());
 
         match name {
             "PLAYER" => ret.you(),

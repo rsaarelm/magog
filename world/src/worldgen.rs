@@ -132,8 +132,6 @@ impl Worldgen {
                     (0, 135, 81) => Some(Tree),
                     (95, 87, 79) => Some(Wall),
                     (194, 195, 199) => Some(Ground),
-                    (171, 82, 54) => Some(NorthMesa),
-                    (255, 163, 0) => Some(SouthMesa),
                     (29, 43, 83) => Some(Water),
                     _ => Some(Ground),
                 };
