@@ -126,7 +126,8 @@ impl WorldView {
                 ));
             }
 
-            // TODO: Set up dynamic lighting, shade sprites based on angle and local light.
+            let mut terrain_sprite_buffer = Vec::new();
+
             render::draw_terrain_sprites(world, loc, |layer, angle, brush, frame_idx| {
                 let color = if in_map_memory {
                     Coloring::MapMemory
@@ -148,12 +149,14 @@ impl WorldView {
 
                     Coloring::Shaded { ambient, diffuse }
                 };
-                sprites.push(
+                terrain_sprite_buffer.push(
                     Sprite::new(layer, screen_pos, Rc::clone(brush))
                         .idx(frame_idx)
                         .color(color),
                 );
             });
+
+            let mut entity_sprite_buffer = Vec::new();
 
             let (mobs, items): (Vec<Entity>, Vec<Entity>) = world
                 .entities_at(loc)
@@ -173,7 +176,7 @@ impl WorldView {
                             diffuse: 1.0,
                         }
                     };
-                    sprites.push(
+                    entity_sprite_buffer.push(
                         Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
                             .color(color),
                     );
@@ -189,7 +192,7 @@ impl WorldView {
                         } else {
                             0
                         };
-                        sprites.push(
+                        entity_sprite_buffer.push(
                             Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
                                 .idx(frame_idx)
                                 .color(Coloring::Shaded {
@@ -197,10 +200,25 @@ impl WorldView {
                                     diffuse: 1.0,
                                 }),
                         );
-                        draw_health_pips(&mut sprites, world, i, screen_pos);
+                        draw_health_pips(&mut entity_sprite_buffer, world, i, screen_pos);
                     }
                 }
             }
+
+            // A doorway wall should be drawn on top of entities, but regular terrain blocks should
+            // go below them.
+            //
+            // (Disabled. This is visually correct, but the wall graphic ends up obstructing the
+            // mob sprite almost completely, and it's more important to be able to see what mob is
+            // standing in the doorway than for things to be visually nice.)
+
+            // if world.terrain(loc).is_wall() {
+            //     sprites.extend_from_slice(&entity_sprite_buffer);
+            //     sprites.extend_from_slice(&terrain_sprite_buffer);
+            // } else {
+                sprites.extend_from_slice(&terrain_sprite_buffer);
+                sprites.extend_from_slice(&entity_sprite_buffer);
+            // }
         }
 
         // Draw cursor.
