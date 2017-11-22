@@ -1,4 +1,5 @@
 use std::slice;
+use calx::SRgba;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -47,6 +48,8 @@ struct TerrainData {
     map_chars: &'static str,
     /// For variants that should not show up in main terrain sets.
     is_irregular: bool,
+    /// 4-bit components, R << 8 + G << 4 + B.
+    color: u16,
 }
 
 macro_rules! count_tts {
@@ -76,21 +79,21 @@ macro_rules! terrain_enum {
 }
 
 terrain_enum! {
-    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_irregular: false },
-    Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_irregular: false },
-    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_irregular: false },
-    Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false },
-    Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_irregular: false },
-    Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_irregular: false },
-    Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false },
-    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false },
-    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false },
-    Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false },
-    OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_irregular: true },
-    Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_irregular: false },
+    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_irregular: false, color: 0xf0f },
+    Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_irregular: false, color: 0x0ff },
+    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_irregular: false, color: 0xccc },
+    Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false, color: 0x0e3 },
+    Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_irregular: false, color: 0x125 },
+    Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_irregular: false, color: 0xf7a },
+    Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false, color: 0x085 },
+    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false, color: 0x554 },
+    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false, color: 0xa53 },
+    Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false, color: 0xfa0 },
+    OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_irregular: true,  color: 0xfaf },
+    Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_irregular: false, color: 0xffe },
     // TODO: Get rid of grass2, give render a coherent noise source for tiles and make it do the
     // variation locally.
-    Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_irregular: true },
+    Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_irregular: true,  color: 0x0e4 },
 }
 
 impl Terrain {
@@ -149,8 +152,41 @@ impl Terrain {
     /// Prop obstacles might not be distinguishable from floors if you only see a corner of the
     /// terrain tile. Use this if there's need to highlight partially visible terrain as obstacles.
     pub fn is_narrow_obstacle(self) -> bool { self.blocks_walk() && self.form() == Form::Prop }
+
+    pub fn dark_color(self) -> SRgba {
+        let col = TERRAIN_DATA[self as usize].color;
+        let r = ((col >> 8) & 0xf) as u8;
+        let g = ((col >> 4) & 0xf) as u8;
+        let b = (col & 0xf) as u8;
+
+        SRgba::new(r << 4, g << 4, b << 4, 0xff)
+    }
+
+    pub fn color(self) -> SRgba {
+        let mut ret = self.dark_color();
+        ret.r += 0xf;
+        ret.g += 0xf;
+        ret.b += 0xf;
+
+        ret
+    }
 }
 
 impl Default for Terrain {
     fn default() -> Self { Terrain::Empty }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_colors_are_unique() {
+        use std::collections::HashSet;
+
+        let mut set = HashSet::new();
+
+        Terrain::iter().for_each(|t| { set.insert(t.color()); });
+        assert_eq!(set.len(), Terrain::iter().count());
+    }
 }
