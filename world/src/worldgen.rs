@@ -374,3 +374,32 @@ impl Rand for Room {
         Room { size: Size2D::new(rng.gen_range(3, 10), rng.gen_range(3, 10)) }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_determinism() {
+        use rand::{self, Rand};
+
+        let mut rng = rand::thread_rng();
+
+        let seed = u32::rand(&mut rng);
+        let mut gen = Worldgen::new(seed);
+
+        // Build the value repeatedly using the same seed and see that they are all equal.
+        for _ in 1..4 {
+            let second = Worldgen::new(seed);
+
+            assert_eq!(gen.seed, second.seed);
+            // These can make huge printouts so don't use assert_eq that would try to print them to
+            // stdout
+            assert!(gen.terrain == second.terrain);
+            assert!(gen.portals == second.portals);
+            assert_eq!(gen.player_entry, second.player_entry);
+
+            gen = second;
+        }
+    }
+}
