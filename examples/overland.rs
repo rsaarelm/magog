@@ -6,8 +6,8 @@ extern crate image;
 use image::Pixel;
 use world::{Sector, Location};
 
-const COLS: i16 = 10;
-const ROWS: i16 = 10;
+const COLS: i16 = 8;
+const ROWS: i16 = 12;
 
 fn overland_locs() -> Vec<Location> {
     let mut ret = Vec::new();
