@@ -1,6 +1,5 @@
 use image;
 use num::Num;
-use std::ascii::AsciiExt;
 use std::fmt;
 use std::ops::{Add, Sub, Mul};
 use std::str::FromStr;
@@ -17,7 +16,7 @@ use std::str::FromStr;
 /// alpha channel and with 4 or 8 bits per channel). "RED", "red",
 /// "#F00", "#F00F", "#FF0000" and "#FF0000FF" all correspond to the
 /// same opaque pure red color.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct SRgba {
     /// sRGB red component
     pub r: u8,
