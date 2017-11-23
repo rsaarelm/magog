@@ -1,10 +1,12 @@
 ///! Generate a base bitmap for drawing an overland map with a paint program.
 
+extern crate calx;
 extern crate world;
 extern crate image;
 
 use image::Pixel;
-use world::{Sector, Location};
+use world::{Sector, Location, Terrain};
+use calx::hex_disc;
 
 const COLS: i16 = 8;
 const ROWS: i16 = 12;
@@ -22,6 +24,10 @@ fn overland_locs() -> Vec<Location> {
     ret
 }
 
+fn valid_sector(sec: Sector) -> bool {
+    sec.x >= 0 && sec.y >= 0 && sec.x < COLS && sec.y < ROWS
+}
+
 fn main() {
     let locs = overland_locs();
     let (mut min_x, mut min_y) = locs.iter().fold(
@@ -37,20 +43,37 @@ fn main() {
     );
     println!("{} {} - {} {}", min_x, min_y, max_x, max_y);
 
-    let mut buf = image::ImageBuffer::new((max_x - min_x + 1) as u32, (max_y - min_y + 1) as u32);
+    let mut buf = image::ImageBuffer::new((max_x - min_x + 2) as u32, (max_y - min_y + 2) as u32);
 
     for (x, y, p) in buf.enumerate_pixels_mut() {
         let loc = Location::new(x as i16 + min_x, y as i16 + min_y, 0);
         let sec = loc.sector();
-        if sec.x < 0 || sec.y < 0 || sec.x >= COLS || sec.y >= ROWS {
+        let terrain = if valid_sector(sec) {
+            Terrain::Grass
+        } else if hex_disc(loc, 1).any(|loc| valid_sector(loc.sector())) {
+            // Not a valid sector, but touching one.
+            Terrain::Water
+        } else {
             *p = image::Rgb::from_channels(0x00, 0x00, 0x00, 0xff);
             continue;
-        }
-        if (sec.x + sec.y) % 2 == 0 {
-            *p = image::Rgb::from_channels(0x00, 0xaa, 0xaa, 0xff);
+        };
+
+        let color = if (sec.x + sec.y) % 2 == 0 {
+            terrain.color()
         } else {
-            *p = image::Rgb::from_channels(0x88, 0x88, 0x88, 0xff);
-        }
+            terrain.dark_color()
+        };
+
+        *p = image::Rgb::from_channels(color.r, color.g, color.b, 0xff);
+    }
+
+    // XXX: Hacky way to force terrain colors into image palette
+    // Didn't find direct indexed palette manipulation in piston-image.
+    for (x, t) in Terrain::iter().filter(|t| t.is_regular()).enumerate() {
+        let light = t.color();
+        let dark = t.dark_color();
+        buf.put_pixel(x as u32, 0, image::Rgb::from_channels(light.r, light.g, light.b, 0xff));
+        buf.put_pixel(x as u32, 1, image::Rgb::from_channels(dark.r, dark.g, dark.b, 0xff));
     }
 
     image::save_buffer(
