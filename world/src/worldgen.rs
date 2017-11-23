@@ -1,5 +1,5 @@
 use Prefab;
-use calx::{Dijkstra, hex_neighbors};
+use calx::{Dijkstra, hex_neighbors, SRgba};
 use euclid::{vec2, Size2D};
 use form::{self, Form};
 use image::{self, GenericImage, Pixel};
@@ -119,26 +119,14 @@ impl Worldgen {
     fn load_map_bitmap(&mut self, origin: Location, path: &str) {
         let image = image::open(path).unwrap();
 
-        for y in 0..image.height() {
+        // Skip the bottom horizontal line, it's used to store metadata pixels.
+        // (Currently using it to store palette pixels for the terrains to force image palette)
+        for y in 0..(image.height() - 1) {
             for x in 0..image.width() {
-                use Terrain::*;
-
                 let loc = origin + vec2(x as i32, y as i32);
                 let (r, g, b, _) = image.get_pixel(x, y).channels4();
 
-                let terrain = match (r, g, b) {
-                    (0, 0, 0) => None,
-                    (0, 231, 86) => Some(Grass),
-                    (0, 135, 81) => Some(Tree),
-                    (95, 87, 79) => Some(Wall),
-                    (194, 195, 199) => Some(Ground),
-                    (29, 43, 83) => Some(Water),
-                    (255, 241, 232) => Some(Window),
-                    (171, 82, 54) => Some(Door),
-                    _ => Some(Ground),
-                };
-
-                if let Some(terrain) = terrain {
+                if let Some(terrain) = Terrain::from_color(SRgba::new(r, g, b, 0xff)) {
                     self.terrain.insert(loc, terrain);
                 }
             }

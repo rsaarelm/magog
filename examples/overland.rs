@@ -43,7 +43,7 @@ fn main() {
     );
     println!("{} {} - {} {}", min_x, min_y, max_x, max_y);
 
-    let mut buf = image::ImageBuffer::new((max_x - min_x + 2) as u32, (max_y - min_y + 2) as u32);
+    let mut buf = image::ImageBuffer::new((max_x - min_x + 2) as u32, (max_y - min_y + 3) as u32);
 
     for (x, y, p) in buf.enumerate_pixels_mut() {
         let loc = Location::new(x as i16 + min_x, y as i16 + min_y, 0);
@@ -72,8 +72,9 @@ fn main() {
     for (x, t) in Terrain::iter().filter(|t| t.is_regular()).enumerate() {
         let light = t.color();
         let dark = t.dark_color();
-        buf.put_pixel(x as u32, 0, image::Rgb::from_channels(light.r, light.g, light.b, 0xff));
-        buf.put_pixel(x as u32, 1, image::Rgb::from_channels(dark.r, dark.g, dark.b, 0xff));
+        let y = buf.height() - 1;
+        buf.put_pixel(x as u32 * 2, y, image::Rgb::from_channels(light.r, light.g, light.b, 0xff));
+        buf.put_pixel(x as u32 * 2 + 1, y, image::Rgb::from_channels(dark.r, dark.g, dark.b, 0xff));
     }
 
     image::save_buffer(
