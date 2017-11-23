@@ -323,7 +323,7 @@ impl View {
 }
 
 fn next_terrain(t: Terrain) -> Terrain {
-    let mut i = Terrain::iter().cycle().filter(|t| !t.is_irregular());
+    let mut i = Terrain::iter().cycle().filter(|t| t.is_regular());
     loop {
         if i.next() == Some(&t) {
             return *i.next().unwrap();
@@ -332,7 +332,7 @@ fn next_terrain(t: Terrain) -> Terrain {
 }
 
 fn prev_terrain(t: Terrain) -> Terrain {
-    let mut i = Terrain::iter().rev().cycle().filter(|t| !t.is_irregular());
+    let mut i = Terrain::iter().rev().cycle().filter(|t| t.is_regular());
     loop {
         if i.next() == Some(&t) {
             return *i.next().unwrap();

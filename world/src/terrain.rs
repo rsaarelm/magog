@@ -47,7 +47,7 @@ struct TerrainData {
     form: Form,
     map_chars: &'static str,
     /// For variants that should not show up in main terrain sets.
-    is_irregular: bool,
+    is_regular: bool,
     /// 4-bit components, R << 8 + G << 4 + B.
     color: u16,
 }
@@ -79,21 +79,21 @@ macro_rules! terrain_enum {
 }
 
 terrain_enum! {
-    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_irregular: false, color: 0xf0f },
-    Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_irregular: false, color: 0x0ff },
-    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_irregular: false, color: 0xccc },
-    Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_irregular: false, color: 0x0e3 },
-    Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_irregular: false, color: 0x125 },
-    Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_irregular: false, color: 0xf7a },
-    Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_irregular: false, color: 0x085 },
-    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_irregular: false, color: 0x554 },
-    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_irregular: false, color: 0xa53 },
-    Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_irregular: false, color: 0xfa0 },
-    OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_irregular: true,  color: 0xfaf },
-    Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_irregular: false, color: 0xffe },
+    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_regular: true,  color: 0xF0F },
+    Gate:        TerrainData { name: "gate",      kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_regular: true,  color: 0x0FF },
+    Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_regular: true,  color: 0xCCC },
+    Grass:       TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: ",._", is_regular: true,  color: 0xAC2 },
+    Water:       TerrainData { name: "water",     kind: Kind::Water,  form: Form::Floor, map_chars: "~=",  is_regular: true,  color: 0x058 },
+    Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_regular: true,  color: 0xF7A },
+    Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_regular: true,  color: 0x481 },
+    Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_regular: true,  color: 0x554 },
+    Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_regular: true,  color: 0xA53 },
+    Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_regular: true,  color: 0xFA0 },
+    OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_regular: false, color: 0xFAF },
+    Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_regular: true,  color: 0xFFE },
     // TODO: Get rid of grass2, give render a coherent noise source for tiles and make it do the
     // variation locally.
-    Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_irregular: true,  color: 0x0e4 },
+    Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_regular: false, color: 0xAC3 },
 }
 
 impl Terrain {
@@ -142,7 +142,7 @@ impl Terrain {
 
     pub fn is_block(self) -> bool { self.is_hull() || self.form() == Form::Prop }
 
-    pub fn is_irregular(self) -> bool { TERRAIN_DATA[self as usize].is_irregular }
+    pub fn is_regular(self) -> bool { TERRAIN_DATA[self as usize].is_regular }
 
     /// For constructing text maps.
     pub fn preferred_map_chars(self) -> &'static str { TERRAIN_DATA[self as usize].map_chars }
