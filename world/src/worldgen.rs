@@ -9,6 +9,7 @@ use rand::{self, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::io::Cursor;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
@@ -91,7 +92,7 @@ impl Worldgen {
             // TODO: Generator needs an option to not generate stairs down on bottom level
         }
 
-        ret.load_map_bitmap(Location::new(-1, -200, 0), "overland.png");
+        ret.load_map_bitmap(Location::new(-1, -200, 0), include_bytes!("../assets/overland.png"));
 
         ret
     }
@@ -114,8 +115,8 @@ impl Worldgen {
         }
     }
 
-    fn load_map_bitmap(&mut self, origin: Location, path: &str) {
-        let image = image::open(path).unwrap();
+    fn load_map_bitmap(&mut self, origin: Location, data: &[u8]) {
+        let image = image::load(Cursor::new(data), image::ImageFormat::PNG).unwrap();
 
         // Skip the bottom horizontal line, it's used to store metadata pixels.
         // (Currently using it to store palette pixels for the terrains to force image palette)
