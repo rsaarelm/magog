@@ -40,6 +40,8 @@ pub struct GameLoop {
     state: State,
 }
 
+enum Side { West, East }
+
 impl GameLoop {
     pub fn new(backend: &mut Backend, world: World) -> GameLoop {
         let font = display::font();
@@ -73,6 +75,19 @@ impl GameLoop {
         }
     }
 
+    fn side_step(&mut self, side: Side) -> CommandResult {
+        let player = self.world.player().ok_or(())?;
+        let loc = self.world.location(player).ok_or(())?;
+        let flip = (loc.x + loc.y) % 2 == 0;
+
+        let actual_dir = match side {
+            Side::West => if flip { Dir6::Northwest } else { Dir6::Southwest }
+            Side::East => if flip { Dir6::Southeast } else { Dir6::Northeast }
+        };
+
+        self.smart_step(actual_dir)
+    }
+
     fn game_input(&mut self, backend: &mut Backend, scancode: Scancode) -> CommandResult {
         use scancode::Scancode::*;
         match scancode {
@@ -80,12 +95,14 @@ impl GameLoop {
                 self.enter_state(State::Console);
                 Ok(Vec::new())
             }
-            Q => self.smart_step(Dir6::Northwest),
-            W => self.smart_step(Dir6::North),
-            E => self.smart_step(Dir6::Northeast),
-            A => self.smart_step(Dir6::Southwest),
-            S => self.smart_step(Dir6::South),
-            D => self.smart_step(Dir6::Southeast),
+            Q | Num7 => self.smart_step(Dir6::Northwest),
+            W | Up | Num8 => self.smart_step(Dir6::North),
+            E | Num9 => self.smart_step(Dir6::Northeast),
+            A | Num1 => self.smart_step(Dir6::Southwest),
+            S | Down | Num2 => self.smart_step(Dir6::South),
+            D | Num3 => self.smart_step(Dir6::Southeast),
+            Left | Num4 => self.side_step(Side::West),
+            Right | Num6 => self.side_step(Side::East),
             I => {
                 self.enter_state(State::Inventory(InventoryAction::Equip));
                 Ok(Vec::new())
