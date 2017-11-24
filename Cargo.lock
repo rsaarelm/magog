@@ -61,7 +61,7 @@ name = "calx"
 version = "0.3.0-alpha"
 source = "git+https://github.com/rsaarelm/calx#7c09ec6dbce0cd6b45ef009c3c1d918b8fe5ab45"
 dependencies = [
- "euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -194,7 +194,7 @@ version = "0.1.0"
 dependencies = [
  "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -248,7 +248,7 @@ dependencies = [
 
 [[package]]
 name = "euclid"
-version = "0.15.5"
+version = "0.15.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "heapsize 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -361,7 +361,7 @@ dependencies = [
  "wayland-client 0.9.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "winit 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "x11-dl 2.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "x11-dl 2.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -462,7 +462,7 @@ dependencies = [
  "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "display 0.1.0",
- "euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -859,9 +859,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "vitral"
 version = "0.2.0-pre"
-source = "git+https://github.com/rsaarelm/vitral#2ba3e19495a3b8a723d78c78724af8f0fcada6c2"
+source = "git+https://github.com/rsaarelm/vitral#d44adb791d69f95d1086e6372d7a3986de6c0f4d"
 dependencies = [
- "euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -961,7 +961,7 @@ dependencies = [
  "wayland-protocols 0.9.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayland-window 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "x11-dl 2.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "x11-dl 2.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -971,7 +971,7 @@ dependencies = [
  "calx 0.3.0-alpha (git+https://github.com/rsaarelm/calx)",
  "calx-ecs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -984,7 +984,7 @@ dependencies = [
 
 [[package]]
 name = "x11-dl"
-version = "2.16.0"
+version = "2.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1039,7 +1039,7 @@ dependencies = [
 "checksum either 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "740178ddf48b1a9e878e6d6509a1442a2d42fd2928aae8e7a6f8a36fb01981b3"
 "checksum enum_primitive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "be4551092f4d519593039259a9ed8daedf0da12e5109c5280338073eaeb81180"
 "checksum error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ff511d5dc435d703f4971bc399647c9bc38e20cb41452e3b9feb4765419ed3f3"
-"checksum euclid 0.15.5 (registry+https://github.com/rust-lang/crates.io-index)" = "f5ed7d77e46f6600f490463ad7b6349c3ebb2d2319af56e679e279e4c66495d9"
+"checksum euclid 0.15.6 (registry+https://github.com/rust-lang/crates.io-index)" = "e7ad12f270c15bb2728fd73e6f3954dda165268c10328e553932e156a27886c1"
 "checksum fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)" = "2fad85553e09a6f881f739c29f0b00b0f01357c743266d478b68951ce23285f3"
 "checksum fs2 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "bcd414e5a1a979b931bb92f41b7a54106d3f6d2e6c253e9ce943b7cd468251ef"
 "checksum fuchsia-zircon 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f6c0581a4e363262e52b87f59ee2afe3415361c6ec35e665924eb08afe8ff159"
@@ -1119,6 +1119,6 @@ dependencies = [
 "checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"
 "checksum winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"
 "checksum winit 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "74bcacc675f952f71c2ebc9750dfd90d605de2cbe2e8ea3b38a370498238a507"
-"checksum x11-dl 2.16.0 (registry+https://github.com/rust-lang/crates.io-index)" = "dd409cc4061fe552ee165c7844cc88596f68d52605c64710b57d8231c700820b"
+"checksum x11-dl 2.17.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b2ffbb23e05fd6bdf449655e2f9b51c974ed4ff72c475cd351fc1c267f52ef5a"
 "checksum xml-rs 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e1945e12e16b951721d7976520b0832496ef79c31602c7a29d950de79ba74621"
 "checksum xml-rs 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3c1cb601d29fe2c2ac60a2b2e5e293994d87a1f6fa9687a31a15270f909be9c2"
