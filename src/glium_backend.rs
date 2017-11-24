@@ -312,6 +312,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
 }
 
 /// Type for key events not handled by Vitral.
+#[derive(Debug)]
 pub struct KeyEvent {
     /// Was the key pressed or released
     pub state: glutin::ElementState,
