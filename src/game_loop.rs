@@ -81,7 +81,7 @@ impl GameLoop {
         let flip = (loc.x + loc.y) % 2 == 0;
 
         let actual_dir = match side {
-            Side::West => if flip { Dir6::Northwest } else { Dir6::Southwest }
+            Side::West => if flip { Dir6::Southwest } else { Dir6::Northwest }
             Side::East => if flip { Dir6::Southeast } else { Dir6::Northeast }
         };
 
