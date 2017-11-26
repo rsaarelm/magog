@@ -19,7 +19,7 @@ struct Opt {
     #[structopt(short = "w", long = "width", default_value = "8", help = "Width in sectors")]
     width: u32,
 
-    #[structopt(short = "h", long = "height", default_value = "12", help = "Height in sectors")]
+    #[structopt(short = "h", long = "height", default_value = "9", help = "Height in sectors")]
     height: u32,
 
     #[structopt(subcommand)]
