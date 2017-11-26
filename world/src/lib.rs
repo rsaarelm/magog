@@ -133,7 +133,7 @@ mod item;
 pub use item::{Slot, ItemType};
 
 mod location;
-pub use location::{Location, Portal, Sector};
+pub use location::{SECTOR_WIDTH, SECTOR_HEIGHT, Location, Portal, Sector};
 
 mod location_set;
 

@@ -43,6 +43,15 @@ enum Command {
         #[structopt(help = "Output file (if different from input)")]
         output: Option<String>,
     },
+
+    #[structopt(name = "minimap", help = "Build a minimap as would be shown in game")]
+    Minimap {
+        #[structopt(help = "Input file")]
+        input: String,
+
+        #[structopt(help = "Output file")]
+        output: String,
+    },
 }
 
 fn overland_locs(width: u32, height: u32) -> Vec<Location> {
@@ -185,12 +194,53 @@ fn normalize(width: u32, height: u32, input: &str, out_path: &str) {
     ).unwrap();
 }
 
+fn minimap(width: u32, height: u32, input: &str, out_path: &str) {
+    let area = location_area(width, height);
+
+    let input = image::open(input).expect(&format!("Unable to load '{}'", input));
+
+    let mut output: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> =
+        image::ImageBuffer::new(
+            width * (world::SECTOR_WIDTH as u32) * 2,
+            height * (world::SECTOR_HEIGHT as u32) * 2,
+        );
+
+    for (x, y, p) in output.enumerate_pixels_mut() {
+        let y = y as i32;
+        let x = x as i32;
+
+        let column = x / 2;
+        let row = (y - column) / 2;
+        let loc_x = (column + row) as i32 - (area.origin.x as i32);
+        let loc_y = row as i32 - (area.origin.y as i32);
+
+        if loc_x >= 0 && loc_y >= 0 && loc_x < input.width() as i32 &&
+            loc_y < input.height() as i32
+        {
+            let col = input.get_pixel(loc_x as u32, loc_y as u32);
+            // Remove the chessboard effect from terrain colors.
+            let col = if let Some(t) = Terrain::from_color(col.into()) {
+                t.color().into()
+            } else {
+                col
+            };
+            *p = col;
+        }
+    }
+
+    image::save_buffer(
+        out_path,
+        &output,
+        output.width(),
+        output.height(),
+        image::ColorType::RGBA(8),
+    ).unwrap();
+}
+
 fn main() {
     let opt = Opt::from_args();
     match opt.cmd {
-        Command::Generate { output } => {
-            generate(opt.width, opt.height, &output);
-        }
+        Command::Generate { output } => generate(opt.width, opt.height, &output),
 
         Command::Normalize { input, output } => {
             normalize(
@@ -198,7 +248,9 @@ fn main() {
                 opt.height,
                 &input.clone(),
                 &output.unwrap_or(input),
-            );
+            )
         }
+
+        Command::Minimap { input, output } => minimap(opt.width, opt.height, &input, &output),
     }
 }
