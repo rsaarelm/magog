@@ -79,7 +79,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         P: Into<glium::program::ProgramCreationInput<'a>>,
     {
         let events = glutin::EventsLoop::new();
-        let window = glutin::WindowBuilder::new().with_title(title.into());
+        let window = glutin::WindowBuilder::new().with_title(title);
         let context = glutin::ContextBuilder::new().with_gl(
             glutin::GlRequest::Specific(
                 glutin::Api::OpenGl,
