@@ -95,14 +95,14 @@ impl GameLoop {
                 self.enter_state(State::Console);
                 Ok(Vec::new())
             }
-            Q | Num7 => self.smart_step(Dir6::Northwest),
-            W | Up | Num8 => self.smart_step(Dir6::North),
-            E | Num9 => self.smart_step(Dir6::Northeast),
-            A | Num1 => self.smart_step(Dir6::Southwest),
-            S | Down | Num2 => self.smart_step(Dir6::South),
-            D | Num3 => self.smart_step(Dir6::Southeast),
-            Left | Num4 => self.side_step(Side::West),
-            Right | Num6 => self.side_step(Side::East),
+            Q | Pad7 | Home => self.smart_step(Dir6::Northwest),
+            W | Up | Pad8 => self.smart_step(Dir6::North),
+            E | Pad9 | PageUp => self.smart_step(Dir6::Northeast),
+            A | Pad1 | End => self.smart_step(Dir6::Southwest),
+            S | Down | Pad2 => self.smart_step(Dir6::South),
+            D | Pad3 | PageDown => self.smart_step(Dir6::Southeast),
+            Left | Pad4 => self.side_step(Side::West),
+            Right | Pad6 => self.side_step(Side::East),
             I => {
                 self.enter_state(State::Inventory(InventoryAction::Equip));
                 Ok(Vec::new())
