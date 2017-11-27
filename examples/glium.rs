@@ -199,11 +199,11 @@ mod feature {
                     continue;
                 }
 
-                if k.key_code == glutin::VirtualKeyCode::Q {
+                if k.virtual_keycode == Some(glutin::VirtualKeyCode::Q) {
                     return;
                 }
 
-                if k.key_code == glutin::VirtualKeyCode::F12 {
+                if k.virtual_keycode == Some(glutin::VirtualKeyCode::F12) {
                     let screenshot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> =
                         backend.screenshot().into();
                     image::save_buffer(

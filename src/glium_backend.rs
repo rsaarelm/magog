@@ -189,31 +189,31 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                             input: glutin::KeyboardInput {
                                 state,
                                 scancode,
-                                virtual_keycode: Some(vk),
+                                virtual_keycode,
                                 ..
                             },
                             ..
                         } => {
                             self.keypress.push(KeyEvent {
-                                state: state,
-                                key_code: vk,
+                                state,
                                 scancode: scancode as u8,
+                                virtual_keycode,
                             });
 
                             let is_down = state == glutin::ElementState::Pressed;
 
                             use glium::glutin::VirtualKeyCode::*;
-                            if let Some(vk) = match vk {
-                                Tab => Some(Keycode::Tab),
-                                LShift | RShift => Some(Keycode::Shift),
-                                LControl | RControl => Some(Keycode::Ctrl),
-                                NumpadEnter | Return => Some(Keycode::Enter),
-                                Back => Some(Keycode::Backspace),
-                                Delete => Some(Keycode::Del),
-                                Numpad8 | Up => Some(Keycode::Up),
-                                Numpad2 | Down => Some(Keycode::Down),
-                                Numpad4 | Left => Some(Keycode::Left),
-                                Numpad6 | Right => Some(Keycode::Right),
+                            if let Some(vk) = match virtual_keycode {
+                                Some(Tab) => Some(Keycode::Tab),
+                                Some(LShift) | Some(RShift) => Some(Keycode::Shift),
+                                Some(LControl) | Some(RControl) => Some(Keycode::Ctrl),
+                                Some(NumpadEnter) | Some(Return) => Some(Keycode::Enter),
+                                Some(Back) => Some(Keycode::Backspace),
+                                Some(Delete) => Some(Keycode::Del),
+                                Some(Numpad8) | Some(Up) => Some(Keycode::Up),
+                                Some(Numpad2) | Some(Down) => Some(Keycode::Down),
+                                Some(Numpad4) | Some(Left) => Some(Keycode::Left),
+                                Some(Numpad6) | Some(Right) => Some(Keycode::Right),
                                 _ => None,
                             }
                             {
@@ -317,7 +317,7 @@ pub struct KeyEvent {
     /// Was the key pressed or released
     pub state: glutin::ElementState,
     /// Layout-dependent keycode
-    pub key_code: glutin::VirtualKeyCode,
+    pub virtual_keycode: Option<glutin::VirtualKeyCode>,
     /// Keyboard layout independent hardware scancode for the key
     pub scancode: u8,
 }
