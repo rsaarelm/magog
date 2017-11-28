@@ -29,7 +29,7 @@ pub use colors::{Rgba, SRgba, to_linear, to_srgb, NAMED_COLORS, scolor, color};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{HexGeom, hex_neighbors, HexNeighbor, hex_disc, HexDisc, Dir6, Dir12};
 pub use hex_fov::{HexFov, HexPolarPoint, HexFovIter, AddFakeIsometricCorners};
-pub use prefab::{Prefab, HexmapDisplay, LegendBuilder};
+pub use prefab::{Prefab, IntoPrefab};
 pub use rng::{RngExt, EncodeRng, RandomPermutation};
 pub use search::{GridNode, Dijkstra, astar_path_with};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
