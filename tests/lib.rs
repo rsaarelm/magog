@@ -108,11 +108,12 @@ fn test_random_permutation() {
 #[test]
 fn test_bit_spread() {
     use calx::{compact_bits_by_2, spread_bits_by_2};
-    let mut rng = rand::thread_rng();
+    use std::u16;
 
-    for _ in 0..1000 {
-        let x = rng.gen::<u16>() as u32;
-        assert!(x == 0 || spread_bits_by_2(x) != x);
+    for x in 0..(u16::MAX as u32 + 1) {
+        if x > 1 {
+            assert_ne!(x, spread_bits_by_2(x));
+        }
         assert_eq!(compact_bits_by_2(spread_bits_by_2(x)), x);
     }
 }
