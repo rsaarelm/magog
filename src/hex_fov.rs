@@ -1,4 +1,5 @@
-use euclid::{Vector2D, vec2};
+use CellVector;
+use euclid::vec2;
 use fov::{Fov, PolarPoint};
 use hex::Dir6;
 use num::Integer;
@@ -35,7 +36,7 @@ impl PolarPoint for HexPolarPoint {
 
     fn is_below(&self, other: &HexPolarPoint) -> bool { self.winding_index() < other.end_index() }
 
-    fn to_v2(&self) -> Vector2D<i32> {
+    fn to_v2(&self) -> CellVector {
         if self.radius == 0 {
             return vec2(0, 0);
         }
@@ -78,7 +79,7 @@ pub trait HexFovIter: Sized {
         is_wall: F,
     ) -> AddFakeIsometricCorners<Self::Value, F, Self>
     where
-        F: Fn(Vector2D<i32>, &Self::Value) -> bool,
+        F: Fn(CellVector, &Self::Value) -> bool,
     {
         AddFakeIsometricCorners {
             inner: self,
@@ -89,24 +90,24 @@ pub trait HexFovIter: Sized {
     }
 }
 
-impl<T, I: Iterator<Item = (Vector2D<i32>, T)>> HexFovIter for I {
+impl<T, I: Iterator<Item = (CellVector, T)>> HexFovIter for I {
     type Value = T;
 }
 
 pub struct AddFakeIsometricCorners<T, F, I> {
     inner: I,
     is_wall: F,
-    prev: Option<(Vector2D<i32>, T)>,
-    extra: Option<(Vector2D<i32>, T)>,
+    prev: Option<(CellVector, T)>,
+    extra: Option<(CellVector, T)>,
 }
 
 impl<T, F, I> Iterator for AddFakeIsometricCorners<T, F, I>
 where
     T: Clone,
-    F: Fn(Vector2D<i32>, &T) -> bool,
-    I: Iterator<Item = (Vector2D<i32>, T)>,
+    F: Fn(CellVector, &T) -> bool,
+    I: Iterator<Item = (CellVector, T)>,
 {
-    type Item = (Vector2D<i32>, T);
+    type Item = (CellVector, T);
 
     fn next(&mut self) -> Option<(Self::Item)> {
         use std::mem;
@@ -155,7 +156,8 @@ where
 #[cfg(test)]
 mod test {
     use super::{HexFov, HexFovIter};
-    use euclid::{Vector2D, vec2};
+    use super::CellVector;
+    use euclid::vec2;
     use fov::FovValue;
     use hex::HexGeom;
     use std::collections::HashMap;
@@ -167,7 +169,7 @@ mod test {
     }
 
     impl FovValue for Cell {
-        fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+        fn advance(&self, offset: CellVector) -> Option<Self> {
             if offset.hex_dist() < self.range {
                 Some(self.clone())
             } else {
@@ -179,14 +181,14 @@ mod test {
     #[test]
     fn trivial_fov() {
         // Just draw a small circle.
-        let field: HashMap<Vector2D<i32>, Cell> =
-            HashMap::from_iter(HexFov::new(Cell { range: 2 }));
+        let field: HashMap<CellVector, Cell> = HashMap::from_iter(HexFov::new(Cell { range: 2 }));
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(!field.contains_key(&vec2(1, -1)));
 
         // Now test out the fake-isometric corners.
-        let field: HashMap<Vector2D<i32>, Cell> = HashMap::from_iter(
-            HexFov::new(Cell { range: 2 }).add_fake_isometric_acute_corners(|_p, _t| true),
+        let field: HashMap<CellVector, Cell> = HashMap::from_iter(
+            HexFov::new(Cell { range: 2 })
+                .add_fake_isometric_acute_corners(|_p, _t| true),
         );
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(field.contains_key(&vec2(1, -1)));

@@ -1,4 +1,5 @@
-use euclid::{Vector2D, vec2};
+use CellVector;
+use euclid::vec2;
 use num::Integer;
 use rand::{Rand, Rng};
 use std::cmp::max;
@@ -12,7 +13,7 @@ pub trait HexGeom {
     fn hex_dist(&self) -> i32;
 }
 
-impl HexGeom for Vector2D<i32> {
+impl HexGeom for CellVector {
     fn hex_dist(&self) -> i32 {
         if self.x.signum() == self.y.signum() {
             max(self.x.abs(), self.y.abs())
@@ -27,7 +28,7 @@ impl HexGeom for Vector2D<i32> {
 /// Return offsets to neighboring hexes.
 pub fn hex_neighbors<P, R>(origin: P) -> HexNeighbor<P>
 where
-    P: Clone + Add<Vector2D<i32>, Output = R>,
+    P: Clone + Add<CellVector, Output = R>,
 {
     HexNeighbor { origin, i: 0 }
 }
@@ -39,7 +40,7 @@ pub struct HexNeighbor<P> {
 
 impl<P, R> Iterator for HexNeighbor<P>
 where
-    P: Clone + Add<Vector2D<i32>, Output = R>,
+    P: Clone + Add<CellVector, Output = R>,
 {
     type Item = R;
 
@@ -57,7 +58,7 @@ where
 /// Return an iterator for all the points in the hex disc with the given radius.
 pub fn hex_disc<P, R>(origin: P, radius: i32) -> HexDisc<P>
 where
-    P: Clone + Add<Vector2D<i32>, Output = R>,
+    P: Clone + Add<CellVector, Output = R>,
 {
     HexDisc {
         origin,
@@ -76,7 +77,7 @@ pub struct HexDisc<P> {
 
 impl<P, R> Iterator for HexDisc<P>
 where
-    P: Clone + Add<Vector2D<i32>, Output = R>,
+    P: Clone + Add<CellVector, Output = R>,
 {
     type Item = R;
 
@@ -142,7 +143,7 @@ impl Dir6 {
     /// Vectors that are in a space between two hex direction vectors are
     /// rounded to a hexadecant, then assigned the hex direction whose vector
     /// is nearest to that hexadecant.
-    pub fn from_v2(v: Vector2D<i32>) -> Dir6 {
+    pub fn from_v2(v: CellVector) -> Dir6 {
         let hexadecant = {
             let width = PI / 8.0;
             let mut radian = (v.x as f32).atan2(-v.y as f32);
@@ -167,7 +168,7 @@ impl Dir6 {
     pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
-    pub fn to_v2(&self) -> Vector2D<i32> { Vector2D::from(*self) }
+    pub fn to_v2(&self) -> CellVector { CellVector::from(*self) }
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
@@ -187,7 +188,7 @@ impl Rand for Dir6 {
     fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
-impl From<Dir6> for Vector2D<i32> {
+impl From<Dir6> for CellVector {
     fn from(d: Dir6) -> Self {
         const DIRS: [(i32, i32); 6] = [(-1, -1), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 0)];
 
