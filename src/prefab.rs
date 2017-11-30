@@ -1,10 +1,64 @@
 use euclid::{self, vec2};
-use std::collections::HashMap;
+use space::{CellVector, Transformation, Space};
+use std::collections::{hash_map, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::i32;
 
-pub type Vector = euclid::Vector2D<i32>;
+/// The text map character coordinate space.
+struct TextSpace;
+
+pub type TextVector = euclid::TypedVector2D<i32, TextSpace>;
+
+// |  2 0 |
+// | -1 1 |
+//
+// | 1/2 0 |
+// | 1/2 1 |
+
+impl Transformation for TextSpace {
+    type Element = i32;
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+        [(v[0] + v[1]) / 2, v[1]]
+    }
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let v = v.into();
+        [2 * v[0] - v[1], v[1]]
+    }
+}
+
+impl TextSpace {
+    /// Which of the two possible map lattices is this vector in?
+    pub fn in_even_lattice(v: TextVector) -> bool { (v.x + v.y) % 2 == 0 }
+}
+
+
+/// The on-screen minimap pixel coordinate space.
+struct MinimapSpace;
+
+// |  2  1 |
+// | -2  1 |
+//
+// | 1/4  -1/4 |
+// | 1/2   1/2 |
+
+impl Transformation for MinimapSpace {
+    type Element = i32;
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+        [v[0] / 4 + v[1] / 2, v[1] / 2 - v[0] / 4]
+    }
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let v = v.into();
+        [2 * v[0] - 2 * v[1], v[0] + v[1]]
+    }
+}
+
 
 // Idea was there'd be both 'Floating' and 'Anchored' prefabs, but I don't think I actually have an
 // use case for the 'Floating' one. So just using the 'Anchored' one and calling it a generic
@@ -68,17 +122,15 @@ pub trait IntoPrefab<T> {
 /// ```
 #[derive(Clone)]
 pub struct Prefab<T> {
-    points: HashMap<Vector, T>,
+    points: HashMap<CellVector, T>,
 }
 
 impl<T> Prefab<T> {
-    pub fn parse<U: IntoPrefab<T>>(value: U) -> Result<Prefab<T>, PrefabError> {
-        value.try_into()
-    }
+    pub fn parse<U: IntoPrefab<T>>(value: U) -> Result<Prefab<T>, PrefabError> { value.try_into() }
 
-    pub fn get(&self, pos: Vector) -> Option<&T> {
-        self.points.get(&pos)
-    }
+    pub fn get(&self, pos: CellVector) -> Option<&T> { self.points.get(&pos) }
+
+    pub fn iter(&self) -> hash_map::Iter<CellVector, T> { self.points.iter() }
 }
 
 // Not using FromStr even when the input type is String, since there's a conversion family here
@@ -88,7 +140,7 @@ impl<S: Into<String>> IntoPrefab<char> for S {
     fn try_into(self) -> Result<Prefab<char>, PrefabError> {
         /// Recognize the point set that only contains the origin markup and return the
         /// corresponding origin value.
-        fn is_origin(points: &HashMap<Vector, char>) -> Option<Vector> {
+        fn is_origin(points: &HashMap<TextVector, char>) -> Option<TextVector> {
             if points.len() != 2 {
                 return None;
             }
@@ -113,10 +165,11 @@ impl<S: Into<String>> IntoPrefab<char> for S {
         for (y, line) in value.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if !c.is_whitespace() {
-                    if (x + y) % 2 == 0 {
-                        evens.insert(vec2(x as i32, y as i32), c);
+                    let vec = vec2(x as i32, y as i32);
+                    if TextSpace::in_even_lattice(vec) {
+                        evens.insert(vec, c);
                     } else {
-                        odds.insert(vec2(x as i32, y as i32), c);
+                        odds.insert(vec, c);
                     }
                 }
             }
@@ -134,12 +187,26 @@ impl<S: Into<String>> IntoPrefab<char> for S {
         for text_data in data.iter() {
             // Set origin
             let text_pos = *text_data.0 - offset;
-            // Transform to map space and save.
-            let map_pos = vec2((text_pos.x + text_pos.y) / 2, text_pos.y);
-
-            points.insert(map_pos, *text_data.1);
+            // Store into cell space.
+            points.insert(text_pos.to_cell_space(), *text_data.1);
         }
 
         Ok(Prefab { points })
+    }
+}
+
+impl From<Prefab<char>> for String {
+    fn from(prefab: Prefab<char>) -> String {
+        // How far left does the textmap go?
+        //
+        // Subtract 1 from the result so that we can always fit the origin brackets on the leftmost
+        // char if need be.
+        let min_x = prefab
+            .iter()
+            .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
+            .min()
+            .unwrap_or(0) - 1;
+
+        unimplemented!();
     }
 }
