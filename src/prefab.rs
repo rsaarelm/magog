@@ -195,18 +195,78 @@ impl<S: Into<String>> IntoPrefab<char> for S {
     }
 }
 
-impl From<Prefab<char>> for String {
-    fn from(prefab: Prefab<char>) -> String {
+impl fmt::Display for Prefab<char> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let dummy_origin: (&CellVector, &char) = (&vec2(0, 0), &' ');
+        // Ensure that the origin cell shows up in the printout even if it's blank in the prefab.
+        let append = if self.iter().find(|&(&pos, _)| pos == vec2(0, 0)).is_none() {
+            Some(dummy_origin)
+        } else {
+            None
+        };
+
         // How far left does the textmap go?
         //
         // Subtract 1 from the result so that we can always fit the origin brackets on the leftmost
         // char if need be.
-        let min_x = prefab
-            .iter()
+        let min_x = self.iter()
+            .chain(append)
             .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
             .min()
             .unwrap_or(0) - 1;
 
-        unimplemented!();
+        // Arrange cells in print order.
+        let mut sorted: Vec<(TextVector, char)> = self.iter()
+            .chain(append)
+            .map(|(&pos, &c)| (TextVector::from_cell_space(pos), c))
+            .collect();
+
+
+        sorted.sort_by(|a, b| (a.0.y, a.0.x).cmp(&(b.0.y, b.0.x)));
+
+        if sorted.len() == 0 {
+            return Ok(());
+        }
+
+        // Printing position.
+        let mut print_y = sorted[0].0.y;
+        let mut print_x = min_x;
+
+        for &(pos, c) in &sorted {
+            while print_y < pos.y {
+                writeln!(f, "")?;
+                print_x = min_x;
+                print_y += 1;
+            }
+
+            while print_x < pos.x - 1 {
+                write!(f, " ")?;
+                print_x += 1;
+            }
+
+            debug_assert_eq!(print_y, pos.y);
+            if pos == vec2(0, 0) {
+                // Write origin markers around origin cell.
+                debug_assert_eq!(print_x, pos.x - 1);
+                write!(f, "[{}]", c)?;
+                print_x += 3;
+            } else {
+                // Print x should be in pos.x - 1, except in the case right after the origin marker
+                // when it's in pos.x.
+                debug_assert!(print_x == pos.x - 1 || print_x == pos.x);
+                if print_x < pos.x {
+                    write!(f, " ")?;
+                    print_x += 1;
+                }
+                write!(f, "{}", c)?;
+                print_x += 1;
+            }
+        }
+
+        Ok(())
     }
+}
+
+impl From<Prefab<char>> for String {
+    fn from(prefab: Prefab<char>) -> String { format!("{}", prefab) }
 }
