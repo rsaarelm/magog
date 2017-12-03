@@ -4,6 +4,7 @@ use std::collections::{hash_map, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::i32;
+use std::iter::{FromIterator, IntoIterator};
 
 /// The text map character coordinate space.
 struct TextSpace;
@@ -83,7 +84,9 @@ impl Error for PrefabError {
     }
 }
 
-// TODO: Once `std::convert::TryFrom` becomes stable, use that instead of this custom trait.
+// XXX: This is basically just a TryFrom, which isn't stable yet. Though I can derive it for things
+// I can't derive TryFrom for, like the templatized GenericImage, because I'm controlling the trait
+// here.
 
 /// A trait for types that can be parsed into a map `Prefab`.
 pub trait IntoPrefab<T> {
@@ -132,6 +135,22 @@ impl<T> Prefab<T> {
 
     pub fn iter(&self) -> hash_map::Iter<CellVector, T> { self.points.iter() }
 }
+
+impl<T> FromIterator<(CellVector, T)> for Prefab<T> {
+    fn from_iter<I: IntoIterator<Item = (CellVector, T)>>(iter: I) -> Self {
+        Prefab { points: FromIterator::from_iter(iter) }
+    }
+}
+
+impl<T> IntoIterator for Prefab<T> {
+    type Item = (CellVector, T);
+    type IntoIter = hash_map::IntoIter<CellVector, T>;
+
+    fn into_iter(self) -> Self::IntoIter { self.points.into_iter() }
+}
+
+
+// Text prefabs
 
 // Not using FromStr even when the input type is String, since there's a conversion family here
 // where the sources can be strings or images and I want the interface to be uniform for both.
