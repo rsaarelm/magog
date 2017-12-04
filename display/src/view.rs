@@ -1,7 +1,7 @@
 use Icon;
 use backend::Core;
 use cache;
-use calx::{clamp, cycle_anim, FovValue, HexFov};
+use calx::{clamp, cycle_anim, FovValue, HexFov, CellVector};
 use calx_ecs::Entity;
 use euclid::{Point2D, Rect, Vector2D, Vector3D, point2, vec2, vec3};
 use render::{self, Angle, Layer};
@@ -19,7 +19,7 @@ pub struct WorldView {
     pub show_cursor: bool,
     camera_loc: Location,
     screen_area: Rect<f32>,
-    fov: Option<HashMap<Vector2D<i32>, Vec<Location>>>,
+    fov: Option<HashMap<CellVector, Vec<Location>>>,
 }
 
 impl WorldView {
@@ -340,7 +340,7 @@ impl<'a> PartialEq for ScreenFov<'a> {
 impl<'a> Eq for ScreenFov<'a> {}
 
 impl<'a> FovValue for ScreenFov<'a> {
-    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+    fn advance(&self, offset: CellVector) -> Option<Self> {
         if !self.screen_area.contains(&chart_to_view(offset.to_point())) {
             return None;
         }
@@ -378,7 +378,7 @@ pub fn screen_fov(
     w: &World,
     origin: Location,
     screen_area: Rect<f32>,
-) -> HashMap<Vector2D<i32>, Vec<Location>> {
+) -> HashMap<CellVector, Vec<Location>> {
     let init = ScreenFov {
         w: w,
         screen_area: screen_area,

@@ -1,5 +1,4 @@
-use calx::{FovValue, HexGeom};
-use euclid::Vector2D;
+use calx::{CellVector, FovValue, HexGeom};
 use location::Location;
 use terraform::TerrainQuery;
 use world::World;
@@ -33,7 +32,7 @@ impl<'a> PartialEq for SightFov<'a> {
 impl<'a> Eq for SightFov<'a> {}
 
 impl<'a> FovValue for SightFov<'a> {
-    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+    fn advance(&self, offset: CellVector) -> Option<Self> {
         if offset.hex_dist() as u32 > self.range {
             return None;
         }
@@ -86,7 +85,7 @@ impl<'a> PartialEq for SphereVolumeFov<'a> {
 impl<'a> Eq for SphereVolumeFov<'a> {}
 
 impl<'a> FovValue for SphereVolumeFov<'a> {
-    fn advance(&self, offset: Vector2D<i32>) -> Option<Self> {
+    fn advance(&self, offset: CellVector) -> Option<Self> {
         if offset.hex_dist() as u32 > self.range {
             return None;
         }

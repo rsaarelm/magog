@@ -1,10 +1,10 @@
 use Prefab;
 use calx::{hex_neighbors, Dijkstra, SRgba};
-use euclid::{Size2D, vec2};
+use euclid::vec2;
 use form::{self, Form};
 use image::{self, GenericImage, Pixel};
 use location::{Location, Portal, Sector};
-use mapgen::{self, DigCavesGen};
+use mapgen::{self, DigCavesGen, Size2D};
 use rand::{self, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::BTreeSet;
@@ -95,7 +95,7 @@ impl Worldgen {
     }
 
     fn load_prefab(&mut self, origin: Location, prefab: &Prefab) {
-        for (p, &(ref terrain, ref entities)) in prefab.iter() {
+        for (&p, &(ref terrain, ref entities)) in prefab.iter() {
             let loc = origin + p;
 
             self.terrain.insert(loc, *terrain);
@@ -344,7 +344,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
 }
 
 struct Room {
-    size: Size2D<i32>,
+    size: Size2D,
 }
 
 impl mapgen::Prefab for Room {
@@ -360,7 +360,7 @@ impl mapgen::Prefab for Room {
         on_x_wall ^ on_y_wall
     }
 
-    fn size(&self) -> mapgen::Size2D { self.size }
+    fn size(&self) -> Size2D { self.size }
 }
 
 impl Rand for Room {

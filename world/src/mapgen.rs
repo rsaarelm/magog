@@ -1,12 +1,12 @@
-use calx::{hex_disc, hex_neighbors, HexGeom, RngExt};
+use calx::{hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
 use euclid::{self, vec2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::BTreeSet;
 use std::ops::Deref;
 
-pub type Point2D = euclid::Point2D<i32>;
-pub type Size2D = euclid::Size2D<i32>;
+pub type Point2D = euclid::TypedPoint2D<i32, CellSpace>;
+pub type Size2D = euclid::TypedSize2D<i32, CellSpace>;
 
 
 // We can't put raw Point2D into BTreeSet because they don't implement Ord, and we don't want to

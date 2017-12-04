@@ -291,7 +291,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
     fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(Terrain, Vec<String>)>) {
-        for (p, &(ref terrain, _)) in prefab.iter() {
+        for (&p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 
             // Annihilate any existing entities in the drop zone.
@@ -304,7 +304,7 @@ pub trait Mutate: Query + Terraform + Sized {
         }
 
         // Spawn entities after all terrain is in place so that initial FOV is good.
-        for (p, &(_, ref entities)) in prefab.iter() {
+        for (&p, &(_, ref entities)) in prefab.iter() {
             let loc = origin + p;
 
             for spawn in entities.iter() {

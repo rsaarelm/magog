@@ -1,9 +1,9 @@
 use FovStatus;
 use Prefab;
-use calx::{clamp, hex_neighbors, Dir6, HexGeom};
+use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom};
 use calx_ecs::Entity;
 use components::{Alignment, BrainState, Icon, Status};
-use euclid::{Vector2D, vec2};
+use euclid::vec2;
 use form;
 use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
@@ -428,7 +428,7 @@ pub trait Query: TerrainQuery + Sized {
     /// drop site.
     fn empty_item_drop_location(&self, origin: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
-        let is_valid = |v: Vector2D<i32>| {
+        let is_valid = |v: CellVector| {
             self.can_drop_item_at(origin.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
         };
         let mut seen = HashSet::new();

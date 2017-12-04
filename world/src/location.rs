@@ -1,5 +1,6 @@
-use calx::{hex_neighbors, noise, Dir6, GridNode, HexGeom, compact_bits_by_2, spread_bits_by_2};
-use euclid::{Vector2D, vec2};
+use calx::{hex_neighbors, noise, CellVector, Dir6, GridNode, HexGeom, compact_bits_by_2,
+           spread_bits_by_2};
+use euclid::vec2;
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
 use terraform::TerrainQuery;
@@ -63,7 +64,7 @@ impl Location {
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
-    pub fn v2_at(&self, other: Location) -> Option<Vector2D<i32>> {
+    pub fn v2_at(&self, other: Location) -> Option<CellVector> {
         if self.z != other.z {
             return None;
         }
@@ -100,7 +101,7 @@ impl Location {
     pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
 
     /// Offset location and follow any portals in target site.
-    pub fn jump<T: TerrainQuery, V: Into<Vector2D<i32>> + Sized>(
+    pub fn jump<T: TerrainQuery, V: Into<CellVector> + Sized>(
         self,
         ctx: &T,
         offset: V,
@@ -139,7 +140,7 @@ impl Location {
     }
 }
 
-impl<V: Into<Vector2D<i32>>> Add<V> for Location {
+impl<V: Into<CellVector>> Add<V> for Location {
     type Output = Location;
     fn add(self, other: V) -> Location {
         let other = other.into();
@@ -162,7 +163,7 @@ impl Add<Portal> for Location {
     }
 }
 
-impl<V: Into<Vector2D<i32>>> Sub<V> for Location {
+impl<V: Into<CellVector>> Sub<V> for Location {
     type Output = Location;
     fn sub(self, other: V) -> Location {
         let other = other.into();
