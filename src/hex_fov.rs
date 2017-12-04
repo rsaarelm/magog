@@ -133,12 +133,11 @@ where
                 Some(prev_p + vec2(-1, 0))
             } else {
                 None
-            }
-            {
+            } {
                 // We don't have the FOV value for the corner point, so just reuse the one from
                 // `next` and hope it works out okay.
-                if (self.is_wall)(prev.0, &prev.1) && (self.is_wall)(next.0, &next.1) &&
-                    (self.is_wall)(corner_p, &next.1)
+                if (self.is_wall)(prev.0, &prev.1) && (self.is_wall)(next.0, &next.1)
+                    && (self.is_wall)(corner_p, &next.1)
                 {
                     // When the wall corner is found, push it to the extra slot to be returned
                     // in between this and the real next cell.
@@ -187,8 +186,7 @@ mod test {
 
         // Now test out the fake-isometric corners.
         let field: HashMap<CellVector, Cell> = HashMap::from_iter(
-            HexFov::new(Cell { range: 2 })
-                .add_fake_isometric_acute_corners(|_p, _t| true),
+            HexFov::new(Cell { range: 2 }).add_fake_isometric_acute_corners(|_p, _t| true),
         );
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(field.contains_key(&vec2(1, -1)));

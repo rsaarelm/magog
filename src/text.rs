@@ -64,9 +64,10 @@ where
                 self.prev = c;
 
                 // Return the cut in the current word if there is no last_word_break set yet.
-                Some(self.last_word_break.unwrap_or(
-                    (self.clip_pos, self.total_width),
-                ))
+                Some(
+                    self.last_word_break
+                        .unwrap_or((self.clip_pos, self.total_width)),
+                )
             }
         }
 

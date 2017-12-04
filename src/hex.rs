@@ -385,8 +385,8 @@ mod test {
 
     #[test]
     fn test_hex_disc() {
-        use euclid::vec2;
         use super::HexGeom;
+        use euclid::vec2;
 
         for y in -8i32..8 {
             for x in -8i32..8 {

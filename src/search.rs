@@ -156,7 +156,7 @@ where
 mod test {
     #[test]
     fn test_astar() {
-        use super::{GridNode, astar_path_with};
+        use super::{astar_path_with, GridNode};
 
         #[derive(PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
         struct V([i32; 2]);

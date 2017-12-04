@@ -1,7 +1,7 @@
 use image;
 use num::Num;
 use std::fmt;
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
 
 /// Color in sRGB color space.
@@ -96,7 +96,11 @@ impl From<image::Rgba<u8>> for SRgba {
 }
 
 impl From<SRgba> for image::Rgba<u8> {
-    fn from(c: SRgba) -> image::Rgba<u8> { image::Rgba { data: [c.r, c.g, c.b, c.a] } }
+    fn from(c: SRgba) -> image::Rgba<u8> {
+        image::Rgba {
+            data: [c.r, c.g, c.b, c.a],
+        }
+    }
 }
 
 impl FromStr for SRgba {
@@ -507,8 +511,8 @@ color_constants! {
 mod test {
     #[test]
     fn test_parse_color() {
-        use std::str::FromStr;
         use super::{Rgba, SRgba};
+        use std::str::FromStr;
 
         assert!(SRgba::from_str("").is_err());
         assert!(SRgba::from_str("#").is_err());

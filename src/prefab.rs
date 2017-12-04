@@ -1,7 +1,7 @@
-use colors::{SRgba, scolor};
-use euclid::{self, point2, TypedPoint2D, TypedRect, TypedVector2D, vec2};
+use colors::{scolor, SRgba};
+use euclid::{self, TypedPoint2D, TypedRect, TypedVector2D, point2, vec2};
 use image::{self, Pixel};
-use space::{CellSpace, CellVector, Transformation, Space};
+use space::{CellSpace, CellVector, Space, Transformation};
 use std::collections::{hash_map, HashMap};
 use std::error::Error;
 use std::fmt;
@@ -67,7 +67,9 @@ impl<T> Prefab<T> {
 
 impl<T> FromIterator<(CellVector, T)> for Prefab<T> {
     fn from_iter<I: IntoIterator<Item = (CellVector, T)>>(iter: I) -> Self {
-        Prefab { points: FromIterator::from_iter(iter) }
+        Prefab {
+            points: FromIterator::from_iter(iter),
+        }
     }
 }
 
