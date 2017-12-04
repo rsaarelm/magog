@@ -1,4 +1,4 @@
-use {Icon, FontData, ImageData};
+use {FontData, Icon, ImageData};
 use atlas_cache::{AtlasCache, SubImageSpec};
 use brush::Brush;
 use init;
@@ -37,25 +37,28 @@ pub fn get(key: &SubImageSpec) -> ImageData { ATLAS.with(|a| a.borrow_mut().get(
 
 pub fn terrain(t: world::Terrain) -> Rc<Brush> {
     TERRAIN_BRUSHES.with(|b| {
-        Rc::clone(b.get(t as usize).expect(
-            &format!("No brush for terrain {:?}", t),
-        ))
+        Rc::clone(
+            b.get(t as usize)
+                .expect(&format!("No brush for terrain {:?}", t)),
+        )
     })
 }
 
 pub fn entity(e: world::Icon) -> Rc<Brush> {
     ENTITY_BRUSHES.with(|b| {
-        Rc::clone(b.get(e as usize).expect(
-            &format!("No brush for entity {:?}", e),
-        ))
+        Rc::clone(
+            b.get(e as usize)
+                .expect(&format!("No brush for entity {:?}", e)),
+        )
     })
 }
 
 pub fn misc(e: Icon) -> Rc<Brush> {
     MISC_BRUSHES.with(|b| {
-        Rc::clone(b.get(e as usize).expect(
-            &format!("No brush for icon {:?}", e),
-        ))
+        Rc::clone(
+            b.get(e as usize)
+                .expect(&format!("No brush for icon {:?}", e)),
+        )
     })
 }
 

@@ -1,17 +1,17 @@
+extern crate calx;
+#[macro_use]
+extern crate calx_ecs;
+#[macro_use]
+extern crate error_chain;
+extern crate euclid;
 extern crate image;
+#[macro_use]
+extern crate lazy_static;
 extern crate rand;
 extern crate ron;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate euclid;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate error_chain;
-extern crate calx;
-#[macro_use]
-extern crate calx_ecs;
 
 use calx::Deciban;
 
@@ -130,15 +130,15 @@ mod fov;
 mod grammar;
 
 mod item;
-pub use item::{Slot, ItemType};
+pub use item::{ItemType, Slot};
 
 mod location;
-pub use location::{SECTOR_WIDTH, SECTOR_HEIGHT, Location, Portal, Sector};
+pub use location::{Location, Portal, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod location_set;
 
 mod mapfile;
-pub use mapfile::{save_prefab, load_prefab};
+pub use mapfile::{load_prefab, save_prefab};
 
 pub mod mapgen;
 
@@ -187,9 +187,7 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
 }
 
 /// Standard deciban roll, clamp into [-20, 20].
-pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 {
-    calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0)
-}
+pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 { calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0) }
 
 pub mod errors {
     error_chain! {
@@ -207,7 +205,11 @@ struct Cache<T> {
 }
 
 impl<T: Default> Cache<T> {
-    pub fn new() -> Cache<T> { Cache { inner: Default::default() } }
+    pub fn new() -> Cache<T> {
+        Cache {
+            inner: Default::default(),
+        }
+    }
 }
 
 impl<T> ::std::ops::Deref for Cache<T> {

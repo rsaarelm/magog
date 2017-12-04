@@ -126,9 +126,9 @@ pub fn font<I: Iterator<Item = char>>(
     for c in span {
         chars.insert(
             c,
-            glyphs.pop().expect(
-                "Not enough glyphs in font sheet for all chars",
-            ),
+            glyphs
+                .pop()
+                .expect("Not enough glyphs in font sheet for all chars"),
         );
     }
 

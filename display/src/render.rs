@@ -6,7 +6,7 @@ use cache;
 use calx::{Dir12, Dir6};
 use euclid::{Vector3D, vec3};
 use std::rc::Rc;
-use world::{Location, World, Query, TerrainQuery, Terrain, terrain};
+use world::{terrain, Location, Query, Terrain, TerrainQuery, World};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///
@@ -299,9 +299,8 @@ pub struct Kernel {
 }
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Terrain {
-    let loc = w.visible_portal(loc + dir.to_v2()).unwrap_or(
-        loc + dir.to_v2(),
-    );
+    let loc = w.visible_portal(loc + dir.to_v2())
+        .unwrap_or(loc + dir.to_v2());
     w.visual_terrain(loc)
 }
 

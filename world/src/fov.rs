@@ -25,8 +25,8 @@ impl<'a> SightFov<'a> {
 
 impl<'a> PartialEq for SightFov<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.w as *const World == other.w as *const World && self.range == other.range &&
-            self.origin == other.origin && self.is_edge == other.is_edge
+        self.w as *const World == other.w as *const World && self.range == other.range
+            && self.origin == other.origin && self.is_edge == other.is_edge
     }
 }
 
@@ -78,8 +78,8 @@ impl<'a> SphereVolumeFov<'a> {
 
 impl<'a> PartialEq for SphereVolumeFov<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.w as *const World == other.w as *const World && self.range == other.range &&
-            self.origin == other.origin
+        self.w as *const World == other.w as *const World && self.range == other.range
+            && self.origin == other.origin
     }
 }
 

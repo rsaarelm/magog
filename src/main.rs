@@ -1,15 +1,15 @@
 // Don't show a console window when running on Windows.
 #![windows_subsystem = "windows"]
 
-extern crate rand;
-extern crate euclid;
-extern crate scancode;
-extern crate vitral;
 #[macro_use]
 extern crate calx;
-extern crate world;
 extern crate display;
+extern crate euclid;
 extern crate glium;
+extern crate rand;
+extern crate scancode;
+extern crate vitral;
+extern crate world;
 
 pub mod game_loop;
 

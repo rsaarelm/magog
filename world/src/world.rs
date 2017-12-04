@@ -1,6 +1,6 @@
 use Rng;
-use calx_ecs::Entity;
 use calx::{HexFov, HexFovIter};
+use calx_ecs::Entity;
 use command::{Command, CommandResult};
 use components;
 use errors::*;
@@ -214,12 +214,17 @@ impl Mutate for World {
             const OVERLAND_FOV_RANGE: u32 = 40;
 
             // Long-range sight while in overworld.
-            let range = if origin.z == 0 { OVERLAND_FOV_RANGE } else { DEFAULT_FOV_RANGE };
+            let range = if origin.z == 0 {
+                OVERLAND_FOV_RANGE
+            } else {
+                DEFAULT_FOV_RANGE
+            };
 
             let fov: HashSet<Location> = HashSet::from_iter(
                 HexFov::new(SightFov::new(self, range, origin))
-                    .add_fake_isometric_acute_corners(|pos, a|
-                        self.terrain(a.origin + pos).is_wall())
+                    .add_fake_isometric_acute_corners(|pos, a| {
+                        self.terrain(a.origin + pos).is_wall()
+                    })
                     .map(|(pos, a)| a.origin + pos),
             );
 

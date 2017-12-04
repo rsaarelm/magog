@@ -80,7 +80,11 @@ pub struct Brain {
 
 impl Brain {
     /// Create default enemy brain.
-    pub fn enemy() -> Brain { Brain { ..Default::default() } }
+    pub fn enemy() -> Brain {
+        Brain {
+            ..Default::default()
+        }
+    }
 
     /// Create default player brain.
     pub fn player() -> Brain {

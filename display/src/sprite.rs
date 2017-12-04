@@ -1,6 +1,6 @@
 use backend::Core;
 use brush::Brush;
-use calx::{lerp, color, Rgba};
+use calx::{color, lerp, Rgba};
 use draw_util::DrawUtil;
 use euclid::{Point2D, point2};
 use render::Layer;

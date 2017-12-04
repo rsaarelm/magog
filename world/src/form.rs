@@ -1,5 +1,5 @@
 use calx::WeightedChoice;
-use components::{Icon, Brain, Desc, Health, Item, MapMemory, ShoutType, StatsComponent, Statuses};
+use components::{Brain, Desc, Health, Icon, Item, MapMemory, ShoutType, StatsComponent, Statuses};
 use item::ItemType;
 use rand::Rng;
 use stats::{Intrinsic, Stats};
@@ -26,10 +26,12 @@ pub struct Form {
 /// Sample a weighted choice from a filtered Form selection.
 pub fn rand<R: Rng>(rng: &mut R, selection: &[&'static Form]) -> Option<&'static Form> {
     selection
-        .weighted_choice(rng, |item| if item.rarity == 0.0 {
-            0.0
-        } else {
-            1.0 / item.rarity
+        .weighted_choice(rng, |item| {
+            if item.rarity == 0.0 {
+                0.0
+            } else {
+                1.0 / item.rarity
+            }
         })
         .cloned()
 }
@@ -89,7 +91,12 @@ impl Form {
 
     pub fn folk(mut self) -> Form {
         self.loadout.brain.as_mut().expect("Must be mob").shout = ShoutType::Shout;
-        self.loadout.stats.as_mut().unwrap().base.add_intrinsic(Intrinsic::Hands);
+        self.loadout
+            .stats
+            .as_mut()
+            .unwrap()
+            .base
+            .add_intrinsic(Intrinsic::Hands);
         self
     }
 

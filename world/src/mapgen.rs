@@ -1,7 +1,7 @@
-use calx::{RngExt, hex_disc, HexGeom, hex_neighbors};
+use calx::{hex_disc, hex_neighbors, HexGeom, RngExt};
 use euclid::{self, vec2};
 use rand::{self, Rng};
-use std::cmp::{PartialOrd, Ord, Ordering};
+use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::BTreeSet;
 use std::ops::Deref;
 
@@ -74,7 +74,9 @@ pub struct DigCavesGen {
 
 impl DigCavesGen {
     pub fn new<I: IntoIterator<Item = Point2D>>(domain: I) -> DigCavesGen {
-        DigCavesGen { domain: domain.into_iter().map(|x| x.into()).collect() }
+        DigCavesGen {
+            domain: domain.into_iter().map(|x| x.into()).collect(),
+        }
     }
 
     pub fn dig<R: Rng, D, P>(&self, rng: &mut R, d: &mut D)
@@ -170,8 +172,8 @@ impl DigCavesGen {
         fn is_downstair_pos(dug: &BTreeSet<OrdPoint>, pos: OrdPoint) -> bool {
             let dug = |x, y| dug.contains(&OrdPoint::from(Point2D::from(pos) + vec2(x, y)));
             // Downstairs needs an extra enclosure behind it for a tile graphics hack.
-            dug(-1, -1) && !dug(-1, 0) && !dug(0, -1) && !dug(1, 1) && !dug(1, 0) &&
-                !dug(0, 1) && !dug(2, 2) && !dug(2, 1) && !dug(1, 2)
+            dug(-1, -1) && !dug(-1, 0) && !dug(0, -1) && !dug(1, 1) && !dug(1, 0) && !dug(0, 1)
+                && !dug(2, 2) && !dug(2, 1) && !dug(1, 2)
         }
     }
 }
@@ -233,9 +235,8 @@ fn jaggly_line<R: Rng>(
 
     while p != p2 {
         let dist = (*p2 - *p).hex_dist();
-        let options = hex_neighbors(Point2D::from(p)).filter(|&q| {
-            (*p2 - q).hex_dist() < dist && available.contains(&q.into())
-        });
+        let options = hex_neighbors(Point2D::from(p))
+            .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
         p = rand::sample(rng, options, 1)[0].into();
         ret.push(p);
     }

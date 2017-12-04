@@ -256,9 +256,10 @@ impl Templater for ObjectTemplater {
 }
 
 pub fn is_capitalized(word: &str) -> bool {
-    word.chars().next().map(|c| c.is_uppercase()).unwrap_or(
-        false,
-    )
+    word.chars()
+        .next()
+        .map(|c| c.is_uppercase())
+        .unwrap_or(false)
 }
 
 pub fn capitalize(word: &str) -> String {
@@ -281,11 +282,11 @@ pub fn is_vowel(c: char) -> bool {
 
 #[cfg(test)]
 mod test {
-    use super::{Pronoun, Noun, Templater, SubjectTemplater, ObjectTemplater};
+    use super::{Noun, ObjectTemplater, Pronoun, SubjectTemplater, Templater};
 
     #[test]
     fn test_caps_helpers() {
-        use super::{is_capitalized, capitalize};
+        use super::{capitalize, is_capitalized};
         for &(text, cap) in &[
             ("", ""),
             ("a", "A"),
@@ -296,8 +297,7 @@ mod test {
             ("ABC", "ABC"),
             ("æ", "Æ"),
             ("æìë", "Æìë"),
-        ]
-        {
+        ] {
             assert_eq!(&capitalize(text), cap);
             assert_eq!(
                 is_capitalized(text),
@@ -323,7 +323,11 @@ mod test {
             .lines()
             .filter_map(|s| {
                 let s = s.trim();
-                if s.is_empty() { None } else { Some(s) }
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(s)
+                }
             })
             .collect::<Vec<&str>>()
             .chunks(3)
@@ -336,7 +340,11 @@ mod test {
             .lines()
             .filter_map(|s| {
                 let s = s.trim();
-                if s.is_empty() { None } else { Some(s) }
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(s)
+                }
             })
             .collect::<Vec<&str>>()
             .chunks(4)
@@ -346,9 +354,8 @@ mod test {
 
     #[test]
     fn test_templating_1() {
-        for (subject, template, message) in
-            parse_subj(
-                "PLAYER
+        for (subject, template, message) in parse_subj(
+            "PLAYER
                  [One] drink[s] the potion.
                  You drink the potion.
 
@@ -395,7 +402,7 @@ mod test {
                  goblin
                  [One] nimbly parr[ies] the blow.
                  The goblin nimbly parries the blow.",
-            ).into_iter()
+        ).into_iter()
         {
             let mut t = SubjectTemplater::new(make_noun(subject));
             assert_eq!(t.format(template), Ok(message.to_string()));
@@ -404,9 +411,8 @@ mod test {
 
     #[test]
     fn test_templating_2() {
-        for (subject, object, template, message) in
-            parse_obj(
-                "PLAYER
+        for (subject, object, template, message) in parse_obj(
+            "PLAYER
                  goblin
                  [One] hit[s] [another].
                  You hit the goblin.
@@ -436,7 +442,7 @@ mod test {
                  [One] chase[s] after [them].
                  You chase after him.
                  ",
-            ).into_iter()
+        ).into_iter()
         {
             let mut t =
                 ObjectTemplater::new(SubjectTemplater::new(make_noun(subject)), make_noun(object));

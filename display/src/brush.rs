@@ -2,7 +2,7 @@ use atlas_cache::SubImageSpec;
 use cache;
 use calx::Rgba;
 use calx::color::*;
-use euclid::{Rect, rect, Vector2D, vec2};
+use euclid::{rect, Rect, Vector2D, vec2};
 use std::fmt;
 use std::rc::Rc;
 use vitral;
@@ -233,6 +233,7 @@ impl Geom {
     }
 
     /// Standard blobform tileset.
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn blob(vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, vert_x, vert_y, 16, 32),       // 0: Top left    VERTICAL SIDES
@@ -279,6 +280,7 @@ impl Geom {
     }
 
     /// Standard wallform tileset.
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn wall(center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, center_x, center_y, 16, 32),       // 0

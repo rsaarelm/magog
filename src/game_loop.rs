@@ -1,4 +1,4 @@
-use calx::{Rgba, color};
+use calx::{color, Rgba};
 use calx::Dir6;
 use display::{self, Backend, Core, FontData};
 use euclid::{Point2D, Rect};
@@ -40,7 +40,10 @@ pub struct GameLoop {
     state: State,
 }
 
-enum Side { West, East }
+enum Side {
+    West,
+    East,
+}
 
 impl GameLoop {
     pub fn new(backend: &mut Backend, world: World) -> GameLoop {
@@ -81,8 +84,16 @@ impl GameLoop {
         let flip = (loc.x + loc.y) % 2 == 0;
 
         let actual_dir = match side {
-            Side::West => if flip { Dir6::Southwest } else { Dir6::Northwest }
-            Side::East => if flip { Dir6::Southeast } else { Dir6::Northeast }
+            Side::West => if flip {
+                Dir6::Southwest
+            } else {
+                Dir6::Northwest
+            },
+            Side::East => if flip {
+                Dir6::Southeast
+            } else {
+                Dir6::Northeast
+            },
         };
 
         self.smart_step(actual_dir)
@@ -321,9 +332,9 @@ impl GameLoop {
         let (view_area, status_area) = screen_area.horizontal_split(-32.0);
 
         // Ugh
-        self.world.player().map(|x| {
-            self.world.location(x).map(|l| self.camera_loc = l)
-        });
+        self.world
+            .player()
+            .map(|x| self.world.location(x).map(|l| self.camera_loc = l));
 
         let mut view = display::WorldView::new(self.camera_loc, view_area);
         view.show_cursor = true;
@@ -355,9 +366,8 @@ impl GameLoop {
         if let Some(event) = backend.poll_key() {
             if event.state == ElementState::Pressed {
                 let scancode_adjust = if cfg!(target_os = "linux") { 8 } else { 0 };
-                if let Some(scancode) = Scancode::new(
-                    (event.scancode as i32 + scancode_adjust) as u8,
-                )
+                if let Some(scancode) =
+                    Scancode::new((event.scancode as i32 + scancode_adjust) as u8)
                 {
                     let ret = match self.state {
                         State::Inventory(_) => self.inventory_input(scancode),

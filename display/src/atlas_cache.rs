@@ -1,10 +1,10 @@
-use euclid::{Rect, rect, size2};
+use euclid::{rect, Rect, size2};
 use image::{self, GenericImage};
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::slice;
 use tilesheet;
-use vitral::{self, ImageBuffer, Atlas};
+use vitral::{self, Atlas, ImageBuffer};
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]

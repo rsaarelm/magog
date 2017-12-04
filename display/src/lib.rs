@@ -1,13 +1,13 @@
-extern crate time;
+extern crate calx;
+extern crate calx_ecs;
 extern crate euclid;
 #[macro_use]
 extern crate glium;
 extern crate image;
+extern crate time;
 extern crate vec_map;
 extern crate vitral;
 extern crate world;
-extern crate calx_ecs;
-extern crate calx;
 
 mod atlas_cache;
 

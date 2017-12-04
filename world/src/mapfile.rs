@@ -10,8 +10,8 @@ use terrain::Terrain;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> {
     const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-             abcdefghijklmnopqrstuvwxyz\
-             0123456789";
+                                    abcdefghijklmnopqrstuvwxyz\
+                                    0123456789";
 
     let chars_f = move |x: &(Terrain, Vec<String>)| {
         let &(ref t, ref e) = x;

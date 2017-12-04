@@ -2,8 +2,7 @@ use cache;
 use euclid::Point2D;
 use glium;
 use std::error::Error;
-use vitral::{self, Color, glium_backend};
-
+use vitral::{self, glium_backend, Color};
 pub use vitral::glium_backend::KeyEvent;
 
 pub type Core = vitral::Core<vitral::glium_backend::TextureHandle, Vertex>;
@@ -73,25 +72,26 @@ impl Backend {
     pub fn new_core(&mut self) -> Core {
         // Make sure to reuse the existing solid texture so that the Core builder won't do new
         // texture allocations.
-        vitral::Builder::new().solid_texture(cache::solid()).build(
-            self.inner.canvas_size().cast().unwrap(),
-            |img| self.inner.make_texture(img),
-        )
+        vitral::Builder::new()
+            .solid_texture(cache::solid())
+            .build(self.inner.canvas_size().cast().unwrap(), |img| {
+                self.inner.make_texture(img)
+            })
     }
 
     fn refresh_atlas(&mut self) {
-        cache::ATLAS.with(|a| for a in a.borrow_mut().atlases_mut() {
-            let idx = *a.texture();
-            debug_assert!(idx <= self.inner.texture_count());
-            if idx == self.inner.texture_count() {
-                let _idx = self.inner.make_empty_texture(
-                    a.size().width,
-                    a.size().height,
-                );
-                debug_assert_eq!(_idx, idx);
-            }
+        cache::ATLAS.with(|a| {
+            for a in a.borrow_mut().atlases_mut() {
+                let idx = *a.texture();
+                debug_assert!(idx <= self.inner.texture_count());
+                if idx == self.inner.texture_count() {
+                    let _idx = self.inner
+                        .make_empty_texture(a.size().width, a.size().height);
+                    debug_assert_eq!(_idx, idx);
+                }
 
-            a.update_texture(|buf, &idx| self.inner.write_to_texture(buf, idx));
+                a.update_texture(|buf, &idx| self.inner.write_to_texture(buf, idx));
+            }
         });
     }
 
@@ -105,10 +105,10 @@ impl Backend {
     }
 
     pub fn save_screenshot(&self, basename: &str) {
-        use time;
-        use std::path::Path;
-        use std::fs::{self, File};
         use image;
+        use std::fs::{self, File};
+        use std::path::Path;
+        use time;
 
         let shot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> = self.inner.screenshot().into();
 

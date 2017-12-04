@@ -1,6 +1,6 @@
 use Prefab;
-use calx::{Dijkstra, hex_neighbors, SRgba};
-use euclid::{vec2, Size2D};
+use calx::{hex_neighbors, Dijkstra, SRgba};
+use euclid::{Size2D, vec2};
 use form::{self, Form};
 use image::{self, GenericImage, Pixel};
 use location::{Location, Portal, Sector};
@@ -36,10 +36,8 @@ impl Worldgen {
 
         let mut cave_entrance = Location::new(9, 0, 0);
         ret.cave_entrance(cave_entrance);
-        ret.terrain.insert(
-            cave_entrance + vec2(1, 1),
-            Terrain::Gate,
-        );
+        ret.terrain
+            .insert(cave_entrance + vec2(1, 1), Terrain::Gate);
 
         for depth in 1..11 {
             let up_stairs;
@@ -52,9 +50,9 @@ impl Worldgen {
                 gen.dig(&mut rng, &mut digger);
 
                 up_stairs = digger.up_portal.expect("Mapgen didn't create stairs up");
-                down_stairs = digger.down_portal.expect(
-                    "Mapgen didn't create stairs down",
-                );
+                down_stairs = digger
+                    .down_portal
+                    .expect("Mapgen didn't create stairs down");
 
                 // Spawn
                 digger.clear_spawns_near_entrance(12);
@@ -106,10 +104,8 @@ impl Worldgen {
                 if spawn == "player" {
                     self.player_entry = loc;
                 } else {
-                    let form = Form::named(spawn).expect(&format!(
-                        "Bad prefab: Form '{}' not found!",
-                        spawn
-                    ));
+                    let form = Form::named(spawn)
+                        .expect(&format!("Bad prefab: Form '{}' not found!", spawn));
                     self.spawns.push((loc, form.loadout.clone()));
                 }
             }
@@ -179,10 +175,8 @@ impl Worldgen {
 
     /// Punch a (one-way) portal between two points.
     fn portal(&mut self, origin: Location, destination: Location) {
-        self.portals.insert(
-            origin,
-            Portal::new(origin, destination),
-        );
+        self.portals
+            .insert(origin, Portal::new(origin, destination));
     }
 }
 
@@ -225,10 +219,10 @@ impl<'a> SectorDigger<'a> {
         let mapgen_origin = mapgen::Point2D::zero();
 
         for loc in self.sector.iter() {
-            let pos = mapgen_origin +
-                sector_origin.v2_at(loc).expect(
-                    "Sector points are not Euclidean",
-                );
+            let pos = mapgen_origin
+                + sector_origin
+                    .v2_at(loc)
+                    .expect("Sector points are not Euclidean");
 
             // Okay, this part is a bit hairy, hang on.
             // Sectors are arranged in a rectangular grid, so there are some cells where you can
@@ -371,7 +365,9 @@ impl mapgen::Prefab for Room {
 
 impl Rand for Room {
     fn rand<R: Rng>(rng: &mut R) -> Self {
-        Room { size: Size2D::new(rng.gen_range(3, 10), rng.gen_range(3, 10)) }
+        Room {
+            size: Size2D::new(rng.gen_range(3, 10), rng.gen_range(3, 10)),
+        }
     }
 }
 

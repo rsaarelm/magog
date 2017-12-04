@@ -1,12 +1,12 @@
 use {attack_damage, roll};
-use calx_ecs::Entity;
 use calx::{Dir6, Prefab, RngExt};
+use calx_ecs::Entity;
 use command::CommandResult;
 use components::{BrainState, Status};
 use effect::{Damage, Effect};
 use event::Event;
 use form::Form;
-use item::{MagicEffect, ItemType, Slot};
+use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use query::Query;
 use rand::{self, Rand};
@@ -75,13 +75,11 @@ pub trait Mutate: Query + Terraform + Sized {
             Asleep => {
                 // XXX: Only treat player mob as potential hostile.
                 // Can't model area conflict effects yet.
-                if let (Some(loc), Some(player), Some(player_loc)) =
-                    (
-                        self.location(npc),
-                        self.player(),
-                        self.player().map(|p| self.location(p)).unwrap_or(None),
-                    )
-                {
+                if let (Some(loc), Some(player), Some(player_loc)) = (
+                    self.location(npc),
+                    self.player(),
+                    self.player().map(|p| self.location(p)).unwrap_or(None),
+                ) {
                     if self.player_sees(loc) {
                         // Okay, tricky spot. Player might be seeing mob across a portal, in
                         // which case we can't do naive distance check.
@@ -197,11 +195,10 @@ pub trait Mutate: Query + Terraform + Sized {
         }
         if let Some(loc) = self.location(e) {
             if let Some(target) = self.mob_at(loc.jump(self, dir)) {
-
                 // XXX: Using power stat for damage, should this be different?
                 // Do +5 since dmg 1 is really, really useless.
-                let advantage = self.stats(e).attack - self.stats(target).defense +
-                    2 * self.stats(target).armor;
+                let advantage = self.stats(e).attack - self.stats(target).defense
+                    + 2 * self.stats(target).armor;
                 let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
 
                 if damage == 0 {
@@ -380,8 +377,7 @@ pub trait Mutate: Query + Terraform + Sized {
         effect: Entity,
         caster: Option<Entity>,
     ) -> Result<(), ()> {
-        if let ItemType::UntargetedUsable(effect) =
-            self.ecs().item.get(effect).ok_or(())?.item_type
+        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type
         {
             match effect {
                 MagicEffect::Lightning => {

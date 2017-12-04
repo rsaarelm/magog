@@ -3,7 +3,7 @@ use backend::Core;
 use cache;
 use calx::{clamp, cycle_anim, FovValue, HexFov};
 use calx_ecs::Entity;
-use euclid::{Point2D, point2, Vector2D, Vector3D, vec2, vec3, Rect};
+use euclid::{Point2D, Rect, Vector2D, Vector3D, point2, vec2, vec3};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
@@ -45,8 +45,9 @@ impl WorldView {
         if self.fov.is_none() {
             // Chart area, center in origin, inflated by tile width in every direction to get the
             // cells partially on screen included.
-            let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
-                              vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
+            let center = (self.screen_area.origin + self.screen_area.size / 2.0
+                - vec2(PIXEL_UNIT / 2.0, 0.0))
+                .to_vector();
             let bounds = self.screen_area
                 .translate(&-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
@@ -61,8 +62,9 @@ impl WorldView {
 
         self.ensure_fov(world);
 
-        let center = (self.screen_area.origin + self.screen_area.size / 2.0 -
-                          vec2(PIXEL_UNIT / 2.0, 10.0)).to_vector();
+        let center = (self.screen_area.origin + self.screen_area.size / 2.0
+            - vec2(PIXEL_UNIT / 2.0, 10.0))
+            .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let cursor_pos = view_to_chart(core.mouse_pos() - center);
@@ -115,8 +117,8 @@ impl WorldView {
 
             // Tile is outside current sector and can't be entered, graphical cues to point this
             // out may be needed.
-            let blocked_offsector = loc.sector() != current_sector &&
-                world.terrain(loc).is_narrow_obstacle();
+            let blocked_offsector =
+                loc.sector() != current_sector && world.terrain(loc).is_narrow_obstacle();
 
             if blocked_offsector && !in_map_memory {
                 sprites.push(Sprite::new(
@@ -216,8 +218,8 @@ impl WorldView {
             //     sprites.extend_from_slice(&entity_sprite_buffer);
             //     sprites.extend_from_slice(&terrain_sprite_buffer);
             // } else {
-                sprites.extend_from_slice(&terrain_sprite_buffer);
-                sprites.extend_from_slice(&entity_sprite_buffer);
+            sprites.extend_from_slice(&terrain_sprite_buffer);
+            sprites.extend_from_slice(&entity_sprite_buffer);
             // }
         }
 
@@ -251,10 +253,11 @@ impl WorldView {
 
         fn get_fov(world: &World, loc: Location) -> Option<FovStatus> {
             if let Some(player) = world.player() {
-                world.ecs().map_memory.get(player).map_or(
-                    Some(FovStatus::Seen),
-                    |fov| fov.status(loc),
-                )
+                world
+                    .ecs()
+                    .map_memory
+                    .get(player)
+                    .map_or(Some(FovStatus::Seen), |fov| fov.status(loc))
             } else {
                 Some(FovStatus::Seen)
             }
@@ -329,8 +332,8 @@ struct ScreenFov<'a> {
 
 impl<'a> PartialEq for ScreenFov<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.w as *const World == other.w as *const World &&
-            self.screen_area == other.screen_area && self.origins == other.origins
+        self.w as *const World == other.w as *const World && self.screen_area == other.screen_area
+            && self.origins == other.origins
     }
 }
 

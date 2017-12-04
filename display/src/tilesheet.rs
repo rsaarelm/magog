@@ -1,4 +1,4 @@
-use euclid::{Point2D, point2, Rect, rect, Size2D, vec2};
+use euclid::{rect, Point2D, Rect, Size2D, point2, vec2};
 use image::GenericImage;
 
 /// Return the tiles on a tile sheet image.
@@ -55,7 +55,6 @@ where
 
     while unchanged_count < 4 {
         for dir in 0..4 {
-
             // Try adding a 1-pixel wide strip to the tile rectangle.
             let new_area = match dir {
                 0 => Rect::new(ret.origin + vec2(0, -1), Size2D::new(ret.size.width, 1)),

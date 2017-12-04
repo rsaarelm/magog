@@ -1,6 +1,6 @@
-use {ImageData, FontData};
+use {FontData, ImageData};
 use backend::{Core, Vertex};
-use euclid::{Point2D, rect, vec2};
+use euclid::{rect, Point2D, vec2};
 use vitral::{Align, Color};
 
 /// Helpers for drawing into the local `Core` type.
@@ -87,8 +87,7 @@ impl DrawUtil for Core {
             vec2(1.0, 0.0),
             vec2(0.0, -1.0),
             vec2(0.0, 1.0),
-        ]
-        {
+        ] {
             self.draw_text(font, pos + *offset, align, back_color, text);
         }
 

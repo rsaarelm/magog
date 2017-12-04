@@ -1,5 +1,5 @@
-use std::slice;
 use calx::SRgba;
+use std::slice;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -100,8 +100,12 @@ impl Terrain {
     pub fn iter() -> slice::Iter<'static, Terrain> { TERRAIN_ENUM.iter() }
 
     pub fn from_color(color: SRgba) -> Option<Terrain> {
-        let key = (((color.r >> 4) as u16) << 8) + (((color.g >> 4) as u16) << 4) + (color.b >> 4) as u16;
-        Self::iter().filter(|t| t.is_regular()).find(|t| TERRAIN_DATA[**t as usize].color == key).cloned()
+        let key =
+            (((color.r >> 4) as u16) << 8) + (((color.g >> 4) as u16) << 4) + (color.b >> 4) as u16;
+        Self::iter()
+            .filter(|t| t.is_regular())
+            .find(|t| TERRAIN_DATA[**t as usize].color == key)
+            .cloned()
     }
 
     #[inline(always)]
@@ -190,7 +194,10 @@ mod test {
     fn test_colors_are_unique() {
         use std::collections::HashSet;
 
-        let terrains: HashSet<Terrain> = Terrain::iter().filter(|t| t.is_regular()).cloned().collect();
+        let terrains: HashSet<Terrain> = Terrain::iter()
+            .filter(|t| t.is_regular())
+            .cloned()
+            .collect();
         let colors: HashSet<SRgba> = terrains.iter().map(|t| t.color()).collect();
 
         assert_eq!(colors.len(), terrains.len());
@@ -198,7 +205,13 @@ mod test {
 
     #[test]
     fn test_from_color() {
-        assert_eq!(Terrain::from_color(SRgba::new(0xff, 0x88, 0xff, 0xff)), None);
-        assert_eq!(Terrain::from_color(SRgba::new(0xa2, 0xc0, 0x2f, 0xff)), Some(Terrain::Grass));
+        assert_eq!(
+            Terrain::from_color(SRgba::new(0xff, 0x88, 0xff, 0xff)),
+            None
+        );
+        assert_eq!(
+            Terrain::from_color(SRgba::new(0xa2, 0xc0, 0x2f, 0xff)),
+            Some(Terrain::Grass)
+        );
     }
 }

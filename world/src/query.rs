@@ -1,7 +1,7 @@
 use FovStatus;
 use Prefab;
+use calx::{clamp, hex_neighbors, Dir6, HexGeom};
 use calx_ecs::Entity;
-use calx::{clamp, Dir6, HexGeom, hex_neighbors};
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::{Vector2D, vec2};
 use form;
@@ -62,9 +62,7 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs().brain.get(e).and_then(
-            |brain| Some(brain.state),
-        )
+        self.ecs().brain.get(e).and_then(|brain| Some(brain.state))
     }
 
     /// Return whether the entity is a mobile object (eg. active creature).
@@ -79,12 +77,11 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return current health of an entity.
     fn hp(&self, e: Entity) -> i32 {
-        self.max_hp(e) -
-            if self.ecs().health.contains(e) {
-                self.ecs().health[e].wounds
-            } else {
-                0
-            }
+        self.max_hp(e) - if self.ecs().health.contains(e) {
+            self.ecs().health[e].wounds
+        } else {
+            0
+        }
     }
 
     /// Return field of view for a location.
@@ -108,10 +105,10 @@ pub trait Query: TerrainQuery + Sized {
     fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
     fn entity_name(&self, e: Entity) -> String {
-        self.ecs().desc.get(e).map_or_else(
-            || "N/A".to_string(),
-            |x| x.name.clone(),
-        )
+        self.ecs()
+            .desc
+            .get(e)
+            .map_or_else(|| "N/A".to_string(), |x| x.name.clone())
     }
 
     fn noun(&self, e: Entity) -> Noun {
@@ -144,9 +141,8 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return whether the entity can move in a direction.
     fn can_step(&self, e: Entity, dir: Dir6) -> bool {
-        self.location(e).map_or(false, |loc| {
-            self.can_enter(e, loc.jump(self, dir))
-        })
+        self.location(e)
+            .map_or(false, |loc| self.can_enter(e, loc.jump(self, dir)))
     }
 
     /// Return whether location blocks line of sight.
@@ -188,9 +184,9 @@ pub trait Query: TerrainQuery + Sized {
         if self.terrain(loc).blocks_walk() {
             return true;
         }
-        if self.entities_at(loc).into_iter().any(|e| {
-            self.is_blocking_entity(e)
-        })
+        if self.entities_at(loc)
+            .into_iter()
+            .any(|e| self.is_blocking_entity(e))
         {
             return true;
         }
@@ -217,10 +213,10 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return whether the entity has a specific temporary status
     fn has_status(&self, e: Entity, status: Status) -> bool {
-        self.ecs().status.get(e).map_or(
-            false,
-            |s| s.contains_key(&status),
-        )
+        self.ecs()
+            .status
+            .get(e)
+            .map_or(false, |s| s.contains_key(&status))
     }
 
     /// Return if the entity is a mob that should get an update this frame
@@ -332,9 +328,7 @@ pub trait Query: TerrainQuery + Sized {
     fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     fn item_type(&self, e: Entity) -> Option<ItemType> {
-        self.ecs().item.get(e).and_then(
-            |item| Some(item.item_type),
-        )
+        self.ecs().item.get(e).and_then(|item| Some(item.item_type))
     }
 
     /// Return terrain at location for drawing on screen.
@@ -372,9 +366,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Return the name that can be used to spawn this entity.
     fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
-        self.ecs().desc.get(e).and_then(
-            |desc| Some(&desc.name[..]),
-        )
+        self.ecs().desc.get(e).and_then(|desc| Some(&desc.name[..]))
     }
 
     fn is_spawn_name(&self, spawn_name: &str) -> bool {
@@ -395,15 +387,17 @@ pub trait Query: TerrainQuery + Sized {
                 Some(origin) => origin,
             };
 
-            let pos = origin.v2_at(loc).expect(
-                "Trying to build prefab from multiple z-levels",
-            );
+            let pos = origin
+                .v2_at(loc)
+                .expect("Trying to build prefab from multiple z-levels");
 
             let terrain = self.terrain(loc);
 
-            let entities = Vec::from_iter(self.entities_at(loc).into_iter().filter_map(|e| {
-                self.spawn_name(e).map(|s| s.to_string())
-            }));
+            let entities = Vec::from_iter(
+                self.entities_at(loc)
+                    .into_iter()
+                    .filter_map(|e| self.spawn_name(e).map(|s| s.to_string())),
+            );
 
             map.push((pos, (terrain, entities)));
         }
@@ -413,18 +407,14 @@ pub trait Query: TerrainQuery + Sized {
 
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
         Slot::iter()
-            .find(|&&x| {
-                !x.is_equipment_slot() && self.entity_equipped(e, x).is_none()
-            })
+            .find(|&&x| !x.is_equipment_slot() && self.entity_equipped(e, x).is_none())
             .cloned()
     }
 
     fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
         if let Some(equip_type) = self.equip_type(item) {
             Slot::iter()
-                .find(|&&x| {
-                    x.accepts(equip_type) && self.entity_equipped(e, x).is_none()
-                })
+                .find(|&&x| x.accepts(equip_type) && self.entity_equipped(e, x).is_none())
                 .cloned()
         } else {
             None

@@ -1,4 +1,4 @@
-use calx::{compact_bits_by_2, noise, spread_bits_by_2, Dir6, GridNode, HexGeom, hex_neighbors};
+use calx::{hex_neighbors, noise, Dir6, GridNode, HexGeom, compact_bits_by_2, spread_bits_by_2};
 use euclid::{Vector2D, vec2};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
@@ -67,9 +67,7 @@ impl Location {
         if self.z != other.z {
             return None;
         }
-        Some(
-            vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32),
-        )
+        Some(vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32))
     }
 
     /// Hex distance from this location to the other one, if applicable.
@@ -244,14 +242,12 @@ impl Sector {
     pub fn iter(self) -> Box<Iterator<Item = Location>> {
         let n = SECTOR_WIDTH * SECTOR_HEIGHT;
         let pitch = SECTOR_WIDTH;
-        Box::new((0..n).map(
-            move |i| self.rect_coord_loc(i % pitch, i / pitch),
-        ))
+        Box::new((0..n).map(move |i| self.rect_coord_loc(i % pitch, i / pitch)))
     }
 
     pub fn taxicab_distance(self, other: Sector) -> i32 {
-        ((self.x as i32) - (other.x as i32)).abs() + ((self.y as i32) - (other.y as i32)).abs() +
-            ((self.z as i32) - (other.z as i32)).abs()
+        ((self.x as i32) - (other.x as i32)).abs() + ((self.y as i32) - (other.y as i32)).abs()
+            + ((self.z as i32) - (other.z as i32)).abs()
     }
 }
 
