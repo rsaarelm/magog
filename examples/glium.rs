@@ -9,7 +9,7 @@ fn main() { feature::main(); }
 
 #[cfg(feature = "glium_backend")]
 mod feature {
-    use euclid::{Rect, Point2D, point2, Size2D, vec2};
+    use euclid::{Point2D, Rect, Size2D, point2, vec2};
     use glium::glutin;
     use image;
     use std::path::Path;
@@ -83,8 +83,7 @@ mod feature {
                 vec2(1.0, 0.0),
                 vec2(0.0, -1.0),
                 vec2(0.0, 1.0),
-            ]
-            {
+            ] {
                 self.core.draw_text(
                     &self.font,
                     pos + *offset,
@@ -94,13 +93,8 @@ mod feature {
                 );
             }
 
-            self.core.draw_text(
-                &self.font,
-                pos,
-                Align::Left,
-                self.fore_color,
-                text,
-            )
+            self.core
+                .draw_text(&self.font, pos, Align::Left, self.fore_color, text)
         }
 
         fn title_bar(&mut self, bounds: &Rect<f32>, text: &str) {
@@ -137,36 +131,23 @@ mod feature {
             };
 
             self.core.fill_rect(bounds, color);
-            self.core.fill_rect(
-                &bounds.inflate(-1.0, -1.0),
-                self.back_color,
-            );
+            self.core
+                .fill_rect(&bounds.inflate(-1.0, -1.0), self.back_color);
 
             let inner = bounds.inflate(-3.0, -3.0).inclusivize();
 
-            self.core.draw_line(
-                1.0,
-                color,
-                inner.bottom_right(),
-                inner.origin,
-            );
+            self.core
+                .draw_line(1.0, color, inner.bottom_right(), inner.origin);
 
-            self.core.draw_line(
-                1.0,
-                color,
-                inner.top_right(),
-                inner.bottom_left(),
-            );
+            self.core
+                .draw_line(1.0, color, inner.top_right(), inner.bottom_left());
 
             self.core.click_state(bounds) == ButtonAction::LeftClicked
         }
 
         fn render(&mut self) {
-            self.core.draw_image(
-                &self.image,
-                point2(20.0, 20.0),
-                [1.0, 1.0, 1.0, 1.0],
-            );
+            self.core
+                .draw_image(&self.image, point2(20.0, 20.0), [1.0, 1.0, 1.0, 1.0]);
             self.outline_text(point2(22.0, 22.0), "Hello, world!");
         }
     }

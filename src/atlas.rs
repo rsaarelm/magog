@@ -1,4 +1,4 @@
-use {ImageData, ImageBuffer};
+use {ImageBuffer, ImageData};
 use euclid::{Point2D, Rect, Size2D};
 use std::cmp::max;
 
@@ -107,9 +107,13 @@ impl<T: Clone> Atlas<T> {
 
         /// Return the two remaining parts of container rect when the dim-sized
         /// item is placed in the top left corner.
-        fn remaining_rects(dim: Size2D<u32>,
-                           Rect { origin: rect_pos, size: rect_dim }: Rect<u32>)
--> (Rect<u32>, Rect<u32>){
+        fn remaining_rects(
+            dim: Size2D<u32>,
+            Rect {
+                origin: rect_pos,
+                size: rect_dim,
+            }: Rect<u32>,
+        ) -> (Rect<u32>, Rect<u32>) {
             assert!(fits(dim, rect_dim));
 
             // Choose between making a vertical or a horizontal split

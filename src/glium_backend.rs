@@ -80,12 +80,8 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     {
         let events = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new().with_title(title);
-        let context = glutin::ContextBuilder::new().with_gl(
-            glutin::GlRequest::Specific(
-                glutin::Api::OpenGl,
-                (3, 2),
-            ),
-        );
+        let context = glutin::ContextBuilder::new()
+            .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)));
         let display = glium::Display::new(window, context, &events)?;
         let program = glium::Program::new(&display, shader.into())?;
 
@@ -96,9 +92,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     ///
     /// Note that this is the logical size which will stay the same even when the
     /// desktop window is resized.
-    pub fn canvas_size(&self) -> Size2D<u32> {
-        self.canvas.size
-    }
+    pub fn canvas_size(&self) -> Size2D<u32> { self.canvas.size }
 
     /// Return the current number of textures.
     pub fn texture_count(&self) -> usize { self.textures.len() }
@@ -107,11 +101,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     ///
     /// The new `TextureHandle` must equal the value `self.texture_count()` would have returned
     /// just before calling this.
-    pub fn make_empty_texture(
-        &mut self,
-        width: u32,
-        height: u32,
-    ) -> TextureHandle {
+    pub fn make_empty_texture(&mut self, width: u32, height: u32) -> TextureHandle {
         let tex = glium::texture::SrgbTexture2d::empty(&self.display, width, height).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
@@ -163,10 +153,13 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == self.display.gl_window().id() => {
+                } if window_id == self.display.gl_window().id() =>
+                {
                     match event {
                         &WindowEvent::Closed => return false,
-                        &WindowEvent::MouseMoved { position: (x, y), .. } => {
+                        &WindowEvent::MouseMoved {
+                            position: (x, y), ..
+                        } => {
                             let pos = self.zoom.screen_to_canvas(
                                 self.window_size,
                                 self.canvas.size(),
@@ -174,24 +167,23 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                             );
                             core.input_mouse_move(pos.x as i32, pos.y as i32);
                         }
-                        &WindowEvent::MouseInput { state, button, .. } => {
-                            core.input_mouse_button(
-                                match button {
-                                    glutin::MouseButton::Left => MouseButton::Left,
-                                    glutin::MouseButton::Right => MouseButton::Right,
-                                    _ => MouseButton::Middle,
-                                },
-                                state == glutin::ElementState::Pressed,
-                            )
-                        }
+                        &WindowEvent::MouseInput { state, button, .. } => core.input_mouse_button(
+                            match button {
+                                glutin::MouseButton::Left => MouseButton::Left,
+                                glutin::MouseButton::Right => MouseButton::Right,
+                                _ => MouseButton::Middle,
+                            },
+                            state == glutin::ElementState::Pressed,
+                        ),
                         &WindowEvent::ReceivedCharacter(c) => core.input_char(c),
                         &WindowEvent::KeyboardInput {
-                            input: glutin::KeyboardInput {
-                                state,
-                                scancode,
-                                virtual_keycode,
-                                ..
-                            },
+                            input:
+                                glutin::KeyboardInput {
+                                    state,
+                                    scancode,
+                                    virtual_keycode,
+                                    ..
+                                },
                             ..
                         } => {
                             self.keypress.push(KeyEvent {
@@ -215,8 +207,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                                 Some(Numpad4) | Some(Left) => Some(Keycode::Left),
                                 Some(Numpad6) | Some(Right) => Some(Keycode::Right),
                                 _ => None,
-                            }
-                            {
+                            } {
                                 core.input_key_state(vk, is_down);
                             }
                         }
@@ -246,8 +237,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
 
         for batch in core.end_frame() {
             // building the uniforms
-            let uniforms =
-                uniform! {
+            let uniforms = uniform! {
                 matrix: [
                     [2.0 / w as f32, 0.0, 0.0, -1.0],
                     [0.0, -2.0 / h as f32, 0.0, 1.0],
@@ -258,9 +248,8 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                     .magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest),
             };
 
-            let vertex_buffer = {
-                glium::VertexBuffer::new(&self.display, &batch.vertices).unwrap()
-            };
+            let vertex_buffer =
+                { glium::VertexBuffer::new(&self.display, &batch.vertices).unwrap() };
 
             // building the index buffer
             let index_buffer = glium::IndexBuffer::new(
@@ -422,7 +411,8 @@ impl Canvas {
                     vec4 tex_color = texture(tex, v_tex_coord);
                     tex_color.a = 1.0;
                     f_color = tex_color;
-                }"}).unwrap();
+                }"})
+            .unwrap();
 
         let buffer = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
 
@@ -546,8 +536,9 @@ impl Canvas {
 
         ImageBuffer::from_fn(image.width, image.height, |x, y| {
             let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;
-            image.data[i] as u32 + ((image.data[i + 1] as u32) << 8) +
-                ((image.data[i + 2] as u32) << 16) + ((image.data[i + 3] as u32) << 24)
+            image.data[i] as u32 + ((image.data[i + 1] as u32) << 8)
+                + ((image.data[i + 2] as u32) << 16)
+                + ((image.data[i + 3] as u32) << 24)
         })
     }
 }

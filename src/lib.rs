@@ -8,7 +8,7 @@ extern crate glium;
 extern crate euclid;
 extern crate time;
 
-use euclid::{Point2D, point2, Rect, rect, Size2D, Vector2D, vec2};
+use euclid::{rect, Point2D, Rect, Size2D, Vector2D, point2, vec2};
 use std::collections::HashMap;
 use std::iter;
 use std::mem;
@@ -53,7 +53,6 @@ impl ImageBuffer {
             size: Size2D::new(width, height),
             pixels: iter::repeat(0u32).take((width * height) as usize).collect(),
         }
-
     }
 
     /// Build the buffer from a function.
@@ -86,9 +85,8 @@ impl ImageBuffer {
     pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
         let blit_rect: Rect<u32> = rect(x, y, source.size.width, source.size.height);
 
-        if let Some(blit_rect) = blit_rect.intersection(
-            &rect(0, 0, self.size.width, self.size.height),
-        )
+        if let Some(blit_rect) =
+            blit_rect.intersection(&rect(0, 0, self.size.width, self.size.height))
         {
             for y2 in blit_rect.min_y()..blit_rect.max_y() {
                 for x2 in blit_rect.min_x()..blit_rect.max_x() {
@@ -267,12 +265,7 @@ where
     /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
-    pub fn push_vertex(
-        &mut self,
-        pos: Point2D<f32>,
-        tex_coord: Point2D<f32>,
-        color: Color,
-    ) -> u16 {
+    pub fn push_vertex(&mut self, pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> u16 {
         self.push_raw_vertex(V::new(pos, tex_coord, color))
     }
 
@@ -346,9 +339,8 @@ where
             return;
         }
 
-        let texture = texture_needed.unwrap_or_else(|| {
-            self.draw_list[self.draw_list.len() - 1].texture.clone()
-        });
+        let texture = texture_needed
+            .unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture.clone());
 
         let clip = self.clip;
 
@@ -362,13 +354,7 @@ where
         }
     }
 
-    pub fn draw_line(
-        &mut self,
-        thickness: f32,
-        color: Color,
-        p1: Point2D<f32>,
-        p2: Point2D<f32>,
-    ) {
+    pub fn draw_line(&mut self, thickness: f32, color: Color, p1: Point2D<f32>, p2: Point2D<f32>) {
         if p1 == p2 {
             return;
         }
@@ -578,36 +564,30 @@ enum ClickState {
 impl ClickState {
     fn tick(self) -> ClickState {
         match self {
-            ClickState::Unpressed |
-            ClickState::Release(_, _) => ClickState::Unpressed,
-            ClickState::Press(p) |
-            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Unpressed | ClickState::Release(_, _) => ClickState::Unpressed,
+            ClickState::Press(p) | ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
     fn input_press(self, pos: Point2D<f32>) -> ClickState {
         match self {
-            ClickState::Unpressed |
-            ClickState::Release(_, _) => ClickState::Press(pos),
-            ClickState::Press(p) |
-            ClickState::Drag(p) => ClickState::Drag(p),
+            ClickState::Unpressed | ClickState::Release(_, _) => ClickState::Press(pos),
+            ClickState::Press(p) | ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
     fn input_release(self, pos: Point2D<f32>) -> ClickState {
         match self {
             ClickState::Unpressed => ClickState::Unpressed,
-            ClickState::Press(p) |
-            ClickState::Drag(p) |
-            ClickState::Release(p, _) => ClickState::Release(p, pos),
+            ClickState::Press(p) | ClickState::Drag(p) | ClickState::Release(p, _) => {
+                ClickState::Release(p, pos)
+            }
         }
     }
 
     fn is_pressed(&self) -> bool {
         match *self {
-            ClickState::Press(_) |
-            ClickState::Drag(_) |
-            ClickState::Release(_, _) => true,
+            ClickState::Press(_) | ClickState::Drag(_) | ClickState::Release(_, _) => true,
             ClickState::Unpressed => false,
         }
     }
@@ -747,9 +727,9 @@ mod test {
     #[cfg(feature = "image")]
     #[test]
     fn image_roundtrip() {
+        use super::ImageBuffer;
         use euclid::size2;
         use image;
-        use super::ImageBuffer;
 
         let image = ImageBuffer {
             pixels: vec![0xca11ab1e, 0x5ca1ab1e, 0xdeadbeef, 0xb01dface],

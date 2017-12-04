@@ -1,6 +1,6 @@
-use euclid::{Point2D, TypedPoint2D, TypedRect, size2, TypedSize2D, TypedVector2D, vec2};
-use euclid::num::{Zero, One};
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use euclid::{Point2D, TypedPoint2D, TypedRect, TypedSize2D, TypedVector2D, size2, vec2};
+use euclid::num::{One, Zero};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Point anchoring, for snapping the origin point of a rectangle to different corners.
 ///
@@ -132,7 +132,6 @@ where
     }
 
     fn vertical_split(&self, at_x: Self::T) -> (Self, Self) {
-
         if at_x < Zero::zero() {
             (
                 TypedRect::new(self.origin, self.size + size2(at_x, Zero::zero())),
