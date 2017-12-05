@@ -195,6 +195,7 @@ pub mod errors {
             Io(::std::io::Error);
             RonSerialize(::ron::ser::Error);
             RonDeserialize(::ron::de::Error);
+            PrefabError(::calx::PrefabError);
         }
     }
 }
