@@ -1,9 +1,9 @@
 use Icon;
 use backend::Core;
 use cache;
-use calx::{clamp, cycle_anim, FovValue, HexFov, CellVector};
+use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Transformation};
 use calx_ecs::Entity;
-use euclid::{Point2D, Rect, Vector2D, Vector3D, point2, vec2, vec3};
+use euclid::{Point2D, Rect, TypedVector2D, TypedVector3D, Vector2D, Vector3D, point2, vec2, vec3};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
@@ -387,6 +387,74 @@ pub fn screen_fov(
 
     HashMap::from_iter(HexFov::new(init).map(|(pos, a)| (pos, a.origins)))
 }
+
+/// On-screen tile display pixel coordinates.
+pub struct ScreenSpace;
+
+// a = PIXEL_UNIT
+//
+// |   a   -a |
+// | a/2  a/2 |
+//
+// |  1/2a  1/a |
+// | -1/2a  1/a |
+
+impl Transformation for ScreenSpace {
+    type Element = f32;
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let v = v.into();
+        let v = [v[0] as f32, v[1] as f32];
+        [
+            v[0] * PIXEL_UNIT - v[1] * PIXEL_UNIT,
+            v[0] * PIXEL_UNIT / 2.0 + v[1] * PIXEL_UNIT / 2.0,
+        ]
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+
+        // Use a custom function here instead of the matrix inverse, because the naive matrix
+        // version projects into an isometric grid instead of the more square on-screen hex cells
+        // and feels off when aiming with the mouse.
+        let c = PIXEL_UNIT / 2.0;
+        let column = ((v[0] + c) / (c * 2.0)).floor();
+        let row = ((v[1] - column * c) / (c * 2.0)).floor();
+        [(column + row) as i32, row as i32]
+    }
+}
+
+pub type ScreenVector = TypedVector2D<f32, ScreenSpace>;
+
+
+/// 3D physics space, used for eg. lighting.
+pub struct PhysicsSpace;
+
+// |    1    -1 |
+// | -1/2  -1/2 |
+//
+// |  1/2  -1 |
+// | -1/2  -1 |
+
+impl Transformation for PhysicsSpace {
+    type Element = f32;
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let v = v.into();
+        let v = [v[0] as f32, v[1] as f32];
+        [v[0] - v[1], -v[0] / 2.0 - v[1] / 2.0]
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+        [
+            (v[0] / 2.0 - v[1]).round() as i32,
+            (-v[0] / 2.0 - v[1]).round() as i32,
+        ]
+    }
+}
+
+pub type PhysicsVector = TypedVector3D<f32, PhysicsSpace>;
 
 #[cfg(test)]
 mod test {
