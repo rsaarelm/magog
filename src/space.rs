@@ -1,4 +1,4 @@
-use euclid::TypedVector2D;
+use euclid::{TypedVector2D, TypedVector3D, vec3};
 
 /// Unit tag for typed euclid structs.
 ///
@@ -80,4 +80,19 @@ where
 {
     fn to_cell_space(self) -> CellVector { U::project(self).into() }
     fn from_cell_space(cell: CellVector) -> Self { U::unproject(cell).into() }
+}
+
+impl<T, U> Space for TypedVector3D<T, U>
+where
+    T: Copy + Default,
+    U: Transformation<Element = T>,
+{
+    fn to_cell_space(self) -> CellVector {
+        let v = [self.x, self.y];
+        U::project(v).into()
+    }
+    fn from_cell_space(cell: CellVector) -> Self {
+        let v = U::unproject(cell);
+        vec3(v[0], v[1], Default::default())
+    }
 }
