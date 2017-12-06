@@ -50,18 +50,18 @@ pub trait Transformation {
     // the transformation matrix that needs to be floating point. LLVM should be able to optimize
     // away a 2x2 matrix inversion function called with const inputs.
 
-    /// Transform coordinates of this space to `CellSpace`.
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2];
-
     /// Transform `CellSpace` coordinates to this space.
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2];
+
+    /// Transform coordinates of this space to `CellSpace`.
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2];
 }
 
 impl Transformation for CellSpace {
     type Element = i32;
 
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] { v.into() }
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] { v.into() }
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] { v.into() }
 }
 
 /// Projection from a different space into `CellSpace`.

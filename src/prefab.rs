@@ -128,14 +128,14 @@ pub type TextVector = TypedVector2D<i32, TextSpace>;
 impl Transformation for TextSpace {
     type Element = i32;
 
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        [(v[0] + v[1]) / 2, v[1]]
-    }
-
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
         let v = v.into();
         [2 * v[0] - v[1], v[1]]
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+        [(v[0] + v[1]) / 2, v[1]]
     }
 }
 
@@ -466,13 +466,13 @@ pub struct MinimapSpace;
 impl Transformation for MinimapSpace {
     type Element = i32;
 
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        [v[0] / 4 + v[1] / 2, v[1] / 2 - v[0] / 4]
-    }
-
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
         let v = v.into();
         [2 * v[0] - 2 * v[1], v[0] + v[1]]
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let v = v.into();
+        [v[0] / 4 + v[1] / 2, v[1] / 2 - v[0] / 4]
     }
 }
