@@ -20,27 +20,27 @@ pub type CellVector = TypedVector2D<i32, CellSpace>;
 ///
 /// # Defining projections
 ///
-/// First write the X and Y axis vectors of your projected space as rows of a 2x2 matrix. For
-/// example the `CellSpace` X-axis unit vector becomes (2, 0) and the Y-axis unit vector becomes
-/// (-1, 1) in the prefab map `TextSpace`. So we get the matrix
+/// First write the X and Y axis vectors of your projected space as column vecttors of a 2x2
+/// matrix. For example the `CellSpace` X-axis unit vector becomes (2, 0) and the Y-axis unit
+/// vector becomes (-1, 1) in the prefab map `TextSpace`. So we get the matrix
 ///
 /// ```notrust
-/// |  2  0 |
-/// | -1  1 |
+/// | 2  -1 |
+/// | 0   1 |
 /// ```
 ///
 /// This is the your unprojection. For the projection matrix, compute the inverse, you'll get
 ///
 /// ```notrust
-/// |  2  0 | ^-1     | 1/2  0 |
-/// | -1  1 |      =  | 1/2  1 |
+/// | 2  -1 | ^-1     | 1/2  1/2 |
+/// | 0   1 |      =  |   0    1 |
 /// ```
 ///
-/// The projection formula for vector v and projection matrix M is vᵀM, ie (with row-major matrix
+/// The projection formula for vector v and projection matrix M is Mv, ie (with row-major matrix
 /// representation):
 ///
 /// ```notrust
-/// [v[0] * M[0] + v[1] * M[2], v[0] * M[1] + v[1] * M[3]]
+/// [v[0] * M[0] + v[1] * M[1], v[0] * M[2] + v[1] * M[3]]
 /// ```
 pub trait Transformation {
     type Element: Copy;

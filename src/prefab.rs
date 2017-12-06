@@ -119,11 +119,11 @@ pub struct TextSpace;
 
 pub type TextVector = TypedVector2D<i32, TextSpace>;
 
-// |  2 0 |
-// | -1 1 |
+// | 2  -1 |
+// | 0   1 |
 //
-// | 1/2 0 |
-// | 1/2 1 |
+// | 1/2  1/2 |
+// |   0    1 |
 
 impl Transformation for TextSpace {
     type Element = i32;
@@ -457,11 +457,11 @@ impl From<Prefab<SRgba>> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
 /// The on-screen minimap pixel coordinate space.
 pub struct MinimapSpace;
 
-// |  2  1 |
-// | -2  1 |
+// | 2  -2 |
+// | 1   1 |
 //
-// | 1/4  -1/4 |
-// | 1/2   1/2 |
+// |  1/4  1/2 |
+// | -1/4  1/2 |
 
 impl Transformation for MinimapSpace {
     type Element = i32;
