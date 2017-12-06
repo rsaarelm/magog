@@ -2,10 +2,11 @@ use backend::Core;
 use brush::Brush;
 use calx::{color, lerp, Rgba};
 use draw_util::DrawUtil;
-use euclid::{Point2D, point2};
+use euclid::point2;
 use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;
+use view::ScreenVector;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Coloring {
@@ -71,7 +72,7 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn new(layer: Layer, offset: Point2D<f32>, brush: Rc<Brush>) -> Sprite {
+    pub fn new(layer: Layer, offset: ScreenVector, brush: Rc<Brush>) -> Sprite {
         let offset = [offset.x as i32, offset.y as i32];
         Sprite {
             layer,

@@ -4,8 +4,9 @@ use Icon;
 use brush::Brush;
 use cache;
 use calx::{Dir12, Dir6};
-use euclid::{Vector3D, vec3};
+use euclid::vec3;
 use std::rc::Rc;
+use view::PhysicsVector;
 use world::{terrain, Location, Query, Terrain, TerrainQuery, World};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
@@ -64,7 +65,7 @@ impl Angle {
     /// Return the wall normal in physics space.
     ///
     /// Physics space x is right on screen, y is up on screen and z is towards viewer.
-    pub fn normal(self) -> Vector3D<f32> {
+    pub fn normal(self) -> PhysicsVector {
         if let Some(deg) = self.degree() {
             let rad = deg.to_radians();
             vec3(rad.sin(), rad.cos(), 0.0)

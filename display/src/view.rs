@@ -1,9 +1,9 @@
 use Icon;
 use backend::Core;
 use cache;
-use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Transformation};
+use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
-use euclid::{Point2D, Rect, TypedVector2D, TypedVector3D, Vector2D, Vector3D, point2, vec2, vec3};
+use euclid::{Rect, TypedRect, TypedVector2D, TypedVector3D, vec2, vec3};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ pub struct WorldView {
     pub cursor_loc: Option<Location>,
     pub show_cursor: bool,
     camera_loc: Location,
-    screen_area: Rect<f32>,
+    screen_area: TypedRect<f32, ScreenSpace>,
     fov: Option<HashMap<CellVector, Vec<Location>>>,
 }
 
@@ -28,7 +28,7 @@ impl WorldView {
             cursor_loc: None,
             show_cursor: false,
             camera_loc: camera_loc,
-            screen_area: screen_area,
+            screen_area: ScreenRect::from_untyped(&screen_area),
             fov: None,
         }
     }
@@ -67,7 +67,8 @@ impl WorldView {
             .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
-        let cursor_pos = view_to_chart(core.mouse_pos() - center);
+        let mouse_pos = ScreenVector::from_untyped(&core.mouse_pos().to_vector());
+        let cursor_pos = (mouse_pos - center).to_cell_space();
 
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
@@ -111,7 +112,7 @@ impl WorldView {
                 }
             }
 
-            let screen_pos = chart_to_view(chart_pos.to_point()) + center;
+            let screen_pos = ScreenVector::from_cell_space(chart_pos) + center;
 
             let ambient = world.light_level(loc);
 
@@ -142,7 +143,7 @@ impl WorldView {
                         // When underground, use the player position as light position instead of
                         // constant-dir sunlight.
                         let light_dir = if world.is_underground(loc) && player_pos.is_some() {
-                            chart_to_physics(player_pos.unwrap()).normalize()
+                            PhysicsVector::from_cell_space(player_pos.unwrap()).normalize()
                         } else {
                             vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
                         };
@@ -224,9 +225,9 @@ impl WorldView {
         }
 
         // Draw cursor.
-        if let Some(origins) = chart.get(&cursor_pos.to_vector()) {
-            let screen_pos = chart_to_view(cursor_pos) + center;
-            let loc = origins[0] + cursor_pos.to_vector();
+        if let Some(origins) = chart.get(&cursor_pos) {
+            let screen_pos = ScreenVector::from_cell_space(cursor_pos) + center;
+            let loc = origins[0] + cursor_pos;
             self.cursor_loc = Some(loc);
 
             if self.show_cursor {
@@ -267,7 +268,7 @@ impl WorldView {
             sprites: &mut Vec<Sprite>,
             world: &World,
             e: Entity,
-            screen_pos: Point2D<f32>,
+            screen_pos: ScreenVector,
         ) {
             if !world.is_mob(e) {
                 return;
@@ -296,37 +297,10 @@ impl WorldView {
     }
 }
 
-/// Transform from chart space (unit is one map cell) to view space (unit is
-/// one pixel).
-pub fn chart_to_view(chart_pos: Point2D<i32>) -> Point2D<f32> {
-    point2(
-        (chart_pos.x as f32 * PIXEL_UNIT - chart_pos.y as f32 * PIXEL_UNIT),
-        (chart_pos.x as f32 * PIXEL_UNIT / 2.0 + chart_pos.y as f32 * PIXEL_UNIT / 2.0),
-    )
-}
-
-/// Transform from view space (unit is one pixel) to chart space (unit is one
-/// map cell).
-pub fn view_to_chart(view_pos: Point2D<f32>) -> Point2D<i32> {
-    let c = PIXEL_UNIT / 2.0;
-    let column = ((view_pos.x + c) / (c * 2.0)).floor();
-    let row = ((view_pos.y - column * c) / (c * 2.0)).floor();
-    point2((column + row) as i32, row as i32)
-}
-
-/// Tranform chart space vector to physics space vector
-pub fn chart_to_physics(chart_vec: Vector2D<i32>) -> Vector3D<f32> {
-    vec3(
-        chart_vec.x as f32 - chart_vec.y as f32,
-        -chart_vec.x as f32 / 2.0 - chart_vec.y as f32 / 2.0,
-        0.0,
-    )
-}
-
 #[derive(Clone)]
 struct ScreenFov<'a> {
     w: &'a World,
-    screen_area: Rect<f32>,
+    screen_area: TypedRect<f32, ScreenSpace>,
     origins: Vec<Location>,
 }
 
@@ -341,7 +315,9 @@ impl<'a> Eq for ScreenFov<'a> {}
 
 impl<'a> FovValue for ScreenFov<'a> {
     fn advance(&self, offset: CellVector) -> Option<Self> {
-        if !self.screen_area.contains(&chart_to_view(offset.to_point())) {
+        if !self.screen_area
+            .contains(&ScreenVector::from_cell_space(offset).to_point())
+        {
             return None;
         }
 
@@ -377,7 +353,7 @@ impl<'a> FovValue for ScreenFov<'a> {
 pub fn screen_fov(
     w: &World,
     origin: Location,
-    screen_area: Rect<f32>,
+    screen_area: TypedRect<f32, ScreenSpace>,
 ) -> HashMap<CellVector, Vec<Location>> {
     let init = ScreenFov {
         w: w,
@@ -425,6 +401,7 @@ impl Transformation for ScreenSpace {
 }
 
 pub type ScreenVector = TypedVector2D<f32, ScreenSpace>;
+pub type ScreenRect = TypedRect<f32, ScreenSpace>;
 
 
 /// 3D physics space, used for eg. lighting.
