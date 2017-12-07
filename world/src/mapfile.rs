@@ -24,7 +24,11 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
 
     let mut legend_builder = calx::LegendBuilder::new(ALPHABET.to_string(), chars_f);
 
-    let prefab: calx::Prefab<_> = prefab.clone().into_iter().map(|(p, e)| (p, legend_builder.add(&e))).collect();
+    let prefab: calx::Prefab<_> = prefab
+        .clone()
+        .into_iter()
+        .map(|(p, e)| (p, legend_builder.add(&e)))
+        .collect();
     // Values are still results, we need to check if legend building failed.
     if legend_builder.out_of_alphabet {
         return Err("Unable to build legend, scene too complex?".into());
@@ -65,7 +69,10 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Turn map into prefab.
     let (map, legend) = (save.map, save.legend);
     let prefab: calx::Prefab<char> = IntoPrefab::try_into(map)?;
-    Ok(prefab.into_iter().map(|(p, item)| (p, legend[&item].clone())).collect())
+    Ok(prefab
+        .into_iter()
+        .map(|(p, item)| (p, legend[&item].clone()))
+        .collect())
 }
 
 #[derive(Debug, Serialize, Deserialize)]
