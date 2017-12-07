@@ -8,7 +8,7 @@ name = "display"
 
 [dependencies]
 time = "0.1"
-euclid = "0.15"
+euclid = "0.16"
 image = "0.18"
 glium = "0.18"
 vec_map = "0.8"

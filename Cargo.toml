@@ -11,7 +11,7 @@ members = ["world", "display"]
 
 [dependencies]
 rand = "0.3"
-euclid = "0.15"
+euclid = "0.16"
 time = "0.1"
 glium = "0.18"
 scancode = "0.1"

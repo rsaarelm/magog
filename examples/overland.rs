@@ -1,57 +1,86 @@
 ///! Generate a base bitmap for drawing an overland map with a paint program.
-
+extern crate calx;
+extern crate euclid;
+extern crate image;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
-extern crate calx;
 extern crate world;
-extern crate image;
-extern crate euclid;
 
-use calx::hex_disc;
-use euclid::{Rect, rect};
+use calx::{hex_disc, CellVector, Prefab, ProjectedImage, SRgba};
+use euclid::vec2;
 use image::{GenericImage, Pixel};
+use std::collections::HashMap;
+use std::iter::FromIterator;
 use structopt::StructOpt;
-use world::{Sector, Location, Terrain};
+use world::{Location, Sector, Terrain};
 
 #[derive(StructOpt, Debug)]
 struct Opt {
-    #[structopt(short = "w", long = "width", default_value = "8", help = "Width in sectors")]
-    width: u32,
-
-    #[structopt(short = "h", long = "height", default_value = "9", help = "Height in sectors")]
-    height: u32,
-
-    #[structopt(subcommand)]
-    cmd: Command,
+    #[structopt(subcommand)] cmd: Command,
 }
 
 #[derive(StructOpt, Debug)]
 enum Command {
     #[structopt(name = "generate", help = "Generate a blank overland map image")]
     Generate {
+        #[structopt(short = "w", long = "width", default_value = "8", help = "Width in sectors")]
+        width: u32,
+
+        #[structopt(short = "h", long = "height", default_value = "9", help = "Height in sectors")]
+        height: u32,
+
+        #[structopt(long = "minimap", default_value = "false", help = "Use minimap projection")]
+        minimap: bool,
+
         #[structopt(help = "Output PNG file", default_value = "overland_base.png")]
         output: String,
     },
 
-    #[structopt(name = "normalize",
-                help = "Normalize the sector checkerboard coloring in existing image")]
-    Normalize {
+    #[structopt(name = "convert",
+                help = "Convert map from one projection to another and normalize the checkerboard pattern")]
+    Convert {
         #[structopt(help = "Input file")]
         input: String,
+
+        #[structopt(long = "input_minimap", default_value = "false", help = "Input file has minimap projection")]
+        input_minimap: bool,
 
         #[structopt(help = "Output file (if different from input)")]
         output: Option<String>,
-    },
 
-    #[structopt(name = "minimap", help = "Build a minimap as would be shown in game")]
-    Minimap {
-        #[structopt(help = "Input file")]
-        input: String,
-
-        #[structopt(help = "Output file")]
-        output: String,
+        #[structopt(long = "output_minimap", default_value = "false", help = "Use minimap projection in output file")]
+        output_minimap: bool,
     },
+}
+
+fn default_map(width: u32, height: u32) -> Prefab<Terrain> {
+    fn p(loc: Location) -> CellVector { vec2(loc.x as i32, loc.y as i32) }
+
+    let mut terrain = HashMap::new();
+
+    for &loc in &overland_locs(width, height) {
+        for edge in hex_disc(loc, 1) {
+            terrain.insert(p(edge), Terrain::Water);
+        }
+        terrain.insert(p(loc), Terrain::Grass);
+    }
+
+    Prefab::from_iter(terrain.into_iter())
+}
+
+fn terrain_to_color((pos, terrain): (CellVector, Terrain)) -> (CellVector, SRgba) {
+    let sec = Location::new(pos.x as i16, pos.y as i16, 0).sector();
+    let is_dark = (sec.x + sec.y) % 2 != 0;
+
+    (
+        pos,
+        if is_dark {
+            terrain.dark_color()
+        } else {
+            terrain.color()
+        },
+    )
 }
 
 fn overland_locs(width: u32, height: u32) -> Vec<Location> {
@@ -67,35 +96,7 @@ fn overland_locs(width: u32, height: u32) -> Vec<Location> {
     ret
 }
 
-fn location_area(width: u32, height: u32) -> Rect<i16> {
-    let locs = overland_locs(width, height);
-    let (mut min_x, mut min_y) = locs.iter().fold(
-        (0, 0),
-        |(x, y), loc| (x.min(loc.x), y.min(loc.y)),
-    );
-    min_x -= 1;
-    min_y -= 1;
-
-    let (max_x, max_y) = locs.iter().fold(
-        (0, 0),
-        |(x, y), loc| (x.max(loc.x), y.max(loc.y)),
-    );
-
-    rect(min_x, min_y, max_x - min_x + 2, max_y - min_y + 2)
-}
-
-fn valid_sector(sec: Sector, width: u32, height: u32) -> bool {
-    sec.x >= 0 && sec.y >= 0 && sec.x < (width as i16) && sec.y < (height as i16)
-}
-
-trait Dark {
-    fn is_dark(self) -> bool;
-}
-
-impl Dark for Sector {
-    fn is_dark(self) -> bool { (self.x + self.y) % 2 != 0 }
-}
-
+/*
 fn generate(width: u32, height: u32, output: &str) {
     let area = location_area(width, height);
 
@@ -164,8 +165,8 @@ fn normalize(width: u32, height: u32, input: &str, out_path: &str) {
             let in_map_space = y < input.height() - 1;
 
             let p = input.get_pixel(x, y);
-            let sector = Location::new((x as i16) + area.origin.x, (y as i16) + area.origin.y, 0)
-                .sector();
+            let sector =
+                Location::new((x as i16) + area.origin.x, (y as i16) + area.origin.y, 0).sector();
 
             let output_pixel = if in_map_space {
                 if let Some(t) = Terrain::from_color(p.into()) {
@@ -199,11 +200,10 @@ fn minimap(width: u32, height: u32, input: &str, out_path: &str) {
 
     let input = image::open(input).expect(&format!("Unable to load '{}'", input));
 
-    let mut output: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> =
-        image::ImageBuffer::new(
-            width * (world::SECTOR_WIDTH as u32) * 2,
-            height * (world::SECTOR_HEIGHT as u32) * 2,
-        );
+    let mut output: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = image::ImageBuffer::new(
+        width * (world::SECTOR_WIDTH as u32) * 2,
+        height * (world::SECTOR_HEIGHT as u32) * 2,
+    );
 
     for (x, y, p) in output.enumerate_pixels_mut() {
         let y = y as i32;
@@ -214,8 +214,7 @@ fn minimap(width: u32, height: u32, input: &str, out_path: &str) {
         let loc_x = (column + row) as i32 - (area.origin.x as i32);
         let loc_y = row as i32 - (area.origin.y as i32);
 
-        if loc_x >= 0 && loc_y >= 0 && loc_x < input.width() as i32 &&
-            loc_y < input.height() as i32
+        if loc_x >= 0 && loc_y >= 0 && loc_x < input.width() as i32 && loc_y < input.height() as i32
         {
             let col = input.get_pixel(loc_x as u32, loc_y as u32);
             // Remove the chessboard effect from terrain colors.
@@ -236,21 +235,38 @@ fn minimap(width: u32, height: u32, input: &str, out_path: &str) {
         image::ColorType::RGBA(8),
     ).unwrap();
 }
+*/
+
+fn generate(width: u32, height: u32, is_minimap: bool, output_path: String) {
+    let map: Prefab<SRgba> = default_map(width, height)
+        .into_iter()
+        .map(terrain_to_color)
+        .collect();
+}
+
+fn convert(
+    input_path: String,
+    input_is_minimap: bool,
+    output_path: Option<String>,
+    output_is_minimap: bool,
+) {
+    unimplemented!();
+}
 
 fn main() {
     let opt = Opt::from_args();
     match opt.cmd {
-        Command::Generate { output } => generate(opt.width, opt.height, &output),
-
-        Command::Normalize { input, output } => {
-            normalize(
-                opt.width,
-                opt.height,
-                &input.clone(),
-                &output.unwrap_or(input),
-            )
-        }
-
-        Command::Minimap { input, output } => minimap(opt.width, opt.height, &input, &output),
+        Command::Generate {
+            width,
+            height,
+            minimap,
+            output,
+        } => generate(width, height, minimap, output),
+        Command::Convert {
+            input,
+            input_minimap,
+            output,
+            output_minimap,
+        } => convert(input, input_minimap, output, output_minimap),
     }
 }
