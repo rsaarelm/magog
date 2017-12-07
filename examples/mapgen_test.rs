@@ -82,6 +82,6 @@ fn main() {
 
     println!(
         "{}",
-        Prefab::from_iter(map.terrain.iter().map(|(p, t)| (p.to_vector(), *t))).hexmap_display()
+        String::from(Prefab::from_iter(map.terrain.iter().map(|(p, t)| (p.to_vector(), *t))))
     );
 }
