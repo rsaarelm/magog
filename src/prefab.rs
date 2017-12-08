@@ -382,17 +382,13 @@ where
     U: Transformation<Element = i32>,
 {
     fn from(prefab: Prefab<SRgba>) -> Self {
-        // Bounds from the prefab, these points are in cell space.
-        let bounds = prefab.bounds();
-        // Ensure that origin is present, needed for anchor display.
-        let points: Vec<TypedPoint2D<i32, U>> = [
-            bounds.origin,
-            bounds.top_right(),
-            bounds.bottom_right(),
-            bounds.bottom_left(),
-            point2(0, 0),
-        ].iter()
-            .map(|p| TypedVector2D::from_cell_space(p.to_vector()).to_point())
+        // Project points from the prefab (plus origin which we need in the image frame for anchor
+        // encoding) to calculate the projected bounds.
+        let points: Vec<TypedPoint2D<i32, U>> = prefab
+            .points
+            .iter()
+            .map(|(&p, _)| TypedVector2D::from_cell_space(p).to_point())
+            .chain(Some(point2(0, 0)))
             .collect();
 
         // Project bounds into space U for the resulting image.
@@ -418,9 +414,9 @@ where
             image::Rgba::from_channels(0xff, 0xff, 0, 0xff),
         );
 
-        for y in 1..bounds.size.height {
-            for x in 1..bounds.size.width {
-                let prefab_pos = (bounds.origin.to_vector() + vec2(x - 1, y - 1)).to_cell_space();
+        for y in 0..bounds.size.height {
+            for x in 0..bounds.size.width {
+                let prefab_pos = (bounds.origin.to_vector() + vec2(x, y)).to_cell_space();
                 // Don't use #000000 as actual data in your prefab because you'll lose it here.
                 // (Add the assert to that effect.)
                 let c = if let Some(&c) = prefab.get(prefab_pos) {
@@ -432,7 +428,7 @@ where
                 } else {
                     image::Rgba::from_channels(0, 0, 0, 0xff)
                 };
-                image.put_pixel(x as u32, y as u32, c);
+                image.put_pixel(x as u32 + 1, y as u32 + 1, c);
             }
         }
 
