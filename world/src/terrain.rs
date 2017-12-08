@@ -162,22 +162,13 @@ impl Terrain {
     /// terrain tile. Use this if there's need to highlight partially visible terrain as obstacles.
     pub fn is_narrow_obstacle(self) -> bool { self.blocks_walk() && self.form() == Form::Prop }
 
-    pub fn dark_color(self) -> SRgba {
+    pub fn color(self) -> SRgba {
         let col = TERRAIN_DATA[self as usize].color;
         let r = ((col >> 8) & 0xf) as u8;
         let g = ((col >> 4) & 0xf) as u8;
         let b = (col & 0xf) as u8;
 
         SRgba::new(r << 4, g << 4, b << 4, 0xff)
-    }
-
-    pub fn color(self) -> SRgba {
-        let mut ret = self.dark_color();
-        ret.r += 0xf;
-        ret.g += 0xf;
-        ret.b += 0xf;
-
-        ret
     }
 }
 
