@@ -392,7 +392,12 @@ where
             .collect();
 
         // Project bounds into space U for the resulting image.
-        let bounds = TypedRect::from_points(points.as_slice());
+        let mut bounds = TypedRect::from_points(points.as_slice());
+        // XXX from_points is exclusive on the right / bottom egde, fix this
+        // FIXME This might get fixed in future euclid, remember to remove the fix then.
+        bounds.size.width += 1;
+        bounds.size.height += 1;
+
         debug_assert!({
             let origin: TypedVector2D<i32, U> = TypedVector2D::from_cell_space(vec2(0, 0));
             bounds.origin.x <= origin.x && bounds.origin.y <= origin.y
