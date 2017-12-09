@@ -341,7 +341,7 @@ where
         // The top and left lines of the image must be used for anchor. They need to contain
         // exactly one non-black pixel that points the origin coordinate.
         for x in min_x..(min_x + w) {
-            if convert_nonblack(image.get_pixel(x, 0)).is_some() {
+            if convert_nonblack(image.get_pixel(x, min_y)).is_some() {
                 if anchor_x.is_some() {
                     return Err(PrefabError::MultipleAnchors);
                 }
@@ -350,7 +350,7 @@ where
         }
 
         for y in min_y..(min_y + h) {
-            if convert_nonblack(image.get_pixel(0, y)).is_some() {
+            if convert_nonblack(image.get_pixel(min_x, y)).is_some() {
                 if anchor_y.is_some() {
                     return Err(PrefabError::MultipleAnchors);
                 }
