@@ -327,7 +327,7 @@ where
         // Completely black pixels are assumed to be non-data.
         fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(p: P) -> Option<SRgba> {
             let (r, g, b, _) = p.channels4();
-            if r != 0 && g != 0 && b != 0 {
+            if r != 0 || g != 0 || b != 0 {
                 Some(SRgba::new(r, g, b, 0xff))
             } else {
                 None
