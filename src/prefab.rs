@@ -88,6 +88,8 @@ pub enum PrefabError {
     InvalidInput,
     /// The prefab data is missing a (dataformat specific) anchor that points to coordinate origin.
     MissingAnchor,
+    /// The prefab data contains multiple anchors.
+    MultipleAnchors,
 }
 
 impl fmt::Display for PrefabError {
@@ -99,6 +101,7 @@ impl Error for PrefabError {
         match self {
             &PrefabError::InvalidInput => "Invalid input",
             &PrefabError::MissingAnchor => "Anchor not found in input",
+            &PrefabError::MultipleAnchors => "Multiple anchor positions found in input",
         }
     }
 }
@@ -340,7 +343,7 @@ where
         for x in min_x..(min_x + w) {
             if convert_nonblack(image.get_pixel(x, 0)).is_some() {
                 if anchor_x.is_some() {
-                    return Err(PrefabError::MissingAnchor);
+                    return Err(PrefabError::MultipleAnchors);
                 }
                 anchor_x = Some(x as i32);
             }
@@ -349,7 +352,7 @@ where
         for y in min_y..(min_y + h) {
             if convert_nonblack(image.get_pixel(0, y)).is_some() {
                 if anchor_y.is_some() {
-                    return Err(PrefabError::MissingAnchor);
+                    return Err(PrefabError::MultipleAnchors);
                 }
                 anchor_y = Some(y as i32);
             }
