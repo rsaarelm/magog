@@ -362,14 +362,14 @@ where
         let anchor = vec2::<i32, U>(
             anchor_x.ok_or(PrefabError::MissingAnchor)?,
             anchor_y.ok_or(PrefabError::MissingAnchor)?,
-        ).to_cell_space();
+        );
 
         let mut points = HashMap::new();
 
         for y in (min_y + 1)..(min_y + h) {
             for x in (min_x + 1)..(min_x + w) {
                 if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
-                    let p = vec2::<i32, U>(x as i32, y as i32).to_cell_space() - anchor;
+                    let p = vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
 
                     // Insert the color we get when we first hit this point.
                     points.entry(p).or_insert(c);
