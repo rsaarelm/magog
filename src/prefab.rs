@@ -1,6 +1,7 @@
 use colors::{scolor, SRgba};
 use euclid::{self, TypedPoint2D, TypedRect, TypedVector2D, point2, vec2};
 use image::{self, Pixel};
+use num::Integer;
 use space::{CellSpace, CellVector, Space, Transformation};
 use std::collections::{hash_map, HashMap};
 use std::error::Error;
@@ -473,7 +474,34 @@ impl Transformation for MinimapSpace {
     }
 
     fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        [v[0] / 4 + v[1] / 2, v[1] / 2 - v[0] / 4]
+        let mut v = v.into();
+        // Snap in square cells
+        v[0] = v[0] & -1; // Two-pixel columns
+        if v[0].mod_floor(&4) < 2 {
+            // Even column
+            v[1] &= !1;
+        } else {
+            // Odd column
+            v[1] = ((v[1] + 1) & !1) - 1;
+        }
+
+        let v = [v[0] as f32, v[1] as f32];
+        [
+            (v[0] / 4.0 + v[1] / 2.0).round() as i32,
+            (v[1] / 2.0 - v[0] / 4.0).round() as i32,
+        ]
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::MinimapSpace;
+    use space::Transformation;
+    #[test]
+    fn test_minimap_projection() {
+        assert_eq!([0, 0], MinimapSpace::project([0, 0]));
+        assert_eq!([0, 0], MinimapSpace::project([1, 0]));
+        assert_eq!([0, 0], MinimapSpace::project([0, 1]));
+        assert_eq!([0, 0], MinimapSpace::project([1, 1]));
     }
 }
