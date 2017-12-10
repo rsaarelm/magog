@@ -115,3 +115,37 @@ impl<'a, R: Rng + 'static> Iterator for RandomPermutation<'a, R> {
         Some(self.shuffle.insert(swap_idx, head).unwrap_or(swap_idx))
     }
 }
+
+/// Independent sampling trait.
+///
+/// Implemented as a convenience struct since `rand::distributions::IndependentSample` always wants
+/// a boilerplate implementation for `rand::distributions::Sample` as well.
+pub trait IndependentSample<Support>: Sized {
+    /// Sample a single value from the distribution.
+    fn ind_sample<R: Rng>(&self, rng: &mut R) -> Support;
+
+    /// Create an endless iterator sampling values from the distribution.
+    fn iter<'a, 'b, R: Rng + 'a>(
+        &'b self,
+        rng: &'a mut R,
+    ) -> SampleIterator<'a, 'b, R, Support, Self> {
+        SampleIterator {
+            rng,
+            sample: self,
+            phantom: ::std::marker::PhantomData,
+        }
+    }
+}
+
+pub struct SampleIterator<'a, 'b, R: Rng + 'a, Support, S: IndependentSample<Support> + 'b> {
+    rng: &'a mut R,
+    sample: &'b S,
+    phantom: ::std::marker::PhantomData<Support>,
+}
+
+impl<'a, 'b, R: Rng + 'a, Support, S: IndependentSample<Support> + 'b> Iterator
+    for SampleIterator<'a, 'b, R, Support, S> {
+    type Item = Support;
+
+    fn next(&mut self) -> Option<Self::Item> { Some(self.sample.ind_sample(self.rng)) }
+}
