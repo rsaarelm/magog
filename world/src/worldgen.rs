@@ -1,8 +1,8 @@
 use Prefab;
-use calx::{hex_neighbors, Dijkstra, SRgba};
+use calx::{self, hex_neighbors, Dijkstra};
 use euclid::vec2;
 use form::{self, Form};
-use image::{self, GenericImage, Pixel};
+use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
 use mapgen::{self, DigCavesGen, Size2D};
 use rand::{self, Rand, Rng, SeedableRng};
@@ -92,7 +92,10 @@ impl Worldgen {
             // TODO: Generator needs an option to not generate stairs down on bottom level
         }
 
-        ret.load_map_bitmap(Location::new(-1, -160, 0), include_bytes!("../assets/overland.png"));
+        ret.load_map_bitmap(
+            Location::new(0, 0, 0),
+            include_bytes!("../assets/overland.png"),
+        );
 
         ret
     }
@@ -116,20 +119,18 @@ impl Worldgen {
     }
 
     fn load_map_bitmap(&mut self, origin: Location, data: &[u8]) {
-        let image = image::load(Cursor::new(data), image::ImageFormat::PNG).unwrap();
-
+        let mut image = image::load(Cursor::new(data), image::ImageFormat::PNG).unwrap();
         // Skip the bottom horizontal line, it's used to store metadata pixels.
-        // (Currently using it to store palette pixels for the terrains to force image palette)
-        for y in 0..(image.height() - 1) {
-            for x in 0..image.width() {
-                let loc = origin + vec2(x as i32, y as i32);
-                let (r, g, b, _) = image.get_pixel(x, y).channels4();
+        let (w, h) = (image.width(), image.height());
+        let input_map = SubImage::new(&mut image, 0, 0, w, h - 1);
 
-                if let Some(terrain) = Terrain::from_color(SRgba::new(r, g, b, 0xff)) {
-                    self.terrain.insert(loc, terrain);
-                }
-            }
-        }
+        let prefab = calx::Prefab::parse(input_map).expect("Invalid overworld image map");
+
+        self.terrain.extend(
+            prefab
+                .into_iter()
+                .filter_map(|(p, c)| Terrain::from_color(c).map(|t| (origin + p, t))),
+        );
     }
 
     pub fn seed(&self) -> u32 { self.seed }
