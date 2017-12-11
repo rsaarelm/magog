@@ -34,7 +34,10 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
         .tile(384, 0).finish());
     ret.insert(Ground as usize, Builder::new("assets/floors.png").color(SLATEGRAY).tile(32, 0).finish());
     ret.insert(Grass as usize, Builder::new("assets/floors.png").color(DARKGREEN).tile(32, 0).finish());
+    ret.insert(Snow as usize, Builder::new("assets/floors.png").color(WHITE).tile(32, 0).finish());
+    ret.insert(Sand as usize, Builder::new("assets/floors.png").color(YELLOW).tile(32, 0).finish());
     ret.insert(Water as usize, Builder::new("assets/floors.png").colors(MIDNIGHTBLUE, ROYALBLUE).tile(96, 0).finish());
+    ret.insert(Shallows as usize, Builder::new("assets/floors.png").colors(CORNFLOWERBLUE, ALICEBLUE).tile(96, 0).finish());
     ret.insert(Magma as usize, Builder::new("assets/floors.png").colors(YELLOW, DARKRED).tile(96, 0).finish());
     ret.insert(Tree as usize, Builder::new("assets/props.png")
         .color(SADDLEBROWN).tile(160, 64)
