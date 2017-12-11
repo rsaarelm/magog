@@ -33,12 +33,19 @@ impl Worldgen {
             player_entry: Location::new(25, 0, 0),
         };
 
+        ret.load_map_bitmap(
+            Location::new(0, 0, 0),
+            include_bytes!("../assets/overland.png"),
+        );
+
         let mut rng: ::Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
 
-        let mut cave_entrance = Location::new(9, 0, 0);
+        let mut cave_entrance = Location::new(40, 12, 0);
         ret.cave_entrance(cave_entrance);
         ret.terrain
-            .insert(cave_entrance + vec2(1, 1), Terrain::Gate);
+            .insert(cave_entrance, Terrain::Gate);
+        ret.terrain
+            .insert(cave_entrance + vec2(1, 1), Terrain::Empty);
 
         for depth in 1..11 {
             let up_stairs;
@@ -91,11 +98,6 @@ impl Worldgen {
 
             // TODO: Generator needs an option to not generate stairs down on bottom level
         }
-
-        ret.load_map_bitmap(
-            Location::new(0, 0, 0),
-            include_bytes!("../assets/overland.png"),
-        );
 
         ret
     }
