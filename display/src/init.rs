@@ -91,7 +91,7 @@ pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     use Icon::*;
     let mut ret = VecMap::new();
 
-    ret.insert(SolidBlob as usize, Builder::new("assets/blobs.png").color(BLACK).blob(0, 64, 0, 96, 0, 128).finish());
+    ret.insert(SolidBlob as usize, Builder::new("assets/blobs.png").colors(BLACK, BLACK).blob(0, 64, 0, 96, 0, 128).finish());
     ret.insert(CursorTop as usize, Builder::new("assets/props.png").color(RED).tile(32, 0).finish());
     ret.insert(CursorBottom as usize, Builder::new("assets/props.png").color(RED).tile(0, 0).finish());
     ret.insert(Portal as usize, Builder::new("assets/props.png").color(Rgba::from_str("#fa08").unwrap()).tile(0, 0).finish());

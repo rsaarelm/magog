@@ -28,7 +28,6 @@ impl Default for Coloring {
 impl Eq for Coloring {}
 
 impl Coloring {
-    // XXX: Maybe we should still be using calx::Rgba here?
     pub fn apply(self, fore: Rgba, back: Rgba) -> (Rgba, Rgba) {
         fn darken(c: f32, col: Rgba) -> Rgba {
             Rgba::new(
@@ -40,7 +39,7 @@ impl Coloring {
         }
 
         match self {
-            Coloring::MapMemory => (Rgba::from(0x0804_00ffu32), Rgba::from(0x3322_00ff)),
+            Coloring::MapMemory => (Rgba::from(0x2222_22ffu32), Rgba::from(0x0408_08ff)),
             Coloring::Shaded { ambient, diffuse } => {
                 let (fore, back) = (
                     lerp(color::BLACK, fore, diffuse),
