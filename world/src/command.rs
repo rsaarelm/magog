@@ -32,7 +32,12 @@ pub trait Command: Mutate + Sized {
     /// Pass a turn without action from the player.
     ///
     /// Will usually succeed, but some games might not let the player pass turns.
-    fn pass(&mut self) -> CommandResult { self.next_tick() }
+    fn pass(&mut self) -> CommandResult {
+        if let Some(player) = self.player() {
+            self.idle(player);
+        }
+        self.next_tick()
+    }
 
     /// Take item from floor
     ///
@@ -80,7 +85,6 @@ pub trait Command: Mutate + Sized {
         };
 
         self.equip_item(item, player, swap_slot);
-        self.regenerate_stats(player);
         self.next_tick()
     }
 

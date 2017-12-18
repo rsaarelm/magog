@@ -128,7 +128,7 @@ impl GameLoop {
                 Ok(Vec::new())
             }
             G => self.world.take(),
-            Space => self.world.pass(),
+            Space | Pad5 => self.world.pass(),
             F5 => {
                 self.world
                     .save(&mut File::create("save.gam").unwrap())
@@ -383,6 +383,11 @@ impl GameLoop {
                             match e {
                                 Event::Msg(text) => {
                                     let _ = writeln!(&mut self.console, "{}", text);
+                                }
+                                Event::Damage { entity, amount } => {
+                                    let name = self.world.entity_name(entity);
+                                    // TODO: Use graphical effect
+                                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
                                 }
                             }
                         }

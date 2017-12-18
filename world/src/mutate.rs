@@ -288,6 +288,26 @@ pub trait Mutate: Query + Terraform + Sized {
         }
     }
 
+    /// Do a single step of natural regeneration for a creature.
+    ///
+    /// Return amount of health gained, or None if at full health.
+    fn tick_regeneration(&mut self, e: Entity) -> Option<i32> {
+        let max_hp = self.max_hp(e);
+        let increase = (max_hp / 30).max(1);
+
+        if let Some(health) = self.ecs_mut().health.get_mut(e) {
+            if health.wounds > 0 {
+                let increase = increase.min(health.wounds);
+                health.wounds -= increase;
+                Some(increase)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
     fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(Terrain, Vec<String>)>) {
@@ -542,7 +562,7 @@ pub trait Mutate: Query + Terraform + Sized {
     ///
     /// Must be explicitly called any time either the entity's base stats or anything relating to
     /// attached stat-affecting entities like equipped items is changed.
-    fn regenerate_stats(&mut self, e: Entity) {
+    fn rebuild_stats(&mut self, e: Entity) {
         if !self.ecs().stats.contains(e) {
             return;
         }
@@ -559,5 +579,22 @@ pub trait Mutate: Query + Terraform + Sized {
 
         // Set the derived stats.
         self.ecs_mut().stats[e].actual = stats;
+    }
+
+    /// The entity spends its action waiting.
+    fn idle(&mut self, e: Entity) {
+        if self.consume_nutrition(e) {
+            if let Some(regen) = self.tick_regeneration(e) {
+                self.push_event(Event::Damage { entity: e, amount: -regen });
+            }
+        }
+    }
+
+    /// Consume one unit of nutrition
+    ///
+    /// Return false if the entity has an empty stomach.
+    fn consume_nutrition(&mut self, e: Entity) -> bool {
+        // TODO nutrition system
+        return true
     }
 }

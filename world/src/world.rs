@@ -189,7 +189,8 @@ impl Mutate for World {
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
 
     fn equip_item(&mut self, e: Entity, parent: Entity, slot: Slot) {
-        self.spatial.equip(e, parent, slot)
+        self.spatial.equip(e, parent, slot);
+        self.rebuild_stats(parent);
     }
 
     fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
