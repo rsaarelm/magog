@@ -157,7 +157,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                 {
                     match event {
                         &WindowEvent::Closed => return false,
-                        &WindowEvent::MouseMoved {
+                        &WindowEvent::CursorMoved {
                             position: (x, y), ..
                         } => {
                             let pos = self.zoom.screen_to_canvas(
