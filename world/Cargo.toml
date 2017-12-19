@@ -9,7 +9,7 @@ name = "world"
 
 [dependencies]
 num = "0.1"
-rand = "0.3"
+rand = "0.4"
 vec_map = "0.8"
 ron = "0.1"
 euclid = "0.16"
