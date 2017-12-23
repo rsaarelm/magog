@@ -46,7 +46,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         width: u32,
         height: u32,
     ) -> Backend<V> {
-        let (w, h) = display.get_framebuffer_dimensions();
+        let (w, h) = get_size(&display);
         let canvas = Canvas::new(&display, width, height);
 
         Backend {
@@ -284,7 +284,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     fn update_window_size(&mut self) {
-        let (w, h) = self.display.get_framebuffer_dimensions();
+        let (w, h) = get_size(&self.display);
         self.window_size = Size2D::new(w, h);
     }
 
@@ -447,7 +447,7 @@ impl Canvas {
         let mut target = display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
 
-        let (w, h) = display.get_framebuffer_dimensions();
+        let (w, h) = get_size(display);
 
         // Build the geometry for the on-screen rectangle.
         let s_rect = zoom.fit_canvas(Size2D::new(w, h), self.size);
@@ -541,4 +541,8 @@ impl Canvas {
                 + ((image.data[i + 3] as u32) << 24)
         })
     }
+}
+
+fn get_size(display: &glium::Display) -> (u32, u32) {
+    display.gl_window().get_inner_size().unwrap_or((800, 600))
 }
