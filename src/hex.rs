@@ -296,7 +296,6 @@ impl Dir12 {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::Dir12;

@@ -45,10 +45,7 @@ impl fmt::Display for SRgba {
         write!(
             f,
             "#{:02X}{:02X}{:02X}{:02X}",
-            self.r,
-            self.g,
-            self.b,
-            self.a
+            self.r, self.g, self.b, self.a
         )
     }
 }

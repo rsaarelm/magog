@@ -98,10 +98,10 @@ impl fmt::Display for PrefabError {
 
 impl Error for PrefabError {
     fn description(&self) -> &str {
-        match self {
-            &PrefabError::InvalidInput => "Invalid input",
-            &PrefabError::MissingAnchor => "Anchor not found in input",
-            &PrefabError::MultipleAnchors => "Multiple anchor positions found in input",
+        match *self {
+            PrefabError::InvalidInput => "Invalid input",
+            PrefabError::MissingAnchor => "Anchor not found in input",
+            PrefabError::MultipleAnchors => "Multiple anchor positions found in input",
         }
     }
 }
@@ -114,7 +114,6 @@ impl Error for PrefabError {
 pub trait IntoPrefab<T> {
     fn try_into(self) -> Result<Prefab<T>, PrefabError>;
 }
-
 
 // Text prefabs
 
@@ -236,10 +235,9 @@ impl fmt::Display for Prefab<char> {
             .map(|(&pos, &c)| (TextVector::from_cell_space(pos), c))
             .collect();
 
-
         sorted.sort_by(|a, b| (a.0.y, a.0.x).cmp(&(b.0.y, b.0.x)));
 
-        if sorted.len() == 0 {
+        if sorted.is_empty() {
             return Ok(());
         }
 
@@ -285,7 +283,6 @@ impl fmt::Display for Prefab<char> {
 impl From<Prefab<char>> for String {
     fn from(prefab: Prefab<char>) -> String { format!("{}", prefab) }
 }
-
 
 // Image prefabs
 
@@ -369,7 +366,8 @@ where
         for y in (min_y + 1)..(min_y + h) {
             for x in (min_x + 1)..(min_x + w) {
                 if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
-                    let p = vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
+                    let p =
+                        vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
 
                     // Insert the color we get when we first hit this point.
                     points.entry(p).or_insert(c);
@@ -479,7 +477,7 @@ impl Transformation for MinimapSpace {
     fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
         let mut v = v.into();
         // Snap in square cells
-        v[0] = v[0] & -1; // Two-pixel columns
+        v[0] &= -1; // Two-pixel columns
         if v[0].mod_floor(&4) < 2 {
             // Even column
             v[1] &= !1;
@@ -515,7 +513,7 @@ mod test {
         // compensates for this. Should euclid ever change the API, the compensation would be
         // wrong, so this test will break. If it does, remove the size adjust found on line 399
         // when this comment was written.
-        use euclid::{point2, Rect};
+        use euclid::{Rect, point2};
         let rect = Rect::from_points(&[point2(5i32, 5i32)]);
         assert!(!rect.contains(&point2(5, 5)));
     }

@@ -33,7 +33,7 @@ pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbo
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use legend_builder::LegendBuilder;
 pub use prefab::{IntoPrefab, MinimapSpace, Prefab, PrefabError, ProjectedImage, TextSpace};
-pub use rng::{EncodeRng, RandomPermutation, RngExt, IndependentSample, SampleIterator};
+pub use rng::{EncodeRng, IndependentSample, RandomPermutation, RngExt, SampleIterator};
 pub use search::{astar_path_with, Dijkstra, GridNode};
 pub use space::{CellSpace, CellVector, Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
