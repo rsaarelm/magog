@@ -1,5 +1,6 @@
 use image;
 use num::Num;
+use std::ascii::AsciiExt;
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
