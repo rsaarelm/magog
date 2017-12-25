@@ -42,8 +42,7 @@ impl Worldgen {
 
         let mut cave_entrance = Location::new(40, 12, 0);
         ret.cave_entrance(cave_entrance);
-        ret.terrain
-            .insert(cave_entrance, Terrain::Gate);
+        ret.terrain.insert(cave_entrance, Terrain::Gate);
         ret.terrain
             .insert(cave_entrance + vec2(1, 1), Terrain::Empty);
 

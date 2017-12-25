@@ -89,8 +89,7 @@ impl<'a> World {
             if x.version != GAME_VERSION {
                 panic!(
                     "Save game version {} does not match current version {}",
-                    x.version,
-                    GAME_VERSION
+                    x.version, GAME_VERSION
                 );
             }
         }

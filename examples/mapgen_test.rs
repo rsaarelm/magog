@@ -1,9 +1,8 @@
+extern crate calx;
 ///!
 /// Test map generators by displaying generated text maps in console.
 ///
-
 extern crate rand;
-extern crate calx;
 extern crate world;
 
 use calx::Prefab;
@@ -11,7 +10,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use world::Sector;
-use world::mapgen::{self, Point2D, Size2D, DigCavesGen};
+use world::mapgen::{self, DigCavesGen, Point2D, Size2D};
 
 struct TestMap {
     terrain: HashMap<Point2D, char>,
@@ -82,6 +81,8 @@ fn main() {
 
     println!(
         "{}",
-        String::from(Prefab::from_iter(map.terrain.iter().map(|(p, t)| (p.to_vector(), *t))))
+        String::from(Prefab::from_iter(
+            map.terrain.iter().map(|(p, t)| (p.to_vector(), *t))
+        ))
     );
 }

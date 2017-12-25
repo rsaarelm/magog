@@ -195,7 +195,6 @@ impl<'a> serde::Deserialize<'a> for Spatial {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::{Place, Spatial};

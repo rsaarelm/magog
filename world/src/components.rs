@@ -50,7 +50,6 @@ impl Desc {
     }
 }
 
-
 /// Map field-of-view and remembered terrain.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct MapMemory {
@@ -69,7 +68,6 @@ impl MapMemory {
         }
     }
 }
-
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Brain {
@@ -147,7 +145,6 @@ pub enum Alignment {
     Evil,
 }
 
-
 /// Damage state component. The default state is undamaged and unarmored.
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Health {
@@ -163,7 +160,6 @@ impl Health {
     pub fn new() -> Health { Default::default() }
 }
 
-
 /// Items can be picked up and carried and they do stuff.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Item {
@@ -171,7 +167,6 @@ pub struct Item {
     /// How many uses a wand or similar has left.
     pub charges: u32,
 }
-
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 /// Temporary creature properties

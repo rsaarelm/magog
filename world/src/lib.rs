@@ -108,7 +108,6 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
     }
 }
 
-
 mod command;
 pub use command::{Command, CommandResult};
 

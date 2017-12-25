@@ -7,7 +7,7 @@ extern crate structopt;
 extern crate structopt_derive;
 extern crate world;
 
-use calx::{hex_disc, CellVector, Prefab, ProjectedImage, SRgba, MinimapSpace};
+use calx::{hex_disc, CellVector, MinimapSpace, Prefab, ProjectedImage, SRgba};
 use euclid::vec2;
 use image::{GenericImage, Pixel, SubImage};
 use std::collections::HashMap;
@@ -57,9 +57,7 @@ enum Command {
 }
 
 fn default_map(width: u32, height: u32) -> Prefab<Terrain> {
-    fn p(loc: Location) -> CellVector {
-        vec2(loc.x as i32, loc.y as i32)
-    }
+    fn p(loc: Location) -> CellVector { vec2(loc.x as i32, loc.y as i32) }
 
     let mut terrain = HashMap::new();
 
@@ -165,7 +163,8 @@ fn convert(
     output_path: Option<String>,
     output_is_minimap: bool,
 ) {
-    let mut input = image::open(input_path.clone()).expect(&format!("Unable to load '{}'", input_path.clone()));
+    let mut input =
+        image::open(input_path.clone()).expect(&format!("Unable to load '{}'", input_path.clone()));
     // Slice off the bottom row containing palette (h - 1).
     let (w, h) = (input.width(), input.height());
     let input_map = SubImage::new(&mut input, 0, 0, w, h - 1);

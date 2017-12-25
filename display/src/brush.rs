@@ -22,10 +22,7 @@ impl fmt::Debug for Splat {
         write!(
             f,
             "Splat {{ {:?}+{:?} {:?} {:?} }}",
-            self.image.tex_coords,
-            self.offset,
-            self.color,
-            self.back_color
+            self.image.tex_coords, self.offset, self.color, self.back_color
         )
     }
 }
@@ -62,7 +59,6 @@ pub struct Builder {
     splat_matrix: Vec<Vec<Splat>>,
     pub brush: Brush,
 }
-
 
 /// Builder structure for brushes.
 ///

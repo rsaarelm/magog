@@ -9,5 +9,5 @@ pub enum Event {
     Msg(String),
 
     /// Damage dealt to an entity. Use negative values to show healing.
-    Damage { entity: Entity, amount: i32 }
+    Damage { entity: Entity, amount: i32 },
 }

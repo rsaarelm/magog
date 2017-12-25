@@ -585,7 +585,10 @@ pub trait Mutate: Query + Terraform + Sized {
     fn idle(&mut self, e: Entity) {
         if self.consume_nutrition(e) {
             if let Some(regen) = self.tick_regeneration(e) {
-                self.push_event(Event::Damage { entity: e, amount: -regen });
+                self.push_event(Event::Damage {
+                    entity: e,
+                    amount: -regen,
+                });
             }
         }
     }
@@ -595,6 +598,6 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Return false if the entity has an empty stomach.
     fn consume_nutrition(&mut self, e: Entity) -> bool {
         // TODO nutrition system
-        return true
+        true
     }
 }

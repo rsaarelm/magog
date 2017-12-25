@@ -60,7 +60,6 @@ impl<'a> FovValue for SightFov<'a> {
     }
 }
 
-
 #[derive(Clone)]
 /// Field for spherical explosions that can be blocked by terrain.
 pub struct SphereVolumeFov<'a> {

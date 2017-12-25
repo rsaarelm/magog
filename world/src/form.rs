@@ -120,7 +120,6 @@ impl Form {
         self
     }
 
-
     /// Return the name of the form if it has one.
     pub fn name(&self) -> Option<&str> {
         match self.loadout.desc {

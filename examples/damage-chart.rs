@@ -2,7 +2,7 @@ extern crate rand;
 extern crate world;
 
 use std::io::Write;
-use world::{roll, attack_damage};
+use world::{attack_damage, roll};
 
 fn ev<F>(n: usize, f: F) -> f32
 where

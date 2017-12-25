@@ -152,7 +152,6 @@ impl Backend {
     }
 }
 
-
 // Use a custom Vertex with the vitral::Vertex adapter trait because Magog sprites use two color
 // parameters while Vitral's draw API only expects one.
 

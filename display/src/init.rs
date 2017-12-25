@@ -111,12 +111,10 @@ pub fn font<I: Iterator<Item = char>>(
 
     let mut glyphs = glyphs
         .into_iter()
-        .map(|i| {
-            vitral::CharData {
-                image: cache::get(&i),
-                draw_offset: vec2(0.0, 0.0),
-                advance: i.bounds.size.width as f32,
-            }
+        .map(|i| vitral::CharData {
+            image: cache::get(&i),
+            draw_offset: vec2(0.0, 0.0),
+            advance: i.bounds.size.width as f32,
         })
         .collect::<Vec<_>>();
 

@@ -113,11 +113,9 @@ impl AtlasCache {
         let img = image::load(Cursor::new(data), image::ImageFormat::PNG)?;
         let ret = tilesheet::bounds(&img)
             .into_iter()
-            .map(|r| {
-                SubImageSpec {
-                    bounds: r,
-                    sheet_name: name.clone(),
-                }
+            .map(|r| SubImageSpec {
+                bounds: r,
+                sheet_name: name.clone(),
             })
             .collect();
         self.add_sheet(name, convert_image(&img));

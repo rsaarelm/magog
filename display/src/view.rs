@@ -403,7 +403,6 @@ impl Transformation for ScreenSpace {
 pub type ScreenVector = TypedVector2D<f32, ScreenSpace>;
 pub type ScreenRect = TypedRect<f32, ScreenSpace>;
 
-
 /// 3D physics space, used for eg. lighting.
 pub struct PhysicsSpace;
 

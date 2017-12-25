@@ -353,7 +353,6 @@ pub trait Query: TerrainQuery + Sized {
             t = Empty;
         }
 
-
         // TODO: Might want a more generic method of specifying cosmetic terrain variants.
         if t == Grass && loc.noise() > 0.85 {
             // Grass is occasionally fancy.

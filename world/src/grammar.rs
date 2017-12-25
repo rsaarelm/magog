@@ -125,13 +125,15 @@ pub trait Templater {
 
     fn format(&mut self, text: &str) -> Result<String, String> {
         let ret = templatize(
-            |token| if let Some(mut s) = self.convert(&token.to_lowercase()) {
-                if is_capitalized(token) {
-                    s = capitalize(&s);
+            |token| {
+                if let Some(mut s) = self.convert(&token.to_lowercase()) {
+                    if is_capitalized(token) {
+                        s = capitalize(&s);
+                    }
+                    Ok(s)
+                } else {
+                    Err(token.to_string())
                 }
-                Ok(s)
-            } else {
-                Err(token.to_string())
             },
             text,
         )?;

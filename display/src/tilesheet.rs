@@ -79,7 +79,6 @@ where
                 continue;
             }
 
-
             // Otherwise good to go, add the new bit.
             ret = ret.union(&new_area);
             unchanged_count = 0;
