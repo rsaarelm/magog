@@ -1,5 +1,5 @@
-use calx::{hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
-use euclid::{self, vec2};
+use calx::{bounding_rect, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
+use euclid::{self, TypedRect, size2, vec2, point2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::BTreeSet;
@@ -7,6 +7,9 @@ use std::ops::Deref;
 
 pub type Point2D = euclid::TypedPoint2D<i32, CellSpace>;
 pub type Size2D = euclid::TypedSize2D<i32, CellSpace>;
+
+type Vector2D = euclid::TypedVector2D<i32, CellSpace>;
+type Rect = euclid::TypedRect<i32, CellSpace>;
 
 // We can't put raw Point2D into BTreeSet because they don't implement Ord, and we don't want to
 // use HashSet anywhere in the mapgen because mapgen must be totally deterministic for a given rng
@@ -68,6 +71,7 @@ pub trait Dungeon {
 /// will assume that the player can travel through the inside of the prefab area between any valid
 /// door position.
 pub trait Prefab {
+    /// Whether a point is open space inside the prefab.
     fn contains(&self, pos: Point2D) -> bool;
     fn can_make_door(&self, pos: Point2D) -> bool;
     fn size(&self) -> Size2D;
@@ -248,4 +252,75 @@ fn jaggly_line<'a, R: Rng>(
         p = rand::sample(rng, options, 1)[0].into();
         p
     }).take_while(move |&p| p != p2).chain(Some(p2))
+}
+
+/// Map generator for a dungeon of tunnels and carved rooms.
+pub struct RoomsAndCorridors;
+
+impl MapGen for RoomsAndCorridors {
+    fn dig<R, I, D, P>(&self, rng: &mut R, d: &mut D, domain: I)
+    where
+        R: Rng,
+        D: Dungeon<Prefab = P>,
+        P: Prefab,
+        I: IntoIterator<Item = Point2D>,
+    {
+        let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
+        let mut bounds =
+            TypedRect::from_points(&domain.iter().map(|p| p.0).collect::<Vec<Point2D>>());
+        // XXX: Correct for unintuitive from_points behavior.
+        bounds.size = bounds.size + size2(1, 1);
+
+        loop {
+            let prefab = d.sample_prefab(rng);
+
+            let size = prefab.size();
+            let mut shape: BTreeSet<OrdPoint> = BTreeSet::new();
+            for y in 0..size.height {
+                for x in 0..size.width {
+                    let p = point2(x, y);
+                    if prefab.contains(p) {
+                        shape.insert(p.into());
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn fits_in(piece: &BTreeSet<OrdPoint>, offset: Vector2D, space: &BTreeSet<OrdPoint>) -> bool {
+    piece
+        .iter()
+        .map(|p| OrdPoint(p.0 + offset))
+        .all(|p| space.contains(&p))
+}
+
+struct Piece {
+    points: BTreeSet<OrdPoint>,
+    bounds: Rect,
+}
+
+impl Piece {
+    fn new(points: BTreeSet<OrdPoint>) -> Piece {
+        let mut ret = Piece {
+            points,
+            bounds: Rect::zero(),
+        };
+        ret.update();
+        ret
+    }
+
+    fn update(&mut self) {
+        self.bounds = bounding_rect(&self.points.iter().map(|p| p.0).collect::<Vec<Point2D>>());
+    }
+}
+
+// TODO return impl
+fn rect_offsets(outer: &Rect, inner: &Rect) -> Vec<Vector2D> {
+    let mut ret = Vec::new();
+    if inner.size.width > outer.size.width || inner.size.height > outer.size.height {
+        return ret;
+    }
+
+    unimplemented!();
 }
