@@ -4,7 +4,7 @@ use euclid::vec2;
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
-use mapgen::{self, DigCavesGen, Size2D};
+use mapgen::{self, MapGen, Size2D};
 use rand::{self, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::BTreeSet;
@@ -54,8 +54,8 @@ impl Worldgen {
 
             {
                 let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, depth as i16));
-                let gen = DigCavesGen::new(digger.domain());
-                gen.dig(&mut rng, &mut digger);
+                let domain = digger.domain();
+                mapgen::Caves.dig(&mut rng, &mut digger, domain);
 
                 up_stairs = digger.up_portal.expect("Mapgen didn't create stairs up");
                 down_stairs = digger

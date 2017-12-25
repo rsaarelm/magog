@@ -8,7 +8,6 @@ use std::ops::Deref;
 pub type Point2D = euclid::TypedPoint2D<i32, CellSpace>;
 pub type Size2D = euclid::TypedSize2D<i32, CellSpace>;
 
-
 // We can't put raw Point2D into BTreeSet because they don't implement Ord, and we don't want to
 // use HashSet anywhere in the mapgen because mapgen must be totally deterministic for a given rng
 // seed and hash containers have unspecified iteration order. A newtype wrapper for getting ord
@@ -40,7 +39,7 @@ impl From<OrdPoint> for Point2D {
     fn from(ord_point: OrdPoint) -> Self { ord_point.0 }
 }
 
-
+/// Interface to the game state where the map is being generated.
 pub trait Dungeon {
     type Prefab: Prefab;
 
@@ -53,6 +52,7 @@ pub trait Dungeon {
     /// Add a narrow corridor to dungeon.
     fn dig_corridor<I: IntoIterator<Item = Point2D>>(&mut self, path: I);
 
+    /// Place a prefab in the world.
     fn add_prefab(&mut self, prefab: &Self::Prefab, pos: Point2D);
 
     fn add_door(&mut self, pos: Point2D);
@@ -62,38 +62,50 @@ pub trait Dungeon {
     fn add_down_stairs(&mut self, pos: Point2D);
 }
 
+/// Rooms and chambers provided by the caller.
+///
+/// Can include both detailed vaults and procedurally generated simple rooms. The map generator
+/// will assume that the player can travel through the inside of the prefab area between any valid
+/// door position.
 pub trait Prefab {
     fn contains(&self, pos: Point2D) -> bool;
     fn can_make_door(&self, pos: Point2D) -> bool;
     fn size(&self) -> Size2D;
 }
 
-pub struct DigCavesGen {
-    domain: Vec<OrdPoint>,
-}
-
-impl DigCavesGen {
-    pub fn new<I: IntoIterator<Item = Point2D>>(domain: I) -> DigCavesGen {
-        DigCavesGen {
-            domain: domain.into_iter().map(|x| x.into()).collect(),
-        }
-    }
-
-    pub fn dig<R: Rng, D, P>(&self, rng: &mut R, d: &mut D)
+/// Generic map generator interface.
+pub trait MapGen {
+    fn dig<R, I, D, P>(&self, rng: &mut R, dungeon: &mut D, domain: I)
     where
+        R: Rng,
         D: Dungeon<Prefab = P>,
         P: Prefab,
+        I: IntoIterator<Item = Point2D>;
+}
+
+/// Map generator for a system of natural caverns.
+pub struct Caves;
+
+impl MapGen for Caves {
+    fn dig<R, I, D, P>(&self, rng: &mut R, d: &mut D, domain: I)
+    where
+        R: Rng,
+        D: Dungeon<Prefab = P>,
+        P: Prefab,
+        I: IntoIterator<Item = Point2D>,
     {
+        let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
+
         const INIT_P: f32 = 0.65;
         const N_ITERS: usize = 3;
         const WALL_THRESHOLD: u32 = 3;
         const MINIMAL_REGION_SIZE: usize = 8;
 
-        let available: BTreeSet<OrdPoint> = self.domain.iter().cloned().collect();
+        let available: BTreeSet<OrdPoint> = domain.iter().cloned().collect();
 
         // Initial cellular automata run, produces okay looking but usually not fully connected
         // cave map.
-        let mut dug: BTreeSet<OrdPoint> = self.domain
+        let mut dug: BTreeSet<OrdPoint> = domain
             .iter()
             .filter(|_| rng.with_chance(INIT_P))
             .cloned()
@@ -102,7 +114,7 @@ impl DigCavesGen {
         for _ in 0..N_ITERS {
             let mut dug2 = dug.clone();
 
-            for &p in &self.domain {
+            for &p in &domain {
                 let n_walls: u32 = hex_disc(Point2D::from(p), 1)
                     .filter(|&p2| p2 != *p)
                     .map(|p2| !dug.contains(&p2.into()) as u32)
@@ -150,12 +162,12 @@ impl DigCavesGen {
         d.dig_chamber(dug.iter().map(|&x| Point2D::from(x)));
 
         // Pick stair sites
-        let upstair_sites: Vec<OrdPoint> = self.domain
+        let upstair_sites: Vec<OrdPoint> = domain
             .iter()
             .filter(|&&p| is_upstair_pos(&dug, p))
             .cloned()
             .collect();
-        let downstair_sites: Vec<OrdPoint> = self.domain
+        let downstair_sites: Vec<OrdPoint> = domain
             .iter()
             .filter(|&&p| is_downstair_pos(&dug, p))
             .cloned()
