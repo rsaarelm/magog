@@ -44,10 +44,10 @@ impl From<OrdPoint> for Point2D {
 
 /// Interface to the game state where the map is being generated.
 pub trait Dungeon {
-    type Prefab: Prefab;
+    type Vault: Vault;
 
     /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Prefab;
+    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I);
@@ -56,7 +56,7 @@ pub trait Dungeon {
     fn dig_corridor<I: IntoIterator<Item = Point2D>>(&mut self, path: I);
 
     /// Place a prefab in the world.
-    fn add_prefab(&mut self, prefab: &Self::Prefab, pos: Point2D);
+    fn add_prefab(&mut self, prefab: &Self::Vault, pos: Point2D);
 
     fn add_door(&mut self, pos: Point2D);
 
@@ -70,7 +70,7 @@ pub trait Dungeon {
 /// Can include both detailed vaults and procedurally generated simple rooms. The map generator
 /// will assume that the player can travel through the inside of the prefab area between any valid
 /// door position.
-pub trait Prefab {
+pub trait Vault {
     /// Whether a point is open space inside the prefab.
     fn contains(&self, pos: Point2D) -> bool;
     fn can_make_door(&self, pos: Point2D) -> bool;
@@ -79,11 +79,11 @@ pub trait Prefab {
 
 /// Generic map generator interface.
 pub trait MapGen {
-    fn dig<R, I, D, P>(&self, rng: &mut R, dungeon: &mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, dungeon: &mut D, domain: I)
     where
         R: Rng,
-        D: Dungeon<Prefab = P>,
-        P: Prefab,
+        D: Dungeon<Vault = V>,
+        V: Vault,
         I: IntoIterator<Item = Point2D>;
 }
 
@@ -91,11 +91,11 @@ pub trait MapGen {
 pub struct Caves;
 
 impl MapGen for Caves {
-    fn dig<R, I, D, P>(&self, rng: &mut R, d: &mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, d: &mut D, domain: I)
     where
         R: Rng,
-        D: Dungeon<Prefab = P>,
-        P: Prefab,
+        D: Dungeon<Vault = V>,
+        V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
@@ -258,11 +258,11 @@ fn jaggly_line<'a, R: Rng>(
 pub struct RoomsAndCorridors;
 
 impl MapGen for RoomsAndCorridors {
-    fn dig<R, I, D, P>(&self, rng: &mut R, d: &mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, d: &mut D, domain: I)
     where
         R: Rng,
-        D: Dungeon<Prefab = P>,
-        P: Prefab,
+        D: Dungeon<Vault = V>,
+        V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();

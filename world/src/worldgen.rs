@@ -292,10 +292,10 @@ impl<'a> SectorDigger<'a> {
 }
 
 impl<'a> mapgen::Dungeon for SectorDigger<'a> {
-    type Prefab = Room;
+    type Vault = Room;
 
     /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Prefab { rng.gen() }
+    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, area: I) {
@@ -316,7 +316,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
         }
     }
 
-    fn add_prefab(&mut self, prefab: &Self::Prefab, pos: mapgen::Point2D) {
+    fn add_prefab(&mut self, prefab: &Self::Vault, pos: mapgen::Point2D) {
         // TODO
         unimplemented!();
     }
@@ -355,7 +355,7 @@ struct Room {
     size: Size2D,
 }
 
-impl mapgen::Prefab for Room {
+impl mapgen::Vault for Room {
     fn contains(&self, pos: mapgen::Point2D) -> bool {
         pos.x >= 0 && pos.y >= 0 && pos.x < self.size.width && pos.y < self.size.height
     }
