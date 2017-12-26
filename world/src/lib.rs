@@ -1,3 +1,5 @@
+#![feature(conservative_impl_trait)]
+
 extern crate calx;
 #[macro_use]
 extern crate calx_ecs;

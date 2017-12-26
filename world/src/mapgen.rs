@@ -234,24 +234,18 @@ fn flood_fill(mut points: BTreeSet<OrdPoint>, seed: OrdPoint) -> BTreeSet<OrdPoi
 
 fn is_connected(points: BTreeSet<OrdPoint>) -> bool { separate_regions(points).len() <= 1 }
 
-// TODO return impl
-fn jaggly_line<R: Rng>(
-    rng: &mut R,
-    available: &BTreeSet<OrdPoint>,
+fn jaggly_line<'a, R: Rng>(
+    rng: &'a mut R,
+    available: &'a BTreeSet<OrdPoint>,
     p1: OrdPoint,
     p2: OrdPoint,
-) -> Vec<OrdPoint> {
-    let mut ret = Vec::new();
+) -> impl Iterator<Item=OrdPoint> + 'a {
     let mut p = p1;
-    ret.push(p);
-
-    while p != p2 {
+    (0..).map(move |_| {
         let dist = (*p2 - *p).hex_dist();
         let options = hex_neighbors(Point2D::from(p))
             .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
         p = rand::sample(rng, options, 1)[0].into();
-        ret.push(p);
-    }
-
-    ret
+        p
+    }).take_while(move |&p| p != p2).chain(Some(p2))
 }
