@@ -1,6 +1,6 @@
-extern crate serde_json;
 extern crate calx;
 extern crate rand;
+extern crate serde_json;
 
 use calx::WeightedChoice;
 use rand::{Rng, SeedableRng, XorShiftRng};
@@ -31,12 +31,12 @@ fn test_noise() {
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx::split_line;
 
-    split_line(line, |_| 1.0, space as f32).zip(parts).all(
-        |(actual, &expected)| {
+    split_line(line, |_| 1.0, space as f32)
+        .zip(parts)
+        .all(|(actual, &expected)| {
             assert_eq!(expected, actual);
             true
-        },
-    );
+        });
 
     assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
 }
@@ -124,7 +124,11 @@ fn test_retry_gen() {
 
     fn failing_gen<R: Rng>(rng: &mut R) -> Result<f32, ()> {
         let x = rng.next_f32();
-        if x < 0.1 { Ok(x) } else { Err(()) }
+        if x < 0.1 {
+            Ok(x)
+        } else {
+            Err(())
+        }
     }
 
     assert!(retry_gen(1000, &mut rand::thread_rng(), failing_gen).is_ok());
