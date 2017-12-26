@@ -47,7 +47,7 @@ pub trait Dungeon {
     type Vault;
 
     /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
+    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I);
@@ -68,7 +68,8 @@ pub trait Dungeon {
 #[derive(Copy, Clone, Debug)]
 pub enum VaultCell {
     Interior,
-    NoDigBorder,
+    DiggableWall,
+    UndiggableWall,
 }
 
 /// Generic map generator interface.
@@ -77,7 +78,7 @@ pub trait MapGen {
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        &'a V: IntoIterator<Item = (Point2D, VaultCell)> + 'a,
+        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
         I: IntoIterator<Item = Point2D>;
 }
 
@@ -89,7 +90,7 @@ impl MapGen for Caves {
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        &'a V: IntoIterator<Item = (Point2D, VaultCell)> + 'a,
+        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
@@ -259,7 +260,7 @@ impl MapGen for RoomsAndCorridors {
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        &'a V: IntoIterator<Item = (Point2D, VaultCell)> + 'a,
+        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
@@ -269,7 +270,28 @@ impl MapGen for RoomsAndCorridors {
         bounds.size = bounds.size + size2(1, 1);
 
         loop {
-            let prefab = d.sample_prefab(rng);
+            let vault = d.sample_vault(rng);
+
+            // The full set of points, both the interior and the walls.
+            let mut full_set: BTreeSet<OrdPoint> = BTreeSet::new();
+
+            // Only the interior that is actually dug out of the map space.
+            let mut interior_set: BTreeSet<OrdPoint> = BTreeSet::new();
+
+            let mut door_positions: BTreeSet<OrdPoint> = BTreeSet::new();
+
+            for (p, t) in vault.into_iter() {
+                /*
+                let p: OrdPoint = p.clone().into();
+
+                full_set.insert(p);
+                match t {
+                    VaultCell::Interior => { interior_set.insert(p); }
+                    VaultCell::DiggableWall => { door_positions.insert(p); }
+                    _ => {}
+                }
+                */
+            }
 
             unimplemented!();
             /*

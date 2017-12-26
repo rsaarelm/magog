@@ -295,7 +295,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     type Vault = Room;
 
     /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
+    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, area: I) {
@@ -387,27 +387,27 @@ impl<'a> Iterator for RoomIter<'a> {
     type Item = (mapgen::Point2D, VaultCell);
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            if self.y > self.room.size.height + 1 {
-                return None;
-            }
+        use mapgen::VaultCell::*;
+        if self.y > self.room.size.height + 1 {
+            return None;
+        }
 
-            let x_wall = self.x == -1 || self.x == self.room.size.width;
-            let y_wall = self.y == -1 || self.y == self.room.size.height;
+        let x_wall = self.x == -1 || self.x == self.room.size.width;
+        let y_wall = self.y == -1 || self.y == self.room.size.height;
+        let p = point2(self.x, self.y);
 
-            self.x += 1;
-            if self.x >= self.room.size.width + 1 {
-                self.x = -1;
-                self.y += 1;
-            }
+        self.x += 1;
+        if self.x >= self.room.size.width + 1 {
+            self.x = -1;
+            self.y += 1;
+        }
 
-            if x_wall && y_wall {
-                return Some((point2(self.x, self.y), VaultCell::NoDigBorder));
-            } else if x_wall || y_wall {
-                continue;
-            } else {
-                return Some((point2(self.x, self.y), VaultCell::Interior));
-            }
+        if x_wall && y_wall {
+            Some((p, UndiggableWall))
+        } else if x_wall || y_wall {
+            Some((p, DiggableWall))
+        } else {
+            Some((p, Interior))
         }
     }
 }
