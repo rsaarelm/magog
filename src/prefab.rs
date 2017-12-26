@@ -1,3 +1,4 @@
+use alg_misc::bounding_rect;
 use colors::{scolor, SRgba};
 use euclid::{self, TypedPoint2D, TypedRect, TypedVector2D, point2, vec2};
 use image::{self, Pixel};
@@ -55,14 +56,10 @@ impl<T> Prefab<T> {
     ///
     /// This is an O(n) operation, so make sure to cache the result if your prefab is large.
     pub fn bounds(&self) -> TypedRect<i32, CellSpace> {
-        type CellPoint = euclid::TypedPoint2D<i32, CellSpace>;
-        TypedRect::from_points(
-            self.points
-                .iter()
-                .map(|(&p, _)| p.to_point())
-                .collect::<Vec<CellPoint>>()
-                .as_slice(),
-        )
+        bounding_rect(&self.points
+            .iter()
+            .map(|(&p, _)| p.to_point())
+            .collect::<Vec<_>>())
     }
 }
 
@@ -504,17 +501,5 @@ mod test {
         assert_eq!([0, 0], MinimapSpace::project([1, 0]));
         assert_eq!([0, 0], MinimapSpace::project([0, 1]));
         assert_eq!([0, 0], MinimapSpace::project([1, 1]));
-    }
-
-    #[test]
-    fn test_rect_from_points_behavior() {
-        // Currently euclid's Rect::from_points has the surprising behavior that the right and
-        // bottom parts of the point cloud are not included in the rect. The prefab code
-        // compensates for this. Should euclid ever change the API, the compensation would be
-        // wrong, so this test will break. If it does, remove the size adjust found on line 399
-        // when this comment was written.
-        use euclid::{Rect, point2};
-        let rect = Rect::from_points(&[point2(5i32, 5i32)]);
-        assert!(!rect.contains(&point2(5, 5)));
     }
 }

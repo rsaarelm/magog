@@ -1,4 +1,5 @@
-use num::Float;
+use euclid::{rect, TypedPoint2D, TypedRect};
+use num::{Float, One, Zero};
 use rand::{Rand, Rng};
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
@@ -184,4 +185,53 @@ where
     }
 
     ret
+}
+
+/// Build an axis-aligned rectangle that contains the given points.
+///
+/// It will add unit distance to the right and bottom edges to make sure the resulting `TypedRect`
+/// will contain all the points. It would beneath
+///
+/// # Examples
+///
+/// ```
+/// # extern crate euclid;
+/// # extern crate calx;
+/// # fn main() {
+/// use euclid::point2;
+///
+/// let points: Vec<euclid::Point2D<i32>> = vec![point2(2, 3), point2(4, 5), point2(6, 7)];
+/// let rect = calx::bounding_rect(&points);
+/// assert!(rect.contains(&point2(2, 3)));
+/// assert!(rect.contains(&point2(6, 7)));
+/// assert!(!rect.contains(&point2(7, 7)));
+/// assert!(!rect.contains(&point2(2, 2)));
+/// # }
+/// ```
+pub fn bounding_rect<'a, I, T, U>(points: I) -> TypedRect<T, U>
+where
+    I: IntoIterator<Item = &'a TypedPoint2D<T, U>>,
+    T: Zero + One + Add + Sub<Output = T> + Ord + Copy + 'a,
+    U: 'a,
+{
+    let mut iter = points.into_iter();
+    if let Some(first) = iter.next() {
+        let (mut min_x, mut min_y) = (first.x, first.y);
+        let (mut max_x, mut max_y) = (first.x, first.y);
+
+        while let Some(p) = iter.next() {
+            min_x = min_x.min(p.x);
+            min_y = min_y.min(p.y);
+            max_x = max_x.max(p.x);
+            max_y = max_y.max(p.y);
+        }
+
+        // Make the rect contain the edge points.
+        max_x = max_x + T::one();
+        max_y = max_y + T::one();
+
+        rect(min_x, min_y, max_x - min_x, max_y - min_y)
+    } else {
+        TypedRect::zero()
+    }
 }

@@ -25,8 +25,8 @@ mod system;
 mod text;
 mod timing;
 
-pub use alg_misc::{clamp, lerp, noise, retry_gen, sorted_pair, Deciban, WeightedChoice,
-                   compact_bits_by_2, spread_bits_by_2};
+pub use alg_misc::{bounding_rect, clamp, lerp, noise, retry_gen, sorted_pair, Deciban,
+                   WeightedChoice, compact_bits_by_2, spread_bits_by_2};
 pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
