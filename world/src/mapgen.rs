@@ -315,12 +315,25 @@ impl Piece {
     }
 }
 
-// TODO return impl
-fn rect_offsets(outer: &Rect, inner: &Rect) -> Vec<Vector2D> {
-    let mut ret = Vec::new();
-    if inner.size.width > outer.size.width || inner.size.height > outer.size.height {
-        return ret;
-    }
+fn rect_offsets(outer: &Rect, inner: &Rect) -> impl Iterator<Item=Vector2D> {
+    let w = (outer.size.width - inner.size.width + 1).max(0);
+    let h = (outer.size.height - inner.size.height + 1).max(0);
+    let offset = outer.origin - inner.origin;
 
-    unimplemented!();
+    (0..h).flat_map(move |y| (0..w).map(move |x| vec2(x, y) + offset))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use euclid::{self, rect, vec2};
+    type Vector2D = euclid::TypedVector2D<i32, CellSpace>;
+
+    #[test]
+    fn test_rect_offsets() {
+        assert!(rect_offsets(&rect(5, 5, 2, 2), &rect(0, 0, 10, 10)).next().is_none());
+        assert_eq!(vec![vec2(5, 5)], rect_offsets(&rect(5, 5, 10, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+        assert_eq!(vec![vec2(5, 5), vec2(6, 5)], rect_offsets(&rect(5, 5, 11, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+        assert_eq!(vec![vec2(5, 5), vec2(5, 6)], rect_offsets(&rect(5, 5, 10, 11), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+    }
 }
