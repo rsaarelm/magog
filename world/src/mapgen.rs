@@ -1,8 +1,13 @@
-use calx::{bounding_rect, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
-use euclid::{self, TypedRect, size2, vec2, point2};
+// Map generation, being a convoluted beast of unsavory angles and loathsome tesseractations, is
+// best confined here in a private subdimension instead of being fully integrated with the main
+// world code.
+
+use calx::{self, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
+use euclid::{self, TypedRect, point2, size2, vec2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
+use std::iter::FromIterator;
 use std::ops::Deref;
 
 pub type Point2D = euclid::TypedPoint2D<i32, CellSpace>;
@@ -65,16 +70,24 @@ pub trait Dungeon {
     fn add_down_stairs(&mut self, pos: Point2D);
 }
 
+/// Type specificier for cells in `Vault` shape.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum VaultCell {
+    /// Open space inside the vault.
+    Interior,
+    /// Regular wall around the vault, dig a door in it to connect the vault.
+    DiggableWall,
+    /// Wall around the vault that needs to stay undug.
+    UndiggableWall,
+}
+
 /// Rooms and chambers provided by the caller.
 ///
 /// Can include both detailed vaults and procedurally generated simple rooms. The map generator
 /// will assume that the player can travel through the inside of the prefab area between any valid
 /// door position.
 pub trait Vault {
-    /// Whether a point is open space inside the prefab.
-    fn contains(&self, pos: Point2D) -> bool;
-    fn can_make_door(&self, pos: Point2D) -> bool;
-    fn size(&self) -> Size2D;
+    fn get_shape<T: FromIterator<(Point2D, VaultCell)>>(&self) -> T;
 }
 
 /// Generic map generator interface.
@@ -243,15 +256,18 @@ fn jaggly_line<'a, R: Rng>(
     available: &'a BTreeSet<OrdPoint>,
     p1: OrdPoint,
     p2: OrdPoint,
-) -> impl Iterator<Item=OrdPoint> + 'a {
+) -> impl Iterator<Item = OrdPoint> + 'a {
     let mut p = p1;
-    (0..).map(move |_| {
-        let dist = (*p2 - *p).hex_dist();
-        let options = hex_neighbors(Point2D::from(p))
-            .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
-        p = rand::sample(rng, options, 1)[0].into();
-        p
-    }).take_while(move |&p| p != p2).chain(Some(p2))
+    (0..)
+        .map(move |_| {
+            let dist = (*p2 - *p).hex_dist();
+            let options = hex_neighbors(Point2D::from(p))
+                .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
+            p = rand::sample(rng, options, 1)[0].into();
+            p
+        })
+        .take_while(move |&p| p != p2)
+        .chain(Some(p2))
 }
 
 /// Map generator for a dungeon of tunnels and carved rooms.
@@ -265,62 +281,107 @@ impl MapGen for RoomsAndCorridors {
         V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
+        use self::VaultCell::*;
+
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
-        let mut bounds =
-            TypedRect::from_points(&domain.iter().map(|p| p.0).collect::<Vec<Point2D>>());
-        // XXX: Correct for unintuitive from_points behavior.
-        bounds.size = bounds.size + size2(1, 1);
+
+        // Points available for digging.
+        let mut diggable: BTreeSet<OrdPoint> = domain.iter().cloned().collect();
+        // Points actually dug out.
+        let mut dug: BTreeSet<OrdPoint> = BTreeSet::new();
+        // Points that should get a doorway if dug.
+        let mut door_here: BTreeSet<OrdPoint> = BTreeSet::new();
+
+        let area_bounds = bounding_rect(diggable.iter());
 
         loop {
             let prefab = d.sample_prefab(rng);
+            let points: Vec<(Point2D, VaultCell)> = prefab.get_shape();
 
-            let size = prefab.size();
-            let mut shape: BTreeSet<OrdPoint> = BTreeSet::new();
-            for y in 0..size.height {
-                for x in 0..size.width {
-                    let p = point2(x, y);
-                    if prefab.contains(p) {
-                        shape.insert(p.into());
+            // Split the vault into multiple masks. These are used to modify the diggable area
+            // after vault placement has been found.
+
+            // The interior is dug out of the map.
+            let mut interior = BTreeSet::new();
+            // No-dig points are not dug out but are removed from diggable space.
+            let mut no_dig = BTreeSet::new();
+            // These points should get a doorway when they are dug.
+            let mut door_here = BTreeSet::new();
+            // The border cells, must not hit any dug space when placing vault.
+            let mut border = BTreeSet::new();
+
+            for &(p, t) in &points {
+                let p: OrdPoint = p.into();
+                match t {
+                    VaultCell::Interior => {
+                        interior.insert(p);
+
+                        border.insert(p);
+                        // Don't trust the user-provided walls, blob the surroundings of every
+                        for p2 in hex_disc(Point2D::from(p), 1) {
+                            border.insert(p2.into());
+                        }
+                    }
+                    VaultCell::DiggableWall => {
+                        door_here.insert(p);
+                        border.insert(p);
+                    }
+                    VaultCell::UndiggableWall => {
+                        no_dig.insert(p);
+                        border.insert(p);
                     }
                 }
+            }
+            border = border.difference(&interior).cloned().collect();
+
+            let bounds = bounding_rect(interior.iter());
+
+            let mut offsets = Vec::new();
+            'search: for offset in rect_offsets(&area_bounds, &bounds) {
+                // All interior points must hit diggable.
+                for p in interior.iter().map(|p| (p.0 + offset).into()) {
+                    if !diggable.contains(&p) {
+                        continue 'search;
+                    }
+                }
+
+                // No full-shape must hit dug.
+                for p in border.iter().map(|p| (p.0 + offset).into()) {
+                    if dug.contains(&p) {
+                        continue 'search;
+                    }
+                }
+
+                // We need separate stages because there no-dig walls create points that are
+                // neither diggable (interior can't be placed there) nor dug (border can still
+                // overlap with them).
+
+                // Finally collect the valid positions.
+                offsets.push(offset);
+            }
+
+            if offsets.is_empty() {
+                // Can't place anything!
+                unimplemented!();
             }
         }
     }
 }
 
-fn fits_in(piece: &BTreeSet<OrdPoint>, offset: Vector2D, space: &BTreeSet<OrdPoint>) -> bool {
-    piece
-        .iter()
-        .map(|p| OrdPoint(p.0 + offset))
-        .all(|p| space.contains(&p))
-}
-
-struct Piece {
-    points: BTreeSet<OrdPoint>,
-    bounds: Rect,
-}
-
-impl Piece {
-    fn new(points: BTreeSet<OrdPoint>) -> Piece {
-        let mut ret = Piece {
-            points,
-            bounds: Rect::zero(),
-        };
-        ret.update();
-        ret
-    }
-
-    fn update(&mut self) {
-        self.bounds = bounding_rect(&self.points.iter().map(|p| p.0).collect::<Vec<Point2D>>());
-    }
-}
-
-fn rect_offsets(outer: &Rect, inner: &Rect) -> impl Iterator<Item=Vector2D> {
+fn rect_offsets(outer: &Rect, inner: &Rect) -> impl Iterator<Item = Vector2D> {
     let w = (outer.size.width - inner.size.width + 1).max(0);
     let h = (outer.size.height - inner.size.height + 1).max(0);
     let offset = outer.origin - inner.origin;
 
     (0..h).flat_map(move |y| (0..w).map(move |x| vec2(x, y) + offset))
+}
+
+/// Convenience function using the local type.
+fn bounding_rect<'a, I>(points: I) -> TypedRect<i32, CellSpace>
+where
+    I: IntoIterator<Item = &'a OrdPoint>,
+{
+    calx::bounding_rect(points.into_iter().map(|p| &p.0))
 }
 
 #[cfg(test)]
@@ -331,9 +392,22 @@ mod test {
 
     #[test]
     fn test_rect_offsets() {
-        assert!(rect_offsets(&rect(5, 5, 2, 2), &rect(0, 0, 10, 10)).next().is_none());
-        assert_eq!(vec![vec2(5, 5)], rect_offsets(&rect(5, 5, 10, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
-        assert_eq!(vec![vec2(5, 5), vec2(6, 5)], rect_offsets(&rect(5, 5, 11, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
-        assert_eq!(vec![vec2(5, 5), vec2(5, 6)], rect_offsets(&rect(5, 5, 10, 11), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+        assert!(
+            rect_offsets(&rect(5, 5, 2, 2), &rect(0, 0, 10, 10))
+                .next()
+                .is_none()
+        );
+        assert_eq!(
+            vec![vec2(5, 5)],
+            rect_offsets(&rect(5, 5, 10, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
+        );
+        assert_eq!(
+            vec![vec2(5, 5), vec2(6, 5)],
+            rect_offsets(&rect(5, 5, 11, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
+        );
+        assert_eq!(
+            vec![vec2(5, 5), vec2(5, 6)],
+            rect_offsets(&rect(5, 5, 10, 11), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
+        );
     }
 }

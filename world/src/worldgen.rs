@@ -1,15 +1,15 @@
 use Prefab;
 use calx::{self, hex_neighbors, Dijkstra};
-use euclid::vec2;
+use euclid::{point2, vec2};
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
-use mapgen::{self, MapGen, Size2D};
+use mapgen::{self, MapGen, Size2D, VaultCell};
 use rand::{self, Rand, Rng, SeedableRng};
 use serde;
-use std::collections::BTreeSet;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::io::Cursor;
+use std::iter::FromIterator;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
@@ -356,19 +356,25 @@ struct Room {
 }
 
 impl mapgen::Vault for Room {
-    fn contains(&self, pos: mapgen::Point2D) -> bool {
-        pos.x >= 0 && pos.y >= 0 && pos.x < self.size.width && pos.y < self.size.height
+    fn get_shape<T: FromIterator<(mapgen::Point2D, VaultCell)>>(&self) -> T {
+        (-1..self.size.height)
+            .flat_map(move |y| {
+                (-1..self.size.width).map(move |x| {
+                    let x_wall = x == -1 || x == self.size.width;
+                    let y_wall = y == -1 || y == self.size.height;
+                    let p = point2(x, y);
+
+                    if x_wall && y_wall {
+                        (p, VaultCell::UndiggableWall)
+                    } else if x_wall || y_wall {
+                        (p, VaultCell::DiggableWall)
+                    } else {
+                        (p, VaultCell::Interior)
+                    }
+                })
+            })
+            .collect()
     }
-
-    fn can_make_door(&self, pos: mapgen::Point2D) -> bool {
-        let on_x_wall = pos.x == 0 || pos.x == self.size.width - 1;
-        let on_y_wall = pos.y == 0 || pos.y == self.size.height - 1;
-
-        // Must touch one wall, but touching both makes it a corner and we don't want rooms there.
-        on_x_wall ^ on_y_wall
-    }
-
-    fn size(&self) -> Size2D { self.size }
 }
 
 impl Rand for Room {
