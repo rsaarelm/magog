@@ -1,10 +1,10 @@
 use Prefab;
 use calx::{self, hex_neighbors, Dijkstra};
-use euclid::{point2, vec2};
+use euclid::vec2;
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
-use mapgen::{self, MapGen, Size2D, VaultCell};
+use mapgen::{self, MapGen, Size2D};
 use rand::{self, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::BTreeSet;
@@ -295,7 +295,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     type Vault = Room;
 
     /// Return a random prefab room.
-    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
+    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = mapgen::Point2D>>(&mut self, area: I) {
@@ -355,59 +355,26 @@ struct Room {
     size: Size2D,
 }
 
-impl<'a> IntoIterator for &'a Room {
-    type Item = (mapgen::Point2D, VaultCell);
-    type IntoIter = RoomIter<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        RoomIter {
-            room: self,
-            x: -1,
-            y: -1,
-        }
+impl mapgen::Vault for Room {
+    fn contains(&self, pos: mapgen::Point2D) -> bool {
+        pos.x >= 0 && pos.y >= 0 && pos.x < self.size.width && pos.y < self.size.height
     }
+
+    fn can_make_door(&self, pos: mapgen::Point2D) -> bool {
+        let on_x_wall = pos.x == 0 || pos.x == self.size.width - 1;
+        let on_y_wall = pos.y == 0 || pos.y == self.size.height - 1;
+
+        // Must touch one wall, but touching both makes it a corner and we don't want rooms there.
+        on_x_wall ^ on_y_wall
+    }
+
+    fn size(&self) -> Size2D { self.size }
 }
 
 impl Rand for Room {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         Room {
             size: Size2D::new(rng.gen_range(3, 10), rng.gen_range(3, 10)),
-        }
-    }
-}
-
-// boilerplate
-struct RoomIter<'a> {
-    room: &'a Room,
-    x: i32,
-    y: i32,
-}
-
-impl<'a> Iterator for RoomIter<'a> {
-    type Item = (mapgen::Point2D, VaultCell);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        use mapgen::VaultCell::*;
-        if self.y > self.room.size.height + 1 {
-            return None;
-        }
-
-        let x_wall = self.x == -1 || self.x == self.room.size.width;
-        let y_wall = self.y == -1 || self.y == self.room.size.height;
-        let p = point2(self.x, self.y);
-
-        self.x += 1;
-        if self.x >= self.room.size.width + 1 {
-            self.x = -1;
-            self.y += 1;
-        }
-
-        if x_wall && y_wall {
-            Some((p, UndiggableWall))
-        } else if x_wall || y_wall {
-            Some((p, DiggableWall))
-        } else {
-            Some((p, Interior))
         }
     }
 }

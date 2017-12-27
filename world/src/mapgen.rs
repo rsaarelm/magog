@@ -1,5 +1,5 @@
 use calx::{bounding_rect, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
-use euclid::{self, TypedRect, point2, size2, vec2};
+use euclid::{self, TypedRect, size2, vec2, point2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::BTreeSet;
@@ -44,10 +44,10 @@ impl From<OrdPoint> for Point2D {
 
 /// Interface to the game state where the map is being generated.
 pub trait Dungeon {
-    type Vault;
+    type Vault: Vault;
 
     /// Return a random prefab room.
-    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
+    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I);
@@ -65,20 +65,25 @@ pub trait Dungeon {
     fn add_down_stairs(&mut self, pos: Point2D);
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum VaultCell {
-    Interior,
-    DiggableWall,
-    UndiggableWall,
+/// Rooms and chambers provided by the caller.
+///
+/// Can include both detailed vaults and procedurally generated simple rooms. The map generator
+/// will assume that the player can travel through the inside of the prefab area between any valid
+/// door position.
+pub trait Vault {
+    /// Whether a point is open space inside the prefab.
+    fn contains(&self, pos: Point2D) -> bool;
+    fn can_make_door(&self, pos: Point2D) -> bool;
+    fn size(&self) -> Size2D;
 }
 
 /// Generic map generator interface.
 pub trait MapGen {
-    fn dig<'a, R, I, D, V>(&self, rng: &mut R, dungeon: &'a mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, dungeon: &mut D, domain: I)
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
+        V: Vault,
         I: IntoIterator<Item = Point2D>;
 }
 
@@ -86,11 +91,11 @@ pub trait MapGen {
 pub struct Caves;
 
 impl MapGen for Caves {
-    fn dig<'a, R, I, D, V>(&self, rng: &mut R, d: &'a mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, d: &mut D, domain: I)
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
+        V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
@@ -238,29 +243,26 @@ fn jaggly_line<'a, R: Rng>(
     available: &'a BTreeSet<OrdPoint>,
     p1: OrdPoint,
     p2: OrdPoint,
-) -> impl Iterator<Item = OrdPoint> + 'a {
+) -> impl Iterator<Item=OrdPoint> + 'a {
     let mut p = p1;
-    (0..)
-        .map(move |_| {
-            let dist = (*p2 - *p).hex_dist();
-            let options = hex_neighbors(Point2D::from(p))
-                .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
-            p = rand::sample(rng, options, 1)[0].into();
-            p
-        })
-        .take_while(move |&p| p != p2)
-        .chain(Some(p2))
+    (0..).map(move |_| {
+        let dist = (*p2 - *p).hex_dist();
+        let options = hex_neighbors(Point2D::from(p))
+            .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
+        p = rand::sample(rng, options, 1)[0].into();
+        p
+    }).take_while(move |&p| p != p2).chain(Some(p2))
 }
 
 /// Map generator for a dungeon of tunnels and carved rooms.
 pub struct RoomsAndCorridors;
 
 impl MapGen for RoomsAndCorridors {
-    fn dig<'a, R, I, D, V>(&self, rng: &mut R, d: &'a mut D, domain: I)
+    fn dig<R, I, D, V>(&self, rng: &mut R, d: &mut D, domain: I)
     where
         R: Rng,
         D: Dungeon<Vault = V>,
-        for<'b> &'b V: IntoIterator<Item = (Point2D, VaultCell)> + 'b,
+        V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
         let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
@@ -270,31 +272,8 @@ impl MapGen for RoomsAndCorridors {
         bounds.size = bounds.size + size2(1, 1);
 
         loop {
-            let vault = d.sample_vault(rng);
+            let prefab = d.sample_prefab(rng);
 
-            // The full set of points, both the interior and the walls.
-            let mut full_set: BTreeSet<OrdPoint> = BTreeSet::new();
-
-            // Only the interior that is actually dug out of the map space.
-            let mut interior_set: BTreeSet<OrdPoint> = BTreeSet::new();
-
-            let mut door_positions: BTreeSet<OrdPoint> = BTreeSet::new();
-
-            for (p, t) in vault.into_iter() {
-                /*
-                let p: OrdPoint = p.clone().into();
-
-                full_set.insert(p);
-                match t {
-                    VaultCell::Interior => { interior_set.insert(p); }
-                    VaultCell::DiggableWall => { door_positions.insert(p); }
-                    _ => {}
-                }
-                */
-            }
-
-            unimplemented!();
-            /*
             let size = prefab.size();
             let mut shape: BTreeSet<OrdPoint> = BTreeSet::new();
             for y in 0..size.height {
@@ -305,7 +284,6 @@ impl MapGen for RoomsAndCorridors {
                     }
                 }
             }
-            */
         }
     }
 }
@@ -337,7 +315,7 @@ impl Piece {
     }
 }
 
-fn rect_offsets(outer: &Rect, inner: &Rect) -> impl Iterator<Item = Vector2D> {
+fn rect_offsets(outer: &Rect, inner: &Rect) -> impl Iterator<Item=Vector2D> {
     let w = (outer.size.width - inner.size.width + 1).max(0);
     let h = (outer.size.height - inner.size.height + 1).max(0);
     let offset = outer.origin - inner.origin;
@@ -353,22 +331,9 @@ mod test {
 
     #[test]
     fn test_rect_offsets() {
-        assert!(
-            rect_offsets(&rect(5, 5, 2, 2), &rect(0, 0, 10, 10))
-                .next()
-                .is_none()
-        );
-        assert_eq!(
-            vec![vec2(5, 5)],
-            rect_offsets(&rect(5, 5, 10, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
-        );
-        assert_eq!(
-            vec![vec2(5, 5), vec2(6, 5)],
-            rect_offsets(&rect(5, 5, 11, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
-        );
-        assert_eq!(
-            vec![vec2(5, 5), vec2(5, 6)],
-            rect_offsets(&rect(5, 5, 10, 11), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>()
-        );
+        assert!(rect_offsets(&rect(5, 5, 2, 2), &rect(0, 0, 10, 10)).next().is_none());
+        assert_eq!(vec![vec2(5, 5)], rect_offsets(&rect(5, 5, 10, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+        assert_eq!(vec![vec2(5, 5), vec2(6, 5)], rect_offsets(&rect(5, 5, 11, 10), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
+        assert_eq!(vec![vec2(5, 5), vec2(5, 6)], rect_offsets(&rect(5, 5, 10, 11), &rect(0, 0, 10, 10)).collect::<Vec<Vector2D>>());
     }
 }
