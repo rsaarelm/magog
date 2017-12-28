@@ -2,7 +2,7 @@
 // best confined here in a private subdimension instead of being fully integrated with the main
 // world code.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt};
+use calx::{self, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt, WeightedChoice};
 use euclid::{self, TypedRect, point2, size2, vec2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -51,8 +51,8 @@ impl From<OrdPoint> for Point2D {
 pub trait Dungeon {
     type Vault: Vault;
 
-    /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
+    /// Return a random vault.
+    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I);
@@ -60,8 +60,8 @@ pub trait Dungeon {
     /// Add a narrow corridor to dungeon.
     fn dig_corridor<I: IntoIterator<Item = Point2D>>(&mut self, path: I);
 
-    /// Place a prefab in the world.
-    fn add_prefab(&mut self, prefab: &Self::Vault, pos: Point2D);
+    /// Place a vault in the world.
+    fn place_vault(&mut self, vault: &Self::Vault, pos: Point2D);
 
     fn add_door(&mut self, pos: Point2D);
 
@@ -84,7 +84,7 @@ pub enum VaultCell {
 /// Rooms and chambers provided by the caller.
 ///
 /// Can include both detailed vaults and procedurally generated simple rooms. The map generator
-/// will assume that the player can travel through the inside of the prefab area between any valid
+/// will assume that the player can travel through the inside of the vault area between any valid
 /// door position.
 pub trait Vault {
     fn get_shape<T: FromIterator<(Point2D, VaultCell)>>(&self) -> T;
@@ -283,88 +283,176 @@ impl MapGen for RoomsAndCorridors {
     {
         use self::VaultCell::*;
 
-        let domain: Vec<OrdPoint> = domain.into_iter().map(|p| p.into()).collect();
+        let mut domain = DigSpace::new(domain.into_iter().map(|p| p.into()));
 
-        // Points available for digging.
-        let mut diggable: BTreeSet<OrdPoint> = domain.iter().cloned().collect();
-        // Points actually dug out.
-        let mut dug: BTreeSet<OrdPoint> = BTreeSet::new();
-        // Points that should get a doorway if dug.
-        let mut door_here: BTreeSet<OrdPoint> = BTreeSet::new();
-
-        let area_bounds = bounding_rect(diggable.iter());
+        let mut vaults = Vec::new();
 
         loop {
-            let prefab = d.sample_prefab(rng);
-            let points: Vec<(Point2D, VaultCell)> = prefab.get_shape();
-
-            // Split the vault into multiple masks. These are used to modify the diggable area
-            // after vault placement has been found.
-
-            // The interior is dug out of the map.
-            let mut interior = BTreeSet::new();
-            // No-dig points are not dug out but are removed from diggable space.
-            let mut no_dig = BTreeSet::new();
-            // These points should get a doorway when they are dug.
-            let mut door_here = BTreeSet::new();
-            // The border cells, must not hit any dug space when placing vault.
-            let mut border = BTreeSet::new();
-
-            for &(p, t) in &points {
-                let p: OrdPoint = p.into();
-                match t {
-                    VaultCell::Interior => {
-                        interior.insert(p);
-
-                        border.insert(p);
-                        // Don't trust the user-provided walls, blob the surroundings of every
-                        for p2 in hex_disc(Point2D::from(p), 1) {
-                            border.insert(p2.into());
-                        }
-                    }
-                    VaultCell::DiggableWall => {
-                        door_here.insert(p);
-                        border.insert(p);
-                    }
-                    VaultCell::UndiggableWall => {
-                        no_dig.insert(p);
-                        border.insert(p);
-                    }
-                }
-            }
-            border = border.difference(&interior).cloned().collect();
-
-            let bounds = bounding_rect(interior.iter());
-
-            let mut offsets = Vec::new();
-            'search: for offset in rect_offsets(&area_bounds, &bounds) {
-                // All interior points must hit diggable.
-                for p in interior.iter().map(|p| (p.0 + offset).into()) {
-                    if !diggable.contains(&p) {
-                        continue 'search;
-                    }
-                }
-
-                // No full-shape must hit dug.
-                for p in border.iter().map(|p| (p.0 + offset).into()) {
-                    if dug.contains(&p) {
-                        continue 'search;
-                    }
-                }
-
-                // We need separate stages because there no-dig walls create points that are
-                // neither diggable (interior can't be placed there) nor dug (border can still
-                // overlap with them).
-
-                // Finally collect the valid positions.
-                offsets.push(offset);
-            }
+            let vault = d.sample_vault(rng);
+            let vault_shape: VaultShape = (&vault).into();
+            let offsets = domain.placement_offsets(&vault_shape);
 
             if offsets.is_empty() {
                 // Can't place anything!
-                unimplemented!();
+                // TODO: More robust criteria
+                // TODO: Retry a few times in case it was just a bad fit
+                break;
+            }
+
+            let center: Vector2D =
+                offsets.iter().fold(vec2(0, 0), |a, &b| a + b) / (offsets.len() as i32);
+            let dist = |&v: &Vector2D| ((v - center).square_length() as f32).sqrt();
+
+            // How much extra sampling weight should you get for being further out of center.
+            //
+            // The center point gets weight 1.0, the most distant point gets weight 1.0 + DIST_WEIGHT.
+            const DIST_WEIGHT: f32 = 1.0;
+
+            // Normalize the dist factor based on how far the points are spread.
+            let dist_factor =
+                DIST_WEIGHT / (1.0 + offsets.iter().map(|v| dist(v) as i32).max().unwrap() as f32);
+
+            let offset = *offsets
+                .iter()
+                .weighted_choice(rng, |v| 1.0 + dist_factor * dist(v))
+                .expect("Failed to sample vault offset");
+
+            d.place_vault(&vault, offset.to_point());
+            domain.place(&vault_shape, offset);
+
+            vaults.push((offset, vault_shape));
+        }
+
+        if vaults.is_empty() {
+            panic!("Couldn't place any rooms!");
+        }
+
+        // TODO: Connect vaults with corridors
+    }
+}
+
+/// Placement determination structure for a vault.
+struct VaultShape {
+    interior: BTreeSet<OrdPoint>,
+    no_dig: BTreeSet<OrdPoint>,
+    door_here: BTreeSet<OrdPoint>,
+    border: BTreeSet<OrdPoint>,
+    bounds: Rect,
+}
+
+impl<'a, V: Vault> From<&'a V> for VaultShape {
+    fn from(vault: &'a V) -> Self {
+        let points: Vec<(Point2D, VaultCell)> = vault.get_shape();
+
+        // Split the vault into multiple masks. These are used to modify the diggable area
+        // after vault placement has been found.
+
+        // The interior is dug out of the map.
+        let mut interior = BTreeSet::new();
+        // No-dig points are not dug out but are removed from diggable space.
+        let mut no_dig = BTreeSet::new();
+        // These points should get a doorway when they are dug.
+        let mut door_here = BTreeSet::new();
+        // The border cells, must not hit any dug space when placing vault.
+        let mut border = BTreeSet::new();
+
+        for &(p, t) in &points {
+            let p: OrdPoint = p.into();
+            match t {
+                VaultCell::Interior => {
+                    interior.insert(p);
+
+                    border.insert(p);
+                    // Don't trust the user-provided walls, blob the surroundings of every
+                    for p2 in hex_disc(Point2D::from(p), 1) {
+                        border.insert(p2.into());
+                    }
+                }
+                VaultCell::DiggableWall => {
+                    door_here.insert(p);
+                    border.insert(p);
+                }
+                VaultCell::UndiggableWall => {
+                    no_dig.insert(p);
+                    border.insert(p);
+                }
             }
         }
+        border = border.difference(&interior).cloned().collect();
+
+        let bounds = bounding_rect(interior.iter());
+
+        VaultShape {
+            interior,
+            no_dig,
+            door_here,
+            border,
+            bounds,
+        }
+    }
+}
+
+struct DigSpace {
+    /// Diggable area.
+    diggable: BTreeSet<OrdPoint>,
+    /// Dug out area.
+    dug: BTreeSet<OrdPoint>,
+    bounds: Rect,
+}
+
+impl DigSpace {
+    pub fn new<I: IntoIterator<Item = OrdPoint>>(domain: I) -> DigSpace {
+        let diggable: BTreeSet<OrdPoint> = domain.into_iter().collect();
+        let bounds = bounding_rect(diggable.iter());
+
+        DigSpace {
+            diggable,
+            dug: BTreeSet::new(),
+            bounds,
+        }
+    }
+
+    /// Find valid placement positions for a vault.
+    pub fn placement_offsets(&self, vault: &VaultShape) -> Vec<Vector2D> {
+        let mut ret = Vec::new();
+        'search: for offset in rect_offsets(&self.bounds, &vault.bounds) {
+            // All interior points must hit diggable.
+            for p in vault.interior.iter().map(|p| (p.0 + offset).into()) {
+                if !self.diggable.contains(&p) {
+                    continue 'search;
+                }
+            }
+
+            // No full-shape must hit dug.
+            for p in vault.border.iter().map(|p| (p.0 + offset).into()) {
+                if self.dug.contains(&p) {
+                    continue 'search;
+                }
+            }
+
+            // We need the two checks here because there no-dig walls create points that are
+            // neither diggable (interior can't be placed there) nor dug (border can still
+            // overlap with them).
+
+            // Finally collect the valid positions.
+            ret.push(offset);
+        }
+        ret
+    }
+
+    /// Place a vault in the space, reduce diggable area.
+    pub fn place(&mut self, vault: &VaultShape, offset: Vector2D) {
+        for p in vault.interior.iter() {
+            let p = (p.0 + offset).into();
+            self.diggable.remove(&p);
+            self.dug.insert(p);
+        }
+        for p in vault.no_dig.iter() {
+            let p = (p.0 + offset).into();
+            self.diggable.remove(&p);
+        }
+
+        self.bounds = bounding_rect(self.diggable.iter());
     }
 }
 
