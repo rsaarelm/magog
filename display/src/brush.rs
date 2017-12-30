@@ -174,7 +174,7 @@ impl Builder {
         let n = self.splat_matrix[0].len();
 
         for _ in 0..n {
-            let mut frame = Vec::new();
+            let mut frame = Vec::with_capacity(self.splat_matrix.len());
             for i in &mut self.splat_matrix {
                 frame.push(i.remove(0));
             }
