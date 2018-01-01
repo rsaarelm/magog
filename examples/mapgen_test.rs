@@ -1,7 +1,6 @@
+//! Test map generators by displaying generated text maps in console.
+
 extern crate calx;
-///!
-/// Test map generators by displaying generated text maps in console.
-///
 extern crate rand;
 extern crate world;
 
@@ -9,8 +8,8 @@ use calx::Prefab;
 use rand::Rng;
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use world::Sector;
-use world::mapgen::{self, DigCavesGen, Point2D, Size2D};
+use world::{Room, Sector};
+use world::mapgen::{self, MapGen, Point2D, Size2D};
 
 struct TestMap {
     terrain: HashMap<Point2D, char>,
@@ -36,10 +35,10 @@ impl TestMap {
 }
 
 impl mapgen::Dungeon for TestMap {
-    type Prefab = Room;
+    type Vault = Room;
 
     /// Return a random prefab room.
-    fn sample_prefab<R: Rng>(&mut self, rng: &mut R) -> Self::Prefab { Room }
+    fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault { rng.gen() }
 
     /// Add a large open continuous region to dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I) {
@@ -55,7 +54,7 @@ impl mapgen::Dungeon for TestMap {
         }
     }
 
-    fn add_prefab(&mut self, prefab: &Self::Prefab, pos: Point2D) {
+    fn place_vault(&mut self, vault: &Self::Vault, pos: Point2D) {
         unimplemented!();
     }
 
@@ -66,18 +65,11 @@ impl mapgen::Dungeon for TestMap {
     fn add_down_stairs(&mut self, pos: Point2D) { self.terrain.insert(pos, '>'); }
 }
 
-struct Room;
-impl mapgen::Prefab for Room {
-    fn contains(&self, pos: Point2D) -> bool { false }
-    fn can_make_door(&self, pos: Point2D) -> bool { false }
-    fn size(&self) -> Size2D { Size2D::new(0, 0) }
-}
-
 fn main() {
     let mut map = TestMap::new();
 
-    let gen = DigCavesGen::new(map.terrain.keys().cloned());
-    gen.dig(&mut rand::thread_rng(), &mut map);
+    let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
+    mapgen::Caves.dig(&mut rand::thread_rng(), &mut map, domain);
 
     println!(
         "{}",
