@@ -9,7 +9,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use world::{Room, Sector};
-use world::mapgen::{self, MapGen, Point2D, Size2D};
+use world::mapgen::{self, MapGen, Point2D, Size2D, Vault, VaultCell};
 
 struct TestMap {
     terrain: HashMap<Point2D, char>,
@@ -55,7 +55,18 @@ impl mapgen::Dungeon for TestMap {
     }
 
     fn place_vault(&mut self, vault: &Self::Vault, pos: Point2D) {
-        unimplemented!();
+        let points: Vec<(Point2D, VaultCell)> = vault.get_shape();
+        for &(p, c) in &points {
+            let p = p + pos.to_vector();
+            if !self.terrain.contains_key(&p) {
+                continue;
+            }
+            let c = match c {
+                VaultCell::Interior => '.',
+                _ => '#',
+            };
+            self.terrain.insert(p, c);
+        }
     }
 
     fn add_door(&mut self, pos: Point2D) { self.terrain.insert(pos, '+'); }
@@ -69,7 +80,7 @@ fn main() {
     let mut map = TestMap::new();
 
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
-    mapgen::Caves.dig(&mut rand::thread_rng(), &mut map, domain);
+    mapgen::RoomsAndCorridors.dig(&mut rand::thread_rng(), &mut map, domain);
 
     println!(
         "{}",
