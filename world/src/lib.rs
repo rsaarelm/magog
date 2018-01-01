@@ -164,6 +164,7 @@ mod world;
 pub use world::{Ecs, World};
 
 mod worldgen;
+pub use worldgen::Room;
 
 /// Standard Prefab type, terrain type and spawn name list.
 pub type Prefab = calx::Prefab<(Terrain, Vec<String>)>;
