@@ -198,7 +198,10 @@ where
     // Find shortest path.
     let mut goal = loop {
         if let Some(closest) = open.pop() {
-            debug_assert!(!come_from.contains_key(&closest.item));
+            if come_from.contains_key(&closest.item) {
+                // Already saw it through a presumably shorter path...
+                continue;
+            }
 
             if let Some(from) = closest.come_from {
                 come_from.insert(closest.item.clone(), from);
