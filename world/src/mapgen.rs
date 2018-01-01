@@ -315,8 +315,36 @@ impl MapGen for RoomsAndCorridors {
                 .weighted_choice(rng, |v| 1.0 + dist_factor * dist(v))
                 .expect("Failed to sample vault offset");
 
+            let tunnel_start = if !vaults.is_empty() {
+                Some(*seq::sample_iter(rng, domain.dug.iter(), 1).unwrap()[0])
+            } else {
+                None
+            };
+
             d.place_vault(&vault, offset.to_point());
             domain.place(&vault_shape, offset);
+
+            if let Some(tunnel_start) = tunnel_start {
+                let tunnel_end = seq::sample_iter(rng, vault_shape.interior.iter(), 1).unwrap()[0];
+                let tunnel_end = OrdPoint(tunnel_end.0 + offset);
+
+                let tunnel = domain.find_tunnel(tunnel_start, tunnel_end).expect("Could not dig tunnel between vaults");
+
+                let mut dug_tunnel = Vec::with_capacity(tunnel.len());
+                for t in &tunnel {
+                    debug_assert!(domain.diggable.contains(&t) || domain.dug.contains(&t));
+                    if domain.diggable.contains(t) {
+                        dug_tunnel.push(t.0.clone());
+                        domain.diggable.remove(t);
+                        domain.dug.insert(*t);
+                    }
+                    if domain.door_here.contains(t) {
+                        d.add_door(t.0);
+                    }
+                }
+
+                d.dig_corridor(dug_tunnel);
+            }
 
             vaults.push((offset, vault_shape));
         }
@@ -395,6 +423,7 @@ struct DigSpace {
     diggable: BTreeSet<OrdPoint>,
     /// Dug out area.
     dug: BTreeSet<OrdPoint>,
+    door_here: BTreeSet<OrdPoint>,
     bounds: Rect,
 }
 
@@ -406,6 +435,7 @@ impl DigSpace {
         DigSpace {
             diggable,
             dug: BTreeSet::new(),
+            door_here: BTreeSet::new(),
             bounds,
         }
     }
@@ -448,6 +478,10 @@ impl DigSpace {
         for p in vault.no_dig.iter() {
             let p = (p.0 + offset).into();
             self.diggable.remove(&p);
+        }
+        for p in vault.door_here.iter() {
+            let p = (p.0 + offset).into();
+            self.door_here.insert(p);
         }
 
         self.bounds = bounding_rect(self.diggable.iter());
