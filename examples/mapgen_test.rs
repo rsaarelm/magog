@@ -7,7 +7,9 @@ extern crate world;
 use calx::Prefab;
 use rand::Rng;
 use std::collections::HashMap;
+use std::fmt::Write;
 use std::iter::FromIterator;
+use std::str;
 use world::{Room, Sector};
 use world::mapgen::{self, MapGen, Point2D, Vault, VaultCell};
 
@@ -69,7 +71,7 @@ impl mapgen::Dungeon for TestMap {
         }
     }
 
-    fn add_door(&mut self, pos: Point2D) { self.terrain.insert(pos, '+'); }
+    fn add_door(&mut self, pos: Point2D) { self.terrain.insert(pos, '|'); }
 
     fn add_up_stairs(&mut self, pos: Point2D) { self.terrain.insert(pos, '<'); }
 
@@ -82,10 +84,33 @@ fn main() {
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
     mapgen::RoomsAndCorridors.dig(&mut rand::thread_rng(), &mut map, domain);
 
-    println!(
-        "{}",
-        String::from(Prefab::from_iter(
-            map.terrain.iter().map(|(p, t)| (p.to_vector(), *t))
-        ))
-    );
+
+    let map_text = String::from(Prefab::from_iter(
+        map.terrain.iter().map(|(p, t)| (p.to_vector(), *t)),
+    ));
+
+    let mut new_text = String::new();
+
+    for line in map_text.lines() {
+        let mut line = line.to_string();
+        let mut bytes: Vec<u8> = line.bytes().collect();
+        for i in 1..(bytes.len() - 1) {
+            for &(a, b, c) in &[
+                ('*', '*', '*'),
+                ('#', '#', '#'),
+                ('*', '#', '*'),
+                ('#', '*', '*'),
+                ('|', '#', '#'),
+                ('#', '|', '#'),
+            ]
+            {
+                if bytes[i] == ' ' as u8 && bytes[i - 1] == a as u8 && bytes[i + 1] == b as u8 {
+                    bytes[i] = c as u8;
+                }
+            }
+        }
+        let _ = writeln!(&mut new_text, "{}", str::from_utf8(&bytes).unwrap());
+    }
+
+    println!("{}", new_text);
 }
