@@ -2,7 +2,8 @@
 // best confined here in a private subdimension instead of being fully integrated with the main
 // world code.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, HexGeom, RngExt, WeightedChoice};
+use calx::{self, hex_disc, hex_neighbors, CellSpace, Dir6, HexGeom, RngExt, WeightedChoice};
+use calx::{astar_path, GridNode};
 use euclid::{self, TypedRect, point2, size2, vec2};
 use rand::{self, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -20,7 +21,7 @@ type Rect = euclid::TypedRect<i32, CellSpace>;
 // use HashSet anywhere in the mapgen because mapgen must be totally deterministic for a given rng
 // seed and hash containers have unspecified iteration order. A newtype wrapper for getting ord
 // lets us work with some minor violence to the code.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 struct OrdPoint(Point2D);
 
 impl PartialOrd for OrdPoint {
@@ -453,6 +454,38 @@ impl DigSpace {
         }
 
         self.bounds = bounding_rect(self.diggable.iter());
+    }
+
+    /// Try to find a tunnel path between two points.
+    pub fn find_tunnel(&self, p1: OrdPoint, p2: OrdPoint) -> Option<Vec<OrdPoint>> {
+        let neighbors = |p: &OrdPoint| {
+            let mut ret = Vec::with_capacity(8);
+
+            let dist = (p.0 - p2.0).hex_dist() as f32;
+            for q in hex_neighbors(p.0) {
+                let q = OrdPoint(q);
+                let dist = (q.0 - p2.0).hex_dist() as f32;
+                if self.dug.contains(&q) {
+                    // Moving in dug space, just go wherever you want.
+                    ret.push((q, dist));
+                } else if !self.diggable.contains(&q) {
+                    continue;
+                } else {
+                    // Diggable, but not dug yet. Can only dig if there are solid walls to both
+                    // sides.
+                    let dig_dir = Dir6::from_v2(q.0 - p.0);
+                    let both_sides_walled = !self.dug
+                        .contains(&OrdPoint(p.0 + (dig_dir - 1).to_v2()))
+                        && !self.dug.contains(&OrdPoint(p.0 + (dig_dir + 1).to_v2()));
+                    if both_sides_walled {
+                        ret.push((q, dist));
+                    }
+                }
+            }
+            ret
+        };
+
+        calx::astar_path(p1, &p2, neighbors)
     }
 }
 
