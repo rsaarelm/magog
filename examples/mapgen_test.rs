@@ -9,7 +9,7 @@ use rand::Rng;
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use world::{Room, Sector};
-use world::mapgen::{self, MapGen, Point2D, Size2D, Vault, VaultCell};
+use world::mapgen::{self, MapGen, Point2D, Vault, VaultCell};
 
 struct TestMap {
     terrain: HashMap<Point2D, char>,

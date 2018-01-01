@@ -9,7 +9,7 @@ use form::Form;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use query::Query;
-use rand::{self, Rand};
+use rand::{seq, Rand};
 use terraform::Terraform;
 use terrain::Terrain;
 use volume::Volume;
@@ -416,7 +416,7 @@ pub trait Mutate: Query + Terraform + Sized {
                         .filter(|&e| self.is_mob(e) && Some(e) != caster)
                         .collect();
 
-                    let mut target = rand::sample(self.rng(), &targets, 1);
+                    let mut target = seq::sample_iter(self.rng(), &targets, 1).unwrap();
 
                     if let Some(target) = target.pop() {
                         msg!(self, "There is a peal of thunder.").send();

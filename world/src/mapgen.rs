@@ -3,11 +3,10 @@
 // world code.
 
 use calx::{self, hex_disc, hex_neighbors, CellSpace, Dir6, HexGeom, RngExt, WeightedChoice};
-use calx::{astar_path, GridNode};
-use euclid::{self, TypedRect, point2, size2, vec2};
-use rand::{self, Rng};
+use euclid::{self, TypedRect, vec2};
+use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::iter::FromIterator;
 use std::ops::Deref;
 
@@ -21,7 +20,7 @@ type Rect = euclid::TypedRect<i32, CellSpace>;
 // use HashSet anywhere in the mapgen because mapgen must be totally deterministic for a given rng
 // seed and hash containers have unspecified iteration order. A newtype wrapper for getting ord
 // lets us work with some minor violence to the code.
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 struct OrdPoint(Point2D);
 
 impl PartialOrd for OrdPoint {
@@ -55,7 +54,7 @@ pub trait Dungeon {
     /// Return a random vault.
     fn sample_vault<R: Rng>(&mut self, rng: &mut R) -> Self::Vault;
 
-    /// Add a large open continuous region to dungeon.
+    /// Add an open continuous region to the dungeon.
     fn dig_chamber<I: IntoIterator<Item = Point2D>>(&mut self, area: I);
 
     /// Add a narrow corridor to dungeon.
@@ -167,8 +166,8 @@ impl MapGen for Caves {
             // Add each secondary region to the dug set, carving a tunnel from dug to its random
             // point.
             // XXX: Might be neater to try to minimize the length of the tunnel to carve
-            let p1: OrdPoint = *rand::sample(rng, dug.iter(), 1)[0];
-            let p2: OrdPoint = *rand::sample(rng, next_region.iter(), 1)[0];
+            let p1: OrdPoint = *seq::sample_iter(rng, dug.iter(), 1).unwrap()[0];
+            let p2: OrdPoint = *seq::sample_iter(rng, next_region.iter(), 1).unwrap()[0];
 
             dug.extend(next_region.into_iter());
             dug.extend(jaggly_line(rng, &available, p1, p2).into_iter());
@@ -190,8 +189,8 @@ impl MapGen for Caves {
             .filter(|&&p| is_downstair_pos(&dug, p))
             .cloned()
             .collect();
-        d.add_up_stairs(rand::sample(rng, upstair_sites.into_iter(), 1)[0].into());
-        d.add_down_stairs(rand::sample(rng, downstair_sites.into_iter(), 1)[0].into());
+        d.add_up_stairs(seq::sample_iter(rng, upstair_sites.into_iter(), 1).unwrap()[0].into());
+        d.add_down_stairs(seq::sample_iter(rng, downstair_sites.into_iter(), 1).unwrap()[0].into());
 
         fn is_upstair_pos(dug: &BTreeSet<OrdPoint>, pos: OrdPoint) -> bool {
             let dug = |x, y| dug.contains(&OrdPoint::from(Point2D::from(pos) + vec2(x, y)));
@@ -264,7 +263,7 @@ fn jaggly_line<'a, R: Rng>(
             let dist = (*p2 - *p).hex_dist();
             let options = hex_neighbors(Point2D::from(p))
                 .filter(|&q| (*p2 - q).hex_dist() < dist && available.contains(&q.into()));
-            p = rand::sample(rng, options, 1)[0].into();
+            p = seq::sample_iter(rng, options, 1).unwrap()[0].into();
             p
         })
         .take_while(move |&p| p != p2)
@@ -282,8 +281,6 @@ impl MapGen for RoomsAndCorridors {
         V: Vault,
         I: IntoIterator<Item = Point2D>,
     {
-        use self::VaultCell::*;
-
         let mut domain = DigSpace::new(domain.into_iter().map(|p| p.into()));
 
         let mut vaults = Vec::new();
@@ -461,7 +458,6 @@ impl DigSpace {
         let neighbors = |p: &OrdPoint| {
             let mut ret = Vec::with_capacity(8);
 
-            let dist = (p.0 - p2.0).hex_dist() as f32;
             for q in hex_neighbors(p.0) {
                 let q = OrdPoint(q);
                 let dist = (q.0 - p2.0).hex_dist() as f32;

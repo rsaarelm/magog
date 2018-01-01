@@ -5,7 +5,7 @@ use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
 use mapgen::{self, MapGen, Size2D, VaultCell};
-use rand::{self, Rand, Rng, SeedableRng};
+use rand::{seq, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::{BTreeSet, HashMap};
 use std::io::Cursor;
@@ -64,7 +64,8 @@ impl Worldgen {
                 // Spawn
                 digger.clear_spawns_near_entrance(12);
 
-                let mut spawn_locs = rand::sample(&mut rng, digger.spawn_region.iter(), 20);
+                let mut spawn_locs =
+                    seq::sample_iter(&mut rng, digger.spawn_region.iter(), 20).unwrap();
                 let n_spawns = spawn_locs.len();
 
                 let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
@@ -354,9 +355,9 @@ pub struct Room {
 
 impl mapgen::Vault for Room {
     fn get_shape<T: FromIterator<(mapgen::Point2D, VaultCell)>>(&self) -> T {
-        (-1..self.size.height+1)
+        (-1..self.size.height + 1)
             .flat_map(move |y| {
-                (-1..self.size.width+1).map(move |x| {
+                (-1..self.size.width + 1).map(move |x| {
                     let x_wall = x == -1 || x == self.size.width;
                     let y_wall = y == -1 || y == self.size.height;
                     let p = point2(x, y);
