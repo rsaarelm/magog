@@ -354,9 +354,9 @@ pub struct Room {
 
 impl mapgen::Vault for Room {
     fn get_shape<T: FromIterator<(mapgen::Point2D, VaultCell)>>(&self) -> T {
-        (-1..self.size.height)
+        (-1..self.size.height+1)
             .flat_map(move |y| {
-                (-1..self.size.width).map(move |x| {
+                (-1..self.size.width+1).map(move |x| {
                     let x_wall = x == -1 || x == self.size.width;
                     let y_wall = y == -1 || y == self.size.height;
                     let p = point2(x, y);
@@ -377,7 +377,7 @@ impl mapgen::Vault for Room {
 impl Rand for Room {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         Room {
-            size: Size2D::new(rng.gen_range(3, 10), rng.gen_range(3, 10)),
+            size: Size2D::new(rng.gen_range(2, 8), rng.gen_range(2, 8)),
         }
     }
 }
