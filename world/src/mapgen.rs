@@ -315,20 +315,32 @@ impl MapGen for RoomsAndCorridors {
                 .weighted_choice(rng, |v| 1.0 + dist_factor * dist(v))
                 .expect("Failed to sample vault offset");
 
-            let tunnel_start = if !vaults.is_empty() {
-                Some(*seq::sample_iter(rng, domain.dug.iter(), 1).unwrap()[0])
-            } else {
-                None
-            };
+            let tunnel_start_set = domain.dug.clone();
+            let tunnel_end_set: Vec<OrdPoint> = vault_shape
+                .interior
+                .iter()
+                .map(|p| (p.0 + offset).into())
+                .collect();
 
             d.place_vault(&vault, offset.to_point());
             domain.place(&vault_shape, offset);
 
-            if let Some(tunnel_start) = tunnel_start {
-                let tunnel_end = seq::sample_iter(rng, vault_shape.interior.iter(), 1).unwrap()[0];
-                let tunnel_end = OrdPoint(tunnel_end.0 + offset);
+            if !tunnel_start_set.is_empty() {
+                // Retry the tunnel digging
+                let mut retries = 32;
+                let tunnel: Vec<OrdPoint> = loop {
+                    let tunnel_start =
+                        *seq::sample_iter(rng, tunnel_start_set.iter(), 1).unwrap()[0];
+                    let tunnel_end = *seq::sample_iter(rng, tunnel_end_set.iter(), 1).unwrap()[0];
+                    if let Some(tunnel) = domain.find_tunnel(tunnel_start, tunnel_end) {
+                        break tunnel;
+                    }
 
-                let tunnel = domain.find_tunnel(tunnel_start, tunnel_end).expect("Could not dig tunnel between vaults");
+                    retries -= 1;
+                    if retries <= 0 {
+                        panic!("Could not dig tunnel between vaults");
+                    }
+                };
 
                 let mut dug_tunnel = Vec::with_capacity(tunnel.len());
                 for t in &tunnel {
