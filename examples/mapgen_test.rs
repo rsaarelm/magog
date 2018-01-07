@@ -84,7 +84,6 @@ fn main() {
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
     mapgen::RoomsAndCorridors.dig(&mut rand::thread_rng(), &mut map, domain);
 
-
     let map_text = String::from(Prefab::from_iter(
         map.terrain.iter().map(|(p, t)| (p.to_vector(), *t)),
     ));
@@ -102,8 +101,7 @@ fn main() {
                 ('#', '*', '*'),
                 ('|', '#', '#'),
                 ('#', '|', '#'),
-            ]
-            {
+            ] {
                 if bytes[i] == ' ' as u8 && bytes[i - 1] == a as u8 && bytes[i + 1] == b as u8 {
                     bytes[i] = c as u8;
                 }
