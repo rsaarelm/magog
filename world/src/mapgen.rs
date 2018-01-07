@@ -506,9 +506,11 @@ impl DigSpace {
                     // Diggable, but not dug yet. Can only dig if there are solid walls to both
                     // sides.
                     let dig_dir = Dir6::from_v2(q.0 - p.0);
-                    let both_sides_walled = !self.dug
+                    let both_sides_walled = (!self.dug
                         .contains(&OrdPoint(p.0 + (dig_dir - 1).to_v2()))
-                        && !self.dug.contains(&OrdPoint(p.0 + (dig_dir + 1).to_v2()));
+                        || !self.dug.contains(&OrdPoint(p.0 + (dig_dir - 2).to_v2())))
+                        && (!self.dug.contains(&OrdPoint(p.0 + (dig_dir + 1).to_v2()))
+                            || !self.dug.contains(&OrdPoint(p.0 + (dig_dir + 2).to_v2())));
                     if both_sides_walled {
                         ret.push((q, dist));
                     }
