@@ -334,7 +334,9 @@ impl MapGen for RoomsAndCorridors {
                 for t in &tunnel {
                     debug_assert!(domain.diggable.contains(&t) || domain.dug.contains(&t));
                     if domain.diggable.contains(t) {
-                        dug_tunnel.push(t.0.clone());
+                        if !domain.door_here.contains(t) {
+                            dug_tunnel.push(t.0.clone());
+                        }
                         domain.diggable.remove(t);
                         domain.dug.insert(*t);
                     }
