@@ -19,7 +19,8 @@ type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
 
 #[derive(StructOpt, Debug)]
 struct Opt {
-    #[structopt(subcommand)] cmd: Command,
+    #[structopt(subcommand)]
+    cmd: Command,
 }
 
 #[derive(StructOpt, Debug)]
