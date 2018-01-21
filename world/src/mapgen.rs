@@ -285,16 +285,18 @@ impl MapGen for RoomsAndCorridors {
 
         let mut vaults = Vec::new();
 
-        loop {
+        let mut vault_retries = 32;
+
+        'vaults: loop {
             let vault = d.sample_vault(rng);
             let vault_shape: VaultShape = (&vault).into();
             let offsets = domain.placement_offsets(&vault_shape);
 
             if offsets.is_empty() {
-                // Can't place anything!
-                // TODO: More robust criteria
-                // TODO: Retry a few times in case it was just a bad fit
+                // Can't place anything! Probably time to bail out
                 break;
+                // TODO: Track the amount of space dug, if there hasn't been enough fill, it
+                // might've just been a bit fit and we should retry.
             }
 
             let center: Vector2D =
@@ -322,7 +324,7 @@ impl MapGen for RoomsAndCorridors {
                 .map(|p| (p.0 + offset).into())
                 .collect();
 
-            d.place_vault(&vault, offset.to_point());
+            let undo_domain = domain.clone();
             domain.place(&vault_shape, offset);
 
             if !tunnel_start_set.is_empty() {
@@ -338,9 +340,17 @@ impl MapGen for RoomsAndCorridors {
 
                     retries -= 1;
                     if retries <= 0 {
-                        panic!("Could not dig tunnel between vaults");
+                        // Can't make this vault work, bail out...
+                        domain = undo_domain;
+                        vault_retries -= 1;
+                        if vault_retries <= 0 {
+                            break 'vaults;
+                        } else {
+                            continue 'vaults;
+                        }
                     }
                 };
+                d.place_vault(&vault, offset.to_point());
 
                 let mut dug_tunnel = Vec::with_capacity(tunnel.len());
                 for t in &tunnel {
@@ -432,6 +442,7 @@ impl<'a, V: Vault> From<&'a V> for VaultShape {
     }
 }
 
+#[derive(Clone)]
 struct DigSpace {
     /// Diggable area.
     diggable: BTreeSet<OrdPoint>,
