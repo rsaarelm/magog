@@ -4,7 +4,7 @@ use euclid::{point2, vec2};
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
-use mapgen::{self, MapGen, Size2D, VaultCell};
+use mapgen::{self, MapGen, Size2D, VaultCell, Vault};
 use rand::{seq, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::{BTreeSet, HashMap};
@@ -265,6 +265,22 @@ impl<'a> SectorDigger<'a> {
         self.worldgen.terrain.insert(loc, terrain);
     }
 
+    /// Set with some extra heuristics
+    fn smart_set(&mut self, loc: Location, terrain: Terrain) {
+        if let Some(&previous) = self.worldgen.terrain.get(&loc) {
+            // Never turn terrain already set as passable as impassable.
+            if !previous.blocks_walk() && terrain.blocks_walk() {
+                return;
+            }
+
+            // Don't clobber doors, period.
+            if previous == Terrain::Door {
+                return;
+            }
+        }
+        self.set(loc, terrain);
+    }
+
     fn clear_spawns_near_entrance(&mut self, range: u32) {
         for loc in Dijkstra::new(
             vec![self.up_portal.expect("No entrance generated")],
@@ -315,8 +331,16 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     }
 
     fn place_vault(&mut self, vault: &Self::Vault, pos: mapgen::Point2D) {
-        // TODO
-        unimplemented!();
+        use mapgen::VaultCell::*;
+        let points: Vec<(mapgen::Point2D, VaultCell)> = vault.get_shape();
+        for &(p, c) in &points {
+            let loc = self.loc(pos + p.to_vector());
+
+            match c {
+                Interior => self.set(loc, Terrain::Ground),
+                DiggableWall | UndiggableWall => self.smart_set(loc, Terrain::Wall),
+            }
+        }
     }
 
     fn add_door(&mut self, pos: mapgen::Point2D) {
