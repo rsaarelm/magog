@@ -4,7 +4,7 @@ use euclid::{point2, vec2};
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
-use mapgen::{self, MapGen, Size2D, VaultCell, Vault};
+use mapgen::{self, MapGen, Size2D, Vault, VaultCell};
 use rand::{seq, Rand, Rng, SeedableRng};
 use serde;
 use std::collections::{BTreeSet, HashMap};

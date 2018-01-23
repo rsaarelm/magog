@@ -2,7 +2,7 @@
 // best confined here in a private subdimension instead of being fully integrated with the main
 // world code.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, Dir6, HexGeom, RngExt, WeightedChoice};
+use calx::{self, hex_disc, hex_neighbors, CellSpace, Dir6, HexGeom, Prefab, RngExt, WeightedChoice};
 use euclid::{self, TypedRect, vec2};
 use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -543,6 +543,79 @@ impl DigSpace {
         };
 
         calx::astar_path(p1, &p2, neighbors)
+    }
+
+    fn matches_mask(&self, p: OrdPoint, mask: &Prefab<char>) -> bool {
+        for (&v, &c) in mask.iter() {
+            let p = OrdPoint(p.0 + v);
+
+            match c {
+                '.' => {
+                    if !self.dug.contains(&p) {
+                        return false;
+                    }
+                }
+                '#' => {
+                    if self.dug.contains(&p) {
+                        return false;
+                    }
+                }
+                _ => {
+                    if !self.diggable.contains(&p) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        true
+    }
+
+    pub fn is_down_enclosure(&self, p: OrdPoint) -> bool {
+        // NB: We want stairs to show up in rooms, not in corridors. The current DigSpace data
+        // doesn't distinguish between the two, so instead the enclosure masks require a larger
+        // open space in front that will only show up in rooms.
+        lazy_static! {
+            static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+                . .
+                 . .
+                # d #
+                 #[>]#
+                  # _ #
+                   # #"#)
+                .expect("Failed to parse string map");
+            static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+                 . . #
+                . . d #
+                   #[>]#
+                    # _ #
+                     # #"#)
+                .expect("Failed to parse string map");
+        }
+
+        self.matches_mask(p, &LEFT_ENCLOSURE) || self.matches_mask(p, &RIGHT_ENCLOSURE)
+    }
+
+    pub fn is_up_enclosure(&self, p: OrdPoint) -> bool {
+        lazy_static! {
+            static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+                 # #
+                # _ #
+                 #[<]#
+                  # d #
+                   . .
+                    . ."#)
+                .expect("Failed to parse string map");
+            static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+                 # #
+                # _ #
+                 #[<]#
+                  # d . .
+                   # . ."#)
+                .expect("Failed to parse string map");
+        }
+
+        self.matches_mask(p, &LEFT_ENCLOSURE) || self.matches_mask(p, &RIGHT_ENCLOSURE)
     }
 }
 
