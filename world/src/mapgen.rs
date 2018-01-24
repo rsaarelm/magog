@@ -283,7 +283,7 @@ impl MapGen for RoomsAndCorridors {
     {
         let mut domain = DigSpace::new(domain.into_iter().map(|p| p.into()));
 
-        let mut vaults = Vec::new();
+        let mut dug_nothing = true;
 
         let mut vault_retries = 32;
 
@@ -359,8 +359,7 @@ impl MapGen for RoomsAndCorridors {
                         if !domain.door_here.contains(t) {
                             dug_tunnel.push(t.0.clone());
                         }
-                        domain.diggable.remove(t);
-                        domain.dug.insert(*t);
+                        domain.dig(*t);
                     }
                     if domain.door_here.contains(t) {
                         d.add_door(t.0);
@@ -370,15 +369,101 @@ impl MapGen for RoomsAndCorridors {
                 d.dig_corridor(dug_tunnel);
             }
 
-            vaults.push((offset, vault_shape));
+            dug_nothing = false;
         }
 
-        if vaults.is_empty() {
+        if dug_nothing {
             panic!("Couldn't place any rooms!");
         }
 
-        // TODO: Connect vaults with corridors
+        // Place entrance and exit stairs.
+        {
+            let upstair_sites: Vec<OrdPoint> = domain
+                .diggable
+                .iter()
+                .filter(|&&p| is_up_enclosure(&domain, p))
+                .cloned()
+                .collect();
+            if upstair_sites.is_empty() {
+                panic!("No place for stairs up!");
+            }
+
+            let pos = *seq::sample_iter(rng, upstair_sites.iter(), 1).unwrap()[0];
+            let enclosure = vec![pos.0, pos.0 + vec2(1, 1)];
+            for p in &enclosure {
+                domain.dig(OrdPoint(*p));
+            }
+            d.dig_chamber(enclosure);
+            d.add_up_stairs(pos.0);
+        }
+
+        {
+            let downstair_sites: Vec<OrdPoint> = domain
+                .diggable
+                .iter()
+                .filter(|&&p| is_down_enclosure(&domain, p))
+                .cloned()
+                .collect();
+            if downstair_sites.is_empty() {
+                panic!("No place for stairs down!");
+            }
+
+            let pos = *seq::sample_iter(rng, downstair_sites.iter(), 1).unwrap()[0];
+            let enclosure = vec![pos.0, pos.0 + vec2(-1, -1), pos.0 + vec2(1, 1)];
+            for p in &enclosure {
+                domain.dig(OrdPoint(*p));
+            }
+            d.dig_chamber(enclosure);
+            d.add_down_stairs(pos.0);
+        }
     }
+}
+
+fn is_down_enclosure(domain: &DigSpace, p: OrdPoint) -> bool {
+    // NB: We want stairs to show up in rooms, not in corridors. The current DigSpace data
+    // doesn't distinguish between the two, so instead the enclosure masks require a larger
+    // open space in front that will only show up in rooms.
+    //
+    // The downside is that this also makes it easier to fail to find the enclosure on a map.
+    lazy_static! {
+        static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+            . .
+             . .
+            # d #
+             #[>]#
+              # _ #
+               # #"#)
+            .expect("Failed to parse string map");
+        static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+             . . #
+            . . d #
+               #[>]#
+                # _ #
+                 # #"#)
+            .expect("Failed to parse string map");
+    }
+
+    domain.matches_mask(p, &LEFT_ENCLOSURE) || domain.matches_mask(p, &RIGHT_ENCLOSURE)
+}
+
+fn is_up_enclosure(domain: &DigSpace, p: OrdPoint) -> bool {
+    lazy_static! {
+        static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+             # #
+            #[<]#
+             # d #
+              . .
+               . ."#)
+            .expect("Failed to parse string map");
+        static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+             # #
+            #[<]#
+             # d . .
+              # . ."#)
+            .expect("Failed to parse string map");
+    }
+
+    domain.matches_mask(p, &LEFT_ENCLOSURE) || domain.matches_mask(p, &RIGHT_ENCLOSURE)
 }
 
 /// Placement determination structure for a vault.
@@ -497,8 +582,7 @@ impl DigSpace {
     pub fn place(&mut self, vault: &VaultShape, offset: Vector2D) {
         for p in vault.interior.iter() {
             let p = (p.0 + offset).into();
-            self.diggable.remove(&p);
-            self.dug.insert(p);
+            self.dig(p);
         }
         for p in vault.no_dig.iter() {
             let p = (p.0 + offset).into();
@@ -510,6 +594,11 @@ impl DigSpace {
         }
 
         self.bounds = bounding_rect(self.diggable.iter());
+    }
+
+    pub fn dig(&mut self, p: OrdPoint) {
+        self.diggable.remove(&p);
+        self.dug.insert(p);
     }
 
     /// Try to find a tunnel path between two points.
@@ -569,53 +658,6 @@ impl DigSpace {
         }
 
         true
-    }
-
-    pub fn is_down_enclosure(&self, p: OrdPoint) -> bool {
-        // NB: We want stairs to show up in rooms, not in corridors. The current DigSpace data
-        // doesn't distinguish between the two, so instead the enclosure masks require a larger
-        // open space in front that will only show up in rooms.
-        lazy_static! {
-            static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
-                . .
-                 . .
-                # d #
-                 #[>]#
-                  # _ #
-                   # #"#)
-                .expect("Failed to parse string map");
-            static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
-                 . . #
-                . . d #
-                   #[>]#
-                    # _ #
-                     # #"#)
-                .expect("Failed to parse string map");
-        }
-
-        self.matches_mask(p, &LEFT_ENCLOSURE) || self.matches_mask(p, &RIGHT_ENCLOSURE)
-    }
-
-    pub fn is_up_enclosure(&self, p: OrdPoint) -> bool {
-        lazy_static! {
-            static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
-                 # #
-                # _ #
-                 #[<]#
-                  # d #
-                   . .
-                    . ."#)
-                .expect("Failed to parse string map");
-            static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
-                 # #
-                # _ #
-                 #[<]#
-                  # d . .
-                   # . ."#)
-                .expect("Failed to parse string map");
-        }
-
-        self.matches_mask(p, &LEFT_ENCLOSURE) || self.matches_mask(p, &RIGHT_ENCLOSURE)
     }
 }
 

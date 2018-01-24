@@ -337,7 +337,10 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
             let loc = self.loc(pos + p.to_vector());
 
             match c {
-                Interior => self.set(loc, Terrain::Ground),
+                Interior => {
+                    self.set(loc, Terrain::Ground);
+                    self.spawn_region.insert(loc);
+                }
                 DiggableWall | UndiggableWall => self.smart_set(loc, Terrain::Wall),
             }
         }
