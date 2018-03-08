@@ -45,8 +45,8 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
     ret.insert(Wall as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 32, 0).finish());
     ret.insert(Rock as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
     ret.insert(Door as usize, Builder::new("assets/walls.png")
-               .color(SADDLEBROWN).wall(128, 0, 160, 0)
-               .color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
+        .color(SADDLEBROWN).wall(128, 0, 160, 0)
+        .color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
     ret.insert(OpenDoor as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
     ret.insert(Window as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 64, 0).finish());
     ret.insert(Grass2 as usize, Builder::new("assets/floors.png").color(DARKGREEN).tile(64, 0).finish());
@@ -72,9 +72,9 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
     // The serpent has a special sprite structure where it's split to the head and mound parts,
     // and the mound part doesn't move during the idle animation.
     ret.insert(Serpent as usize, Builder::new("assets/mobs.png").color(CORAL)
-               .splat(Some(Geom::new(16, 14, 1*32, 32, 32, 32))).tile(2*32, 32).merge()
-               .tile(1*32, 32).tile(2*32, 32).merge()
-               .finish());
+        .splat(Some(Geom::new(16, 14, 1*32, 32, 32, 32))).tile(2*32, 32).merge()
+        .tile(1*32, 32).tile(2*32, 32).merge()
+        .finish());
 
     ret.insert(Sword as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(4*32, 1*32).finish());
     ret.insert(Helmet as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(5*32, 1*32).finish());
