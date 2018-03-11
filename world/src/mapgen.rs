@@ -606,7 +606,20 @@ impl DigSpace {
         let neighbors = |p: &OrdPoint| {
             let mut ret = Vec::with_capacity(8);
 
+            let in_doorway = self.door_here.contains(&p);
+
             for q in hex_neighbors(p.0) {
+                let dig_dir = Dir6::from_v2(q - p.0);
+                let is_diagonal_neighbor = dig_dir == Dir6::North || dig_dir == Dir6::South;
+
+                if in_doorway && is_diagonal_neighbor {
+                    // The wall tile formatting system will produce bad visuals for a diagonal path
+                    // that starts directly from a doorway (TODO: This would be better fixed at
+                    // tile formatting level). To avoid this, make sure only orthogonal moves are
+                    // considered when moving away from doorways.
+                    continue;
+                }
+
                 let q = OrdPoint(q);
                 let dist = (q.0 - p2.0).hex_dist() as f32;
                 if self.dug.contains(&q) {
