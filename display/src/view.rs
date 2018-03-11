@@ -143,7 +143,15 @@ impl WorldView {
                         // When underground, use the player position as light position instead of
                         // constant-dir sunlight.
                         let light_dir = if world.is_underground(loc) && player_pos.is_some() {
-                            PhysicsVector::from_cell_space(player_pos.unwrap()).normalize()
+                            // XXX: Things get screwy if location is the same as player location
+                            // (eg. when player stands in a doorway), hack around that by
+                            // displacing the zero position.
+                            let center_pos = if player_pos == Some(vec2(0, 0)) {
+                                vec2(1, 1)
+                            } else {
+                                player_pos.unwrap()
+                            };
+                            PhysicsVector::from_cell_space(center_pos).normalize()
                         } else {
                             vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
                         };
