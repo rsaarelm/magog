@@ -376,6 +376,7 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct Room {
     size: Size2D,
 }
