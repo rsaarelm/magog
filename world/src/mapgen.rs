@@ -367,6 +367,8 @@ impl MapGen for RoomsAndCorridors {
                 }
 
                 d.dig_corridor(dug_tunnel);
+            } else {
+                d.place_vault(&vault, offset.to_point());
             }
 
             dug_nothing = false;
