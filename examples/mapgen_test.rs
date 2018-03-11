@@ -5,10 +5,12 @@ extern crate rand;
 extern crate world;
 
 use calx::Prefab;
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 use std::collections::HashMap;
 use std::fmt::Write;
 use std::iter::FromIterator;
+use std::str::FromStr;
+use std::env;
 use std::str;
 use world::{Room, Sector};
 use world::mapgen::{self, MapGen, Point2D, Vault, VaultCell};
@@ -79,10 +81,20 @@ impl mapgen::Dungeon for TestMap {
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let seed: u32 = if args.len() > 1 {
+        FromStr::from_str(&args[1]).expect("Not a valid rng seed")
+    } else {
+        rand::thread_rng().gen()
+    };
+    println!("Seed: {}", seed);
+    let mut rng = rand::XorShiftRng::from_seed([seed, seed, seed, seed]);
+
     let mut map = TestMap::new();
 
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
-    mapgen::RoomsAndCorridors.dig(&mut rand::thread_rng(), &mut map, domain);
+    mapgen::RoomsAndCorridors.dig(&mut rng, &mut map, domain);
 
     let map_text = String::from(Prefab::from_iter(
         map.terrain.iter().map(|(p, t)| (p.to_vector(), *t)),
