@@ -2,7 +2,8 @@
 // best confined here in a private subdimension instead of being fully integrated with the main
 // world code.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, RngExt, WeightedChoice, IntoPrefab};
+use calx::{self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, IntoPrefab,
+           RngExt, WeightedChoice};
 use euclid::{self, TypedRect, vec2};
 use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -538,6 +539,7 @@ struct DigSpace {
     /// Dug out area.
     dug: BTreeSet<OrdPoint>,
     door_here: BTreeSet<OrdPoint>,
+    vault_wall: BTreeSet<OrdPoint>,
     bounds: Rect,
 }
 
@@ -550,6 +552,7 @@ impl DigSpace {
             diggable,
             dug: BTreeSet::new(),
             door_here: BTreeSet::new(),
+            vault_wall: BTreeSet::new(),
             bounds,
         }
     }
@@ -565,9 +568,45 @@ impl DigSpace {
                 }
             }
 
-            // No full-shape must hit dug.
-            for p in vault.border.iter().map(|p| (p.0 + offset).into()) {
+            for vault_p in vault.border.iter() {
+                let p = (vault_p.0 + offset).into();
+
+                // No full-shape must hit dug.
                 if self.dug.contains(&p) {
+                    continue 'search;
+                }
+
+                // XXX: The wall formatter doesn't deal with 2x2 wall blocks very nicely. Prevent
+                // new vaults from forming a 2x2 solid block with existing stuff.
+
+                // Only existing wall
+                let d = |x, y| self.vault_wall.contains(&OrdPoint(p.0 + vec2(x, y)));
+
+                // Existing wall or vault wall
+                let dv = |x, y| {
+                    self.vault_wall.contains(&OrdPoint(p.0 + vec2(x, y)))
+                        || vault.border.contains(&OrdPoint(vault_p.0 + vec2(x, y)))
+                };
+
+                let north = d(-1, -1);
+                let northeast = dv(0, -1);
+                let east = d(1, -1);
+                let southeast = dv(1, 0);
+                let south = d(1, 1);
+                let southwest = dv(0, 1);
+                let west = d(-1, 1);
+                let northwest = dv(-1, 0);
+
+                if north && northwest && northeast {
+                    continue 'search;
+                }
+                if east && northeast && southeast {
+                    continue 'search;
+                }
+                if south && southeast && southwest {
+                    continue 'search;
+                }
+                if west && southwest && northwest {
                     continue 'search;
                 }
             }
@@ -596,6 +635,10 @@ impl DigSpace {
             let p = (p.0 + offset).into();
             self.door_here.insert(p);
         }
+        for p in vault.border.iter() {
+            let p = (p.0 + offset).into();
+            self.vault_wall.insert(p);
+        }
 
         self.bounds = bounding_rect(self.diggable.iter());
     }
@@ -617,7 +660,7 @@ impl DigSpace {
                 for q in hex_neighbors(p.0) {
                     let q = OrdPoint(q);
                     if self.door_here.contains(&q) && self.dug.contains(&q) {
-                        return ret
+                        return ret;
                     }
                 }
             }
@@ -636,7 +679,7 @@ impl DigSpace {
                     }
 
                     // Don't continue from one doorway directly to another one.
-                    if self.door_here.contains(&q) {
+                    if self.vault_wall.contains(&q) {
                         continue;
                     }
                 }
