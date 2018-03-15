@@ -1,82 +1,14 @@
 use alg_misc::bounding_rect;
 use colors::{scolor, SRgba};
-use euclid::{TypedPoint2D, TypedRect, TypedVector2D, point2, vec2};
+use euclid::{TypedPoint2D, TypedVector2D, point2, vec2};
 use image::{self, Pixel};
 use num::Integer;
 use space::{CellSpace, CellVector, Space, Transformation};
-use std::collections::{hash_map, HashMap};
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::i32;
 use std::iter::{FromIterator, IntoIterator};
-
-/// A piece of 2D map data with a fixed origin position.
-///
-/// # Examples
-///
-/// ```
-/// # extern crate euclid;
-/// # extern crate calx;
-/// # fn main() {
-///
-/// use euclid::vec2;
-/// use calx::{Prefab, IntoPrefab};
-///
-/// let string_map = Prefab::parse(r#"
-///   1 2
-///  3[4]5
-///   6 7"#).expect("Failed to parse string map");
-///
-/// for &(c, p) in &[
-///   ('1', (-1, -1)),
-///   ('2', ( 0, -1)),
-///   ('3', (-1,  0)),
-///   ('4', ( 0,  0)),
-///   ('5', ( 1,  0)),
-///   ('6', ( 0,  1)),
-///   ('7', ( 1,  1))] {
-///     assert_eq!(Some(&c), string_map.get(vec2(p.0, p.1)));
-/// }
-///
-/// # }
-/// ```
-#[derive(Clone)]
-pub struct Prefab<T> {
-    points: HashMap<CellVector, T>,
-}
-
-impl<T> Prefab<T> {
-    pub fn parse<U: IntoPrefab<T>>(value: U) -> Result<Prefab<T>, PrefabError> { value.try_into() }
-
-    pub fn get(&self, pos: CellVector) -> Option<&T> { self.points.get(&pos) }
-
-    pub fn iter(&self) -> hash_map::Iter<CellVector, T> { self.points.iter() }
-
-    /// Compute the bounding box for the prefab
-    ///
-    /// This is an O(n) operation, so make sure to cache the result if your prefab is large.
-    pub fn bounds(&self) -> TypedRect<i32, CellSpace> {
-        bounding_rect(&self.points
-            .iter()
-            .map(|(&p, _)| p.to_point())
-            .collect::<Vec<_>>())
-    }
-}
-
-impl<T> FromIterator<(CellVector, T)> for Prefab<T> {
-    fn from_iter<I: IntoIterator<Item = (CellVector, T)>>(iter: I) -> Self {
-        Prefab {
-            points: FromIterator::from_iter(iter),
-        }
-    }
-}
-
-impl<T> IntoIterator for Prefab<T> {
-    type Item = (CellVector, T);
-    type IntoIter = hash_map::IntoIter<CellVector, T>;
-
-    fn into_iter(self) -> Self::IntoIter { self.points.into_iter() }
-}
 
 /// Error from parsing data into a `Prefab` value.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -103,13 +35,67 @@ impl Error for PrefabError {
     }
 }
 
-// XXX: This is basically just a TryFrom, which isn't stable yet. Though I can derive it for things
-// I can't derive TryFrom for, like the templatized GenericImage, because I'm controlling the trait
-// here.
-
 /// A trait for types that can be parsed into a map `Prefab`.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate euclid;
+/// # extern crate calx;
+/// # fn main() {
+///
+/// use std::collections::HashMap;
+/// use euclid::vec2;
+/// use calx::{CellVector, IntoPrefab};
+///
+/// let map: HashMap<CellVector, char> = r#"
+///   1 2
+///  3[4]5
+///   6 7"#.into_prefab().expect("Failed to parse string map");
+///
+/// for &(c, p) in &[
+///   ('1', (-1, -1)),
+///   ('2', ( 0, -1)),
+///   ('3', (-1,  0)),
+///   ('4', ( 0,  0)),
+///   ('5', ( 1,  0)),
+///   ('6', ( 0,  1)),
+///   ('7', ( 1,  1))] {
+///     assert_eq!(Some(&c), map.get(&vec2(p.0, p.1)));
+/// }
+///
+/// # }
+/// ```
 pub trait IntoPrefab<T> {
-    fn try_into(self) -> Result<Prefab<T>, PrefabError>;
+    fn into_prefab<P: FromIterator<(CellVector, T)>>(self) -> Result<P, PrefabError>;
+}
+
+/// Trait for types that can be constructed from prefab data.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate euclid;
+/// # extern crate calx;
+/// # fn main() {
+///
+/// use std::collections::HashMap;
+/// use euclid::vec2;
+/// use calx::{CellVector, FromPrefab};
+///
+/// let mut prefab: HashMap<CellVector, char> = HashMap::new();
+/// prefab.insert(vec2(1, 0), 'x');
+/// prefab.insert(vec2(0, 1), 'y');
+///
+/// assert_eq!(" [ ]x\n y", &String::from_prefab(&prefab));
+/// # }
+/// ```
+pub trait FromPrefab {
+    type Cell;
+    // XXX Would be nice to be able to have something more generic as the parameter, but the
+    // implementations need both random access and iteration over all values and there isn't really
+    // a good idiom for that.
+    fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self;
 }
 
 // Text prefabs
@@ -144,11 +130,8 @@ impl TextSpace {
     pub fn in_even_lattice(v: TextVector) -> bool { (v.x + v.y) % 2 == 0 }
 }
 
-// Not using FromStr even when the input type is String, since there's a conversion family here
-// where the sources can be strings or images and I want the interface to be uniform for both.
-
 impl<S: Into<String>> IntoPrefab<char> for S {
-    fn try_into(self) -> Result<Prefab<char>, PrefabError> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
         /// Recognize the point set that only contains the origin markup and return the
         /// corresponding origin value.
         fn is_origin(points: &HashMap<TextVector, char>) -> Option<TextVector> {
@@ -194,23 +177,26 @@ impl<S: Into<String>> IntoPrefab<char> for S {
             return Err(PrefabError::InvalidInput);
         };
 
-        let mut points = HashMap::new();
-        for text_data in data.iter() {
+        Ok(P::from_iter(data.iter().map(|(p, c)| {
             // Set origin
-            let text_pos = *text_data.0 - offset;
+            let text_pos = *p - offset;
             // Store into cell space.
-            points.insert(text_pos.to_cell_space(), *text_data.1);
-        }
-
-        Ok(Prefab { points })
+            (text_pos.to_cell_space(), *c)
+        })))
     }
 }
 
-impl fmt::Display for Prefab<char> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl FromPrefab for String {
+    type Cell = char;
+
+    fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
+        use std::fmt::Write;
+
+        let mut ret = String::new();
+
         let dummy_origin: (&CellVector, &char) = (&vec2(0, 0), &' ');
         // Ensure that the origin cell shows up in the printout even if it's blank in the prefab.
-        let append = if self.iter().find(|&(&pos, _)| pos == vec2(0, 0)).is_none() {
+        let append = if !prefab.contains_key(&vec2(0, 0)) {
             Some(dummy_origin)
         } else {
             None
@@ -220,14 +206,16 @@ impl fmt::Display for Prefab<char> {
         //
         // Subtract 1 from the result so that we can always fit the origin brackets on the leftmost
         // char if need be.
-        let min_x = self.iter()
+        let min_x = prefab.iter()
+            //.map(|(&pos, &c)| (pos.clone(), c.clone()))
             .chain(append)
             .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
             .min()
             .unwrap_or(0) - 1;
 
         // Arrange cells in print order.
-        let mut sorted: Vec<(TextVector, char)> = self.iter()
+        let mut sorted: Vec<(TextVector, char)> = prefab.iter()
+            //.map(|(&pos, &c)| (pos.clone(), c.clone()))
             .chain(append)
             .map(|(&pos, &c)| (TextVector::from_cell_space(pos), c))
             .collect();
@@ -235,7 +223,7 @@ impl fmt::Display for Prefab<char> {
         sorted.sort_by(|a, b| (a.0.y, a.0.x).cmp(&(b.0.y, b.0.x)));
 
         if sorted.is_empty() {
-            return Ok(());
+            return "".to_string();
         }
 
         // Printing position.
@@ -244,13 +232,13 @@ impl fmt::Display for Prefab<char> {
 
         for &(pos, c) in &sorted {
             while print_y < pos.y {
-                writeln!(f, "")?;
+                let _ = writeln!(ret, "");
                 print_x = min_x;
                 print_y += 1;
             }
 
             while print_x < pos.x - 1 {
-                write!(f, " ")?;
+                let _ = write!(ret, " ");
                 print_x += 1;
             }
 
@@ -258,27 +246,23 @@ impl fmt::Display for Prefab<char> {
             if pos == vec2(0, 0) {
                 // Write origin markers around origin cell.
                 debug_assert_eq!(print_x, pos.x - 1);
-                write!(f, "[{}]", c)?;
+                let _ = write!(ret, "[{}]", c);
                 print_x += 3;
             } else {
                 // Print x should be in pos.x - 1, except in the case right after the origin marker
                 // when it's in pos.x.
                 debug_assert!(print_x == pos.x - 1 || print_x == pos.x);
                 if print_x < pos.x {
-                    write!(f, " ")?;
+                    let _ = write!(ret, " ");
                     print_x += 1;
                 }
-                write!(f, "{}", c)?;
+                let _ = write!(ret, "{}", c);
                 print_x += 1;
             }
         }
 
-        Ok(())
+        ret
     }
-}
-
-impl From<Prefab<char>> for String {
-    fn from(prefab: Prefab<char>) -> String { format!("{}", prefab) }
 }
 
 // Image prefabs
@@ -313,7 +297,7 @@ where
     P: image::Pixel<Subpixel = u8>,
     U: Transformation<Element = i32>,
 {
-    fn try_into(self) -> Result<Prefab<SRgba>, PrefabError> {
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
         // The coordinate space in which the image is in.
         //type LocalVector = TypedVector2D<i32, U>;
         let image = self.image;
@@ -358,44 +342,59 @@ where
             anchor_y.ok_or(PrefabError::MissingAnchor)?,
         );
 
-        let mut points = HashMap::new();
+        let mut seen_cells = HashSet::new();
 
+        // XXX: Traversing rectangle points was too annoying to type in an iterator expression,
+        // just caching the points in a Vec here instead.
+        let mut points = Vec::new();
         for y in (min_y + 1)..(min_y + h) {
             for x in (min_x + 1)..(min_x + w) {
-                if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
-                    let p =
-                        vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
-
-                    // Insert the color we get when we first hit this point.
-                    points.entry(p).or_insert(c);
-                }
+                points.push((x, y));
             }
         }
 
-        Ok(Prefab { points })
+        Ok(Q::from_iter(points.into_iter().flat_map(|(x, y)| {
+            if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
+                let p = vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
+
+                // Only insert a cell the first time we see it.
+                if !seen_cells.contains(&p) {
+                    seen_cells.insert(p);
+                    Some((p, c))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })))
     }
 }
 
-impl<U> From<Prefab<SRgba>> for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
+impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>> IntoPrefab<SRgba> for I {
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
+        let t: ProjectedImage<I, CellSpace> = ProjectedImage::new(self);
+        t.into_prefab()
+    }
+}
+
+impl<U> FromPrefab for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
 where
     U: Transformation<Element = i32>,
 {
-    fn from(prefab: Prefab<SRgba>) -> Self {
+    type Cell = SRgba;
+
+    fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
         // Project points from the prefab (plus origin which we need in the image frame for anchor
         // encoding) to calculate the projected bounds.
         let points: Vec<TypedPoint2D<i32, U>> = prefab
-            .points
             .iter()
             .map(|(&p, _)| TypedVector2D::from_cell_space(p).to_point())
             .chain(Some(point2(0, 0)))
             .collect();
 
         // Project bounds into space U for the resulting image.
-        let mut bounds = TypedRect::from_points(points.as_slice());
-        // XXX from_points is exclusive on the right / bottom egde, fix this
-        // FIXME This might get fixed in future euclid, remember to remove the fix then.
-        bounds.size.width += 1;
-        bounds.size.height += 1;
+        let bounds = bounding_rect(points.as_slice());
 
         debug_assert!({
             let origin: TypedVector2D<i32, U> = TypedVector2D::from_cell_space(vec2(0, 0));
@@ -423,7 +422,7 @@ where
                 let prefab_pos = (bounds.origin.to_vector() + vec2(x, y)).to_cell_space();
                 // Don't use #000000 as actual data in your prefab because you'll lose it here.
                 // (Add the assert to that effect.)
-                let c = if let Some(&c) = prefab.get(prefab_pos) {
+                let c = if let Some(&c) = prefab.get(&prefab_pos) {
                     assert!(
                         c != scolor::BLACK,
                         "Prefab contains full black color, converting to image will lose data"
@@ -440,16 +439,11 @@ where
     }
 }
 
-impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>> IntoPrefab<SRgba> for I {
-    fn try_into(self) -> Result<Prefab<SRgba>, PrefabError> {
-        let t: ProjectedImage<I, CellSpace> = ProjectedImage::new(self);
-        t.try_into()
-    }
-}
+impl FromPrefab for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
+    type Cell = SRgba;
 
-impl From<Prefab<SRgba>> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    fn from(prefab: Prefab<SRgba>) -> Self {
-        let t: ProjectedImage<Self, CellSpace> = From::from(prefab);
+    fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
+        let t: ProjectedImage<Self, CellSpace> = FromPrefab::from_prefab(prefab);
         t.image
     }
 }

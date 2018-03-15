@@ -32,7 +32,7 @@ pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use legend_builder::LegendBuilder;
-pub use prefab::{IntoPrefab, MinimapSpace, Prefab, PrefabError, ProjectedImage, TextSpace};
+pub use prefab::{IntoPrefab, FromPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace};
 pub use rng::{EncodeRng, IndependentSample, RandomPermutation, RngExt, SampleIterator};
 pub use search::{astar_grid, astar_path, Dijkstra, GridNode};
 pub use space::{CellSpace, CellVector, Space, Transformation};
