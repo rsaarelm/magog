@@ -1,9 +1,9 @@
 use Prefab;
-use calx::{self, IntoPrefab};
+use calx::{self, IntoPrefab, FromPrefab, CellVector};
 use errors::*;
 use form::Form;
 use ron;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::io;
 use terrain::Terrain;
@@ -24,7 +24,7 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
 
     let mut legend_builder = calx::LegendBuilder::new(ALPHABET.to_string(), chars_f);
 
-    let prefab: calx::Prefab<_> = prefab
+    let prefab: HashMap<CellVector, _> = prefab
         .clone()
         .into_iter()
         .map(|(p, e)| (p, legend_builder.add(&e)))
@@ -35,9 +35,9 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     }
 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
-    let prefab: calx::Prefab<_> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
+    let prefab: HashMap<CellVector, _> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
 
-    let map = format!("{}", String::from(prefab));
+    let map = format!("{}", String::from_prefab(&prefab));
     let legend = legend_builder.legend;
 
     write!(output, "{}", MapSave { map, legend })?;
@@ -68,7 +68,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
 
     // Turn map into prefab.
     let (map, legend) = (save.map, save.legend);
-    let prefab: calx::Prefab<char> = IntoPrefab::try_into(map)?;
+    let prefab: HashMap<CellVector, char> = IntoPrefab::into_prefab(map)?;
     Ok(prefab
         .into_iter()
         .map(|(p, item)| (p, legend[&item].clone()))

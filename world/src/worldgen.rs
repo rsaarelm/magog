@@ -1,5 +1,5 @@
 use Prefab;
-use calx::{self, hex_neighbors, Dijkstra};
+use calx::{hex_neighbors, Dijkstra, IntoPrefab, CellVector, SRgba};
 use euclid::{point2, vec2};
 use form::{self, Form};
 use image::{self, GenericImage, SubImage};
@@ -126,7 +126,7 @@ impl Worldgen {
         let (w, h) = (image.width(), image.height());
         let input_map = SubImage::new(&mut image, 0, 0, w, h - 1);
 
-        let prefab = calx::Prefab::parse(input_map).expect("Invalid overworld image map");
+        let prefab: HashMap<CellVector, SRgba> = input_map.into_prefab().expect("Invalid overworld image map");
 
         self.terrain.extend(
             prefab

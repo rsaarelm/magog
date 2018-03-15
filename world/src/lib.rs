@@ -16,6 +16,7 @@ extern crate serde;
 extern crate serde_derive;
 
 use calx::Deciban;
+use std::collections::HashMap;
 
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
@@ -167,7 +168,7 @@ mod worldgen;
 pub use worldgen::Room;
 
 /// Standard Prefab type, terrain type and spawn name list.
-pub type Prefab = calx::Prefab<(Terrain, Vec<String>)>;
+pub type Prefab = HashMap<calx::CellVector, (Terrain, Vec<String>)>;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {

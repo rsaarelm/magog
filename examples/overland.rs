@@ -7,15 +7,16 @@ extern crate structopt;
 extern crate structopt_derive;
 extern crate world;
 
-use calx::{hex_disc, CellVector, MinimapSpace, Prefab, ProjectedImage, SRgba};
+use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};
 use euclid::vec2;
 use image::{GenericImage, Pixel, SubImage};
 use std::collections::HashMap;
-use std::iter::FromIterator;
 use structopt::StructOpt;
 use world::{Location, Sector, Terrain};
 
 type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;
+
+type Prefab<T> = HashMap<CellVector, T>;
 
 #[derive(StructOpt, Debug)]
 struct Opt {
@@ -70,7 +71,7 @@ fn default_map(width: u32, height: u32) -> Prefab<Terrain> {
         terrain.insert(p(loc), Terrain::Grass);
     }
 
-    Prefab::from_iter(terrain.into_iter())
+    terrain
 }
 
 fn dark(color: SRgba) -> SRgba {
@@ -114,10 +115,10 @@ fn overland_locs(width: u32, height: u32) -> Vec<Location> {
 
 fn save(prefab: Prefab<SRgba>, is_minimap: bool, output_path: String) {
     let image: ImageBuffer = if is_minimap {
-        let p: ProjectedImage<ImageBuffer, MinimapSpace> = prefab.into();
+        let p: ProjectedImage<ImageBuffer, MinimapSpace> = FromPrefab::from_prefab(&prefab);
         p.image
     } else {
-        prefab.into()
+        FromPrefab::from_prefab(&prefab)
     };
 
     // Impose palette
@@ -172,9 +173,9 @@ fn convert(
 
     let prefab: Prefab<SRgba> = if input_is_minimap {
         let p: ProjectedImage<_, MinimapSpace> = ProjectedImage::new(input_map);
-        Prefab::parse(p).expect("Bad map image")
+        p.into_prefab().expect("Bad map image")
     } else {
-        Prefab::parse(input_map).expect("Bad map image")
+        input_map.into_prefab().expect("Bad map image")
     };
 
     // Impose sector checkerboard.

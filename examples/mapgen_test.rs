@@ -4,14 +4,13 @@ extern crate calx;
 extern crate rand;
 extern crate world;
 
-use calx::Prefab;
+use calx::{CellVector, FromPrefab};
 use rand::{Rng, SeedableRng};
 use std::collections::HashMap;
-use std::fmt::Write;
-use std::iter::FromIterator;
-use std::str::FromStr;
 use std::env;
+use std::fmt::Write;
 use std::str;
+use std::str::FromStr;
 use world::{Room, Sector};
 use world::mapgen::{self, MapGen, Point2D, Vault, VaultCell};
 
@@ -96,9 +95,11 @@ fn main() {
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
     mapgen::RoomsAndCorridors.dig(&mut rng, &mut map, domain);
 
-    let map_text = String::from(Prefab::from_iter(
-        map.terrain.iter().map(|(p, t)| (p.to_vector(), *t)),
-    ));
+    let prefab: HashMap<CellVector, char> = map.terrain
+        .iter()
+        .map(|(p, t)| (p.to_vector(), *t))
+        .collect();
+    let map_text = String::from_prefab(&prefab);
 
     let mut new_text = String::new();
 

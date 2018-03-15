@@ -2,13 +2,15 @@
 // best confined here in a private subdimension instead of being fully integrated with the main
 // world code.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, Dir6, HexGeom, Prefab, RngExt, WeightedChoice};
+use calx::{self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, RngExt, WeightedChoice, IntoPrefab};
 use euclid::{self, TypedRect, vec2};
 use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::iter::FromIterator;
 use std::ops::Deref;
+
+type Prefab<T> = HashMap<CellVector, T>;
 
 pub type Point2D = euclid::TypedPoint2D<i32, CellSpace>;
 pub type Size2D = euclid::TypedSize2D<i32, CellSpace>;
@@ -428,20 +430,20 @@ fn is_down_enclosure(domain: &DigSpace, p: OrdPoint) -> bool {
     //
     // The downside is that this also makes it easier to fail to find the enclosure on a map.
     lazy_static! {
-        static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+        static ref LEFT_ENCLOSURE: Prefab<char> = r#"
             . .
              . .
             # d #
              #[>]#
               # _ #
-               # #"#)
+               # #"#.into_prefab()
             .expect("Failed to parse string map");
-        static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+        static ref RIGHT_ENCLOSURE: Prefab<char> = r#"
              . . #
             . . d #
                #[>]#
                 # _ #
-                 # #"#)
+                 # #"#.into_prefab()
             .expect("Failed to parse string map");
     }
 
@@ -450,18 +452,18 @@ fn is_down_enclosure(domain: &DigSpace, p: OrdPoint) -> bool {
 
 fn is_up_enclosure(domain: &DigSpace, p: OrdPoint) -> bool {
     lazy_static! {
-        static ref LEFT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+        static ref LEFT_ENCLOSURE: Prefab<char> = r#"
              # #
             #[<]#
              # d #
               . .
-               . ."#)
+               . ."#.into_prefab()
             .expect("Failed to parse string map");
-        static ref RIGHT_ENCLOSURE: Prefab<char> = Prefab::parse(r#"
+        static ref RIGHT_ENCLOSURE: Prefab<char> = r#"
              # #
             #[<]#
              # d . .
-              # . ."#)
+              # . ."#.into_prefab()
             .expect("Failed to parse string map");
     }
 

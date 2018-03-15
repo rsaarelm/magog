@@ -1,5 +1,5 @@
 use {attack_damage, roll};
-use calx::{Dir6, Prefab, RngExt};
+use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
 use command::CommandResult;
 use components::{BrainState, Status};
@@ -11,9 +11,9 @@ use location::Location;
 use query::Query;
 use rand::{seq, Rand};
 use terraform::Terraform;
-use terrain::Terrain;
 use volume::Volume;
 use world::{Ecs, Loadout};
+use {Prefab};
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -310,7 +310,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
-    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab<(Terrain, Vec<String>)>) {
+    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab) {
         for (&p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 
