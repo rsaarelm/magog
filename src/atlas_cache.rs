@@ -49,6 +49,8 @@ impl AtlasCache {
 
     pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas<usize>> { self.atlases.iter_mut() }
 
+    pub fn atlas_size(&self) -> u32 { self.atlas_size }
+
     /// Get a drawable `ImageData` corresponding to a subimage specification.
     ///
     /// The named sheet in the `SubImageSpec` key must have been added to the atlas cache before

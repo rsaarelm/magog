@@ -141,6 +141,21 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         self.textures.len() - 1
     }
 
+    /// Update or construct textures based on changes in atlas cache.
+    pub fn sync_with_atlas_cache(&mut self, atlas_cache: &AtlasCache) {
+        for a in atlas_cache.atlases_mut() {
+            let idx = *a.texture();
+            // If there are sheets in the atlas that don't have corresponding textures yet,
+            // construct those now.
+            while idx >= self.texture_count() {
+                self.make_empty_texture(a.size().width, a.size().height);
+            }
+
+            // Write the updated texture atlas to internal texture.
+            a.update_texture(|buf, &idx| self.write_to_texture(buf, idx));
+        }
+    }
+
     fn process_events(&mut self, core: &mut Core<V>) -> bool {
         self.keypress.clear();
 
