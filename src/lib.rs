@@ -16,6 +16,9 @@ use std::mem;
 mod atlas;
 pub use atlas::Atlas;
 
+mod atlas_cache;
+pub use atlas_cache::{SubImageSpec, AtlasCache};
+
 mod canvas_zoom;
 pub use canvas_zoom::CanvasZoom;
 
@@ -24,6 +27,9 @@ pub mod glium_backend;
 
 mod rect_util;
 pub use rect_util::RectUtil;
+
+mod tilesheet;
+pub use tilesheet::tilesheet_bounds;
 
 pub type Color = [f32; 4];
 
