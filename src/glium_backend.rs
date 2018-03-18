@@ -2,7 +2,7 @@
 
 #![deny(missing_docs)]
 
-use {CanvasZoom, Color, ImageBuffer, Keycode, MouseButton, Vertex};
+use {AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex};
 use euclid::{Point2D, Size2D};
 use glium::{self, Surface};
 use glium::glutin::{self, Event, WindowEvent};
@@ -11,12 +11,6 @@ use std::error::Error;
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
-
-/// Texture type used to parametrize vitral `Core`.
-pub type TextureHandle = usize;
-
-/// Vitral `Core` using glium vertex type.
-pub type Core<V> = ::Core<TextureHandle, V>;
 
 /// Glium-rendering backend for Vitral.
 pub struct Backend<V> {
@@ -99,16 +93,16 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
 
     /// Make a new empty internal texture.
     ///
-    /// The new `TextureHandle` must equal the value `self.texture_count()` would have returned
+    /// The new `TextureIndex` must equal the value `self.texture_count()` would have returned
     /// just before calling this.
-    pub fn make_empty_texture(&mut self, width: u32, height: u32) -> TextureHandle {
+    pub fn make_empty_texture(&mut self, width: u32, height: u32) -> TextureIndex {
         let tex = glium::texture::SrgbTexture2d::empty(&self.display, width, height).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
     }
 
     /// Rewrite an internal texture.
-    pub fn write_to_texture(&mut self, img: &ImageBuffer, texture: TextureHandle) {
+    pub fn write_to_texture(&mut self, img: &ImageBuffer, texture: TextureIndex) {
         assert!(
             texture < self.textures.len(),
             "Trying to write nonexistent texture"
@@ -129,7 +123,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     /// Make a new internal texture using image data.
-    pub fn make_texture(&mut self, img: ImageBuffer) -> TextureHandle {
+    pub fn make_texture(&mut self, img: ImageBuffer) -> TextureIndex {
         let mut raw = glium::texture::RawImage2d::from_raw_rgba(
             img.pixels,
             (img.size.width, img.size.height),
@@ -142,9 +136,9 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     /// Update or construct textures based on changes in atlas cache.
-    pub fn sync_with_atlas_cache(&mut self, atlas_cache: &AtlasCache) {
+    pub fn sync_with_atlas_cache(&mut self, atlas_cache: &mut AtlasCache) {
         for a in atlas_cache.atlases_mut() {
-            let idx = *a.texture();
+            let idx = a.texture();
             // If there are sheets in the atlas that don't have corresponding textures yet,
             // construct those now.
             while idx >= self.texture_count() {
@@ -152,7 +146,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
             }
 
             // Write the updated texture atlas to internal texture.
-            a.update_texture(|buf, &idx| self.write_to_texture(buf, idx));
+            a.update_texture(|buf, idx| self.write_to_texture(buf, idx));
         }
     }
 
@@ -274,13 +268,11 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
             ).unwrap();
 
             let params = glium::draw_parameters::DrawParameters {
-                scissor: batch.clip.map(|clip| {
-                    glium::Rect {
-                        left: clip.origin.x as u32,
-                        bottom: h - (clip.origin.y + clip.size.height) as u32,
-                        width: clip.size.width as u32,
-                        height: clip.size.height as u32,
-                    }
+                scissor: batch.clip.map(|clip| glium::Rect {
+                    left: clip.origin.x as u32,
+                    bottom: h - (clip.origin.y + clip.size.height) as u32,
+                    width: clip.size.width as u32,
+                    height: clip.size.height as u32,
                 }),
                 blend: glium::Blend::alpha_blending(),
                 ..Default::default()
@@ -387,7 +379,6 @@ impl Vertex for DefaultVertex {
         }
     }
 }
-
 
 /// A deferred rendering buffer for pixel-perfect display.
 struct Canvas {

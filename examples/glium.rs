@@ -14,11 +14,11 @@ mod feature {
     use image;
     use std::path::Path;
     use vitral::{self, Align, ButtonAction, Color, RectUtil};
-    use vitral::glium_backend::{DefaultVertex, TextureHandle};
+    use vitral::glium_backend::DefaultVertex;
 
-    type Core = vitral::Core<TextureHandle, DefaultVertex>;
+    type Core = vitral::Core<DefaultVertex>;
     type Backend = vitral::glium_backend::Backend<DefaultVertex>;
-    type ImageData = vitral::ImageData<TextureHandle>;
+    type ImageData = vitral::ImageData;
 
     pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
         if x < mn {
@@ -44,8 +44,8 @@ mod feature {
 
     struct App {
         core: Core,
-        font: vitral::FontData<TextureHandle>,
-        image: vitral::ImageData<TextureHandle>,
+        font: vitral::FontData,
+        image: vitral::ImageData,
         fore_color: Color,
         back_color: Color,
         bounds: Rect<f32>,

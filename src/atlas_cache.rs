@@ -21,13 +21,10 @@ impl SubImageSpec {
 }
 
 /// Updateable incremental cache for multiple texture atlases.
-///
-/// This will set image type to `usize`, the backend implementer is resposible for mapping
-/// the consecutive integers to actual backend atlas texture values.
 pub struct AtlasCache {
     image_sheets: HashMap<String, ImageBuffer>,
-    atlas_images: HashMap<SubImageSpec, ImageData<usize>>,
-    atlases: Vec<Atlas<usize>>,
+    atlas_images: HashMap<SubImageSpec, ImageData>,
+    atlases: Vec<Atlas>,
     atlas_size: u32,
     next_index: usize,
 }
@@ -47,7 +44,7 @@ impl AtlasCache {
         ret
     }
 
-    pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas<usize>> { self.atlases.iter_mut() }
+    pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas> { self.atlases.iter_mut() }
 
     pub fn atlas_size(&self) -> u32 { self.atlas_size }
 
@@ -58,7 +55,7 @@ impl AtlasCache {
     ///
     /// If the added image is larger than `atlas_size` of the atlas cache in either x or y
     /// dimension, the image cannot be added and the method will panic.
-    pub fn get<'a>(&'a mut self, key: &SubImageSpec) -> &'a ImageData<usize> {
+    pub fn get<'a>(&'a mut self, key: &SubImageSpec) -> &'a ImageData {
         // This subimage already exists, return it.
         if self.atlas_images.contains_key(key) {
             return &self.atlas_images[key];

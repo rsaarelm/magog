@@ -17,7 +17,7 @@ mod atlas;
 pub use atlas::Atlas;
 
 mod atlas_cache;
-pub use atlas_cache::{SubImageSpec, AtlasCache};
+pub use atlas_cache::{AtlasCache, SubImageSpec};
 
 mod canvas_zoom;
 pub use canvas_zoom::CanvasZoom;
@@ -33,10 +33,13 @@ pub use tilesheet::tilesheet_bounds;
 
 pub type Color = [f32; 4];
 
+/// Vitral representation for texture handle, consecutive positive integers.
+pub type TextureIndex = usize;
+
 /// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
-pub struct ImageData<T> {
-    pub texture: T,
+pub struct ImageData {
+    pub texture: TextureIndex,
     pub size: Size2D<u32>,
     pub tex_coords: Rect<f32>,
 }
@@ -110,34 +113,30 @@ impl ImageBuffer {
 }
 
 /// Builder for Vitral `Core` structure.
-pub struct Builder<T> {
-    user_solid: Option<ImageData<T>>,
+pub struct Builder {
+    user_solid: Option<ImageData>,
 }
 
-impl<T> Builder<T>
-where
-    T: Clone + Eq,
-{
-    pub fn new() -> Builder<T> { Builder { user_solid: None } }
+impl Builder {
+    pub fn new() -> Builder { Builder { user_solid: None } }
 
     /// Give your own `ImageData` for the solid texture.
     ///
     /// You want to use this if you have an image atlas and you want to have both drawing solid
     /// shapes and textured shapes use the same texture resource and go to the same draw batch.
-    pub fn solid_texture(mut self, solid: ImageData<T>) -> Builder<T> {
+    pub fn solid_texture(mut self, solid: ImageData) -> Builder {
         self.user_solid = Some(solid);
         self
     }
-
 
     /// Construct an interface context instance.
     ///
     /// Needs to be provided a texture creation function. If the user has not specified them
     /// earlier, this will be used to construct a separate texture for the solid color and a
     /// default font texture.
-    pub fn build<F, V: Vertex>(self, screen_size: Size2D<f32>, mut make_t: F) -> Core<T, V>
+    pub fn build<F, V: Vertex>(self, screen_size: Size2D<f32>, mut make_t: F) -> Core<V>
     where
-        F: FnMut(ImageBuffer) -> T,
+        F: FnMut(ImageBuffer) -> TextureIndex,
     {
         let solid;
         if let Some(user_solid) = self.user_solid {
@@ -155,9 +154,9 @@ where
 }
 
 /// Build the default Vitral font given a texture constructor.
-pub fn build_default_font<F, T: Clone>(mut make_t: F) -> FontData<T>
+pub fn build_default_font<F>(mut make_t: F) -> FontData
 where
-    F: FnMut(ImageBuffer) -> T,
+    F: FnMut(ImageBuffer) -> TextureIndex,
 {
     static DEFAULT_FONT: &'static [u8] = include_bytes!("font-96x48.raw");
     let (char_width, char_height) = (6, 8);
@@ -190,7 +189,7 @@ where
             std::char::from_u32(i).unwrap(),
             CharData {
                 image: ImageData {
-                    texture: t.clone(),
+                    texture: t,
                     size: Size2D::new(char_width, char_height),
                     tex_coords: tex_coords,
                 },
@@ -216,13 +215,13 @@ pub trait Vertex {
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Core<T, V> {
-    draw_list: Vec<DrawBatch<T, V>>,
+pub struct Core<V> {
+    draw_list: Vec<DrawBatch<V>>,
 
     mouse_pos: Point2D<f32>,
     click_state: [ClickState; 3],
 
-    solid_texture: ImageData<T>,
+    solid_texture: ImageData,
 
     text_input: Vec<KeyInput>,
 
@@ -232,11 +231,8 @@ pub struct Core<T, V> {
     screen_size: Size2D<f32>,
 }
 
-impl<T, V: Vertex> Core<T, V>
-where
-    T: Clone + Eq,
-{
-    pub fn new(solid_texture: ImageData<T>, screen_size: Size2D<f32>) -> Core<T, V> {
+impl<V: Vertex> Core<V> {
+    pub fn new(solid_texture: ImageData, screen_size: Size2D<f32>) -> Core<V> {
         Core {
             draw_list: Vec::new(),
 
@@ -312,9 +308,9 @@ where
 
     pub fn solid_texture_texcoord(&self) -> Point2D<f32> { self.solid_texture.tex_coords.origin }
 
-    pub fn start_texture(&mut self, texture: T) { self.check_batch(Some(texture)); }
+    pub fn start_texture(&mut self, texture: TextureIndex) { self.check_batch(Some(texture)); }
 
-    fn current_batch_is_invalid(&self, texture: T) -> bool {
+    fn current_batch_is_invalid(&self, texture: TextureIndex) -> bool {
         if self.draw_list.is_empty() {
             return true;
         }
@@ -339,7 +335,7 @@ where
     ///
     /// Need to start a new batch if render state has changed or if the current one is growing too
     /// large for the u16 indices.
-    fn check_batch(&mut self, texture_needed: Option<T>) {
+    fn check_batch(&mut self, texture_needed: Option<TextureIndex>) {
         if texture_needed.is_none() && self.draw_list.is_empty() {
             // Do nothing for stuff that only affects ongoing drawing.
             return;
@@ -403,7 +399,7 @@ where
         self.draw_tex_rect(area, &rect(p.x, p.y, 0.0, 0.0), color);
     }
 
-    pub fn draw_image(&mut self, image: &ImageData<T>, pos: Point2D<f32>, color: Color) {
+    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<f32>, color: Color) {
         self.start_texture(image.texture.clone());
         let size = Size2D::new(image.size.width as f32, image.size.height as f32);
         self.draw_tex_rect(&Rect::new(pos, size), &image.tex_coords, color);
@@ -417,7 +413,7 @@ where
     /// The return value is the position for the next line.
     pub fn draw_text(
         &mut self,
-        font: &FontData<T>,
+        font: &FontData,
         pos: Point2D<f32>,
         align: Align,
         color: Color,
@@ -480,7 +476,7 @@ where
         self.tick += 1;
     }
 
-    pub fn end_frame(&mut self) -> Vec<DrawBatch<T, V>> {
+    pub fn end_frame(&mut self) -> Vec<DrawBatch<V>> {
         // Clean up transient mouse click info.
         for i in 0..3 {
             self.click_state[i] = self.click_state[i].tick();
@@ -530,10 +526,10 @@ where
 }
 
 /// A sequence of primitive draw operarations.
-pub struct DrawBatch<T, V> {
+pub struct DrawBatch<V> {
     /// Texture used for the current batch, details depend on backend
     /// implementation
-    pub texture: T,
+    pub texture: TextureIndex,
     /// Clipping rectangle for the current batch
     pub clip: Option<Rect<f32>>,
     /// Vertex data
@@ -630,14 +626,14 @@ enum KeyInput {
 
 /// Font data for Vitral.
 #[derive(Clone)]
-pub struct FontData<T> {
+pub struct FontData {
     /// Map from chars to glyph images.
-    pub chars: HashMap<char, CharData<T>>,
+    pub chars: HashMap<char, CharData>,
     /// Line height for this font.
     pub height: f32,
 }
 
-impl<T> FontData<T> {
+impl FontData {
     /// Return the size of a string of text in this font.
     pub fn render_size(&self, text: &str) -> Rect<f32> {
         let mut w = 0.0;
@@ -661,8 +657,8 @@ impl<T> FontData<T> {
 
 /// Drawable image data for Vitral.
 #[derive(Clone, PartialEq)]
-pub struct CharData<T> {
-    pub image: ImageData<T>,
+pub struct CharData {
+    pub image: ImageData,
     pub draw_offset: Vector2D<f32>,
     pub advance: f32,
 }

@@ -1,21 +1,21 @@
-use {ImageBuffer, ImageData};
+use {ImageBuffer, ImageData, TextureIndex};
 use euclid::{Point2D, Rect, Size2D};
 use std::cmp::max;
 
 /// An incremental texture atlas.
 ///
-/// Assumes a backend system where the resource behind the texture handle `T` can be changed
-/// without changing the value of the handle itself.
-pub struct Atlas<T> {
-    texture: T,
+/// Assumes a backend system where the resource behind the texture handle can be changed without
+/// changing the value of the handle itself.
+pub struct Atlas {
+    texture: TextureIndex,
     slots: Vec<Rect<u32>>,
     placed: Vec<Rect<u32>>,
     atlas: ImageBuffer,
     is_dirty: bool,
 }
 
-impl<T: Clone> Atlas<T> {
-    pub fn new(texture: T, size: Size2D<u32>) -> Atlas<T> {
+impl Atlas {
+    pub fn new(texture: TextureIndex, size: Size2D<u32>) -> Atlas {
         Atlas {
             texture,
             slots: vec![Rect::new(Point2D::new(0, 0), size)],
@@ -27,7 +27,7 @@ impl<T: Clone> Atlas<T> {
 
     pub fn is_empty(&self) -> bool { self.placed.is_empty() }
 
-    pub fn add(&mut self, image: &ImageBuffer) -> Option<ImageData<T>> {
+    pub fn add(&mut self, image: &ImageBuffer) -> Option<ImageData> {
         if let Some(area) = self.place(image.size) {
             // Draw the new image into the atlas image.
             self.atlas.copy_from(image, area.origin.x, area.origin.y);
@@ -58,17 +58,17 @@ impl<T: Clone> Atlas<T> {
 
     pub fn size(&self) -> Size2D<u32> { self.atlas.size }
 
-    pub fn texture(&self) -> &T { &self.texture }
+    pub fn texture(&self) -> TextureIndex { self.texture }
 
     /// Write the current atlas image to the system texture handle if the atlas has changed.
     ///
     /// The texture update function must be provided by the caller.
     pub fn update_texture<F>(&mut self, mut f: F)
     where
-        F: FnMut(&ImageBuffer, &T),
+        F: FnMut(&ImageBuffer, TextureIndex),
     {
         if self.is_dirty {
-            f(&self.atlas, &self.texture);
+            f(&self.atlas, self.texture);
             self.is_dirty = false;
         }
     }

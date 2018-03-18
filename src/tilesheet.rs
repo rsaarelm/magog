@@ -1,5 +1,5 @@
-use euclid::{rect, Point2D, Rect, Size2D, point2, vec2};
 use ImageBuffer;
+use euclid::{rect, Point2D, Rect, Size2D, point2, vec2};
 
 /// Return the tiles on a tile sheet image.
 ///
