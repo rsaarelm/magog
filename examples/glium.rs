@@ -40,7 +40,7 @@ mod feature {
     }
 
     impl App {
-        pub fn new(core: Core, backend: &mut Backend) -> App {
+        pub fn new(core: Core, backend: &Backend) -> App {
             fn load_image(path: &str) -> image::DynamicImage {
                 image::open(&Path::new(path)).unwrap()
             }
