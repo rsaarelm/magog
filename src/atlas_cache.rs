@@ -1,5 +1,5 @@
-use {Atlas, ImageBuffer, ImageData};
-use euclid::{rect, Rect, size2};
+use {Atlas, ImageBuffer, ImageData, CharData, FontData};
+use euclid::{rect, Rect, size2, vec2};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -103,12 +103,25 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     }
 
     /// Add a named tile source sheet into the cache.
-    pub fn add_sheet<U, I>(&mut self, id: U, sheet: I)
+    ///
+    /// Return the `SubImageSpec` for the entire sheet in case it is a single image that should be
+    /// used as is.
+    pub fn add_sheet<U, I>(&mut self, id: U, sheet: I) -> SubImageSpec<T>
     where
         U: Into<T>,
         I: Into<ImageBuffer>,
     {
-        self.image_sheets.insert(id.into(), sheet.into());
+        let id = id.into();
+        let sheet = sheet.into();
+
+        let ret = SubImageSpec {
+            id: id.clone(),
+            bounds: rect(0, 0, sheet.size.width, sheet.size.height),
+        };
+
+        self.image_sheets.insert(id, sheet);
+
+        ret
     }
 
     /// Add a named tile source and generate tile data using image properties.
@@ -132,5 +145,27 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
 
         self.add_sheet(id, sheet);
         ret
+    }
+
+    pub fn add_tilesheet_font<U, I, J>(&mut self, id: U, sheet: I, span: J) -> FontData
+    where
+        U: Into<T>,
+        I: Into<ImageBuffer>,
+        J: IntoIterator<Item = char> {
+        let tiles = self.add_tilesheet(id, sheet);
+
+    let glyphs = tiles
+        .into_iter()
+        .map(|i| CharData {
+            image: self.get(&i).clone(),
+            draw_offset: vec2(0.0, 0.0),
+            advance: i.bounds.size.width as f32,
+        })
+        .collect::<Vec<_>>();
+
+    let height = glyphs[0].image.size.height as f32;
+    let chars = span.into_iter().zip(glyphs.into_iter()).collect();
+
+    FontData { chars, height }
     }
 }

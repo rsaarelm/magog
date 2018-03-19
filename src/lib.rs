@@ -37,7 +37,7 @@ pub type Color = [f32; 4];
 pub type TextureIndex = usize;
 
 /// Drawable image data for Vitral.
-#[derive(Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct ImageData {
     pub texture: TextureIndex,
     pub size: Size2D<u32>,
@@ -656,7 +656,7 @@ impl FontData {
 }
 
 /// Drawable image data for Vitral.
-#[derive(Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct CharData {
     pub image: ImageData,
     pub draw_offset: Vector2D<f32>,
