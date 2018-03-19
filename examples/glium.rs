@@ -18,7 +18,6 @@ mod feature {
 
     type Core = vitral::Core<DefaultVertex>;
     type Backend = vitral::glium_backend::Backend<DefaultVertex>;
-    type ImageData = vitral::ImageData;
 
     pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
         if x < mn {
@@ -30,20 +29,9 @@ mod feature {
         }
     }
 
-    fn load_image(backend: &mut Backend, path: &str) -> ImageData {
-        let image: vitral::ImageBuffer = image::open(&Path::new(path)).unwrap().into();
-        let size = image.size;
-        let texture = backend.make_texture(image);
-
-        vitral::ImageData {
-            texture,
-            size,
-            tex_coords: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(1.0, 1.0)),
-        }
-    }
-
     struct App {
         core: Core,
+        atlas_cache: vitral::AtlasCache<String>,
         font: vitral::FontData,
         image: vitral::ImageData,
         fore_color: Color,
@@ -53,11 +41,25 @@ mod feature {
 
     impl App {
         pub fn new(core: Core, backend: &mut Backend) -> App {
+            fn load_image(path: &str) -> image::DynamicImage {
+                image::open(&Path::new(path)).unwrap()
+            }
+
             let bounds = core.bounds();
-            let font = vitral::build_default_font(|img| backend.make_texture(img));
-            let image = load_image(backend, "julia.png");
+            let mut atlas_cache = vitral::AtlasCache::new(512, backend.texture_count());
+
+            let font = atlas_cache.add_tilesheet_font(
+                "font",
+                load_image("tilesheet-font.png"),
+                (32u8..128).map(|c| c as char),
+            );
+
+            let image = atlas_cache.add_sheet("julia", load_image("julia.png"));
+            let image = atlas_cache.get(&image).clone();
+
             App {
                 core,
+                atlas_cache,
                 font,
                 image,
                 fore_color: [1.0, 0.5, 0.1, 1.0],
@@ -165,6 +167,7 @@ mod feature {
         let mut app = App::new(core, &mut backend);
 
         loop {
+            backend.sync_with_atlas_cache(&mut app.atlas_cache);
             app.begin();
             app.render();
             let (_, title_area) = app.bounds.horizontal_split(12.0);
