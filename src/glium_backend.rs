@@ -8,6 +8,8 @@ use glium::{self, Surface};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
 use std::error::Error;
+use std::fmt::Debug;
+use std::hash::Hash;
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
@@ -136,7 +138,10 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     /// Update or construct textures based on changes in atlas cache.
-    pub fn sync_with_atlas_cache(&mut self, atlas_cache: &mut AtlasCache) {
+    pub fn sync_with_atlas_cache<T: Eq + Hash + Clone + Debug>(
+        &mut self,
+        atlas_cache: &mut AtlasCache<T>,
+    ) {
         for a in atlas_cache.atlases_mut() {
             let idx = a.texture();
             // If there are sheets in the atlas that don't have corresponding textures yet,

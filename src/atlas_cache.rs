@@ -1,36 +1,38 @@
 use {Atlas, ImageBuffer, ImageData};
 use euclid::{rect, Rect, size2};
 use std::collections::HashMap;
+use std::fmt::Debug;
+use std::hash::Hash;
 use std::slice;
 use tilesheet;
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct SubImageSpec {
-    pub sheet_name: String,
+pub struct SubImageSpec<T> {
+    pub id: T,
     pub bounds: Rect<u32>,
 }
 
-impl SubImageSpec {
-    pub fn new(name: &str, x: u32, y: u32, width: u32, height: u32) -> SubImageSpec {
+impl<T> SubImageSpec<T> {
+    pub fn new<U: Into<T>>(id: U, x: u32, y: u32, width: u32, height: u32) -> SubImageSpec<T> {
         SubImageSpec {
-            sheet_name: name.to_string(),
+            id: id.into(),
             bounds: rect(x, y, width, height),
         }
     }
 }
 
 /// Updateable incremental cache for multiple texture atlases.
-pub struct AtlasCache {
-    image_sheets: HashMap<String, ImageBuffer>,
-    atlas_images: HashMap<SubImageSpec, ImageData>,
+pub struct AtlasCache<T> {
+    image_sheets: HashMap<T, ImageBuffer>,
+    atlas_images: HashMap<SubImageSpec<T>, ImageData>,
     atlases: Vec<Atlas>,
     atlas_size: u32,
     next_index: usize,
 }
 
-impl AtlasCache {
-    pub fn new(atlas_size: u32, starting_index: usize) -> AtlasCache {
+impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
+    pub fn new(atlas_size: u32, starting_index: usize) -> AtlasCache<T> {
         let mut ret = AtlasCache {
             image_sheets: HashMap::new(),
             atlas_images: HashMap::new(),
@@ -55,14 +57,14 @@ impl AtlasCache {
     ///
     /// If the added image is larger than `atlas_size` of the atlas cache in either x or y
     /// dimension, the image cannot be added and the method will panic.
-    pub fn get<'a>(&'a mut self, key: &SubImageSpec) -> &'a ImageData {
+    pub fn get<'a>(&'a mut self, key: &SubImageSpec<T>) -> &'a ImageData {
         // This subimage already exists, return it.
         if self.atlas_images.contains_key(key) {
             return &self.atlas_images[key];
         }
 
         // Subimage does not exist yet, construct the ImageData for it.
-        let sub_image = if let Some(image) = self.image_sheets.get(&key.sheet_name) {
+        let sub_image = if let Some(image) = self.image_sheets.get(&key.id) {
             // Add a new image to the atlas.
 
             // First create the buffer image.
@@ -70,7 +72,7 @@ impl AtlasCache {
                 image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
             })
         } else {
-            panic!("Image sheet {} not found in cache", key.sheet_name);
+            panic!("Image sheet {:?} not found in cache", key.id);
         };
 
         assert!(!self.atlases.is_empty());
@@ -101,34 +103,34 @@ impl AtlasCache {
     }
 
     /// Add a named tile source sheet into the cache.
-    pub fn add_sheet<S, I>(&mut self, name: S, sheet: I)
+    pub fn add_sheet<U, I>(&mut self, id: U, sheet: I)
     where
-        S: Into<String>,
+        U: Into<T>,
         I: Into<ImageBuffer>,
     {
-        self.image_sheets.insert(name.into(), sheet.into());
+        self.image_sheets.insert(id.into(), sheet.into());
     }
 
     /// Add a named tile source and generate tile data using image properties.
     ///
     /// Calls the `tilesheet_bounds` function to determine tilesheet subimages.
-    pub fn add_tilesheet<S, I>(&mut self, name: S, sheet: I) -> Vec<SubImageSpec>
+    pub fn add_tilesheet<U, I>(&mut self, id: U, sheet: I) -> Vec<SubImageSpec<T>>
     where
-        S: Into<String>,
+        U: Into<T>,
         I: Into<ImageBuffer>,
     {
-        let name = name.into();
+        let id = id.into();
         let sheet = sheet.into();
 
         let ret = tilesheet::tilesheet_bounds(&sheet)
             .into_iter()
             .map(|r| SubImageSpec {
                 bounds: r,
-                sheet_name: name.clone(),
+                id: id.clone(),
             })
             .collect();
 
-        self.add_sheet(name, sheet);
+        self.add_sheet(id, sheet);
         ret
     }
 }
