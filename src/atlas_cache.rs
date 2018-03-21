@@ -1,4 +1,4 @@
-use {Atlas, ImageBuffer, ImageData, CharData, FontData};
+use {Atlas, CharData, FontData, ImageBuffer, ImageData};
 use euclid::{rect, Rect, size2, vec2};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -151,21 +151,22 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     where
         U: Into<T>,
         I: Into<ImageBuffer>,
-        J: IntoIterator<Item = char> {
+        J: IntoIterator<Item = char>,
+    {
         let tiles = self.add_tilesheet(id, sheet);
 
-    let glyphs = tiles
-        .into_iter()
-        .map(|i| CharData {
-            image: self.get(&i).clone(),
-            draw_offset: vec2(0.0, 0.0),
-            advance: i.bounds.size.width as f32,
-        })
-        .collect::<Vec<_>>();
+        let glyphs = tiles
+            .into_iter()
+            .map(|i| CharData {
+                image: self.get(&i).clone(),
+                draw_offset: vec2(0.0, 0.0),
+                advance: i.bounds.size.width as f32,
+            })
+            .collect::<Vec<_>>();
 
-    let height = glyphs[0].image.size.height as f32;
-    let chars = span.into_iter().zip(glyphs.into_iter()).collect();
+        let height = glyphs[0].image.size.height as f32;
+        let chars = span.into_iter().zip(glyphs.into_iter()).collect();
 
-    FontData { chars, height }
+        FontData { chars, height }
     }
 }
