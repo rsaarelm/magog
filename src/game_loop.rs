@@ -1,13 +1,13 @@
 use calx::{color, Rgba};
 use calx::Dir6;
-use display::{self, Backend, Core, FontData};
+use display::{self, Backend, Core};
 use euclid::{Point2D, Rect};
 use glium::glutin::ElementState;
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use std::rc::Rc;
-use vitral::{Align, RectUtil};
+use vitral::{Align, FontData, RectUtil};
 use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

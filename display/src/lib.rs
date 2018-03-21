@@ -9,8 +9,6 @@ extern crate vec_map;
 extern crate vitral;
 extern crate world;
 
-mod atlas_cache;
-
 mod backend;
 pub use backend::{Backend, Core, KeyEvent};
 
@@ -25,14 +23,13 @@ pub use draw_util::DrawUtil;
 pub mod init;
 mod render;
 mod sprite;
-mod tilesheet;
 mod view;
 
 pub use console::Console;
 pub use view::WorldView;
 
-pub type ImageData = vitral::ImageData<vitral::glium_backend::TextureHandle>;
-pub type FontData = vitral::FontData<vitral::glium_backend::TextureHandle>;
+type SubImageSpec = vitral::SubImageSpec<String>;
+type AtlasCache = vitral::AtlasCache<String>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Icon {

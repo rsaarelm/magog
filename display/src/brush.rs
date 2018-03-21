@@ -1,16 +1,16 @@
-use atlas_cache::SubImageSpec;
+use SubImageSpec;
 use cache;
 use calx::Rgba;
 use calx::color::*;
 use euclid::{rect, Rect, Vector2D, vec2};
 use std::fmt;
 use std::rc::Rc;
-use vitral;
+use vitral::ImageData;
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]
 pub struct Splat {
-    pub image: vitral::ImageData<usize>,
+    pub image: ImageData,
     /// Draw offset for the splat.
     pub offset: Vector2D<f32>,
     pub color: Rgba,
@@ -31,7 +31,7 @@ impl Splat {
     pub fn new(geom: &Geom, sheet: String, color: Rgba, back_color: Rgba) -> Splat {
         Splat {
             image: cache::get(&SubImageSpec {
-                sheet_name: sheet,
+                id: sheet,
                 bounds: geom.bounds,
             }),
             offset: geom.offset,

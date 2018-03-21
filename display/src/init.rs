@@ -1,15 +1,11 @@
 //! Set up resource content for game.
 
 use brush::{Brush, Builder, Geom};
-use cache;
 use calx::Rgba;
 use calx::color::*;
-use euclid::vec2;
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::str::FromStr;
 use vec_map::VecMap;
-use vitral;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
@@ -100,41 +96,4 @@ pub fn misc_brushes() -> VecMap<Rc<Brush>> {
     ret.insert(BlockedOffSectorCell as usize, Builder::new("assets/floors.png").color(LIGHTGRAY).tile(0, 32).finish());
 
     ret
-}
-
-pub fn font<I: Iterator<Item = char>>(
-    name: String,
-    data: &[u8],
-    span: I,
-) -> vitral::FontData<usize> {
-    let glyphs = cache::ATLAS.with(|a| a.borrow_mut().load_tilesheet(name, data).unwrap());
-
-    let mut glyphs = glyphs
-        .into_iter()
-        .map(|i| vitral::CharData {
-            image: cache::get(&i),
-            draw_offset: vec2(0.0, 0.0),
-            advance: i.bounds.size.width as f32,
-        })
-        .collect::<Vec<_>>();
-
-    assert!(!glyphs.is_empty());
-    let font_height = glyphs[0].image.size.height as f32;
-
-    glyphs.reverse();
-
-    let mut chars = HashMap::new();
-    for c in span {
-        chars.insert(
-            c,
-            glyphs
-                .pop()
-                .expect("Not enough glyphs in font sheet for all chars"),
-        );
-    }
-
-    vitral::FontData {
-        chars: chars,
-        height: font_height,
-    }
 }

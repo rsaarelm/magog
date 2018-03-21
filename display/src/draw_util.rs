@@ -1,7 +1,6 @@
-use {FontData, ImageData};
 use backend::{Core, Vertex};
 use euclid::{rect, Point2D, vec2};
-use vitral::{Align, Color};
+use vitral::{Align, Color, FontData, ImageData};
 
 /// Helpers for drawing into the local `Core` type.
 pub trait DrawUtil {

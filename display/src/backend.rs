@@ -5,7 +5,7 @@ use std::error::Error;
 use vitral::{self, glium_backend, Color};
 pub use vitral::glium_backend::KeyEvent;
 
-pub type Core = vitral::Core<vitral::glium_backend::TextureHandle, Vertex>;
+pub type Core = vitral::Core<Vertex>;
 
 pub struct Backend {
     inner: glium_backend::Backend<Vertex>,
@@ -79,28 +79,12 @@ impl Backend {
             })
     }
 
-    fn refresh_atlas(&mut self) {
-        cache::ATLAS.with(|a| {
-            for a in a.borrow_mut().atlases_mut() {
-                let idx = *a.texture();
-                debug_assert!(idx <= self.inner.texture_count());
-                if idx == self.inner.texture_count() {
-                    let _idx = self.inner
-                        .make_empty_texture(a.size().width, a.size().height);
-                    debug_assert_eq!(_idx, idx);
-                }
-
-                a.update_texture(|buf, &idx| self.inner.write_to_texture(buf, idx));
-            }
-        });
-    }
-
     /// Return the next keypress event if there is one.
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.inner.poll_key() }
 
     /// Display the backend and read input events.
     pub fn update(&mut self, core: &mut Core) -> bool {
-        self.refresh_atlas();
+        cache::ATLAS.with(|a| self.inner.sync_with_atlas_cache(&mut a.borrow_mut()));
         self.inner.update(core)
     }
 
