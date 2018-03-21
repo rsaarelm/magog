@@ -12,7 +12,7 @@ mod feature {
     use euclid::{Point2D, Rect, Size2D, point2, vec2};
     use glium::glutin;
     use image;
-    use vitral::{self, Align, ButtonAction, Color, PngData, RectUtil};
+    use vitral::{self, Align, ButtonAction, Color, PngBytes, RectUtil};
     use vitral::glium_backend::DefaultVertex;
 
     type Core = vitral::Core<DefaultVertex>;
@@ -45,11 +45,11 @@ mod feature {
 
             let font = atlas_cache.add_tilesheet_font(
                 "font",
-                PngData(include_bytes!("../tilesheet-font.png")),
+                PngBytes(include_bytes!("../tilesheet-font.png")),
                 (32u8..128).map(|c| c as char),
             );
 
-            let image = atlas_cache.add_sheet("julia", PngData(include_bytes!("../julia.png")));
+            let image = atlas_cache.add_sheet("julia", PngBytes(include_bytes!("../julia.png")));
             let image = atlas_cache.get(&image).clone();
 
             App {

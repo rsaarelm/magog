@@ -46,11 +46,11 @@ pub type TextureIndex = usize;
 /// This is a convenience type. If you are using data where you can't be sure it's a valid PNG,
 /// call `image::load` explicitly to load it, check for errors and then convert the image to
 /// `ImageBuffer`.
-pub struct PngData<'a>(pub &'a [u8]);
+pub struct PngBytes<'a>(pub &'a [u8]);
 
 #[cfg(feature = "image")]
-impl<'a> From<PngData<'a>> for ImageBuffer {
-    fn from(data: PngData) -> Self {
+impl<'a> From<PngBytes<'a>> for ImageBuffer {
+    fn from(data: PngBytes) -> Self {
         use std::io::Cursor;
 
         let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)
