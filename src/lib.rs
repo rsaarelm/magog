@@ -36,6 +36,29 @@ pub type Color = [f32; 4];
 /// Vitral representation for texture handle, consecutive positive integers.
 pub type TextureIndex = usize;
 
+#[cfg(feature = "image")]
+/// Wrapper for the bytes of a PNG image file.
+///
+/// This is mostly intended for image data that is included in binaries using `include_bytes!`. It
+/// implements an `Into` conversion to `ImageBuffer` that will panic if the included bytes do not
+/// resolve as an image file of the specified format.
+///
+/// This is a convenience type. If you are using data where you can't be sure it's a valid PNG,
+/// call `image::load` explicitly to load it, check for errors and then convert the image to
+/// `ImageBuffer`.
+pub struct PngData<'a>(pub &'a [u8]);
+
+#[cfg(feature = "image")]
+impl<'a> From<PngData<'a>> for ImageBuffer {
+    fn from(data: PngData) -> Self {
+        use std::io::Cursor;
+
+        let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)
+            .expect("Failed to load PNG data");
+        img.into()
+    }
+}
+
 /// Drawable image data for Vitral.
 #[derive(Copy, Clone, PartialEq)]
 pub struct ImageData {

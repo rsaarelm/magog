@@ -12,8 +12,7 @@ mod feature {
     use euclid::{Point2D, Rect, Size2D, point2, vec2};
     use glium::glutin;
     use image;
-    use std::path::Path;
-    use vitral::{self, Align, ButtonAction, Color, RectUtil};
+    use vitral::{self, Align, ButtonAction, Color, PngData, RectUtil};
     use vitral::glium_backend::DefaultVertex;
 
     type Core = vitral::Core<DefaultVertex>;
@@ -41,20 +40,16 @@ mod feature {
 
     impl App {
         pub fn new(core: Core, backend: &Backend) -> App {
-            fn load_image(path: &str) -> image::DynamicImage {
-                image::open(&Path::new(path)).unwrap()
-            }
-
             let bounds = core.bounds();
             let mut atlas_cache = vitral::AtlasCache::new(512, backend.texture_count());
 
             let font = atlas_cache.add_tilesheet_font(
                 "font",
-                load_image("tilesheet-font.png"),
+                PngData(include_bytes!("../tilesheet-font.png")),
                 (32u8..128).map(|c| c as char),
             );
 
-            let image = atlas_cache.add_sheet("julia", load_image("julia.png"));
+            let image = atlas_cache.add_sheet("julia", PngData(include_bytes!("../julia.png")));
             let image = atlas_cache.get(&image).clone();
 
             App {
