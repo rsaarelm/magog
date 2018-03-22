@@ -34,7 +34,7 @@ pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use legend_builder::LegendBuilder;
 pub use prefab::{IntoPrefab, FromPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace};
 pub use rng::{EncodeRng, IndependentSample, RandomPermutation, RngExt, SampleIterator};
-pub use search::{astar_grid, astar_path, Dijkstra, GridNode};
+pub use search::{astar_path, Dijkstra, GridNode};
 pub use space::{CellSpace, CellVector, Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};
