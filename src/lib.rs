@@ -38,4 +38,4 @@ pub use search::{astar_grid, astar_path, Dijkstra, GridNode};
 pub use space::{CellSpace, CellVector, Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};
-pub use timing::{cycle_anim, single_anim, spike, AverageDuration, Ticker, TimePerFrame};
+pub use timing::{cycle_anim, single_anim, spike};
