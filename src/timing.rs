@@ -27,13 +27,13 @@ pub fn single_anim(start_s: f64, period_s: f64, num_frames: usize) -> usize {
 }
 
 pub struct TimestepLoop {
-    /// Length of update timestep in seconds.
-    pub timestep_s: f64,
+    timestep_s: f64,
     current_time: f64,
     accum: f64,
     /// Weight given to latest render duration when updating average duration.
     update_weight: f64,
-    frame_duration_s: f64,
+    average_frame_s: f64,
+    current_tick: u64,
 }
 
 /// Utility structure for tracking FPS and fixed step physics updates.
@@ -60,6 +60,9 @@ pub struct TimestepLoop {
 ///
 ///     render_frame();
 ///     timestep_loop.observe_render();
+///     println!("tick: {}, FPS: {}",
+///         timestep_loop.current_tick(),
+///         1.0 / timestep_loop.average_frame_s());
 /// }
 /// ```
 impl TimestepLoop {
@@ -68,8 +71,12 @@ impl TimestepLoop {
             timestep_s,
             current_time: time::precise_time_s(),
             accum: 0.0,
+
+            // XXX: Arbitrarily chosen weight parameter
             update_weight: 0.05,
-            frame_duration_s: 1.0,
+
+            average_frame_s: 1.0,
+            current_tick: 0,
         }
     }
 
@@ -79,8 +86,8 @@ impl TimestepLoop {
         let delta = current_time - self.current_time;
         self.current_time = current_time;
         self.accum += current_time;
-        self.frame_duration_s =
-            self.frame_duration_s * (1.0 - self.update_weight) + delta * self.update_weight;
+        self.average_frame_s =
+            self.average_frame_s * (1.0 - self.update_weight) + delta * self.update_weight;
     }
 
     /// Consume accumulation and return true if accumulation is sufficient for a physics update.
@@ -90,6 +97,16 @@ impl TimestepLoop {
         }
 
         self.accum -= self.timestep_s;
+        self.current_tick += 1;
         true
     }
+
+    /// Return length of the update tick in seconds
+    pub fn timestep_s(&self) -> f64 { self.timestep_s }
+
+    /// Return the number of update ticks observed since `TimestepLoop` creation.
+    pub fn current_tick(&self) -> u64 { self.current_tick }
+
+    /// Return the average render frame duration in seconds.
+    pub fn average_frame_s(&self) -> f64 { self.average_frame_s }
 }
