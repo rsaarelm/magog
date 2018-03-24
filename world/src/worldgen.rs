@@ -30,22 +30,12 @@ impl Worldgen {
             terrain: HashMap::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
-            player_entry: Location::new(25, 0, 0),
+            player_entry: Location::new(0, 0, 0),
         };
-
-        ret.load_map_bitmap(
-            Location::new(0, 0, 0),
-            include_bytes!("../assets/overland.png"),
-        );
 
         let mut rng: ::Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
 
-        let mut cave_entrance = Location::new(40, 12, 0);
-        ret.cave_entrance(cave_entrance);
-        ret.terrain.insert(cave_entrance, Terrain::Gate);
-        ret.terrain
-            .insert(cave_entrance + vec2(1, 1), Terrain::Empty);
-
+        let mut cave_entrance = Location::new(0, 0, 0);
         for depth in 1..11 {
             let up_stairs;
             let down_stairs;
@@ -54,7 +44,12 @@ impl Worldgen {
             {
                 let mut digger = SectorDigger::new(&mut ret, Sector::new(0, 0, depth as i16));
                 let domain = digger.domain();
-                mapgen::Caves.dig(&mut rng, &mut digger, domain);
+
+                if depth < 5 {
+                    mapgen::RoomsAndCorridors.dig(&mut rng, &mut digger, domain);
+                } else {
+                    mapgen::Caves.dig(&mut rng, &mut digger, domain);
+                }
 
                 up_stairs = digger.up_portal.expect("Mapgen didn't create stairs up");
                 down_stairs = digger
@@ -92,8 +87,13 @@ impl Worldgen {
             }
 
             ret.spawns.extend(spawns.into_iter());
-            ret.portal(cave_entrance, up_stairs + vec2(1, 1));
-            ret.portal(up_stairs, cave_entrance - vec2(1, 1));
+            if depth > 1 {
+                ret.portal(cave_entrance, up_stairs + vec2(1, 1));
+                ret.portal(up_stairs, cave_entrance - vec2(1, 1));
+            } else {
+                ret.player_entry = up_stairs;
+            }
+
             cave_entrance = down_stairs;
 
             // TODO: Generator needs an option to not generate stairs down on bottom level
