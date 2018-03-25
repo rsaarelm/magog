@@ -1,8 +1,8 @@
 use Prefab;
-use calx::{self, IntoPrefab, FromPrefab, CellVector};
+use calx::{self, CellVector, FromPrefab, IntoPrefab};
 use errors::*;
-use form::Form;
 use ron;
+use spec;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::io;
@@ -52,7 +52,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
     // Validate the prefab
     for i in save.legend.values() {
         for e in &i.1 {
-            if Form::named(e).is_none() {
+            if !spec::is_named(e) {
                 return Err(format!("Unknown entity spawn '{}'", e).into());
             }
         }

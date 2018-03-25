@@ -4,7 +4,6 @@ use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom};
 use calx_ecs::Entity;
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::vec2;
-use form;
 use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
 use location::Location;
@@ -366,10 +365,6 @@ pub trait Query: TerrainQuery + Sized {
     fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
         self.ecs().desc.get(e).and_then(|desc| Some(&desc.name[..]))
-    }
-
-    fn is_spawn_name(&self, spawn_name: &str) -> bool {
-        form::FORMS.iter().any(|f| f.name() == Some(spawn_name))
     }
 
     fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> Prefab {

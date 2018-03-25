@@ -124,9 +124,6 @@ pub use event::Event;
 
 mod flags;
 
-mod form;
-pub use form::{Form, FORMS};
-
 mod fov;
 
 mod grammar;
@@ -151,6 +148,7 @@ mod query;
 pub use query::Query;
 
 mod spatial;
+mod spec;
 mod stats;
 
 mod terraform;

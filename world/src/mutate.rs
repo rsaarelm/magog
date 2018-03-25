@@ -1,19 +1,19 @@
 use {attack_damage, roll};
+use Prefab;
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
 use command::CommandResult;
-use components::{BrainState, Status};
+use components::{Brain, BrainState, MapMemory, Status};
 use effect::{Damage, Effect};
 use event::Event;
-use form::Form;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use query::Query;
 use rand::{seq, Rand};
+use spec;
 use terraform::Terraform;
 use volume::Volume;
 use world::{Ecs, Loadout};
-use {Prefab};
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -331,8 +331,9 @@ pub trait Mutate: Query + Terraform + Sized {
                 if spawn == "player" {
                     self.spawn_player(loc);
                 } else {
-                    let form = Form::named(spawn).expect(&format!("Form '{}' not found!", spawn));
-                    self.spawn(&form.loadout, loc);
+                    let loadout = spec::named(self.rng(), spawn)
+                        .expect(&format!("Spec '{}' not found!", spawn));
+                    self.spawn(&loadout, loc);
                 }
             }
         }
@@ -352,9 +353,13 @@ pub trait Mutate: Query + Terraform + Sized {
                 self.place_entity(player, loc);
             }
         } else {
-            // Initialize new player object.
-            let form = Form::named("player").expect("Player form not found");
-            let player = self.spawn(&form.loadout, loc);
+            // Initialize new player object. Add some special components you don't get on regular
+            // mob spawns.
+            let loadout = spec::named(self.rng(), "player")
+                .expect("Player spec not found")
+                .c(Brain::player())
+                .c(MapMemory::default());
+            let player = self.spawn(&loadout, loc);
             self.set_player(Some(player));
         }
     }

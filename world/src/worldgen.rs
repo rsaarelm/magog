@@ -1,12 +1,12 @@
 use Prefab;
-use calx::{hex_neighbors, Dijkstra, IntoPrefab, CellVector, SRgba};
+use calx::{hex_neighbors, CellVector, Dijkstra, IntoPrefab, SRgba};
 use euclid::{point2, vec2};
-use form::{self, Form};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
 use mapgen::{self, MapGen, Size2D, Vault, VaultCell};
 use rand::{seq, Rand, Rng, SeedableRng};
 use serde;
+use spec;
 use std::collections::{BTreeSet, HashMap};
 use std::io::Cursor;
 use std::iter::FromIterator;
@@ -63,25 +63,19 @@ impl Worldgen {
                     seq::sample_iter(&mut rng, digger.spawn_region.iter(), 20).unwrap();
                 let n_spawns = spawn_locs.len();
 
-                let items = Form::filter(|f| f.is_item() && f.at_depth(depth));
                 for &loc in spawn_locs.drain(0..n_spawns / 2) {
                     spawns.push((
                         loc,
-                        form::rand(&mut rng, &items)
-                            .expect("No item spawn")
-                            .loadout
-                            .clone(),
+                        spec::pick(&mut rng, depth, spec::ITEM_SPECS.as_slice())
+                            .expect("No item spawn"),
                     ))
                 }
 
-                let mobs = Form::filter(|f| f.is_mob() && f.at_depth(depth));
                 for &loc in spawn_locs {
                     spawns.push((
                         loc,
-                        form::rand(&mut rng, &mobs)
-                            .expect("No mob spawn")
-                            .loadout
-                            .clone(),
+                        spec::pick(&mut rng, depth, (&*spec::MOB_SPECS).as_slice())
+                            .expect("No mob spawn"),
                     ))
                 }
             }
@@ -102,7 +96,7 @@ impl Worldgen {
         ret
     }
 
-    fn load_prefab(&mut self, origin: Location, prefab: &Prefab) {
+    fn load_prefab<R: Rng>(&mut self, rng: &mut R, origin: Location, prefab: &Prefab) {
         for (&p, &(ref terrain, ref entities)) in prefab.iter() {
             let loc = origin + p;
 
@@ -112,9 +106,9 @@ impl Worldgen {
                 if spawn == "player" {
                     self.player_entry = loc;
                 } else {
-                    let form = Form::named(spawn)
-                        .expect(&format!("Bad prefab: Form '{}' not found!", spawn));
-                    self.spawns.push((loc, form.loadout.clone()));
+                    let loadout = spec::named(rng, spawn)
+                        .expect(&format!("Bad prefab: Spec '{}' not found!", spawn));
+                    self.spawns.push((loc, loadout));
                 }
             }
         }
@@ -126,7 +120,9 @@ impl Worldgen {
         let (w, h) = (image.width(), image.height());
         let input_map = SubImage::new(&mut image, 0, 0, w, h - 1);
 
-        let prefab: HashMap<CellVector, SRgba> = input_map.into_prefab().expect("Invalid overworld image map");
+        let prefab: HashMap<CellVector, SRgba> = input_map
+            .into_prefab()
+            .expect("Invalid overworld image map");
 
         self.terrain.extend(
             prefab
