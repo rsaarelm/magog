@@ -101,6 +101,11 @@ impl TimestepLoop {
         true
     }
 
+    /// Return remaining time until the next update.
+    ///
+    /// If this is positive, the caller can sleep between frames
+    pub fn time_until_update(&self) -> f64 { self.timestep_s - self.accum }
+
     /// Return length of the update tick in seconds
     pub fn timestep_s(&self) -> f64 { self.timestep_s }
 
