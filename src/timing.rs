@@ -85,7 +85,7 @@ impl TimestepLoop {
         let current_time = time::precise_time_s();
         let delta = current_time - self.current_time;
         self.current_time = current_time;
-        self.accum += current_time;
+        self.accum += delta;
         self.average_frame_s =
             self.average_frame_s * (1.0 - self.update_weight) + delta * self.update_weight;
     }
