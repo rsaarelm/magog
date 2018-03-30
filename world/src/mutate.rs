@@ -554,12 +554,19 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn tick_statuses(&mut self, e: Entity) {
         if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
-            for (_, d) in statuses.iter_mut() {
+            let mut remove = Vec::new();
+
+            for (k, d) in statuses.iter_mut() {
                 *d -= 1;
+                if *d == 0 {
+                    remove.push(*k);
+                }
             }
 
             // TODO: Special stuff when status goes out of effect for dropped statuses.
-            statuses.retain(|_, d| *d > 0);
+            for k in remove.into_iter() {
+                statuses.remove(&k);
+            }
         }
     }
 

@@ -4,7 +4,7 @@ use item::ItemType;
 use location::Location;
 use location_set::LocationSet;
 use stats::Stats;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// The visual representation for an entity
 ///
@@ -168,7 +168,7 @@ pub struct Item {
     pub charges: u32,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
 /// Temporary creature properties
 pub enum Status {
     /// Creature is acting erratically
@@ -179,7 +179,7 @@ pub enum Status {
     Fast,
 }
 
-pub type Statuses = HashMap<Status, u32>;
+pub type Statuses = BTreeMap<Status, u32>;
 
 /// Stats component in the ECS that supports caching applied modifiers for efficiency.
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
