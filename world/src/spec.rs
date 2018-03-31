@@ -117,8 +117,8 @@ impl Spec for ItemSpec {
 lazy_static! {
     pub static ref MOB_SPECS: Vec<MobSpec> = {
         use self::Intrinsic::*;
-        use Icon::*;
         use self::ShoutType::*;
+        use Icon::*;
 
         vec![
             MobSpec {
@@ -130,7 +130,6 @@ lazy_static! {
                 shout: Shout,
                 ..d()
             },
-
             MobSpec {
                 name: "dreg".into(),
                 icon: Dreg,
@@ -139,7 +138,6 @@ lazy_static! {
                 shout: Shout,
                 ..d()
             },
-
             MobSpec {
                 name: "snake".into(),
                 icon: Snake,
@@ -147,7 +145,6 @@ lazy_static! {
                 shout: Hiss,
                 ..d()
             },
-
             MobSpec {
                 name: "ooze".into(),
                 icon: Ooze,
@@ -156,7 +153,6 @@ lazy_static! {
                 shout: Gurgle,
                 ..d()
             },
-
             MobSpec {
                 name: "bug".into(),
                 icon: Bug,
@@ -165,7 +161,6 @@ lazy_static! {
                 power: 2,
                 ..d()
             },
-
             MobSpec {
                 name: "octopus".into(),
                 icon: Octopus,
@@ -174,7 +169,6 @@ lazy_static! {
                 intrinsics: vec![Hands],
                 ..d()
             },
-
             MobSpec {
                 name: "ogre".into(),
                 icon: Ogre,
@@ -185,7 +179,6 @@ lazy_static! {
                 shout: Shout,
                 ..d()
             },
-
             MobSpec {
                 name: "wraith".into(),
                 icon: Wraith,
@@ -195,7 +188,6 @@ lazy_static! {
                 intrinsics: vec![Hands],
                 ..d()
             },
-
             MobSpec {
                 name: "efreet".into(),
                 icon: Efreet,
@@ -205,7 +197,6 @@ lazy_static! {
                 intrinsics: vec![Hands],
                 ..d()
             },
-
             MobSpec {
                 name: "serpent".into(),
                 icon: Serpent,
@@ -217,11 +208,10 @@ lazy_static! {
             },
         ]
     };
-
     pub static ref ITEM_SPECS: Vec<ItemSpec> = {
+        use Icon as I;
         use ItemType::*;
         use item::MagicEffect::*;
-        use Icon as I;
 
         vec![
             ItemSpec {
@@ -232,7 +222,6 @@ lazy_static! {
                 attack: 6,
                 ..d()
             },
-
             ItemSpec {
                 name: "helmet".into(),
                 icon: I::Helmet,
@@ -241,7 +230,6 @@ lazy_static! {
                 armor: 2,
                 ..d()
             },
-
             ItemSpec {
                 name: "armor".into(),
                 icon: I::Armor,
@@ -250,7 +238,6 @@ lazy_static! {
                 armor: 5,
                 ..d()
             },
-
             ItemSpec {
                 name: "wand of fireball".into(),
                 icon: I::Wand1,
@@ -260,7 +247,6 @@ lazy_static! {
                 depth: 3,
                 ..d()
             },
-
             ItemSpec {
                 name: "wand of confusion".into(),
                 icon: I::Wand2,
@@ -270,7 +256,6 @@ lazy_static! {
                 armor: 5,
                 ..d()
             },
-
             ItemSpec {
                 name: "scroll of lightning".into(),
                 icon: I::Scroll1,
