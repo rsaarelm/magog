@@ -19,15 +19,6 @@ fn test_serialize_rng() {
     assert_eq!(rng.next_u32(), rng2.next_u32());
 }
 
-#[test]
-fn test_noise() {
-    use calx::noise;
-
-    for i in 0i32..100 {
-        assert!(noise(i) >= -1.0 && noise(i) <= 1.0);
-    }
-}
-
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx::split_line;
 

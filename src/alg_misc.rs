@@ -1,6 +1,7 @@
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::{Rand, Rng};
+use std::hash::Hash;
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 /// Clamp a value to range.
@@ -15,15 +16,28 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 }
 
 /// Deterministic noise.
-pub fn noise(n: i32) -> f32 {
-    use std::num::Wrapping;
+///
+/// Turns an input value into a noise value.
+///
+/// # Examples
+///
+///     let z: u32 = calx::noise(&(12, 34));
+///     assert_eq!(z, 746252712);
+///     let z: u32 = calx::noise(&(34, 12));
+///     assert_eq!(z, 926582979);
+pub fn noise<I: Hash, O: Rand>(seed: &I) -> O {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::Hasher;
+    use rand::{SeedableRng, XorShiftRng};
 
-    let n = Wrapping(n);
-    let n = (n << 13) ^ n;
-    let m = (n * (n * n * Wrapping(15731) + Wrapping(789221)) + Wrapping(1376312589))
-        & Wrapping(0x7fffffff);
-    let Wrapping(m) = m;
-    1.0 - m as f32 / 1073741824.0
+    let mut hasher = DefaultHasher::new();
+    seed.hash(&mut hasher);
+    let hash = hasher.finish().to_be();
+    // XorShift seed mustn't be all-0.
+    let hash = if hash == 0 { 1 } else { hash };
+
+    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u32; 4]>([hash, hash]) };
+    XorShiftRng::from_seed(seed).gen()
 }
 
 /// A deciban unit log odds value.
@@ -87,13 +101,7 @@ where
 }
 
 /// Return the two arguments sorted to order.
-pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) {
-    if a < b {
-        (a, b)
-    } else {
-        (b, a)
-    }
-}
+pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) { if a < b { (a, b) } else { (b, a) } }
 
 // TODO: Remove this thing once Rust has a proper way of counting macro
 // arguments.
@@ -127,8 +135,9 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     where
         F: Fn(&Self::Item) -> f32,
     {
-        let (_, ret) = self.into_iter()
-            .fold((0.0, None), |(weight_sum, prev_item), item| {
+        let (_, ret) = self.into_iter().fold(
+            (0.0, None),
+            |(weight_sum, prev_item), item| {
                 let item_weight = weight_fn(&item);
                 debug_assert!(item_weight >= 0.0);
                 let p = item_weight / (weight_sum + item_weight);
@@ -138,7 +147,8 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
                     prev_item
                 };
                 (weight_sum + item_weight, next_item)
-            });
+            },
+        );
         ret
     }
 }
