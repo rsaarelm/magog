@@ -1,6 +1,6 @@
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
-use rand::{Rand, Rng};
+use rand::{Rand, Rng, XorShiftRng};
 use seeded_rng;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
@@ -26,7 +26,7 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 ///     assert_eq!(z, 746252712);
 ///     let z: u32 = calx::noise(&(34, 12));
 ///     assert_eq!(z, 926582979);
-pub fn noise<I: Hash, O: Rand>(seed: &I) -> O { seeded_rng(&seed).gen() }
+pub fn noise<I: Hash, O: Rand>(seed: &I) -> O { seeded_rng::<I, XorShiftRng>(&seed).gen() }
 
 /// A deciban unit log odds value.
 ///
