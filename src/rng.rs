@@ -1,8 +1,24 @@
 use Deciban;
-use rand::{Rng, SeedableRng};
+use rand::{Rng, SeedableRng, XorShiftRng};
 use serde;
+use std::hash::Hash;
 use std::mem;
 use vec_map::VecMap;
+
+/// Seed a RNG from any hashable value.
+pub fn seeded_rng<I: Hash>(seed: &I) -> XorShiftRng {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::Hasher;
+
+    let mut hasher = DefaultHasher::new();
+    seed.hash(&mut hasher);
+    let hash = hasher.finish().to_be();
+    // XorShift seed mustn't be all-0.
+    let hash = if hash == 0 { 1 } else { hash };
+
+    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u32; 4]>([hash, hash]) };
+    XorShiftRng::from_seed(seed)
+}
 
 /// Additional methods for random number generators.
 pub trait RngExt {

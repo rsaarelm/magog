@@ -1,6 +1,8 @@
+
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::{Rand, Rng};
+use seeded_rng;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
@@ -25,20 +27,7 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 ///     assert_eq!(z, 746252712);
 ///     let z: u32 = calx::noise(&(34, 12));
 ///     assert_eq!(z, 926582979);
-pub fn noise<I: Hash, O: Rand>(seed: &I) -> O {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::Hasher;
-    use rand::{SeedableRng, XorShiftRng};
-
-    let mut hasher = DefaultHasher::new();
-    seed.hash(&mut hasher);
-    let hash = hasher.finish().to_be();
-    // XorShift seed mustn't be all-0.
-    let hash = if hash == 0 { 1 } else { hash };
-
-    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u32; 4]>([hash, hash]) };
-    XorShiftRng::from_seed(seed).gen()
-}
+pub fn noise<I: Hash, O: Rand>(seed: &I) -> O { seeded_rng(&seed).gen() }
 
 /// A deciban unit log odds value.
 ///
