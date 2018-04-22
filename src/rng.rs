@@ -1,7 +1,5 @@
 use rand::{Rng, SeedableRng};
-use serde;
 use std::hash::Hash;
-use std::mem;
 use vec_map::VecMap;
 use Deciban;
 
@@ -9,7 +7,7 @@ use Deciban;
 pub fn seeded_rng<I, O>(seed: &I) -> O
 where
     I: Hash,
-    O: SeedableRng<[u32; 4]>,
+    O: SeedableRng<Seed = [u8; 16]>,
 {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::Hasher;
@@ -20,7 +18,7 @@ where
     // XorShift seed mustn't be all-0.
     let hash = if hash == 0 { 1 } else { hash };
 
-    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u32; 4]>([hash, hash]) };
+    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u8; 16]>([hash, hash]) };
     O::from_seed(seed)
 }
 
@@ -41,66 +39,13 @@ pub trait RngExt {
 }
 
 impl<T: Rng> RngExt for T {
-    fn coinflip(&mut self) -> bool { self.gen_weighted_bool(2) }
+    fn coinflip(&mut self) -> bool { self.gen_bool(1.0 / 2.0) }
 
-    fn one_chance_in(&mut self, n: u32) -> bool { self.gen_weighted_bool(n) }
+    fn one_chance_in(&mut self, n: u32) -> bool { self.gen_bool(1.0 / n as f64) }
 
     fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0, 1.0) < p }
 
     fn with_log_odds(&mut self, db: Deciban) -> bool { db > self.gen::<Deciban>() }
-}
-
-/// A wrapper that makes a Rng implementation encodable.
-///
-/// For games that want to store the current Rng state as a part of the save
-/// game. Works by casting the Rng representation into a binary blob, will
-/// crash and burn if the Rng struct is not plain-old-data.
-#[derive(Clone, Debug)]
-pub struct EncodeRng<T> {
-    inner: T,
-}
-
-impl<T: Rng + 'static> EncodeRng<T> {
-    pub fn new(inner: T) -> EncodeRng<T> { EncodeRng { inner: inner } }
-}
-
-impl<T: SeedableRng<S> + Rng + 'static, S> SeedableRng<S> for EncodeRng<T> {
-    fn reseed(&mut self, seed: S) { self.inner.reseed(seed); }
-
-    fn from_seed(seed: S) -> EncodeRng<T> { EncodeRng::new(SeedableRng::from_seed(seed)) }
-}
-
-impl<T: Rng> Rng for EncodeRng<T> {
-    fn next_u32(&mut self) -> u32 { self.inner.next_u32() }
-}
-
-impl<T: Rng + 'static> serde::Serialize for EncodeRng<T> {
-    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        let mut vec = Vec::new();
-        unsafe {
-            let view = self as *const _ as *const u8;
-            for i in 0..(mem::size_of::<T>()) {
-                vec.push(*view.offset(i as isize));
-            }
-        }
-        vec.serialize(s)
-    }
-}
-
-impl<'a, T: Rng + 'static> serde::Deserialize<'a> for EncodeRng<T> {
-    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
-        let blob: Vec<u8> = serde::Deserialize::deserialize(d)?;
-        unsafe {
-            if blob.len() == mem::size_of::<T>() {
-                Ok(EncodeRng::new(mem::transmute_copy(&blob[0])))
-            } else {
-                Err(serde::de::Error::invalid_length(
-                    blob.len(),
-                    &"Bad inner RNG length",
-                ))
-            }
-        }
-    }
 }
 
 /// Lazily evaluated random permutation.

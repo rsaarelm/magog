@@ -1,6 +1,7 @@
 use euclid::vec2;
 use num::Integer;
-use rand::{Rand, Rng};
+use rand::distributions::{Distribution, Standard};
+use rand::Rng;
 use std::cmp::max;
 use std::f32::consts::PI;
 use std::ops::{Add, Sub};
@@ -184,8 +185,8 @@ impl Sub<i32> for Dir6 {
     fn sub(self, other: i32) -> Dir6 { Dir6::from_int(self as i32 - other) }
 }
 
-impl Rand for Dir6 {
-    fn rand<R: Rng>(rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
+impl Distribution<Dir6> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
 impl From<Dir6> for CellVector {

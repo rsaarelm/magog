@@ -1,6 +1,7 @@
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
-use rand::{Rand, Rng, XorShiftRng};
+use rand::distributions::{Distribution, Standard, Uniform};
+use rand::{Rng, XorShiftRng};
 use seeded_rng;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
@@ -22,11 +23,29 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 ///
 /// # Examples
 ///
-///     let z: u32 = calx::noise(&(12, 34));
-///     assert_eq!(z, 746252712);
-///     let z: u32 = calx::noise(&(34, 12));
-///     assert_eq!(z, 926582979);
-pub fn noise<I: Hash, O: Rand>(seed: &I) -> O { seeded_rng::<I, XorShiftRng>(&seed).gen() }
+/// ```
+/// # extern crate rand;
+/// # extern crate calx;
+/// # fn main() {
+/// use rand::distributions::Uniform;
+/// use calx::Noise;
+///
+/// let depth = Uniform::new_inclusive(-1.0, 1.0);
+/// let z: f32 = depth.noise(&(12, 34));
+/// assert_eq!(z, -0.6524992);
+/// let z: f32 = depth.noise(&(34, 12));
+/// assert_eq!(z, -0.56852627);
+/// # }
+/// ```
+pub trait Noise<T> {
+    fn noise<I: Hash>(&self, seed: &I) -> T;
+}
+
+impl<T: Distribution<U>, U> Noise<U> for T {
+    fn noise<I: Hash>(&self, seed: &I) -> U {
+        self.sample(&mut seeded_rng::<I, XorShiftRng>(&seed))
+    }
+}
 
 /// A deciban unit log odds value.
 ///
@@ -47,10 +66,6 @@ pub fn noise<I: Hash, O: Rand>(seed: &I) -> O { seeded_rng::<I, XorShiftRng>(&se
 #[derive(Copy, Clone, PartialEq, PartialOrd, Default, Debug)]
 pub struct Deciban(pub f32);
 
-impl Rand for Deciban {
-    fn rand<R: Rng>(rng: &mut R) -> Self { Deciban::new(rng.next_f32()) }
-}
-
 impl Deciban {
     /// Build a deciban value from a probability in [0, 1).
     pub fn new(p: f32) -> Deciban {
@@ -60,6 +75,12 @@ impl Deciban {
 
     /// Convert a deciban value to the corresponding probability in [0, 1).
     pub fn to_p(self) -> f32 { 1.0 - 1.0 / (1.0 + 10.0.powf(self.0 / 10.0)) }
+}
+
+impl Distribution<Deciban> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ::Deciban {
+        Deciban::new(rng.gen_range(0.0, 1.0))
+    }
 }
 
 impl Add for Deciban {
@@ -182,12 +203,13 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     where
         F: Fn(&Self::Item) -> f32,
     {
+        let dist = Uniform::new(0.0, 1.0);
         let (_, ret) = self.into_iter()
             .fold((0.0, None), |(weight_sum, prev_item), item| {
                 let item_weight = weight_fn(&item);
                 debug_assert!(item_weight >= 0.0);
                 let p = item_weight / (weight_sum + item_weight);
-                let next_item = if rng.next_f32() < p {
+                let next_item = if dist.sample(rng) < p {
                     Some(item)
                 } else {
                     prev_item

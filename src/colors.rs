@@ -968,7 +968,9 @@ mod test {
         use super::{to_srgb, Rgba, SRgba};
         use rand::{Rng, SeedableRng, XorShiftRng};
 
-        let mut rng = XorShiftRng::from_seed([1, 2, 3, 4]);
+        let mut rng = XorShiftRng::from_seed(
+            unsafe { ::std::mem::transmute::<[u32; 4], [u8; 16]>([1, 2, 3, 4]) }
+        );
         for _ in 0..1000 {
             let sc = SRgba::rgb(rng.gen(), rng.gen(), rng.gen());
             let sluma = sc.luma();

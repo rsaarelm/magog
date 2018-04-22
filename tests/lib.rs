@@ -3,21 +3,8 @@ extern crate rand;
 extern crate serde_json;
 
 use calx::WeightedChoice;
-use rand::{Rng, SeedableRng, XorShiftRng};
+use rand::{Rng, XorShiftRng};
 use std::collections::HashMap;
-
-#[test]
-fn test_serialize_rng() {
-    use calx::EncodeRng;
-
-    let mut rng: EncodeRng<XorShiftRng> = SeedableRng::from_seed([1, 2, 3, 4]);
-
-    let saved = serde_json::to_string(&rng).expect("Serialization failed");
-    let mut rng2: EncodeRng<XorShiftRng> =
-        serde_json::from_str(&saved).expect("Deserialization failed");
-
-    assert_eq!(rng.next_u32(), rng2.next_u32());
-}
 
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx::split_line;
@@ -50,7 +37,7 @@ fn test_split_line() {
 #[test]
 fn test_weighted_choice() {
     let mut histogram: HashMap<u32, f32> = HashMap::new();
-    let mut rng: XorShiftRng = SeedableRng::from_seed([1, 2, 3, 4]);
+    let mut rng: XorShiftRng = calx::seeded_rng(&"1234");
     let items = vec![1u32, 2, 3, 4];
     let n = 1000;
 
@@ -114,7 +101,7 @@ fn test_retry_gen() {
     use calx::retry_gen;
 
     fn failing_gen<R: Rng>(rng: &mut R) -> Result<f32, ()> {
-        let x = rng.next_f32();
+        let x: f32 = rng.gen();
         if x < 0.1 {
             Ok(x)
         } else {
