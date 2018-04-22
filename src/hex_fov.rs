@@ -1,8 +1,8 @@
-use CellVector;
 use euclid::vec2;
 use fov::{Fov, PolarPoint};
 use hex::Dir6;
 use num::Integer;
+use CellVector;
 
 pub type HexFov<T> = Fov<HexPolarPoint, T>;
 
@@ -154,8 +154,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::{HexFov, HexFovIter};
     use super::CellVector;
+    use super::{HexFov, HexFovIter};
     use euclid::vec2;
     use fov::FovValue;
     use hex::HexGeom;

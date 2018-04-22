@@ -1,6 +1,6 @@
 use alg_misc::bounding_rect;
 use colors::{scolor, SRgba};
-use euclid::{TypedPoint2D, TypedVector2D, point2, vec2};
+use euclid::{point2, vec2, TypedPoint2D, TypedVector2D};
 use image::{self, Pixel};
 use num::Integer;
 use space::{CellSpace, CellVector, Space, Transformation};

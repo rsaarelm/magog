@@ -1,6 +1,6 @@
-use CellVector;
 ///! Generic field-of-view algorithm.
 use euclid::vec2;
+use CellVector;
 
 /// User data for field of view cells.
 pub trait FovValue: PartialEq + Clone {

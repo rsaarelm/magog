@@ -1,4 +1,3 @@
-use CellVector;
 use euclid::vec2;
 use num::Integer;
 use rand::{Rand, Rng};
@@ -6,6 +5,7 @@ use std::cmp::max;
 use std::f32::consts::PI;
 use std::ops::{Add, Sub};
 use std::slice;
+use CellVector;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
@@ -298,10 +298,10 @@ impl Dir12 {
 
 #[cfg(test)]
 mod test {
+    use super::hex_disc;
     use super::Dir12;
     use super::Dir6;
     use super::Dir6::*;
-    use super::hex_disc;
     use euclid::vec2;
 
     #[test]

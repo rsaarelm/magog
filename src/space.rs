@@ -1,4 +1,4 @@
-use euclid::{TypedVector2D, TypedVector3D, vec3};
+use euclid::{vec3, TypedVector2D, TypedVector3D};
 
 /// Unit tag for typed euclid structs.
 ///

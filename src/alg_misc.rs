@@ -1,4 +1,3 @@
-
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::{Rand, Rng};
@@ -90,7 +89,13 @@ where
 }
 
 /// Return the two arguments sorted to order.
-pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) { if a < b { (a, b) } else { (b, a) } }
+pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) {
+    if a < b {
+        (a, b)
+    } else {
+        (b, a)
+    }
+}
 
 // TODO: Remove this thing once Rust has a proper way of counting macro
 // arguments.
@@ -124,9 +129,8 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     where
         F: Fn(&Self::Item) -> f32,
     {
-        let (_, ret) = self.into_iter().fold(
-            (0.0, None),
-            |(weight_sum, prev_item), item| {
+        let (_, ret) = self.into_iter()
+            .fold((0.0, None), |(weight_sum, prev_item), item| {
                 let item_weight = weight_fn(&item);
                 debug_assert!(item_weight >= 0.0);
                 let p = item_weight / (weight_sum + item_weight);
@@ -136,8 +140,7 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
                     prev_item
                 };
                 (weight_sum + item_weight, next_item)
-            },
-        );
+            });
         ret
     }
 }

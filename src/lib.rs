@@ -25,15 +25,15 @@ mod system;
 mod text;
 mod timing;
 
-pub use alg_misc::{bounding_rect, clamp, lerp, noise, retry_gen, sorted_pair, Deciban,
-                   WeightedChoice, compact_bits_by_2, spread_bits_by_2};
+pub use alg_misc::{bounding_rect, clamp, compact_bits_by_2, lerp, noise, retry_gen, sorted_pair,
+                   spread_bits_by_2, Deciban, WeightedChoice};
 pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use legend_builder::LegendBuilder;
-pub use prefab::{IntoPrefab, FromPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace};
-pub use rng::{EncodeRng, IndependentSample, RandomPermutation, RngExt, SampleIterator, seeded_rng};
+pub use prefab::{FromPrefab, IntoPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace};
+pub use rng::{seeded_rng, EncodeRng, IndependentSample, RandomPermutation, RngExt, SampleIterator};
 pub use search::{astar_path, Dijkstra, GridNode};
 pub use space::{CellSpace, CellVector, Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};

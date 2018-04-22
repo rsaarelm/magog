@@ -1,9 +1,9 @@
-use Deciban;
 use rand::{Rng, SeedableRng, XorShiftRng};
 use serde;
 use std::hash::Hash;
 use std::mem;
 use vec_map::VecMap;
+use Deciban;
 
 /// Seed a RNG from any hashable value.
 pub fn seeded_rng<I: Hash>(seed: &I) -> XorShiftRng {
@@ -160,7 +160,8 @@ pub struct SampleIterator<'a, 'b, R: Rng + 'a, Support, S: IndependentSample<Sup
 }
 
 impl<'a, 'b, R: Rng + 'a, Support, S: IndependentSample<Support> + 'b> Iterator
-    for SampleIterator<'a, 'b, R, Support, S> {
+    for SampleIterator<'a, 'b, R, Support, S>
+{
     type Item = Support;
 
     fn next(&mut self) -> Option<Self::Item> { Some(self.sample.ind_sample(self.rng)) }
