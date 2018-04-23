@@ -29,6 +29,9 @@ pub struct SRgba {
 }
 
 impl SRgba {
+    /// Create new color with opaque alpha channel.
+    pub fn rgb(r: u8, g: u8, b: u8) -> SRgba { SRgba::new(r, g, b, 255) }
+
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba {
         SRgba {
             r: r,
@@ -36,6 +39,16 @@ impl SRgba {
             b: b,
             a: a,
         }
+    }
+
+    /// Return square of distance to other color
+    pub fn distance2(&self, other: &SRgba) -> i32 {
+        let x = self.r as i32 - other.r as i32;
+        let y = self.g as i32 - other.g as i32;
+        let z = self.b as i32 - other.b as i32;
+        let w = self.a as i32 - other.a as i32;
+
+        x * x + y * y + z * z + w * w
     }
 }
 
@@ -170,6 +183,93 @@ impl FromStr for SRgba {
         }
 
         Err(())
+    }
+}
+
+/// Xterm 256 color palette values
+///
+/// The values from 16 to 231 are RGB values with 6 steps per channel. The values from 232 to 255
+/// are a grayscale gradient. Only color values that have the exact same R, G and B components are guaranteed
+/// to use the grayscale area.
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub struct Xterm256Color(pub u8);
+
+impl From<Xterm256Color> for SRgba {
+    fn from(c: Xterm256Color) -> SRgba {
+        // XXX: This should really be a precalculated table...
+
+        // The first 16 are the EGA colors
+        if c.0 == 7 {
+            return SRgba::rgb(192, 192, 192);
+        } else if c.0 == 8 {
+            return SRgba::rgb(128, 128, 128);
+        } else if c.0 < 16 {
+            let i = if c.0 & 0b1000 != 0 { 255 } else { 128 };
+            let r = if c.0 & 0b1 != 0 { i } else { 0 };
+            let g = if c.0 & 0b10 != 0 { i } else { 0 };
+            let b = if c.0 & 0b100 != 0 { i } else { 0 };
+
+            return SRgba::rgb(r * i, g * i, b * i);
+        } else if c.0 < 232 {
+            fn channel(i: u8) -> u8 { i * 40 + if i > 0 { 55 } else { 0 } }
+            // 6^3 RGB space
+            let c = c.0 - 16;
+            let b = channel(c % 6);
+            let g = channel((c / 6) % 6);
+            let r = channel(c / 36);
+
+            return SRgba::rgb(r, g, b);
+        } else {
+            // 24 level grayscale slide
+            let c = c.0 - 232;
+            let c = 8 + 10 * c;
+            return SRgba::rgb(c, c, c);
+        }
+    }
+}
+
+impl From<SRgba> for Xterm256Color {
+    fn from(c: SRgba) -> Xterm256Color {
+        fn rgb_channel(c: u8) -> u8 {
+            if c < 48 {
+                return 0;
+            } else if c < 75 {
+                return 1;
+            } else {
+                return (c - 35) / 40;
+            }
+        }
+
+        fn gray_channel(c: u8) -> u8 {
+            if c < 13 {
+                return 0;
+            } else if c > 235 {
+                return 23;
+            } else {
+                return (c - 3) / 10;
+            }
+        }
+
+        let rgb_color = {
+            let r = rgb_channel(c.r);
+            let g = rgb_channel(c.g);
+            let b = rgb_channel(c.b);
+
+            Xterm256Color(16 + b + g * 6 + r * 36)
+        };
+
+        let gray_color = {
+            // XXX: This is a terrible way to turn any saturated color into grayscale. But unless
+            // your color is very gray to begin with, this approach will lose to the the RGB one.
+            let gray = ((c.r as u32 + c.g as u32 + c.b as u32) / 3) as u8;
+            Xterm256Color(232 + gray_channel(gray))
+        };
+
+        if c.distance2(&rgb_color.into()) < c.distance2(&gray_color.into()) {
+            rgb_color
+        } else {
+            gray_color
+        }
     }
 }
 
@@ -559,5 +659,15 @@ mod test {
         assert_eq!(0x00, SRgba::from_str("#000").unwrap().r);
         assert_eq!(0x22, SRgba::from_str("#200").unwrap().r);
         assert_eq!(0xFF, SRgba::from_str("#F00").unwrap().r);
+    }
+
+    #[test]
+    fn test_xterm256() {
+        use super::{SRgba, Xterm256Color};
+        for i in 16..256 {
+            let c = Xterm256Color(i as u8);
+            let rgb: SRgba = c.into();
+            assert_eq!(c, Xterm256Color::from(rgb));
+        }
     }
 }
