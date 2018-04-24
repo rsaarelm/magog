@@ -27,7 +27,7 @@ mod timing;
 
 pub use alg_misc::{bounding_rect, clamp, compact_bits_by_2, lerp, noise, retry_gen, sorted_pair,
                    spread_bits_by_2, Deciban, WeightedChoice};
-pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
+pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, Xterm256Color, NAMED_COLORS};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};

@@ -50,6 +50,10 @@ impl SRgba {
 
         x * x + y * y + z * z + w * w
     }
+
+    pub fn grayscale(&self) -> u8 {
+        (self.r as f32 * 0.2126 + self.g as f32 * 0.7152 + self.b as f32 * 0.0722) as u8
+    }
 }
 
 impl fmt::Display for SRgba {
@@ -230,6 +234,9 @@ impl From<Xterm256Color> for SRgba {
 
 impl From<SRgba> for Xterm256Color {
     fn from(c: SRgba) -> Xterm256Color {
+        // Never convert into the first 16 colors, the user may have configured those to have
+        // different RGB values.
+
         fn rgb_channel(c: u8) -> u8 {
             if c < 48 {
                 return 0;
@@ -259,8 +266,9 @@ impl From<SRgba> for Xterm256Color {
         };
 
         let gray_color = {
-            // XXX: This is a terrible way to turn any saturated color into grayscale. But unless
-            // your color is very gray to begin with, this approach will lose to the the RGB one.
+            // This is a terrible way to turn any saturated color into grayscale. But unless
+            // your color is very gray to begin with, the gray color will have a large error and
+            // will lose to the RGB color anyway.
             let gray = ((c.r as u32 + c.g as u32 + c.b as u32) / 3) as u8;
             Xterm256Color(232 + gray_channel(gray))
         };
