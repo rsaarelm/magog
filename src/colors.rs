@@ -42,7 +42,7 @@ impl SRgba {
     }
 
     /// Return square of distance to other color
-    pub fn distance2(&self, other: &SRgba) -> i32 {
+    fn distance2(&self, other: &SRgba) -> i32 {
         let x = self.r as i32 - other.r as i32;
         let y = self.g as i32 - other.g as i32;
         let z = self.b as i32 - other.b as i32;
@@ -51,8 +51,11 @@ impl SRgba {
         x * x + y * y + z * z + w * w
     }
 
-    pub fn grayscale(&self) -> u8 {
-        (self.r as f32 * 0.2126 + self.g as f32 * 0.7152 + self.b as f32 * 0.0722) as u8
+    pub fn luma(&self) -> u8 {
+        // This is faster, but doesn't quite match with linear RGB luma
+        //(self.r as f32 * 0.2126 + self.g as f32 * 0.7152 + self.b as f32 * 0.0722) as u8
+
+        (to_srgb(Rgba::from(*self).luma()) * 255.0).round() as u8
     }
 }
 
@@ -269,6 +272,8 @@ impl From<SRgba> for Xterm256Color {
             // This is a terrible way to turn any saturated color into grayscale. But unless
             // your color is very gray to begin with, the gray color will have a large error and
             // will lose to the RGB color anyway.
+            //
+            // Not using SRgba::luma because it involves much more work than this.
             let gray = ((c.r as u32 + c.g as u32 + c.b as u32) / 3) as u8;
             Xterm256Color(232 + gray_channel(gray))
         };
@@ -306,6 +311,8 @@ impl Rgba {
             a: a,
         }
     }
+
+    pub fn luma(&self) -> f32 { self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722 }
 
     /// Turn color to monochrome preserving brightness.
     pub fn to_monochrome(&self) -> Rgba {
@@ -350,6 +357,14 @@ impl From<u32> for Rgba {
 
 impl From<Rgba> for [f32; 4] {
     fn from(c: Rgba) -> [f32; 4] { [c.r, c.g, c.b, c.a] }
+}
+
+impl From<Xterm256Color> for Rgba {
+    fn from(c: Xterm256Color) -> Rgba { SRgba::from(c).into() }
+}
+
+impl From<Rgba> for Xterm256Color {
+    fn from(c: Rgba) -> Xterm256Color { SRgba::from(c).into() }
 }
 
 impl Add<Rgba> for Rgba {
@@ -676,6 +691,27 @@ mod test {
             let c = Xterm256Color(i as u8);
             let rgb: SRgba = c.into();
             assert_eq!(c, Xterm256Color::from(rgb));
+        }
+    }
+
+    #[test]
+    fn test_luma() {
+        // Test that luma values from corresponding sRGBA and RGBA are same.
+
+        use super::{to_srgb, Rgba, SRgba};
+        use rand::{Rng, SeedableRng, XorShiftRng};
+
+        let mut rng = XorShiftRng::from_seed([1, 2, 3, 4]);
+        for _ in 0..1000 {
+            let sc = SRgba::rgb(rng.gen(), rng.gen(), rng.gen());
+            let sluma = sc.luma();
+
+            let c = Rgba::from(sc);
+            let cluma = c.luma();
+            let csluma = (to_srgb(cluma) * 255.0).round() as u8;
+
+            assert_eq!(sluma, csluma);
+            assert_eq!(sc, SRgba::from(c));
         }
     }
 }
