@@ -139,32 +139,6 @@ where
     }
 }
 
-/// Variant of `LerpPath` where element positions are assigned by a function.
-pub struct LerpTrajectory<T, U, F> {
-    f: F,
-    path: LerpPath<T, U>,
-}
-
-impl<T, U, F> LerpTrajectory<T, U, F>
-where
-    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
-    T: PartialOrd + Sub<T, Output = T> + Div<T, Output = T> + Copy,
-    F: Fn(U) -> T,
-{
-    pub fn new(f: F, begin: U, end: U) -> LerpTrajectory<T, U, F> {
-        let begin_pos = f(begin);
-        let end_pos = f(end);
-
-        let path = LerpPath::new((begin_pos, begin), (end_pos, end));
-
-        LerpTrajectory { f, path }
-    }
-
-    pub fn add(&mut self, value: U) { self.path.add(((self.f)(value), value)); }
-
-    pub fn sample(&self, t: T) -> U { self.path.sample(t) }
-}
-
 /// Return the two arguments sorted to order.
 pub fn sorted_pair<T: PartialOrd>(a: T, b: T) -> (T, T) {
     if a < b {
