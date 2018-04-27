@@ -3,7 +3,7 @@ use num::{Float, One, Zero};
 use rand::{Rand, Rng, XorShiftRng};
 use seeded_rng;
 use std::hash::Hash;
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 /// Clamp a value to range.
 pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
@@ -86,6 +86,83 @@ where
     U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
 {
     a + (b - a) * t
+}
+
+/// Sequence of points for linearly interpolating between them.
+pub struct LerpPath<T, U> {
+    points: Vec<(T, U)>,
+}
+
+impl<T, U> LerpPath<T, U>
+where
+    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
+    T: PartialOrd + Sub<T, Output = T> + Div<T, Output = T> + Copy,
+{
+    pub fn new(begin: (T, U), end: (T, U)) -> LerpPath<T, U> {
+        let mut result = LerpPath {
+            points: vec![begin],
+        };
+        result.add(end);
+        result
+    }
+
+    pub fn add(&mut self, point: (T, U)) {
+        for i in 0..self.points.len() {
+            if point.0 == self.points[i].0 {
+                // Avoid zero width intervals or we'll get division by zero down the road, just
+                // replace the point if the position is exactly the same.
+                self.points[i] = point;
+                return;
+            }
+            if point.0 < self.points[i].0 {
+                self.points.insert(i, point);
+                return;
+            }
+        }
+
+        self.points.push(point);
+    }
+
+    pub fn sample(&self, t: T) -> U {
+        if t < self.points[0].0 {
+            return self.points[0].1;
+        }
+
+        for i in 1..self.points.len() {
+            if t < self.points[i].0 {
+                let scaled = (t - self.points[i - 1].0) / (self.points[i].0 - self.points[i - 1].0);
+                return lerp(self.points[i - 1].1, self.points[i].1, scaled);
+            }
+        }
+
+        self.points[self.points.len() - 1].1
+    }
+}
+
+/// Variant of `LerpPath` where element positions are assigned by a function.
+pub struct LerpTrajectory<T, U, F> {
+    f: F,
+    path: LerpPath<T, U>,
+}
+
+impl<T, U, F> LerpTrajectory<T, U, F>
+where
+    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
+    T: PartialOrd + Sub<T, Output = T> + Div<T, Output = T> + Copy,
+    F: Fn(U) -> T,
+{
+    pub fn new(f: F, begin: U, end: U) -> LerpTrajectory<T, U, F> {
+        let begin_pos = f(begin);
+        let end_pos = f(end);
+
+        let path = LerpPath::new((begin_pos, begin), (end_pos, end));
+
+        LerpTrajectory { f, path }
+    }
+
+    pub fn add(&mut self, value: U) { self.path.add(((self.f)(value), value)); }
+
+    pub fn sample(&self, t: T) -> U { self.path.sample(t) }
 }
 
 /// Return the two arguments sorted to order.
