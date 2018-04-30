@@ -81,9 +81,10 @@ impl SubAssign for Deciban {
 }
 
 /// Interpolate linearly between two values.
-pub fn lerp<T, U>(a: U, b: U, t: T) -> U
+pub fn lerp<T, U, V, W>(a: U, b: U, t: T) -> W
 where
-    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
+    U: Add<V, Output = W> + Sub<U, Output = V> + Copy,
+    V: Mul<T, Output = V>
 {
     a + (b - a) * t
 }
@@ -93,10 +94,11 @@ pub struct LerpPath<T, U> {
     points: Vec<(T, U)>,
 }
 
-impl<T, U> LerpPath<T, U>
+impl<T, U, V, W> LerpPath<T, U>
 where
-    U: Add<U, Output = U> + Sub<U, Output = U> + Mul<T, Output = U> + Copy,
-    T: PartialOrd + Sub<T, Output = T> + Div<T, Output = T> + Copy,
+    U: Add<V, Output = W> + Sub<U, Output = V> + Copy,
+    V: Mul<T, Output = V>,
+    T: PartialOrd + Sub<T, Output = T> + Div<T, Output = T> + Copy + Zero,
 {
     pub fn new(begin: (T, U), end: (T, U)) -> LerpPath<T, U> {
         let mut result = LerpPath {
@@ -123,9 +125,9 @@ where
         self.points.push(point);
     }
 
-    pub fn sample(&self, t: T) -> U {
+    pub fn sample(&self, t: T) -> W {
         if t < self.points[0].0 {
-            return self.points[0].1;
+            return lerp(self.points[0].1, self.points[0].1, T::zero());
         }
 
         for i in 1..self.points.len() {
@@ -135,7 +137,7 @@ where
             }
         }
 
-        self.points[self.points.len() - 1].1
+        lerp(self.points[self.points.len() - 1].1, self.points[self.points.len() - 1].1, T::zero())
     }
 }
 

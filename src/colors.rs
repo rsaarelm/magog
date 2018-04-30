@@ -193,99 +193,6 @@ impl FromStr for SRgba {
     }
 }
 
-/// Xterm 256 color palette values
-///
-/// The values from 16 to 231 are RGB values with 6 steps per channel. The values from 232 to 255
-/// are a grayscale gradient. Only color values that have the exact same R, G and B components are guaranteed
-/// to use the grayscale area.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
-pub struct Xterm256Color(pub u8);
-
-impl From<Xterm256Color> for SRgba {
-    fn from(c: Xterm256Color) -> SRgba {
-        // XXX: This should really be a precalculated table...
-
-        // The first 16 are the EGA colors
-        if c.0 == 7 {
-            return SRgba::rgb(192, 192, 192);
-        } else if c.0 == 8 {
-            return SRgba::rgb(128, 128, 128);
-        } else if c.0 < 16 {
-            let i = if c.0 & 0b1000 != 0 { 255 } else { 128 };
-            let r = if c.0 & 0b1 != 0 { i } else { 0 };
-            let g = if c.0 & 0b10 != 0 { i } else { 0 };
-            let b = if c.0 & 0b100 != 0 { i } else { 0 };
-
-            return SRgba::rgb(r * i, g * i, b * i);
-        } else if c.0 < 232 {
-            fn channel(i: u8) -> u8 { i * 40 + if i > 0 { 55 } else { 0 } }
-            // 6^3 RGB space
-            let c = c.0 - 16;
-            let b = channel(c % 6);
-            let g = channel((c / 6) % 6);
-            let r = channel(c / 36);
-
-            return SRgba::rgb(r, g, b);
-        } else {
-            // 24 level grayscale slide
-            let c = c.0 - 232;
-            let c = 8 + 10 * c;
-            return SRgba::rgb(c, c, c);
-        }
-    }
-}
-
-impl From<SRgba> for Xterm256Color {
-    fn from(c: SRgba) -> Xterm256Color {
-        // Never convert into the first 16 colors, the user may have configured those to have
-        // different RGB values.
-
-        fn rgb_channel(c: u8) -> u8 {
-            if c < 48 {
-                return 0;
-            } else if c < 75 {
-                return 1;
-            } else {
-                return (c - 35) / 40;
-            }
-        }
-
-        fn gray_channel(c: u8) -> u8 {
-            if c < 13 {
-                return 0;
-            } else if c > 235 {
-                return 23;
-            } else {
-                return (c - 3) / 10;
-            }
-        }
-
-        let rgb_color = {
-            let r = rgb_channel(c.r);
-            let g = rgb_channel(c.g);
-            let b = rgb_channel(c.b);
-
-            Xterm256Color(16 + b + g * 6 + r * 36)
-        };
-
-        let gray_color = {
-            // This is a terrible way to turn any saturated color into grayscale. But unless
-            // your color is very gray to begin with, the gray color will have a large error and
-            // will lose to the RGB color anyway.
-            //
-            // Not using SRgba::luma because it involves much more work than this.
-            let gray = ((c.r as u32 + c.g as u32 + c.b as u32) / 3) as u8;
-            Xterm256Color(232 + gray_channel(gray))
-        };
-
-        if c.distance2(&rgb_color.into()) < c.distance2(&gray_color.into()) {
-            rgb_color
-        } else {
-            gray_color
-        }
-    }
-}
-
 /// Color in linear color space.
 ///
 /// This is the canonical color representation that the rendering engine
@@ -625,6 +532,326 @@ color_constants! {
     WHITESMOKE           = ([0xF5, 0xF5, 0xF5], [0.9131, 0.9131, 0.9131]),
     YELLOW               = ([0xFF, 0xFF, 0x00], [1.0, 1.0, 0.0]),
     YELLOWGREEN          = ([0x9A, 0xCD, 0x32], [0.3231, 0.6105, 0.0319]),
+}
+
+/// Base terminal color, no bright colors allowed.
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub enum BaseTermColor {
+    Black,
+    Red,
+    Green,
+    Brown,
+    Blue,
+    Magenta,
+    Cyan,
+    Gray,
+}
+
+impl From<BaseTermColor> for u32 {
+    fn from(t: BaseTermColor) -> u32 { t as u32 }
+}
+
+impl From<BaseTermColor> for SRgba {
+    fn from(t: BaseTermColor) -> SRgba { SRgba::from(Xterm256Color(t as u8)) }
+}
+
+/// Terminal color, include both dark and bright colors.
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub struct TermColor {
+    base: BaseTermColor,
+    high: bool,
+}
+
+/// Helper structure that enables using lerp on Term colors.
+pub struct TermColorInterpolator(TermColor, f32);
+
+impl Sub for TermColor {
+    type Output = TermColorInterpolator;
+
+    fn sub(self, _other: TermColor) -> TermColorInterpolator {
+        // This is just a hack to make TermColor work with lerp, so throw away the other color here
+        // and make this a thing going towards self-color from anything this is added to later.
+        TermColorInterpolator(self, 1.0)
+    }
+}
+
+impl Mul<f32> for TermColorInterpolator {
+    type Output = TermColorInterpolator;
+
+    fn mul(mut self, c: f32) -> TermColorInterpolator {
+        self.1 *= c;
+        self
+    }
+}
+
+impl Add<TermColorInterpolator> for TermColor {
+    type Output = PseudoTermColor;
+
+    fn add(self, other: TermColorInterpolator) -> PseudoTermColor { self.lerp(&other.0, other.1) }
+}
+
+impl From<TermColor> for u32 {
+    fn from(t: TermColor) -> u32 { t.base as u32 + if t.high { 8 } else { 0 } }
+}
+
+impl From<TermColor> for SRgba {
+    fn from(t: TermColor) -> SRgba { SRgba::from(Xterm256Color(u32::from(t) as u8)) }
+}
+
+impl TermColor {
+    /// Linearly interpolate between two terminal colors.
+    ///
+    /// Return a gradient pseudocolor value. This can be printed using the unicode gradient
+    /// characters and the specified terminal colors.
+    pub fn lerp(&self, other: &TermColor, x: f32) -> PseudoTermColor {
+        if self.high {
+            // Cannot use self as background color.
+            if !other.high {
+                // But can use the other one, just invert the lerp.
+                other.lerp(self, 1.0 - x)
+            } else {
+                // Otherwise just do a hard switch at 50 %, can't gradient.
+                if x < 0.5 {
+                    PseudoTermColor::Solid(*self)
+                } else {
+                    PseudoTermColor::Solid(*other)
+                }
+            }
+        } else {
+            if x < 0.125 {
+                PseudoTermColor::Solid(*self)
+            } else if x < 0.375 {
+                PseudoTermColor::Mixed {
+                    fore: *other,
+                    back: self.base,
+                    mix: ColorMix::Mix25,
+                }
+            } else if x < 0.625 {
+                PseudoTermColor::Mixed {
+                    fore: *other,
+                    back: self.base,
+                    mix: ColorMix::Mix50,
+                }
+            } else if x < 0.875 {
+                PseudoTermColor::Mixed {
+                    fore: *other,
+                    back: self.base,
+                    mix: ColorMix::Mix75,
+                }
+            } else {
+                PseudoTermColor::Solid(*other)
+            }
+        }
+    }
+}
+
+/// Terminal pseudocolor using background and foreground colors.
+///
+/// Background color must be `BaseColor`. It's assumed that the partial mixes are implemented with
+/// the unicode ░▒▓█ gradient characters.
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub enum PseudoTermColor {
+    Mixed {
+        fore: TermColor,
+        back: BaseTermColor,
+        mix: ColorMix,
+    },
+    Solid(TermColor),
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub enum ColorMix {
+    Mix25,
+    Mix50,
+    Mix75,
+}
+
+impl PseudoTermColor {
+    /// Return the halftone character for this pseudocolor.
+    pub fn c(self) -> char {
+        match self {
+            PseudoTermColor::Mixed {
+                fore: _,
+                back: _,
+                mix: ColorMix::Mix25,
+            } => '░',
+            PseudoTermColor::Mixed {
+                fore: _,
+                back: _,
+                mix: ColorMix::Mix50,
+            } => '▒',
+            PseudoTermColor::Mixed {
+                fore: _,
+                back: _,
+                mix: ColorMix::Mix75,
+            } => '▓',
+            PseudoTermColor::Solid(_) => '█',
+        }
+    }
+}
+
+/// Standard 16 terminal colors.
+pub mod term_color {
+    use super::BaseTermColor::*;
+    use super::TermColor;
+
+    pub const BLACK: TermColor = TermColor {
+        base: Black,
+        high: false,
+    };
+    pub const NAVY: TermColor = TermColor {
+        base: Blue,
+        high: false,
+    };
+    pub const GREEN: TermColor = TermColor {
+        base: Green,
+        high: false,
+    };
+    pub const TEAL: TermColor = TermColor {
+        base: Cyan,
+        high: false,
+    };
+    pub const MAROON: TermColor = TermColor {
+        base: Red,
+        high: false,
+    };
+    pub const PURPLE: TermColor = TermColor {
+        base: Magenta,
+        high: false,
+    };
+    pub const OLIVE: TermColor = TermColor {
+        base: Brown,
+        high: false,
+    };
+    pub const SILVER: TermColor = TermColor {
+        base: Gray,
+        high: false,
+    };
+    pub const GRAY: TermColor = TermColor {
+        base: Black,
+        high: true,
+    };
+    pub const BLUE: TermColor = TermColor {
+        base: Blue,
+        high: true,
+    };
+    pub const LIME: TermColor = TermColor {
+        base: Green,
+        high: true,
+    };
+    pub const AQUA: TermColor = TermColor {
+        base: Cyan,
+        high: true,
+    };
+    pub const RED: TermColor = TermColor {
+        base: Red,
+        high: true,
+    };
+    pub const FUCHSIA: TermColor = TermColor {
+        base: Magenta,
+        high: true,
+    };
+    pub const YELLOW: TermColor = TermColor {
+        base: Brown,
+        high: true,
+    };
+    pub const WHITE: TermColor = TermColor {
+        base: Gray,
+        high: true,
+    };
+}
+
+/// Xterm 256 color palette values
+///
+/// The values from 16 to 231 are RGB values with 6 steps per channel. The values from 232 to 255
+/// are a grayscale gradient. Only color values that have the exact same R, G and B components are guaranteed
+/// to use the grayscale area.
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+pub struct Xterm256Color(pub u8);
+
+impl From<Xterm256Color> for SRgba {
+    fn from(c: Xterm256Color) -> SRgba {
+        // XXX: This should really be a precalculated table...
+
+        // The first 16 are the EGA colors
+        if c.0 == 7 {
+            return SRgba::rgb(192, 192, 192);
+        } else if c.0 == 8 {
+            return SRgba::rgb(128, 128, 128);
+        } else if c.0 < 16 {
+            let i = if c.0 & 0b1000 != 0 { 255 } else { 128 };
+            let r = if c.0 & 0b1 != 0 { i } else { 0 };
+            let g = if c.0 & 0b10 != 0 { i } else { 0 };
+            let b = if c.0 & 0b100 != 0 { i } else { 0 };
+
+            return SRgba::rgb(r * i, g * i, b * i);
+        } else if c.0 < 232 {
+            fn channel(i: u8) -> u8 { i * 40 + if i > 0 { 55 } else { 0 } }
+            // 6^3 RGB space
+            let c = c.0 - 16;
+            let b = channel(c % 6);
+            let g = channel((c / 6) % 6);
+            let r = channel(c / 36);
+
+            return SRgba::rgb(r, g, b);
+        } else {
+            // 24 level grayscale slide
+            let c = c.0 - 232;
+            let c = 8 + 10 * c;
+            return SRgba::rgb(c, c, c);
+        }
+    }
+}
+
+impl From<SRgba> for Xterm256Color {
+    fn from(c: SRgba) -> Xterm256Color {
+        // Never convert into the first 16 colors, the user may have configured those to have
+        // different RGB values.
+
+        fn rgb_channel(c: u8) -> u8 {
+            if c < 48 {
+                return 0;
+            } else if c < 75 {
+                return 1;
+            } else {
+                return (c - 35) / 40;
+            }
+        }
+
+        fn gray_channel(c: u8) -> u8 {
+            if c < 13 {
+                return 0;
+            } else if c > 235 {
+                return 23;
+            } else {
+                return (c - 3) / 10;
+            }
+        }
+
+        let rgb_color = {
+            let r = rgb_channel(c.r);
+            let g = rgb_channel(c.g);
+            let b = rgb_channel(c.b);
+
+            Xterm256Color(16 + b + g * 6 + r * 36)
+        };
+
+        let gray_color = {
+            // This is a terrible way to turn any saturated color into grayscale. But unless
+            // your color is very gray to begin with, the gray color will have a large error and
+            // will lose to the RGB color anyway.
+            //
+            // Not using SRgba::luma because it involves much more work than this.
+            let gray = ((c.r as u32 + c.g as u32 + c.b as u32) / 3) as u8;
+            Xterm256Color(232 + gray_channel(gray))
+        };
+
+        if c.distance2(&rgb_color.into()) < c.distance2(&gray_color.into()) {
+            rgb_color
+        } else {
+            gray_color
+        }
+    }
 }
 
 #[cfg(test)]
