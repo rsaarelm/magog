@@ -540,11 +540,11 @@ pub enum BaseTermColor {
     Black,
     Red,
     Green,
-    Brown,
+    Yellow,
     Blue,
     Magenta,
     Cyan,
-    Gray,
+    White,
 }
 
 impl From<BaseTermColor> for u32 {
@@ -558,8 +558,8 @@ impl From<BaseTermColor> for SRgba {
 /// Terminal color, include both dark and bright colors.
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct TermColor {
-    base: BaseTermColor,
-    high: bool,
+    pub base: BaseTermColor,
+    pub is_bright: bool,
 }
 
 /// Helper structure that enables using lerp on Term colors.
@@ -591,7 +591,7 @@ impl Add<TermColorInterpolator> for TermColor {
 }
 
 impl From<TermColor> for u32 {
-    fn from(t: TermColor) -> u32 { t.base as u32 + if t.high { 8 } else { 0 } }
+    fn from(t: TermColor) -> u32 { t.base as u32 + if t.is_bright { 8 } else { 0 } }
 }
 
 impl From<TermColor> for SRgba {
@@ -604,9 +604,9 @@ impl TermColor {
     /// Return a gradient pseudocolor value. This can be printed using the unicode gradient
     /// characters and the specified terminal colors.
     pub fn lerp(&self, other: &TermColor, x: f32) -> PseudoTermColor {
-        if self.high {
+        if self.is_bright {
             // Cannot use self as background color.
-            if !other.high {
+            if !other.is_bright {
                 // But can use the other one, just invert the lerp.
                 other.lerp(self, 1.0 - x)
             } else {
@@ -626,11 +626,17 @@ impl TermColor {
                     back: self.base,
                     mix: ColorMix::Mix25,
                 }
+            } else if x < 0.5 {
+                PseudoTermColor::Mixed {
+                    fore: *other,
+                    back: self.base,
+                    mix: ColorMix::Mix50Low,
+                }
             } else if x < 0.625 {
                 PseudoTermColor::Mixed {
                     fore: *other,
                     back: self.base,
-                    mix: ColorMix::Mix50,
+                    mix: ColorMix::Mix50High,
                 }
             } else if x < 0.875 {
                 PseudoTermColor::Mixed {
@@ -662,13 +668,14 @@ pub enum PseudoTermColor {
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub enum ColorMix {
     Mix25,
-    Mix50,
+    Mix50Low,
+    Mix50High,
     Mix75,
 }
 
 impl PseudoTermColor {
     /// Return the halftone character for this pseudocolor.
-    pub fn c(self) -> char {
+    pub fn ch(self) -> char {
         match self {
             PseudoTermColor::Mixed {
                 fore: _,
@@ -678,14 +685,47 @@ impl PseudoTermColor {
             PseudoTermColor::Mixed {
                 fore: _,
                 back: _,
-                mix: ColorMix::Mix50,
-            } => '▒',
+                mix: ColorMix::Mix75,
+            } => '▓',
             PseudoTermColor::Mixed {
                 fore: _,
                 back: _,
-                mix: ColorMix::Mix75,
-            } => '▓',
+                mix: _,
+            } => '▒',
             PseudoTermColor::Solid(_) => '█',
+        }
+    }
+
+    /// Return the closest color to this pseudocolor.
+    pub fn color(self) -> TermColor {
+        match self {
+            PseudoTermColor::Mixed {
+                fore: _,
+                back: base,
+                mix: ColorMix::Mix25,
+            } => TermColor {
+                base,
+                is_bright: false,
+            },
+            PseudoTermColor::Mixed {
+                fore: _,
+                back: base,
+                mix: ColorMix::Mix50Low,
+            } => TermColor {
+                base,
+                is_bright: false,
+            },
+            PseudoTermColor::Mixed {
+                fore: c,
+                back: _,
+                mix: ColorMix::Mix50High,
+            } => c,
+            PseudoTermColor::Mixed {
+                fore: c,
+                back: _,
+                mix: ColorMix::Mix75,
+            } => c,
+            PseudoTermColor::Solid(c) => c,
         }
     }
 }
@@ -697,67 +737,67 @@ pub mod term_color {
 
     pub const BLACK: TermColor = TermColor {
         base: Black,
-        high: false,
+        is_bright: false,
     };
     pub const NAVY: TermColor = TermColor {
         base: Blue,
-        high: false,
+        is_bright: false,
     };
     pub const GREEN: TermColor = TermColor {
         base: Green,
-        high: false,
+        is_bright: false,
     };
     pub const TEAL: TermColor = TermColor {
         base: Cyan,
-        high: false,
+        is_bright: false,
     };
     pub const MAROON: TermColor = TermColor {
         base: Red,
-        high: false,
+        is_bright: false,
     };
     pub const PURPLE: TermColor = TermColor {
         base: Magenta,
-        high: false,
+        is_bright: false,
     };
     pub const OLIVE: TermColor = TermColor {
-        base: Brown,
-        high: false,
+        base: Yellow,
+        is_bright: false,
     };
     pub const SILVER: TermColor = TermColor {
-        base: Gray,
-        high: false,
+        base: White,
+        is_bright: false,
     };
     pub const GRAY: TermColor = TermColor {
         base: Black,
-        high: true,
+        is_bright: true,
     };
     pub const BLUE: TermColor = TermColor {
         base: Blue,
-        high: true,
+        is_bright: true,
     };
     pub const LIME: TermColor = TermColor {
         base: Green,
-        high: true,
+        is_bright: true,
     };
     pub const AQUA: TermColor = TermColor {
         base: Cyan,
-        high: true,
+        is_bright: true,
     };
     pub const RED: TermColor = TermColor {
         base: Red,
-        high: true,
+        is_bright: true,
     };
     pub const FUCHSIA: TermColor = TermColor {
         base: Magenta,
-        high: true,
+        is_bright: true,
     };
     pub const YELLOW: TermColor = TermColor {
-        base: Brown,
-        high: true,
+        base: Yellow,
+        is_bright: true,
     };
     pub const WHITE: TermColor = TermColor {
-        base: Gray,
-        high: true,
+        base: White,
+        is_bright: true,
     };
 }
 

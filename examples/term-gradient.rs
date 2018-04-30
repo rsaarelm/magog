@@ -20,7 +20,7 @@ fn print(t: &mut Box<term::StdoutTerminal>, c: PseudoTermColor) {
     if fg > 8 {
         t.attr(term::Attr::Bold).unwrap();
     }
-    print!("{}", c.c());
+    print!("{}", c.ch());
 }
 
 fn main() {
