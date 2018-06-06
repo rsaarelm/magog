@@ -32,8 +32,8 @@ impl Coloring {
         fn darken(c: f32, col: Rgba) -> Rgba {
             Rgba::new(
                 col.r * c,
-                col.g * lerp(0.2, 1.0, c),
-                col.b * lerp(0.4, 1.0, c),
+                col.g * lerp(0.2f32, 1.0f32, c),
+                col.b * lerp(0.4f32, 1.0f32, c),
                 col.a,
             )
         }

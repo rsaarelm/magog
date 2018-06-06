@@ -98,7 +98,7 @@ impl Location {
     /// A pseudorandom value in [-1.0, 1.0] corresponding to this specific location.
     ///
     /// Is always the same for the same `Location`.
-    pub fn noise(&self) -> f32 { noise(self.x as i32 + self.y as i32 * 59 + self.z as i32 * 919) }
+    pub fn noise(&self) -> f32 { noise(self) }
 
     /// Offset location and follow any portals in target site.
     pub fn jump<T: TerrainQuery, V: Into<CellVector> + Sized>(

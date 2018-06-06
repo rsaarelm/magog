@@ -13,7 +13,7 @@ members = ["world", "display"]
 rand = "0.4"
 euclid = "0.17"
 time = "0.1"
-glium = "0.20"
+glium = "0.21"
 scancode = "0.1"
 serde = "1.0"
 calx-ecs = "0.6"
@@ -23,6 +23,6 @@ world = { path = "world" }
 display = { path = "display" }
 
 [dev-dependencies]
-image = "0.18"
+image = "0.19"
 structopt = "0.2"
 structopt-derive = "0.2"
