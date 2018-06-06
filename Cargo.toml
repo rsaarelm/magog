@@ -11,8 +11,8 @@ repository = "https://github.com/rsaarelm/vitral"
 euclid = "0.17"
 time = "0.1"
 
-image = { version = "0.18", optional = true }
-glium = { version = "0.20", optional = true }
+image = { version = "0.19", optional = true }
+glium = { version = "0.21", optional = true }
 
 [features]
 default = ["image"]
