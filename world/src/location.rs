@@ -1,5 +1,4 @@
-use calx::{compact_bits_by_2, hex_neighbors, noise, spread_bits_by_2, CellVector, Dir6, GridNode,
-           HexGeom};
+use calx::{compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom};
 use euclid::vec2;
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
@@ -94,11 +93,6 @@ impl Location {
             None
         }
     }
-
-    /// A pseudorandom value in [-1.0, 1.0] corresponding to this specific location.
-    ///
-    /// Is always the same for the same `Location`.
-    pub fn noise(&self) -> f32 { noise(self) }
 
     /// Offset location and follow any portals in target site.
     pub fn jump<T: TerrainQuery, V: Into<CellVector> + Sized>(

@@ -7,7 +7,8 @@ use event::Event;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use query::Query;
-use rand::{seq, Rand};
+use rand::distributions::Standard;
+use rand::{seq, Rng};
 use spec;
 use terraform::Terraform;
 use volume::Volume;
@@ -230,7 +231,7 @@ pub trait Mutate: Query + Terraform + Sized {
         }
 
         if self.rng().one_chance_in(CONFUSE_CHANCE_ONE_IN) {
-            let dir = Dir6::rand(self.rng());
+            let dir = self.rng().gen();
             let loc = if let Some(loc) = self.location(e) {
                 loc
             } else {

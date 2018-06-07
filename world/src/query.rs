@@ -1,10 +1,11 @@
-use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom};
+use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom, Noise};
 use calx_ecs::Entity;
 use components::{Alignment, BrainState, Icon, Status};
 use euclid::vec2;
 use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
 use location::Location;
+use rand::distributions::Uniform;
 use stats;
 use stats::Intrinsic;
 use std::collections::{HashSet, VecDeque};
@@ -353,7 +354,7 @@ pub trait Query: TerrainQuery + Sized {
         }
 
         // TODO: Might want a more generic method of specifying cosmetic terrain variants.
-        if t == Grass && loc.noise() > 0.85 {
+        if t == Grass && Uniform::new_inclusive(0.0, 1.0).noise(&loc) > 0.95 {
             // Grass is occasionally fancy.
             t = Grass2;
         }

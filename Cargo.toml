@@ -10,7 +10,7 @@ license = "GPL3"
 members = ["world", "display"]
 
 [dependencies]
-rand = "0.4"
+rand = { version = "0.5", features = ["serde1"] }
 euclid = "0.17"
 time = "0.1"
 glium = "0.21"

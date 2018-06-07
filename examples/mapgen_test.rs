@@ -4,8 +4,8 @@ extern crate calx;
 extern crate rand;
 extern crate world;
 
-use calx::{CellVector, FromPrefab};
-use rand::{Rng, SeedableRng};
+use calx::{seeded_rng, CellVector, FromPrefab};
+use rand::Rng;
 use std::collections::HashMap;
 use std::env;
 use std::fmt::Write;
@@ -88,7 +88,7 @@ fn main() {
         rand::thread_rng().gen()
     };
     println!("Seed: {}", seed);
-    let mut rng = rand::XorShiftRng::from_seed([seed, seed, seed, seed]);
+    let mut rng = seeded_rng(&seed);
 
     let mut map = TestMap::new();
 

@@ -1,9 +1,10 @@
-use calx::{hex_neighbors, CellVector, Dijkstra, IntoPrefab, SRgba};
+use calx::{hex_neighbors, seeded_rng, CellVector, Dijkstra, IntoPrefab, SRgba};
 use euclid::{point2, vec2};
 use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
 use mapgen::{self, MapGen, Size2D, Vault, VaultCell};
-use rand::{seq, Rand, Rng, SeedableRng};
+use rand::distributions::{Distribution, Standard};
+use rand::{seq, Rng};
 use serde;
 use spec;
 use std::collections::{BTreeSet, HashMap};
@@ -33,7 +34,7 @@ impl Worldgen {
             player_entry: Location::new(0, 0, 0),
         };
 
-        let mut rng: ::Rng = SeedableRng::from_seed([seed, seed, seed, seed]);
+        let mut rng = seeded_rng(&seed);
 
         let mut cave_entrance = Location::new(0, 0, 0);
         for depth in 1..11 {
@@ -399,8 +400,8 @@ impl mapgen::Vault for Room {
     }
 }
 
-impl Rand for Room {
-    fn rand<R: Rng>(rng: &mut R) -> Self {
+impl Distribution<Room> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Room {
         Room {
             size: Size2D::new(rng.gen_range(2, 8), rng.gen_range(2, 8)),
         }

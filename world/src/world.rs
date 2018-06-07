@@ -1,4 +1,4 @@
-use calx::{HexFov, HexFovIter};
+use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
 use command::{Command, CommandResult};
 use components;
@@ -63,7 +63,7 @@ impl<'a> World {
             worldgen: Worldgen::new(seed),
             spatial: Spatial::new(),
             flags: Flags::new(),
-            rng: SeedableRng::from_seed([seed, seed, seed, seed]),
+            rng: seeded_rng(&seed),
             events: Vec::new(),
         };
 

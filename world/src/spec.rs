@@ -1,4 +1,4 @@
-use calx::WeightedChoice;
+use calx::{seeded_rng, WeightedChoice};
 use components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use item::ItemType;
 use rand::Rng;
@@ -292,10 +292,7 @@ pub fn named<R: Rng>(rng: &mut R, name: &str) -> Option<Loadout> {
     None
 }
 
-pub fn is_named(name: &str) -> bool {
-    use rand::StdRng;
-    named(&mut StdRng::new().unwrap(), name).is_some()
-}
+pub fn is_named(name: &str) -> bool { named(&mut seeded_rng(&0), name).is_some() }
 
 // Helpers for data conciseness.
 

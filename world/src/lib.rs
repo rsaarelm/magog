@@ -172,7 +172,7 @@ pub enum FovStatus {
     Remembered,
 }
 
-pub type Rng = calx::EncodeRng<rand::XorShiftRng>;
+pub type Rng = rand::XorShiftRng;
 
 /// The combat formula.
 ///
