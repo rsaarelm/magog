@@ -105,7 +105,7 @@ impl SubAssign for Deciban {
 pub fn lerp<T, U, V, W>(a: U, b: U, t: T) -> W
 where
     U: Add<V, Output = W> + Sub<U, Output = V> + Copy,
-    V: Mul<T, Output = V>
+    V: Mul<T, Output = V>,
 {
     a + (b - a) * t
 }
@@ -158,7 +158,11 @@ where
             }
         }
 
-        lerp(self.points[self.points.len() - 1].1, self.points[self.points.len() - 1].1, T::zero())
+        lerp(
+            self.points[self.points.len() - 1].1,
+            self.points[self.points.len() - 1].1,
+            T::zero(),
+        )
     }
 }
 
