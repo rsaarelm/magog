@@ -41,8 +41,10 @@ enum Command {
         output: String,
     },
 
-    #[structopt(name = "convert",
-                help = "Convert map from one projection to another and normalize the checkerboard pattern")]
+    #[structopt(
+        name = "convert",
+        help = "Convert map from one projection to another and normalize the checkerboard pattern"
+    )]
     Convert {
         #[structopt(long = "input-minimap", help = "Input file has minimap projection")]
         input_minimap: bool,

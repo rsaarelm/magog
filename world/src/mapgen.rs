@@ -4,7 +4,7 @@
 
 use calx::{self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, IntoPrefab,
            RngExt, WeightedChoice};
-use euclid::{self, TypedRect, vec2};
+use euclid::{self, vec2, TypedRect};
 use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
 use std::collections::{BTreeSet, HashMap};

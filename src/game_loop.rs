@@ -1,5 +1,5 @@
-use calx::{color, Rgba};
 use calx::Dir6;
+use calx::{color, Rgba};
 use display::{self, Backend, Core};
 use euclid::{Point2D, Rect};
 use glium::glutin::ElementState;

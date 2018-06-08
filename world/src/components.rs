@@ -1,10 +1,10 @@
-use FovStatus;
 use calx_ecs::Entity;
 use item::ItemType;
 use location::Location;
 use location_set::LocationSet;
 use stats::Stats;
 use std::collections::BTreeMap;
+use FovStatus;
 
 /// The visual representation for an entity
 ///

@@ -1,11 +1,11 @@
-use SubImageSpec;
 use cache;
-use calx::Rgba;
 use calx::color::*;
-use euclid::{rect, Rect, Vector2D, vec2};
+use calx::Rgba;
+use euclid::{rect, vec2, Rect, Vector2D};
 use std::fmt;
 use std::rc::Rc;
 use vitral::ImageData;
+use SubImageSpec;
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]

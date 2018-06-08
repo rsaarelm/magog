@@ -1,5 +1,5 @@
-use calx::{hex_neighbors, noise, CellVector, Dir6, GridNode, HexGeom, compact_bits_by_2,
-           spread_bits_by_2};
+use calx::{compact_bits_by_2, hex_neighbors, noise, spread_bits_by_2, CellVector, Dir6, GridNode,
+           HexGeom};
 use euclid::vec2;
 use std::num::Wrapping;
 use std::ops::{Add, Sub};

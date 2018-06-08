@@ -2,8 +2,8 @@ use cache;
 use euclid::Point2D;
 use glium;
 use std::error::Error;
-use vitral::{self, glium_backend, Color};
 pub use vitral::glium_backend::KeyEvent;
+use vitral::{self, glium_backend, Color};
 
 pub type Core = vitral::Core<Vertex>;
 

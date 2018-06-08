@@ -1,4 +1,3 @@
-use Core;
 use calx::split_line;
 use euclid::{Point2D, Rect};
 use std::io;
@@ -8,6 +7,7 @@ use std::rc::Rc;
 use std::str;
 use time;
 use vitral::{Align, FontData};
+use Core;
 
 struct Message {
     expire_time_s: f64,

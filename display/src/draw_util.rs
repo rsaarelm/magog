@@ -1,5 +1,5 @@
 use backend::{Core, Vertex};
-use euclid::{rect, Point2D, vec2};
+use euclid::{rect, vec2, Point2D};
 use vitral::{Align, Color, FontData, ImageData};
 
 /// Helpers for drawing into the local `Core` type.

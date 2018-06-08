@@ -209,9 +209,9 @@ lazy_static! {
         ]
     };
     pub static ref ITEM_SPECS: Vec<ItemSpec> = {
+        use item::MagicEffect::*;
         use Icon as I;
         use ItemType::*;
-        use item::MagicEffect::*;
 
         vec![
             ItemSpec {

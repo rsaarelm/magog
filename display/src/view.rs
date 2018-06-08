@@ -1,15 +1,15 @@
-use Icon;
 use backend::Core;
 use cache;
 use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
-use euclid::{Rect, TypedRect, TypedVector2D, TypedVector3D, vec2, vec3};
+use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
 use render::{self, Angle, Layer};
 use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
 use world::{FovStatus, Location, Query, TerrainQuery, World};
+use Icon;
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: f32 = 16.0;

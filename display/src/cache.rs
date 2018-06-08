@@ -1,4 +1,3 @@
-use {AtlasCache, Icon, SubImageSpec};
 use brush::Brush;
 use init;
 use std::cell::RefCell;
@@ -6,6 +5,7 @@ use std::rc::Rc;
 use vec_map::VecMap;
 use vitral::{FontData, ImageBuffer, ImageData, PngBytes};
 use world;
+use {AtlasCache, Icon, SubImageSpec};
 
 thread_local! {
     pub static ATLAS: RefCell<AtlasCache> = {

@@ -1,8 +1,8 @@
 //! Set up resource content for game.
 
 use brush::{Brush, Builder, Geom};
-use calx::Rgba;
 use calx::color::*;
+use calx::Rgba;
 use std::rc::Rc;
 use std::str::FromStr;
 use vec_map::VecMap;

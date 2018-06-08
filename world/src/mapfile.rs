@@ -1,4 +1,3 @@
-use Prefab;
 use calx::{self, CellVector, FromPrefab, IntoPrefab};
 use errors::*;
 use ron;
@@ -7,6 +6,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::io;
 use terrain::Terrain;
+use Prefab;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> {
     const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\

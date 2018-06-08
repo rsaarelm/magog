@@ -1,5 +1,3 @@
-use {attack_damage, roll};
-use Prefab;
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
 use command::CommandResult;
@@ -14,6 +12,8 @@ use spec;
 use terraform::Terraform;
 use volume::Volume;
 use world::{Ecs, Loadout};
+use Prefab;
+use {attack_damage, roll};
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {

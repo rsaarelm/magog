@@ -1,4 +1,3 @@
-use Rng;
 use calx::{HexFov, HexFovIter};
 use calx_ecs::Entity;
 use command::{Command, CommandResult};
@@ -22,6 +21,7 @@ use terraform::{Terraform, TerrainQuery};
 use terrain::Terrain;
 use volume::Volume;
 use worldgen::Worldgen;
+use Rng;
 
 pub const GAME_VERSION: &'static str = "0.1.0";
 

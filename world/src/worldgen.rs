@@ -1,4 +1,3 @@
-use Prefab;
 use calx::{hex_neighbors, CellVector, Dijkstra, IntoPrefab, SRgba};
 use euclid::{point2, vec2};
 use image::{self, GenericImage, SubImage};
@@ -13,6 +12,7 @@ use std::iter::FromIterator;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
+use Prefab;
 
 /// Static generated world.
 pub struct Worldgen {

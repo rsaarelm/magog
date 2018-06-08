@@ -1,6 +1,5 @@
 //! Game world display utilities.
 
-use Icon;
 use brush::Brush;
 use cache;
 use calx::{Dir12, Dir6};
@@ -8,6 +7,7 @@ use euclid::vec3;
 use std::rc::Rc;
 use view::PhysicsVector;
 use world::{terrain, Location, Query, Terrain, TerrainQuery, World};
+use Icon;
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///

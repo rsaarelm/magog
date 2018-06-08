@@ -11,8 +11,8 @@ use std::env;
 use std::fmt::Write;
 use std::str;
 use std::str::FromStr;
-use world::{Room, Sector};
 use world::mapgen::{self, MapGen, Point2D, Vault, VaultCell};
+use world::{Room, Sector};
 
 struct TestMap {
     terrain: HashMap<Point2D, char>,

@@ -1,5 +1,3 @@
-use FovStatus;
-use Prefab;
 use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom};
 use calx_ecs::Entity;
 use components::{Alignment, BrainState, Icon, Status};
@@ -16,6 +14,8 @@ use terraform::TerrainQuery;
 use terrain::Terrain;
 use volume::Volume;
 use world::Ecs;
+use FovStatus;
+use Prefab;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery + Sized {
