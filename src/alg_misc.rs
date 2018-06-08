@@ -1,7 +1,7 @@
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
-use rand::{Rng, XorShiftRng};
+use rand::Rng;
 use seeded_rng;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
@@ -42,9 +42,7 @@ pub trait Noise<T> {
 }
 
 impl<T: Distribution<U>, U> Noise<U> for T {
-    fn noise<I: Hash>(&self, seed: &I) -> U {
-        self.sample(&mut seeded_rng::<I, XorShiftRng>(&seed))
-    }
+    fn noise<I: Hash>(&self, seed: &I) -> U { self.sample(&mut seeded_rng(&seed)) }
 }
 
 /// A deciban unit log odds value.

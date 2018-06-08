@@ -1,13 +1,10 @@
-use rand::{Rng, SeedableRng};
+use rand::{Rng, SeedableRng, XorShiftRng};
 use std::hash::Hash;
 use vec_map::VecMap;
 use Deciban;
 
 /// Seed a RNG from any hashable value.
-pub fn seeded_rng<I, O>(seed: &I) -> O
-where
-    I: Hash,
-    O: SeedableRng<Seed = [u8; 16]>,
+pub fn seeded_rng(seed: &impl Hash) -> XorShiftRng
 {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::Hasher;
@@ -19,7 +16,7 @@ where
     let hash = if hash == 0 { 1 } else { hash };
 
     let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u8; 16]>([hash, hash]) };
-    O::from_seed(seed)
+    SeedableRng::from_seed(seed)
 }
 
 /// Additional methods for random number generators.
