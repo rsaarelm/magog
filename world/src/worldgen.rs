@@ -414,11 +414,11 @@ mod test {
 
     #[test]
     fn test_determinism() {
-        use rand::{self, Rand};
+        use rand;
 
         let mut rng = rand::thread_rng();
 
-        let seed = u32::rand(&mut rng);
+        let seed: u32 = rng.gen();
         let mut gen = Worldgen::new(seed);
 
         // Build the value repeatedly using the same seed and see that they are all equal.

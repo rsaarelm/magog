@@ -7,7 +7,6 @@ use event::Event;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use query::Query;
-use rand::distributions::Standard;
 use rand::{seq, Rng};
 use spec;
 use terraform::Terraform;
