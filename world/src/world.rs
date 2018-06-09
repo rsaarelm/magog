@@ -212,7 +212,7 @@ impl Mutate for World {
         }
 
         if let Some(origin) = self.location(e) {
-            const DEFAULT_FOV_RANGE: u32 = 12;
+            const DEFAULT_FOV_RANGE: u32 = 7;
             const OVERLAND_FOV_RANGE: u32 = 40;
 
             // Long-range sight while in overworld.
