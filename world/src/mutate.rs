@@ -194,23 +194,178 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // High-level commands, actual action can change because of eg. confusion.
+
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
         if self.confused_move(e) {
             return Ok(());
+        } else {
+            self.really_step(e, dir)
         }
-        let loc = self.location(e).ok_or(())?.jump(self, dir);
+    }
+
+    fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+        if self.confused_move(e) {
+            return Ok(());
+        } else {
+            self.really_melee(e, dir)
+        }
+    }
+
+    fn entity_take(&mut self, e: Entity, item: Entity) -> Result<(), ()> {
+        // Only mobs can take items.
+        if !self.is_mob(e) {
+            return Err(());
+        }
+
+        if !self.is_item(item) {
+            return Err(());
+        }
+
+        // Somehow trying to pick up something we're inside of. Pls don't break the universe.
+        if self.entity_contains(item, e) {
+            panic!("Trying to pick up an entity you are inside of. This shouldn't happen");
+        }
+
+        if let Some(slot) = self.free_bag_slot(e) {
+            self.equip_item(item, e, slot);
+            if self.is_player(e) {
+                msg!(self, "[One] pick[s] up [another].")
+                    .subject(e)
+                    .object(item)
+                    .send();
+            }
+
+            self.end_turn(e);
+            Ok(())
+        } else {
+            // No more inventory space
+            Err(())
+        }
+    }
+
+    /// Cast an undirected spell
+    fn cast_spell(
+        &mut self,
+        origin: Location,
+        effect: Entity,
+        caster: Option<Entity>,
+    ) -> Result<(), ()> {
+        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type
+        {
+            match effect {
+                MagicEffect::Lightning => {
+                    const LIGHTNING_RANGE: u32 = 4;
+                    const LIGHTNING_EFFECT: Effect = Effect::Hit {
+                        amount: 12,
+                        damage: Damage::Electricity,
+                    };
+
+                    // TODO: Make an API, more efficient lookup of entities within an area
+
+                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE)
+                        .0
+                        .into_iter()
+                        .flat_map(|loc| self.entities_at(loc))
+                        .filter(|&e| self.is_mob(e) && Some(e) != caster)
+                        .collect();
+
+                    let mut target = seq::sample_iter(self.rng(), &targets, 1).unwrap();
+
+                    if let Some(target) = target.pop() {
+                        msg!(self, "There is a peal of thunder.").send();
+                        let loc = self.location(*target).unwrap();
+                        self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);
+                    } else {
+                        msg!(self, "The spell fizzles.").send();
+                    }
+                }
+                _ => {
+                    msg!(self, "TODO cast untargeted spell {:?}", effect).send();
+                }
+            }
+            caster.map(|e| self.end_turn(e));
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    /// Cast a directed spell
+    fn cast_directed_spell(
+        &mut self,
+        origin: Location,
+        dir: Dir6,
+        effect: Entity,
+        caster: Option<Entity>,
+    ) -> Result<(), ()> {
+        if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type {
+            match effect {
+                MagicEffect::Fireball => {
+                    const FIREBALL_RANGE: u32 = 9;
+                    const FIREBALL_RADIUS: u32 = 2;
+                    const FIREBALL_EFFECT: Effect = Effect::Hit {
+                        amount: 6,
+                        damage: Damage::Fire,
+                    };
+                    let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
+                    let volume = self.sphere_volume(center, FIREBALL_RADIUS);
+                    self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
+                }
+                MagicEffect::Confuse => {
+                    const CONFUSION_RANGE: u32 = 9;
+
+                    let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
+                    self.apply_effect(&Effect::Confuse, &Volume::point(center), caster);
+                }
+                _ => {
+                    msg!(self, "TODO cast directed spell {:?}", effect).send();
+                }
+            }
+            caster.map(|e| self.end_turn(e));
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    /// The entity spends its action waiting.
+    fn idle(&mut self, e: Entity) {
+        if self.consume_nutrition(e) {
+            if let Some(regen) = self.tick_regeneration(e) {
+                self.push_event(Event::Damage {
+                    entity: e,
+                    amount: -regen,
+                });
+            }
+        }
+        self.end_turn(e);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+
+    fn really_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+        let origin = self.location(e).ok_or(())?;
+        let loc = origin.jump(self, dir);
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
+
+            let delay = self.action_delay(e);
+            debug_assert!(delay > 0);
+            if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
+                anim.tween_from = origin;
+                anim.tween_current = delay - 1;
+                anim.tween_max = delay;
+            }
+            self.end_turn(e);
             return Ok(());
         }
 
         Err(())
     }
 
-    fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
-        if self.confused_move(e) {
-            return Ok(());
-        }
+    fn really_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
         if let Some(loc) = self.location(e) {
             if let Some(target) = self.mob_at(loc.jump(self, dir)) {
                 // XXX: Using power stat for damage, should this be different?
@@ -231,6 +386,7 @@ pub trait Mutate: Query + Terraform + Sized {
                         .send();
                 }
                 self.damage(target, damage, Damage::Physical, Some(e));
+                self.end_turn(e);
                 return Ok(());
             }
         }
@@ -257,9 +413,9 @@ pub trait Mutate: Query + Terraform + Sized {
             let destination = loc.jump(self, dir);
 
             if self.mob_at(destination).is_some() {
-                let _ = self.entity_melee(e, dir);
+                let _ = self.really_melee(e, dir);
             } else {
-                let _ = self.entity_step(e, dir);
+                let _ = self.really_step(e, dir);
             }
             true
         } else {
@@ -382,120 +538,6 @@ pub trait Mutate: Query + Terraform + Sized {
         }
     }
 
-    fn entity_take(&mut self, e: Entity, item: Entity) -> Result<(), ()> {
-        // Only mobs can take items.
-        if !self.is_mob(e) {
-            return Err(());
-        }
-
-        if !self.is_item(item) {
-            return Err(());
-        }
-
-        // Somehow trying to pick up something we're inside of. Pls don't break the universe.
-        if self.entity_contains(item, e) {
-            panic!("Trying to pick up an entity you are inside of. This shouldn't happen");
-        }
-
-        if let Some(slot) = self.free_bag_slot(e) {
-            self.equip_item(item, e, slot);
-            if self.is_player(e) {
-                msg!(self, "[One] pick[s] up [another].")
-                    .subject(e)
-                    .object(item)
-                    .send();
-            }
-
-            Ok(())
-        } else {
-            // No more inventory space
-            Err(())
-        }
-    }
-
-    /// Cast an undirected spell
-    fn cast_spell(
-        &mut self,
-        origin: Location,
-        effect: Entity,
-        caster: Option<Entity>,
-    ) -> Result<(), ()> {
-        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type
-        {
-            match effect {
-                MagicEffect::Lightning => {
-                    const LIGHTNING_RANGE: u32 = 4;
-                    const LIGHTNING_EFFECT: Effect = Effect::Hit {
-                        amount: 12,
-                        damage: Damage::Electricity,
-                    };
-
-                    // TODO: Make an API, more efficient lookup of entities within an area
-
-                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE)
-                        .0
-                        .into_iter()
-                        .flat_map(|loc| self.entities_at(loc))
-                        .filter(|&e| self.is_mob(e) && Some(e) != caster)
-                        .collect();
-
-                    let mut target = seq::sample_iter(self.rng(), &targets, 1).unwrap();
-
-                    if let Some(target) = target.pop() {
-                        msg!(self, "There is a peal of thunder.").send();
-                        let loc = self.location(*target).unwrap();
-                        self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);
-                    } else {
-                        msg!(self, "The spell fizzles.").send();
-                    }
-                }
-                _ => {
-                    msg!(self, "TODO cast untargeted spell {:?}", effect).send();
-                }
-            }
-            Ok(())
-        } else {
-            Err(())
-        }
-    }
-
-    /// Cast a directed spell
-    fn cast_directed_spell(
-        &mut self,
-        origin: Location,
-        dir: Dir6,
-        effect: Entity,
-        caster: Option<Entity>,
-    ) -> Result<(), ()> {
-        if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type {
-            match effect {
-                MagicEffect::Fireball => {
-                    const FIREBALL_RANGE: u32 = 9;
-                    const FIREBALL_RADIUS: u32 = 2;
-                    const FIREBALL_EFFECT: Effect = Effect::Hit {
-                        amount: 6,
-                        damage: Damage::Fire,
-                    };
-                    let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
-                    let volume = self.sphere_volume(center, FIREBALL_RADIUS);
-                    self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
-                }
-                MagicEffect::Confuse => {
-                    const CONFUSION_RANGE: u32 = 9;
-
-                    let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
-                    self.apply_effect(&Effect::Confuse, &Volume::point(center), caster);
-                }
-                _ => {
-                    msg!(self, "TODO cast directed spell {:?}", effect).send();
-                }
-            }
-            Ok(())
-        } else {
-            Err(())
-        }
-    }
-
     fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
         use effect::Effect::*;
         match *effect {
@@ -609,18 +651,6 @@ pub trait Mutate: Query + Terraform + Sized {
 
         // Set the derived stats.
         self.ecs_mut().stats[e].actual = stats;
-    }
-
-    /// The entity spends its action waiting.
-    fn idle(&mut self, e: Entity) {
-        if self.consume_nutrition(e) {
-            if let Some(regen) = self.tick_regeneration(e) {
-                self.push_event(Event::Damage {
-                    entity: e,
-                    amount: -regen,
-                });
-            }
-        }
     }
 
     /// Consume one unit of nutrition

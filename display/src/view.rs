@@ -1,6 +1,6 @@
 use backend::Core;
 use cache;
-use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Space, Transformation};
+use calx::{clamp, cycle_anim, ease, lerp, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
 use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
 use render::{self, Angle, Layer};
@@ -197,6 +197,28 @@ impl WorldView {
             // Draw mobs in directly seen cells
             if !in_map_memory {
                 for &i in &mobs {
+                    let mut mob_pos = screen_pos;
+
+                    // Is the mob doing a tweening move, interpolate it's position between old and
+                    // new locations.
+                    if let Some(anim) = world.ecs().anim.get(i) {
+                        if anim.tween_current != 0 {
+                            if let Some(towards_prev_pos) = loc.v2_at(anim.tween_from) {
+                                let tween_factor =
+                                    anim.tween_current as f32 / anim.tween_max as f32;
+                                let prev_pos = ScreenVector::from_cell_space(
+                                    chart_pos + towards_prev_pos,
+                                ) + center;
+                                mob_pos =
+                                    lerp(screen_pos, prev_pos, ease::cubic_in_out(tween_factor));
+                                // Make sure no fractions end up to mess pixel rendering
+                                // (TODO: Need a single place solution for this)
+                                mob_pos.x = mob_pos.x.round();
+                                mob_pos.y = mob_pos.y.round();
+                            }
+                        }
+                    }
+
                     if let Some(desc) = world.ecs().desc.get(i) {
                         let frame_idx = if world.is_bobbing(i) {
                             cycle_anim(1.0 / 3.0, 2)
@@ -204,7 +226,7 @@ impl WorldView {
                             0
                         };
                         entity_sprite_buffer.push(
-                            Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
+                            Sprite::new(Layer::Object, mob_pos, cache::entity(desc.icon))
                                 .idx(frame_idx)
                                 .color(Coloring::Shaded {
                                     ambient,

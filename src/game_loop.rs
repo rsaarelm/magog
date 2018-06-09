@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::rc::Rc;
 use vitral::{Align, FontData, RectUtil};
-use world::{Command, CommandResult, Event, ItemType, Location, Query, Slot, World};
+use world::{Command, CommandResult, Event, ItemType, Location, Mutate, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
@@ -363,6 +363,7 @@ impl GameLoop {
             }
         }
 
+        // TODO FIXME: Needs to be written better, need kb interrupts outside player input phase...
         if let Some(event) = backend.poll_key() {
             if event.state == ElementState::Pressed {
                 let scancode_adjust = if cfg!(target_os = "linux") { 8 } else { 0 };
@@ -387,12 +388,29 @@ impl GameLoop {
                                 Event::Damage { entity, amount } => {
                                     let name = self.world.entity_name(entity);
                                     // TODO: Use graphical effect
-                                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
+                                    let _ =
+                                        writeln!(&mut self.console, "{} dmg {}", name, amount);
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        if self.world.player_can_act() {
+            self.world.tick_anims();
+        } else {
+            // When playing turn-based and running the animations between player's inputs, speed
+            // things up so that the pace feels snappy.
+            const FAST_FORWARD: usize = 3;
+
+            for _ in 0..FAST_FORWARD {
+                if self.world.player_can_act() {
+                    break;
+                }
+                // TODO FIXME process events in return value.
+                let _ = self.world.next_tick();
             }
         }
 
