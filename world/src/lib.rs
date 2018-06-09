@@ -1,8 +1,6 @@
 extern crate calx;
 #[macro_use]
 extern crate calx_ecs;
-#[macro_use]
-extern crate error_chain;
 extern crate euclid;
 extern crate image;
 #[macro_use]
@@ -187,17 +185,6 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
 
 /// Standard deciban roll, clamp into [-20, 20].
 pub fn roll<R: rand::Rng>(rng: &mut R) -> f32 { calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0) }
-
-pub mod errors {
-    error_chain! {
-        foreign_links {
-            Io(::std::io::Error);
-            RonSerialize(::ron::ser::Error);
-            RonDeserialize(::ron::de::Error);
-            PrefabError(::calx::PrefabError);
-        }
-    }
-}
 
 /// Wrapper class for things that should not be serialized.
 struct Cache<T> {

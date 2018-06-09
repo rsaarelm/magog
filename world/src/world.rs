@@ -2,7 +2,6 @@ use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
 use command::{Command, CommandResult};
 use components;
-use errors::*;
 use event::Event;
 use flags::Flags;
 use fov::SightFov;
@@ -13,6 +12,7 @@ use query::Query;
 use ron;
 use spatial::{Place, Spatial};
 use std::collections::HashSet;
+use std::error::Error;
 use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::slice;
@@ -82,7 +82,7 @@ impl<'a> World {
         ret
     }
 
-    pub fn load<R: Read>(reader: &mut R) -> Result<World> {
+    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<Error>> {
         let ret: ron::de::Result<World> = ron::de::from_reader(reader);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
@@ -95,7 +95,7 @@ impl<'a> World {
         Ok(ret?)
     }
 
-    pub fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
+    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<Error>> {
         let enc = ron::ser::to_string_pretty(self, Default::default())?;
         // TODO: Handle error from writer too...
         writeln!(writer, "{}", enc)?;

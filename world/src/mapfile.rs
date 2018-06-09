@@ -1,14 +1,14 @@
 use calx::{self, CellVector, FromPrefab, IntoPrefab};
-use errors::*;
 use ron;
 use spec;
 use std::collections::{BTreeMap, HashMap};
+use std::error::Error;
 use std::fmt;
 use std::io;
 use terrain::Terrain;
 use Prefab;
 
-pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> {
+pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), Box<Error>> {
     const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                                     abcdefghijklmnopqrstuvwxyz\
                                     0123456789";
@@ -44,7 +44,7 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<()> 
     Ok(())
 }
 
-pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab> {
+pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab, Box<Error>> {
     let mut s = String::new();
     input.read_to_string(&mut s)?;
     let save: MapSave = ron::de::from_str(&s)?;
