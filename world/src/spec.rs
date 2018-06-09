@@ -1,5 +1,5 @@
 use calx::{seeded_rng, WeightedChoice};
-use components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
+use components::{Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use item::ItemType;
 use rand::Rng;
 use stats::{Intrinsic, Stats};
@@ -55,8 +55,9 @@ impl Spec for MobSpec {
             )))
             .c(Desc::new(&self.name, self.icon))
             .c(Brain::enemy())
-            .c(Health::new())
-            .c(Statuses::new())
+            .c(Anim::default())
+            .c(Health::default())
+            .c(Statuses::default())
     }
 
     fn rarity(&self) -> f32 { self.rarity }

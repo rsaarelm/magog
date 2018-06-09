@@ -37,6 +37,22 @@ pub struct Desc {
     pub icon: Icon,
 }
 
+/// Entity animation state.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Anim {
+    pub tween_from: Location,
+    pub tween_current: u32,
+    pub tween_max: u32,
+}
+
+impl Anim {
+    pub fn tick(&mut self) {
+        if self.tween_current > 0 {
+            self.tween_current -= 1;
+        }
+    }
+}
+
 impl Desc {
     pub fn new(name: &str, icon: Icon) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned
@@ -177,6 +193,10 @@ pub enum Status {
     Dead,
     /// Moves 1/3 faster than usual, stacks with Quick status.
     Fast,
+    /// Creature is delayed.
+    ///
+    /// This gets jumped up every time after the creature acted.
+    Delayed,
 }
 
 pub type Statuses = BTreeMap<Status, u32>;

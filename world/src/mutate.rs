@@ -19,8 +19,18 @@ use {attack_damage, roll};
 pub trait Mutate: Query + Terraform + Sized {
     /// Advance world state after player input has been received.
     ///
-    /// Returns CommandResult Ok(()) so can used to end result-returning methods.
+    /// Returns CommandResult so can used to end result-returning methods.
     fn next_tick(&mut self) -> CommandResult;
+
+    /// Advance animations without ticking the world logic.
+    ///
+    /// Use this when waiting for player input to finish pending animations.
+    fn tick_anims(&mut self) {
+        let entities: Vec<Entity> = self.entities().cloned().collect();
+        for e in entities {
+            self.ecs_mut().anim.get_mut(e).map(|a| a.tick());
+        }
+    }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location);
 
@@ -108,6 +118,14 @@ pub trait Mutate: Query + Terraform + Sized {
             }
             PlayerControl => {}
         }
+    }
+
+    /// End move for entity.
+    ///
+    /// Applies delay.
+    fn end_turn(&mut self, e: Entity) {
+        let delay = self.action_delay(e);
+        self.gain_status(e, Status::Delayed, delay);
     }
 
     fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {

@@ -30,7 +30,7 @@ pub trait Query: TerrainQuery + Sized {
     fn player(&self) -> Option<Entity>;
 
     /// Return current time of the world logic clock.
-    fn tick(&self) -> u64;
+    fn get_tick(&self) -> u64;
 
     /// Return world RNG seed
     fn rng_seed(&self) -> u32;
@@ -219,6 +219,32 @@ pub trait Query: TerrainQuery + Sized {
             .map_or(false, |s| s.contains_key(&status))
     }
 
+    /// Return how many frames the entity will delay after an action.
+    fn action_delay(&self, e: Entity) -> u32 {
+        let speed = 3 + if self.has_intrinsic(e, Intrinsic::Slow) {
+            -1
+        } else {
+            0
+        } + if self.has_intrinsic(e, Intrinsic::Quick) {
+            1
+        } else {
+            0
+        } + if self.has_status(e, Status::Fast) {
+            1
+        } else {
+            0
+        };
+
+        match speed {
+            1 => 36,
+            2 => 18,
+            3 => 12,
+            4 => 9,
+            5 => 7,
+            _ => panic!("Invalid speed value {}", speed),
+        }
+    }
+
     /// Return if the entity is a mob that should get an update this frame
     /// based on its speed properties. Does not check for status effects like
     /// sleep that might prevent actual action.
@@ -227,17 +253,11 @@ pub trait Query: TerrainQuery + Sized {
             return false;
         }
 
-        // Go through a cycle of 5 phases to get 4 possible speeds.
-        // System idea from Jeff Lait.
-        let phase = self.tick() % 5;
-        match phase {
-            0 => true,
-            1 => self.has_status(e, Status::Fast),
-            2 => true,
-            3 => self.has_intrinsic(e, Intrinsic::Quick),
-            4 => !self.has_intrinsic(e, Intrinsic::Slow),
-            _ => panic!("Invalid action phase"),
+        if self.has_status(e, Status::Delayed) {
+            return false;
         }
+
+        true
     }
 
     /// Return whether the entity is dead and should be removed from the world.
@@ -271,6 +291,14 @@ pub trait Query: TerrainQuery + Sized {
             return false;
         }
         self.ticks_this_frame(e)
+    }
+
+    fn player_can_act(&self) -> bool {
+        if let Some(p) = self.player() {
+            self.acts_this_frame(p)
+        } else {
+            false
+        }
     }
 
     /// Look for targets to shoot in a direction.

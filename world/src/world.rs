@@ -26,6 +26,7 @@ pub const GAME_VERSION: &'static str = "0.1.0";
 
 Ecs! {
     desc: components::Desc,
+    anim: components::Anim,
     map_memory: components::MapMemory,
     health: components::Health,
     brain: components::Brain,
@@ -144,7 +145,7 @@ impl Query for World {
         None
     }
 
-    fn tick(&self) -> u64 { self.flags.tick }
+    fn get_tick(&self) -> u64 { self.flags.tick }
 
     fn rng_seed(&self) -> u32 { self.worldgen.seed() }
 
@@ -172,6 +173,8 @@ impl Query for World {
 impl Mutate for World {
     fn next_tick(&mut self) -> CommandResult {
         use std::mem;
+
+        self.tick_anims();
 
         self.ai_main();
 
