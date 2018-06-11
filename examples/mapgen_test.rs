@@ -95,7 +95,8 @@ fn main() {
     let domain: Vec<Point2D> = map.terrain.keys().cloned().collect();
     mapgen::RoomsAndCorridors.dig(&mut rng, &mut map, domain);
 
-    let prefab: HashMap<CellVector, char> = map.terrain
+    let prefab: HashMap<CellVector, char> = map
+        .terrain
         .iter()
         .map(|(p, t)| (p.to_vector(), *t))
         .collect();

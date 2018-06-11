@@ -48,7 +48,8 @@ impl WorldView {
             let center = (self.screen_area.origin + self.screen_area.size / 2.0
                 - vec2(PIXEL_UNIT / 2.0, 0.0))
                 .to_vector();
-            let bounds = self.screen_area
+            let bounds = self
+                .screen_area
                 .translate(&-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
 
@@ -336,7 +337,8 @@ struct ScreenFov<'a> {
 
 impl<'a> PartialEq for ScreenFov<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.w as *const World == other.w as *const World && self.screen_area == other.screen_area
+        self.w as *const World == other.w as *const World
+            && self.screen_area == other.screen_area
             && self.origins == other.origins
     }
 }
@@ -345,7 +347,8 @@ impl<'a> Eq for ScreenFov<'a> {}
 
 impl<'a> FovValue for ScreenFov<'a> {
     fn advance(&self, offset: CellVector) -> Option<Self> {
-        if !self.screen_area
+        if !self
+            .screen_area
             .contains(&ScreenVector::from_cell_space(offset).to_point())
         {
             return None;

@@ -110,7 +110,8 @@ impl Builder {
     /// If a splat matrix exists, the column must match the height of the matrix. Otherwise the
     /// column will start a new splat matrix.
     pub fn splat<I: IntoIterator<Item = Geom>>(mut self, geom: I) -> Builder {
-        let matrix_column = geom.into_iter()
+        let matrix_column = geom
+            .into_iter()
             .map(|g| self.make_splat(&g))
             .collect::<Vec<Splat>>();
         assert!(

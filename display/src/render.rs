@@ -300,7 +300,8 @@ pub struct Kernel {
 }
 
 fn neighbor(w: &World, loc: Location, dir: Dir6) -> Terrain {
-    let loc = w.visible_portal(loc + dir.to_v2())
+    let loc = w
+        .visible_portal(loc + dir.to_v2())
         .unwrap_or(loc + dir.to_v2());
     w.visual_terrain(loc)
 }

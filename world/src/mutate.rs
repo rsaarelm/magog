@@ -174,7 +174,8 @@ pub trait Mutate: Query + Terraform + Sized {
 
     /// Remove destroyed entities from system
     fn clean_dead(&mut self) {
-        let kill_list: Vec<Entity> = self.entities()
+        let kill_list: Vec<Entity> = self
+            .entities()
             .filter(|&&e| !self.is_alive(e))
             .cloned()
             .collect();
@@ -199,7 +200,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
         if self.confused_move(e) {
-            return Ok(());
+            Ok(())
         } else {
             self.really_step(e, dir)
         }
@@ -207,7 +208,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
         if self.confused_move(e) {
-            return Ok(());
+            Ok(())
         } else {
             self.really_melee(e, dir)
         }
@@ -264,7 +265,8 @@ pub trait Mutate: Query + Terraform + Sized {
 
                     // TODO: Make an API, more efficient lookup of entities within an area
 
-                    let targets: Vec<Entity> = self.sphere_volume(origin, LIGHTNING_RANGE)
+                    let targets: Vec<Entity> = self
+                        .sphere_volume(origin, LIGHTNING_RANGE)
                         .0
                         .into_iter()
                         .flat_map(|loc| self.entities_at(loc))
@@ -656,7 +658,7 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Consume one unit of nutrition
     ///
     /// Return false if the entity has an empty stomach.
-    fn consume_nutrition(&mut self, e: Entity) -> bool {
+    fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
     }

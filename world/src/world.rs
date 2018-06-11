@@ -22,7 +22,7 @@ use volume::Volume;
 use worldgen::Worldgen;
 use Rng;
 
-pub const GAME_VERSION: &'static str = "0.1.0";
+pub const GAME_VERSION: &str = "0.1.0";
 
 Ecs! {
     desc: components::Desc,
@@ -68,7 +68,8 @@ impl<'a> World {
         };
 
         // XXX: Clone to not run into borrow checker...
-        for (loc, spawn) in ret.worldgen
+        for (loc, spawn) in ret
+            .worldgen
             .spawns()
             .cloned()
             .collect::<Vec<(Location, Loadout)>>()

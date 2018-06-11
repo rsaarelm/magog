@@ -1,4 +1,6 @@
-use calx::{compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom};
+use calx::{
+    compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom,
+};
 use euclid::vec2;
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
@@ -234,15 +236,15 @@ impl Sector {
         self.rect_coord_loc(SECTOR_WIDTH / 2 - 1, SECTOR_HEIGHT / 2 - 1)
     }
 
-    // TODO return impl
-    pub fn iter(self) -> Box<Iterator<Item = Location>> {
+    pub fn iter(self) -> impl Iterator<Item = Location> {
         let n = SECTOR_WIDTH * SECTOR_HEIGHT;
         let pitch = SECTOR_WIDTH;
-        Box::new((0..n).map(move |i| self.rect_coord_loc(i % pitch, i / pitch)))
+        (0..n).map(move |i| self.rect_coord_loc(i % pitch, i / pitch))
     }
 
     pub fn taxicab_distance(self, other: Sector) -> i32 {
-        ((self.x as i32) - (other.x as i32)).abs() + ((self.y as i32) - (other.y as i32)).abs()
+        ((self.x as i32) - (other.x as i32)).abs()
+            + ((self.y as i32) - (other.y as i32)).abs()
             + ((self.z as i32) - (other.z as i32)).abs()
     }
 }

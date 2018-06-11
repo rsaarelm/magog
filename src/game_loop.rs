@@ -388,8 +388,7 @@ impl GameLoop {
                                 Event::Damage { entity, amount } => {
                                     let name = self.world.entity_name(entity);
                                     // TODO: Use graphical effect
-                                    let _ =
-                                        writeln!(&mut self.console, "{} dmg {}", name, amount);
+                                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
                                 }
                             }
                         }

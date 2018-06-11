@@ -1,13 +1,13 @@
 use calx::{seeded_rng, WeightedChoice};
 use components::{Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use item::ItemType;
+use rand::distributions::Distribution;
 use rand::Rng;
 use stats::{Intrinsic, Stats};
 use world::Loadout;
 
-pub trait Spec {
-    /// Generate an entity loadout for this spec.
-    fn generate<R: Rng>(&self, &mut R) -> Loadout;
+pub trait Spec: Distribution<<Self as Spec>::Output> {
+    type Output;
 
     /// How rare is this spec?
     ///
@@ -46,8 +46,8 @@ impl Default for MobSpec {
     }
 }
 
-impl Spec for MobSpec {
-    fn generate<R: Rng>(&self, _: &mut R) -> Loadout {
+impl Distribution<Loadout> for MobSpec {
+    fn sample<R: Rng + ?Sized>(&self, _: &mut R) -> Loadout {
         Loadout::new()
             .c(StatsComponent::new(Stats::new(
                 self.power,
@@ -59,6 +59,10 @@ impl Spec for MobSpec {
             .c(Health::default())
             .c(Statuses::default())
     }
+}
+
+impl Spec for MobSpec {
+    type Output = Loadout;
 
     fn rarity(&self) -> f32 { self.rarity }
     fn min_depth(&self) -> i32 { self.depth }
@@ -95,8 +99,8 @@ impl Default for ItemSpec {
     }
 }
 
-impl Spec for ItemSpec {
-    fn generate<R: Rng>(&self, _: &mut R) -> Loadout {
+impl Distribution<Loadout> for ItemSpec {
+    fn sample<R: Rng + ?Sized>(&self, _: &mut R) -> Loadout {
         Loadout::new()
             .c(Desc::new(&self.name, self.icon))
             .c(StatsComponent::new(
@@ -110,6 +114,10 @@ impl Spec for ItemSpec {
                 charges: 1,
             })
     }
+}
+
+impl Spec for ItemSpec {
+    type Output = Loadout;
 
     fn rarity(&self) -> f32 { self.rarity }
     fn min_depth(&self) -> i32 { self.depth }
@@ -269,7 +277,7 @@ lazy_static! {
 }
 
 /// Sample a random spec from a list.
-pub fn pick<S: Spec, R: Rng>(rng: &mut R, depth: i32, specs: &[S]) -> Option<Loadout> {
+pub fn pick<T>(rng: &mut impl Rng, depth: i32, specs: &[impl Spec<Output = T>]) -> Option<T> {
     specs
         .weighted_choice(rng, |item| {
             if item.rarity() == 0.0 || item.min_depth() > depth {
@@ -278,16 +286,16 @@ pub fn pick<S: Spec, R: Rng>(rng: &mut R, depth: i32, specs: &[S]) -> Option<Loa
                 1.0 / item.rarity()
             }
         })
-        .map(|s| s.generate(rng))
+        .map(|s| s.sample(rng))
 }
 
-pub fn named<R: Rng>(rng: &mut R, name: &str) -> Option<Loadout> {
-    if let Some(spec) = MOB_SPECS.iter().find(|x| &x.name == name) {
-        return Some(spec.generate(rng));
+pub fn named(rng: &mut impl Rng, name: &str) -> Option<Loadout> {
+    if let Some(spec) = MOB_SPECS.iter().find(|x| x.name == name) {
+        return Some(spec.sample(rng));
     }
 
-    if let Some(spec) = ITEM_SPECS.iter().find(|x| &x.name == name) {
-        return Some(spec.generate(rng));
+    if let Some(spec) = ITEM_SPECS.iter().find(|x| x.name == name) {
+        return Some(spec.sample(rng));
     }
 
     None

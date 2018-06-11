@@ -9,9 +9,9 @@ use terrain::Terrain;
 use Prefab;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), Box<Error>> {
-    const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                                    abcdefghijklmnopqrstuvwxyz\
-                                    0123456789";
+    const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                            abcdefghijklmnopqrstuvwxyz\
+                            0123456789";
 
     let chars_f = move |x: &(Terrain, Vec<String>)| {
         let &(ref t, ref e) = x;
@@ -37,7 +37,7 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab: HashMap<CellVector, _> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
 
-    let map = format!("{}", String::from_prefab(&prefab));
+    let map = String::from_prefab(&prefab);
     let legend = legend_builder.legend;
 
     write!(output, "{}", MapSave { map, legend })?;

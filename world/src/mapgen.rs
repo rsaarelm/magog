@@ -1,9 +1,12 @@
-// Map generation, being a convoluted beast of unsavory angles and loathsome tesseractations, is
-// best confined here in a private subdimension instead of being fully integrated with the main
-// world code.
+//! Generic map generation module
+//!
+//! This module handles the geometrical side of map generation. It should not need to know about
+//! game world specific datatypes.
 
-use calx::{self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, IntoPrefab,
-           RngExt, WeightedChoice};
+use calx::{
+    self, hex_disc, hex_neighbors, CellSpace, CellVector, Dir6, HexGeom, IntoPrefab, RngExt,
+    WeightedChoice,
+};
 use euclid::{self, vec2, TypedRect};
 use rand::{seq, Rng};
 use std::cmp::{Ord, Ordering, PartialOrd};
@@ -204,8 +207,15 @@ impl MapGen for Caves {
         fn is_downstair_pos(dug: &BTreeSet<OrdPoint>, pos: OrdPoint) -> bool {
             let dug = |x, y| dug.contains(&OrdPoint::from(Point2D::from(pos) + vec2(x, y)));
             // Downstairs needs an extra enclosure behind it for a tile graphics hack.
-            dug(-1, -1) && !dug(-1, 0) && !dug(0, -1) && !dug(1, 1) && !dug(1, 0) && !dug(0, 1)
-                && !dug(2, 2) && !dug(2, 1) && !dug(1, 2)
+            dug(-1, -1)
+                && !dug(-1, 0)
+                && !dug(0, -1)
+                && !dug(1, 1)
+                && !dug(1, 0)
+                && !dug(0, 1)
+                && !dug(2, 2)
+                && !dug(2, 1)
+                && !dug(1, 2)
         }
     }
 }
@@ -360,7 +370,7 @@ impl MapGen for RoomsAndCorridors {
                     debug_assert!(domain.diggable.contains(&t) || domain.dug.contains(&t));
                     if domain.diggable.contains(t) {
                         if !domain.door_here.contains(t) {
-                            dug_tunnel.push(t.0.clone());
+                            dug_tunnel.push(t.0);
                         }
                         domain.dig(*t);
                     }
@@ -568,7 +578,7 @@ impl DigSpace {
                 }
             }
 
-            for vault_p in vault.border.iter() {
+            for vault_p in &vault.border {
                 let p = (vault_p.0 + offset).into();
 
                 // No full-shape must hit dug.
@@ -623,19 +633,19 @@ impl DigSpace {
 
     /// Place a vault in the space, reduce diggable area.
     pub fn place(&mut self, vault: &VaultShape, offset: Vector2D) {
-        for p in vault.interior.iter() {
+        for p in &vault.interior {
             let p = (p.0 + offset).into();
             self.dig(p);
         }
-        for p in vault.no_dig.iter() {
+        for p in &vault.no_dig {
             let p = (p.0 + offset).into();
             self.diggable.remove(&p);
         }
-        for p in vault.door_here.iter() {
+        for p in &vault.door_here {
             let p = (p.0 + offset).into();
             self.door_here.insert(p);
         }
-        for p in vault.border.iter() {
+        for p in &vault.border {
             let p = (p.0 + offset).into();
             self.vault_wall.insert(p);
         }
@@ -694,11 +704,11 @@ impl DigSpace {
                     // Diggable, but not dug yet. Can only dig if there are solid walls to both
                     // sides.
                     let dig_dir = Dir6::from_v2(q.0 - p.0);
-                    let both_sides_walled = (!self.dug
-                        .contains(&OrdPoint(p.0 + (dig_dir - 1).to_v2()))
-                        || !self.dug.contains(&OrdPoint(p.0 + (dig_dir - 2).to_v2())))
-                        && (!self.dug.contains(&OrdPoint(p.0 + (dig_dir + 1).to_v2()))
-                            || !self.dug.contains(&OrdPoint(p.0 + (dig_dir + 2).to_v2())));
+                    let both_sides_walled =
+                        (!self.dug.contains(&OrdPoint(p.0 + (dig_dir - 1).to_v2()))
+                            || !self.dug.contains(&OrdPoint(p.0 + (dig_dir - 2).to_v2())))
+                            && (!self.dug.contains(&OrdPoint(p.0 + (dig_dir + 1).to_v2()))
+                                || !self.dug.contains(&OrdPoint(p.0 + (dig_dir + 2).to_v2())));
                     if both_sides_walled {
                         ret.push((q, dist));
                     }

@@ -1,6 +1,9 @@
-use calx::{hex_neighbors, seeded_rng, CellVector, Dijkstra, IntoPrefab, SRgba};
+//! Game world generation
+//!
+//! Unlike the game-agnostic `mapgen` module, this module does have gameplay-specific logic.
+
+use calx::{hex_neighbors, seeded_rng, Dijkstra};
 use euclid::{point2, vec2};
-use image::{self, GenericImage, SubImage};
 use location::{Location, Portal, Sector};
 use mapgen::{self, MapGen, Size2D, Vault, VaultCell};
 use rand::distributions::{Distribution, Standard};
@@ -8,12 +11,10 @@ use rand::{seq, Rng};
 use serde;
 use spec;
 use std::collections::{BTreeSet, HashMap};
-use std::io::Cursor;
 use std::iter::FromIterator;
 use std::slice;
 use terrain::Terrain;
 use world::Loadout;
-use Prefab;
 
 /// Static generated world.
 pub struct Worldgen {
@@ -27,7 +28,7 @@ pub struct Worldgen {
 impl Worldgen {
     pub fn new(seed: u32) -> Worldgen {
         let mut ret = Worldgen {
-            seed: seed,
+            seed,
             terrain: HashMap::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
@@ -97,41 +98,6 @@ impl Worldgen {
         ret
     }
 
-    fn load_prefab<R: Rng>(&mut self, rng: &mut R, origin: Location, prefab: &Prefab) {
-        for (&p, &(ref terrain, ref entities)) in prefab.iter() {
-            let loc = origin + p;
-
-            self.terrain.insert(loc, *terrain);
-
-            for spawn in entities.iter() {
-                if spawn == "player" {
-                    self.player_entry = loc;
-                } else {
-                    let loadout = spec::named(rng, spawn)
-                        .expect(&format!("Bad prefab: Spec '{}' not found!", spawn));
-                    self.spawns.push((loc, loadout));
-                }
-            }
-        }
-    }
-
-    fn load_map_bitmap(&mut self, origin: Location, data: &[u8]) {
-        let mut image = image::load(Cursor::new(data), image::ImageFormat::PNG).unwrap();
-        // Skip the bottom horizontal line, it's used to store metadata pixels.
-        let (w, h) = (image.width(), image.height());
-        let input_map = SubImage::new(&mut image, 0, 0, w, h - 1);
-
-        let prefab: HashMap<CellVector, SRgba> = input_map
-            .into_prefab()
-            .expect("Invalid overworld image map");
-
-        self.terrain.extend(
-            prefab
-                .into_iter()
-                .filter_map(|(p, c)| Terrain::from_color(c).map(|t| (origin + p, t))),
-        );
-    }
-
     pub fn seed(&self) -> u32 { self.seed }
 
     pub fn get_terrain(&self, loc: Location) -> Terrain {
@@ -165,19 +131,6 @@ impl Worldgen {
     pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
 
     pub fn player_entry(&self) -> Location { self.player_entry }
-
-    /// Make a cave entrance going down.
-    fn cave_entrance(&mut self, loc: Location) {
-        const DOWNBOUND_ENCLOSURE: [(i32, i32); 5] = [(1, 0), (0, 1), (2, 1), (1, 2), (2, 2)];
-
-        for &v in &DOWNBOUND_ENCLOSURE {
-            let loc = loc + vec2(v.0, v.1);
-            self.terrain.insert(loc, Terrain::Rock);
-        }
-
-        self.terrain.insert(loc, Terrain::Ground);
-        self.terrain.insert(loc + vec2(1, 1), Terrain::Ground);
-    }
 
     /// Punch a (one-way) portal between two points.
     fn portal(&mut self, origin: Location, destination: Location) {
@@ -217,14 +170,11 @@ impl<'a> SectorDigger<'a> {
         }
     }
 
-    // TODO return impl
-    fn domain(&self) -> Vec<mapgen::Point2D> {
-        let mut ret = Vec::new();
-
+    fn domain(&self) -> impl Iterator<Item = mapgen::Point2D> {
         let sector_origin = self.sector.origin();
         let mapgen_origin = mapgen::Point2D::zero();
 
-        for loc in self.sector.iter() {
+        self.sector.iter().filter_map(move |loc| {
             let pos = mapgen_origin
                 + sector_origin
                     .v2_at(loc)
@@ -236,13 +186,11 @@ impl<'a> SectorDigger<'a> {
             // sectors are only connected in the four cardinal directions, so we omit these cells
             // from the domain to prevent surprise holes between two diagonally adjacent shafts.
             if Self::is_next_to_diagonal_sector(loc) {
-                continue;
+                None
+            } else {
+                Some(pos)
             }
-
-            ret.push(pos);
-        }
-
-        ret
+        })
     }
 
     fn loc(&self, pos: mapgen::Point2D) -> Location { self.sector.origin() + pos.to_vector() }

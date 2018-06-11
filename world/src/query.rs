@@ -184,7 +184,8 @@ pub trait Query: TerrainQuery + Sized {
         if self.terrain(loc).blocks_walk() {
             return true;
         }
-        if self.entities_at(loc)
+        if self
+            .entities_at(loc)
             .into_iter()
             .any(|e| self.is_blocking_entity(e))
         {
