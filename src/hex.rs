@@ -268,13 +268,7 @@ impl Dir12 {
                 }
             }
 
-            if cluster_start.is_none() {
-                return None;
-            }
-
-            debug_assert!(cluster_end.is_some()); // Must be some if start is some.
-
-            Some((cluster_start.unwrap(), cluster_end.unwrap()))
+            Some((cluster_start?, cluster_end?))
         }
 
         fn is_single_cluster(neighbors: &[bool; 6], start: usize, end: usize) -> bool {

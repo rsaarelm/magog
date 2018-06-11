@@ -56,7 +56,7 @@ impl<'a, R: Rng + 'static> RandomPermutation<'a, R> {
         RandomPermutation {
             remain: n,
             shuffle: VecMap::new(),
-            rng: rng,
+            rng,
         }
     }
 }

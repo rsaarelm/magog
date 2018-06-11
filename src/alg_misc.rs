@@ -205,11 +205,11 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
 #[inline(always)]
 pub fn spread_bits_by_2(mut bits: u32) -> u32 {
     // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
-    bits &= /* --------------- */ 0b00000000_00000000_11111111_11111111;
-    bits = (bits ^ (bits << 8)) & 0b00000000_11111111_00000000_11111111;
-    bits = (bits ^ (bits << 4)) & 0b00001111_00001111_00001111_00001111;
-    bits = (bits ^ (bits << 2)) & 0b00110011_00110011_00110011_00110011;
-    bits = (bits ^ (bits << 1)) & 0b01010101_01010101_01010101_01010101;
+    bits &= /* --------------- */ 0b0000_0000_0000_0000_1111_1111_1111_1111;
+    bits = (bits ^ (bits << 8)) & 0b0000_0000_1111_1111_0000_0000_1111_1111;
+    bits = (bits ^ (bits << 4)) & 0b0000_1111_0000_1111_0000_1111_0000_1111;
+    bits = (bits ^ (bits << 2)) & 0b0011_0011_0011_0011_0011_0011_0011_0011;
+    bits = (bits ^ (bits << 1)) & 0b0101_0101_0101_0101_0101_0101_0101_0101;
     bits
 }
 
@@ -219,11 +219,11 @@ pub fn spread_bits_by_2(mut bits: u32) -> u32 {
 #[inline(always)]
 pub fn compact_bits_by_2(mut bits: u32) -> u32 {
     // from https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
-    bits &= /* --------------- */ 0b01010101_01010101_01010101_01010101;
-    bits = (bits ^ (bits >> 1)) & 0b00110011_00110011_00110011_00110011;
-    bits = (bits ^ (bits >> 2)) & 0b00001111_00001111_00001111_00001111;
-    bits = (bits ^ (bits >> 4)) & 0b00000000_11111111_00000000_11111111;
-    bits = (bits ^ (bits >> 8)) & 0b00000000_00000000_11111111_11111111;
+    bits &= /* --------------- */ 0b0101_0101_0101_0101_0101_0101_0101_0101;
+    bits = (bits ^ (bits >> 1)) & 0b0011_0011_0011_0011_0011_0011_0011_0011;
+    bits = (bits ^ (bits >> 2)) & 0b0000_1111_0000_1111_0000_1111_0000_1111;
+    bits = (bits ^ (bits >> 4)) & 0b0000_0000_1111_1111_0000_0000_1111_1111;
+    bits = (bits ^ (bits >> 8)) & 0b0000_0000_0000_0000_1111_1111_1111_1111;
     bits
 }
 
@@ -276,7 +276,7 @@ where
         let (mut min_x, mut min_y) = (first.x, first.y);
         let (mut max_x, mut max_y) = (first.x, first.y);
 
-        while let Some(p) = iter.next() {
+        for p in iter {
             min_x = min_x.min(p.x);
             min_y = min_y.min(p.y);
             max_x = max_x.max(p.x);

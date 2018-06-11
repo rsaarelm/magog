@@ -232,7 +232,7 @@ impl FromPrefab for String {
 
         for &(pos, c) in &sorted {
             while print_y < pos.y {
-                let _ = writeln!(ret, "");
+                let _ = writeln!(ret);
                 print_x = min_x;
                 print_y += 1;
             }

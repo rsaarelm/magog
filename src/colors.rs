@@ -1,3 +1,10 @@
+#![cfg_attr(feature = "cargo-clippy", allow(
+        approx_constant,
+        cast_lossless,
+        many_single_char_names,
+        unreadable_literal,
+))]
+
 use image;
 use num::Num;
 use std::fmt;
@@ -32,14 +39,7 @@ impl SRgba {
     /// Create new color with opaque alpha channel.
     pub fn rgb(r: u8, g: u8, b: u8) -> SRgba { SRgba::new(r, g, b, 255) }
 
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba {
-        SRgba {
-            r: r,
-            g: g,
-            b: b,
-            a: a,
-        }
-    }
+    pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba { SRgba { r, g, b, a } }
 
     /// Return square of distance to other color
     fn distance2(&self, other: &SRgba) -> i32 {
@@ -210,14 +210,7 @@ pub struct Rgba {
 }
 
 impl Rgba {
-    pub fn new(r: f32, g: f32, b: f32, a: f32) -> Rgba {
-        Rgba {
-            r: r,
-            g: g,
-            b: b,
-            a: a,
-        }
-    }
+    pub fn new(r: f32, g: f32, b: f32, a: f32) -> Rgba { Rgba { r, g, b, a } }
 
     pub fn luma(&self) -> f32 { self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722 }
 
@@ -234,7 +227,7 @@ impl FromStr for Rgba {
     fn from_str(s: &str) -> Result<Rgba, ()> {
         match SRgba::from_str(s) {
             Ok(a) => Ok(a.into()),
-            Err(e) => Err(e),
+            Err(_) => Err(()),
         }
     }
 }
@@ -609,44 +602,40 @@ impl TermColor {
             if !other.is_bright {
                 // But can use the other one, just invert the lerp.
                 other.lerp(self, 1.0 - x)
-            } else {
-                // Otherwise just do a hard switch at 50 %, can't gradient.
-                if x < 0.5 {
-                    PseudoTermColor::Solid(*self)
-                } else {
-                    PseudoTermColor::Solid(*other)
-                }
-            }
-        } else {
-            if x < 0.125 {
-                PseudoTermColor::Solid(*self)
-            } else if x < 0.375 {
-                PseudoTermColor::Mixed {
-                    fore: *other,
-                    back: self.base,
-                    mix: ColorMix::Mix25,
-                }
             } else if x < 0.5 {
-                PseudoTermColor::Mixed {
-                    fore: *other,
-                    back: self.base,
-                    mix: ColorMix::Mix50Low,
-                }
-            } else if x < 0.625 {
-                PseudoTermColor::Mixed {
-                    fore: *other,
-                    back: self.base,
-                    mix: ColorMix::Mix50High,
-                }
-            } else if x < 0.875 {
-                PseudoTermColor::Mixed {
-                    fore: *other,
-                    back: self.base,
-                    mix: ColorMix::Mix75,
-                }
+                // Otherwise just do a hard switch at 50 %, can't gradient.
+                PseudoTermColor::Solid(*self)
             } else {
                 PseudoTermColor::Solid(*other)
             }
+        } else if x < 0.125 {
+            PseudoTermColor::Solid(*self)
+        } else if x < 0.375 {
+            PseudoTermColor::Mixed {
+                fore: *other,
+                back: self.base,
+                mix: ColorMix::Mix25,
+            }
+        } else if x < 0.5 {
+            PseudoTermColor::Mixed {
+                fore: *other,
+                back: self.base,
+                mix: ColorMix::Mix50Low,
+            }
+        } else if x < 0.625 {
+            PseudoTermColor::Mixed {
+                fore: *other,
+                back: self.base,
+                mix: ColorMix::Mix50High,
+            }
+        } else if x < 0.875 {
+            PseudoTermColor::Mixed {
+                fore: *other,
+                back: self.base,
+                mix: ColorMix::Mix75,
+            }
+        } else {
+            PseudoTermColor::Solid(*other)
         }
     }
 }
@@ -678,20 +667,14 @@ impl PseudoTermColor {
     pub fn ch(self) -> char {
         match self {
             PseudoTermColor::Mixed {
-                fore: _,
-                back: _,
                 mix: ColorMix::Mix25,
+                ..
             } => '░',
             PseudoTermColor::Mixed {
-                fore: _,
-                back: _,
                 mix: ColorMix::Mix75,
+                ..
             } => '▓',
-            PseudoTermColor::Mixed {
-                fore: _,
-                back: _,
-                mix: _,
-            } => '▒',
+            PseudoTermColor::Mixed { .. } => '▒',
             PseudoTermColor::Solid(_) => '█',
         }
     }
@@ -700,30 +683,30 @@ impl PseudoTermColor {
     pub fn color(self) -> TermColor {
         match self {
             PseudoTermColor::Mixed {
-                fore: _,
                 back: base,
                 mix: ColorMix::Mix25,
+                ..
             } => TermColor {
                 base,
                 is_bright: false,
             },
             PseudoTermColor::Mixed {
-                fore: _,
                 back: base,
                 mix: ColorMix::Mix50Low,
+                ..
             } => TermColor {
                 base,
                 is_bright: false,
             },
             PseudoTermColor::Mixed {
                 fore: c,
-                back: _,
                 mix: ColorMix::Mix50High,
+                ..
             } => c,
             PseudoTermColor::Mixed {
                 fore: c,
-                back: _,
                 mix: ColorMix::Mix75,
+                ..
             } => c,
             PseudoTermColor::Solid(c) => c,
         }
@@ -815,16 +798,16 @@ impl From<Xterm256Color> for SRgba {
 
         // The first 16 are the EGA colors
         if c.0 == 7 {
-            return SRgba::rgb(192, 192, 192);
+            SRgba::rgb(192, 192, 192)
         } else if c.0 == 8 {
-            return SRgba::rgb(128, 128, 128);
+            SRgba::rgb(128, 128, 128)
         } else if c.0 < 16 {
             let i = if c.0 & 0b1000 != 0 { 255 } else { 128 };
             let r = if c.0 & 0b1 != 0 { i } else { 0 };
             let g = if c.0 & 0b10 != 0 { i } else { 0 };
             let b = if c.0 & 0b100 != 0 { i } else { 0 };
 
-            return SRgba::rgb(r * i, g * i, b * i);
+            SRgba::rgb(r * i, g * i, b * i)
         } else if c.0 < 232 {
             fn channel(i: u8) -> u8 { i * 40 + if i > 0 { 55 } else { 0 } }
             // 6^3 RGB space
@@ -833,12 +816,12 @@ impl From<Xterm256Color> for SRgba {
             let g = channel((c / 6) % 6);
             let r = channel(c / 36);
 
-            return SRgba::rgb(r, g, b);
+            SRgba::rgb(r, g, b)
         } else {
             // 24 level grayscale slide
             let c = c.0 - 232;
             let c = 8 + 10 * c;
-            return SRgba::rgb(c, c, c);
+            SRgba::rgb(c, c, c)
         }
     }
 }
@@ -850,21 +833,21 @@ impl From<SRgba> for Xterm256Color {
 
         fn rgb_channel(c: u8) -> u8 {
             if c < 48 {
-                return 0;
+                0
             } else if c < 75 {
-                return 1;
+                1
             } else {
-                return (c - 35) / 40;
+                (c - 35) / 40
             }
         }
 
         fn gray_channel(c: u8) -> u8 {
             if c < 13 {
-                return 0;
+                0
             } else if c > 235 {
-                return 23;
+                23
             } else {
-                return (c - 3) / 10;
+                (c - 3) / 10
             }
         }
 

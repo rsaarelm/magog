@@ -52,7 +52,7 @@ impl<N: GridNode> Dijkstra<N> {
             }
         }
 
-        Dijkstra { weights: weights }
+        Dijkstra { weights }
     }
 
     /// Return the neighbors of a cell (if any), sorted from downhill to
@@ -74,7 +74,7 @@ impl<N: GridNode> Dijkstra<N> {
 /// The `neighbors` function returns neighboring nodes and their estimated distance from the goal.
 /// The search will treat any node whose distance is zero as a goal and return a path leading to
 /// it.
-pub fn astar_path<'a, N, F>(start: N, end: &N, neighbors: F) -> Option<Vec<N>>
+pub fn astar_path<N, F>(start: N, end: &N, neighbors: F) -> Option<Vec<N>>
 where
     N: Eq + Hash + Clone,
     F: Fn(&N) -> Vec<(N, f32)>,

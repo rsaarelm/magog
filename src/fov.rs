@@ -105,9 +105,9 @@ impl<P: PolarPoint, T: FovValue> Arc<P, T> {
         Arc {
             begin: begin.clone(),
             pt: begin,
-            end: end,
-            prev_value: prev_value,
-            group_value: group_value,
+            end,
+            prev_value,
+            group_value,
         }
     }
 

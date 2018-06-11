@@ -28,8 +28,8 @@ where
             legend: BTreeMap::new(),
             out_of_alphabet: false,
             seen_values: BTreeMap::new(),
-            prefix_fn: prefix_fn,
-            alphabet: alphabet,
+            prefix_fn,
+            alphabet,
         }
     }
 

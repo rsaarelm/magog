@@ -10,8 +10,8 @@ where
 {
     LineSplit {
         remain: text,
-        char_width: char_width,
-        max_width: max_width,
+        char_width,
+        max_width,
         finished: false,
     }
 }
