@@ -38,11 +38,11 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 /// # }
 /// ```
 pub trait Noise<T> {
-    fn noise<I: Hash>(&self, seed: &I) -> T;
+    fn noise(&self, seed: &impl Hash) -> T;
 }
 
 impl<T: Distribution<U>, U> Noise<U> for T {
-    fn noise<I: Hash>(&self, seed: &I) -> U { self.sample(&mut seeded_rng(&seed)) }
+    fn noise(&self, seed: &impl Hash) -> U { self.sample(&mut seeded_rng(&seed)) }
 }
 
 /// A deciban unit log odds value.
@@ -182,7 +182,8 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
         F: Fn(&Self::Item) -> f32,
     {
         let dist = Uniform::new(0.0, 1.0);
-        let (_, ret) = self.into_iter()
+        let (_, ret) = self
+            .into_iter()
             .fold((0.0, None), |(weight_sum, prev_item), item| {
                 let item_weight = weight_fn(&item);
                 debug_assert!(item_weight >= 0.0);
@@ -227,10 +228,11 @@ pub fn compact_bits_by_2(mut bits: u32) -> u32 {
 }
 
 /// Repeatedly run a random generator that may fail until it succeeds.
-pub fn retry_gen<R: Rng, F, T, E>(n_tries: usize, rng: &mut R, gen: F) -> Result<T, E>
-where
-    F: Fn(&mut R) -> Result<T, E>,
-{
+pub fn retry_gen<R: Rng, T, E>(
+    n_tries: usize,
+    rng: &mut R,
+    gen: impl Fn(&mut R) -> Result<T, E>,
+) -> Result<T, E> {
     let mut ret = gen(rng);
     for _ in 0..(n_tries - 1) {
         if ret.is_ok() {

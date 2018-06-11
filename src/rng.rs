@@ -4,8 +4,7 @@ use vec_map::VecMap;
 use Deciban;
 
 /// Seed a RNG from any hashable value.
-pub fn seeded_rng(seed: &impl Hash) -> XorShiftRng
-{
+pub fn seeded_rng(seed: &impl Hash) -> XorShiftRng {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::Hasher;
 

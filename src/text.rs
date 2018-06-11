@@ -94,7 +94,8 @@ where
 
         self.remain = &self.remain[end_pos..];
         // Strip whitespace between this line and the next.
-        let start_pos = self.remain
+        let start_pos = self
+            .remain
             .chars()
             .take_while(|&c| c.is_whitespace())
             .map(|c| c.len_utf8())

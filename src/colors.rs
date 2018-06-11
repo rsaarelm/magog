@@ -966,8 +966,8 @@ mod test {
         // Test that luma values from corresponding sRGBA and RGBA are same.
 
         use super::{to_srgb, Rgba, SRgba};
-        use rng::seeded_rng;
         use rand::Rng;
+        use rng::seeded_rng;
 
         let mut rng = seeded_rng(&1);
         for _ in 0..1000 {

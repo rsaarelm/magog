@@ -25,10 +25,14 @@ mod system;
 mod text;
 mod timing;
 
-pub use alg_misc::{bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen,
-                   spread_bits_by_2, Deciban, LerpPath, Noise, WeightedChoice};
-pub use colors::{color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor,
-                 Rgba, SRgba, TermColor, Xterm256Color, NAMED_COLORS};
+pub use alg_misc::{
+    bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban, LerpPath,
+    Noise, WeightedChoice,
+};
+pub use colors::{
+    color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
+    TermColor, Xterm256Color, NAMED_COLORS,
+};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};

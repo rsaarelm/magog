@@ -228,8 +228,6 @@ impl Dir12 {
     /// If there is exactly one cluster of neighbors in the neighbor mask,
     /// return a direction pointing away from that cluster.
     pub fn away_from(neighbors: &[bool; 6]) -> Option<Dir12> {
-        use std::mem;
-
         let (begin, end) = match find_cluster(neighbors) {
             Some((a, b)) => (a, b),
             None => return None,
@@ -252,7 +250,7 @@ impl Dir12 {
         debug_assert!(away_dir < 12);
 
         // XXX: Unsafe because I'm too lazy to do int conversion func by hand.
-        return Some(unsafe { mem::transmute(away_dir) });
+        return Some(unsafe { ::std::mem::transmute(away_dir) });
 
         fn find_cluster(neighbors: &[bool; 6]) -> Option<(usize, usize)> {
             // Start of the active cluster, inclusive.

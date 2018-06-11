@@ -136,7 +136,8 @@ where
             } {
                 // We don't have the FOV value for the corner point, so just reuse the one from
                 // `next` and hope it works out okay.
-                if (self.is_wall)(prev.0, &prev.1) && (self.is_wall)(next.0, &next.1)
+                if (self.is_wall)(prev.0, &prev.1)
+                    && (self.is_wall)(next.0, &next.1)
                     && (self.is_wall)(corner_p, &next.1)
                 {
                     // When the wall corner is found, push it to the extra slot to be returned
