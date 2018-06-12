@@ -83,9 +83,9 @@ impl Add<Stats> for Stats {
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 /// Permanent creature properties.
 pub enum Intrinsic {
-    /// Moves 1/3 slower than usual.
+    /// Moves 1/3 slower than usual, stacks with Slowed status.
     Slow,
-    /// Moves 1/3 faster than usual, stacks with Fast status.
+    /// Moves 1/3 faster than usual, stacks with Hasted status.
     Quick,
     /// Can manipulate objects and doors.
     Hands,

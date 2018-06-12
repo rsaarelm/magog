@@ -191,8 +191,10 @@ pub enum Status {
     Confused,
     /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
     Dead,
-    /// Moves 1/3 faster than usual, stacks with Quick status.
-    Fast,
+    /// Moves 1/3 slower than usual, stacks with Slow intrinsic.
+    Slowed,
+    /// Moves 1/3 faster than usual, stacks with Quick intrinsic.
+    Hasted,
     /// Creature is delayed.
     ///
     /// This gets jumped up every time after the creature acted.

@@ -222,19 +222,18 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return how many frames the entity will delay after an action.
     fn action_delay(&self, e: Entity) -> u32 {
-        let speed = 3 + if self.has_intrinsic(e, Intrinsic::Slow) {
-            -1
-        } else {
-            0
-        } + if self.has_intrinsic(e, Intrinsic::Quick) {
-            1
-        } else {
-            0
-        } + if self.has_status(e, Status::Fast) {
-            1
-        } else {
-            0
-        };
+        // Granular speed system:
+        // | slow and slowed  | 1 |
+        // | slow or slowed   | 2 |
+        // | normal           | 3 |
+        // | quick or hasted  | 4 |
+        // | quick and hasted | 5 |
+
+        let mut speed = 3;
+        if self.has_intrinsic(e, Intrinsic::Slow) { speed -= 1; }
+        if self.has_status(e, Status::Slowed) { speed -= 1; }
+        if self.has_intrinsic(e, Intrinsic::Quick) { speed += 1; }
+        if self.has_status(e, Status::Hasted) { speed += 1; }
 
         match speed {
             1 => 36,
