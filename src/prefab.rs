@@ -100,7 +100,7 @@ pub trait FromPrefab {
 
 // Text prefabs
 
-/// The text map character coordinate space.
+/// The oblique projection text map character coordinate space.
 pub struct TextSpace;
 
 pub type TextVector = TypedVector2D<i32, TextSpace>;
@@ -262,6 +262,58 @@ impl FromPrefab for String {
         }
 
         ret
+    }
+}
+
+/// Wrapper to signify that a text prefab has no spaces between cells.
+///
+/// A dense text map has no way to specify the origin position, so the origin is just placed at the
+/// point corresponding to the top left corner of the bounding box of the prefab. Use the sparse
+/// map style if you want to specify an origin for your prefab.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate euclid;
+/// # extern crate calx;
+/// # fn main() {
+/// use std::collections::HashMap;
+/// use euclid::vec2;
+/// use calx::{CellVector, IntoPrefab, DenseTextMap};
+///
+/// let map: HashMap<CellVector, char> = DenseTextMap(r#"
+///   12
+///   34"#).into_prefab().expect("Failed to parse string map");
+///
+/// for &(c, p) in &[
+///   ('1', (0, 0)),
+///   ('2', (1, 0)),
+///   ('3', (0, 1)),
+///   ('4', (1, 1))] {
+///     assert_eq!(Some(&c), map.get(&vec2(p.0, p.1)));
+/// }
+///
+/// # }
+/// ```
+pub struct DenseTextMap<'a>(pub &'a str);
+
+impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
+        let mut elts = Vec::new();
+        let mut min_x = i32::MAX;
+        let mut min_y = i32::MAX;
+        for (y, line) in self.0.lines().enumerate() {
+            for (x, c) in line.chars().enumerate() {
+                if !c.is_whitespace() {
+                    let (x, y) = (x as i32, y as i32);
+                    elts.push((vec2(x, y), c));
+                    min_x = min_x.min(x);
+                    min_y = min_y.min(y);
+                }
+            }
+        }
+
+        Ok(P::from_iter(elts.into_iter().map(|(p, c)| (p - vec2(min_x, min_y), c))))
     }
 }
 
@@ -489,6 +541,7 @@ impl Transformation for MinimapSpace {
 mod test {
     use super::MinimapSpace;
     use space::Transformation;
+
     #[test]
     fn test_minimap_projection() {
         assert_eq!([0, 0], MinimapSpace::project([0, 0]));
