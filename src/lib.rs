@@ -15,6 +15,7 @@ pub mod ease;
 mod fov;
 mod hex;
 mod hex_fov;
+mod incremental;
 mod legend_builder;
 mod parser;
 mod prefab;
@@ -36,6 +37,7 @@ pub use colors::{
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, Dir12, Dir6, HexDisc, HexGeom, HexNeighbor};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
+pub use incremental::{Incremental, IncrementalState};
 pub use legend_builder::LegendBuilder;
 pub use prefab::{
     DenseTextMap, FromPrefab, IntoPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace,
