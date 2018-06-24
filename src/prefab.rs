@@ -313,7 +313,9 @@ impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
             }
         }
 
-        Ok(P::from_iter(elts.into_iter().map(|(p, c)| (p - vec2(min_x, min_y), c))))
+        Ok(P::from_iter(
+            elts.into_iter().map(|(p, c)| (p - vec2(min_x, min_y), c)),
+        ))
     }
 }
 
