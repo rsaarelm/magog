@@ -33,6 +33,27 @@ impl<T: FailingIncremental<E>, E> Incremental<E> for Result<T, T::Error> {
 /// Handle that stores an `Incremental` object and the event sequence used to build it.
 ///
 /// Serializes itself by only storing the log.
+///
+/// # Examples
+///
+/// ```
+/// use calx::{Incremental, IncrementalState};
+///
+/// #[derive(Default)]
+/// struct State(u32);
+///
+/// impl Incremental<u32> for State {
+///     fn update(self, e: &u32) -> State { State(self.0 + *e) }
+/// }
+///
+/// let mut handle: IncrementalState<State, u32> = Default::default();
+/// assert_eq!(handle.0, 0);
+///
+/// for x in &[1, 2, 3, 4] { handle.push(*x); }
+/// assert_eq!(handle.0, 10);
+/// handle.pop();
+/// assert_eq!(handle.0, 6);
+/// ```
 pub struct IncrementalState<T: Incremental<E> + Default, E> {
     log: Vec<E>,
     state: T,
