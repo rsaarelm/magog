@@ -31,7 +31,7 @@ pub fn tilesheet_bounds(image: &ImageBuffer) -> Vec<Rect<u32>> {
     }
 
     ret.sort_by(|a, b| rect_key(a).cmp(&rect_key(b)));
-    return ret.into_iter().map(|r| r.cast::<u32>().unwrap()).collect();
+    return ret.into_iter().map(|r| r.cast::<u32>()).collect();
 
     fn rect_key(x: &Rect<i32>) -> (i32, i32) { (x.bottom_right().y, x.bottom_right().x) }
 }
