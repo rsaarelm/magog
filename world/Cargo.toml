@@ -8,11 +8,10 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "world"
 
 [dependencies]
-num = "0.1"
 rand = { version = "0.5", features = ["serde1"] }
 vec_map = "0.8"
-ron = "0.2"
-euclid = "0.17"
+ron = "0.3"
+euclid = "0.18"
 lazy_static = "1.0"
 serde = "1.0"
 serde_derive = "1.0"

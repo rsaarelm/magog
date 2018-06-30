@@ -11,7 +11,7 @@ members = ["world", "display"]
 
 [dependencies]
 rand = { version = "0.5", features = ["serde1"] }
-euclid = "0.17"
+euclid = "0.18"
 time = "0.1"
 glium = "0.21"
 scancode = "0.1"

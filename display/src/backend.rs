@@ -74,7 +74,7 @@ impl Backend {
         // texture allocations.
         vitral::Builder::new()
             .solid_texture(cache::solid())
-            .build(self.inner.canvas_size().cast().unwrap(), |img| {
+            .build(self.inner.canvas_size().cast(), |img| {
                 self.inner.make_texture(img)
             })
     }

@@ -230,10 +230,18 @@ pub trait Query: TerrainQuery + Sized {
         // | quick and hasted | 5 |
 
         let mut speed = 3;
-        if self.has_intrinsic(e, Intrinsic::Slow) { speed -= 1; }
-        if self.has_status(e, Status::Slowed) { speed -= 1; }
-        if self.has_intrinsic(e, Intrinsic::Quick) { speed += 1; }
-        if self.has_status(e, Status::Hasted) { speed += 1; }
+        if self.has_intrinsic(e, Intrinsic::Slow) {
+            speed -= 1;
+        }
+        if self.has_status(e, Status::Slowed) {
+            speed -= 1;
+        }
+        if self.has_intrinsic(e, Intrinsic::Quick) {
+            speed += 1;
+        }
+        if self.has_status(e, Status::Hasted) {
+            speed += 1;
+        }
 
         match speed {
             1 => 36,
