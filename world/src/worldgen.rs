@@ -108,21 +108,7 @@ impl Worldgen {
         }
     }
 
-    fn default_terrain(&self, loc: Location) -> Terrain {
-        use Terrain::*;
-        if loc.z == 0 {
-            /*
-            match loc.noise() {
-                n if n > 0.8 => Tree,
-                n if n > -0.8 => Grass,
-                _ => Water,
-            }
-            */
-            Ground
-        } else {
-            Rock
-        }
-    }
+    fn default_terrain(&self, _loc: Location) -> Terrain { Terrain::Rock }
 
     pub fn get_portal(&self, loc: Location) -> Option<Location> {
         self.portals.get(&loc).map(|&p| loc + p)
