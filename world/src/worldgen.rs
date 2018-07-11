@@ -182,7 +182,7 @@ impl<'a> SectorDigger<'a> {
     fn loc(&self, pos: mapgen::Point2D) -> Location { self.sector.origin() + pos.to_vector() }
 
     fn set(&mut self, loc: Location, terrain: Terrain) {
-        if terrain != Terrain::Gate {
+        if terrain != Terrain::Entrance {
             debug_assert_ne!(self.up_portal, Some(loc), "mapgen overwriting exit");
             debug_assert_ne!(self.down_portal, Some(loc), "mapgen overwriting exit");
         }
@@ -288,14 +288,14 @@ impl<'a> mapgen::Dungeon for SectorDigger<'a> {
         self.up_portal = Some(loc);
         self.spawn_region.remove(&loc);
         // TODO: Add debug assertion that up-stairs are dug in the upper wall of a room
-        self.set(loc, Terrain::Gate);
+        self.set(loc, Terrain::Entrance);
     }
 
     fn add_down_stairs(&mut self, pos: mapgen::Point2D) {
         let loc = self.loc(pos);
         self.down_portal = Some(loc);
         self.spawn_region.remove(&loc);
-        self.set(loc, Terrain::Gate);
+        self.set(loc, Terrain::Entrance);
 
         // Visual hack to make the down-stairs show up better, carve out the rock blob that would
         // be drawn partially in front of it on screen.

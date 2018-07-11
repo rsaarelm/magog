@@ -13,7 +13,22 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
     let mut ret = VecMap::new();
 
     ret.insert(Empty as usize, Builder::new("assets/floors.png").tile(0, 0).finish());
-    ret.insert(Gate as usize, Builder::new("assets/portals.png")
+    ret.insert(Entrance as usize, Builder::new("assets/portals.png")
+        .color(LIGHTCYAN)
+        .tile(0, 0).merge()
+        .tile(32, 0).merge()
+        .tile(64, 0).merge()
+        .tile(96, 0).merge()
+        .tile(128, 0).merge()
+        .tile(160, 0).merge()
+        .tile(192, 0).merge()
+        .tile(224, 0).merge()
+        .tile(256, 0).merge()
+        .tile(288, 0).merge()
+        .tile(320, 0).merge()
+        .tile(352, 0).merge()
+        .tile(384, 0).finish());
+    ret.insert(Exit as usize, Builder::new("assets/portals.png")
         .color(LIGHTCYAN)
         .tile(0, 0).merge()
         .tile(32, 0).merge()
