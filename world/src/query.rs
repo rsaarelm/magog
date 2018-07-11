@@ -5,6 +5,7 @@ use euclid::vec2;
 use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
 use location::Location;
+use mapfile;
 use rand::distributions::Uniform;
 use stats;
 use stats::Intrinsic;
@@ -16,7 +17,6 @@ use terrain::Terrain;
 use volume::Volume;
 use world::Ecs;
 use FovStatus;
-use Prefab;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery + Sized {
@@ -405,7 +405,7 @@ pub trait Query: TerrainQuery + Sized {
         self.ecs().desc.get(e).and_then(|desc| Some(&desc.name[..]))
     }
 
-    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> Prefab {
+    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapfile::Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
@@ -434,7 +434,7 @@ pub trait Query: TerrainQuery + Sized {
             map.push((pos, (terrain, entities)));
         }
 
-        Prefab::from_iter(map.into_iter())
+        mapfile::Prefab::from_iter(map.into_iter())
     }
 
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {

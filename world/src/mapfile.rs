@@ -6,7 +6,8 @@ use std::error::Error;
 use std::fmt;
 use std::io;
 use terrain::Terrain;
-use Prefab;
+
+pub type Prefab = HashMap<CellVector, (Terrain, Vec<String>)>;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), Box<Error>> {
     const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\

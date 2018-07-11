@@ -6,13 +6,13 @@ use effect::{Damage, Effect};
 use event::Event;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
+use mapfile;
 use query::Query;
 use rand::{seq, Rng};
 use spec;
 use terraform::Terraform;
 use volume::Volume;
 use world::{Ecs, Loadout};
-use Prefab;
 use {attack_damage, roll};
 
 /// World-mutating methods that are not exposed outside the crate.
@@ -486,7 +486,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
-    fn deploy_prefab(&mut self, origin: Location, prefab: &Prefab) {
+    fn deploy_prefab(&mut self, origin: Location, prefab: &mapfile::Prefab) {
         for (&p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 
