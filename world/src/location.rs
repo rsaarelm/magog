@@ -135,6 +135,20 @@ impl Location {
             z,
         )
     }
+
+    /// True for locations at sector corner that are connected to a diagonally adjacent sector.
+    ///
+    /// Locations that are next to a diagonal section direct travel between two diagonal sectors.
+    /// You may want to take care to block these locations during map generation to prevent
+    /// unexpected connections if the sector structure is designed with the assumption that sectors
+    /// are only connected along cardinal directions.
+    pub fn is_next_to_diagonal_sector(self) -> bool {
+        let sector = self.sector();
+
+        hex_neighbors(self)
+            .map(|x| x.sector().taxicab_distance(sector))
+            .any(|d| d > 1)
+    }
 }
 
 impl<V: Into<CellVector>> Add<V> for Location {
@@ -240,6 +254,15 @@ impl Sector {
         let n = SECTOR_WIDTH * SECTOR_HEIGHT;
         let pitch = SECTOR_WIDTH;
         (0..n).map(move |i| self.rect_coord_loc(i % pitch, i / pitch))
+    }
+
+    /// Iterate offset points for a generic `Sector`.
+    pub fn points() -> impl Iterator<Item = CellVector> {
+        let sector = Sector::new(0, 0, 0);
+        let sector_origin = sector.origin();
+        sector
+            .iter()
+            .map(move |loc| sector_origin.v2_at(loc).unwrap())
     }
 
     pub fn taxicab_distance(self, other: Sector) -> i32 {
