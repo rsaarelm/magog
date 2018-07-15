@@ -3,7 +3,7 @@
 #![deny(missing_docs)]
 
 use euclid::{Point2D, Size2D};
-use glium::glutin::dpi::{LogicalPosition, LogicalSize};
+use glium::glutin::dpi::LogicalSize;
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
 use glium::{self, Surface};
@@ -174,14 +174,14 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                     if window_id == self.display.gl_window().id() =>
                 {
                     match event {
-                        &WindowEvent::Closed => return false,
-                        &WindowEvent::CursorMoved {
-                            position: (x, y), ..
-                        } => {
+                        &WindowEvent::CloseRequested => return false,
+                        &WindowEvent::CursorMoved { position, .. } => {
+                            let position =
+                                position.to_physical(self.display.gl_window().get_hidpi_factor());
                             let pos = self.zoom.screen_to_canvas(
                                 self.window_size,
                                 self.canvas.size(),
-                                Point2D::new(x as f32, y as f32),
+                                Point2D::new(position.x as f32, position.y as f32),
                             );
                             core.input_mouse_move(pos.x as i32, pos.y as i32);
                         }
@@ -560,5 +560,14 @@ impl Canvas {
 }
 
 fn get_size(display: &glium::Display) -> (u32, u32) {
-    display.gl_window().get_inner_size().unwrap_or((800, 600))
+    let size = display
+        .gl_window()
+        .get_inner_size()
+        .unwrap_or(LogicalSize {
+            width: 800f64,
+            height: 600f64,
+        })
+        .to_physical(display.gl_window().get_hidpi_factor());
+
+    (size.width as u32, size.height as u32)
 }

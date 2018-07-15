@@ -12,7 +12,7 @@ euclid = "0.18"
 time = "0.1"
 
 image = { version = "0.19", optional = true }
-glium = { version = "0.21", optional = true }
+glium = { version = "0.22", optional = true }
 
 [features]
 default = ["image"]
