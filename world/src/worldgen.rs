@@ -161,10 +161,9 @@ impl<'a> SectorDigger<'a> {
         let mapgen_origin = mapgen::Point2D::zero();
 
         self.sector.iter().filter_map(move |loc| {
-            let pos = mapgen_origin
-                + sector_origin
-                    .v2_at(loc)
-                    .expect("Sector points are not Euclidean");
+            let pos = mapgen_origin + sector_origin
+                .v2_at(loc)
+                .expect("Sector points are not Euclidean");
 
             // Okay, this part is a bit hairy, hang on.
             // Sectors are arranged in a rectangular grid, so there are some cells where you can

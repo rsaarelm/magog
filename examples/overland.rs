@@ -26,15 +26,28 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(name = "generate", help = "Generate a blank overland map image")]
+    #[structopt(
+        name = "generate",
+        help = "Generate a blank overland map image"
+    )]
     Generate {
         #[structopt(long = "minimap", help = "Use minimap projection")]
         minimap: bool,
 
-        #[structopt(short = "w", long = "width", default_value = "8", help = "Width in sectors")]
+        #[structopt(
+            short = "w",
+            long = "width",
+            default_value = "8",
+            help = "Width in sectors"
+        )]
         width: u32,
 
-        #[structopt(short = "h", long = "height", default_value = "9", help = "Height in sectors")]
+        #[structopt(
+            short = "h",
+            long = "height",
+            default_value = "9",
+            help = "Height in sectors"
+        )]
         height: u32,
 
         #[structopt(help = "Output PNG file")]
@@ -46,10 +59,16 @@ enum Command {
         help = "Convert map from one projection to another and normalize the checkerboard pattern"
     )]
     Convert {
-        #[structopt(long = "input-minimap", help = "Input file has minimap projection")]
+        #[structopt(
+            long = "input-minimap",
+            help = "Input file has minimap projection"
+        )]
         input_minimap: bool,
 
-        #[structopt(long = "output-minimap", help = "Use minimap projection in output file")]
+        #[structopt(
+            long = "output-minimap",
+            help = "Use minimap projection in output file"
+        )]
         output_minimap: bool,
 
         #[structopt(help = "Input file")]
