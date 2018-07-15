@@ -211,7 +211,8 @@ impl FromPrefab for String {
             .chain(append)
             .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
             .min()
-            .unwrap_or(0) - 1;
+            .unwrap_or(0)
+            - 1;
 
         // Arrange cells in print order.
         let mut sorted: Vec<(TextVector, char)> = prefab.iter()

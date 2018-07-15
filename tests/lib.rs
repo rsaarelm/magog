@@ -63,7 +63,8 @@ fn test_weighted_choice() {
         .iter()
         .zip(ideal)
         .map(|(x, y)| (x - y) * (x - y))
-        .sum::<f32>() / measurement.len() as f32;
+        .sum::<f32>()
+        / measurement.len() as f32;
     println!("Mean square error from expected: {}", err);
     assert!(err < 0.0001);
 }
