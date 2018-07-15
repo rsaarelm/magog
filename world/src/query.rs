@@ -7,11 +7,13 @@ use item::{EquipType, ItemType, Slot};
 use location::Location;
 use mapfile;
 use rand::distributions::Uniform;
+use spec::EntitySpawn;
 use stats;
 use stats::Intrinsic;
 use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
 use std::slice;
+use std::str::FromStr;
 use terraform::TerrainQuery;
 use terrain::Terrain;
 use volume::Volume;
@@ -425,11 +427,12 @@ pub trait Query: TerrainQuery + Sized {
 
             let terrain = self.terrain(loc);
 
-            let entities = Vec::from_iter(
-                self.entities_at(loc)
-                    .into_iter()
-                    .filter_map(|e| self.spawn_name(e).map(|s| s.to_string())),
-            );
+            let entities: Vec<_> = self
+                .entities_at(loc)
+                .into_iter()
+                .filter_map(|e| self.spawn_name(e))
+                .map(|n| EntitySpawn::from_str(n).unwrap())
+                .collect();
 
             map.push((pos, (terrain, entities)));
         }

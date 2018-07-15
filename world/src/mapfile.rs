@@ -1,20 +1,20 @@
 use calx::{self, CellVector, FromPrefab, IntoPrefab};
 use ron;
-use spec;
+use spec::EntitySpawn;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
 use std::io;
 use terrain::Terrain;
 
-pub type Prefab = HashMap<CellVector, (Terrain, Vec<String>)>;
+pub type Prefab = HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>;
 
 pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), Box<Error>> {
     const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                             abcdefghijklmnopqrstuvwxyz\
                             0123456789";
 
-    let chars_f = move |x: &(Terrain, Vec<String>)| {
+    let chars_f = move |x: &(Terrain, Vec<EntitySpawn>)| {
         let &(ref t, ref e) = x;
         if e.is_empty() {
             t.preferred_map_chars()
@@ -50,14 +50,6 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab, Box<Error>> {
     input.read_to_string(&mut s)?;
     let save: MapSave = ron::de::from_str(&s)?;
 
-    // Validate the prefab
-    for i in save.legend.values() {
-        for e in &i.1 {
-            if !spec::is_named(e) {
-                return Err(format!("Unknown entity spawn '{}'", e).into());
-            }
-        }
-    }
     for c in save.map.chars() {
         if c.is_whitespace() {
             continue;
@@ -79,7 +71,7 @@ pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab, Box<Error>> {
 #[derive(Debug, Serialize, Deserialize)]
 struct MapSave {
     pub map: String,
-    pub legend: BTreeMap<char, (Terrain, Vec<String>)>,
+    pub legend: BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
 }
 
 impl fmt::Display for MapSave {

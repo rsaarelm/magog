@@ -8,6 +8,7 @@ use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use mapfile;
 use query::Query;
+use rand::distributions::Distribution;
 use rand::{seq, Rng};
 use spec;
 use terraform::Terraform;
@@ -504,11 +505,10 @@ pub trait Mutate: Query + Terraform + Sized {
             let loc = origin + p;
 
             for spawn in entities.iter() {
-                if spawn == "player" {
+                if spawn == &*spec::PLAYER_SPAWN {
                     self.spawn_player(loc);
                 } else {
-                    let loadout = spec::named(self.rng(), spawn)
-                        .expect(&format!("Spec '{}' not found!", spawn));
+                    let loadout = spawn.sample(self.rng());
                     self.spawn(&loadout, loc);
                 }
             }
@@ -531,8 +531,8 @@ pub trait Mutate: Query + Terraform + Sized {
         } else {
             // Initialize new player object. Add some special components you don't get on regular
             // mob spawns.
-            let loadout = spec::named(self.rng(), "player")
-                .expect("Player spec not found")
+            let loadout = spec::PLAYER_SPAWN
+                .sample(self.rng())
                 .c(Brain::player())
                 .c(MapMemory::default());
             let player = self.spawn(&loadout, loc);

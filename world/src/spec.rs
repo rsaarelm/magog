@@ -3,7 +3,11 @@ use components::{Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponen
 use item::ItemType;
 use rand::distributions::Distribution;
 use rand::Rng;
+use serde;
 use stats::{Intrinsic, Stats};
+use std::error::Error;
+use std::fmt;
+use std::str::FromStr;
 use world::Loadout;
 
 pub trait Spec: Distribution<<Self as Spec>::Output> {
@@ -289,7 +293,7 @@ pub fn pick<T>(rng: &mut impl Rng, depth: i32, specs: &[impl Spec<Output = T>]) 
         .map(|s| s.sample(rng))
 }
 
-pub fn named(rng: &mut impl Rng, name: &str) -> Option<Loadout> {
+fn named<R: Rng + ?Sized>(rng: &mut R, name: &str) -> Option<Loadout> {
     if let Some(spec) = MOB_SPECS.iter().find(|x| x.name == name) {
         return Some(spec.sample(rng));
     }
@@ -301,8 +305,91 @@ pub fn named(rng: &mut impl Rng, name: &str) -> Option<Loadout> {
     None
 }
 
-pub fn is_named(name: &str) -> bool { named(&mut seeded_rng(&0), name).is_some() }
+fn is_named(name: &str) -> bool { named(&mut seeded_rng(&0), name).is_some() }
+
+/// String that's guaranteed to describe an entity spawn.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub struct EntitySpawn(String);
+
+impl fmt::Display for EntitySpawn {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+}
+
+lazy_static! {
+    pub static ref PLAYER_SPAWN: EntitySpawn = EntitySpawn("player".to_string());
+}
+
+#[derive(Debug)]
+pub struct SpawnError(String);
+
+impl fmt::Display for SpawnError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EntitySpawn {} not found in spec database", self.0)
+    }
+}
+
+impl Error for SpawnError {}
+
+impl FromStr for EntitySpawn {
+    type Err = SpawnError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if !is_named(s) {
+            Err(SpawnError(s.to_string()))
+        } else {
+            Ok(EntitySpawn(s.to_string()))
+        }
+    }
+}
+
+impl serde::Serialize for EntitySpawn {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.to_string().serialize(s)
+    }
+}
+
+impl<'a> serde::Deserialize<'a> for EntitySpawn {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
+        let s: String = serde::Deserialize::deserialize(d)?;
+        Ok(EntitySpawn::from_str(&s).map_err(serde::de::Error::custom)?)
+    }
+}
+
+impl Distribution<Loadout> for EntitySpawn {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Loadout {
+        named(rng, &self.0).expect(&format!(
+            "EntitySpawn {:?} not found in spec database",
+            self
+        ))
+    }
+}
 
 // Helpers for data conciseness.
 
 fn d<T: Default>() -> T { Default::default() }
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_entity_spawn_serialization() {
+        use super::EntitySpawn;
+        use ron;
+        use std::str::FromStr;
+
+        let example = EntitySpawn::from_str("dreg").unwrap();
+        assert!(EntitySpawn::from_str("tyop txet").is_err());
+
+        // Check roundtrip.
+        let ser = ron::ser::to_string(&example).unwrap();
+        assert_eq!(example, ron::de::from_str::<EntitySpawn>(&ser).unwrap());
+
+        // Names in spec database get deserialized.
+        assert_eq!(
+            ron::de::from_str::<EntitySpawn>(&"\"dreg\"".to_string()).unwrap(),
+            example
+        );
+
+        // Names not in database don't.
+        assert!(ron::de::from_str::<EntitySpawn>(&"\"tyop txet\"".to_string()).is_err());
+    }
+}
