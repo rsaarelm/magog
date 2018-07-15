@@ -2,14 +2,17 @@
 
 #![deny(missing_docs)]
 
-use {AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex};
 use euclid::{Point2D, Size2D};
-use glium::{self, Surface};
+use glium::glutin::dpi::{LogicalPosition, LogicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
+use glium::{self, Surface};
 use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
+use {
+    AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
+};
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
@@ -167,7 +170,8 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == self.display.gl_window().id() =>
+                }
+                    if window_id == self.display.gl_window().id() =>
                 {
                     match event {
                         &WindowEvent::Closed => return false,
@@ -547,7 +551,8 @@ impl Canvas {
 
         ImageBuffer::from_fn(image.width, image.height, |x, y| {
             let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;
-            image.data[i] as u32 + ((image.data[i + 1] as u32) << 8)
+            image.data[i] as u32
+                + ((image.data[i + 1] as u32) << 8)
                 + ((image.data[i + 2] as u32) << 16)
                 + ((image.data[i + 3] as u32) << 24)
         })

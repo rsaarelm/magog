@@ -9,11 +9,11 @@ fn main() { feature::main(); }
 
 #[cfg(feature = "glium_backend")]
 mod feature {
-    use euclid::{Point2D, Rect, Size2D, point2, vec2};
+    use euclid::{point2, vec2, Point2D, Rect, Size2D};
     use glium::glutin;
     use image;
-    use vitral::{self, Align, ButtonAction, Color, PngBytes, RectUtil};
     use vitral::glium_backend::DefaultVertex;
+    use vitral::{self, Align, ButtonAction, Color, PngBytes, RectUtil};
 
     type Core = vitral::Core<DefaultVertex>;
     type Backend = vitral::glium_backend::Backend<DefaultVertex>;

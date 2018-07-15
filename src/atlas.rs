@@ -1,6 +1,6 @@
-use {ImageBuffer, ImageData, TextureIndex};
 use euclid::{Point2D, Rect, Size2D};
 use std::cmp::max;
+use {ImageBuffer, ImageData, TextureIndex};
 
 /// An incremental texture atlas.
 ///

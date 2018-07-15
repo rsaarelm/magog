@@ -8,7 +8,7 @@ extern crate glium;
 extern crate euclid;
 extern crate time;
 
-use euclid::{rect, Point2D, Rect, Size2D, Vector2D, point2, vec2};
+use euclid::{point2, rect, vec2, Point2D, Rect, Size2D, Vector2D};
 use std::collections::HashMap;
 use std::iter;
 use std::mem;

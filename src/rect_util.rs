@@ -1,5 +1,5 @@
-use euclid::{Point2D, TypedPoint2D, TypedRect, TypedSize2D, TypedVector2D, size2, vec2};
 use euclid::num::{One, Zero};
+use euclid::{size2, vec2, Point2D, TypedPoint2D, TypedRect, TypedSize2D, TypedVector2D};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Point anchoring, for snapping the origin point of a rectangle to different corners.
