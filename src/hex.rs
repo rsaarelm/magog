@@ -24,36 +24,30 @@ impl HexGeom for CellVector {
     }
 }
 
-// TODO return impl
-// No need to muck with custom return iter type then...
 /// Return offsets to neighboring hexes.
-pub fn hex_neighbors<P, R>(origin: P) -> HexNeighbor<P>
+pub fn hex_neighbors<P, R>(origin: P) -> impl Iterator<Item = R>
 where
     P: Clone + Add<CellVector, Output = R>,
 {
-    HexNeighbor { origin, i: 0 }
+    use Dir6::*;
+
+    [North, Northeast, Southeast, South, Southwest, Northwest]
+        .iter()
+        .map(move |&d| origin.clone() + d.into())
 }
 
-pub struct HexNeighbor<P> {
-    origin: P,
-    i: i32,
-}
-
-impl<P, R> Iterator for HexNeighbor<P>
+/// Return offsets to the four cardinal directions.
+///
+/// These are also the fake-isometric directions on a hex map.
+pub fn taxicab_neighbors<P, R>(origin: P) -> impl Iterator<Item = R>
 where
     P: Clone + Add<CellVector, Output = R>,
 {
-    type Item = R;
+    use Dir6::*;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.i >= 6 {
-            None
-        } else {
-            let ret = Some(self.origin.clone() + Dir6::from_int(self.i).to_v2());
-            self.i += 1;
-            ret
-        }
-    }
+    [Northeast, Southeast, Southwest, Northwest]
+        .iter()
+        .map(move |&d| origin.clone() + d.into())
 }
 
 /// Return an iterator for all the points in the hex disc with the given radius.
