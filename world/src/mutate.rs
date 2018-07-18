@@ -6,7 +6,7 @@ use effect::{Damage, Effect};
 use event::Event;
 use item::{ItemType, MagicEffect, Slot};
 use location::Location;
-use mapfile;
+use mapsave;
 use query::Query;
 use rand::distributions::Distribution;
 use rand::{seq, Rng};
@@ -487,7 +487,7 @@ pub trait Mutate: Query + Terraform + Sized {
 
     fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
 
-    fn deploy_prefab(&mut self, origin: Location, prefab: &mapfile::Prefab) {
+    fn deploy_prefab(&mut self, origin: Location, prefab: &mapsave::Prefab) {
         for (&p, &(ref terrain, _)) in prefab.iter() {
             let loc = origin + p;
 

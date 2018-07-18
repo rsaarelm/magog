@@ -1,15 +1,31 @@
 use calx::{self, CellVector, FromPrefab, IntoPrefab};
-use ron;
 use spec::EntitySpawn;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::io;
 use terrain::Terrain;
 
 pub type Prefab = HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>;
 
-pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), Box<Error>> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MapSave {
+    pub map: String,
+    pub legend: BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
+}
+
+/// Convert a standard map prefab into an ASCII map with a legend.
+///
+/// The legend characters are assigned procedurally. The function will fail if the prefab is too
+/// complex and the legend generator runs out of separate characters to use.
+pub fn build_textmap(
+    prefab: &Prefab,
+) -> Result<
+    (
+        HashMap<CellVector, char>,
+        BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
+    ),
+    Box<Error>,
+> {
     const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                             abcdefghijklmnopqrstuvwxyz\
                             0123456789";
@@ -38,40 +54,43 @@ pub fn save_prefab<W: io::Write>(output: &mut W, prefab: &Prefab) -> Result<(), 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
     let prefab: HashMap<CellVector, _> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
 
-    let map = String::from_prefab(&prefab);
-    let legend = legend_builder.legend;
-
-    write!(output, "{}", MapSave { map, legend })?;
-    Ok(())
+    Ok((prefab, legend_builder.legend))
 }
 
-pub fn load_prefab<I: io::Read>(input: &mut I) -> Result<Prefab, Box<Error>> {
-    let mut s = String::new();
-    input.read_to_string(&mut s)?;
-    let save: MapSave = ron::de::from_str(&s)?;
-
-    for c in save.map.chars() {
-        if c.is_whitespace() {
-            continue;
-        }
-        if !save.legend.contains_key(&c) {
-            return Err(format!("Unknown map character '{}'", c).into());
-        }
+impl MapSave {
+    pub fn from_prefab(prefab: &Prefab) -> Result<MapSave, Box<Error>> {
+        let (prefab, legend) = build_textmap(prefab)?;
+        Ok(MapSave::new(prefab, legend))
     }
 
-    // Turn map into prefab.
-    let (map, legend) = (save.map, save.legend);
-    let prefab: HashMap<CellVector, char> = IntoPrefab::into_prefab(map)?;
-    Ok(prefab
-        .into_iter()
-        .map(|(p, item)| (p, legend[&item].clone()))
-        .collect())
-}
+    pub fn into_prefab(self) -> Result<Prefab, Box<Error>> {
+        let (map, legend) = (self.map, self.legend);
+        for c in map.chars() {
+            if c.is_whitespace() {
+                continue;
+            }
+            if !legend.contains_key(&c) {
+                return Err(format!("Unknown map character '{}'", c).into());
+            }
+        }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct MapSave {
-    pub map: String,
-    pub legend: BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
+        let prefab: HashMap<CellVector, char> = IntoPrefab::into_prefab(map)?;
+        let ret: Prefab = prefab
+            .into_iter()
+            .map(|(p, item)| (p, legend[&item].clone()))
+            .collect();
+        Ok(ret)
+    }
+
+    pub fn new(
+        text_prefab: impl IntoIterator<Item = (CellVector, char)>,
+        legend: impl IntoIterator<Item = (char, (Terrain, Vec<EntitySpawn>))>,
+    ) -> MapSave {
+        MapSave {
+            map: String::from_prefab(&text_prefab.into_iter().collect()),
+            legend: legend.into_iter().collect(),
+        }
+    }
 }
 
 impl fmt::Display for MapSave {

@@ -5,7 +5,7 @@ use euclid::vec2;
 use grammar::{Noun, Pronoun};
 use item::{EquipType, ItemType, Slot};
 use location::Location;
-use mapfile;
+use mapsave;
 use rand::distributions::Uniform;
 use spec::EntitySpawn;
 use stats;
@@ -407,7 +407,7 @@ pub trait Query: TerrainQuery + Sized {
         self.ecs().desc.get(e).and_then(|desc| Some(&desc.name[..]))
     }
 
-    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapfile::Prefab {
+    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
@@ -437,7 +437,7 @@ pub trait Query: TerrainQuery + Sized {
             map.push((pos, (terrain, entities)));
         }
 
-        mapfile::Prefab::from_iter(map.into_iter())
+        mapsave::Prefab::from_iter(map.into_iter())
     }
 
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {

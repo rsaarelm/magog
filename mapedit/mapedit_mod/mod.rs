@@ -8,7 +8,7 @@ use std::io::prelude::*;
 use std::num::Wrapping;
 use vitral::{self, ButtonAction, Align, FracPoint2D};
 use vitral::Context;
-use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World, Terrain};
+use world::{self, Form, Location, Mutate, Portal, Query, Terraform, World, Terrain, MapSave};
 use world::errors::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -216,7 +216,8 @@ impl View {
     fn load(&mut self, path: String) {
         fn loader(path: String) -> Result<Prefab<(Terrain, Vec<String>)>> {
             let mut file = File::open(path)?;
-            world::load_prefab(&mut file)
+            let save: MapSave = ron::de::from_reader(&mut file)?;
+            save.into_prefab()
         }
 
         let prefab = match loader(path) {
@@ -255,7 +256,7 @@ impl View {
 
         match File::create(&path) {
             Ok(mut file) => {
-                if let Err(e) = world::save_prefab(&mut file, &prefab) {
+                if let Err(e) = write!(&mut file, MapSave::from_prefab(prefab)?) {
                     let _ = writeln!(&mut self.console, "Save failed: {}", e);
                 } else {
                     let _ = writeln!(&mut self.console, "Saved '{}'", path);

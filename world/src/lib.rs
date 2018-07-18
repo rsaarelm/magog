@@ -133,8 +133,8 @@ pub use location::{Location, Portal, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod location_set;
 
-mod mapfile;
-pub use mapfile::{load_prefab, save_prefab};
+mod mapsave;
+pub use mapsave::MapSave;
 
 pub mod mapgen;
 
