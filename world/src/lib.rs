@@ -5,6 +5,8 @@ extern crate euclid;
 extern crate image;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate log;
 extern crate rand;
 extern crate ron;
 extern crate serde;

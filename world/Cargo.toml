@@ -8,13 +8,14 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "world"
 
 [dependencies]
-rand = { version = "0.5", features = ["serde1"] }
-vec_map = "0.8"
-ron = "0.3"
+calx = { git = "https://github.com/rsaarelm/calx" }
+calx-ecs = "0.6"
 euclid = "0.18"
+image = "0.19"
 lazy_static = "1.0"
+log = "0.4"
+rand = { version = "0.5", features = ["serde1"] }
+ron = "0.3"
 serde = "1.0"
 serde_derive = "1.0"
-calx-ecs = "0.6"
-calx = { git = "https://github.com/rsaarelm/calx" }
-image = "0.19"
+vec_map = "0.8"

@@ -4,6 +4,7 @@
 #[macro_use]
 extern crate calx;
 extern crate display;
+extern crate env_logger;
 extern crate euclid;
 extern crate glium;
 extern crate rand;
@@ -22,6 +23,8 @@ use std::time::Duration;
 use world::World;
 
 pub fn main() {
+    env_logger::init();
+
     const FPS: f64 = 30.0;
 
     let mut timestep = TimestepLoop::new(1.0 / FPS);
