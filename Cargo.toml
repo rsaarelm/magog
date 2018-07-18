@@ -15,7 +15,7 @@ calx-ecs = "0.6"
 display = { path = "display" }
 env_logger = "0.5"
 euclid = "0.18"
-glium = "0.21"
+glium = "0.22"
 rand = { version = "0.5", features = ["serde1"] }
 scancode = "0.1"
 serde = "1.0"

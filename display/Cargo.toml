@@ -10,7 +10,7 @@ name = "display"
 calx = { git = "https://github.com/rsaarelm/calx" }
 calx-ecs = "0.6"
 euclid = "0.18"
-glium = "0.21"
+glium = "0.22"
 image = "0.19"
 time = "0.1"
 vec_map = "0.8"
