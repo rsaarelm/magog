@@ -95,6 +95,7 @@ terrain_enum! {
     Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_regular: true,  color: 0x842 },
     OpenDoor:    TerrainData { name: "open door", kind: Kind::Ground, form: Form::Wall,  map_chars: "",    is_regular: false, color: 0xFAF },
     Window:      TerrainData { name: "window",    kind: Kind::Window, form: Form::Wall,  map_chars: "+",   is_regular: true,  color: 0xBFF },
+    Pillar:      TerrainData { name: "pillar",    kind: Kind::Block,  form: Form::Prop,  map_chars: "I",   is_regular: true,  color: 0xCCD },
     // TODO: Get rid of grass2, give render a coherent noise source for tiles and make it do the
     // variation locally.
     Grass2:      TerrainData { name: "grass",     kind: Kind::Ground, form: Form::Floor, map_chars: "",    is_regular: false, color: 0x230 },

@@ -60,6 +60,7 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
         .color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
     ret.insert(OpenDoor as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 96, 0).finish());
     ret.insert(Window as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 64, 0).finish());
+    ret.insert(Pillar as usize, Builder::new("assets/props.png").color(GAINSBORO).tile(0, 32).finish());
     ret.insert(Grass2 as usize, Builder::new("assets/floors.png").color(DARKGREEN).tile(64, 0).finish());
 
     ret
