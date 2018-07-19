@@ -43,7 +43,7 @@ pub trait RngExt {
     fn pick_iter<U>(&mut self, iter: impl IntoIterator<Item = U>) -> Option<U>;
 }
 
-impl<T: Rng> RngExt for T {
+impl<T: Rng + ?Sized> RngExt for T {
     fn coinflip(&mut self) -> bool { self.gen_bool(1.0 / 2.0) }
 
     fn one_chance_in(&mut self, n: u32) -> bool { self.gen_bool(1.0 / n as f64) }
