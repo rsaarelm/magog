@@ -27,8 +27,8 @@ mod text;
 mod timing;
 
 pub use alg_misc::{
-    bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban, LerpPath,
-    Noise, WeightedChoice,
+    bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban,
+    GenericError, LerpPath, Noise, WeightedChoice,
 };
 pub use colors::{
     color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,

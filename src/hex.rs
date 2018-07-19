@@ -174,7 +174,7 @@ impl Dir6 {
 
         match self {
             Northeast | Southeast | Southwest | Northwest => true,
-            North | South => false
+            North | South => false,
         }
     }
 }

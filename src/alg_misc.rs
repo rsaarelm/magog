@@ -3,6 +3,8 @@ use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::Rng;
 use seeded_rng;
+use std::error::Error;
+use std::fmt;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
@@ -291,4 +293,26 @@ where
     } else {
         TypedRect::zero()
     }
+}
+
+/// Error type for when you don't care about the type and just want to use a string message.
+#[derive(Debug)]
+pub struct GenericError(pub String);
+
+impl Error for GenericError {}
+
+impl fmt::Display for GenericError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+}
+
+/// Construct a `GenericError`.
+#[macro_export]
+macro_rules! err {
+    ($($arg:tt)*) => ($crate::GenericError(format!($($arg)*)));
+}
+
+/// Return a `Result<_, Box<Error>>` error with `GenericError` message.
+#[macro_export]
+macro_rules! die {
+    ($($arg:tt)*) => (return Err(Box::new(err!($($arg)*))););
 }
