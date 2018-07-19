@@ -230,7 +230,7 @@ pub fn compact_bits_by_2(mut bits: u32) -> u32 {
 }
 
 /// Repeatedly run a random generator that may fail until it succeeds.
-pub fn retry_gen<R: Rng, T, E>(
+pub fn retry_gen<R: Rng + ?Sized, T, E>(
     n_tries: usize,
     rng: &mut R,
     gen: impl Fn(&mut R) -> Result<T, E>,
