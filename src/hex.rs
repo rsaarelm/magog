@@ -167,6 +167,16 @@ impl Dir6 {
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
+
+    /// Return whether the direction is along the axes used in fake isometric graphics.
+    pub fn is_fake_isometric(self) -> bool {
+        use Dir6::*;
+
+        match self {
+            Northeast | Southeast | Southwest | Northwest => true,
+            North | South => false
+        }
+    }
 }
 
 impl Add<i32> for Dir6 {
