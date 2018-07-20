@@ -171,7 +171,7 @@ pub trait WeightedChoice {
     type Item;
 
     /// Choose an item from the iteration with probability weighted by item weight.
-    fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+    fn weighted_choice<R: Rng + ?Sized, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
     where
         F: Fn(&Self::Item) -> f32;
 }
@@ -179,7 +179,7 @@ pub trait WeightedChoice {
 impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     type Item = T;
 
-    fn weighted_choice<R: Rng, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+    fn weighted_choice<R: Rng + ?Sized, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
     where
         F: Fn(&Self::Item) -> f32,
     {
