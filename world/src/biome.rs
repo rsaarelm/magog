@@ -85,13 +85,6 @@ impl Distribution<Dungeon> for Biome {
                 }
             }
 
-            /*
-            let room: Map = self.sample(rng);
-            let sites = gen.room_positions(&room);
-            let pos = *seq::sample_iter(rng, &sites, 1).unwrap()[0];
-            gen.place_room_at(pos, &room);
-            */
-
             debug!("Placing exit");
             let room = rng.pick_slice(&vaults::EXITS).unwrap();
             gen.place_room(rng, &*room)?;
