@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate calx;
 #[macro_use]
 extern crate calx_ecs;
@@ -108,6 +109,8 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
     }
 }
 
+mod biome;
+
 mod command;
 pub use command::{Command, CommandResult};
 
@@ -136,7 +139,7 @@ mod location_set;
 mod mapsave;
 pub use mapsave::MapSave;
 
-pub mod mapgen;
+mod map;
 
 mod mutate;
 pub use mutate::Mutate;
@@ -154,13 +157,14 @@ pub use terraform::{Terraform, TerrainQuery};
 pub mod terrain;
 pub use terrain::Terrain;
 
+mod vaults;
+
 mod volume;
 
 mod world;
 pub use world::{Ecs, World};
 
 mod worldgen;
-pub use worldgen::Room;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {
@@ -169,6 +173,11 @@ pub enum FovStatus {
 }
 
 pub type Rng = rand::XorShiftRng;
+
+/// Object-safe version of `rand::distributions::Distribution`.
+pub trait Distribution<T> {
+    fn sample(&self, rng: &mut Rng) -> T;
+}
 
 /// The combat formula.
 ///

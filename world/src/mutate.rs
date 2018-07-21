@@ -8,12 +8,12 @@ use item::{ItemType, MagicEffect, Slot};
 use location::Location;
 use mapsave;
 use query::Query;
-use rand::distributions::Distribution;
 use rand::{seq, Rng};
 use spec;
 use terraform::Terraform;
 use volume::Volume;
 use world::{Ecs, Loadout};
+use Distribution;
 use {attack_damage, roll};
 
 /// World-mutating methods that are not exposed outside the crate.
