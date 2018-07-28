@@ -192,36 +192,3 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
 
 /// Standard deciban roll, clamp into [-20, 20].
 pub fn roll(rng: &mut impl rand::Rng) -> f32 { calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0) }
-
-/// Wrapper class for things that should not be serialized.
-struct Cache<T> {
-    inner: T,
-}
-
-impl<T: Default> Cache<T> {
-    pub fn new() -> Cache<T> {
-        Cache {
-            inner: Default::default(),
-        }
-    }
-}
-
-impl<T> ::std::ops::Deref for Cache<T> {
-    type Target = T;
-
-    fn deref(&self) -> &T { &self.inner }
-}
-
-impl<T> ::std::ops::DerefMut for Cache<T> {
-    fn deref_mut(&mut self) -> &mut T { &mut self.inner }
-}
-impl<T: Default> serde::Serialize for Cache<T> {
-    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> { ().serialize(s) }
-}
-
-impl<'a, T: Default> serde::Deserialize<'a> for Cache<T> {
-    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
-        serde::Deserialize::deserialize(d)?;
-        Ok(Cache::new())
-    }
-}
