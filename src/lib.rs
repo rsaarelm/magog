@@ -307,7 +307,7 @@ impl<ST> ops::DerefMut for Ecs<ST> {
 /// store type with the component types you specify. Will also define a trait
 /// `Component` which will be implemented for the component types.
 #[macro_export]
-macro_rules! Ecs {
+macro_rules! build_ecs {
     {
         // Declare the type of the (plain old data) component and the
         // identifier to use for it in the ECS.

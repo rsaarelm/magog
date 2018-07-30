@@ -17,7 +17,7 @@ pub struct Pos {
     y: i32,
 }
 
-Ecs! {
+build_ecs! {
         desc: Desc,
         pos: Pos,
     }
