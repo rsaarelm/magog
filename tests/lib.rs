@@ -18,9 +18,9 @@ pub struct Pos {
 }
 
 build_ecs! {
-        desc: Desc,
-        pos: Pos,
-    }
+    desc: Desc,
+    pos: Pos,
+}
 
 #[test]
 fn test_ecs() {
