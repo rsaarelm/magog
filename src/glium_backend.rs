@@ -3,7 +3,7 @@
 #![deny(missing_docs)]
 
 use euclid::{Point2D, Size2D};
-use glium::glutin::dpi::LogicalSize;
+use glium::glutin::dpi::{LogicalPosition, LogicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
 use glium::{self, Surface};
@@ -83,6 +83,35 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)));
         let display = glium::Display::new(window, context, &events)?;
         let program = glium::Program::new(&display, shader.into())?;
+
+        {
+            // Start the window as a good fit on the primary monitor.
+
+            // Don't make it a completely fullscreen window, that might put the window title bar
+            // outside the screen.
+            const BUFFER: u32 = 8;
+
+            let monitor_size = display
+                .gl_window()
+                .window()
+                .get_primary_monitor()
+                .get_dimensions();
+            let monitor_size = Size2D::new(monitor_size.width as u32, monitor_size.height as u32);
+            let mut dim = Size2D::new(width, height);
+            while dim.width + width <= monitor_size.width - BUFFER
+                && dim.height + height <= monitor_size.height - BUFFER
+            {
+                dim.width += width;
+                dim.height += height;
+            }
+            display
+                .gl_window()
+                .set_inner_size(LogicalSize::new(dim.width as f64, dim.height as f64));
+            display.gl_window().set_position(LogicalPosition::new(
+                (monitor_size.width - dim.width) as f64 / 2.0,
+                (monitor_size.height - dim.height) as f64 / 2.0,
+            ));
+        }
 
         Ok(Backend::new(display, events, program, width, height))
     }
@@ -563,10 +592,7 @@ fn get_size(display: &glium::Display) -> (u32, u32) {
     let size = display
         .gl_window()
         .get_inner_size()
-        .unwrap_or(LogicalSize {
-            width: 800f64,
-            height: 600f64,
-        })
+        .unwrap_or(LogicalSize::new(800.0, 600.0))
         .to_physical(display.gl_window().get_hidpi_factor());
 
     (size.width as u32, size.height as u32)
