@@ -10,6 +10,21 @@ When building on Windows, you may need to have MinGW gcc installed
 and in PATH for cargo to be able to build all the necessary
 dependencies.
 
+Instructions
+------------
+
+Better UX is planned. Current gameplay is keyboard only:
+
+QWE,ASD: move around
+
+I: View inventory, equip item (ESC exits)
+
+U: Use item in inventory (ESC exits)
+
+G, B: Get item, drop item
+
+Space: Wait for turn
+
 Screenshots
 -----------
 
