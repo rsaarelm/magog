@@ -9,7 +9,7 @@ name = "display"
 [dependencies]
 calx = { git = "https://github.com/rsaarelm/calx" }
 calx-ecs = "0.6"
-euclid = "0.18"
+euclid = "0.19"
 glium = "0.22"
 image = "0.19"
 time = "0.1"

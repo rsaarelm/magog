@@ -10,12 +10,12 @@ name = "world"
 [dependencies]
 calx = { git = "https://github.com/rsaarelm/calx" }
 calx-ecs = "0.6"
-euclid = "0.18"
+euclid = "0.19"
 image = "0.19"
 lazy_static = "1.0"
 log = "0.4"
 rand = { version = "0.5", features = ["serde1"] }
-ron = "0.3"
+ron = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
 vec_map = "0.8"
