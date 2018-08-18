@@ -7,12 +7,12 @@ authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
 name = "display"
 
 [dependencies]
-calx = { git = "https://github.com/rsaarelm/calx" }
-calx-ecs = "0.6"
+calx = { path = "../calx" }
+calx-ecs = { path = "../calx-ecs" }
 euclid = "0.19"
 glium = "0.22"
 image = "0.19"
 time = "0.1"
 vec_map = "0.8"
-vitral = { git = "https://github.com/rsaarelm/vitral", features = ["glium_backend"] }
+vitral = { path = "../vitral", features = ["glium_backend"] }
 world = { path = "../world" }

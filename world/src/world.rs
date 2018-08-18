@@ -24,7 +24,7 @@ use Rng;
 
 pub const GAME_VERSION: &str = "0.1.0";
 
-Ecs! {
+build_ecs! {
     desc: components::Desc,
     anim: components::Anim,
     map_memory: components::MapMemory,

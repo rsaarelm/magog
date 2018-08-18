@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+for x in calx-*
+do
+    echo "Testing $x"
+    cd $x
+    rm -f Cargo.lock
+    cargo test
+    cd -
+done

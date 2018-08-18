@@ -8,8 +8,8 @@ authors = [ "risto.saarelma@iki.fi" ]
 name = "world"
 
 [dependencies]
-calx = { git = "https://github.com/rsaarelm/calx" }
-calx-ecs = "0.6"
+calx = { path = "../calx" }
+calx-ecs = { path = "../calx-ecs" }
 euclid = "0.19"
 image = "0.19"
 lazy_static = "1.0"
