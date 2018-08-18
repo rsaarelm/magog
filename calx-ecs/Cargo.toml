@@ -1,0 +1,15 @@
+[package]
+name = "calx-ecs"
+version = "0.7.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Serializable entity component system for games"
+keywords = ["gamedev", "ecs"]
+repository = "https://github.com/rsaarelm/calx-ecs"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde_derive = "1.0"
+serde = "1.0"
+
+[dev-dependencies]
+serde_json = "1.0"
