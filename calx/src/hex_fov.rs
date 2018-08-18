@@ -1,8 +1,8 @@
+use crate::fov::{Fov, PolarPoint};
+use crate::hex::Dir6;
+use crate::CellVector;
 use euclid::vec2;
-use fov::{Fov, PolarPoint};
-use hex::Dir6;
 use num::Integer;
-use CellVector;
 
 pub type HexFov<T> = Fov<HexPolarPoint, T>;
 
@@ -157,9 +157,9 @@ where
 mod test {
     use super::CellVector;
     use super::{HexFov, HexFovIter};
+    use crate::fov::FovValue;
+    use crate::hex::HexGeom;
     use euclid::vec2;
-    use fov::FovValue;
-    use hex::HexGeom;
     use std::collections::HashMap;
     use std::iter::FromIterator;
 

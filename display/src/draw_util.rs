@@ -1,4 +1,4 @@
-use backend::{Core, Vertex};
+use crate::backend::{Core, Vertex};
 use euclid::{rect, vec2, Point2D};
 use vitral::{Align, Color, FontData, ImageData};
 

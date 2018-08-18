@@ -1,14 +1,14 @@
 use calx::{self, RngExt, WeightedChoice};
-use location::{Location, Sector};
-use map::Map;
+use crate::location::{Location, Sector};
+use crate::map::Map;
+use crate::spec::{self, EntitySpawn};
+use crate::vaults;
+use crate::{Distribution, Rng};
 use rand::seq;
 use rand::Rng as _Rng;
-use spec::{self, EntitySpawn};
 use std::error::Error;
 use std::str::FromStr;
 use std::sync::Arc;
-use vaults;
-use {Distribution, Rng};
 
 /// Descriptor for different regions of the game world for spawn distributions.
 pub struct Biome {

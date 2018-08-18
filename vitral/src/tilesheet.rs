@@ -1,5 +1,5 @@
+use crate::ImageBuffer;
 use euclid::{point2, rect, vec2, Point2D, Rect, Size2D};
-use ImageBuffer;
 
 /// Return the tiles on a tile sheet image.
 ///

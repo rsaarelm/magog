@@ -1,10 +1,10 @@
 use calx_ecs::Entity;
-use item::ItemType;
-use location::Location;
-use location_set::LocationSet;
-use stats::Stats;
+use crate::item::ItemType;
+use crate::location::Location;
+use crate::location_set::LocationSet;
+use crate::stats::Stats;
+use crate::FovStatus;
 use std::collections::BTreeMap;
-use FovStatus;
 
 /// The visual representation for an entity
 ///

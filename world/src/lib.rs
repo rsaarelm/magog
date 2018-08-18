@@ -69,7 +69,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter0<'a, W> {
     }
 
     pub fn send(self) {
-        use grammar::Templater;
+        use crate::grammar::Templater;
         let event = Event::Msg(grammar::EmptyTemplater.format(&self.msg).unwrap());
         self.world.push_event(event);
     }
@@ -87,7 +87,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter1<'a, W> {
     }
 
     pub fn send(self) {
-        use grammar::Templater;
+        use crate::grammar::Templater;
         let event = Event::Msg(
             grammar::SubjectTemplater::new(self.subject)
                 .format(&self.msg)
@@ -99,7 +99,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter1<'a, W> {
 
 impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
     pub fn send(self) {
-        use grammar::Templater;
+        use crate::grammar::Templater;
         let event = Event::Msg(
             grammar::ObjectTemplater::new(
                 grammar::SubjectTemplater::new(self.subject),
@@ -114,15 +114,15 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
 mod biome;
 
 mod command;
-pub use command::{Command, CommandResult};
+pub use crate::command::{Command, CommandResult};
 
 mod components;
-pub use components::Icon;
+pub use crate::components::Icon;
 
 mod effect;
 
 mod event;
-pub use event::Event;
+pub use crate::event::Event;
 
 mod flags;
 
@@ -131,40 +131,40 @@ mod fov;
 mod grammar;
 
 mod item;
-pub use item::{ItemType, Slot};
+pub use crate::item::{ItemType, Slot};
 
 mod location;
-pub use location::{Location, Portal, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
+pub use crate::location::{Location, Portal, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod location_set;
 
 mod mapsave;
-pub use mapsave::MapSave;
+pub use crate::mapsave::MapSave;
 
 mod map;
 
 mod mutate;
-pub use mutate::Mutate;
+pub use crate::mutate::Mutate;
 
 mod query;
-pub use query::Query;
+pub use crate::query::Query;
 
 mod spatial;
 mod spec;
 mod stats;
 
 mod terraform;
-pub use terraform::{Terraform, TerrainQuery};
+pub use crate::terraform::{Terraform, TerrainQuery};
 
 pub mod terrain;
-pub use terrain::Terrain;
+pub use crate::terrain::Terrain;
 
 mod vaults;
 
 mod volume;
 
 mod world;
-pub use world::{Ecs, World};
+pub use crate::world::{Ecs, World};
 
 mod worldgen;
 

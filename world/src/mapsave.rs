@@ -1,9 +1,9 @@
 use calx::{self, CellVector, FromPrefab, IntoPrefab};
-use spec::EntitySpawn;
+use crate::spec::EntitySpawn;
+use crate::terrain::Terrain;
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::fmt;
-use terrain::Terrain;
 
 pub type Prefab = HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>;
 

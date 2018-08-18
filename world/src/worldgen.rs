@@ -1,16 +1,16 @@
 //! Game world generation
 
-use biome::{Biome, Dungeon};
 use calx::{seeded_rng, RngExt};
+use crate::biome::{Biome, Dungeon};
+use crate::location::{Location, Portal, Sector};
+use crate::map::{Map, MapCell};
+use crate::terrain::Terrain;
+use crate::world::Loadout;
+use crate::Distribution;
 use euclid::vec2;
-use location::{Location, Portal, Sector};
-use map::{Map, MapCell};
 use serde;
 use std::collections::HashMap;
 use std::slice;
-use terrain::Terrain;
-use world::Loadout;
-use Distribution;
 
 /// Static generated world.
 pub struct Worldgen {
@@ -31,7 +31,7 @@ impl Worldgen {
             player_entry: Location::new(0, 0, 0),
         };
 
-        let mut rng: ::Rng = seeded_rng(&seed);
+        let mut rng: crate::Rng = seeded_rng(&seed);
 
         const NUM_FLOORS: i32 = 10;
 

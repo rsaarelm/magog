@@ -1,15 +1,15 @@
 use calx::{self, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
+use crate::mapsave::{self, build_textmap, MapSave};
+use crate::spec::EntitySpawn;
+use crate::terrain::Terrain;
 use euclid::vec2;
 use log::Level::Trace;
-use mapsave::{self, build_textmap, MapSave};
 use rand::{seq, Rng};
-use spec::EntitySpawn;
 use std::collections::{hash_map, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::ops::Index;
 use std::str::FromStr;
-use terrain::Terrain;
 
 // NOTE ON STABLE ORDER
 //
@@ -77,7 +77,7 @@ impl Map {
         let mut ret = Map::new();
 
         for (&pos, c) in &prefab {
-            use Terrain::*;
+            use crate::Terrain::*;
             let is_border_pos = !calx::hex_neighbors(pos).all(|p| prefab.contains_key(&p));
             let mut cell = MapCell::default();
             // The only cells that get marked as Border are wall tiles or similar shaped blocks.

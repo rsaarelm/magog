@@ -1,10 +1,10 @@
 use calx::{
     compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom,
 };
+use crate::terraform::TerrainQuery;
 use euclid::vec2;
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
-use terraform::TerrainQuery;
 
 pub const SECTOR_WIDTH: i32 = 40;
 pub const SECTOR_HEIGHT: i32 = 20;

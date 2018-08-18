@@ -1,5 +1,4 @@
 #![feature(rust_2018_preview)]
-
 // Don't show a console window when running on Windows.
 #![windows_subsystem = "windows"]
 
@@ -17,8 +16,8 @@ extern crate world;
 pub mod game_loop;
 
 use calx::TimestepLoop;
+use crate::game_loop::GameLoop;
 use display::Backend;
-use game_loop::GameLoop;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;

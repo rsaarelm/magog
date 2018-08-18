@@ -1,4 +1,4 @@
-use map::Map;
+use crate::map::Map;
 use std::sync::Arc;
 
 macro_rules! vaults {

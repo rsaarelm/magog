@@ -1,4 +1,4 @@
-use location::Location;
+use crate::location::Location;
 use std::collections::HashMap;
 
 /// Compact Location set collection

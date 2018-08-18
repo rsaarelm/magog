@@ -1,14 +1,16 @@
-use components::{Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
-use item::ItemType;
+use crate::components::{
+    Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses,
+};
+use crate::item::ItemType;
+use crate::stats::{Intrinsic, Stats};
+use crate::world::Loadout;
+use crate::{Distribution, Rng};
 use serde;
-use stats::{Intrinsic, Stats};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 use std::sync::Arc;
-use world::Loadout;
-use {Distribution, Rng};
 
 pub trait Spec: Distribution<Loadout> + Sync + Send {
     /// How rare is this spec?
@@ -141,9 +143,9 @@ pub fn iter_specs() -> impl Iterator<Item = Arc<dyn Spec + 'static>> { SPECS.val
 
 use self::Intrinsic::*;
 use self::ShoutType::*;
-use item::MagicEffect::*;
-use Icon as I;
-use ItemType::*;
+use crate::item::MagicEffect::*;
+use crate::Icon as I;
+use crate::ItemType::*;
 
 specs!{
     // Mobs

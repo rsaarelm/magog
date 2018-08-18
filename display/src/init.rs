@@ -1,8 +1,8 @@
 //! Set up resource content for game.
 
-use brush::{Brush, Builder, Geom};
 use calx::color::*;
 use calx::Rgba;
+use crate::brush::{Brush, Builder, Geom};
 use std::rc::Rc;
 use std::str::FromStr;
 use vec_map::VecMap;
@@ -100,7 +100,7 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn misc_brushes() -> VecMap<Rc<Brush>> {
-    use Icon::*;
+    use crate::Icon::*;
     let mut ret = VecMap::new();
 
     ret.insert(SolidBlob as usize, Builder::new("assets/blobs.png").colors(BLACK, BLACK).blob(0, 64, 0, 96, 0, 128).finish());

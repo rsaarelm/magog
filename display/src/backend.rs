@@ -1,4 +1,4 @@
-use cache;
+use crate::cache;
 use euclid::Point2D;
 use glium;
 use std::error::Error;

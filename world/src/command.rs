@@ -1,7 +1,7 @@
 use calx::Dir6;
-use event::Event;
-use item::Slot;
-use mutate::Mutate;
+use crate::event::Event;
+use crate::item::Slot;
+use crate::mutate::Mutate;
 
 pub type CommandResult = Result<Vec<Event>, ()>;
 

@@ -1,7 +1,7 @@
 use self::Place::*;
 use calx_ecs::Entity;
-use item::Slot;
-use location::Location;
+use crate::item::Slot;
+use crate::location::Location;
 use serde;
 use std::collections::BTreeMap;
 
@@ -198,9 +198,9 @@ impl<'a> serde::Deserialize<'a> for Spatial {
 #[cfg(test)]
 mod test {
     use super::{Place, Spatial};
-    use item::Slot;
-    use location::Location;
-    use world::Ecs;
+    use crate::item::Slot;
+    use crate::location::Location;
+    use crate::world::Ecs;
 
     #[test]
     fn test_place_adjacency() {

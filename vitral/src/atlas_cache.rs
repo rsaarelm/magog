@@ -1,10 +1,10 @@
+use crate::tilesheet;
+use crate::{Atlas, CharData, FontData, ImageBuffer, ImageData};
 use euclid::{rect, size2, vec2, Rect};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::slice;
-use tilesheet;
-use {Atlas, CharData, FontData, ImageBuffer, ImageData};
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]

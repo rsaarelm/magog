@@ -43,7 +43,7 @@ impl Slot {
     pub fn is_equipment_slot(self) -> bool { (self as u32) <= (Slot::TrinketI as u32) }
 
     pub fn accepts(self, equip_type: EquipType) -> bool {
-        use Slot::*;
+        use crate::Slot::*;
         match self {
             Spell1 | Spell2 | Spell3 | Spell4 | Spell5 | Spell6 | Spell7 | Spell8 => {
                 equip_type == EquipType::Spell
@@ -59,7 +59,7 @@ impl Slot {
     }
 
     pub fn equipped_iter() -> slice::Iter<'static, Slot> {
-        use Slot::*;
+        use crate::Slot::*;
         static EQUIPPED: [Slot; 17] = [
             Spell1, Spell2, Spell3, Spell4, Spell5, Spell6, Spell7, Spell8, Melee, Ranged, Head,
             Body, Feet, TrinketF, TrinketG, TrinketH, TrinketI,
@@ -69,7 +69,7 @@ impl Slot {
     }
 
     pub fn iter() -> slice::Iter<'static, Slot> {
-        use Slot::*;
+        use crate::Slot::*;
         static ALL: [Slot; 34] = [
             Spell1, Spell2, Spell3, Spell4, Spell5, Spell6, Spell7, Spell8, Melee, Ranged, Head,
             Body, Feet, TrinketF, TrinketG, TrinketH, TrinketI, InventoryJ, InventoryK, InventoryL,

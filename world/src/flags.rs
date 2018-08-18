@@ -1,5 +1,5 @@
 use calx_ecs::Entity;
-use location::Location;
+use crate::location::Location;
 
 #[derive(Serialize, Deserialize)]
 pub struct Flags {

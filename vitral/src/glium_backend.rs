@@ -2,6 +2,9 @@
 
 #![deny(missing_docs)]
 
+use crate::{
+    AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
+};
 use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
@@ -10,9 +13,6 @@ use glium::{self, Surface};
 use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
-use {
-    AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
-};
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;

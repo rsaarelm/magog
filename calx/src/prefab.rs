@@ -1,9 +1,9 @@
-use alg_misc::bounding_rect;
-use colors::{scolor, SRgba};
+use crate::alg_misc::bounding_rect;
+use crate::colors::{scolor, SRgba};
+use crate::space::{CellSpace, CellVector, Space, Transformation};
 use euclid::{point2, vec2, TypedPoint2D, TypedVector2D};
 use image::{self, Pixel};
 use num::Integer;
-use space::{CellSpace, CellVector, Space, Transformation};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -543,7 +543,7 @@ impl Transformation for MinimapSpace {
 #[cfg(test)]
 mod test {
     use super::MinimapSpace;
-    use space::Transformation;
+    use crate::space::Transformation;
 
     #[test]
     fn test_minimap_projection() {

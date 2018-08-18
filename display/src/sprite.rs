@@ -1,12 +1,12 @@
-use backend::Core;
-use brush::Brush;
 use calx::{color, lerp, Rgba};
-use draw_util::DrawUtil;
+use crate::backend::Core;
+use crate::brush::Brush;
+use crate::draw_util::DrawUtil;
+use crate::render::Layer;
+use crate::view::ScreenVector;
 use euclid::point2;
-use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use view::ScreenVector;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Coloring {

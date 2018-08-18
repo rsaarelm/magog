@@ -18,22 +18,22 @@ use std::iter;
 use std::mem;
 
 mod atlas;
-pub use atlas::Atlas;
+pub use crate::atlas::Atlas;
 
 mod atlas_cache;
-pub use atlas_cache::{AtlasCache, SubImageSpec};
+pub use crate::atlas_cache::{AtlasCache, SubImageSpec};
 
 mod canvas_zoom;
-pub use canvas_zoom::CanvasZoom;
+pub use crate::canvas_zoom::CanvasZoom;
 
 #[cfg(feature = "glium_backend")]
 pub mod glium_backend;
 
 mod rect_util;
-pub use rect_util::RectUtil;
+pub use crate::rect_util::RectUtil;
 
 mod tilesheet;
-pub use tilesheet::tilesheet_bounds;
+pub use crate::tilesheet::tilesheet_bounds;
 
 pub type Color = [f32; 4];
 

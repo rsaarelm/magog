@@ -1,8 +1,8 @@
+use crate::seeded_rng;
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::Rng;
-use seeded_rng;
 use std::error::Error;
 use std::fmt;
 use std::hash::Hash;
@@ -78,7 +78,7 @@ impl Deciban {
 }
 
 impl Distribution<Deciban> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ::Deciban {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> crate::Deciban {
         Deciban::new(rng.gen_range(0.0, 1.0))
     }
 }

@@ -1,24 +1,24 @@
 use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom, Noise};
 use calx_ecs::Entity;
-use components::{Alignment, BrainState, Icon, Status};
+use crate::components::{Alignment, BrainState, Icon, Status};
+use crate::grammar::{Noun, Pronoun};
+use crate::item::{EquipType, ItemType, Slot};
+use crate::location::Location;
+use crate::mapsave;
+use crate::spec::EntitySpawn;
+use crate::stats;
+use crate::stats::Intrinsic;
+use crate::terraform::TerrainQuery;
+use crate::terrain::Terrain;
+use crate::volume::Volume;
+use crate::world::Ecs;
+use crate::FovStatus;
 use euclid::vec2;
-use grammar::{Noun, Pronoun};
-use item::{EquipType, ItemType, Slot};
-use location::Location;
-use mapsave;
 use rand::distributions::Uniform;
-use spec::EntitySpawn;
-use stats;
-use stats::Intrinsic;
 use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
 use std::slice;
 use std::str::FromStr;
-use terraform::TerrainQuery;
-use terrain::Terrain;
-use volume::Volume;
-use world::Ecs;
-use FovStatus;
 
 /// Immutable querying of game world state.
 pub trait Query: TerrainQuery + Sized {
@@ -374,7 +374,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Terrain is sometimes replaced with a variant for visual effect, but
     /// this should not be reflected in the logical terrain.
     fn visual_terrain(&self, loc: Location) -> Terrain {
-        use Terrain::*;
+        use crate::Terrain::*;
 
         let mut t = self.terrain(loc);
 
@@ -546,7 +546,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     fn equip_type(&self, item: Entity) -> Option<EquipType> {
-        use ItemType::*;
+        use crate::ItemType::*;
         match self.item_type(item) {
             Some(MeleeWeapon) => Some(EquipType::Melee),
             Some(RangedWeapon) => Some(EquipType::Ranged),

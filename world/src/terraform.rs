@@ -1,5 +1,5 @@
-use location::{Location, Portal};
-use terrain::{self, Terrain};
+use crate::location::{Location, Portal};
+use crate::terrain::{self, Terrain};
 
 /// Immutable terrain field query.
 pub trait TerrainQuery {
