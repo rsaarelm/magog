@@ -10,8 +10,8 @@ license = "GPL3"
 members = ["world", "display"]
 
 [dependencies]
-calx = { git = "https://github.com/rsaarelm/calx" }
-calx-ecs = "0.6"
+calx = { path = "calx" }
+calx-ecs = { path = "calx-ecs" }
 display = { path = "display" }
 env_logger = "0.5"
 euclid = "0.19"
@@ -20,7 +20,7 @@ rand = { version = "0.5", features = ["serde1"] }
 scancode = "0.1"
 serde = "1.0"
 time = "0.1"
-vitral = { git = "https://github.com/rsaarelm/vitral", features = ["glium_backend"] }
+vitral = { path = "vitral", features = ["glium_backend"] }
 world = { path = "world" }
 
 [dev-dependencies]
