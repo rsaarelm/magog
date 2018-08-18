@@ -103,7 +103,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
                 grammar::SubjectTemplater::new(self.subject),
                 self.object,
             ).format(&self.msg)
-                .unwrap(),
+            .unwrap(),
         );
         self.world.push_event(event);
     }

@@ -116,33 +116,23 @@ impl<C> ComponentData<C> {
     }
 
     /// Iterate entity ids in this component.
-    pub fn ent_iter(&self) -> slice::Iter<Entity> {
-        self.inner.entities.iter()
-    }
+    pub fn ent_iter(&self) -> slice::Iter<Entity> { self.inner.entities.iter() }
 
     /// Iterate elements in this component.
-    pub fn iter(&self) -> slice::Iter<C> {
-        self.inner.data.iter()
-    }
+    pub fn iter(&self) -> slice::Iter<C> { self.inner.data.iter() }
 
     /// Iterate mutable elements in this component.
-    pub fn iter_mut(&mut self) -> slice::IterMut<C> {
-        self.inner.data.iter_mut()
-    }
+    pub fn iter_mut(&mut self) -> slice::IterMut<C> { self.inner.data.iter_mut() }
 }
 
 impl<C> ops::Index<Entity> for ComponentData<C> {
     type Output = C;
 
-    fn index(&self, e: Entity) -> &C {
-        self.get(e).unwrap()
-    }
+    fn index(&self, e: Entity) -> &C { self.get(e).unwrap() }
 }
 
 impl<C> ops::IndexMut<Entity> for ComponentData<C> {
-    fn index_mut(&mut self, e: Entity) -> &mut C {
-        self.get_mut(e).unwrap()
-    }
+    fn index_mut(&mut self, e: Entity) -> &mut C { self.get_mut(e).unwrap() }
 }
 
 impl<C> AnyComponent for ComponentData<C> {
@@ -271,28 +261,20 @@ impl<ST: Default + Store> Ecs<ST> {
     }
 
     /// Return whether the system contains an entity.
-    pub fn contains(&self, e: Entity) -> bool {
-        self.active.contains(e)
-    }
+    pub fn contains(&self, e: Entity) -> bool { self.active.contains(e) }
 
     /// Iterate through all the active entities.
-    pub fn iter(&self) -> slice::Iter<Entity> {
-        self.active.ent_iter()
-    }
+    pub fn iter(&self) -> slice::Iter<Entity> { self.active.ent_iter() }
 }
 
 impl<ST> ops::Deref for Ecs<ST> {
     type Target = ST;
 
-    fn deref(&self) -> &ST {
-        &self.store
-    }
+    fn deref(&self) -> &ST { &self.store }
 }
 
 impl<ST> ops::DerefMut for Ecs<ST> {
-    fn deref_mut(&mut self) -> &mut ST {
-        &mut self.store
-    }
+    fn deref_mut(&mut self) -> &mut ST { &mut self.store }
 }
 
 /// Entity component system builder macro.

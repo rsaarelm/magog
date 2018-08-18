@@ -46,8 +46,7 @@ impl WorldView {
             // Chart area, center in origin, inflated by tile width in every direction to get the
             // cells partially on screen included.
             let center = (self.screen_area.origin + self.screen_area.size / 2.0
-                - vec2(PIXEL_UNIT / 2.0, 0.0))
-                .to_vector();
+                - vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
             let bounds = self
                 .screen_area
                 .translate(&-(self.screen_area.origin + center).to_vector())
@@ -64,8 +63,7 @@ impl WorldView {
         self.ensure_fov(world);
 
         let center = (self.screen_area.origin + self.screen_area.size / 2.0
-            - vec2(PIXEL_UNIT / 2.0, 10.0))
-            .to_vector();
+            - vec2(PIXEL_UNIT / 2.0, 10.0)).to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let mouse_pos = ScreenVector::from_untyped(&core.mouse_pos().to_vector());
@@ -207,9 +205,9 @@ impl WorldView {
                             if let Some(towards_prev_pos) = loc.v2_at(anim.tween_from) {
                                 let tween_factor =
                                     anim.tween_current as f32 / anim.tween_max as f32;
-                                let prev_pos = ScreenVector::from_cell_space(
-                                    chart_pos + towards_prev_pos,
-                                ) + center;
+                                let prev_pos =
+                                    ScreenVector::from_cell_space(chart_pos + towards_prev_pos)
+                                        + center;
                                 mob_pos =
                                     lerp(screen_pos, prev_pos, ease::cubic_in_out(tween_factor));
                                 // Make sure no fractions end up to mess pixel rendering

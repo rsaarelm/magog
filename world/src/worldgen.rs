@@ -39,8 +39,7 @@ impl Worldgen {
             .map(|i| {
                 let map: Dungeon = Biome::new(i + 1).sample(&mut rng);
                 map.0
-            })
-            .collect();
+            }).collect();
 
         for i in 0..floors.len() {
             let depth = (i + 1) as i16;

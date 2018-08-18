@@ -102,7 +102,7 @@ impl Console {
                 |c| self.font.char_width(c).unwrap_or(0.0),
                 screen_area.size.width,
             ).map(|x| x.to_string())
-                .collect::<Vec<String>>();
+            .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
                 core.draw_text(
                     &*self.font,

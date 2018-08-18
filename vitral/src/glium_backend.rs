@@ -323,8 +323,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                     &self.program,
                     &uniforms,
                     &params,
-                )
-                .unwrap();
+                ).unwrap();
         }
     }
 
@@ -455,8 +454,7 @@ impl Canvas {
                     vec4 tex_color = texture(tex, v_tex_coord);
                     tex_color.a = 1.0;
                     f_color = tex_color;
-                }"})
-            .unwrap();
+                }"}).unwrap();
 
         let buffer = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
 

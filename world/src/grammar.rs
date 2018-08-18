@@ -330,8 +330,7 @@ mod test {
                 } else {
                     Some(s)
                 }
-            })
-            .collect::<Vec<&str>>()
+            }).collect::<Vec<&str>>()
             .chunks(3)
             .map(|a| (a[0], a[1], a[2]))
             .collect()
@@ -347,8 +346,7 @@ mod test {
                 } else {
                     Some(s)
                 }
-            })
-            .collect::<Vec<&str>>()
+            }).collect::<Vec<&str>>()
             .chunks(4)
             .map(|a| (a[0], a[1], a[2], a[3]))
             .collect()

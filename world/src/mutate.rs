@@ -458,7 +458,7 @@ pub trait Mutate: Query + Terraform + Sized {
                             Damage::Cold => "shatter[s] to frozen pieces",
                         }
                     ).subject(e)
-                        .send();
+                    .send();
                 }
             }
             self.kill_entity(e);

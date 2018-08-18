@@ -716,8 +716,7 @@ where
             .map(|(_, _, p)| {
                 let (r, g, b, a) = p.channels4();
                 r as u32 + ((g as u32) << 8) + ((b as u32) << 16) + ((a as u32) << 24)
-            })
-            .collect();
+            }).collect();
 
         ImageBuffer { size, pixels }
     }

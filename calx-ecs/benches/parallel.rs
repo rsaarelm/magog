@@ -50,9 +50,7 @@ fn build() -> Ecs {
 }
 
 #[bench]
-fn bench_build(b: &mut Bencher) {
-    b.iter(build);
-}
+fn bench_build(b: &mut Bencher) { b.iter(build); }
 
 #[bench]
 fn bench_update(b: &mut Bencher) {
