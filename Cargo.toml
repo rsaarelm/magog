@@ -7,7 +7,7 @@ keywords = ["gamedev"]
 license = "GPL3"
 
 [workspace]
-members = ["world", "display"]
+members = ["world", "display", "calx", "calx-ecs", "vitral"]
 
 [dependencies]
 calx = { path = "calx" }
