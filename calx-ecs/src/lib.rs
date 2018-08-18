@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 //! Entity component system
 
 #![deny(missing_docs)]

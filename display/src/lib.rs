@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 extern crate calx;
 extern crate calx_ecs;
 extern crate euclid;

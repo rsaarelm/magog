@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 ///! Generate a base bitmap for drawing an overland map with a paint program.
 extern crate calx;
 extern crate euclid;

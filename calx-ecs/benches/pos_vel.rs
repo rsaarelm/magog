@@ -1,3 +1,4 @@
+#![feature(rust_2018_preview)]
 // Benchmark from https://github.com/lschmierer/ecs_bench
 
 #![feature(test)]

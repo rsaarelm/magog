@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 extern crate rand;
 extern crate world;
 

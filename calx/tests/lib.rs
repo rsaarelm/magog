@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 extern crate calx;
 extern crate rand;
 extern crate serde_json;

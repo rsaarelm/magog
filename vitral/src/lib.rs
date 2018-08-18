@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 #[cfg(feature = "image")]
 extern crate image;
 

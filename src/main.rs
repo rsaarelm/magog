@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 // Don't show a console window when running on Windows.
 #![windows_subsystem = "windows"]
 
