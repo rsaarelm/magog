@@ -9,6 +9,7 @@ repository = "https://github.com/rsaarelm/vitral"
 
 [dependencies]
 euclid = "0.19"
+log = "0.4"
 time = "0.1"
 
 image = { version = "0.19", optional = true }

@@ -3,7 +3,7 @@
 #![deny(missing_docs)]
 
 use euclid::{Point2D, Size2D};
-use glium::glutin::dpi::{LogicalPosition, LogicalSize};
+use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
 use glium::{self, Surface};
@@ -89,28 +89,44 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
 
             // Don't make it a completely fullscreen window, that might put the window title bar
             // outside the screen.
-            const BUFFER: u32 = 8;
+            const BUFFER: f64 = 8.0;
+            let (width, height) = (width as f64, height as f64);
 
             let monitor_size = display
                 .gl_window()
                 .window()
                 .get_primary_monitor()
                 .get_dimensions();
-            let monitor_size = Size2D::new(monitor_size.width as u32, monitor_size.height as u32);
-            let mut dim = Size2D::new(width, height);
-            while dim.width + width <= monitor_size.width - BUFFER
-                && dim.height + height <= monitor_size.height - BUFFER
+            // Get the most conservative DPI if there's a weird multi-monitor setup.
+            let dpi_factor = display
+                .gl_window()
+                .get_available_monitors()
+                .map(|m| m.get_hidpi_factor())
+                .max_by(|x, y| x.partial_cmp(y).unwrap())
+                .expect("No monitors found!");
+            debug!("Scaling starting size to monitor");
+            debug!("Monitor size {:?}", monitor_size);
+            debug!("DPI Factor {}", dpi_factor);
+
+            let mut window_size = PhysicalSize::new(width, height);
+            while window_size.width + width <= monitor_size.width - BUFFER
+                && window_size.height + height <= monitor_size.height - BUFFER
             {
-                dim.width += width;
-                dim.height += height;
+                window_size.width += width;
+                window_size.height += height;
             }
+            debug!("Adjusted window size: {:?}", window_size);
+            let window_pos = PhysicalPosition::new(
+                (monitor_size.width - window_size.width) / 2.0,
+                (monitor_size.height - window_size.height) / 2.0,
+            );
+
             display
                 .gl_window()
-                .set_inner_size(LogicalSize::new(dim.width as f64, dim.height as f64));
-            display.gl_window().set_position(LogicalPosition::new(
-                (monitor_size.width - dim.width) as f64 / 2.0,
-                (monitor_size.height - dim.height) as f64 / 2.0,
-            ));
+                .set_inner_size(window_size.to_logical(dpi_factor));
+            display
+                .gl_window()
+                .set_position(window_pos.to_logical(dpi_factor));
         }
 
         Ok(Backend::new(display, events, program, width, height))

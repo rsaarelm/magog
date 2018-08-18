@@ -4,6 +4,8 @@ extern crate image;
 #[cfg(feature = "glium_backend")]
 #[macro_use]
 extern crate glium;
+#[macro_use]
+extern crate log;
 
 extern crate euclid;
 extern crate time;
