@@ -1,0 +1,20 @@
+[package]
+name = "vitral"
+version = "0.2.0-pre"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Platform-agnostic immediate mode GUI"
+keywords = ["gui", "vitral"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rsaarelm/vitral"
+
+[dependencies]
+euclid = "0.19"
+time = "0.1"
+
+image = { version = "0.19", optional = true }
+glium = { version = "0.22", optional = true }
+
+[features]
+default = ["image"]
+
+glium_backend = ["glium"]
