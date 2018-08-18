@@ -314,5 +314,5 @@ macro_rules! err {
 /// Return a `Result<_, Box<Error>>` error with `GenericError` message.
 #[macro_export]
 macro_rules! die {
-    ($($arg:tt)*) => (return Err(Box::new(err!($($arg)*))););
+    ($($arg:tt)*) => (return Err(Box::new($crate::err!($($arg)*))););
 }
