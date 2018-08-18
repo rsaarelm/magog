@@ -31,7 +31,7 @@ pub struct Velocity {
     pub dy: f32,
 }
 
-Ecs! {
+build_ecs! {
     pos: Position,
     vel: Velocity,
 }

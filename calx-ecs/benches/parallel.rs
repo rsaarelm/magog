@@ -30,7 +30,7 @@ pub struct W2 {
     pub x: f32,
 }
 
-Ecs! {
+build_ecs! {
     r: R,
     w1: W1,
     w2: W2,
