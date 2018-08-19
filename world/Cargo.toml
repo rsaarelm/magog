@@ -1,8 +1,10 @@
-[package]
+cargo-features = ["edition"]
 
+[package]
 name = "world"
 version = "0.1.0"
 authors = [ "risto.saarelma@iki.fi" ]
+edition = "2018"
 
 [lib]
 name = "world"

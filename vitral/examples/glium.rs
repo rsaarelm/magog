@@ -1,5 +1,3 @@
-#![feature(rust_2018_preview)]
-
 extern crate euclid;
 extern crate image;
 

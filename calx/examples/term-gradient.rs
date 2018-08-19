@@ -1,8 +1,3 @@
-#![feature(rust_2018_preview)]
-
-extern crate calx;
-extern crate term;
-
 use calx::{term_color, PseudoTermColor};
 
 fn print(t: &mut Box<term::StdoutTerminal>, c: PseudoTermColor) {

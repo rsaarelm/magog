@@ -3,6 +3,7 @@ use euclid::vec2;
 use num::Integer;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
+use serde_derive::{Deserialize, Serialize};
 use std::cmp::max;
 use std::f32::consts::PI;
 use std::ops::{Add, Sub};

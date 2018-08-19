@@ -1,12 +1,6 @@
-#![feature(rust_2018_preview)]
-
 //! Entity component system
 
 #![deny(missing_docs)]
-
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
 
 use std::default::Default;
 use std::ops;

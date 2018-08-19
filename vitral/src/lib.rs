@@ -1,17 +1,3 @@
-#![feature(rust_2018_preview)]
-
-#[cfg(feature = "image")]
-extern crate image;
-
-#[cfg(feature = "glium_backend")]
-#[macro_use]
-extern crate glium;
-#[macro_use]
-extern crate log;
-
-extern crate euclid;
-extern crate time;
-
 use euclid::{point2, rect, vec2, Point2D, Rect, Size2D, Vector2D};
 use std::collections::HashMap;
 use std::iter;

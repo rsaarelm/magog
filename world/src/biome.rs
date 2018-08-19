@@ -1,9 +1,10 @@
-use calx::{self, RngExt, WeightedChoice};
+use calx::{self, die, RngExt, WeightedChoice};
 use crate::location::{Location, Sector};
 use crate::map::Map;
 use crate::spec::{self, EntitySpawn};
 use crate::vaults;
 use crate::{Distribution, Rng};
+use log::debug;
 use rand::seq;
 use rand::Rng as _Rng;
 use std::error::Error;

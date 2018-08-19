@@ -1,3 +1,5 @@
+cargo-features = ["edition"]
+
 [package]
 name = "magog"
 version = "0.1.0"
@@ -5,6 +7,7 @@ authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
 description = "Roguelike game"
 keywords = ["gamedev"]
 license = "GPL3"
+edition = "2018"
 
 [workspace]
 members = ["world", "display", "calx", "calx-ecs", "vitral"]

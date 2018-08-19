@@ -3,6 +3,7 @@ use calx::{
 };
 use crate::terraform::TerrainQuery;
 use euclid::vec2;
+use serde_derive::{Deserialize, Serialize};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
 

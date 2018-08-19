@@ -1,3 +1,5 @@
+cargo-features = ["edition"]
+
 [package]
 name = "calx-ecs"
 version = "0.7.0"
@@ -6,6 +8,7 @@ description = "Serializable entity component system for games"
 keywords = ["gamedev", "ecs"]
 repository = "https://github.com/rsaarelm/calx-ecs"
 license = "MIT OR Apache-2.0"
+edition = "2018"
 
 [dependencies]
 serde_derive = "1.0"

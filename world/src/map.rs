@@ -1,9 +1,10 @@
-use calx::{self, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
+use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
 use euclid::vec2;
 use log::Level::Trace;
+use log::{log_enabled, log_module_path, trace};
 use rand::{seq, Rng};
 use std::collections::{hash_map, HashMap, HashSet};
 use std::error::Error;

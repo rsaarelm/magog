@@ -1,5 +1,5 @@
 use calx::{seeded_rng, HexFov, HexFovIter};
-use calx_ecs::Entity;
+use calx_ecs::{build_ecs, Entity};
 use crate::command::{Command, CommandResult};
 use crate::components;
 use crate::event::Event;
@@ -16,6 +16,7 @@ use crate::volume::Volume;
 use crate::worldgen::Worldgen;
 use crate::Rng;
 use ron;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::error::Error;
 use std::io::{Read, Write};

@@ -5,6 +5,7 @@ use crate::item::ItemType;
 use crate::stats::{Intrinsic, Stats};
 use crate::world::Loadout;
 use crate::{Distribution, Rng};
+use lazy_static::lazy_static;
 use serde;
 use std::collections::HashMap;
 use std::error::Error;

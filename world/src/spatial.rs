@@ -3,6 +3,7 @@ use calx_ecs::Entity;
 use crate::item::Slot;
 use crate::location::Location;
 use serde;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 /// Entities can be placed either on open locations or inside other entities.

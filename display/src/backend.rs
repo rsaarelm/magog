@@ -1,6 +1,6 @@
 use crate::cache;
 use euclid::Point2D;
-use glium;
+use glium::{self, implement_vertex};
 use std::error::Error;
 pub use vitral::glium_backend::KeyEvent;
 use vitral::{self, glium_backend, Color};

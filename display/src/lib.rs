@@ -1,16 +1,3 @@
-#![feature(rust_2018_preview)]
-
-extern crate calx;
-extern crate calx_ecs;
-extern crate euclid;
-#[macro_use]
-extern crate glium;
-extern crate image;
-extern crate time;
-extern crate vec_map;
-extern crate vitral;
-extern crate world;
-
 mod backend;
 pub use crate::backend::{Backend, Core, KeyEvent};
 

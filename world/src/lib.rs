@@ -1,21 +1,3 @@
-#![feature(rust_2018_preview)]
-
-#[macro_use]
-extern crate calx;
-#[macro_use]
-extern crate calx_ecs;
-extern crate euclid;
-extern crate image;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-extern crate rand;
-extern crate ron;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-
 use calx::Deciban;
 
 /// Helper macro for formatting textual event messages.

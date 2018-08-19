@@ -1,4 +1,5 @@
 use crate::map::Map;
+use lazy_static::lazy_static;
 use std::sync::Arc;
 
 macro_rules! vaults {

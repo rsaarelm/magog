@@ -1,16 +1,3 @@
-#![feature(rust_2018_preview)]
-
-extern crate euclid;
-extern crate image;
-extern crate num;
-extern crate rand;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate tempdir;
-extern crate time;
-extern crate vec_map;
-
 mod alg_misc;
 mod colors;
 pub mod ease;

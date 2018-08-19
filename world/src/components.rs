@@ -4,6 +4,7 @@ use crate::location::Location;
 use crate::location_set::LocationSet;
 use crate::stats::Stats;
 use crate::FovStatus;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 /// The visual representation for an entity

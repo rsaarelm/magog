@@ -7,6 +7,7 @@
 
 use image;
 use num::Num;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;

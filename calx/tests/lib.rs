@@ -1,9 +1,3 @@
-#![feature(rust_2018_preview)]
-
-extern crate calx;
-extern crate rand;
-extern crate serde_json;
-
 use calx::WeightedChoice;
 use rand::{Rng, XorShiftRng};
 use std::collections::HashMap;

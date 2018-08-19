@@ -1,8 +1,3 @@
-#![feature(rust_2018_preview)]
-
-extern crate rand;
-extern crate world;
-
 use std::io::Write;
 use world::{attack_damage, roll};
 

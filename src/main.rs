@@ -1,17 +1,5 @@
-#![feature(rust_2018_preview)]
 // Don't show a console window when running on Windows.
 #![windows_subsystem = "windows"]
-
-#[macro_use]
-extern crate calx;
-extern crate display;
-extern crate env_logger;
-extern crate euclid;
-extern crate glium;
-extern crate rand;
-extern crate scancode;
-extern crate vitral;
-extern crate world;
 
 pub mod game_loop;
 
