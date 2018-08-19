@@ -60,7 +60,7 @@ impl SRgba {
 }
 
 impl fmt::Display for SRgba {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "#{:02X}{:02X}{:02X}{:02X}",

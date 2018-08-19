@@ -293,7 +293,7 @@ specs!{
 pub struct EntitySpawn(String);
 
 impl fmt::Display for EntitySpawn {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 lazy_static! {
@@ -304,7 +304,7 @@ lazy_static! {
 pub struct SpawnError(String);
 
 impl fmt::Display for SpawnError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "EntitySpawn {} not found in spec database", self.0)
     }
 }

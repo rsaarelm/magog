@@ -22,7 +22,7 @@ pub enum PrefabError {
 }
 
 impl fmt::Display for PrefabError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.description()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.description()) }
 }
 
 impl Error for PrefabError {

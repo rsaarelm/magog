@@ -118,13 +118,13 @@ impl<C> ComponentData<C> {
     }
 
     /// Iterate entity ids in this component.
-    pub fn ent_iter(&self) -> slice::Iter<Entity> { self.inner.entities.iter() }
+    pub fn ent_iter(&self) -> slice::Iter<'_, Entity> { self.inner.entities.iter() }
 
     /// Iterate elements in this component.
-    pub fn iter(&self) -> slice::Iter<C> { self.inner.data.iter() }
+    pub fn iter(&self) -> slice::Iter<'_, C> { self.inner.data.iter() }
 
     /// Iterate mutable elements in this component.
-    pub fn iter_mut(&mut self) -> slice::IterMut<C> { self.inner.data.iter_mut() }
+    pub fn iter_mut(&mut self) -> slice::IterMut<'_, C> { self.inner.data.iter_mut() }
 }
 
 impl<C> ops::Index<Entity> for ComponentData<C> {
@@ -208,7 +208,7 @@ pub trait Store {
     /// Perform an operation for each component container.
     fn for_each_component<F>(&mut self, f: F)
     where
-        F: FnMut(&mut AnyComponent);
+        F: FnMut(&mut dyn AnyComponent);
 }
 
 /// Generic entity component system container
@@ -266,7 +266,7 @@ impl<ST: Default + Store> Ecs<ST> {
     pub fn contains(&self, e: Entity) -> bool { self.active.contains(e) }
 
     /// Iterate through all the active entities.
-    pub fn iter(&self) -> slice::Iter<Entity> { self.active.ent_iter() }
+    pub fn iter(&self) -> slice::Iter<'_, Entity> { self.active.ent_iter() }
 }
 
 impl<ST> ops::Deref for Ecs<ST> {

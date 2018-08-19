@@ -41,7 +41,7 @@ pub trait Query: TerrainQuery + Sized {
     fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
 
     /// Return all entities in the world.
-    fn entities(&self) -> slice::Iter<Entity>;
+    fn entities(&self) -> slice::Iter<'_, Entity>;
 
     // XXX: Would be nicer if entities_at returned an iterator. Probably want to wait for impl
     // Trait return types before jumping to this.

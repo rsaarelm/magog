@@ -24,7 +24,7 @@ pub fn build_textmap(
         HashMap<CellVector, char>,
         BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
     ),
-    Box<Error>,
+    Box<dyn Error>,
 > {
     const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                             abcdefghijklmnopqrstuvwxyz\
@@ -58,12 +58,12 @@ pub fn build_textmap(
 }
 
 impl MapSave {
-    pub fn from_prefab(prefab: &Prefab) -> Result<MapSave, Box<Error>> {
+    pub fn from_prefab(prefab: &Prefab) -> Result<MapSave, Box<dyn Error>> {
         let (prefab, legend) = build_textmap(prefab)?;
         Ok(MapSave::new(prefab, legend))
     }
 
-    pub fn into_prefab(self) -> Result<Prefab, Box<Error>> {
+    pub fn into_prefab(self) -> Result<Prefab, Box<dyn Error>> {
         let (map, legend) = (self.map, self.legend);
         for c in map.chars() {
             if c.is_whitespace() {
@@ -94,7 +94,7 @@ impl MapSave {
 }
 
 impl fmt::Display for MapSave {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Custom RON prettyprint that prints prettier than ron::ser::pretty
         writeln!(f, "(\n    map: \"")?;
         for line in self.map.lines() {

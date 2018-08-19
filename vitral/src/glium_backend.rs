@@ -72,7 +72,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         height: u32,
         title: S,
         shader: P,
-    ) -> Result<Backend<V>, Box<Error>>
+    ) -> Result<Backend<V>, Box<dyn Error>>
     where
         S: Into<String>,
         P: Into<glium::program::ProgramCreationInput<'a>>,
@@ -372,7 +372,7 @@ pub struct KeyEvent {
 }
 
 /// Shader program for the `DefaultVertex` type
-pub const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
+pub const DEFAULT_SHADER: glium::program::SourceCode<'_> = glium::program::SourceCode {
     vertex_shader: "
         #version 150 core
 
@@ -493,7 +493,7 @@ impl Canvas {
     pub fn get_framebuffer_target(
         &mut self,
         display: &glium::Display,
-    ) -> glium::framebuffer::SimpleFrameBuffer {
+    ) -> glium::framebuffer::SimpleFrameBuffer<'_> {
         glium::framebuffer::SimpleFrameBuffer::with_depth_buffer(
             display,
             &self.buffer,
@@ -555,7 +555,7 @@ impl Canvas {
         ).unwrap();
 
         // Set up the rest of the draw parameters.
-        let mut params: glium::DrawParameters = Default::default();
+        let mut params: glium::DrawParameters<'_> = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
         // pixel perfect rounding errors.
         params.viewport = Some(glium::Rect {
@@ -590,7 +590,7 @@ impl Canvas {
     pub fn size(&self) -> Size2D<u32> { self.size }
 
     pub fn screenshot(&self) -> ImageBuffer {
-        let image: glium::texture::RawImage2d<u8> = self.buffer.read();
+        let image: glium::texture::RawImage2d<'_, u8> = self.buffer.read();
 
         ImageBuffer::from_fn(image.width, image.height, |x, y| {
             let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;

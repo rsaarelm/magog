@@ -302,7 +302,7 @@ pub struct GenericError(pub String);
 impl Error for GenericError {}
 
 impl fmt::Display for GenericError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 /// Construct a `GenericError`.

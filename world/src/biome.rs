@@ -66,7 +66,7 @@ impl Distribution<Dungeon> for Biome {
     // write each their own newtype and have this master generator choose between them based on
     // Biome.
     fn sample(&self, rng: &mut Rng) -> Dungeon {
-        fn gen(rng: &mut Rng, biome: &Biome) -> Result<Map, Box<Error>> {
+        fn gen(rng: &mut Rng, biome: &Biome) -> Result<Map, Box<dyn Error>> {
             debug!("Starting mapgen");
             let mut gen = Map::new_base(Sector::points().filter(|p| {
                 !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()

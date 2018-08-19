@@ -99,7 +99,7 @@ impl Worldgen {
         self.portals.get(&loc).map(|&p| loc + p)
     }
 
-    pub fn spawns(&self) -> slice::Iter<(Location, Loadout)> { self.spawns.iter() }
+    pub fn spawns(&self) -> slice::Iter<'_, (Location, Loadout)> { self.spawns.iter() }
 
     pub fn player_entry(&self) -> Location { self.player_entry }
 

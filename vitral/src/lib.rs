@@ -54,7 +54,7 @@ pub struct PngBytes<'a>(pub &'a [u8]);
 
 #[cfg(feature = "image")]
 impl<'a> From<PngBytes<'a>> for ImageBuffer {
-    fn from(data: PngBytes) -> Self {
+    fn from(data: PngBytes<'_>) -> Self {
         use std::io::Cursor;
 
         let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)

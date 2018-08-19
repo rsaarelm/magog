@@ -84,7 +84,7 @@ impl<'a> World {
         ret
     }
 
-    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<Error>> {
+    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<dyn Error>> {
         let ret: ron::de::Result<World> = ron::de::from_reader(reader);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
@@ -97,7 +97,7 @@ impl<'a> World {
         Ok(ret?)
     }
 
-    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<Error>> {
+    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<dyn Error>> {
         let enc = ron::ser::to_string_pretty(self, Default::default())?;
         // TODO: Handle error from writer too...
         writeln!(writer, "{}", enc)?;
@@ -150,7 +150,7 @@ impl Query for World {
 
     fn rng_seed(&self) -> u32 { self.worldgen.seed() }
 
-    fn entities(&self) -> slice::Iter<Entity> { self.ecs.iter() }
+    fn entities(&self) -> slice::Iter<'_, Entity> { self.ecs.iter() }
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 

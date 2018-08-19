@@ -46,7 +46,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         ret
     }
 
-    pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas> { self.atlases.iter_mut() }
+    pub fn atlases_mut(&mut self) -> slice::IterMut<'_, Atlas> { self.atlases.iter_mut() }
 
     pub fn atlas_size(&self) -> u32 { self.atlas_size }
 

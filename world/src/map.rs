@@ -72,7 +72,7 @@ impl Map {
     }
 
     /// Build a prefab vault map from ASCII map.
-    pub fn new_vault(textmap: &str) -> Result<Self, Box<Error>> {
+    pub fn new_vault(textmap: &str) -> Result<Self, Box<dyn Error>> {
         let prefab: HashMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
         let mut ret = Map::new();
 
@@ -318,7 +318,7 @@ impl Map {
         &mut self,
         rng: &mut (impl Rng + ?Sized),
         room: &Map,
-    ) -> Result<(), Box<Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         let sites = self.room_positions(room);
         if sites.is_empty() {
             die!("No room left");
@@ -539,7 +539,7 @@ impl Map {
 }
 
 impl fmt::Display for Map {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let save = MapSave::from_prefab(&mapsave::Prefab::from(self))
             .expect("Couldn't convert Map to displayable");
         writeln!(f, "{}", save)

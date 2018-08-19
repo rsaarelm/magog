@@ -16,8 +16,8 @@ impl Backend {
         width: u32,
         height: u32,
         title: S,
-    ) -> Result<Backend, Box<Error>> {
-        const SHADER: glium::program::SourceCode = glium::program::SourceCode {
+    ) -> Result<Backend, Box<dyn Error>> {
+        const SHADER: glium::program::SourceCode<'_> = glium::program::SourceCode {
             vertex_shader: "
             #version 150 core
 
