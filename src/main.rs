@@ -9,6 +9,8 @@ extern crate euclid;
 extern crate glium;
 extern crate rand;
 extern crate scancode;
+extern crate structopt;
+extern crate structopt_derive;
 extern crate vitral;
 extern crate world;
 
@@ -20,14 +22,24 @@ use game_loop::GameLoop;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
+use structopt::StructOpt;
 use world::World;
 
+#[derive(Debug, StructOpt)]
+struct Opt {
+    #[structopt(long = "seed")]
+    seed: Option<u32>,
+}
+
 pub fn main() {
+    let opt = Opt::from_args();
+    println!("{:?}", opt);
+
     const FPS: f64 = 30.0;
 
     env_logger::init();
 
-    let seed = rand::thread_rng().gen();
+    let seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
     println!("Seed: {}", seed);
     let world = World::new(seed);
