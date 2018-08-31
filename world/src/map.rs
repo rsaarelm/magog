@@ -309,6 +309,12 @@ impl Map {
                 }
             }
 
+            if !self.contains(pos) {
+                // You can place unwalkable stuff outside the map area, but you need to make sure
+                // it stays unwalkable so make it undiggable.
+                c.can_dig = false;
+            }
+
             self.insert(pos, c);
         }
     }
