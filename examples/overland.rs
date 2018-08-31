@@ -3,8 +3,6 @@ extern crate calx;
 extern crate euclid;
 extern crate image;
 extern crate structopt;
-#[macro_use]
-extern crate structopt_derive;
 extern crate world;
 
 use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};

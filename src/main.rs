@@ -10,7 +10,6 @@ extern crate glium;
 extern crate rand;
 extern crate scancode;
 extern crate structopt;
-extern crate structopt_derive;
 extern crate vitral;
 extern crate world;
 

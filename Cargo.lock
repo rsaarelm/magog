@@ -502,7 +502,6 @@ dependencies = [
  "scancode 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.72 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "structopt-derive 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "vitral 0.2.0-pre",
  "world 0.1.0",
