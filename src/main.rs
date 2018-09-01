@@ -7,6 +7,8 @@ extern crate display;
 extern crate env_logger;
 extern crate euclid;
 extern crate glium;
+#[macro_use]
+extern crate log;
 extern crate rand;
 extern crate scancode;
 extern crate structopt;
@@ -32,7 +34,6 @@ struct Opt {
 
 pub fn main() {
     let opt = Opt::from_args();
-    println!("{:?}", opt);
 
     const FPS: f64 = 30.0;
 
@@ -40,7 +41,7 @@ pub fn main() {
 
     let seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
-    println!("Seed: {}", seed);
+    info!("World seed: {}", seed);
     let world = World::new(seed);
 
     let mut timestep = TimestepLoop::new(1.0 / FPS);

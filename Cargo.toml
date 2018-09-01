@@ -16,13 +16,14 @@ display = { path = "display" }
 env_logger = "0.5"
 euclid = "0.19"
 glium = "0.22"
+log = "0.4"
 rand = { version = "0.5", features = ["serde1"] }
 scancode = "0.1"
 serde = "1.0"
+structopt = "0.2"
 time = "0.1"
 vitral = { path = "vitral", features = ["glium_backend"] }
 world = { path = "world" }
-structopt = "0.2"
 
 [dev-dependencies]
 image = "0.19"
