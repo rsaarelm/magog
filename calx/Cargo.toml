@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 euclid = "0.19"
-image = "0.19"
+image = "0.20"
 num = "0.2"
 rand = "0.5"
 serde = "1.0"
