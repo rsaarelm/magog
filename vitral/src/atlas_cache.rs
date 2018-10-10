@@ -31,6 +31,12 @@ pub struct AtlasCache<T> {
     next_index: usize,
 }
 
+impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
+    fn default() -> AtlasCache<T> {
+        AtlasCache::new(1024, 0)
+    }
+}
+
 impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     pub fn new(atlas_size: u32, starting_index: usize) -> AtlasCache<T> {
         let mut ret = AtlasCache {
