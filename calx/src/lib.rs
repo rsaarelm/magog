@@ -12,6 +12,7 @@ extern crate vec_map;
 mod alg_misc;
 mod colors;
 pub mod ease;
+mod flick;
 mod fov;
 mod hex;
 mod hex_fov;
@@ -34,6 +35,7 @@ pub use colors::{
     color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
     TermColor, Xterm256Color, NAMED_COLORS,
 };
+pub use flick::Flick;
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
