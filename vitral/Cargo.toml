@@ -9,11 +9,14 @@ repository = "https://github.com/rsaarelm/vitral"
 
 [dependencies]
 euclid = "0.19"
+glium = "0.22"
+lazy_static = "1.2"
 log = "0.4"
 time = "0.1"
-glium = "0.22"
 
 image = { version = "0.20", optional = true }
+
+calx = { path = "../calx" }
 
 [features]
 default = ["image"]

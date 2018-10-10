@@ -1,8 +1,12 @@
+extern crate calx;
+
 #[cfg(feature = "image")]
 extern crate image;
 
 #[macro_use]
 extern crate glium;
+#[macro_use]
+extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
@@ -28,6 +32,12 @@ pub use backend::{Backend, KeyEvent};
 
 mod rect_util;
 pub use rect_util::RectUtil;
+
+mod scene;
+pub use scene::{
+    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
+    save_screenshot, AppConfig, Evt, Scene, SceneSwitch,
+};
 
 mod tilesheet;
 pub use tilesheet::tilesheet_bounds;
@@ -61,7 +71,7 @@ impl<'a> From<PngBytes<'a>> for ImageBuffer {
 }
 
 /// Drawable image data for Vitral.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct ImageData {
     pub texture: TextureIndex,
     pub size: Size2D<u32>,
