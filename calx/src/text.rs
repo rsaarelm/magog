@@ -1,12 +1,16 @@
 //! String processing utilities
 
+use num::Zero;
+use std::ops::{Add, AddAssign};
+
 /// Split a long line into multiple lines that fit a given width.
 ///
 /// Will treat newlines in the input as regular whitespace, you probably want to split your input
 /// at newlines before using `split_line` on the individual lines.
-pub fn split_line<F>(text: &str, char_width: F, max_width: f32) -> LineSplit<F>
+pub fn split_line<F, N>(text: &str, char_width: F, max_width: N) -> LineSplit<F, N>
 where
-    F: Fn(char) -> f32,
+    F: Fn(char) -> N,
+    N: Add + PartialOrd + Copy,
 {
     LineSplit {
         remain: text,
@@ -16,16 +20,17 @@ where
     }
 }
 
-pub struct LineSplit<'a, F> {
+pub struct LineSplit<'a, F, N> {
     remain: &'a str,
     char_width: F,
-    max_width: f32,
+    max_width: N,
     finished: bool,
 }
 
-impl<'a, F> Iterator for LineSplit<'a, F>
+impl<'a, F, N> Iterator for LineSplit<'a, F, N>
 where
-    F: Fn(char) -> f32,
+    F: Fn(char) -> N,
+    N: Zero + Add + AddAssign + Copy + PartialOrd,
 {
     type Item = &'a str;
 
@@ -34,28 +39,24 @@ where
             return None;
         }
 
-        struct State {
-            total_width: f32,
+        struct State<N> {
+            total_width: N,
             clip_pos: usize,
-            last_word_break: Option<(usize, f32)>,
+            last_word_break: Option<(usize, N)>,
             prev: char,
         }
 
-        impl State {
-            fn new() -> State {
+        impl<N: Zero + Add + AddAssign + Copy> State<N> {
+            fn new() -> State<N> {
                 State {
-                    total_width: 0.0,
+                    total_width: N::zero(),
                     clip_pos: 0,
                     last_word_break: None,
                     prev: 'A',
                 }
             }
 
-            fn update<F: Fn(char) -> f32>(
-                &mut self,
-                char_width: &F,
-                c: char,
-            ) -> Option<(usize, f32)> {
+            fn update<F: Fn(char) -> N>(&mut self, char_width: &F, c: char) -> Option<(usize, N)> {
                 if c.is_whitespace() && !self.prev.is_whitespace() {
                     self.last_word_break = Some((self.clip_pos, self.total_width));
                 }
@@ -84,7 +85,9 @@ where
                         Some(i)
                     } else if w <= self.max_width {
                         Some(i)
-                    } else { None }
+                    } else {
+                        None
+                    }
                 })
                 .last()
                 .unwrap_or(0)
