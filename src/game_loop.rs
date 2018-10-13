@@ -84,16 +84,20 @@ impl GameLoop {
         let flip = (loc.x + loc.y) % 2 == 0;
 
         let actual_dir = match side {
-            Side::West => if flip {
-                Dir6::Southwest
-            } else {
-                Dir6::Northwest
-            },
-            Side::East => if flip {
-                Dir6::Southeast
-            } else {
-                Dir6::Northeast
-            },
+            Side::West => {
+                if flip {
+                    Dir6::Southwest
+                } else {
+                    Dir6::Northwest
+                }
+            }
+            Side::East => {
+                if flip {
+                    Dir6::Southeast
+                } else {
+                    Dir6::Northeast
+                }
+            }
         };
 
         self.smart_step(actual_dir)
@@ -274,9 +278,9 @@ impl GameLoop {
         let bounds = self.core.bounds();
         self.core.fill_rect(&bounds, [0.0, 0.0, 0.0, 0.99]);
 
-        let mut letter_pos = Point2D::new(0.0, 0.0);
-        let mut slot_name_pos = Point2D::new(20.0, 0.0);
-        let mut item_name_pos = Point2D::new(80.0, 0.0);
+        let mut letter_pos = Point2D::new(0, 0);
+        let mut slot_name_pos = Point2D::new(20, 0);
+        let mut item_name_pos = Point2D::new(80, 0);
         let text_color = [1.0, 1.0, 1.0, 1.0];
 
         for slot in SLOT_DATA.iter() {
@@ -313,7 +317,7 @@ impl GameLoop {
         Ok(())
     }
 
-    pub fn status_draw(&mut self, area: &Rect<f32>) {
+    pub fn status_draw(&mut self, area: &Rect<i32>) {
         self.core.fill_rect(area, Rgba::from(0x33_11_11_ff).into());
         self.core.draw_text(
             &*self.font,
@@ -329,7 +333,7 @@ impl GameLoop {
         self.core.begin_frame();
         let screen_area = self.core.screen_bounds();
 
-        let (view_area, status_area) = screen_area.horizontal_split(-32.0);
+        let (view_area, status_area) = screen_area.horizontal_split(-32);
 
         // Ugh
         self.world
@@ -353,12 +357,12 @@ impl GameLoop {
             }
             State::Console => {
                 let mut console_area = screen_area;
-                console_area.size.height = 184.0;
+                console_area.size.height = 184;
                 self.console.draw_large(&mut self.core, &console_area);
             }
             _ => {
                 let mut console_area = screen_area;
-                console_area.size.height = 32.0;
+                console_area.size.height = 32;
                 self.console.draw_small(&mut self.core, &console_area);
             }
         }

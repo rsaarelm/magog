@@ -2,7 +2,6 @@ use backend::Core;
 use brush::Brush;
 use calx::{color, lerp, Rgba};
 use draw_util::DrawUtil;
-use euclid::point2;
 use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;
@@ -60,8 +59,7 @@ impl Coloring {
 #[derive(Clone, PartialEq)]
 pub struct Sprite {
     pub layer: Layer,
-    // XXX: Not using Point2D<f32> because floats don't have Ord.
-    pub offset: [i32; 2],
+    pub offset: ScreenVector,
 
     // TODO: Replace this with a generic "Drawable" trait object once we start having other things
     // than frames as sprites.
@@ -72,7 +70,6 @@ pub struct Sprite {
 
 impl Sprite {
     pub fn new(layer: Layer, offset: ScreenVector, brush: Rc<Brush>) -> Sprite {
-        let offset = [offset.x as i32, offset.y as i32];
         Sprite {
             layer,
             offset,
@@ -97,7 +94,7 @@ impl Eq for Sprite {}
 
 impl Ord for Sprite {
     fn cmp(&self, other: &Self) -> Ordering {
-        (self.layer, self.offset[1]).cmp(&(other.layer, other.offset[1]))
+        (self.layer, self.offset.y).cmp(&(other.layer, other.offset.y))
     }
 }
 
@@ -107,10 +104,10 @@ impl PartialOrd for Sprite {
 
 impl Sprite {
     pub fn draw(&self, core: &mut Core) {
-        let pos = point2(self.offset[0] as f32, self.offset[1] as f32);
         for splat in &self.brush[self.frame_idx] {
             let (fore, back) = self.color.apply(splat.color, splat.back_color);
-            core.draw_image_2color(&splat.image, pos - splat.offset, fore.into(), back.into());
+            let pos = (self.offset - splat.offset).to_point().to_untyped();
+            core.draw_image_2color(&splat.image, pos, fore.into(), back.into());
         }
     }
 }

@@ -8,7 +8,7 @@ pub trait DrawUtil {
     fn draw_image_2color(
         &mut self,
         image: &ImageData,
-        pos: Point2D<f32>,
+        pos: Point2D<i32>,
         color: Color,
         back_color: Color,
     );
@@ -17,19 +17,19 @@ pub trait DrawUtil {
     fn draw_outline_text(
         &mut self,
         font: &FontData,
-        pos: Point2D<f32>,
+        pos: Point2D<i32>,
         align: Align,
         color: Color,
         back_color: Color,
         text: &str,
-    ) -> Point2D<f32>;
+    ) -> Point2D<i32>;
 }
 
 impl DrawUtil for Core {
     fn draw_image_2color(
         &mut self,
         image: &ImageData,
-        pos: Point2D<f32>,
+        pos: Point2D<i32>,
         color: Color,
         back_color: Color,
     ) {
@@ -38,30 +38,30 @@ impl DrawUtil for Core {
         let area = rect(
             pos.x,
             pos.y,
-            image.size.width as f32,
-            image.size.height as f32,
+            image.size.width as i32,
+            image.size.height as i32,
         );
 
         let idx = self.push_raw_vertex(Vertex::new(
-            area.origin,
+            area.origin.to_f32(),
             image.tex_coords.origin,
             color,
             back_color,
         ));
         self.push_raw_vertex(Vertex::new(
-            area.top_right(),
+            area.top_right().to_f32(),
             image.tex_coords.top_right(),
             color,
             back_color,
         ));
         self.push_raw_vertex(Vertex::new(
-            area.bottom_right(),
+            area.bottom_right().to_f32(),
             image.tex_coords.bottom_right(),
             color,
             back_color,
         ));
         self.push_raw_vertex(Vertex::new(
-            area.bottom_left(),
+            area.bottom_left().to_f32(),
             image.tex_coords.bottom_left(),
             color,
             back_color,
@@ -75,18 +75,13 @@ impl DrawUtil for Core {
     fn draw_outline_text(
         &mut self,
         font: &FontData,
-        pos: Point2D<f32>,
+        pos: Point2D<i32>,
         align: Align,
         color: Color,
         back_color: Color,
         text: &str,
-    ) -> Point2D<f32> {
-        for offset in &[
-            vec2(-1.0, 0.0),
-            vec2(1.0, 0.0),
-            vec2(0.0, -1.0),
-            vec2(0.0, 1.0),
-        ] {
+    ) -> Point2D<i32> {
+        for offset in &[vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1)] {
             self.draw_text(font, pos + *offset, align, back_color, text);
         }
 

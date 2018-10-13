@@ -1,9 +1,10 @@
 use cache;
 use calx::color::*;
 use calx::Rgba;
-use euclid::{rect, vec2, Rect, Vector2D};
+use euclid::{rect, vec2, Rect};
 use std::fmt;
 use std::rc::Rc;
+use view::ScreenVector;
 use vitral::ImageData;
 use SubImageSpec;
 
@@ -12,7 +13,7 @@ use SubImageSpec;
 pub struct Splat {
     pub image: ImageData,
     /// Draw offset for the splat.
-    pub offset: Vector2D<f32>,
+    pub offset: ScreenVector,
     pub color: Rgba,
     pub back_color: Rgba,
 }
@@ -202,7 +203,7 @@ impl Builder {
 #[derive(Clone)]
 pub struct Geom {
     /// Draw offset.
-    offset: Vector2D<f32>,
+    offset: ScreenVector,
     /// Coordinates on the sprite sheet image.
     bounds: Rect<u32>,
 }
@@ -217,7 +218,7 @@ impl Geom {
         height: u32,
     ) -> Geom {
         Geom {
-            offset: vec2(offset_x as f32, offset_y as f32),
+            offset: vec2(offset_x, offset_y),
             bounds: rect(orig_x, orig_y, width, height),
         }
     }

@@ -46,7 +46,7 @@ impl Console {
     }
 
     /// Draw the console as a regular message display.
-    pub fn draw_small(&mut self, core: &mut Core, screen_area: &Rect<f32>) {
+    pub fn draw_small(&mut self, core: &mut Core, screen_area: &Rect<i32>) {
         // TODO: Store color in draw context.
         let color = [1.0, 1.0, 1.0, 0.4];
 
@@ -59,9 +59,10 @@ impl Console {
             lines.extend(
                 split_line(
                     &msg.text,
-                    |c| self.font.char_width(c).unwrap_or(0.0),
+                    |c| self.font.char_width(c).unwrap_or(0),
                     screen_area.size.width,
-                ).map(|x| x.to_string()),
+                )
+                .map(|x| x.to_string()),
             );
         }
 
@@ -73,7 +74,7 @@ impl Console {
     }
 
     /// Draw the console as a big drop-down with a command prompt.
-    pub fn draw_large(&mut self, core: &mut Core, screen_area: &Rect<f32>) {
+    pub fn draw_large(&mut self, core: &mut Core, screen_area: &Rect<i32>) {
         // TODO: Store color in draw context.
         let color = [0.6, 0.6, 0.6, 1.0];
         let background = [0.0, 0.0, 0.6, 0.8];
@@ -81,7 +82,7 @@ impl Console {
         core.fill_rect(screen_area, background);
 
         let h = self.font.height;
-        let mut lines_left = (screen_area.size.height / h).ceil() as i32;
+        let mut lines_left = (screen_area.size.height + h - 1) / h;
         let mut y = screen_area.max_y() - h;
 
         // TODO: Handle enter with text input.
@@ -99,18 +100,13 @@ impl Console {
             // XXX: Duplicated from draw_small.
             let fragments = split_line(
                 &msg.text,
-                |c| self.font.char_width(c).unwrap_or(0.0),
+                |c| self.font.char_width(c).unwrap_or(0),
                 screen_area.size.width,
-            ).map(|x| x.to_string())
+            )
+            .map(|x| x.to_string())
             .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                core.draw_text(
-                    &*self.font,
-                    Point2D::new(0.0f32, y),
-                    Align::Left,
-                    color,
-                    line,
-                );
+                core.draw_text(&*self.font, Point2D::new(0, y), Align::Left, color, line);
                 y -= h;
                 lines_left -= 1;
             }

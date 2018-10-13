@@ -12,18 +12,18 @@ use world::{FovStatus, Location, Query, TerrainQuery, World};
 use Icon;
 
 /// Useful general constant for cell dimension ops.
-pub static PIXEL_UNIT: f32 = 16.0;
+pub static PIXEL_UNIT: i32 = 16;
 
 pub struct WorldView {
     pub cursor_loc: Option<Location>,
     pub show_cursor: bool,
     camera_loc: Location,
-    screen_area: TypedRect<f32, ScreenSpace>,
+    screen_area: ScreenRect,
     fov: Option<HashMap<CellVector, Vec<Location>>>,
 }
 
 impl WorldView {
-    pub fn new(camera_loc: Location, screen_area: Rect<f32>) -> WorldView {
+    pub fn new(camera_loc: Location, screen_area: Rect<i32>) -> WorldView {
         WorldView {
             cursor_loc: None,
             show_cursor: false,
@@ -45,12 +45,13 @@ impl WorldView {
         if self.fov.is_none() {
             // Chart area, center in origin, inflated by tile width in every direction to get the
             // cells partially on screen included.
-            let center = (self.screen_area.origin + self.screen_area.size / 2.0
-                - vec2(PIXEL_UNIT / 2.0, 0.0)).to_vector();
+            let center = (self.screen_area.origin + self.screen_area.size / 2
+                - vec2(PIXEL_UNIT / 2, 0))
+            .to_vector();
             let bounds = self
                 .screen_area
                 .translate(&-(self.screen_area.origin + center).to_vector())
-                .inflate(PIXEL_UNIT * 2.0, PIXEL_UNIT * 2.0);
+                .inflate(PIXEL_UNIT * 2, PIXEL_UNIT * 2);
 
             self.fov = Some(screen_fov(world, self.camera_loc, bounds));
         }
@@ -62,8 +63,9 @@ impl WorldView {
 
         self.ensure_fov(world);
 
-        let center = (self.screen_area.origin + self.screen_area.size / 2.0
-            - vec2(PIXEL_UNIT / 2.0, 10.0)).to_vector();
+        let center = (self.screen_area.origin + self.screen_area.size / 2
+            - vec2(PIXEL_UNIT / 2, 10))
+        .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let mouse_pos = ScreenVector::from_untyped(&core.mouse_pos().to_vector());
@@ -208,12 +210,13 @@ impl WorldView {
                                 let prev_pos =
                                     ScreenVector::from_cell_space(chart_pos + towards_prev_pos)
                                         + center;
-                                mob_pos =
-                                    lerp(screen_pos, prev_pos, ease::cubic_in_out(tween_factor));
-                                // Make sure no fractions end up to mess pixel rendering
-                                // (TODO: Need a single place solution for this)
-                                mob_pos.x = mob_pos.x.round();
-                                mob_pos.y = mob_pos.y.round();
+                                mob_pos = lerp(
+                                    screen_pos.to_f32(),
+                                    prev_pos.to_f32(),
+                                    ease::cubic_in_out(tween_factor),
+                                )
+                                .round()
+                                .to_i32();
                             }
                         }
                     }
@@ -314,7 +317,7 @@ impl WorldView {
             let limit = ((hp * 5) as f32 / max_hp as f32).ceil() as i32;
 
             for x in 0..5 {
-                let pos = screen_pos + vec2(x as f32 * 4.0 - 10.0, -10.0);
+                let pos = screen_pos + vec2(x * 4 - 10, -10);
                 let brush = cache::misc(if x < limit {
                     Icon::HealthPip
                 } else {
@@ -329,7 +332,7 @@ impl WorldView {
 #[derive(Clone)]
 struct ScreenFov<'a> {
     w: &'a World,
-    screen_area: TypedRect<f32, ScreenSpace>,
+    screen_area: ScreenRect,
     origins: Vec<Location>,
 }
 
@@ -384,7 +387,7 @@ impl<'a> FovValue for ScreenFov<'a> {
 pub fn screen_fov(
     w: &World,
     origin: Location,
-    screen_area: TypedRect<f32, ScreenSpace>,
+    screen_area: ScreenRect,
 ) -> HashMap<CellVector, Vec<Location>> {
     let init = ScreenFov {
         w: w,
@@ -407,32 +410,32 @@ pub struct ScreenSpace;
 // | -1/2a  1/a |
 
 impl Transformation for ScreenSpace {
-    type Element = f32;
+    type Element = i32;
 
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
         let v = v.into();
-        let v = [v[0] as f32, v[1] as f32];
         [
             v[0] * PIXEL_UNIT - v[1] * PIXEL_UNIT,
-            v[0] * PIXEL_UNIT / 2.0 + v[1] * PIXEL_UNIT / 2.0,
+            v[0] * PIXEL_UNIT / 2 + v[1] * PIXEL_UNIT / 2,
         ]
     }
 
     fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
         let v = v.into();
+        let v = [v[0] as f32, v[1] as f32];
 
         // Use a custom function here instead of the matrix inverse, because the naive matrix
         // version projects into an isometric grid instead of the more square on-screen hex cells
         // and feels off when aiming with the mouse.
-        let c = PIXEL_UNIT / 2.0;
+        let c = PIXEL_UNIT as f32 / 2.0;
         let column = ((v[0] + c) / (c * 2.0)).floor();
         let row = ((v[1] - column * c) / (c * 2.0)).floor();
         [(column + row) as i32, row as i32]
     }
 }
 
-pub type ScreenVector = TypedVector2D<f32, ScreenSpace>;
-pub type ScreenRect = TypedRect<f32, ScreenSpace>;
+pub type ScreenVector = TypedVector2D<i32, ScreenSpace>;
+pub type ScreenRect = TypedRect<i32, ScreenSpace>;
 
 /// 3D physics space, used for eg. lighting.
 pub struct PhysicsSpace;
