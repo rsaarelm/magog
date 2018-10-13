@@ -159,7 +159,7 @@ impl Builder {
     /// Needs to be provided a texture creation function. If the user has not specified them
     /// earlier, this will be used to construct a separate texture for the solid color and a
     /// default font texture.
-    pub fn build<F, V: Vertex>(self, screen_size: Size2D<f32>, mut make_t: F) -> Core<V>
+    pub fn build<F, V: Vertex>(self, screen_size: Size2D<u32>, mut make_t: F) -> Core<V>
     where
         F: FnMut(ImageBuffer) -> TextureIndex,
     {
@@ -218,15 +218,15 @@ where
                     size: Size2D::new(char_width, char_height),
                     tex_coords: tex_coords,
                 },
-                draw_offset: vec2(0.0, 0.0),
-                advance: char_width as f32,
+                draw_offset: vec2(0, 0),
+                advance: char_width as i32,
             },
         );
     }
 
     FontData {
         chars: map,
-        height: char_height as f32,
+        height: char_height as i32,
     }
 }
 
@@ -243,7 +243,7 @@ pub trait Vertex {
 pub struct Core<V> {
     draw_list: Vec<DrawBatch<V>>,
 
-    mouse_pos: Point2D<f32>,
+    mouse_pos: Point2D<i32>,
     click_state: [ClickState; 3],
 
     solid_texture: ImageData,
@@ -252,16 +252,16 @@ pub struct Core<V> {
 
     tick: u64,
 
-    clip: Option<Rect<f32>>,
-    screen_size: Size2D<f32>,
+    clip: Option<Rect<i32>>,
+    screen_size: Size2D<i32>,
 }
 
 impl<V: Vertex> Core<V> {
-    pub fn new(solid_texture: ImageData, screen_size: Size2D<f32>) -> Core<V> {
+    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Core<V> {
         Core {
             draw_list: Vec::new(),
 
-            mouse_pos: point2(0.0, 0.0),
+            mouse_pos: point2(0, 0),
             click_state: [
                 ClickState::Unpressed,
                 ClickState::Unpressed,
@@ -275,7 +275,7 @@ impl<V: Vertex> Core<V> {
             tick: 0,
 
             clip: None,
-            screen_size,
+            screen_size: screen_size.to_i32(),
         }
     }
 
@@ -292,8 +292,8 @@ impl<V: Vertex> Core<V> {
     /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
-    pub fn push_vertex(&mut self, pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> u16 {
-        self.push_raw_vertex(V::new(pos, tex_coord, color))
+    pub fn push_vertex(&mut self, pos: Point2D<i32>, tex_coord: Point2D<f32>, color: Color) -> u16 {
+        self.push_raw_vertex(V::new(pos.to_f32(), tex_coord, color))
     }
 
     pub fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
@@ -304,7 +304,7 @@ impl<V: Vertex> Core<V> {
         batch.triangle_indices.push(i3);
     }
 
-    pub fn set_clip(&mut self, area: Rect<f32>) {
+    pub fn set_clip(&mut self, area: Rect<i32>) {
         self.clip = Some(area);
         self.check_batch(None);
     }
@@ -315,7 +315,7 @@ impl<V: Vertex> Core<V> {
     }
 
     /// Return the current draw bounds
-    pub fn bounds(&self) -> Rect<f32> {
+    pub fn bounds(&self) -> Rect<i32> {
         if let Some(clip) = self.clip {
             clip
         } else {
@@ -324,7 +324,7 @@ impl<V: Vertex> Core<V> {
     }
 
     /// Return the screen bounds
-    pub fn screen_bounds(&self) -> Rect<f32> { Rect::new(point2(0.0, 0.0), self.screen_size) }
+    pub fn screen_bounds(&self) -> Rect<i32> { Rect::new(point2(0, 0), self.screen_size) }
 
     pub fn start_solid_texture(&mut self) {
         let t = self.solid_texture.texture.clone();
@@ -381,10 +381,13 @@ impl<V: Vertex> Core<V> {
         }
     }
 
-    pub fn draw_line(&mut self, thickness: f32, color: Color, p1: Point2D<f32>, p2: Point2D<f32>) {
+    pub fn draw_line(&mut self, thickness: f32, color: Color, p1: Point2D<i32>, p2: Point2D<i32>) {
         if p1 == p2 {
             return;
         }
+
+        let p1 = p1.to_f32();
+        let p2 = p2.to_f32();
 
         self.start_solid_texture();
         let t = self.solid_texture_texcoord();
@@ -400,15 +403,15 @@ impl<V: Vertex> Core<V> {
         let q3 = p2 + side + front + vec2(0.5, 0.5);
         let q4 = p2 - side + front + vec2(0.5, 0.5);
 
-        let idx = self.push_vertex(q1, t, color);
-        self.push_vertex(q2, t, color);
-        self.push_vertex(q3, t, color);
-        self.push_vertex(q4, t, color);
+        let idx = self.push_vertex(q1.round().to_i32(), t, color);
+        self.push_vertex(q2.round().to_i32(), t, color);
+        self.push_vertex(q3.round().to_i32(), t, color);
+        self.push_vertex(q4.round().to_i32(), t, color);
         self.push_triangle(idx, idx + 1, idx + 2);
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn draw_tex_rect(&mut self, area: &Rect<f32>, tex_coords: &Rect<f32>, color: Color) {
+    pub fn draw_tex_rect(&mut self, area: &Rect<i32>, tex_coords: &Rect<f32>, color: Color) {
         let idx = self.push_vertex(area.origin, tex_coords.origin, color);
         self.push_vertex(area.top_right(), tex_coords.top_right(), color);
         self.push_vertex(area.bottom_right(), tex_coords.bottom_right(), color);
@@ -418,16 +421,19 @@ impl<V: Vertex> Core<V> {
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn fill_rect(&mut self, area: &Rect<f32>, color: Color) {
+    pub fn fill_rect(&mut self, area: &Rect<i32>, color: Color) {
         self.start_solid_texture();
         let p = self.solid_texture_texcoord();
         self.draw_tex_rect(area, &rect(p.x, p.y, 0.0, 0.0), color);
     }
 
-    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<f32>, color: Color) {
+    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<i32>, color: Color) {
         self.start_texture(image.texture.clone());
-        let size = Size2D::new(image.size.width as f32, image.size.height as f32);
-        self.draw_tex_rect(&Rect::new(pos, size), &image.tex_coords, color);
+        self.draw_tex_rect(
+            &Rect::new(pos, image.size.to_i32()),
+            &image.tex_coords,
+            color,
+        );
     }
 
     /// Draw a line of text to screen.
@@ -439,15 +445,15 @@ impl<V: Vertex> Core<V> {
     pub fn draw_text(
         &mut self,
         font: &FontData,
-        pos: Point2D<f32>,
+        pos: Point2D<i32>,
         align: Align,
         color: Color,
         text: &str,
-    ) -> Point2D<f32> {
+    ) -> Point2D<i32> {
         let mut cursor_pos = pos;
         cursor_pos.x -= match align {
-            Align::Left => 0.0,
-            Align::Center => font.str_width(text) / 2.0,
+            Align::Left => 0,
+            Align::Center => font.str_width(text) / 2,
             Align::Right => font.str_width(text),
         };
 
@@ -465,7 +471,7 @@ impl<V: Vertex> Core<V> {
     }
 
     /// Return the mouse input state for the current bounds area.
-    pub fn click_state(&self, area: &Rect<f32>) -> ButtonAction {
+    pub fn click_state(&self, area: &Rect<i32>) -> ButtonAction {
         // XXX: This is doing somewhat sneaky stuff to avoid having to track widget IDs across
         // frames. In a usual GUI, you first need to press the mouse button on a widget, then
         // release it on top of the same widget for the click to register. Here, the click will
@@ -516,7 +522,7 @@ impl<V: Vertex> Core<V> {
     }
 
     /// Get the mouse cursor position in global space.
-    pub fn mouse_pos(&self) -> Point2D<f32> { self.mouse_pos }
+    pub fn mouse_pos(&self) -> Point2D<i32> { self.mouse_pos }
 
     /// Register mouse button state.
     pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
@@ -530,9 +536,7 @@ impl<V: Vertex> Core<V> {
     }
 
     /// Register mouse motion.
-    pub fn input_mouse_move(&mut self, x: i32, y: i32) {
-        self.mouse_pos = point2(x as f32, y as f32);
-    }
+    pub fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
 
     /// Get whether mouse button was pressed
     pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
@@ -556,7 +560,7 @@ pub struct DrawBatch<V> {
     /// implementation
     pub texture: TextureIndex,
     /// Clipping rectangle for the current batch
-    pub clip: Option<Rect<f32>>,
+    pub clip: Option<Rect<i32>>,
     /// Vertex data
     pub vertices: Vec<V>,
     /// Indices into the vertex array for the triangles that make up the batch
@@ -583,9 +587,9 @@ pub enum MouseButton {
 #[derive(Copy, Clone, PartialEq, Debug)]
 enum ClickState {
     Unpressed,
-    Press(Point2D<f32>),
-    Drag(Point2D<f32>),
-    Release(Point2D<f32>, Point2D<f32>),
+    Press(Point2D<i32>),
+    Drag(Point2D<i32>),
+    Release(Point2D<i32>, Point2D<i32>),
 }
 
 impl ClickState {
@@ -596,14 +600,14 @@ impl ClickState {
         }
     }
 
-    fn input_press(self, pos: Point2D<f32>) -> ClickState {
+    fn input_press(self, pos: Point2D<i32>) -> ClickState {
         match self {
             ClickState::Unpressed | ClickState::Release(_, _) => ClickState::Press(pos),
             ClickState::Press(p) | ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
-    fn input_release(self, pos: Point2D<f32>) -> ClickState {
+    fn input_release(self, pos: Point2D<i32>) -> ClickState {
         match self {
             ClickState::Unpressed => ClickState::Unpressed,
             ClickState::Press(p) | ClickState::Drag(p) | ClickState::Release(p, _) => {
@@ -655,13 +659,13 @@ pub struct FontData {
     /// Map from chars to glyph images.
     pub chars: HashMap<char, CharData>,
     /// Line height for this font.
-    pub height: f32,
+    pub height: i32,
 }
 
 impl FontData {
     /// Return the size of a string of text in this font.
-    pub fn render_size(&self, text: &str) -> Rect<f32> {
-        let mut w = 0.0;
+    pub fn render_size(&self, text: &str) -> Rect<i32> {
+        let mut w = 0;
 
         for c in text.chars() {
             if let Some(f) = self.chars.get(&c) {
@@ -669,14 +673,14 @@ impl FontData {
             }
         }
 
-        rect(0.0, 0.0, w, self.height)
+        rect(0, 0, w, self.height)
     }
 
     /// Return the width of a char in the font.
-    pub fn char_width(&self, c: char) -> Option<f32> { self.chars.get(&c).map(|c| c.advance) }
+    pub fn char_width(&self, c: char) -> Option<i32> { self.chars.get(&c).map(|c| c.advance) }
 
-    pub fn str_width(&self, s: &str) -> f32 {
-        s.chars().map(|c| self.char_width(c).unwrap_or(0.0)).sum()
+    pub fn str_width(&self, s: &str) -> i32 {
+        s.chars().map(|c| self.char_width(c).unwrap_or(0)).sum()
     }
 }
 
@@ -684,8 +688,8 @@ impl FontData {
 #[derive(Copy, Clone, PartialEq)]
 pub struct CharData {
     pub image: ImageData,
-    pub draw_offset: Vector2D<f32>,
-    pub advance: f32,
+    pub draw_offset: Vector2D<i32>,
+    pub advance: i32,
 }
 
 /// Action on a GUI button.
@@ -718,7 +722,8 @@ where
             .map(|(_, _, p)| {
                 let (r, g, b, a) = p.channels4();
                 r as u32 + ((g as u32) << 8) + ((b as u32) << 16) + ((a as u32) << 24)
-            }).collect();
+            })
+            .collect();
 
         ImageBuffer { size, pixels }
     }

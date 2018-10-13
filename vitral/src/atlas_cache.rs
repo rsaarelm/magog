@@ -140,7 +140,8 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             .map(|r| SubImageSpec {
                 bounds: r,
                 id: id.clone(),
-            }).collect();
+            })
+            .collect();
 
         self.add_sheet(id, sheet);
         ret
@@ -158,11 +159,12 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             .into_iter()
             .map(|i| CharData {
                 image: self.get(&i).clone(),
-                draw_offset: vec2(0.0, 0.0),
-                advance: i.bounds.size.width as f32,
-            }).collect::<Vec<_>>();
+                draw_offset: vec2(0, 0),
+                advance: i.bounds.size.width as i32,
+            })
+            .collect::<Vec<_>>();
 
-        let height = glyphs[0].image.size.height as f32;
+        let height = glyphs[0].image.size.height as i32;
         let chars = span.into_iter().zip(glyphs.into_iter()).collect();
 
         FontData { chars, height }
