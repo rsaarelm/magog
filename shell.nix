@@ -33,5 +33,4 @@ stdenv.mkDerivation {
 
   # Set Environment Variables
   RUST_BACKTRACE = 1;
-  RUST_LOG = "info";
 }
