@@ -1,7 +1,6 @@
 #[cfg(feature = "image")]
 extern crate image;
 
-#[cfg(feature = "glium_backend")]
 #[macro_use]
 extern crate glium;
 #[macro_use]
@@ -24,8 +23,7 @@ pub use atlas_cache::{AtlasCache, SubImageSpec};
 mod canvas_zoom;
 pub use canvas_zoom::CanvasZoom;
 
-#[cfg(feature = "glium_backend")]
-pub mod glium_backend;
+pub mod backend;
 
 mod rect_util;
 pub use rect_util::RectUtil;

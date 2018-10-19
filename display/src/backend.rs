@@ -2,13 +2,13 @@ use cache;
 use euclid::Point2D;
 use glium;
 use std::error::Error;
-pub use vitral::glium_backend::KeyEvent;
-use vitral::{self, glium_backend, Color};
+pub use vitral::backend::KeyEvent;
+use vitral::{self, backend, Color};
 
 pub type Core = vitral::Core<Vertex>;
 
 pub struct Backend {
-    inner: glium_backend::Backend<Vertex>,
+    inner: backend::Backend<Vertex>,
 }
 
 impl Backend {
@@ -63,7 +63,7 @@ impl Backend {
             geometry_shader: None,
         };
 
-        let inner = glium_backend::Backend::start(width, height, title, SHADER)?;
+        let inner = backend::Backend::start(width, height, title, SHADER)?;
 
         Ok(Backend { inner })
     }

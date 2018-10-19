@@ -14,5 +14,5 @@ glium = "0.22"
 image = "0.20"
 time = "0.1"
 vec_map = "0.8"
-vitral = { path = "../vitral", features = ["glium_backend"] }
+vitral = { path = "../vitral" }
 world = { path = "../world" }
