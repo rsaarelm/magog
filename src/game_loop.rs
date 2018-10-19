@@ -145,7 +145,7 @@ impl GameLoop {
                 Ok(Vec::new())
             }
             F12 => {
-                backend.save_screenshot("magog");
+                backend.save_screenshot("magog").unwrap();
                 Ok(Vec::new())
             }
             _ => Ok(Vec::new()),

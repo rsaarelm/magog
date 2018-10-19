@@ -1,7 +1,9 @@
 use cache;
+use calx;
 use euclid::Point2D;
 use glium;
 use std::error::Error;
+use std::io;
 pub use vitral::backend::KeyEvent;
 use vitral::{self, backend, Color};
 
@@ -88,51 +90,8 @@ impl Backend {
         self.inner.update(core)
     }
 
-    pub fn save_screenshot(&self, basename: &str) {
-        use image;
-        use std::fs::{self, File};
-        use std::path::Path;
-        use time;
-
-        let shot: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> = self.inner.screenshot().into();
-
-        let timestamp = time::precise_time_s() as u64;
-        // Create screenshot filenames by concatenating the current timestamp in
-        // seconds with a running number from 00 to 99. 100 shots per second
-        // should be good enough.
-
-        // Default if we fail to generate any of the 100 candidates for this
-        // second, just overwrite with the "xx" prefix then.
-        let mut filename = format!("{}-{}{}.wng", basename, timestamp, "xx");
-
-        // Run through candidates for this second.
-        for i in 0..100 {
-            let test_filename = format!("{}-{}{:02}.png", basename, timestamp, i);
-            // If file does not exist.
-            if fs::metadata(&test_filename).is_err() {
-                // Thread-safe claiming: create_dir will fail if the dir
-                // already exists (it'll exist if another thread is gunning
-                // for the same filename and managed to get past us here).
-                // At least assuming that create_dir is atomic...
-                let squat_dir = format!(".tmp-{}{:02}", timestamp, i);
-                if fs::create_dir(&squat_dir).is_ok() {
-                    File::create(&test_filename).unwrap();
-                    filename = test_filename;
-                    fs::remove_dir(&squat_dir).unwrap();
-                    break;
-                } else {
-                    continue;
-                }
-            }
-        }
-
-        let _ = image::save_buffer(
-            &Path::new(&filename),
-            &shot,
-            shot.width(),
-            shot.height(),
-            image::ColorType::RGB(8),
-        );
+    pub fn save_screenshot(&self, basename: &str) -> io::Result<()> {
+        calx::save_screenshot(basename, &self.inner.screenshot().into())
     }
 }
 
