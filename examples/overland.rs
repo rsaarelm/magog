@@ -7,7 +7,7 @@ extern crate world;
 
 use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};
 use euclid::vec2;
-use image::{GenericImage, Pixel, SubImage};
+use image::{GenericImage, Pixel, SubImage, GenericImageView};
 use std::collections::HashMap;
 use structopt::StructOpt;
 use world::{Location, Sector, Terrain};
