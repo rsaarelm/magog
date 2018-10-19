@@ -7,7 +7,7 @@ extern crate world;
 
 use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};
 use euclid::vec2;
-use image::{GenericImage, Pixel, SubImage, GenericImageView};
+use image::{GenericImage, GenericImageView, Pixel, SubImage};
 use std::collections::HashMap;
 use structopt::StructOpt;
 use world::{Location, Sector, Terrain};
@@ -166,7 +166,8 @@ fn save(prefab: Prefab<SRgba>, is_minimap: bool, output_path: String) {
         result.width(),
         result.height(),
         image::ColorType::RGBA(8),
-    ).unwrap();
+    )
+    .unwrap();
 }
 
 fn generate(width: u32, height: u32, is_minimap: bool, output_path: String) {

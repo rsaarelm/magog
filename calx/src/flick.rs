@@ -16,9 +16,7 @@ impl Flick {
         Flick((seconds * FLICKS_PER_SECOND as f64) as u64)
     }
 
-    pub fn from_nanoseconds(nanos: u64) -> Flick {
-        Flick(nanos * 7056 / 10_000)
-    }
+    pub fn from_nanoseconds(nanos: u64) -> Flick { Flick(nanos * 7056 / 10_000) }
 }
 
 impl fmt::Display for Flick {
@@ -47,9 +45,7 @@ impl<T: Into<Flick>> Add<T> for Flick {
 }
 
 impl<T: Into<Flick>> AddAssign<T> for Flick {
-    fn add_assign(&mut self, rhs: T) {
-        *self = *self + rhs.into();
-    }
+    fn add_assign(&mut self, rhs: T) { *self = *self + rhs.into(); }
 }
 
 impl<T: Into<Flick>> Sub<T> for Flick {
@@ -65,8 +61,5 @@ impl<T: Into<Flick>> Sub<T> for Flick {
 }
 
 impl<T: Into<Flick>> SubAssign<T> for Flick {
-    fn sub_assign(&mut self, rhs: T) {
-        *self = *self - rhs.into();
-    }
+    fn sub_assign(&mut self, rhs: T) { *self = *self - rhs.into(); }
 }
-

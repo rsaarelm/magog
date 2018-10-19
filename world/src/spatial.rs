@@ -138,13 +138,20 @@ impl Spatial {
 
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
-        self.place_to_entities.range(In(parent, None)..)
-             // Consume the contiguous elements for the parent container.
-             // This expects the ordering of the `Place` type to group contents
-             // of the same parent together.
-             .take_while(|&(k, _)| if let In(ref p, _) = *k { *p == parent } else { false })
-             .flat_map(|(_, e)| e.iter().cloned())
-             .collect()
+        self.place_to_entities
+            .range(In(parent, None)..)
+            // Consume the contiguous elements for the parent container.
+            // This expects the ordering of the `Place` type to group contents
+            // of the same parent together.
+            .take_while(|&(k, _)| {
+                if let In(ref p, _) = *k {
+                    *p == parent
+                } else {
+                    false
+                }
+            })
+            .flat_map(|(_, e)| e.iter().cloned())
+            .collect()
     }
 
     pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {

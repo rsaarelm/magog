@@ -37,13 +37,15 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
             "{}/Library/Application Support/{}",
             env::var("HOME").unwrap(),
             app_name
-        )).to_path_buf()
+        ))
+        .to_path_buf()
     } else {
         Path::new(&format!(
             "{}/.config/{}",
             env::var("HOME").unwrap(),
             app_name
-        )).to_path_buf()
+        ))
+        .to_path_buf()
     }
 }
 

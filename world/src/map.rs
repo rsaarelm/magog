@@ -37,7 +37,8 @@ impl<'a> From<&'a Map> for mapsave::Prefab {
                 } else {
                     None
                 }
-            }).collect()
+            })
+            .collect()
     }
 }
 

@@ -36,7 +36,8 @@ fn test_ecs() {
     Desc {
         name: "Orc".to_string(),
         icon: 8,
-    }.add_to_ecs(&mut ecs, e1);
+    }
+    .add_to_ecs(&mut ecs, e1);
     assert_eq!(ecs.desc[e1].name, "Orc");
 
     ecs.remove(e1);

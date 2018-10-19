@@ -56,7 +56,8 @@ impl Distribution<Loadout> for MobSpec {
             .c(StatsComponent::new(Stats::new(
                 self.power,
                 &self.intrinsics,
-            ))).c(Desc::new(&self.name, self.icon))
+            )))
+            .c(Desc::new(&self.name, self.icon))
             .c(Brain::enemy())
             .c(Anim::default())
             .c(Health::default())
@@ -110,7 +111,8 @@ impl Distribution<Loadout> for ItemSpec {
                     .armor(self.armor)
                     .attack(self.attack)
                     .defense(self.defense),
-            )).c(Item {
+            ))
+            .c(Item {
                 item_type: self.item_type,
                 charges: 1,
             })
@@ -341,7 +343,8 @@ impl Distribution<Loadout> for EntitySpawn {
             .expect(&format!(
                 "EntitySpawn {:?} not found in spec database",
                 self
-            )).sample(rng)
+            ))
+            .sample(rng)
     }
 }
 

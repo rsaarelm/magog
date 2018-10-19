@@ -206,8 +206,8 @@ impl FromPrefab for String {
         //
         // Subtract 1 from the result so that we can always fit the origin brackets on the leftmost
         // char if need be.
-        let min_x = prefab.iter()
-            //.map(|(&pos, &c)| (pos.clone(), c.clone()))
+        let min_x = prefab
+            .iter()
             .chain(append)
             .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
             .min()
@@ -215,8 +215,8 @@ impl FromPrefab for String {
             - 1;
 
         // Arrange cells in print order.
-        let mut sorted: Vec<(TextVector, char)> = prefab.iter()
-            //.map(|(&pos, &c)| (pos.clone(), c.clone()))
+        let mut sorted: Vec<(TextVector, char)> = prefab
+            .iter()
             .chain(append)
             .map(|(&pos, &c)| (TextVector::from_cell_space(pos), c))
             .collect();

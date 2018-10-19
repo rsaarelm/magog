@@ -457,7 +457,8 @@ pub trait Mutate: Query + Terraform + Sized {
                             Damage::Electricity => "[is] electrocuted",
                             Damage::Cold => "shatter[s] to frozen pieces",
                         }
-                    ).subject(e)
+                    )
+                    .subject(e)
                     .send();
                 }
             }

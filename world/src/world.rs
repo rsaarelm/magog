@@ -227,7 +227,8 @@ impl Mutate for World {
                 HexFov::new(SightFov::new(self, range, origin))
                     .add_fake_isometric_acute_corners(|pos, a| {
                         self.terrain(a.origin + pos).is_wall()
-                    }).map(|(pos, a)| a.origin + pos),
+                    })
+                    .map(|(pos, a)| a.origin + pos),
             );
 
             let memory = &mut self.ecs.map_memory[e];

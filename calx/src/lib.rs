@@ -35,7 +35,7 @@ pub use colors::{
     color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
     TermColor, Xterm256Color, NAMED_COLORS,
 };
-pub use flick::{FLICKS_PER_SECOND, Flick};
+pub use flick::{Flick, FLICKS_PER_SECOND};
 pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};

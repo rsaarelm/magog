@@ -319,7 +319,8 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                 &self.display,
                 PrimitiveType::TrianglesList,
                 &batch.triangle_indices,
-            ).unwrap();
+            )
+            .unwrap();
 
             let params = glium::draw_parameters::DrawParameters {
                 scissor: batch.clip.map(|clip| glium::Rect {
@@ -339,7 +340,8 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
                     &self.program,
                     &uniforms,
                     &params,
-                ).unwrap();
+                )
+                .unwrap();
         }
     }
 
@@ -470,7 +472,8 @@ impl Canvas {
                     vec4 tex_color = texture(tex, v_tex_coord);
                     tex_color.a = 1.0;
                     f_color = tex_color;
-                }"}).unwrap();
+                }"})
+        .unwrap();
 
         let buffer = glium::texture::SrgbTexture2d::empty(display, width, height).unwrap();
 
@@ -479,7 +482,8 @@ impl Canvas {
             glium::texture::DepthFormat::F32,
             width,
             height,
-        ).unwrap();
+        )
+        .unwrap();
 
         Canvas {
             size: Size2D::new(width, height),
@@ -498,7 +502,8 @@ impl Canvas {
             display,
             &self.buffer,
             &self.depth_buffer,
-        ).unwrap()
+        )
+        .unwrap()
     }
 
     pub fn draw(&mut self, display: &glium::Display, zoom: CanvasZoom) {
@@ -545,14 +550,16 @@ impl Canvas {
                         tex_coord: [0.0, 1.0],
                     },
                 ],
-            ).unwrap()
+            )
+            .unwrap()
         };
 
         let indices = glium::IndexBuffer::new(
             display,
             glium::index::PrimitiveType::TrianglesList,
             &[0u16, 1, 2, 0, 2, 3],
-        ).unwrap();
+        )
+        .unwrap();
 
         // Set up the rest of the draw parameters.
         let mut params: glium::DrawParameters = Default::default();

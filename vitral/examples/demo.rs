@@ -1,6 +1,6 @@
 extern crate euclid;
-extern crate image;
 extern crate glium;
+extern crate image;
 extern crate vitral;
 
 use euclid::{point2, vec2, Point2D, Rect, Size2D};

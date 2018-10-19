@@ -109,7 +109,8 @@ impl Distribution<EntitySpawn> for Biome {
                 } else {
                     1.0 / item.rarity()
                 }
-            }).unwrap();
+            })
+            .unwrap();
 
         EntitySpawn::from_str(item.name()).unwrap()
     }

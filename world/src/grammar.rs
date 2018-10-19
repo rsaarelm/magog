@@ -330,7 +330,8 @@ mod test {
                 } else {
                     Some(s)
                 }
-            }).collect::<Vec<&str>>()
+            })
+            .collect::<Vec<&str>>()
             .chunks(3)
             .map(|a| (a[0], a[1], a[2]))
             .collect()
@@ -346,7 +347,8 @@ mod test {
                 } else {
                     Some(s)
                 }
-            }).collect::<Vec<&str>>()
+            })
+            .collect::<Vec<&str>>()
             .chunks(4)
             .map(|a| (a[0], a[1], a[2], a[3]))
             .collect()
@@ -402,7 +404,8 @@ mod test {
                  goblin
                  [One] nimbly parr[ies] the blow.
                  The goblin nimbly parries the blow.",
-        ).into_iter()
+        )
+        .into_iter()
         {
             let mut t = SubjectTemplater::new(make_noun(subject));
             assert_eq!(t.format(template), Ok(message.to_string()));
@@ -442,7 +445,8 @@ mod test {
                  [One] chase[s] after [them].
                  You chase after him.
                  ",
-        ).into_iter()
+        )
+        .into_iter()
         {
             let mut t =
                 ObjectTemplater::new(SubjectTemplater::new(make_noun(subject)), make_noun(object));
