@@ -1,4 +1,3 @@
-use backend::Core;
 use cache;
 use calx::{clamp, cycle_anim, ease, lerp, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
@@ -8,6 +7,7 @@ use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
+use vitral::Core;
 use world::{FovStatus, Location, Query, TerrainQuery, World};
 use Icon;
 

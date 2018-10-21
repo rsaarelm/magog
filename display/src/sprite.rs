@@ -1,4 +1,3 @@
-use backend::Core;
 use brush::Brush;
 use calx::{color, lerp, Rgba};
 use draw_util::DrawUtil;
@@ -6,6 +5,7 @@ use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;
 use view::ScreenVector;
+use vitral::Core;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Coloring {

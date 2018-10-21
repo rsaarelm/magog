@@ -10,15 +10,13 @@ use glium::{self, Surface};
 use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
-use {
-    AtlasCache, CanvasZoom, Color, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
-};
+use {AtlasCache, CanvasZoom, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex};
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
 
 /// Glium-rendering backend for Vitral.
-pub struct Backend<V> {
+pub struct Backend {
     display: glium::Display,
     events: glutin::EventsLoop,
     program: glium::Program,
@@ -29,11 +27,9 @@ pub struct Backend<V> {
     canvas: Canvas,
     zoom: CanvasZoom,
     window_size: Size2D<u32>,
-
-    phantom: ::std::marker::PhantomData<V>,
 }
 
-impl<V: glium::Vertex + Vertex> Backend<V> {
+impl Backend {
     /// Create a new Glium backend for Vitral.
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
@@ -44,7 +40,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         program: glium::Program,
         width: u32,
         height: u32,
-    ) -> Backend<V> {
+    ) -> Backend {
         let (w, h) = get_size(&display);
         let canvas = Canvas::new(&display, width, height);
 
@@ -59,30 +55,23 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
             canvas,
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
-
-            phantom: ::std::marker::PhantomData,
         }
     }
 
     /// Open a Glium window and start a backend for it.
     ///
     /// The custom shader must support a uniform named `tex` for texture data.
-    pub fn start<'a, S, P>(
+    pub fn start<S: Into<String>>(
         width: u32,
         height: u32,
         title: S,
-        shader: P,
-    ) -> Result<Backend<V>, Box<Error>>
-    where
-        S: Into<String>,
-        P: Into<glium::program::ProgramCreationInput<'a>>,
-    {
+    ) -> Result<Backend, Box<Error>> {
         let events = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new().with_title(title);
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)));
         let display = glium::Display::new(window, context, &events)?;
-        let program = glium::Program::new(&display, shader.into())?;
+        let program = glium::Program::new(&display, DEFAULT_SHADER)?;
 
         {
             // Start the window as a good fit on the primary monitor.
@@ -203,7 +192,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
         }
     }
 
-    fn process_events(&mut self, core: &mut Core<V>) -> bool {
+    fn process_events(&mut self, core: &mut Core) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
@@ -293,7 +282,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     /// Return the next keypress event if there is one.
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
-    fn render(&mut self, core: &mut Core<V>) {
+    fn render(&mut self, core: &mut Core) {
         let mut target = self.canvas.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
@@ -351,7 +340,7 @@ impl<V: glium::Vertex + Vertex> Backend<V> {
     }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self, core: &mut Core<V>) -> bool {
+    pub fn update(&mut self, core: &mut Core) -> bool {
         self.update_window_size();
         self.render(core);
         self.canvas.draw(&self.display, self.zoom);
@@ -373,30 +362,36 @@ pub struct KeyEvent {
     pub scancode: u8,
 }
 
-/// Shader program for the `DefaultVertex` type
-pub const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
+/// Shader for two parametrizable colors and discarding fully transparent pixels
+const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
     vertex_shader: "
         #version 150 core
 
         uniform mat4 matrix;
 
         in vec2 pos;
-        in vec4 color;
         in vec2 tex_coord;
+        in vec4 color;
+        in vec4 back_color;
 
         out vec4 v_color;
+        out vec4 v_back_color;
         out vec2 v_tex_coord;
 
         void main() {
             gl_Position = vec4(pos, 0.0, 1.0) * matrix;
             v_color = color;
+            v_back_color = back_color;
             v_tex_coord = tex_coord;
-        }",
+        }
+    ",
+
     fragment_shader: "
         #version 150 core
         uniform sampler2D tex;
         in vec4 v_color;
         in vec2 v_tex_coord;
+        in vec4 v_back_color;
         out vec4 f_color;
 
         void main() {
@@ -406,34 +401,15 @@ pub const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCod
             // writing into the depth buffer.
             if (tex_color.a == 0.0) discard;
 
-            f_color = v_color * tex_color;
-        }",
+            f_color = v_color * tex_color + v_back_color * (vec4(1, 1, 1, 1) - tex_color);
+        }
+    ",
     tessellation_control_shader: None,
     tessellation_evaluation_shader: None,
     geometry_shader: None,
 };
 
-/// A regular vertex that implements exactly the fields used by Vitral.
-#[derive(Copy, Clone)]
-pub struct DefaultVertex {
-    /// 2D position
-    pub pos: [f32; 2],
-    /// Texture coordinates
-    pub tex_coord: [f32; 2],
-    /// RGBA color
-    pub color: Color,
-}
-implement_vertex!(DefaultVertex, pos, tex_coord, color);
-
-impl Vertex for DefaultVertex {
-    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self {
-        DefaultVertex {
-            pos: [pos.x, pos.y],
-            tex_coord: [tex_coord.x, tex_coord.y],
-            color,
-        }
-    }
-}
+implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 /// A deferred rendering buffer for pixel-perfect display.
 struct Canvas {

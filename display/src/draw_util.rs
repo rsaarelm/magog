@@ -1,6 +1,5 @@
-use backend::{Core, Vertex};
 use euclid::{rect, vec2, Point2D};
-use vitral::{Align, Color, FontData, ImageData};
+use vitral::{Align, Color, Core, FontData, ImageData, Vertex};
 
 /// Helpers for drawing into the local `Core` type.
 pub trait DrawUtil {
@@ -42,30 +41,34 @@ impl DrawUtil for Core {
             image.size.height as i32,
         );
 
-        let idx = self.push_raw_vertex(Vertex::new(
-            area.origin.to_f32(),
-            image.tex_coords.origin,
-            color,
-            back_color,
-        ));
-        self.push_raw_vertex(Vertex::new(
-            area.top_right().to_f32(),
-            image.tex_coords.top_right(),
-            color,
-            back_color,
-        ));
-        self.push_raw_vertex(Vertex::new(
-            area.bottom_right().to_f32(),
-            image.tex_coords.bottom_right(),
-            color,
-            back_color,
-        ));
-        self.push_raw_vertex(Vertex::new(
-            area.bottom_left().to_f32(),
-            image.tex_coords.bottom_left(),
-            color,
-            back_color,
-        ));
+        let idx = self.push_raw_vertex(
+            Vertex::new(area.origin.to_f32(), image.tex_coords.origin, color)
+                .back_color(back_color),
+        );
+        self.push_raw_vertex(
+            Vertex::new(
+                area.top_right().to_f32(),
+                image.tex_coords.top_right(),
+                color,
+            )
+            .back_color(back_color),
+        );
+        self.push_raw_vertex(
+            Vertex::new(
+                area.bottom_right().to_f32(),
+                image.tex_coords.bottom_right(),
+                color,
+            )
+            .back_color(back_color),
+        );
+        self.push_raw_vertex(
+            Vertex::new(
+                area.bottom_left().to_f32(),
+                image.tex_coords.bottom_left(),
+                color,
+            )
+            .back_color(back_color),
+        );
 
         self.push_triangle(idx, idx + 1, idx + 2);
         self.push_triangle(idx, idx + 2, idx + 3);

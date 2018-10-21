@@ -23,7 +23,8 @@ pub use atlas_cache::{AtlasCache, SubImageSpec};
 mod canvas_zoom;
 pub use canvas_zoom::CanvasZoom;
 
-pub mod backend;
+mod backend;
+pub use backend::{Backend, KeyEvent};
 
 mod rect_util;
 pub use rect_util::RectUtil;
@@ -157,7 +158,7 @@ impl Builder {
     /// Needs to be provided a texture creation function. If the user has not specified them
     /// earlier, this will be used to construct a separate texture for the solid color and a
     /// default font texture.
-    pub fn build<F, V: Vertex>(self, screen_size: Size2D<u32>, mut make_t: F) -> Core<V>
+    pub fn build<F>(self, screen_size: Size2D<u32>, mut make_t: F) -> Core
     where
         F: FnMut(ImageBuffer) -> TextureIndex,
     {
@@ -228,9 +229,33 @@ where
     }
 }
 
-pub trait Vertex {
-    /// Custom constructor with exactly the fields Vitral cares about.
-    fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self;
+/// Vertex type for geometry points
+#[derive(Copy, Clone)]
+pub struct Vertex {
+    /// 2D position
+    pub pos: [f32; 2],
+    /// Texture coordinates
+    pub tex_coord: [f32; 2],
+    /// Light pixel (foreground) color
+    pub color: Color,
+    /// Dark pixel (background) color
+    pub back_color: Color,
+}
+
+impl Vertex {
+    pub fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self {
+        Vertex {
+            pos: [pos.x, pos.y],
+            tex_coord: [tex_coord.x, tex_coord.y],
+            color,
+            back_color: [0.0, 0.0, 0.0, 0.0],
+        }
+    }
+
+    pub fn back_color(mut self, back_color: Color) -> Vertex {
+        self.back_color = back_color;
+        self
+    }
 }
 
 /// An immediate mode graphical user interface context.
@@ -238,8 +263,8 @@ pub trait Vertex {
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Core<V> {
-    draw_list: Vec<DrawBatch<V>>,
+pub struct Core {
+    draw_list: Vec<DrawBatch>,
 
     mouse_pos: Point2D<i32>,
     click_state: [ClickState; 3],
@@ -254,8 +279,8 @@ pub struct Core<V> {
     screen_size: Size2D<i32>,
 }
 
-impl<V: Vertex> Core<V> {
-    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Core<V> {
+impl Core {
+    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Core {
         Core {
             draw_list: Vec::new(),
 
@@ -277,7 +302,7 @@ impl<V: Vertex> Core<V> {
         }
     }
 
-    pub fn push_raw_vertex(&mut self, vertex: V) -> u16 {
+    pub fn push_raw_vertex(&mut self, vertex: Vertex) -> u16 {
         let idx = self.draw_list.len() - 1;
         let batch = &mut self.draw_list[idx];
         let idx_offset = batch.vertices.len() as u16;
@@ -291,7 +316,7 @@ impl<V: Vertex> Core<V> {
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
     pub fn push_vertex(&mut self, pos: Point2D<i32>, tex_coord: Point2D<f32>, color: Color) -> u16 {
-        self.push_raw_vertex(V::new(pos.to_f32(), tex_coord, color))
+        self.push_raw_vertex(Vertex::new(pos.to_f32(), tex_coord, color))
     }
 
     pub fn push_triangle(&mut self, i1: u16, i2: u16, i3: u16) {
@@ -505,7 +530,7 @@ impl<V: Vertex> Core<V> {
         self.tick += 1;
     }
 
-    pub fn end_frame(&mut self) -> Vec<DrawBatch<V>> {
+    pub fn end_frame(&mut self) -> Vec<DrawBatch> {
         // Clean up transient mouse click info.
         for i in 0..3 {
             self.click_state[i] = self.click_state[i].tick();
@@ -553,14 +578,14 @@ impl<V: Vertex> Core<V> {
 }
 
 /// A sequence of primitive draw operarations.
-pub struct DrawBatch<V> {
+pub struct DrawBatch {
     /// Texture used for the current batch, details depend on backend
     /// implementation
     pub texture: TextureIndex,
     /// Clipping rectangle for the current batch
     pub clip: Option<Rect<i32>>,
     /// Vertex data
-    pub vertices: Vec<V>,
+    pub vertices: Vec<Vertex>,
     /// Indices into the vertex array for the triangles that make up the batch
     pub triangle_indices: Vec<u16>,
 }

@@ -5,11 +5,7 @@ extern crate vitral;
 
 use euclid::{point2, vec2, Point2D, Rect, Size2D};
 use glium::glutin;
-use vitral::backend::DefaultVertex;
-use vitral::{Align, ButtonAction, Color, PngBytes, RectUtil};
-
-type Core = vitral::Core<DefaultVertex>;
-type Backend = vitral::backend::Backend<DefaultVertex>;
+use vitral::{Align, Backend, ButtonAction, Color, Core, PngBytes, RectUtil};
 
 pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
     if x < mn {
@@ -139,13 +135,8 @@ impl App {
 
 pub fn main() {
     let size = Size2D::new(640, 360);
-    let mut backend: Backend = Backend::start(
-        size.width as u32,
-        size.height as u32,
-        "Vitral Demo",
-        vitral::backend::DEFAULT_SHADER,
-    )
-    .expect("Failed to start Glium backend!");
+    let mut backend: Backend = Backend::start(size.width as u32, size.height as u32, "Vitral Demo")
+        .expect("Failed to start Glium backend!");
 
     let core = vitral::Builder::new().build(size, |img| backend.make_texture(img));
     let mut app = App::new(core, &mut backend);

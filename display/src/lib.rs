@@ -10,7 +10,7 @@ extern crate vitral;
 extern crate world;
 
 mod backend;
-pub use backend::{Backend, Core, KeyEvent};
+pub use backend::Backend;
 
 mod brush;
 mod cache;

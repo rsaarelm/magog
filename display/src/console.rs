@@ -6,8 +6,7 @@ use std::mem;
 use std::rc::Rc;
 use std::str;
 use time;
-use vitral::{Align, FontData};
-use Core;
+use vitral::{Align, Core, FontData};
 
 struct Message {
     expire_time_s: f64,
