@@ -1,20 +1,20 @@
+use crate::command::CommandResult;
+use crate::components::{Brain, BrainState, MapMemory, Status};
+use crate::effect::{Damage, Effect};
+use crate::event::Event;
+use crate::item::{ItemType, MagicEffect, Slot};
+use crate::location::Location;
+use crate::mapsave;
+use crate::query::Query;
+use crate::spec;
+use crate::terraform::Terraform;
+use crate::volume::Volume;
+use crate::world::{Ecs, Loadout};
+use crate::Distribution;
+use crate::{attack_damage, roll};
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
-use command::CommandResult;
-use components::{Brain, BrainState, MapMemory, Status};
-use effect::{Damage, Effect};
-use event::Event;
-use item::{ItemType, MagicEffect, Slot};
-use location::Location;
-use mapsave;
-use query::Query;
 use rand::{seq, Rng};
-use spec;
-use terraform::Terraform;
-use volume::Volume;
-use world::{Ecs, Loadout};
-use Distribution;
-use {attack_damage, roll};
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -57,7 +57,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn push_event(&mut self, event: Event);
 
     /// Access the persistent random number generator.
-    fn rng(&mut self) -> &mut ::Rng;
+    fn rng(&mut self) -> &mut crate::Rng;
 
     /// Mutable access to ecs
     fn ecs_mut(&mut self) -> &mut Ecs;
@@ -80,7 +80,7 @@ pub trait Mutate: Query + Terraform + Sized {
     fn run_ai_for(&mut self, npc: Entity) {
         const WAKEUP_DISTANCE: i32 = 5;
 
-        use components::BrainState::*;
+        use crate::components::BrainState::*;
         let brain_state = self.brain_state(npc).expect("Running AI for non-mob");
         match brain_state {
             Asleep => {
@@ -150,7 +150,7 @@ pub trait Mutate: Query + Terraform + Sized {
     /// Make a mob shout according to its type.
     fn shout(&mut self, e: Entity) {
         // TODO: Create noise, wake up other nearby monsters.
-        use components::ShoutType;
+        use crate::components::ShoutType;
         if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
             match shout {
                 ShoutType::Shout => {
@@ -542,7 +542,7 @@ pub trait Mutate: Query + Terraform + Sized {
     }
 
     fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
-        use effect::Effect::*;
+        use crate::effect::Effect::*;
         match *effect {
             Heal(_amount) => {
                 unimplemented!();

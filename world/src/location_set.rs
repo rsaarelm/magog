@@ -1,4 +1,5 @@
-use location::Location;
+use crate::location::Location;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Compact Location set collection

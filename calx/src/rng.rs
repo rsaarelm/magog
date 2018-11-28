@@ -1,8 +1,8 @@
+use crate::Deciban;
 use rand::{seq, Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 use std::hash::Hash;
 use vec_map::VecMap;
-use Deciban;
 
 /// Seed a RNG from any hashable value.
 pub fn seeded_rng(seed: &impl Hash) -> XorShiftRng {

@@ -1,7 +1,3 @@
-extern crate calx;
-extern crate rand;
-extern crate serde_json;
-
 use calx::WeightedChoice;
 use rand::Rng;
 use rand_xorshift::XorShiftRng;

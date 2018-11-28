@@ -1,4 +1,5 @@
 use calx_ecs::Entity;
+use serde_derive::{Deserialize, Serialize};
 
 /// Immediate events emitted by game events.
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,5 +1,4 @@
-extern crate euclid;
-extern crate vitral;
+use vitral;
 
 use euclid::{point2, rect, Rect};
 use vitral::{Align, AppConfig, ButtonAction, Color, Core, PngBytes, RectUtil, Scene, SceneSwitch};
@@ -33,7 +32,7 @@ impl World {
 struct DemoScene;
 
 impl Scene<World> for DemoScene {
-    fn update(&mut self, ctx: &mut World) -> Option<SceneSwitch<World>> { None }
+    fn update(&mut self, _ctx: &mut World) -> Option<SceneSwitch<World>> { None }
 
     fn render(&mut self, ctx: &mut World, core: &mut Core) -> Option<SceneSwitch<World>> {
         core.draw_image(&ctx.image, point2(20, 20), [1.0, 1.0, 1.0, 1.0]);

@@ -1,14 +1,9 @@
-///! Generate a base bitmap for drawing an overland map with a paint program.
-extern crate calx;
-extern crate euclid;
-extern crate image;
-extern crate structopt;
-extern crate world;
-
 use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};
 use euclid::vec2;
+use image;
 use image::{GenericImage, GenericImageView, Pixel, SubImage};
 use std::collections::HashMap;
+use structopt;
 use structopt::StructOpt;
 use world::{Location, Sector, Terrain};
 
@@ -24,10 +19,7 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(
-        name = "generate",
-        help = "Generate a blank overland map image"
-    )]
+    #[structopt(name = "generate", help = "Generate a blank overland map image")]
     Generate {
         #[structopt(long = "minimap", help = "Use minimap projection")]
         minimap: bool,
@@ -57,10 +49,7 @@ enum Command {
         help = "Convert map from one projection to another and normalize the checkerboard pattern"
     )]
     Convert {
-        #[structopt(
-            long = "input-minimap",
-            help = "Input file has minimap projection"
-        )]
+        #[structopt(long = "input-minimap", help = "Input file has minimap projection")]
         input_minimap: bool,
 
         #[structopt(

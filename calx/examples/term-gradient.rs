@@ -1,5 +1,5 @@
-extern crate calx;
-extern crate term;
+use calx;
+use term;
 
 use calx::{term_color, PseudoTermColor};
 

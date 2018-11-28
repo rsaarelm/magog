@@ -1,9 +1,9 @@
-use alg_misc::bounding_rect;
-use colors::{scolor, SRgba};
+use crate::alg_misc::bounding_rect;
+use crate::colors::{scolor, SRgba};
+use crate::space::{CellSpace, CellVector, Space, Transformation};
 use euclid::{point2, vec2, TypedPoint2D, TypedVector2D};
 use image::{self, Pixel};
 use num::Integer;
-use space::{CellSpace, CellVector, Space, Transformation};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -22,7 +22,7 @@ pub enum PrefabError {
 }
 
 impl fmt::Display for PrefabError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.description()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.description()) }
 }
 
 impl Error for PrefabError {
@@ -40,8 +40,6 @@ impl Error for PrefabError {
 /// # Examples
 ///
 /// ```
-/// # extern crate euclid;
-/// # extern crate calx;
 /// # fn main() {
 ///
 /// use std::collections::HashMap;
@@ -75,8 +73,6 @@ pub trait IntoPrefab<T> {
 /// # Examples
 ///
 /// ```
-/// # extern crate euclid;
-/// # extern crate calx;
 /// # fn main() {
 ///
 /// use std::collections::HashMap;
@@ -275,8 +271,6 @@ impl FromPrefab for String {
 /// # Examples
 ///
 /// ```
-/// # extern crate euclid;
-/// # extern crate calx;
 /// # fn main() {
 /// use std::collections::HashMap;
 /// use euclid::vec2;
@@ -543,7 +537,7 @@ impl Transformation for MinimapSpace {
 #[cfg(test)]
 mod test {
     use super::MinimapSpace;
-    use space::Transformation;
+    use crate::space::Transformation;
 
     #[test]
     fn test_minimap_projection() {

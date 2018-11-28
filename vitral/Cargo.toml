@@ -6,6 +6,7 @@ description = "Platform-agnostic immediate mode GUI"
 keywords = ["gui", "vitral"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rsaarelm/vitral"
+edition = "2018"
 
 [dependencies]
 euclid = "0.19"

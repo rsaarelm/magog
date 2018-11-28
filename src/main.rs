@@ -1,30 +1,21 @@
 // Don't show a console window when running on Windows.
 #![windows_subsystem = "windows"]
 
-#[macro_use]
-extern crate calx;
-extern crate display;
-extern crate env_logger;
-extern crate euclid;
-extern crate glium;
-#[macro_use]
-extern crate log;
-extern crate rand;
-extern crate scancode;
-extern crate structopt;
-extern crate vitral;
-extern crate world;
-
-pub mod game_loop;
-
+use crate::game_loop::GameLoop;
 use calx::TimestepLoop;
+use display;
 use display::Backend;
-use game_loop::GameLoop;
+use env_logger;
+use log::info;
+use rand;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
+use structopt;
 use structopt::StructOpt;
 use world::World;
+
+pub mod game_loop;
 
 #[derive(Debug, StructOpt)]
 struct Opt {

@@ -1,14 +1,17 @@
-use components::{Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
-use item::ItemType;
+use crate::components::{
+    Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses,
+};
+use crate::item::ItemType;
+use crate::stats::{Intrinsic, Stats};
+use crate::world::Loadout;
+use crate::{Distribution, Rng};
+use lazy_static::lazy_static;
 use serde;
-use stats::{Intrinsic, Stats};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 use std::sync::Arc;
-use world::Loadout;
-use {Distribution, Rng};
 
 pub trait Spec: Distribution<Loadout> + Sync + Send {
     /// How rare is this spec?
@@ -143,11 +146,11 @@ pub fn iter_specs() -> impl Iterator<Item = Arc<dyn Spec + 'static>> { SPECS.val
 
 use self::Intrinsic::*;
 use self::ShoutType::*;
-use item::MagicEffect::*;
-use Icon as I;
-use ItemType::*;
+use crate::item::MagicEffect::*;
+use crate::Icon as I;
+use crate::ItemType::*;
 
-specs!{
+specs! {
     // Mobs
     MobSpec {
         name: "player".into(),
@@ -293,7 +296,7 @@ specs!{
 pub struct EntitySpawn(String);
 
 impl fmt::Display for EntitySpawn {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 lazy_static! {
@@ -304,7 +307,7 @@ lazy_static! {
 pub struct SpawnError(String);
 
 impl fmt::Display for SpawnError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "EntitySpawn {} not found in spec database", self.0)
     }
 }

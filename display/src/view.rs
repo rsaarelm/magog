@@ -1,15 +1,15 @@
-use cache;
+use crate::cache;
+use crate::render::{self, Angle, Layer};
+use crate::sprite::{Coloring, Sprite};
+use crate::Icon;
 use calx::{clamp, cycle_anim, ease, lerp, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
 use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
-use render::{self, Angle, Layer};
-use sprite::{Coloring, Sprite};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
 use vitral::Core;
 use world::{FovStatus, Location, Query, TerrainQuery, World};
-use Icon;
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;

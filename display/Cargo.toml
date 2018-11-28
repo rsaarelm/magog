@@ -2,6 +2,7 @@
 name = "display"
 version = "0.1.0"
 authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+edition = "2018"
 
 [lib]
 name = "display"

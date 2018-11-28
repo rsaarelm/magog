@@ -1,5 +1,3 @@
-extern crate calx;
-
 #[cfg(feature = "image")]
 extern crate image;
 
@@ -10,8 +8,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
-extern crate euclid;
-extern crate time;
+use time;
 
 use euclid::{point2, rect, vec2, Point2D, Rect, Size2D, Vector2D};
 use std::collections::HashMap;
@@ -19,28 +16,28 @@ use std::iter;
 use std::mem;
 
 mod atlas;
-pub use atlas::Atlas;
+pub use crate::atlas::Atlas;
 
 mod atlas_cache;
-pub use atlas_cache::{AtlasCache, SubImageSpec};
+pub use crate::atlas_cache::{AtlasCache, SubImageSpec};
 
 mod canvas_zoom;
-pub use canvas_zoom::CanvasZoom;
+pub use crate::canvas_zoom::CanvasZoom;
 
 mod backend;
-pub use backend::{Backend, KeyEvent};
+pub use crate::backend::{Backend, KeyEvent};
 
 mod rect_util;
-pub use rect_util::RectUtil;
+pub use crate::rect_util::RectUtil;
 
 mod scene;
-pub use scene::{
+pub use crate::scene::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
     save_screenshot, AppConfig, Evt, Scene, SceneSwitch,
 };
 
 mod tilesheet;
-pub use tilesheet::tilesheet_bounds;
+pub use crate::tilesheet::tilesheet_bounds;
 
 pub type Color = [f32; 4];
 
@@ -61,7 +58,7 @@ pub struct PngBytes<'a>(pub &'a [u8]);
 
 #[cfg(feature = "image")]
 impl<'a> From<PngBytes<'a>> for ImageBuffer {
-    fn from(data: PngBytes) -> Self {
+    fn from(data: PngBytes<'_>) -> Self {
         use std::io::Cursor;
 
         let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)

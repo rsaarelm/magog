@@ -1,12 +1,13 @@
+use crate::CellVector;
 use euclid::vec2;
 use num::Integer;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
+use serde_derive::{Deserialize, Serialize};
 use std::cmp::max;
 use std::f32::consts::PI;
 use std::ops::{Add, Sub};
 use std::slice;
-use CellVector;
 
 /// Hex grid geometry for vectors.
 pub trait HexGeom {
@@ -29,7 +30,7 @@ pub fn hex_neighbors<P, R>(origin: P) -> impl Iterator<Item = R>
 where
     P: Clone + Add<CellVector, Output = R>,
 {
-    use Dir6::*;
+    use crate::Dir6::*;
 
     [North, Northeast, Southeast, South, Southwest, Northwest]
         .iter()
@@ -43,7 +44,7 @@ pub fn taxicab_neighbors<P, R>(origin: P) -> impl Iterator<Item = R>
 where
     P: Clone + Add<CellVector, Output = R>,
 {
-    use Dir6::*;
+    use crate::Dir6::*;
 
     [Northeast, Southeast, Southwest, Northwest]
         .iter()
@@ -170,7 +171,7 @@ impl Dir6 {
 
     /// Return whether the direction is along the axes used in fake isometric graphics.
     pub fn is_fake_isometric(self) -> bool {
-        use Dir6::*;
+        use crate::Dir6::*;
 
         match self {
             Northeast | Southeast | Southwest | Northwest => true,

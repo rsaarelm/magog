@@ -1,15 +1,3 @@
-extern crate euclid;
-extern crate image;
-extern crate num;
-extern crate rand;
-extern crate rand_xorshift;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate tempdir;
-extern crate time;
-extern crate vec_map;
-
 mod alg_misc;
 mod colors;
 pub mod ease;
@@ -28,26 +16,26 @@ mod system;
 mod text;
 mod timing;
 
-pub use alg_misc::{
+pub use crate::alg_misc::{
     bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban,
     GenericError, LerpPath, Noise, WeightedChoice,
 };
-pub use colors::{
+pub use crate::colors::{
     color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
     TermColor, Xterm256Color, NAMED_COLORS,
 };
-pub use flick::{Flick, FLICKS_PER_SECOND};
-pub use fov::{Fov, FovValue, PolarPoint};
-pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
-pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
-pub use incremental::{Incremental, IncrementalState};
-pub use legend_builder::LegendBuilder;
-pub use prefab::{
+pub use crate::flick::{Flick, FLICKS_PER_SECOND};
+pub use crate::fov::{Fov, FovValue, PolarPoint};
+pub use crate::hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
+pub use crate::hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
+pub use crate::incremental::{Incremental, IncrementalState};
+pub use crate::legend_builder::LegendBuilder;
+pub use crate::prefab::{
     DenseTextMap, FromPrefab, IntoPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace,
 };
-pub use rng::{seeded_rng, RandomPermutation, RngExt};
-pub use search::{astar_path, Dijkstra, GridNode};
-pub use space::{CellSpace, CellVector, Space, Transformation};
-pub use system::{app_data_path, save_screenshot, TimeLogItem};
-pub use text::{split_line, templatize};
-pub use timing::{cycle_anim, single_anim, spike, TimestepLoop};
+pub use crate::rng::{seeded_rng, RandomPermutation, RngExt};
+pub use crate::search::{astar_path, Dijkstra, GridNode};
+pub use crate::space::{CellSpace, CellVector, Space, Transformation};
+pub use crate::system::{app_data_path, save_screenshot, TimeLogItem};
+pub use crate::text::{split_line, templatize};
+pub use crate::timing::{cycle_anim, single_anim, spike, TimestepLoop};

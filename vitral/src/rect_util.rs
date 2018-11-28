@@ -7,8 +7,6 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 /// # Examples
 ///
 /// ```
-/// # extern crate euclid;
-/// # extern crate vitral;
 /// # fn main() {
 /// use euclid::{Rect, rect, point2, size2};
 /// use vitral::RectUtil;

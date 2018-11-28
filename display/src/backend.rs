@@ -1,4 +1,4 @@
-use cache;
+use crate::cache;
 use calx;
 use std::error::Error;
 use std::io;
@@ -13,7 +13,7 @@ impl Backend {
         width: u32,
         height: u32,
         title: S,
-    ) -> Result<Backend, Box<Error>> {
+    ) -> Result<Backend, Box<dyn Error>> {
         let inner = vitral::Backend::start(width, height, title)?;
 
         Ok(Backend { inner })

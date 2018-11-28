@@ -1,8 +1,8 @@
+use crate::seeded_rng;
 use euclid::{rect, TypedPoint2D, TypedRect};
 use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::Rng;
-use seeded_rng;
 use std::error::Error;
 use std::fmt;
 use std::hash::Hash;
@@ -26,8 +26,6 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 /// # Examples
 ///
 /// ```
-/// # extern crate rand;
-/// # extern crate calx;
 /// # fn main() {
 /// use rand::distributions::Uniform;
 /// use calx::Noise;
@@ -36,7 +34,7 @@ pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
 /// let z: f32 = depth.noise(&(12, 34));
 /// assert_eq!(z, -0.6524992);
 /// let z: f32 = depth.noise(&(34, 12));
-/// assert_eq!(z, -0.56852627);
+/// assert_eq!(z, -0.5685262);
 /// # }
 /// ```
 pub trait Noise<T> {
@@ -78,7 +76,7 @@ impl Deciban {
 }
 
 impl Distribution<Deciban> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ::Deciban {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> crate::Deciban {
         Deciban::new(rng.gen_range(0.0, 1.0))
     }
 }
@@ -254,8 +252,6 @@ pub fn retry_gen<R: Rng + ?Sized, T, E>(
 /// # Examples
 ///
 /// ```
-/// # extern crate euclid;
-/// # extern crate calx;
 /// # fn main() {
 /// use euclid::point2;
 ///
@@ -302,7 +298,7 @@ pub struct GenericError(pub String);
 impl Error for GenericError {}
 
 impl fmt::Display for GenericError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 /// Construct a `GenericError`.

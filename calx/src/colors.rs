@@ -7,6 +7,7 @@
 
 use image;
 use num::Num;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;
@@ -60,7 +61,7 @@ impl SRgba {
 }
 
 impl fmt::Display for SRgba {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "#{:02X}{:02X}{:02X}{:02X}",
@@ -949,8 +950,8 @@ mod test {
         // Test that luma values from corresponding sRGBA and RGBA are same.
 
         use super::{to_srgb, Rgba, SRgba};
+        use crate::rng::seeded_rng;
         use rand::Rng;
-        use rng::seeded_rng;
 
         let mut rng = seeded_rng(&1);
         for _ in 0..1000 {

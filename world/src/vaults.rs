@@ -1,4 +1,5 @@
-use map::Map;
+use crate::map::Map;
+use lazy_static::lazy_static;
 use std::sync::Arc;
 
 macro_rules! vaults {
@@ -13,7 +14,7 @@ macro_rules! vaults {
     }
 }
 
-vaults!{VAULTS,
+vaults! {VAULTS,
     "
       ##++##
       #....#
@@ -29,7 +30,7 @@ vaults!{VAULTS,
     ",
 }
 
-vaults!{ENTRANCES,
+vaults! {ENTRANCES,
     "
     %%
     %<%
@@ -39,7 +40,7 @@ vaults!{ENTRANCES,
     ",
 }
 
-vaults!{EXITS,
+vaults! {EXITS,
     "
     _
       %

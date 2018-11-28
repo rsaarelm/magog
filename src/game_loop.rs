@@ -1,5 +1,4 @@
-use calx::Dir6;
-use calx::{color, Rgba};
+use calx::{color, command_parser, Dir6, Rgba};
 use display::{self, Backend};
 use euclid::{Point2D, Rect};
 use glium::glutin::ElementState;
@@ -267,7 +266,7 @@ impl GameLoop {
         // TODO: Bring back some debug commands
     }
 
-    command_parser!{
+    command_parser! {
         fn todo(&mut self);
     }
 

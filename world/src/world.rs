@@ -1,30 +1,31 @@
+use crate::command::{Command, CommandResult};
+use crate::components;
+use crate::event::Event;
+use crate::flags::Flags;
+use crate::fov::SightFov;
+use crate::item::Slot;
+use crate::location::{Location, Portal};
+use crate::mutate::Mutate;
+use crate::query::Query;
+use crate::spatial::{Place, Spatial};
+use crate::terraform::{Terraform, TerrainQuery};
+use crate::terrain::Terrain;
+use crate::volume::Volume;
+use crate::worldgen::Worldgen;
+use crate::Rng;
 use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
-use command::{Command, CommandResult};
-use components;
-use event::Event;
-use flags::Flags;
-use fov::SightFov;
-use item::Slot;
-use location::{Location, Portal};
-use mutate::Mutate;
-use query::Query;
 use ron;
-use spatial::{Place, Spatial};
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::error::Error;
 use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::slice;
-use terraform::{Terraform, TerrainQuery};
-use terrain::Terrain;
-use volume::Volume;
-use worldgen::Worldgen;
-use Rng;
 
 pub const GAME_VERSION: &str = "0.1.0";
 
-build_ecs! {
+calx_ecs::build_ecs! {
     desc: components::Desc,
     anim: components::Anim,
     map_memory: components::MapMemory,
@@ -84,7 +85,7 @@ impl<'a> World {
         ret
     }
 
-    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<Error>> {
+    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<dyn Error>> {
         let ret: ron::de::Result<World> = ron::de::from_reader(reader);
         if let Ok(ref x) = ret {
             if x.version != GAME_VERSION {
@@ -97,7 +98,7 @@ impl<'a> World {
         Ok(ret?)
     }
 
-    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<Error>> {
+    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<dyn Error>> {
         let enc = ron::ser::to_string_pretty(self, Default::default())?;
         // TODO: Handle error from writer too...
         writeln!(writer, "{}", enc)?;
@@ -150,7 +151,7 @@ impl Query for World {
 
     fn rng_seed(&self) -> u32 { self.worldgen.seed() }
 
-    fn entities(&self) -> slice::Iter<Entity> { self.ecs.iter() }
+    fn entities(&self) -> slice::Iter<'_, Entity> { self.ecs.iter() }
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 

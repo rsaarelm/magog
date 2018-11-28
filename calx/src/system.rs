@@ -121,17 +121,17 @@ pub fn save_screenshot(
     basename: &str,
     shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>,
 ) -> io::Result<()> {
-    let tmpdir = try!(TempDir::new("calx"));
+    let tmpdir = TempDir::new("calx")?;
     let timestamp = (time::precise_time_s() * 100.0) as u64;
     let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
-    try!(image::save_buffer(
+    image::save_buffer(
         &tmpfile,
         shot,
         shot.width(),
         shot.height(),
         image::ColorType::RGB(8),
-    ));
+    )?;
 
     fs::copy(&tmpfile, &file).map(|_| ())
 }

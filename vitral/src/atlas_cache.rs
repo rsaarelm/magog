@@ -1,10 +1,10 @@
+use crate::tilesheet;
+use crate::{Atlas, CharData, FontData, ImageBuffer, ImageData};
 use euclid::{rect, size2, vec2, Rect};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::slice;
-use tilesheet;
-use {Atlas, CharData, FontData, ImageBuffer, ImageData};
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -32,9 +32,7 @@ pub struct AtlasCache<T> {
 }
 
 impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
-    fn default() -> AtlasCache<T> {
-        AtlasCache::new(1024, 0)
-    }
+    fn default() -> AtlasCache<T> { AtlasCache::new(1024, 0) }
 }
 
 impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
@@ -52,7 +50,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         ret
     }
 
-    pub fn atlases_mut(&mut self) -> slice::IterMut<Atlas> { self.atlases.iter_mut() }
+    pub fn atlases_mut(&mut self) -> slice::IterMut<'_, Atlas> { self.atlases.iter_mut() }
 
     pub fn atlas_size(&self) -> u32 { self.atlas_size }
 

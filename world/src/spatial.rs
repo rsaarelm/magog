@@ -1,8 +1,9 @@
 use self::Place::*;
+use crate::item::Slot;
+use crate::location::Location;
 use calx_ecs::Entity;
-use item::Slot;
-use location::Location;
 use serde;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 /// Entities can be placed either on open locations or inside other entities.
@@ -205,9 +206,9 @@ impl<'a> serde::Deserialize<'a> for Spatial {
 #[cfg(test)]
 mod test {
     use super::{Place, Spatial};
-    use item::Slot;
-    use location::Location;
-    use world::Ecs;
+    use crate::item::Slot;
+    use crate::location::Location;
+    use crate::world::Ecs;
 
     #[test]
     fn test_place_adjacency() {

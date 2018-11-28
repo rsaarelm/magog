@@ -1,14 +1,15 @@
-use calx::{self, RngExt, WeightedChoice};
-use location::{Location, Sector};
-use map::Map;
+use crate::location::{Location, Sector};
+use crate::map::Map;
+use crate::spec::{self, EntitySpawn};
+use crate::vaults;
+use crate::{Distribution, Rng};
+use calx::{self, die, RngExt, WeightedChoice};
+use log::debug;
 use rand::seq;
 use rand::Rng as _Rng;
-use spec::{self, EntitySpawn};
 use std::error::Error;
 use std::str::FromStr;
 use std::sync::Arc;
-use vaults;
-use {Distribution, Rng};
 
 /// Descriptor for different regions of the game world for spawn distributions.
 pub struct Biome {
@@ -66,7 +67,7 @@ impl Distribution<Dungeon> for Biome {
     // write each their own newtype and have this master generator choose between them based on
     // Biome.
     fn sample(&self, rng: &mut Rng) -> Dungeon {
-        fn gen(rng: &mut Rng, biome: &Biome) -> Result<Map, Box<Error>> {
+        fn gen(rng: &mut Rng, biome: &Biome) -> Result<Map, Box<dyn Error>> {
             debug!("Starting mapgen");
             let mut gen = Map::new_base(Sector::points().filter(|p| {
                 !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()

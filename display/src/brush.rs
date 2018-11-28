@@ -1,12 +1,12 @@
-use cache;
+use crate::cache;
+use crate::view::ScreenVector;
+use crate::SubImageSpec;
 use calx::color::*;
 use calx::Rgba;
 use euclid::{rect, vec2, Rect};
 use std::fmt;
 use std::rc::Rc;
-use view::ScreenVector;
 use vitral::ImageData;
-use SubImageSpec;
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]
@@ -19,7 +19,7 @@ pub struct Splat {
 }
 
 impl fmt::Debug for Splat {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Splat {{ {:?}+{:?} {:?} {:?} }}",

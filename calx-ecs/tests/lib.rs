@@ -1,9 +1,6 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
-extern crate calx_ecs;
+use calx_ecs::build_ecs;
+use serde_derive::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Desc {

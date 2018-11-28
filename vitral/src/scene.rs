@@ -1,11 +1,11 @@
-use atlas_cache::AtlasCache;
-use backend::Backend;
+use crate::atlas_cache::AtlasCache;
+use crate::backend::Backend;
+use crate::{Builder, Core, FontData, ImageBuffer, ImageData, SubImageSpec, Vertex};
 use calx::Flick;
 use euclid::{size2, Size2D};
 use std::error::Error;
 use std::sync::Mutex;
 use time;
-use {Builder, Core, ImageBuffer, ImageData, SubImageSpec, Vertex, FontData};
 
 pub type ImageKey = SubImageSpec<String>;
 
@@ -29,7 +29,7 @@ pub trait Scene<T> {
     fn render(&mut self, ctx: &mut T, core: &mut Core) -> Option<SceneSwitch<T>>;
 
     /// Process an input event.
-    fn input(&mut self, ctx: &mut T, event: Evt) {}
+    fn input(&mut self, _ctx: &mut T, _event: Evt) {}
 
     /// Return true if the scene below this one in the scene stack should be visible.
     ///
@@ -96,7 +96,7 @@ pub fn run_app<T>(
     config: AppConfig,
     world: T,
     scenes: Vec<Box<dyn Scene<T>>>,
-) -> Result<(), Box<Error>> {
+) -> Result<(), Box<dyn Error>> {
     // TODO: Maybe want world to come in as &mut T instead of T in the future so that the caller
     // can access it after run_app finishes? Or just return the world if exit is successful?
     let backend = Backend::start(
@@ -115,7 +115,7 @@ pub fn run_app<T>(
 /// Saves a screenshot with the given name prefix to disk.
 ///
 /// Panics if called when an app isn't running via `run_app`.
-pub fn save_screenshot(prefix: &str) -> Result<(), Box<Error>> {
+pub fn save_screenshot(_prefix: &str) -> Result<(), Box<dyn Error>> {
     unimplemented!();
 }
 
@@ -128,7 +128,11 @@ pub fn get_frame_duration() -> Flick {
 
 /// Add a named image into the engine image atlas.
 pub fn add_sheet(id: impl Into<String>, sheet: impl Into<ImageBuffer>) -> ImageKey {
-    ENGINE_STATE.lock().unwrap().atlas_cache.add_sheet(id, sheet)
+    ENGINE_STATE
+        .lock()
+        .unwrap()
+        .atlas_cache
+        .add_sheet(id, sheet)
 }
 
 /// Add a tilesheet image that gets automatically split to subimages based on image structure.
@@ -144,9 +148,13 @@ pub fn add_sheet(id: impl Into<String>, sheet: impl Into<ImageBuffer>) -> ImageK
 pub fn add_tilesheet(
     id: impl Into<String>,
     sheet: impl Into<ImageBuffer>,
-    span: impl IntoIterator<Item = char>,
+    _span: impl IntoIterator<Item = char>,
 ) -> Vec<ImageKey> {
-    ENGINE_STATE.lock().unwrap().atlas_cache.add_tilesheet(id, sheet)
+    ENGINE_STATE
+        .lock()
+        .unwrap()
+        .atlas_cache
+        .add_tilesheet(id, sheet)
 }
 
 /// Add a bitmap font read from a tilesheet image.
@@ -155,7 +163,11 @@ pub fn add_tilesheet_font(
     sheet: impl Into<ImageBuffer>,
     span: impl IntoIterator<Item = char>,
 ) -> FontData {
-    ENGINE_STATE.lock().unwrap().atlas_cache.add_tilesheet_font(id, sheet, span)
+    ENGINE_STATE
+        .lock()
+        .unwrap()
+        .atlas_cache
+        .add_tilesheet_font(id, sheet, span)
 }
 
 /// Get a drawable (sub)image from the cache corresponding to the given `ImageKey`.
@@ -255,7 +267,8 @@ impl<T> GameLoop<T> {
                 }
             }
 
-            self.backend.sync_with_atlas_cache(&mut ENGINE_STATE.lock().unwrap().atlas_cache);
+            self.backend
+                .sync_with_atlas_cache(&mut ENGINE_STATE.lock().unwrap().atlas_cache);
 
             self.render();
             if self.scene_stack.is_empty() {

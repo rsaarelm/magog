@@ -1,15 +1,17 @@
-use calx::{self, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
+use crate::mapsave::{self, build_textmap, MapSave};
+use crate::spec::EntitySpawn;
+use crate::terrain::Terrain;
+use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
 use euclid::vec2;
 use log::Level::Trace;
-use mapsave::{self, build_textmap, MapSave};
+use log::{log_enabled, trace};
 use rand::{seq, Rng};
-use spec::EntitySpawn;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::{hash_map, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::ops::Index;
 use std::str::FromStr;
-use terrain::Terrain;
 
 // NOTE ON STABLE ORDER
 //
@@ -73,12 +75,12 @@ impl Map {
     }
 
     /// Build a prefab vault map from ASCII map.
-    pub fn new_vault(textmap: &str) -> Result<Self, Box<Error>> {
+    pub fn new_vault(textmap: &str) -> Result<Self, Box<dyn Error>> {
         let prefab: HashMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
         let mut ret = Map::new();
 
         for (&pos, c) in &prefab {
-            use Terrain::*;
+            use crate::Terrain::*;
             let is_border_pos = !calx::hex_neighbors(pos).all(|p| prefab.contains_key(&p));
             let mut cell = MapCell::default();
             // The only cells that get marked as Border are wall tiles or similar shaped blocks.
@@ -325,7 +327,7 @@ impl Map {
         &mut self,
         rng: &mut (impl Rng + ?Sized),
         room: &Map,
-    ) -> Result<(), Box<Error>> {
+    ) -> Result<(), Box<dyn Error>> {
         let sites = self.room_positions(room);
         if sites.is_empty() {
             die!("No room left");
@@ -467,9 +469,10 @@ impl Map {
     /// prefab vaults but should not factor into map connectivity analysis.
     fn is_interior_bubble<'a>(&self, points: impl IntoIterator<Item = &'a CellVector>) -> bool {
         points.into_iter().all(|&p| {
-            !self.is_vault_exterior(p) && calx::hex_neighbors(p).all(|p_edge| {
-                !self.is_vault_exterior(p_edge) && self.get(p_edge).map_or(true, |c| !c.can_dig)
-            })
+            !self.is_vault_exterior(p)
+                && calx::hex_neighbors(p).all(|p_edge| {
+                    !self.is_vault_exterior(p_edge) && self.get(p_edge).map_or(true, |c| !c.can_dig)
+                })
         })
     }
 
@@ -546,7 +549,7 @@ impl Map {
 }
 
 impl fmt::Display for Map {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let save = MapSave::from_prefab(&mapsave::Prefab::from(self))
             .expect("Couldn't convert Map to displayable");
         writeln!(f, "{}", save)

@@ -24,7 +24,7 @@ impl Flick {
 }
 
 impl fmt::Display for Flick {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:.3} s", self.0 as f32 / FLICKS_PER_SECOND as f32)
     }
 }

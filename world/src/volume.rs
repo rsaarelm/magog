@@ -1,8 +1,8 @@
+use crate::fov::SphereVolumeFov;
+use crate::location::Location;
+use crate::world::World;
 use calx::HexFov;
-use fov::SphereVolumeFov;
-use location::Location;
 use std::iter::FromIterator;
-use world::World;
 
 /// `Volume` is a specific area of the game world.
 pub struct Volume(pub Vec<Location>);

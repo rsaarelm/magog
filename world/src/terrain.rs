@@ -1,4 +1,5 @@
 use calx::SRgba;
+use serde_derive::{Deserialize, Serialize};
 use std::slice;
 
 /// Movement effect of a terrain tile.

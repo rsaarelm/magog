@@ -1,32 +1,26 @@
-extern crate calx;
-extern crate calx_ecs;
-extern crate euclid;
-#[macro_use]
-extern crate glium;
-extern crate image;
-extern crate time;
-extern crate vec_map;
-extern crate vitral;
-extern crate world;
+use calx;
+use time;
+use vitral;
+use world;
 
 mod backend;
-pub use backend::Backend;
+pub use crate::backend::Backend;
 
 mod brush;
 mod cache;
-pub use cache::font;
+pub use crate::cache::font;
 mod console;
 
 mod draw_util;
-pub use draw_util::DrawUtil;
+pub use crate::draw_util::DrawUtil;
 
 pub mod init;
 mod render;
 mod sprite;
 mod view;
 
-pub use console::Console;
-pub use view::WorldView;
+pub use crate::console::Console;
+pub use crate::view::WorldView;
 
 type SubImageSpec = vitral::SubImageSpec<String>;
 type AtlasCache = vitral::AtlasCache<String>;

@@ -2,16 +2,10 @@
 
 #![feature(test)]
 extern crate test;
+
+use calx_ecs::{build_ecs, Entity};
+use serde_derive::{Deserialize, Serialize};
 use test::Bencher;
-
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-
-#[macro_use]
-extern crate calx_ecs;
-
-use calx_ecs::Entity;
 
 pub const N: usize = 10000;
 

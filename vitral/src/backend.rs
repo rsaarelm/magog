@@ -2,6 +2,9 @@
 
 #![deny(missing_docs)]
 
+use crate::{
+    AtlasCache, CanvasZoom, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
+};
 use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
@@ -10,7 +13,6 @@ use glium::{self, Surface};
 use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
-use {AtlasCache, CanvasZoom, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex};
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
@@ -65,7 +67,7 @@ impl Backend {
         width: u32,
         height: u32,
         title: S,
-    ) -> Result<Backend, Box<Error>> {
+    ) -> Result<Backend, Box<dyn Error>> {
         let events = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new().with_title(title);
         let context = glutin::ContextBuilder::new()
@@ -204,68 +206,64 @@ impl Backend {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                }
-                    if window_id == self.display.gl_window().id() =>
-                {
-                    match event {
-                        &WindowEvent::CloseRequested => return false,
-                        &WindowEvent::CursorMoved { position, .. } => {
-                            let position =
-                                position.to_physical(self.display.gl_window().get_hidpi_factor());
-                            let pos = self.zoom.screen_to_canvas(
-                                self.window_size,
-                                self.canvas.size(),
-                                Point2D::new(position.x as f32, position.y as f32),
-                            );
-                            core.input_mouse_move(pos.x as i32, pos.y as i32);
-                        }
-                        &WindowEvent::MouseInput { state, button, .. } => core.input_mouse_button(
-                            match button {
-                                glutin::MouseButton::Left => MouseButton::Left,
-                                glutin::MouseButton::Right => MouseButton::Right,
-                                _ => MouseButton::Middle,
-                            },
-                            state == glutin::ElementState::Pressed,
-                        ),
-                        &WindowEvent::ReceivedCharacter(c) => core.input_char(c),
-                        &WindowEvent::KeyboardInput {
-                            input:
-                                glutin::KeyboardInput {
-                                    state,
-                                    scancode,
-                                    virtual_keycode,
-                                    ..
-                                },
-                            ..
-                        } => {
-                            self.keypress.push(KeyEvent {
-                                state,
-                                scancode: scancode as u8,
-                                virtual_keycode,
-                            });
-
-                            let is_down = state == glutin::ElementState::Pressed;
-
-                            use glium::glutin::VirtualKeyCode::*;
-                            if let Some(vk) = match virtual_keycode {
-                                Some(Tab) => Some(Keycode::Tab),
-                                Some(LShift) | Some(RShift) => Some(Keycode::Shift),
-                                Some(LControl) | Some(RControl) => Some(Keycode::Ctrl),
-                                Some(NumpadEnter) | Some(Return) => Some(Keycode::Enter),
-                                Some(Back) => Some(Keycode::Backspace),
-                                Some(Delete) => Some(Keycode::Del),
-                                Some(Numpad8) | Some(Up) => Some(Keycode::Up),
-                                Some(Numpad2) | Some(Down) => Some(Keycode::Down),
-                                Some(Numpad4) | Some(Left) => Some(Keycode::Left),
-                                Some(Numpad6) | Some(Right) => Some(Keycode::Right),
-                                _ => None,
-                            } {
-                                core.input_key_state(vk, is_down);
-                            }
-                        }
-                        _ => (),
+                } if window_id == self.display.gl_window().id() => match event {
+                    &WindowEvent::CloseRequested => return false,
+                    &WindowEvent::CursorMoved { position, .. } => {
+                        let position =
+                            position.to_physical(self.display.gl_window().get_hidpi_factor());
+                        let pos = self.zoom.screen_to_canvas(
+                            self.window_size,
+                            self.canvas.size(),
+                            Point2D::new(position.x as f32, position.y as f32),
+                        );
+                        core.input_mouse_move(pos.x as i32, pos.y as i32);
                     }
-                }
+                    &WindowEvent::MouseInput { state, button, .. } => core.input_mouse_button(
+                        match button {
+                            glutin::MouseButton::Left => MouseButton::Left,
+                            glutin::MouseButton::Right => MouseButton::Right,
+                            _ => MouseButton::Middle,
+                        },
+                        state == glutin::ElementState::Pressed,
+                    ),
+                    &WindowEvent::ReceivedCharacter(c) => core.input_char(c),
+                    &WindowEvent::KeyboardInput {
+                        input:
+                            glutin::KeyboardInput {
+                                state,
+                                scancode,
+                                virtual_keycode,
+                                ..
+                            },
+                        ..
+                    } => {
+                        self.keypress.push(KeyEvent {
+                            state,
+                            scancode: scancode as u8,
+                            virtual_keycode,
+                        });
+
+                        let is_down = state == glutin::ElementState::Pressed;
+
+                        use glium::glutin::VirtualKeyCode::*;
+                        if let Some(vk) = match virtual_keycode {
+                            Some(Tab) => Some(Keycode::Tab),
+                            Some(LShift) | Some(RShift) => Some(Keycode::Shift),
+                            Some(LControl) | Some(RControl) => Some(Keycode::Ctrl),
+                            Some(NumpadEnter) | Some(Return) => Some(Keycode::Enter),
+                            Some(Back) => Some(Keycode::Backspace),
+                            Some(Delete) => Some(Keycode::Del),
+                            Some(Numpad8) | Some(Up) => Some(Keycode::Up),
+                            Some(Numpad2) | Some(Down) => Some(Keycode::Down),
+                            Some(Numpad4) | Some(Left) => Some(Keycode::Left),
+                            Some(Numpad6) | Some(Right) => Some(Keycode::Right),
+                            _ => None,
+                        } {
+                            core.input_key_state(vk, is_down);
+                        }
+                    }
+                    _ => (),
+                },
                 // Events in other windows, ignore
                 Event::WindowEvent { .. } => {}
                 Event::Awakened => {
@@ -363,7 +361,7 @@ pub struct KeyEvent {
 }
 
 /// Shader for two parametrizable colors and discarding fully transparent pixels
-const DEFAULT_SHADER: glium::program::SourceCode = glium::program::SourceCode {
+const DEFAULT_SHADER: glium::program::SourceCode<'_> = glium::program::SourceCode {
     vertex_shader: "
         #version 150 core
 
@@ -473,7 +471,7 @@ impl Canvas {
     pub fn get_framebuffer_target(
         &mut self,
         display: &glium::Display,
-    ) -> glium::framebuffer::SimpleFrameBuffer {
+    ) -> glium::framebuffer::SimpleFrameBuffer<'_> {
         glium::framebuffer::SimpleFrameBuffer::with_depth_buffer(
             display,
             &self.buffer,
@@ -538,7 +536,7 @@ impl Canvas {
         .unwrap();
 
         // Set up the rest of the draw parameters.
-        let mut params: glium::DrawParameters = Default::default();
+        let mut params: glium::DrawParameters<'_> = Default::default();
         // Set an explicit viewport to apply the custom resolution that fixes
         // pixel perfect rounding errors.
         params.viewport = Some(glium::Rect {
@@ -573,7 +571,7 @@ impl Canvas {
     pub fn size(&self) -> Size2D<u32> { self.size }
 
     pub fn screenshot(&self) -> ImageBuffer {
-        let image: glium::texture::RawImage2d<u8> = self.buffer.read();
+        let image: glium::texture::RawImage2d<'_, u8> = self.buffer.read();
 
         ImageBuffer::from_fn(image.width, image.height, |x, y| {
             let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;

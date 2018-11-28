@@ -1,7 +1,7 @@
+use crate::location::Location;
+use crate::terraform::TerrainQuery;
+use crate::world::World;
 use calx::{CellVector, FovValue, HexGeom};
-use location::Location;
-use terraform::TerrainQuery;
-use world::World;
 
 #[derive(Clone)]
 pub struct SightFov<'a> {

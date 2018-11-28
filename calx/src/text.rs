@@ -7,7 +7,7 @@ use std::ops::{Add, AddAssign};
 ///
 /// Will treat newlines in the input as regular whitespace, you probably want to split your input
 /// at newlines before using `split_line` on the individual lines.
-pub fn split_line<F, N>(text: &str, char_width: F, max_width: N) -> LineSplit<F, N>
+pub fn split_line<F, N>(text: &str, char_width: F, max_width: N) -> LineSplit<'_, F, N>
 where
     F: Fn(char) -> N,
     N: Add + PartialOrd + Copy,

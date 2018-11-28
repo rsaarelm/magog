@@ -1,10 +1,10 @@
-use brush::Brush;
+use crate::brush::Brush;
+use crate::draw_util::DrawUtil;
+use crate::render::Layer;
+use crate::view::ScreenVector;
 use calx::{color, lerp, Rgba};
-use draw_util::DrawUtil;
-use render::Layer;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use view::ScreenVector;
 use vitral::Core;
 
 #[derive(Copy, Clone, PartialEq, Debug)]

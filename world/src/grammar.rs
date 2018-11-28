@@ -1,4 +1,5 @@
 use calx::templatize;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Pronoun {

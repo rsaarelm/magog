@@ -2,14 +2,11 @@
 
 #![deny(missing_docs)]
 
-extern crate serde;
-extern crate serde_derive;
-
+use serde;
+use serde_derive::{Deserialize, Serialize};
 use std::default::Default;
 use std::ops;
 use std::slice;
-
-use serde::{Deserialize, Serialize};
 
 /// Handle for an entity in the entity component system.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
@@ -115,13 +112,13 @@ impl<C> ComponentData<C> {
     }
 
     /// Iterate entity ids in this component.
-    pub fn ent_iter(&self) -> slice::Iter<Entity> { self.inner.entities.iter() }
+    pub fn ent_iter(&self) -> slice::Iter<'_, Entity> { self.inner.entities.iter() }
 
     /// Iterate elements in this component.
-    pub fn iter(&self) -> slice::Iter<C> { self.inner.data.iter() }
+    pub fn iter(&self) -> slice::Iter<'_, C> { self.inner.data.iter() }
 
     /// Iterate mutable elements in this component.
-    pub fn iter_mut(&mut self) -> slice::IterMut<C> { self.inner.data.iter_mut() }
+    pub fn iter_mut(&mut self) -> slice::IterMut<'_, C> { self.inner.data.iter_mut() }
 }
 
 impl<C> ops::Index<Entity> for ComponentData<C> {
@@ -171,13 +168,13 @@ struct Packed<C> {
     entities: Vec<Entity>,
 }
 
-impl<C: Serialize + Clone> serde::Serialize for ComponentData<C> {
+impl<C: serde::Serialize + Clone> serde::Serialize for ComponentData<C> {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         self.inner.serialize(s)
     }
 }
 
-impl<'a, C: Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> {
+impl<'a, C: serde::Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
 
@@ -205,7 +202,7 @@ pub trait Store {
     /// Perform an operation for each component container.
     fn for_each_component<F>(&mut self, f: F)
     where
-        F: FnMut(&mut AnyComponent);
+        F: FnMut(&mut dyn AnyComponent);
 }
 
 /// Generic entity component system container
@@ -263,7 +260,7 @@ impl<ST: Default + Store> Ecs<ST> {
     pub fn contains(&self, e: Entity) -> bool { self.active.contains(e) }
 
     /// Iterate through all the active entities.
-    pub fn iter(&self) -> slice::Iter<Entity> { self.active.ent_iter() }
+    pub fn iter(&self) -> slice::Iter<'_, Entity> { self.active.ent_iter() }
 }
 
 impl<ST> ops::Deref for Ecs<ST> {
