@@ -3,7 +3,8 @@ extern crate rand;
 extern crate serde_json;
 
 use calx::WeightedChoice;
-use rand::{Rng, XorShiftRng};
+use rand::Rng;
+use rand_xorshift::XorShiftRng;
 use std::collections::HashMap;
 
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
