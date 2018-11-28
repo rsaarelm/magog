@@ -2,6 +2,7 @@ extern crate euclid;
 extern crate image;
 extern crate num;
 extern crate rand;
+extern crate rand_xorshift;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

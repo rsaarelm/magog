@@ -9,6 +9,7 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate rand;
+extern crate rand_xorshift;
 extern crate ron;
 extern crate serde;
 #[macro_use]
@@ -173,7 +174,7 @@ pub enum FovStatus {
     Remembered,
 }
 
-pub type Rng = rand::XorShiftRng;
+pub type Rng = rand_xorshift::XorShiftRng;
 
 /// Object-safe version of `rand::distributions::Distribution`.
 pub trait Distribution<T> {

@@ -6,7 +6,7 @@ use world::{attack_damage, roll};
 
 fn ev<F>(n: usize, f: F) -> f32
 where
-    F: Fn(&mut rand::ThreadRng) -> f32,
+    F: Fn(&mut rand::prelude::ThreadRng) -> f32,
 {
     let mut acc = 0.0;
     let mut rng = rand::thread_rng();
