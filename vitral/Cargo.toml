@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 euclid = "0.19"
-glium = "0.22"
+glium = "0.23"
 lazy_static = "1.2"
 log = "0.4"
 time = "0.1"
