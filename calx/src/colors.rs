@@ -6,7 +6,6 @@
 ))]
 
 use image;
-use num::Num;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
@@ -164,11 +163,11 @@ impl FromStr for SRgba {
 
             debug_assert!(digits == 1 || digits == 2);
 
-            let r = Num::from_str_radix(&s[0..(digits)], 16);
-            let g = Num::from_str_radix(&s[(digits)..(2 * digits)], 16);
-            let b = Num::from_str_radix(&s[(2 * digits)..(3 * digits)], 16);
+            let r = u8::from_str_radix(&s[0..(digits)], 16);
+            let g = u8::from_str_radix(&s[(digits)..(2 * digits)], 16);
+            let b = u8::from_str_radix(&s[(2 * digits)..(3 * digits)], 16);
             let a = if alpha {
-                Num::from_str_radix(&s[(3 * digits)..(4 * digits)], 16)
+                u8::from_str_radix(&s[(3 * digits)..(4 * digits)], 16)
             } else if digits == 1 {
                 Ok(0xFu8)
             } else {
