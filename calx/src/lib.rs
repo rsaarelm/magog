@@ -1,7 +1,6 @@
 mod alg_misc;
 mod colors;
 pub mod ease;
-mod flick;
 mod fov;
 mod hex;
 mod hex_fov;
@@ -24,7 +23,6 @@ pub use crate::colors::{
     color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
     TermColor, Xterm256Color, NAMED_COLORS,
 };
-pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 pub use crate::fov::{Fov, FovValue, PolarPoint};
 pub use crate::hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use crate::hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};

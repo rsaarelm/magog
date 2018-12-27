@@ -1,6 +1,6 @@
 use vitral;
 
-use euclid::{point2, rect, Rect};
+use euclid::{point2, Rect};
 use vitral::{Align, AppConfig, ButtonAction, Color, Core, PngBytes, RectUtil, Scene, SceneSwitch};
 
 struct World {
@@ -104,5 +104,5 @@ fn main() {
         AppConfig::new("Vitral Demo"),
         World::new(),
         vec![Box::new(DemoScene)],
-    );
+    ).unwrap();
 }

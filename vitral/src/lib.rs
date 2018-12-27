@@ -8,8 +8,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
-use time;
-
 use euclid::{point2, rect, vec2, Point2D, Rect, Size2D, Vector2D};
 use std::collections::HashMap;
 use std::iter;
@@ -21,11 +19,15 @@ pub use crate::atlas::Atlas;
 mod atlas_cache;
 pub use crate::atlas_cache::{AtlasCache, SubImageSpec};
 
+mod backend;
+pub use crate::backend::{Backend, KeyEvent};
+
 mod canvas_zoom;
 pub use crate::canvas_zoom::CanvasZoom;
 
-mod backend;
-pub use crate::backend::{Backend, KeyEvent};
+
+mod flick;
+pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 
 mod rect_util;
 pub use crate::rect_util::RectUtil;

@@ -1,11 +1,10 @@
 use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
-use crate::{Builder, Core, FontData, ImageBuffer, ImageData, SubImageSpec, Vertex};
-use calx::Flick;
+use crate::{Builder, Core, FontData, ImageBuffer, ImageData, SubImageSpec};
+use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::{size2, Size2D};
 use std::error::Error;
 use std::sync::Mutex;
-use time;
 
 pub type ImageKey = SubImageSpec<String>;
 
@@ -61,7 +60,7 @@ pub struct AppConfig {
 impl AppConfig {
     pub fn new(title: impl Into<String>) -> AppConfig {
         AppConfig {
-            frame_duration: Flick(calx::FLICKS_PER_SECOND / 30),
+            frame_duration: Flick(FLICKS_PER_SECOND / 30),
             resolution: size2(640, 360),
             window_title: title.into(),
         }
@@ -105,7 +104,7 @@ pub fn run_app<T>(
         config.window_title,
     )?;
 
-    let mut gameloop = GameLoop::new(backend, world, scenes);
+    let mut gameloop = GameLoop::new(backend, world, scenes).frame_duration(config.frame_duration);
 
     gameloop.run();
 
@@ -197,7 +196,7 @@ impl<T> GameLoop<T> {
         let core = Builder::new().build(backend.canvas_size(), |img| backend.make_texture(img));
 
         GameLoop {
-            frame_duration: Flick(calx::FLICKS_PER_SECOND / 30),
+            frame_duration: Flick(FLICKS_PER_SECOND / 30),
             scene_stack: scenes,
             world,
             backend,
