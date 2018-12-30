@@ -3,7 +3,7 @@
 #![deny(missing_docs)]
 
 use crate::{
-    AtlasCache, CanvasZoom, Core, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
+    AtlasCache, CanvasZoom, Canvas, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
 };
 use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
@@ -26,7 +26,7 @@ pub struct Backend {
 
     keypress: Vec<KeyEvent>,
 
-    canvas: Canvas,
+    render_buffer: RenderBuffer,
     zoom: CanvasZoom,
     window_size: Size2D<u32>,
 }
@@ -44,7 +44,7 @@ impl Backend {
         height: u32,
     ) -> Backend {
         let (w, h) = get_size(&display);
-        let canvas = Canvas::new(&display, width, height);
+        let render_buffer = RenderBuffer::new(&display, width, height);
 
         Backend {
             display,
@@ -54,7 +54,7 @@ impl Backend {
 
             keypress: Vec::new(),
 
-            canvas,
+            render_buffer,
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
         }
@@ -127,7 +127,7 @@ impl Backend {
     ///
     /// Note that this is the logical size which will stay the same even when the
     /// desktop window is resized.
-    pub fn canvas_size(&self) -> Size2D<u32> { self.canvas.size }
+    pub fn canvas_size(&self) -> Size2D<u32> { self.render_buffer.size }
 
     /// Return the current number of textures.
     pub fn texture_count(&self) -> usize { self.textures.len() }
@@ -194,7 +194,7 @@ impl Backend {
         }
     }
 
-    fn process_events(&mut self, core: &mut Core) -> bool {
+    fn process_events(&mut self, canvas: &mut Canvas) -> bool {
         self.keypress.clear();
 
         // polling and handling the events received by the window
@@ -213,12 +213,12 @@ impl Backend {
                             position.to_physical(self.display.gl_window().get_hidpi_factor());
                         let pos = self.zoom.screen_to_canvas(
                             self.window_size,
-                            self.canvas.size(),
+                            self.render_buffer.size(),
                             Point2D::new(position.x as f32, position.y as f32),
                         );
-                        core.input_mouse_move(pos.x as i32, pos.y as i32);
+                        canvas.input_mouse_move(pos.x as i32, pos.y as i32);
                     }
-                    &WindowEvent::MouseInput { state, button, .. } => core.input_mouse_button(
+                    &WindowEvent::MouseInput { state, button, .. } => canvas.input_mouse_button(
                         match button {
                             glutin::MouseButton::Left => MouseButton::Left,
                             glutin::MouseButton::Right => MouseButton::Right,
@@ -226,7 +226,7 @@ impl Backend {
                         },
                         state == glutin::ElementState::Pressed,
                     ),
-                    &WindowEvent::ReceivedCharacter(c) => core.input_char(c),
+                    &WindowEvent::ReceivedCharacter(c) => canvas.input_char(c),
                     &WindowEvent::KeyboardInput {
                         input:
                             glutin::KeyboardInput {
@@ -259,7 +259,7 @@ impl Backend {
                             Some(Numpad6) | Some(Right) => Some(Keycode::Right),
                             _ => None,
                         } {
-                            core.input_key_state(vk, is_down);
+                            canvas.input_key_state(vk, is_down);
                         }
                     }
                     _ => (),
@@ -280,12 +280,12 @@ impl Backend {
     /// Return the next keypress event if there is one.
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
 
-    fn render(&mut self, core: &mut Core) {
-        let mut target = self.canvas.get_framebuffer_target(&self.display);
+    fn render(&mut self, canvas: &mut Canvas) {
+        let mut target = self.render_buffer.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
-        for batch in core.end_frame() {
+        for batch in canvas.end_frame() {
             // building the uniforms
             let uniforms = uniform! {
                 matrix: [
@@ -338,15 +338,15 @@ impl Backend {
     }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self, core: &mut Core) -> bool {
+    pub fn update(&mut self, canvas: &mut Canvas) -> bool {
         self.update_window_size();
-        self.render(core);
-        self.canvas.draw(&self.display, self.zoom);
-        self.process_events(core)
+        self.render(canvas);
+        self.render_buffer.draw(&self.display, self.zoom);
+        self.process_events(canvas)
     }
 
     /// Return an image for the current contents of the screen.
-    pub fn screenshot(&self) -> ImageBuffer { self.canvas.screenshot() }
+    pub fn screenshot(&self) -> ImageBuffer { self.render_buffer.screenshot() }
 }
 
 /// Type for key events not handled by Vitral.
@@ -410,15 +410,15 @@ const DEFAULT_SHADER: glium::program::SourceCode<'_> = glium::program::SourceCod
 implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 /// A deferred rendering buffer for pixel-perfect display.
-struct Canvas {
+struct RenderBuffer {
     size: Size2D<u32>,
     buffer: glium::texture::SrgbTexture2d,
     depth_buffer: glium::framebuffer::DepthRenderBuffer,
     shader: glium::Program,
 }
 
-impl Canvas {
-    pub fn new(display: &glium::Display, width: u32, height: u32) -> Canvas {
+impl RenderBuffer {
+    pub fn new(display: &glium::Display, width: u32, height: u32) -> RenderBuffer {
         let shader = program!(
             display,
             150 => {
@@ -459,7 +459,7 @@ impl Canvas {
         )
         .unwrap();
 
-        Canvas {
+        RenderBuffer {
             size: Size2D::new(width, height),
             buffer,
             depth_buffer,

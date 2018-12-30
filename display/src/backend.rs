@@ -2,7 +2,7 @@ use crate::cache;
 use calx;
 use std::error::Error;
 use std::io;
-use vitral::{self, Core, KeyEvent};
+use vitral::{self, Canvas, KeyEvent};
 
 pub struct Backend {
     inner: vitral::Backend,
@@ -19,9 +19,9 @@ impl Backend {
         Ok(Backend { inner })
     }
 
-    /// Helper method for making a vitral `Core` of the correct type
-    pub fn new_core(&mut self) -> Core {
-        // Make sure to reuse the existing solid texture so that the Core builder won't do new
+    /// Helper method for making a vitral `Canvas` of the correct type
+    pub fn new_core(&mut self) -> Canvas {
+        // Make sure to reuse the existing solid texture so that the Canvas builder won't do new
         // texture allocations.
         vitral::Builder::new()
             .solid_texture(cache::solid())
@@ -34,9 +34,9 @@ impl Backend {
     pub fn poll_key(&mut self) -> Option<KeyEvent> { self.inner.poll_key() }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self, core: &mut Core) -> bool {
+    pub fn update(&mut self, canvas: &mut Canvas) -> bool {
         cache::ATLAS.with(|a| self.inner.sync_with_atlas_cache(&mut a.borrow_mut()));
-        self.inner.update(core)
+        self.inner.update(canvas)
     }
 
     pub fn save_screenshot(&self, basename: &str) -> io::Result<()> {

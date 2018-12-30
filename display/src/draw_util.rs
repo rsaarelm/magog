@@ -1,7 +1,7 @@
 use euclid::{rect, vec2, Point2D};
-use vitral::{Align, Color, Core, FontData, ImageData, Vertex};
+use vitral::{Align, Color, Canvas, FontData, ImageData, Vertex};
 
-/// Helpers for drawing into the local `Core` type.
+/// Helpers for drawing into the local `Canvas` type.
 pub trait DrawUtil {
     /// Draw an image with two-color vertices.
     fn draw_image_2color(
@@ -24,7 +24,7 @@ pub trait DrawUtil {
     ) -> Point2D<i32>;
 }
 
-impl DrawUtil for Core {
+impl DrawUtil for Canvas {
     fn draw_image_2color(
         &mut self,
         image: &ImageData,

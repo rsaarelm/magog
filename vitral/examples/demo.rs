@@ -1,7 +1,7 @@
 use vitral;
 
 use euclid::{point2, Rect};
-use vitral::{Align, AppConfig, ButtonAction, Color, Core, PngBytes, RectUtil, Scene, SceneSwitch};
+use vitral::{Align, AppConfig, ButtonAction, Color, Canvas, PngBytes, RectUtil, Scene, SceneSwitch};
 
 struct World {
     font: vitral::FontData,
@@ -34,15 +34,15 @@ struct DemoScene;
 impl Scene<World> for DemoScene {
     fn update(&mut self, _ctx: &mut World) -> Option<SceneSwitch<World>> { None }
 
-    fn render(&mut self, ctx: &mut World, core: &mut Core) -> Option<SceneSwitch<World>> {
-        core.draw_image(&ctx.image, point2(20, 20), [1.0, 1.0, 1.0, 1.0]);
-        let bounds = core.bounds();
+    fn render(&mut self, ctx: &mut World, canvas: &mut Canvas) -> Option<SceneSwitch<World>> {
+        canvas.draw_image(&ctx.image, point2(20, 20), [1.0, 1.0, 1.0, 1.0]);
+        let bounds = canvas.bounds();
 
         let (_, title_area) = bounds.horizontal_split(12);
-        self.title_bar(ctx, core, &title_area, "Vitral Demo");
+        self.title_bar(ctx, canvas, &title_area, "Vitral Demo");
 
         let (_, widget_area) = title_area.vertical_split(-12);
-        if self.quit_button(ctx, core, &widget_area) {
+        if self.quit_button(ctx, canvas, &widget_area) {
             return Some(SceneSwitch::Pop);
         }
 
@@ -53,11 +53,11 @@ impl Scene<World> for DemoScene {
 impl DemoScene {
     fn bright_color(&self) -> Color { [1.0, 0.7, 0.2, 1.0] }
 
-    fn title_bar(&self, ctx: &World, core: &mut Core, bounds: &Rect<i32>, text: &str) {
-        core.fill_rect(bounds, ctx.back_color);
+    fn title_bar(&self, ctx: &World, canvas: &mut Canvas, bounds: &Rect<i32>, text: &str) {
+        canvas.fill_rect(bounds, ctx.back_color);
         {
             let bounds = bounds.inclusivize();
-            core.draw_line(
+            canvas.draw_line(
                 1.0,
                 ctx.fore_color,
                 bounds.bottom_left(),
@@ -68,7 +68,7 @@ impl DemoScene {
         // Margin
         let bounds = bounds.inflate(-2, -2);
 
-        core.draw_text(
+        canvas.draw_text(
             &ctx.font,
             bounds.anchor(&point2(0, -1)),
             Align::Center,
@@ -77,8 +77,8 @@ impl DemoScene {
         );
     }
 
-    fn quit_button(&self, ctx: &World, core: &mut Core, bounds: &Rect<i32>) -> bool {
-        let click_state = core.click_state(bounds);
+    fn quit_button(&self, ctx: &World, canvas: &mut Canvas, bounds: &Rect<i32>) -> bool {
+        let click_state = canvas.click_state(bounds);
 
         let color = if click_state != ButtonAction::Inert {
             self.bright_color()
@@ -86,16 +86,16 @@ impl DemoScene {
             ctx.fore_color
         };
 
-        core.fill_rect(bounds, color);
-        core.fill_rect(&bounds.inflate(-1, -1), ctx.back_color);
+        canvas.fill_rect(bounds, color);
+        canvas.fill_rect(&bounds.inflate(-1, -1), ctx.back_color);
 
         let inner = bounds.inflate(-3, -3).inclusivize();
 
-        core.draw_line(1.0, color, inner.bottom_right(), inner.origin);
+        canvas.draw_line(1.0, color, inner.bottom_right(), inner.origin);
 
-        core.draw_line(1.0, color, inner.top_right(), inner.bottom_left());
+        canvas.draw_line(1.0, color, inner.top_right(), inner.bottom_left());
 
-        core.click_state(bounds) == ButtonAction::LeftClicked
+        canvas.click_state(bounds) == ButtonAction::LeftClicked
     }
 }
 

@@ -6,7 +6,7 @@ use std::mem;
 use std::rc::Rc;
 use std::str;
 use time;
-use vitral::{Align, Core, FontData};
+use vitral::{Align, Canvas, FontData};
 
 struct Message {
     expire_time_s: f64,
@@ -45,7 +45,7 @@ impl Console {
     }
 
     /// Draw the console as a regular message display.
-    pub fn draw_small(&mut self, core: &mut Core, screen_area: &Rect<i32>) {
+    pub fn draw_small(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
         // TODO: Store color in draw context.
         let color = [1.0, 1.0, 1.0, 0.4];
 
@@ -68,17 +68,17 @@ impl Console {
         // Draw the lines
         let mut pos = screen_area.origin;
         for line in lines.iter().rev() {
-            pos = core.draw_text(&*self.font, pos, Align::Left, color, line);
+            pos = canvas.draw_text(&*self.font, pos, Align::Left, color, line);
         }
     }
 
     /// Draw the console as a big drop-down with a command prompt.
-    pub fn draw_large(&mut self, core: &mut Core, screen_area: &Rect<i32>) {
+    pub fn draw_large(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
         // TODO: Store color in draw context.
         let color = [0.6, 0.6, 0.6, 1.0];
         let background = [0.0, 0.0, 0.6, 0.8];
 
-        core.fill_rect(screen_area, background);
+        canvas.fill_rect(screen_area, background);
 
         let h = self.font.height;
         let mut lines_left = (screen_area.size.height + h - 1) / h;
@@ -88,7 +88,7 @@ impl Console {
         // TODO: Command history.
         // TODO
         /*
-        core
+        canvas
             .bound(0, y as u32, screen_area.size.width as u32, h as u32)
             .text_input(color, &mut self.input_buffer);
         */
@@ -105,7 +105,7 @@ impl Console {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                core.draw_text(&*self.font, Point2D::new(0, y), Align::Left, color, line);
+                canvas.draw_text(&*self.font, Point2D::new(0, y), Align::Left, color, line);
                 y -= h;
                 lines_left -= 1;
             }

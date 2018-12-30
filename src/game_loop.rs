@@ -6,7 +6,7 @@ use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use std::rc::Rc;
-use vitral::{Align, Core, FontData, RectUtil};
+use vitral::{Align, Canvas, FontData, RectUtil};
 use world::{Command, CommandResult, Event, ItemType, Location, Mutate, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -31,7 +31,7 @@ enum AimAction {
 }
 
 pub struct GameLoop {
-    core: Core,
+    core: Canvas,
     font: Rc<FontData>,
     pub world: World,
     pub console: display::Console,

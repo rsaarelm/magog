@@ -1,6 +1,6 @@
 use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
-use crate::{Builder, Core, FontData, ImageBuffer, ImageData, SubImageSpec};
+use crate::{Builder, Canvas, FontData, ImageBuffer, ImageData, SubImageSpec};
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::{size2, Size2D};
 use std::error::Error;
@@ -25,7 +25,7 @@ pub trait Scene<T> {
     ///
     /// The render method can also introduce scene transitions in case there is immediate mode GUI
     /// logic written in the render code.
-    fn render(&mut self, ctx: &mut T, core: &mut Core) -> Option<SceneSwitch<T>>;
+    fn render(&mut self, ctx: &mut T, core: &mut Canvas) -> Option<SceneSwitch<T>>;
 
     /// Process an input event.
     fn input(&mut self, _ctx: &mut T, _event: Evt) {}
@@ -192,7 +192,7 @@ pub struct GameLoop<T> {
     scene_stack: Vec<Box<dyn Scene<T>>>,
     world: T,
     backend: Backend,
-    core: Core,
+    core: Canvas,
 }
 
 impl<T> GameLoop<T> {

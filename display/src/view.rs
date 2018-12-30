@@ -8,7 +8,7 @@ use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::rc::Rc;
-use vitral::Core;
+use vitral::Canvas;
 use world::{FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
@@ -57,7 +57,7 @@ impl WorldView {
         }
     }
 
-    pub fn draw(&mut self, world: &World, core: &mut Core) {
+    pub fn draw(&mut self, world: &World, canvas: &mut Canvas) {
         let current_sector = self.camera_loc.sector();
         self.camera_loc = current_sector.center();
 
@@ -68,7 +68,7 @@ impl WorldView {
         .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
-        let mouse_pos = ScreenVector::from_untyped(&core.mouse_pos().to_vector());
+        let mouse_pos = ScreenVector::from_untyped(&canvas.mouse_pos().to_vector());
         let cursor_pos = (mouse_pos - center).to_cell_space();
 
         for (&chart_pos, origins) in chart.iter() {
@@ -281,7 +281,7 @@ impl WorldView {
         sprites.sort();
 
         for i in &sprites {
-            i.draw(core)
+            i.draw(canvas)
         }
 
         fn get_fov(world: &World, loc: Location) -> Option<FovStatus> {

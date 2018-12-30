@@ -166,7 +166,7 @@ impl Builder {
     /// Needs to be provided a texture creation function. If the user has not specified them
     /// earlier, this will be used to construct a separate texture for the solid color and a
     /// default font texture.
-    pub fn build<F>(self, screen_size: Size2D<u32>, mut make_t: F) -> Core
+    pub fn build<F>(self, screen_size: Size2D<u32>, mut make_t: F) -> Canvas
     where
         F: FnMut(ImageBuffer) -> TextureIndex,
     {
@@ -181,7 +181,7 @@ impl Builder {
             };
         }
 
-        Core::new(solid, screen_size)
+        Canvas::new(solid, screen_size)
     }
 }
 
@@ -271,7 +271,7 @@ impl Vertex {
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Core {
+pub struct Canvas {
     draw_list: Vec<DrawBatch>,
 
     mouse_pos: Point2D<i32>,
@@ -287,9 +287,9 @@ pub struct Core {
     screen_size: Size2D<i32>,
 }
 
-impl Core {
-    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Core {
-        Core {
+impl Canvas {
+    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Canvas {
+        Canvas {
             draw_list: Vec::new(),
 
             mouse_pos: point2(0, 0),

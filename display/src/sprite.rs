@@ -5,7 +5,7 @@ use crate::view::ScreenVector;
 use calx::{color, lerp, Rgba};
 use std::cmp::Ordering;
 use std::rc::Rc;
-use vitral::Core;
+use vitral::Canvas;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Coloring {
@@ -103,11 +103,11 @@ impl PartialOrd for Sprite {
 }
 
 impl Sprite {
-    pub fn draw(&self, core: &mut Core) {
+    pub fn draw(&self, canvas: &mut Canvas) {
         for splat in &self.brush[self.frame_idx] {
             let (fore, back) = self.color.apply(splat.color, splat.back_color);
             let pos = (self.offset - splat.offset).to_point().to_untyped();
-            core.draw_image_2color(&splat.image, pos, fore.into(), back.into());
+            canvas.draw_image_2color(&splat.image, pos, fore.into(), back.into());
         }
     }
 }
