@@ -25,7 +25,6 @@ pub use crate::backend::{Backend, KeyEvent};
 mod canvas_zoom;
 pub use crate::canvas_zoom::CanvasZoom;
 
-
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 
@@ -35,7 +34,7 @@ pub use crate::rect_util::RectUtil;
 mod scene;
 pub use crate::scene::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
-    save_screenshot, AppConfig, Evt, Scene, SceneSwitch,
+    save_screenshot, AppConfig, Evt, ImageKey, Scene, SceneSwitch,
 };
 
 mod tilesheet;
