@@ -1,12 +1,10 @@
-use crate::cache;
 use crate::view::ScreenVector;
-use crate::SubImageSpec;
 use calx::color::*;
 use calx::Rgba;
 use euclid::{rect, vec2, Rect};
 use std::fmt;
-use std::rc::Rc;
-use vitral::ImageData;
+use std::sync::Arc;
+use vitral::{ImageData, ImageKey};
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]
@@ -31,10 +29,10 @@ impl fmt::Debug for Splat {
 impl Splat {
     pub fn new(geom: &Geom, sheet: String, color: Rgba, back_color: Rgba) -> Splat {
         Splat {
-            image: cache::get(&SubImageSpec {
+            image: vitral::get_image(&ImageKey {
                 id: sheet,
                 bounds: geom.bounds,
-            }),
+            }).unwrap(),
             offset: geom.offset,
             color: color,
             back_color: back_color,
@@ -190,12 +188,12 @@ impl Builder {
     /// Convert the builder into a finished brush.
     ///
     /// If the current splat matrix is not empty, it will be merged into frames first.
-    pub fn finish(mut self) -> Rc<Brush> {
+    pub fn finish(mut self) -> Arc<Brush> {
         if !self.splat_matrix.is_empty() {
             // A merge is pending, do it now.
             self = self.merge();
         }
-        Rc::new(self.brush)
+        Arc::new(self.brush)
     }
 }
 

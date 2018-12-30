@@ -6,7 +6,7 @@ use crate::view::PhysicsVector;
 use crate::Icon;
 use calx::{Dir12, Dir6};
 use euclid::vec3;
-use std::rc::Rc;
+use std::sync::Arc;
 use world::{terrain, Location, Query, Terrain, TerrainQuery, World};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
@@ -93,9 +93,9 @@ pub enum Layer {
 ///
 /// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
 /// the blob but doesn't have visible walls.
-fn blobform<F>(kernel: &Kernel, brush: &Rc<Brush>, is_solid: bool, draw: &mut F)
+fn blobform<F>(kernel: &Kernel, brush: &Arc<Brush>, is_solid: bool, draw: &mut F)
 where
-    F: FnMut(Layer, Angle, &Rc<Brush>, usize),
+    F: FnMut(Layer, Angle, &Arc<Brush>, usize),
 {
     use self::Angle::*;
     // This part gets a little tricky. Basic idea is that there's an inner pointy-top
@@ -235,7 +235,7 @@ where
 
 pub fn draw_terrain_sprites<F>(w: &World, loc: Location, mut draw: F)
 where
-    F: FnMut(Layer, Angle, &Rc<Brush>, usize),
+    F: FnMut(Layer, Angle, &Arc<Brush>, usize),
 {
     use self::Angle::*;
 

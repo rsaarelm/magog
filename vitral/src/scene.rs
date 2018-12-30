@@ -1,5 +1,6 @@
 use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
+use crate::keycode::Keycode;
 use crate::{Builder, Canvas, FontData, ImageBuffer, ImageData, SubImageSpec};
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::{size2, Size2D};
@@ -16,7 +17,7 @@ pub trait Scene<T> {
     ///
     /// May be called several times for one `render` call. Return value tells if this update should
     /// be followed by a change of scene.
-    fn update(&mut self, ctx: &mut T) -> Option<SceneSwitch<T>>;
+    fn update(&mut self, _ctx: &mut T) -> Option<SceneSwitch<T>> { None }
 
     /// Draw this scene to a Vitral core.
     ///
@@ -25,10 +26,10 @@ pub trait Scene<T> {
     ///
     /// The render method can also introduce scene transitions in case there is immediate mode GUI
     /// logic written in the render code.
-    fn render(&mut self, ctx: &mut T, core: &mut Canvas) -> Option<SceneSwitch<T>>;
+    fn render(&mut self, _ctx: &mut T, _core: &mut Canvas) -> Option<SceneSwitch<T>> { None }
 
     /// Process an input event.
-    fn input(&mut self, _ctx: &mut T, _event: Evt) {}
+    fn input(&mut self, _ctx: &mut T, _event: InputEvent) -> Option<SceneSwitch<T>> { None }
 
     /// Return true if the scene below this one in the scene stack should be visible.
     ///
@@ -47,8 +48,13 @@ pub enum SceneSwitch<T> {
 }
 
 #[derive(Clone, Debug)]
-pub enum Evt {
-    // TODO: Key-down, key-up, key-typed, mouse events
+pub enum InputEvent {
+    Typed(char),
+    KeyEvent {
+        is_down: bool,
+        key: Option<Keycode>,
+        hardware_key: Option<Keycode>,
+    },
 }
 
 pub struct AppConfig {
@@ -66,10 +72,9 @@ impl AppConfig {
         }
     }
 
-    pub fn frame_duration(mut self, frame_duration: Flick) -> AppConfig
-    {
+    pub fn frame_duration(mut self, frame_duration: Flick) -> AppConfig {
         self.frame_duration = frame_duration;
-        return self
+        return self;
     }
 }
 
@@ -280,8 +285,15 @@ impl<T> GameLoop<T> {
                 break 'gameloop;
             }
 
-            if !self.backend.update(&mut self.core) {
-                break;
+            match self
+                .backend
+                .update(&mut self.core, &mut self.scene_stack, &mut self.world)
+            {
+                Ok(switch) => self.process(switch),
+                Err(()) => break 'gameloop,
+            }
+            if self.scene_stack.is_empty() {
+                break 'gameloop;
             }
         }
         // TODO: Some kind of return value.

@@ -3,12 +3,55 @@
 use crate::brush::{Brush, Builder, Geom};
 use calx::color::*;
 use calx::Rgba;
-use std::rc::Rc;
 use std::str::FromStr;
+use std::sync::Arc;
 use vec_map::VecMap;
+use vitral::{self, PngBytes};
+
+/// Load all game graphics in memory from image data.
+///
+/// Must be called before the main game loop starts and tries to render tiles.
+pub fn load_graphics() {
+    vitral::add_sheet(
+        "assets/blobs.png",
+        PngBytes(include_bytes!("../assets/blobs.png")),
+    );
+    vitral::add_sheet(
+        "assets/floors.png",
+        PngBytes(include_bytes!("../assets/floors.png")),
+    );
+    vitral::add_sheet(
+        "assets/gui.png",
+        PngBytes(include_bytes!("../assets/gui.png")),
+    );
+    vitral::add_sheet(
+        "assets/logo.png",
+        PngBytes(include_bytes!("../assets/logo.png")),
+    );
+    vitral::add_sheet(
+        "assets/mobs.png",
+        PngBytes(include_bytes!("../assets/mobs.png")),
+    );
+    vitral::add_sheet(
+        "assets/portals.png",
+        PngBytes(include_bytes!("../assets/portals.png")),
+    );
+    vitral::add_sheet(
+        "assets/props.png",
+        PngBytes(include_bytes!("../assets/props.png")),
+    );
+    vitral::add_sheet(
+        "assets/splatter.png",
+        PngBytes(include_bytes!("../assets/splatter.png")),
+    );
+    vitral::add_sheet(
+        "assets/walls.png",
+        PngBytes(include_bytes!("../assets/walls.png")),
+    );
+}
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
+pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     use world::Terrain::*;
     let mut ret = VecMap::new();
 
@@ -67,7 +110,7 @@ pub fn terrain_brushes() -> VecMap<Rc<Brush>> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn entity_brushes() -> VecMap<Rc<Brush>> {
+pub fn entity_brushes() -> VecMap<Arc<Brush>> {
     use world::Icon::*;
     let mut ret = VecMap::new();
 
@@ -99,7 +142,7 @@ pub fn entity_brushes() -> VecMap<Rc<Brush>> {
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn misc_brushes() -> VecMap<Rc<Brush>> {
+pub fn misc_brushes() -> VecMap<Arc<Brush>> {
     use crate::Icon::*;
     let mut ret = VecMap::new();
 

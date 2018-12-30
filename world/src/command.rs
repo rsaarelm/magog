@@ -12,8 +12,10 @@ use serde_derive::{Deserialize, Serialize};
 pub type ActionOutcome = Option<()>;
 
 /// Player command events that the world is updated with.
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Command {
+    /// Called to update the state on frames where the player can't act.
+    Wait,
     /// Do nothing, skip your turn.
     Pass,
     /// Take a step in direction.
@@ -45,8 +47,11 @@ impl Incremental for World {
 
     fn update(&mut self, e: &Command) {
         if self.player_can_act() {
+            debug_assert!(*e != Command::Wait, "Calling wait during player's turn");
             self.clear_events();
             self.process_cmd(e);
+        } else {
+            debug_assert!(*e == Command::Wait, "Giving inputs outside player's turn");
         }
 
         self.next_tick();
@@ -57,6 +62,9 @@ impl World {
     fn process_cmd(&mut self, cmd: &Command) -> ActionOutcome {
         use Command::*;
         match cmd {
+            Wait => {
+                Some(())
+            }
             Pass => {
                 let player = self.player()?;
                 self.idle(player)

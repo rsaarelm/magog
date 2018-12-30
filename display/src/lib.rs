@@ -1,11 +1,3 @@
-use calx;
-use time;
-use vitral;
-use world;
-
-mod backend;
-pub use crate::backend::Backend;
-
 mod brush;
 mod cache;
 pub use crate::cache::font;
@@ -14,16 +6,15 @@ mod console;
 mod draw_util;
 pub use crate::draw_util::DrawUtil;
 
-pub mod init;
+mod init;
+pub use crate::init::load_graphics;
+
 mod render;
 mod sprite;
 mod view;
 
 pub use crate::console::Console;
 pub use crate::view::WorldView;
-
-type SubImageSpec = vitral::SubImageSpec<String>;
-type AtlasCache = vitral::AtlasCache<String>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Icon {

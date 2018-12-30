@@ -7,7 +7,7 @@ use calx_ecs::Entity;
 use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
-use std::rc::Rc;
+use std::sync::Arc;
 use vitral::Canvas;
 use world::{FovStatus, Location, Query, TerrainQuery, World};
 
@@ -162,7 +162,7 @@ impl WorldView {
                     Coloring::Shaded { ambient, diffuse }
                 };
                 terrain_sprite_buffer.push(
-                    Sprite::new(layer, screen_pos, Rc::clone(brush))
+                    Sprite::new(layer, screen_pos, Arc::clone(brush))
                         .idx(frame_idx)
                         .color(color),
                 );

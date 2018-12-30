@@ -3,7 +3,7 @@ use euclid::{Point2D, Rect};
 use std::io;
 use std::io::prelude::*;
 use std::mem;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::str;
 use time;
 use vitral::{Align, Canvas, FontData};
@@ -26,7 +26,7 @@ impl Message {
 
 /// Output text container.
 pub struct Console {
-    font: Rc<FontData>,
+    font: Arc<FontData>,
     lines: Vec<Message>,
     input_buffer: String,
     output_buffer: String,
@@ -34,7 +34,7 @@ pub struct Console {
 }
 
 impl Console {
-    pub fn new(font: Rc<FontData>) -> Console {
+    pub fn new(font: Arc<FontData>) -> Console {
         Console {
             font,
             lines: Vec::new(),

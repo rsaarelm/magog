@@ -4,7 +4,7 @@ use crate::render::Layer;
 use crate::view::ScreenVector;
 use calx::{color, lerp, Rgba};
 use std::cmp::Ordering;
-use std::rc::Rc;
+use std::sync::Arc;
 use vitral::Canvas;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -63,13 +63,13 @@ pub struct Sprite {
 
     // TODO: Replace this with a generic "Drawable" trait object once we start having other things
     // than frames as sprites.
-    pub brush: Rc<Brush>,
+    pub brush: Arc<Brush>,
     pub frame_idx: usize,
     pub color: Coloring,
 }
 
 impl Sprite {
-    pub fn new(layer: Layer, offset: ScreenVector, brush: Rc<Brush>) -> Sprite {
+    pub fn new(layer: Layer, offset: ScreenVector, brush: Arc<Brush>) -> Sprite {
         Sprite {
             layer,
             offset,

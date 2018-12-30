@@ -1,3 +1,5 @@
+extern crate cfg_if;
+
 #[cfg(feature = "image")]
 extern crate image;
 
@@ -28,13 +30,16 @@ pub use crate::canvas_zoom::CanvasZoom;
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 
+mod keycode;
+pub use crate::keycode::Keycode;
+
 mod rect_util;
 pub use crate::rect_util::RectUtil;
 
 mod scene;
 pub use crate::scene::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
-    save_screenshot, AppConfig, Evt, ImageKey, Scene, SceneSwitch,
+    save_screenshot, AppConfig, ImageKey, InputEvent, Scene, SceneSwitch,
 };
 
 mod tilesheet;
@@ -279,8 +284,6 @@ pub struct Canvas {
 
     solid_texture: ImageData,
 
-    text_input: Vec<KeyInput>,
-
     tick: u64,
 
     clip: Option<Rect<i32>>,
@@ -300,8 +303,6 @@ impl Canvas {
             ],
 
             solid_texture,
-
-            text_input: Vec::new(),
 
             tick: 0,
 
@@ -544,9 +545,6 @@ impl Canvas {
             self.click_state[i] = self.click_state[i].tick();
         }
 
-        // Clean up text buffer
-        self.text_input.clear();
-
         let mut ret = Vec::new();
         mem::swap(&mut ret, &mut self.draw_list);
         ret
@@ -556,7 +554,7 @@ impl Canvas {
     pub fn mouse_pos(&self) -> Point2D<i32> { self.mouse_pos }
 
     /// Register mouse button state.
-    pub fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
+    pub(crate) fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
         if is_down {
             self.click_state[id as usize] =
                 self.click_state[id as usize].input_press(self.mouse_pos());
@@ -567,21 +565,11 @@ impl Canvas {
     }
 
     /// Register mouse motion.
-    pub fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
+    pub(crate) fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
 
     /// Get whether mouse button was pressed
     pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
         self.click_state[button as usize].is_pressed()
-    }
-
-    /// Register printable character input.
-    pub fn input_char(&mut self, c: char) { self.text_input.push(KeyInput::Printable(c)); }
-
-    /// Register a nonprintable key state.
-    pub fn input_key_state(&mut self, k: Keycode, is_down: bool) {
-        if is_down {
-            self.text_input.push(KeyInput::Other(k));
-        }
     }
 }
 
@@ -661,27 +649,6 @@ impl ClickState {
             false
         }
     }
-}
-
-/// Identifiers for nonprintable keys used in text editing widgets.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub enum Keycode {
-    Tab,
-    Shift,
-    Ctrl,
-    Enter,
-    Backspace,
-    Del,
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum KeyInput {
-    Printable(char),
-    Other(Keycode),
 }
 
 /// Font data for Vitral.

@@ -3,7 +3,8 @@
 #![deny(missing_docs)]
 
 use crate::{
-    AtlasCache, CanvasZoom, Canvas, ImageBuffer, Keycode, MouseButton, TextureIndex, Vertex,
+    AtlasCache, Canvas, CanvasZoom, ImageBuffer, InputEvent, Keycode, MouseButton, Scene,
+    SceneSwitch, TextureIndex, Vertex,
 };
 use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
@@ -194,12 +195,33 @@ impl Backend {
         }
     }
 
-    fn process_events(&mut self, canvas: &mut Canvas) -> bool {
+    fn dispatch<T>(
+        &self,
+        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
+        ctx: &mut T,
+        event: InputEvent,
+    ) -> Option<SceneSwitch<T>> {
+        if !scene_stack.is_empty() {
+            let idx = scene_stack.len() - 1;
+            scene_stack[idx].input(ctx, event)
+        } else {
+            None
+        }
+    }
+
+    fn process_events<T>(
+        &mut self,
+        canvas: &mut Canvas,
+        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
+        ctx: &mut T,
+    ) -> Result<Option<SceneSwitch<T>>, ()> {
         self.keypress.clear();
 
         // polling and handling the events received by the window
         let mut event_list = Vec::new();
         self.events.poll_events(|event| event_list.push(event));
+        // Accumulated scene switches from processing input
+        let mut scene_switches = Vec::new();
 
         for e in event_list {
             match e {
@@ -207,7 +229,7 @@ impl Backend {
                     ref event,
                     window_id,
                 } if window_id == self.display.gl_window().id() => match event {
-                    &WindowEvent::CloseRequested => return false,
+                    &WindowEvent::CloseRequested => return Err(()),
                     &WindowEvent::CursorMoved { position, .. } => {
                         let position =
                             position.to_physical(self.display.gl_window().get_hidpi_factor());
@@ -226,7 +248,9 @@ impl Backend {
                         },
                         state == glutin::ElementState::Pressed,
                     ),
-                    &WindowEvent::ReceivedCharacter(c) => canvas.input_char(c),
+                    &WindowEvent::ReceivedCharacter(c) => {
+                        scene_switches.push(self.dispatch(scene_stack, ctx, InputEvent::Typed(c)));
+                    }
                     &WindowEvent::KeyboardInput {
                         input:
                             glutin::KeyboardInput {
@@ -237,29 +261,29 @@ impl Backend {
                             },
                         ..
                     } => {
-                        self.keypress.push(KeyEvent {
-                            state,
-                            scancode: scancode as u8,
-                            virtual_keycode,
-                        });
-
                         let is_down = state == glutin::ElementState::Pressed;
-
-                        use glium::glutin::VirtualKeyCode::*;
-                        if let Some(vk) = match virtual_keycode {
-                            Some(Tab) => Some(Keycode::Tab),
-                            Some(LShift) | Some(RShift) => Some(Keycode::Shift),
-                            Some(LControl) | Some(RControl) => Some(Keycode::Ctrl),
-                            Some(NumpadEnter) | Some(Return) => Some(Keycode::Enter),
-                            Some(Back) => Some(Keycode::Backspace),
-                            Some(Delete) => Some(Keycode::Del),
-                            Some(Numpad8) | Some(Up) => Some(Keycode::Up),
-                            Some(Numpad2) | Some(Down) => Some(Keycode::Down),
-                            Some(Numpad4) | Some(Left) => Some(Keycode::Left),
-                            Some(Numpad6) | Some(Right) => Some(Keycode::Right),
-                            _ => None,
-                        } {
-                            canvas.input_key_state(vk, is_down);
+                        let key = virtual_keycode.map_or(None, |virtual_keycode| {
+                            Keycode::try_from(virtual_keycode).ok()
+                        });
+                        // Glutin adjusts the Linux scancodes, take into account. Don't know if
+                        // this belongs here in the glium module or in the Keycode translation
+                        // maps...
+                        let scancode = if cfg!(target_os = "linux") {
+                            scancode + 8
+                        } else {
+                            scancode
+                        };
+                        let hardware_key = Keycode::from_scancode(scancode);
+                        if key.is_some() || hardware_key.is_some() {
+                            scene_switches.push(self.dispatch(
+                                scene_stack,
+                                ctx,
+                                InputEvent::KeyEvent {
+                                    is_down,
+                                    key,
+                                    hardware_key,
+                                },
+                            ));
                         }
                     }
                     _ => (),
@@ -274,7 +298,15 @@ impl Backend {
             }
         }
 
-        true
+        // Take the first scene switch that shows up.
+        let scene_switch = scene_switches
+            .into_iter()
+            .fold(None, |prev, e| match (prev, e) {
+                (Some(x), _) => Some(x),
+                (None, y) => y,
+            });
+
+        Ok(scene_switch)
     }
 
     /// Return the next keypress event if there is one.
@@ -338,11 +370,16 @@ impl Backend {
     }
 
     /// Display the backend and read input events.
-    pub fn update(&mut self, canvas: &mut Canvas) -> bool {
+    pub fn update<T>(
+        &mut self,
+        canvas: &mut Canvas,
+        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
+        ctx: &mut T,
+    ) -> Result<Option<SceneSwitch<T>>, ()> {
         self.update_window_size();
         self.render(canvas);
         self.render_buffer.draw(&self.display, self.zoom);
-        self.process_events(canvas)
+        self.process_events(canvas, scene_stack, ctx)
     }
 
     /// Return an image for the current contents of the screen.

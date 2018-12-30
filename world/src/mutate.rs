@@ -252,8 +252,7 @@ pub trait Mutate: Query + Terraform + Sized {
         effect: Entity,
         caster: Option<Entity>,
     ) -> ActionOutcome {
-        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect)?.item_type
-        {
+        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect)?.item_type {
             match effect {
                 MagicEffect::Lightning => {
                     const LIGHTNING_RANGE: u32 = 4;
@@ -373,8 +372,8 @@ pub trait Mutate: Query + Terraform + Sized {
 
         // XXX: Using power stat for damage, should this be different?
         // Do +5 since dmg 1 is really, really useless.
-        let advantage = self.stats(e).attack - self.stats(target).defense
-            + 2 * self.stats(target).armor;
+        let advantage =
+            self.stats(e).attack - self.stats(target).defense + 2 * self.stats(target).armor;
         let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
 
         if damage == 0 {

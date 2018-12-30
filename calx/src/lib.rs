@@ -36,4 +36,4 @@ pub use crate::search::{astar_path, Dijkstra, GridNode};
 pub use crate::space::{CellSpace, CellVector, Space, Transformation};
 pub use crate::system::{app_data_path, save_screenshot, TimeLogItem};
 pub use crate::text::{split_line, templatize};
-pub use crate::timing::{cycle_anim, single_anim, spike, TimestepLoop};
+pub use crate::timing::{cycle_anim, single_anim, spike};
