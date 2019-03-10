@@ -11,7 +11,7 @@ name = "world"
 calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
 euclid = "0.19"
-image = "0.20"
+image = "0.21"
 lazy_static = "1.0"
 log = "0.4"
 rand = { version = "0.6", features = ["serde1"] }

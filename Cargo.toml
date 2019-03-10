@@ -27,4 +27,4 @@ vitral = { path = "vitral" }
 world = { path = "world" }
 
 [dev-dependencies]
-image = "0.20"
+image = "0.21"

@@ -12,7 +12,7 @@ calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
 euclid = "0.19"
 glium = "0.23"
-image = "0.20"
+image = "0.21"
 time = "0.1"
 vec_map = "0.8"
 vitral = { path = "../vitral" }
