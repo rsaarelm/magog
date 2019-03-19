@@ -1,4 +1,5 @@
-use serde::{self, Deserialize, Serialize};
+use serde;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::mem;
 use std::ops::Deref;
@@ -46,7 +47,11 @@ impl<T: FailingIncremental<E>, E> Incremental<E> for Result<T, T::Error> {
 ///     fn update(self, e: &u32) -> State { State(self.0 + *e) }
 /// }
 ///
-/// let mut handle: IncrementalState<State, u32> = Default::default();
+/// impl From<u32> for State {
+///     fn from(x: u32) -> Self { State(x) }
+/// }
+///
+/// let mut handle: IncrementalState<State, u32, u32> = Default::default();
 /// assert_eq!(handle.0, 0);
 ///
 /// for x in &[1, 2, 3, 4] { handle.push(*x); }
@@ -54,41 +59,56 @@ impl<T: FailingIncremental<E>, E> Incremental<E> for Result<T, T::Error> {
 /// handle.pop();
 /// assert_eq!(handle.0, 6);
 /// ```
-pub struct IncrementalState<T: Incremental<E> + Default, E> {
-    log: Vec<E>,
+pub struct IncrementalState<T: Incremental<E>, U: Into<T> + Clone, E> {
     state: T,
+    history: History<U, E>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct History<U, E> {
+    seed: U,
+    log: Vec<E>,
 }
 
 // Implemented manually instead of derived so that T::Event doesn't need to implement Default.
-impl<T: Incremental<E> + Default, E> Default for IncrementalState<T, E> {
-    fn default() -> Self {
+impl<T: Incremental<E>, U: Into<T> + Clone + Default, E> Default for IncrementalState<T, U, E> {
+    fn default() -> Self { IncrementalState::new(U::default()) }
+}
+
+impl<T: Incremental<E>, U: Into<T> + Clone, E> IncrementalState<T, U, E> {
+    pub fn new(seed: U) -> Self {
         IncrementalState {
-            log: Vec::new(),
-            state: Default::default(),
+            state: seed.clone().into(),
+            history: History {
+                seed,
+                log: Vec::new(),
+            },
         }
     }
 }
 
-impl<T: Incremental<E> + Default, E> IncrementalState<T, E> {
+impl<T: Incremental<E>, U: Into<T> + Clone, E> IncrementalState<T, U, E> {
     pub fn push(&mut self, e: E) {
         // XXX: Need to get state away from borrow checker for updating, is there a better way than
         // ugly unsafe tricks?
         let state = mem::replace(&mut self.state, unsafe { mem::uninitialized() }).update(&e);
         self.state = state;
-        self.log.push(e);
+        self.history.log.push(e);
     }
+}
 
+impl<T: Incremental<E>, U: Into<T> + Clone, E> IncrementalState<T, U, E> {
     pub fn pop(&mut self) -> Option<E> {
         // TODO: Way to pop several items without O(n) delay for each.
-        let ret = self.log.pop();
+        let ret = self.history.log.pop();
         self.replay();
         ret
     }
 
     fn replay(&mut self) {
-        let mut state: T = Default::default();
+        let mut state: T = self.history.seed.clone().into();
 
-        for e in &self.log {
+        for e in &self.history.log {
             state = state.update(e);
         }
 
@@ -96,26 +116,33 @@ impl<T: Incremental<E> + Default, E> IncrementalState<T, E> {
     }
 }
 
-impl<T: Incremental<E> + Default, E> Deref for IncrementalState<T, E> {
+impl<T: Incremental<E>, U: Into<T> + Clone, E> Deref for IncrementalState<T, U, E> {
     type Target = T;
 
     fn deref(&self) -> &T { &self.state }
 }
 
-impl<T: Incremental<E> + Default, E: Serialize> Serialize for IncrementalState<T, E> {
+impl<T, U, E> serde::Serialize for IncrementalState<T, U, E>
+where
+    T: Incremental<E>,
+    U: Into<T> + Clone + serde::Serialize,
+    E: serde::Serialize,
+{
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        self.log.serialize(s)
+        self.history.serialize(s)
     }
 }
 
-impl<'a, T: Incremental<E> + Default, E: Deserialize<'a>> Deserialize<'a>
-    for IncrementalState<T, E>
+impl<'a, T, U, E> serde::Deserialize<'a> for IncrementalState<T, U, E>
+where
+    T: Incremental<E>,
+    U: Into<T> + Clone + serde::Deserialize<'a>,
+    E: serde::Deserialize<'a>,
 {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
-        let mut ret: Self = IncrementalState {
-            log: Vec::deserialize(d)?,
-            state: Default::default(),
-        };
+        let history: History<U, E> = History::deserialize(d)?;
+        let state = history.seed.clone().into();
+        let mut ret: Self = IncrementalState { state, history };
         ret.replay();
         Ok(ret)
     }
