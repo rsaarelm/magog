@@ -26,7 +26,7 @@ pub use crate::colors::{
 pub use crate::fov::{Fov, FovValue, PolarPoint};
 pub use crate::hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use crate::hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
-pub use crate::incremental::{Incremental, IncrementalState};
+pub use crate::incremental::{History, Incremental, IncrementalState};
 pub use crate::legend_builder::LegendBuilder;
 pub use crate::prefab::{
     DenseTextMap, FromPrefab, IntoPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace,
