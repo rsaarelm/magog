@@ -1,6 +1,5 @@
 use serde;
 use serde_derive::{Deserialize, Serialize};
-use std::fmt::Debug;
 use std::mem;
 use std::ops::Deref;
 
@@ -8,27 +7,6 @@ use std::ops::Deref;
 pub trait Incremental<E>: Sized {
     /// Try to update the object with an event.
     fn update(self, e: &E) -> Self;
-}
-
-/// An incremental object that can fail when updated.
-///
-/// Use the `Incremental` implementation on a `Result` type with `FailingIncremental` value to use
-/// this.
-pub trait FailingIncremental<E>: Sized {
-    /// Error in case an event couldn't be handled.
-    type Error: Debug;
-
-    /// Try to update the object with an event.
-    fn update(self, e: &E) -> Result<Self, Self::Error>;
-}
-
-impl<T: FailingIncremental<E>, E> Incremental<E> for Result<T, T::Error> {
-    fn update(self, e: &E) -> Self {
-        match self {
-            Ok(state) => state.update(e),
-            err => err,
-        }
-    }
 }
 
 /// Handle that stores an `Incremental` object and the event sequence used to build it.
