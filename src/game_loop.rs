@@ -1,13 +1,14 @@
-use calx::{color, command_parser, Dir6, Rgba};
+use calx::{color, command_parser, Dir6, History, Incremental, IncrementalState, Rgba};
 use display::{self, Backend};
 use euclid::{Point2D, Rect};
 use glium::glutin::ElementState;
+use ron;
 use scancode::Scancode;
 use std::fs::File;
 use std::io::prelude::*;
 use std::rc::Rc;
 use vitral::{Align, Canvas, FontData, RectUtil};
-use world::{Command, CommandResult, Event, ItemType, Location, Mutate, Query, Slot, World};
+use world::{ActionOutcome, Command, Event, ItemType, Location, Mutate, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
@@ -33,10 +34,11 @@ enum AimAction {
 pub struct GameLoop {
     core: Canvas,
     font: Rc<FontData>,
-    pub world: World,
+    pub world: IncrementalState<World>,
     pub console: display::Console,
     camera_loc: Location,
     state: State,
+    command: Option<Command>,
 }
 
 enum Side {
@@ -45,7 +47,7 @@ enum Side {
 }
 
 impl GameLoop {
-    pub fn new(backend: &mut Backend, world: World) -> GameLoop {
+    pub fn new(backend: &mut Backend, world: IncrementalState<World>) -> GameLoop {
         let font = display::font();
         GameLoop {
             core: backend.new_core(),
@@ -54,32 +56,34 @@ impl GameLoop {
             console: display::Console::new(font),
             camera_loc: Location::new(0, 0, 0),
             state: State::Main,
+            command: None,
         }
     }
 
     /// Step command that turns into melee attack if an enemy is in the way.
-    fn smart_step(&mut self, dir: Dir6) -> CommandResult {
-        let player = self.world.player().ok_or(())?;
-        let loc = self.world.location(player).ok_or(())?;
-        let destination = loc.jump(&self.world, dir);
+    fn smart_step(&mut self, dir: Dir6) -> ActionOutcome {
+        let player = self.world.player()?;
+        let loc = self.world.location(player)?;
+        let destination = loc.jump(&*self.world, dir);
 
         if let Some(mob) = self.world.mob_at(destination) {
             if self.world.is_hostile_to(player, mob) {
                 // Fight on!
-                self.world.melee(dir)
+                self.command = Some(Command::Melee(dir));
             } else {
                 // Do we want to do something smarter than walk into friendlies?
                 // The world might treat this as a displace action so keep it like this for now.
-                self.world.step(dir)
+                self.command = Some(Command::Step(dir));
             }
         } else {
-            self.world.step(dir)
+            self.command = Some(Command::Step(dir));
         }
+        Some(())
     }
 
-    fn side_step(&mut self, side: Side) -> CommandResult {
-        let player = self.world.player().ok_or(())?;
-        let loc = self.world.location(player).ok_or(())?;
+    fn side_step(&mut self, side: Side) -> ActionOutcome {
+        let player = self.world.player()?;
+        let loc = self.world.location(player)?;
         let flip = (loc.x + loc.y) % 2 == 0;
 
         let actual_dir = match side {
@@ -99,65 +103,85 @@ impl GameLoop {
             }
         };
 
-        self.smart_step(actual_dir)
+        self.smart_step(actual_dir);
+        Some(())
     }
 
-    fn game_input(&mut self, backend: &mut Backend, scancode: Scancode) -> CommandResult {
+    fn game_input(&mut self, backend: &mut Backend, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
                 self.enter_state(State::Console);
-                Ok(Vec::new())
             }
-            Q | Pad7 | Home => self.smart_step(Dir6::Northwest),
-            W | Up | Pad8 => self.smart_step(Dir6::North),
-            E | Pad9 | PageUp => self.smart_step(Dir6::Northeast),
-            A | Pad1 | End => self.smart_step(Dir6::Southwest),
-            S | Down | Pad2 => self.smart_step(Dir6::South),
-            D | Pad3 | PageDown => self.smart_step(Dir6::Southeast),
-            Left | Pad4 => self.side_step(Side::West),
-            Right | Pad6 => self.side_step(Side::East),
+            Q | Pad7 | Home => {
+                self.smart_step(Dir6::Northwest);
+            }
+            W | Up | Pad8 => {
+                self.smart_step(Dir6::North);
+            }
+            E | Pad9 | PageUp => {
+                self.smart_step(Dir6::Northeast);
+            }
+            A | Pad1 | End => {
+                self.smart_step(Dir6::Southwest);
+            }
+            S | Down | Pad2 => {
+                self.smart_step(Dir6::South);
+            }
+            D | Pad3 | PageDown => {
+                self.smart_step(Dir6::Southeast);
+            }
+            Left | Pad4 => {
+                self.side_step(Side::West);
+            }
+            Right | Pad6 => {
+                self.side_step(Side::East);
+            }
             I => {
                 self.enter_state(State::Inventory(InventoryAction::Equip));
-                Ok(Vec::new())
             }
             // XXX: Key mnemonics, bit awkward when D is taken by movement.
             B => {
                 self.enter_state(State::Inventory(InventoryAction::Drop));
-                Ok(Vec::new())
             }
             U => {
                 self.enter_state(State::Inventory(InventoryAction::Use));
-                Ok(Vec::new())
             }
-            G => self.world.take(),
-            Space | Pad5 => self.world.pass(),
+            G => {
+                self.command = Some(Command::Take);
+            }
+            Space | Pad5 => {
+                self.command = Some(Command::Pass);
+            }
             F5 => {
-                self.world
-                    .save(&mut File::create("save.gam").unwrap())
-                    .unwrap();
-                Ok(Vec::new())
+                let mut file = File::create("save.gam").unwrap();
+                let save_data =
+                    ron::ser::to_string_pretty(self.world.history(), Default::default()).unwrap();
+                writeln!(file, "{}", save_data);
             }
             F9 => {
-                let mut savefile = File::open("save.gam").unwrap();
-                self.world = World::load(&mut savefile).unwrap();
-                Ok(Vec::new())
+                // TODO: Handle missing file
+                let mut file = File::open("save.gam").unwrap();
+                let data: ron::de::Result<
+                    History<<World as Incremental>::Seed, <World as Incremental>::Event>,
+                > = ron::de::from_reader(file);
+                if let Ok(data) = data {
+                    self.world = data.into();
+                }
             }
             F12 => {
                 backend.save_screenshot("magog").unwrap();
-                Ok(Vec::new())
             }
-            _ => Ok(Vec::new()),
+            _ => {}
         }
     }
 
-    fn zap(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
-        let ret = self.world.zap_item(slot, dir)?;
+    fn zap(&mut self, slot: Slot, dir: Dir6) {
+        self.command = Some(Command::Zap(slot, dir));
         self.enter_state(State::Main);
-        Ok(ret)
     }
 
-    fn aim_input(&mut self, slot: Slot, scancode: Scancode) -> CommandResult {
+    fn aim_input(&mut self, slot: Slot, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Q => self.zap(slot, Dir6::Northwest),
@@ -168,21 +192,18 @@ impl GameLoop {
             D => self.zap(slot, Dir6::Southeast),
             Escape => {
                 self.enter_state(State::Main);
-                Ok(Vec::new())
             }
-            _ => Ok(Vec::new()),
+            _ => {}
         }
     }
 
-    fn inventory_input(&mut self, scancode: Scancode) -> CommandResult {
+    fn inventory_input(&mut self, scancode: Scancode) {
         use scancode::Scancode::*;
         for slot in SLOT_DATA.iter() {
             if scancode == slot.code {
                 if let State::Inventory(action) = self.state {
-                    let ret = self.inventory_action(slot.slot, action);
-                    if ret.is_ok() {
-                        return ret;
-                    }
+                    self.inventory_action(slot.slot, action);
+                    return;
                 }
             }
         }
@@ -190,9 +211,8 @@ impl GameLoop {
         match scancode {
             Escape => {
                 self.enter_state(State::Main);
-                Ok(Vec::new())
             }
-            _ => Ok(Vec::new()),
+            _ => {}
         }
     }
 
@@ -208,47 +228,47 @@ impl GameLoop {
         self.state = new_state;
     }
 
-    fn inventory_action(&mut self, slot: Slot, action: InventoryAction) -> CommandResult {
+    fn inventory_action(&mut self, slot: Slot, action: InventoryAction) -> ActionOutcome {
+        // TODO: Add checks if the command is possible when the world supports it.
         match action {
             InventoryAction::Drop => {
-                let ret = self.world.drop(slot);
-                // After succesful drop, go back to main state.
-                if ret.is_ok() {
-                    self.enter_state(State::Main);
-                }
-                ret
+                self.command = Some(Command::Drop(slot));
+                self.enter_state(State::Main);
+                return Some(());
             }
             // Can equip multiple items in one go, wait for ESC to return to main state.
-            InventoryAction::Equip => self.world.equip(slot),
+            InventoryAction::Equip => {
+                self.command = Some(Command::Equip(slot));
+                return Some(());
+            }
             InventoryAction::Use => {
-                let player = self.world.player().ok_or(())?;
+                let player = self.world.player()?;
 
                 if let Some(item) = self.world.entity_equipped(player, slot) {
                     match self.world.item_type(item) {
                         Some(ItemType::UntargetedUsable(_)) => {
-                            let ret = self.world.use_item(slot)?;
+                            self.command = Some(Command::UseItem(slot));
                             self.enter_state(State::Main);
-                            return Ok(ret);
+                            return Some(());
                         }
                         Some(ItemType::TargetedUsable(_)) => {
                             // If we need to aim, switch to aim state before calling world.
                             self.enter_state(State::Aim(AimAction::Zap(slot)));
-                            return Ok(Vec::new());
+                            return Some(());
                         }
                         _ => {}
                     }
                 }
-                Err(())
+                None
             }
         }
     }
 
-    fn console_input(&mut self, scancode: Scancode) -> CommandResult {
+    fn console_input(&mut self, scancode: Scancode) {
         use scancode::Scancode::*;
         match scancode {
             Tab => {
                 self.enter_state(State::Main);
-                Ok(Vec::new())
             }
             Enter | PadEnter => {
                 let input = self.console.get_input();
@@ -256,9 +276,8 @@ impl GameLoop {
                 if let Err(e) = self.parse(&input) {
                     let _ = writeln!(&mut self.console, "{}", e);
                 }
-                Ok(Vec::new())
             }
-            _ => Ok(Vec::new()),
+            _ => {}
         }
     }
 
@@ -270,8 +289,8 @@ impl GameLoop {
         fn todo(&mut self);
     }
 
-    fn draw_inventory(&mut self) -> Result<(), ()> {
-        let player = self.world.player().ok_or(())?;
+    fn draw_inventory(&mut self) -> ActionOutcome {
+        let player = self.world.player()?;
 
         // Start with hardcoded invetory data to test the UI logic.
         let bounds = self.core.bounds();
@@ -313,7 +332,7 @@ impl GameLoop {
             );
         }
 
-        Ok(())
+        Some(())
     }
 
     pub fn status_draw(&mut self, area: &Rect<i32>) {
@@ -373,23 +392,26 @@ impl GameLoop {
                 if let Some(scancode) =
                     Scancode::new((event.scancode as i32 + scancode_adjust) as u8)
                 {
-                    let ret = match self.state {
+                    match self.state {
                         State::Inventory(_) => self.inventory_input(scancode),
                         State::Console => self.console_input(scancode),
                         State::Aim(AimAction::Zap(slot)) => self.aim_input(slot, scancode),
                         _ => self.game_input(backend, scancode),
                     };
 
-                    if let Ok(events) = ret {
+                    if let Some(ref cmd) = self.command {
                         // Input event caused a successful world step and we got an event sequence out.
                         // Convert events into UI display effects.
-                        for e in events {
+                        self.world.update(*cmd);
+                        self.command = None;
+
+                        for e in self.world.events() {
                             match e {
                                 Event::Msg(text) => {
                                     let _ = writeln!(&mut self.console, "{}", text);
                                 }
                                 Event::Damage { entity, amount } => {
-                                    let name = self.world.entity_name(entity);
+                                    let name = self.world.entity_name(*entity);
                                     // TODO: Use graphical effect
                                     let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
                                 }
@@ -412,7 +434,7 @@ impl GameLoop {
                     break;
                 }
                 // TODO FIXME process events in return value.
-                let _ = self.world.next_tick();
+                self.world.update(Command::Pass);
             }
         }
 

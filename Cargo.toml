@@ -19,6 +19,7 @@ euclid = "0.19"
 glium = "0.23"
 log = "0.4"
 rand = { version = "0.6", features = ["serde1"] }
+ron = "0.4"
 scancode = "0.1"
 serde = "1.0"
 structopt = "0.2"

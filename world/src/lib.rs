@@ -97,7 +97,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
 mod biome;
 
 mod command;
-pub use crate::command::{Command, CommandResult};
+pub use crate::command::{ActionOutcome, Command};
 
 mod components;
 pub use crate::components::Icon;

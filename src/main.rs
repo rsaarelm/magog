@@ -2,7 +2,7 @@
 #![windows_subsystem = "windows"]
 
 use crate::game_loop::GameLoop;
-use calx::TimestepLoop;
+use calx::{TimestepLoop, IncrementalState};
 use display;
 use display::Backend;
 use env_logger;
@@ -33,7 +33,7 @@ pub fn main() {
     let seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
     info!("World seed: {}", seed);
-    let world = World::new(seed);
+    let world: IncrementalState<World> = IncrementalState::new(seed);
 
     let mut timestep = TimestepLoop::new(1.0 / FPS);
     let mut backend = Backend::start(640, 360, "Magog").expect("Failed to start rendering backend");

@@ -1,4 +1,3 @@
-use crate::command::{Command, CommandResult};
 use crate::components;
 use crate::event::Event;
 use crate::flags::Flags;
@@ -53,7 +52,7 @@ pub struct World {
     /// Persistent random number generator.
     rng: Rng,
     /// Event queue
-    events: Vec<Event>,
+    pub(crate) events: Vec<Event>,
 }
 
 impl<'a> World {
@@ -104,6 +103,10 @@ impl<'a> World {
         writeln!(writer, "{}", enc)?;
         Ok(())
     }
+
+    pub fn events(&self) -> &Vec<Event> { &self.events }
+
+    pub(crate) fn clear_events(&mut self) { self.events.clear() }
 }
 
 impl TerrainQuery for World {
@@ -173,7 +176,7 @@ impl Query for World {
 }
 
 impl Mutate for World {
-    fn next_tick(&mut self) -> CommandResult {
+    fn next_tick(&mut self) {
         use std::mem;
 
         self.tick_anims();
@@ -182,11 +185,6 @@ impl Mutate for World {
 
         self.clean_dead();
         self.flags.tick += 1;
-
-        // Dump events.
-        let mut events = Vec::new();
-        mem::swap(&mut self.events, &mut events);
-        Ok(events)
     }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
@@ -252,8 +250,6 @@ impl Mutate for World {
 
     fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 }
-
-impl Command for World {}
 
 impl Terraform for World {
     fn set_terrain(&mut self, _loc: Location, _terrain: Terrain) {

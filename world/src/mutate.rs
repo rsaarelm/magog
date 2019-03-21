@@ -1,4 +1,4 @@
-use crate::command::CommandResult;
+use crate::command::ActionOutcome;
 use crate::components::{Brain, BrainState, MapMemory, Status};
 use crate::effect::{Damage, Effect};
 use crate::event::Event;
@@ -19,9 +19,7 @@ use rand::{seq, Rng};
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
     /// Advance world state after player input has been received.
-    ///
-    /// Returns CommandResult so can used to end result-returning methods.
-    fn next_tick(&mut self) -> CommandResult;
+    fn next_tick(&mut self);
 
     /// Advance animations without ticking the world logic.
     ///
@@ -199,30 +197,30 @@ pub trait Mutate: Query + Terraform + Sized {
     ////////////////////////////////////////////////////////////////////////////////
     // High-level commands, actual action can change because of eg. confusion.
 
-    fn entity_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+    fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
-            Ok(())
+            Some(())
         } else {
             self.really_step(e, dir)
         }
     }
 
-    fn entity_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
+    fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
-            Ok(())
+            Some(())
         } else {
             self.really_melee(e, dir)
         }
     }
 
-    fn entity_take(&mut self, e: Entity, item: Entity) -> Result<(), ()> {
+    fn entity_take(&mut self, e: Entity, item: Entity) -> ActionOutcome {
         // Only mobs can take items.
         if !self.is_mob(e) {
-            return Err(());
+            return None;
         }
 
         if !self.is_item(item) {
-            return Err(());
+            return None;
         }
 
         // Somehow trying to pick up something we're inside of. Pls don't break the universe.
@@ -240,10 +238,10 @@ pub trait Mutate: Query + Terraform + Sized {
             }
 
             self.end_turn(e);
-            Ok(())
+            Some(())
         } else {
             // No more inventory space
-            Err(())
+            None
         }
     }
 
@@ -253,8 +251,8 @@ pub trait Mutate: Query + Terraform + Sized {
         origin: Location,
         effect: Entity,
         caster: Option<Entity>,
-    ) -> Result<(), ()> {
-        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type
+    ) -> ActionOutcome {
+        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect)?.item_type
         {
             match effect {
                 MagicEffect::Lightning => {
@@ -289,9 +287,9 @@ pub trait Mutate: Query + Terraform + Sized {
                 }
             }
             caster.map(|e| self.end_turn(e));
-            Ok(())
+            Some(())
         } else {
-            Err(())
+            None
         }
     }
 
@@ -302,8 +300,8 @@ pub trait Mutate: Query + Terraform + Sized {
         dir: Dir6,
         effect: Entity,
         caster: Option<Entity>,
-    ) -> Result<(), ()> {
-        if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect).ok_or(())?.item_type {
+    ) -> ActionOutcome {
+        if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect)?.item_type {
             match effect {
                 MagicEffect::Fireball => {
                     const FIREBALL_RANGE: u32 = 9;
@@ -327,14 +325,14 @@ pub trait Mutate: Query + Terraform + Sized {
                 }
             }
             caster.map(|e| self.end_turn(e));
-            Ok(())
+            Some(())
         } else {
-            Err(())
+            None
         }
     }
 
     /// The entity spends its action waiting.
-    fn idle(&mut self, e: Entity) {
+    fn idle(&mut self, e: Entity) -> ActionOutcome {
         if self.consume_nutrition(e) {
             if let Some(regen) = self.tick_regeneration(e) {
                 self.push_event(Event::Damage {
@@ -344,12 +342,13 @@ pub trait Mutate: Query + Terraform + Sized {
             }
         }
         self.end_turn(e);
+        Some(())
     }
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    fn really_step(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
-        let origin = self.location(e).ok_or(())?;
+    fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+        let origin = self.location(e)?;
         let loc = origin.jump(self, dir);
         if self.can_enter(e, loc) {
             self.place_entity(e, loc);
@@ -362,38 +361,36 @@ pub trait Mutate: Query + Terraform + Sized {
                 anim.tween_max = delay;
             }
             self.end_turn(e);
-            return Ok(());
+            return Some(());
         }
 
-        Err(())
+        None
     }
 
-    fn really_melee(&mut self, e: Entity, dir: Dir6) -> Result<(), ()> {
-        if let Some(loc) = self.location(e) {
-            if let Some(target) = self.mob_at(loc.jump(self, dir)) {
-                // XXX: Using power stat for damage, should this be different?
-                // Do +5 since dmg 1 is really, really useless.
-                let advantage = self.stats(e).attack - self.stats(target).defense
-                    + 2 * self.stats(target).armor;
-                let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
+    fn really_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+        let loc = self.location(e)?;
+        let target = self.mob_at(loc.jump(self, dir))?;
 
-                if damage == 0 {
-                    msg!(self, "[One] miss[es] [another].")
-                        .subject(e)
-                        .object(target)
-                        .send();
-                } else {
-                    msg!(self, "[One] hit[s] [another] for {}.", damage)
-                        .subject(e)
-                        .object(target)
-                        .send();
-                }
-                self.damage(target, damage, Damage::Physical, Some(e));
-                self.end_turn(e);
-                return Ok(());
-            }
+        // XXX: Using power stat for damage, should this be different?
+        // Do +5 since dmg 1 is really, really useless.
+        let advantage = self.stats(e).attack - self.stats(target).defense
+            + 2 * self.stats(target).armor;
+        let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
+
+        if damage == 0 {
+            msg!(self, "[One] miss[es] [another].")
+                .subject(e)
+                .object(target)
+                .send();
+        } else {
+            msg!(self, "[One] hit[s] [another] for {}.", damage)
+                .subject(e)
+                .object(target)
+                .send();
         }
-        Err(())
+        self.damage(target, damage, Damage::Physical, Some(e));
+        self.end_turn(e);
+        Some(())
     }
 
     /// Randomly make a confused mob move erratically.
@@ -473,14 +470,11 @@ pub trait Mutate: Query + Terraform + Sized {
         let max_hp = self.max_hp(e);
         let increase = (max_hp / 30).max(1);
 
-        if let Some(health) = self.ecs_mut().health.get_mut(e) {
-            if health.wounds > 0 {
-                let increase = increase.min(health.wounds);
-                health.wounds -= increase;
-                Some(increase)
-            } else {
-                None
-            }
+        let health = self.ecs_mut().health.get_mut(e)?;
+        if health.wounds > 0 {
+            let increase = increase.min(health.wounds);
+            health.wounds -= increase;
+            Some(increase)
         } else {
             None
         }

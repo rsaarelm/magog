@@ -1,113 +1,118 @@
-use crate::event::Event;
 use crate::item::Slot;
 use crate::mutate::Mutate;
+use crate::query::Query;
+use crate::world::World;
 use calx::Dir6;
+use calx::Incremental;
+use serde_derive::{Deserialize, Serialize};
 
-pub type CommandResult = Result<Vec<Event>, ()>;
+/// Return type for actions that might fail.
+///
+/// Used for early exit with ?-operator in the action functions.
+pub type ActionOutcome = Option<()>;
 
-/// Player actions.
-pub trait Command: Mutate + Sized {
-    /// The player tries to step in a direction.
+/// Player command events that the world is updated with.
+#[derive(Copy, Clone, Serialize, Deserialize)]
+pub enum Command {
+    /// Do nothing, skip your turn.
+    Pass,
+    /// Take a step in direction.
+    Step(Dir6),
+    /// Melee attack in direction.
+    Melee(Dir6),
+    /// Pick up the topmost item from the floor where you're standing on.
     ///
-    /// Will fail if there are any obstacles blocking the path.
+    /// TODO: Item selection support.
+    Take,
+    /// Drop an item from inventory slot.
+    Drop(Slot),
+    /// Equip or unequip an item in slot.
     ///
-    /// Will fail if the player is incapacitated.
-    fn step(&mut self, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        self.entity_step(player, dir)?;
-        self.next_tick()
-    }
+    /// Items in equipment slots are unequipped to inventory. Items in inventory slots are equipped
+    /// to the appropriate equipment slot.
+    Equip(Slot),
+    /// Use a nontargeted inventory item.
+    UseItem(Slot),
+    /// Use a directionally targeted inventory item.
+    Zap(Slot, Dir6),
+}
 
-    /// The player performs a melee attack in direction.
-    ///
-    /// Will fail if the player is incapacitated.
-    ///
-    /// Melee attacks against empty air are allowed.
-    fn melee(&mut self, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        self.entity_melee(player, dir)?;
-        self.next_tick()
-    }
+impl Incremental for World {
+    type Seed = u32;
+    type Event = Command;
 
-    /// Pass a turn without action from the player.
-    ///
-    /// Will usually succeed, but some games might not let the player pass turns.
-    fn pass(&mut self) -> CommandResult {
-        if let Some(player) = self.player() {
-            self.idle(player);
+    fn from_seed(s: &Self::Seed) -> Self { World::new(*s) }
+
+    fn update(&mut self, e: &Command) {
+        if self.player_can_act() {
+            self.clear_events();
+            self.process_cmd(e);
         }
-        self.next_tick()
-    }
 
-    /// Take item from floor
-    ///
-    /// No selection support yet for multiple items, you pick up the topmost one.
-    /// Try to maintain a convention where there's no more than one item in a single location.
-    fn take(&mut self) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let location = self.location(player).ok_or(())?;
-        if let Some(item) = self.item_at(location) {
-            self.entity_take(player, item)?;
-            self.next_tick()
-        } else {
-            Err(())
+        self.next_tick();
+    }
+}
+
+impl World {
+    fn process_cmd(&mut self, cmd: &Command) -> ActionOutcome {
+        use Command::*;
+        match cmd {
+            Pass => {
+                let player = self.player()?;
+                self.idle(player)
+            }
+            Step(dir) => {
+                let player = self.player()?;
+                self.entity_step(player, *dir)
+            }
+            Melee(dir) => {
+                let player = self.player()?;
+                self.entity_melee(player, *dir)
+            }
+            Take => {
+                let player = self.player()?;
+                let item = self.item_at(self.location(player)?)?;
+                self.entity_take(player, item)
+            }
+            Drop(slot) => {
+                let player = self.player()?;
+                self.place_entity(self.entity_equipped(player, *slot)?, self.location(player)?);
+                Some(())
+            }
+            Equip(slot) => {
+                let player = self.player()?;
+                let item = self.entity_equipped(player, *slot)?;
+                let swap_slot = if slot.is_equipment_slot() {
+                    // Remove equipped.
+                    // TODO: Items that can't be removed because of curses etc. trip here.
+                    self.free_bag_slot(player)?
+                } else {
+                    // Equip from bag.
+                    // TODO: Inability to equip item because stats limits etc. trips here.
+                    self.free_equip_slot(player, item)?
+                };
+
+                self.equip_item(item, player, swap_slot);
+                Some(())
+            }
+            UseItem(slot) => {
+                let player = self.player()?;
+                let item = self.entity_equipped(player, *slot)?;
+                let location = self.location(player)?;
+                if self.uses_left(item) > 0 {
+                    self.drain_charge(item);
+                    self.cast_spell(location, item, Some(player))
+                } else {
+                    msg!(self, "Nothing happens.").send();
+                    None
+                }
+            }
+            Zap(slot, dir) => {
+                let player = self.player()?;
+                let item = self.entity_equipped(player, *slot)?;
+                let location = self.location(player)?;
+                self.cast_directed_spell(location, *dir, item, Some(player))
+            }
         }
-    }
-
-    /// Drop item held in slot.
-    fn drop(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let location = self.location(player).ok_or(())?;
-        if let Some(item) = self.entity_equipped(player, slot) {
-            self.place_entity(item, location);
-            self.next_tick()
-        } else {
-            Err(())
-        }
-    }
-
-    /// Swap item between equipment and inventory slots
-    ///
-    /// Behavior depends on slot. Equipment slots go to inventory, inventory slots go to equip. The
-    /// item will be moved to the first available slot.
-    fn equip(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let item = self.entity_equipped(player, slot).ok_or(())?;
-
-        let swap_slot = if slot.is_equipment_slot() {
-            // Remove equipped.
-            // TODO: Items that can't be removed because of curses etc. trip here.
-            self.free_bag_slot(player).ok_or(())?
-        } else {
-            // Equip from bag.
-            // TODO: Inability to equip item because stats limits etc. trips here.
-            self.free_equip_slot(player, item).ok_or(())?
-        };
-
-        self.equip_item(item, player, swap_slot);
-        self.next_tick()
-    }
-
-    /// Use a nontargeted effect item.
-    fn use_item(&mut self, slot: Slot) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let location = self.location(player).ok_or(())?;
-        let item = self.entity_equipped(player, slot).ok_or(())?;
-        if self.uses_left(item) > 0 {
-            self.cast_spell(location, item, Some(player))?;
-            self.drain_charge(item);
-        } else {
-            msg!(self, "Nothing happens.").send();
-        }
-        self.next_tick()
-    }
-
-    /// Use a directionally targeted effect item.
-    fn zap_item(&mut self, slot: Slot, dir: Dir6) -> CommandResult {
-        let player = self.player().ok_or(())?;
-        let location = self.location(player).ok_or(())?;
-        let item = self.entity_equipped(player, slot).ok_or(())?;
-        self.cast_directed_spell(location, dir, item, Some(player))?;
-        self.next_tick()
     }
 }
