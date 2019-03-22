@@ -1,6 +1,5 @@
 use serde;
 use serde_derive::{Deserialize, Serialize};
-use std::mem;
 use std::ops::Deref;
 
 /// An object that can be incrementally updated with events.
@@ -12,15 +11,15 @@ pub trait Incremental: Sized {
     fn from_seed(s: &Self::Seed) -> Self;
 
     /// Try to update the object with an event.
-    fn update(self, e: &Self::Event) -> Self;
+    fn update(&mut self, e: &Self::Event);
 }
 
 /// Handle that stores an `Incremental` object and the event sequence used to build it.
 ///
 /// The full `IncrementalState` serializes itself normally with a full snapshot of the state, but
-/// you can make a possibly much smaller serialization by just saving the History and then creating
-/// a new state with `IncrmentalState::from(history)`. This will involve replaying the entire
-/// history so it might be much slower than just deserializing the snapshot.
+/// you can make a possibly much smaller serialization by just saving the `History` and then
+/// creating a new state with `IncrmentalState::from(history)`. This will involve replaying the
+/// entire history so it might be much slower than just deserializing the snapshot.
 ///
 /// # Examples
 ///
@@ -34,7 +33,7 @@ pub trait Incremental: Sized {
 ///     type Seed = u32;
 ///     type Event = u32;
 ///
-///     fn update(self, e: &Self::Event) -> State { State(self.0 + *e) }
+///     fn update(&mut self, e: &Self::Event) { self.0 += *e }
 ///     fn from_seed(s: &Self::Seed) -> Self { State(*s) }
 /// }
 ///
@@ -91,10 +90,7 @@ impl<T: Incremental> IncrementalState<T> {
     pub fn history(&self) -> &History<T::Seed, T::Event> { &self.history }
 
     pub fn update(&mut self, e: T::Event) {
-        // XXX: Need to get state away from borrow checker for updating, is there a better way than
-        // ugly unsafe tricks?
-        let state = mem::replace(&mut self.state, unsafe { mem::uninitialized() }).update(&e);
-        self.state = state;
+        self.state.update(&e);
         self.history.events.push(e);
     }
 
@@ -114,7 +110,7 @@ impl<T: Incremental> IncrementalState<T> {
         let mut state = T::from_seed(&self.history.seed);
 
         for e in &self.history.events {
-            state = state.update(e);
+            state.update(e);
         }
 
         self.state = state;
