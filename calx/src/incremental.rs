@@ -1,6 +1,6 @@
 use serde;
 use serde_derive::{Deserialize, Serialize};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 /// An object that can be incrementally updated with events.
 pub trait Incremental: Sized {
@@ -10,7 +10,7 @@ pub trait Incremental: Sized {
     /// Initialize the starting state from a seed value.
     fn from_seed(s: &Self::Seed) -> Self;
 
-    /// Try to update the object with an event.
+    /// Update the object with an event.
     fn update(&mut self, e: &Self::Event);
 }
 
@@ -18,7 +18,7 @@ pub trait Incremental: Sized {
 ///
 /// The full `IncrementalState` serializes itself normally with a full snapshot of the state, but
 /// you can make a possibly much smaller serialization by just saving the `History` and then
-/// creating a new state with `IncrmentalState::from(history)`. This will involve replaying the
+/// creating a new state with `IncrementalState::from(history)`. This will involve replaying the
 /// entire history so it might be much slower than just deserializing the snapshot.
 ///
 /// # Examples
@@ -130,4 +130,8 @@ impl<T: Incremental> Deref for IncrementalState<T> {
     type Target = T;
 
     fn deref(&self) -> &T { &self.state }
+}
+
+impl<T: Incremental> DerefMut for IncrementalState<T> {
+    fn deref_mut(&mut self) -> &mut T { &mut self.state }
 }
