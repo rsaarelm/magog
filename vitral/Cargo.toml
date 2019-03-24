@@ -12,13 +12,9 @@ edition = "2018"
 cfg-if = "0.1"
 euclid = "0.19"
 glium = "0.23"
+image = "0.21"
 lazy_static = "1.2"
 log = "0.4"
 time = "0.1"
 
-image = { version = "0.21", optional = true }
-
 calx = { path = "../calx" }
-
-[features]
-default = ["image"]

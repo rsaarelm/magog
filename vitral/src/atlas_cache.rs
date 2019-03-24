@@ -1,5 +1,6 @@
 use crate::tilesheet;
-use crate::{Atlas, CharData, FontData, ImageBuffer, ImageData};
+use crate::atlas::Atlas;
+use crate::{CharData, FontData, ImageBuffer, ImageData};
 use euclid::{rect, size2, vec2, Rect};
 use std::collections::HashMap;
 use std::fmt::Debug;

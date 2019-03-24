@@ -54,8 +54,6 @@ impl Atlas {
         }
     }
 
-    pub fn is_dirty(&self) -> bool { self.is_dirty }
-
     pub fn size(&self) -> Size2D<u32> { self.atlas.size }
 
     pub fn texture(&self) -> TextureIndex { self.texture }

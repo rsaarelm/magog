@@ -2,9 +2,10 @@
 
 #![deny(missing_docs)]
 
+use crate::atlas_cache::AtlasCache;
+use crate::canvas_zoom::CanvasZoom;
 use crate::{
-    AtlasCache, Canvas, CanvasZoom, ImageBuffer, InputEvent, Keycode, MouseButton, Scene,
-    SceneSwitch, TextureIndex, Vertex,
+    Canvas, ImageBuffer, InputEvent, Keycode, MouseButton, Scene, SceneSwitch, TextureIndex, Vertex,
 };
 use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
@@ -24,9 +25,6 @@ pub struct Backend {
     events: glutin::EventsLoop,
     program: glium::Program,
     textures: Vec<GliumTexture>,
-
-    keypress: Vec<KeyEvent>,
-
     render_buffer: RenderBuffer,
     zoom: CanvasZoom,
     window_size: Size2D<u32>,
@@ -52,9 +50,6 @@ impl Backend {
             events,
             program,
             textures: Vec::new(),
-
-            keypress: Vec::new(),
-
             render_buffer,
             zoom: CanvasZoom::PixelPerfect,
             window_size: Size2D::new(w, h),
@@ -215,8 +210,6 @@ impl Backend {
         scene_stack: &mut Vec<Box<dyn Scene<T>>>,
         ctx: &mut T,
     ) -> Result<Option<SceneSwitch<T>>, ()> {
-        self.keypress.clear();
-
         // polling and handling the events received by the window
         let mut event_list = Vec::new();
         self.events.poll_events(|event| event_list.push(event));
@@ -309,9 +302,6 @@ impl Backend {
         Ok(scene_switch)
     }
 
-    /// Return the next keypress event if there is one.
-    pub fn poll_key(&mut self) -> Option<KeyEvent> { self.keypress.pop() }
-
     fn render(&mut self, canvas: &mut Canvas) {
         let mut target = self.render_buffer.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
@@ -384,17 +374,6 @@ impl Backend {
 
     /// Return an image for the current contents of the screen.
     pub fn screenshot(&self) -> ImageBuffer { self.render_buffer.screenshot() }
-}
-
-/// Type for key events not handled by Vitral.
-#[derive(Debug)]
-pub struct KeyEvent {
-    /// Was the key pressed or released
-    pub state: glutin::ElementState,
-    /// Layout-dependent keycode
-    pub virtual_keycode: Option<glutin::VirtualKeyCode>,
-    /// Keyboard layout independent hardware scancode for the key
-    pub scancode: u8,
 }
 
 /// Shader for two parametrizable colors and discarding fully transparent pixels

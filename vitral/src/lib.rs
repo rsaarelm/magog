@@ -16,26 +16,16 @@ use std::iter;
 use std::mem;
 
 mod atlas;
-pub use crate::atlas::Atlas;
-
 mod atlas_cache;
-pub use crate::atlas_cache::{AtlasCache, SubImageSpec};
-
+pub use atlas_cache::SubImageSpec;
 mod backend;
-pub use crate::backend::{Backend, KeyEvent};
-
 mod canvas_zoom;
-pub use crate::canvas_zoom::CanvasZoom;
-
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
-
 mod keycode;
 pub use crate::keycode::Keycode;
-
 mod rect_util;
 pub use crate::rect_util::RectUtil;
-
 mod scene;
 pub use crate::scene::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
@@ -43,14 +33,12 @@ pub use crate::scene::{
 };
 
 mod tilesheet;
-pub use crate::tilesheet::tilesheet_bounds;
 
-pub type Color = [f32; 4];
+pub(crate) type Color = [f32; 4];
 
 /// Vitral representation for texture handle, consecutive positive integers.
-pub type TextureIndex = usize;
+pub(crate) type TextureIndex = usize;
 
-#[cfg(feature = "image")]
 /// Wrapper for the bytes of a PNG image file.
 ///
 /// This is mostly intended for image data that is included in binaries using `include_bytes!`. It
@@ -62,7 +50,6 @@ pub type TextureIndex = usize;
 /// `ImageBuffer`.
 pub struct PngBytes<'a>(pub &'a [u8]);
 
-#[cfg(feature = "image")]
 impl<'a> From<PngBytes<'a>> for ImageBuffer {
     fn from(data: PngBytes<'_>) -> Self {
         use std::io::Cursor;
@@ -771,7 +758,6 @@ impl ButtonAction {
     pub fn right_clicked(&self) -> bool { self == &ButtonAction::RightClicked }
 }
 
-#[cfg(feature = "image")]
 impl<I, P> From<I> for ImageBuffer
 where
     I: image::GenericImage<Pixel = P>,
@@ -793,7 +779,6 @@ where
     }
 }
 
-#[cfg(feature = "image")]
 impl From<ImageBuffer> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
     fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
         use image::Pixel;
@@ -805,7 +790,6 @@ impl From<ImageBuffer> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
     }
 }
 
-#[cfg(feature = "image")]
 impl From<ImageBuffer> for image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
     fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
         use image::Pixel;
@@ -819,7 +803,6 @@ impl From<ImageBuffer> for image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
 
 #[cfg(test)]
 mod test {
-    #[cfg(feature = "image")]
     #[test]
     fn image_roundtrip() {
         use super::ImageBuffer;
