@@ -2,13 +2,8 @@ mod brush;
 mod cache;
 pub use crate::cache::font;
 mod console;
-
-mod draw_util;
-pub use crate::draw_util::DrawUtil;
-
 mod init;
 pub use crate::init::load_graphics;
-
 mod render;
 mod sprite;
 mod view;

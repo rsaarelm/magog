@@ -1,5 +1,4 @@
 use crate::brush::Brush;
-use crate::draw_util::DrawUtil;
 use crate::render::Layer;
 use crate::view::ScreenVector;
 use calx::{color, lerp, Rgba};
