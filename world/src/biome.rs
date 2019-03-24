@@ -5,7 +5,7 @@ use crate::vaults;
 use crate::{Distribution, Rng};
 use calx::{self, die, RngExt, WeightedChoice};
 use log::debug;
-use rand::seq;
+use rand::seq::SliceRandom;
 use rand::Rng as _Rng;
 use std::error::Error;
 use std::str::FromStr;
@@ -25,7 +25,7 @@ struct Entrance(Arc<Map>);
 
 impl Distribution<Entrance> for Biome {
     fn sample(&self, rng: &mut Rng) -> Entrance {
-        Entrance(rng.pick_slice(&vaults::ENTRANCES).unwrap().clone())
+        Entrance(vaults::ENTRANCES.choose(rng).unwrap().clone())
     }
 }
 
@@ -35,14 +35,14 @@ impl Distribution<Room> for Biome {
     fn sample(&self, rng: &mut Rng) -> Room {
         if rng.one_chance_in(12) {
             // Make a vault sometimes.
-            Room(rng.pick_slice(&vaults::VAULTS).unwrap().clone())
+            Room(vaults::VAULTS.choose(rng).unwrap().clone())
         } else {
             // Make a procgen room normally.
             let mut map = Map::new_plain_room(rng);
             let floor_area = map.open_ground();
             let num_spawns = rng.gen_range(0, floor_area.len() / 8 + 1);
 
-            for pos in seq::sample_slice(rng, &floor_area, num_spawns) {
+            for &pos in floor_area.choose_multiple(rng, num_spawns) {
                 map.push_spawn(pos, self.sample(rng));
             }
 
@@ -54,9 +54,7 @@ impl Distribution<Room> for Biome {
 struct Exit(Arc<Map>);
 
 impl Distribution<Exit> for Biome {
-    fn sample(&self, rng: &mut Rng) -> Exit {
-        Exit(rng.pick_slice(&vaults::EXITS).unwrap().clone())
-    }
+    fn sample(&self, rng: &mut Rng) -> Exit { Exit(vaults::EXITS.choose(rng).unwrap().clone()) }
 }
 
 /// Biome-sampleable newtype for dungeon level maps.
@@ -87,7 +85,7 @@ impl Distribution<Dungeon> for Biome {
             }
 
             debug!("Placing exit");
-            let room = rng.pick_slice(&vaults::EXITS).unwrap();
+            let room = vaults::EXITS.choose(rng).unwrap();
             gen.place_room(rng, &*room)?;
 
             if let Some(map) = gen.join_disjoint_regions(rng) {

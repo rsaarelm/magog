@@ -6,8 +6,9 @@ use crate::map::{Map, MapCell};
 use crate::terrain::Terrain;
 use crate::world::Loadout;
 use crate::Distribution;
-use calx::{seeded_rng, RngExt};
+use calx::seeded_rng;
 use euclid::vec2;
+use rand::seq::SliceRandom;
 use serde;
 use std::collections::HashMap;
 use std::slice;
@@ -75,7 +76,7 @@ impl Worldgen {
                 let other_stairs = floors[i + 1].entrances();
 
                 for &stair in &map.exits() {
-                    let other = rng.pick_slice(&other_stairs).unwrap();
+                    let other = *other_stairs.choose(&mut rng).unwrap();
                     ret.make_stairs(origin + stair, other_origin + other);
                 }
             }

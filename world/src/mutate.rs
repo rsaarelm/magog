@@ -14,7 +14,8 @@ use crate::Distribution;
 use crate::{attack_damage, roll};
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
-use rand::{seq, Rng};
+use rand::seq::SliceRandom;
+use rand::Rng;
 
 /// World-mutating methods that are not exposed outside the crate.
 pub trait Mutate: Query + Terraform + Sized {
@@ -271,9 +272,7 @@ pub trait Mutate: Query + Terraform + Sized {
                         .filter(|&e| self.is_mob(e) && Some(e) != caster)
                         .collect();
 
-                    let mut target = seq::sample_iter(self.rng(), &targets, 1).unwrap();
-
-                    if let Some(target) = target.pop() {
+                    if let Some(target) = targets.choose(self.rng()) {
                         msg!(self, "There is a peal of thunder.").send();
                         let loc = self.location(*target).unwrap();
                         self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);

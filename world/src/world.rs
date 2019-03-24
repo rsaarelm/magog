@@ -177,8 +177,6 @@ impl Query for World {
 
 impl Mutate for World {
     fn next_tick(&mut self) {
-        use std::mem;
-
         self.tick_anims();
 
         self.ai_main();

@@ -99,7 +99,7 @@ impl fmt::Display for MapSave {
         // Custom RON prettyprint that prints prettier than ron::ser::pretty
         writeln!(f, "(\n    map: \"")?;
         for line in self.map.lines() {
-            writeln!(f, "{}", line.trim_right())?;
+            writeln!(f, "{}", line.trim_end())?;
         }
         writeln!(f, "\",\n")?;
         writeln!(f, "    legend: {{")?;

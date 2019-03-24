@@ -1,12 +1,12 @@
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
-use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, RngExt};
+use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab};
 use euclid::vec2;
 use log::Level::Trace;
 use log::{log_enabled, trace};
-use rand::{seq, Rng};
-use serde_derive::{Deserialize, Serialize};
+use rand::seq::SliceRandom;
+use rand::Rng;
 use std::collections::{hash_map, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -332,7 +332,7 @@ impl Map {
         if sites.is_empty() {
             die!("No room left");
         }
-        self.place_room_at(rng.pick_slice(&sites).unwrap(), room);
+        self.place_room_at(*sites.choose(rng).unwrap(), room);
         Ok(())
     }
 
@@ -445,8 +445,8 @@ impl Map {
             }
 
             // Connect first into second.
-            let p1 = *seq::sample_iter(rng, &regions[0], 1).unwrap()[0];
-            let p2 = *seq::sample_iter(rng, &regions[1], 1).unwrap()[0];
+            let p1 = *regions[0].choose(rng).unwrap();
+            let p2 = *regions[1].choose(rng).unwrap();
 
             if log_enabled!(Trace) {
                 trace!("Merging disjoint map:\n{}", ret);
