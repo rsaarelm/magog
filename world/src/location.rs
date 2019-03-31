@@ -7,8 +7,8 @@ use serde_derive::{Deserialize, Serialize};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
 
-pub const SECTOR_WIDTH: i32 = 40;
-pub const SECTOR_HEIGHT: i32 = 20;
+pub const SECTOR_WIDTH: i32 = 38;
+pub const SECTOR_HEIGHT: i32 = 18;
 
 /// Unambiguous location in the game world.
 #[derive(

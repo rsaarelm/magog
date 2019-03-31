@@ -3,7 +3,7 @@ use crate::event::Event;
 use crate::flags::Flags;
 use crate::fov::SightFov;
 use crate::item::Slot;
-use crate::location::{Location, Portal};
+use crate::location::{Location, Portal, SECTOR_WIDTH};
 use crate::mutate::Mutate;
 use crate::query::Query;
 use crate::spatial::{Place, Spatial};
@@ -211,7 +211,7 @@ impl Mutate for World {
 
         if let Some(origin) = self.location(e) {
             const DEFAULT_FOV_RANGE: u32 = 7;
-            const OVERLAND_FOV_RANGE: u32 = 40;
+            const OVERLAND_FOV_RANGE: u32 = SECTOR_WIDTH as u32;
 
             // Long-range sight while in overworld.
             let range = if origin.z == 0 {
