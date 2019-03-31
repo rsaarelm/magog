@@ -34,7 +34,7 @@ pub use crate::scene::{
 
 mod tilesheet;
 
-pub(crate) type Color = [f32; 4];
+pub type Color = [f32; 4];
 
 /// Vitral representation for texture handle, consecutive positive integers.
 pub(crate) type TextureIndex = usize;
