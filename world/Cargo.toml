@@ -20,3 +20,4 @@ ron = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
 vec_map = "0.8"
+vitral = { path = "../vitral" }

@@ -19,10 +19,7 @@ pub use crate::alg_misc::{
     bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban,
     GenericError, LerpPath, Noise, WeightedChoice,
 };
-pub use crate::colors::{
-    color, scolor, term_color, to_linear, to_srgb, BaseTermColor, PseudoTermColor, Rgba, SRgba,
-    TermColor, Xterm256Color, NAMED_COLORS,
-};
+pub use crate::colors::{term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color};
 pub use crate::fov::{Fov, FovValue, PolarPoint};
 pub use crate::hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use crate::hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};

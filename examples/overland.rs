@@ -1,4 +1,5 @@
-use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage, SRgba};
+use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage};
+use vitral::SRgba;
 use euclid::vec2;
 use image;
 use image::{GenericImage, GenericImageView, Pixel, SubImage};

@@ -1,6 +1,6 @@
-use calx::SRgba;
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
+use vitral::SRgba;
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

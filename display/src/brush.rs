@@ -1,10 +1,9 @@
 use crate::view::ScreenVector;
-use calx::color::*;
-use calx::Rgba;
 use euclid::{rect, vec2, Rect};
 use std::fmt;
 use std::sync::Arc;
-use vitral::{ImageData, ImageKey};
+use vitral::color::*;
+use vitral::{ImageData, ImageKey, Rgba};
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]
@@ -32,7 +31,8 @@ impl Splat {
             image: vitral::get_image(&ImageKey {
                 id: sheet,
                 bounds: geom.bounds,
-            }).unwrap(),
+            })
+            .unwrap(),
             offset: geom.offset,
             color: color,
             back_color: back_color,
