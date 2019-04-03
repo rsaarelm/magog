@@ -1,12 +1,11 @@
 //! Set up resource content for game.
 
 use crate::brush::{Brush, Builder, Geom};
-use calx::color::*;
-use calx::Rgba;
 use std::str::FromStr;
 use std::sync::Arc;
 use vec_map::VecMap;
-use vitral::{self, PngBytes};
+use vitral::color::*;
+use vitral::{self, PngBytes, Rgba};
 
 /// Load all game graphics in memory from image data.
 ///

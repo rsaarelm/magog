@@ -1,8 +1,8 @@
-use calx::{color, Dir6, IncrementalState, Rgba};
+use calx::{Dir6, IncrementalState};
 use display;
 use euclid::{Point2D, Rect};
 use std::io::prelude::*;
-use vitral::{self, Align, Canvas, InputEvent, Keycode, RectUtil, Scene, SceneSwitch};
+use vitral::{self, color, Align, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene, SceneSwitch};
 use world::{ActionOutcome, Command, Event, ItemType, Location, Mutate, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

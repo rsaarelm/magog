@@ -1,10 +1,10 @@
 use crate::brush::Brush;
 use crate::render::Layer;
 use crate::view::ScreenVector;
-use calx::{color, lerp, Rgba};
+use calx::lerp;
 use std::cmp::Ordering;
 use std::sync::Arc;
-use vitral::Canvas;
+use vitral::{color, Canvas, Rgba};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Coloring {

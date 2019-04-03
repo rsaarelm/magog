@@ -20,6 +20,8 @@ mod atlas_cache;
 pub use atlas_cache::SubImageSpec;
 mod backend;
 mod canvas_zoom;
+mod colors;
+pub use crate::colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 mod keycode;

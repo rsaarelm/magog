@@ -1,5 +1,4 @@
 use crate::alg_misc::bounding_rect;
-use crate::colors::{scolor, SRgba};
 use crate::space::{CellSpace, CellVector, Space, Transformation};
 use euclid::{point2, vec2, TypedPoint2D, TypedVector2D};
 use image::{self, Pixel};
@@ -9,6 +8,7 @@ use std::error::Error;
 use std::fmt;
 use std::i32;
 use std::iter::{FromIterator, IntoIterator};
+use vitral::{scolor, SRgba};
 
 /// Error from parsing data into a `Prefab` value.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
