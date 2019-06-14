@@ -1,6 +1,7 @@
 //! Game world generation
 
 use crate::biome::{Biome, Dungeon};
+use crate::seed::Seed;
 use crate::location::{Location, Portal, Sector};
 use crate::map::{Map, MapCell};
 use crate::terrain::Terrain;
@@ -15,7 +16,7 @@ use std::slice;
 
 /// Static generated world.
 pub struct Worldgen {
-    seed: u32,
+    seed: Seed,
     terrain: HashMap<Location, Terrain>,
     portals: HashMap<Location, Portal>,
     spawns: Vec<(Location, Loadout)>,
@@ -23,18 +24,20 @@ pub struct Worldgen {
 }
 
 impl Worldgen {
-    pub fn new(seed: u32) -> Worldgen {
+    pub fn new(seed: &Seed) -> Worldgen {
         let mut ret = Worldgen {
-            seed,
+            seed: seed.clone(),
             terrain: HashMap::new(),
             portals: HashMap::new(),
             spawns: Vec::new(),
             player_entry: Location::new(0, 0, 0),
         };
 
-        let mut rng: crate::Rng = seeded_rng(&seed);
+        let mut rng: crate::Rng = seeded_rng(&seed.rng_seed);
 
-        const NUM_FLOORS: i32 = 10;
+        // TODO: Specify dungeon size and biomes in Seed
+
+        const NUM_FLOORS: i32 = 1;
 
         let floors: Vec<Map> = (0..NUM_FLOORS)
             .map(|i| {

@@ -132,6 +132,7 @@ pub use crate::mutate::Mutate;
 mod query;
 pub use crate::query::Query;
 
+mod seed;
 mod spatial;
 mod spec;
 mod stats;

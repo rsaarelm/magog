@@ -1,3 +1,5 @@
+//! Operating system interface utilities.
+
 use image;
 use std::cell::RefCell;
 use std::collections::HashMap;

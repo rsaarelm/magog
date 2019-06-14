@@ -2,6 +2,7 @@ use crate::item::Slot;
 use crate::mutate::Mutate;
 use crate::query::Query;
 use crate::world::World;
+use crate::seed::Seed;
 use calx::Dir6;
 use calx::Incremental;
 use serde_derive::{Deserialize, Serialize};
@@ -40,10 +41,10 @@ pub enum Command {
 }
 
 impl Incremental for World {
-    type Seed = u32;
+    type Seed = Seed;
     type Event = Command;
 
-    fn from_seed(s: &Self::Seed) -> Self { World::new(*s) }
+    fn from_seed(s: &Self::Seed) -> Self { World::new(s) }
 
     fn update(&mut self, e: &Command) {
         if self.player_can_act() {

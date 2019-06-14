@@ -11,6 +11,7 @@ use crate::terraform::{Terraform, TerrainQuery};
 use crate::terrain::Terrain;
 use crate::volume::Volume;
 use crate::worldgen::Worldgen;
+use crate::seed::Seed;
 use crate::Rng;
 use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
@@ -56,14 +57,14 @@ pub struct World {
 }
 
 impl<'a> World {
-    pub fn new(seed: u32) -> World {
+    pub fn new(seed: &Seed) -> World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            worldgen: Worldgen::new(seed),
+            worldgen: Worldgen::new(&seed),
             spatial: Spatial::new(),
             flags: Flags::new(),
-            rng: seeded_rng(&seed),
+            rng: seeded_rng(&seed.rng_seed),
             events: Vec::new(),
         };
 
