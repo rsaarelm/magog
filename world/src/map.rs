@@ -3,11 +3,11 @@ use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
 use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab};
 use euclid::vec2;
+use indexmap::{IndexMap, IndexSet};
 use log::Level::Trace;
 use log::{log_enabled, trace};
 use rand::seq::SliceRandom;
 use rand::Rng;
-use std::collections::{hash_map, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 use std::ops::Index;
@@ -15,18 +15,15 @@ use std::str::FromStr;
 
 // NOTE ON STABLE ORDER
 //
-// HashSet has a nondeterministic iteration order, but it's very important that `Map` methods
-// introduce no randomness other than what comes in explicitly via the `Rng` parameter. All public
-// methods that operate on a HashSet and return some list or selection of values from it must
-// perform an extra step to sort the data in some deterministic order.
-//
-// The other approach would be to use a deterministic container like `BTreeMap`, but CellVectors do
-// not implement `Ord` so they can't be used as keys for it.
+// The `HashMap` and `HashSet` structures have a nondeterministic iteration order, but it's very
+// important that `Map` methods introduce no randomness other than what comes in explicitly via the
+// `Rng` parameter. Therefore `IndexMap` and `IndexSet` that provide a stable iteration order must
+// be used instead in the internal logic where iteration order matters for map construction logic.
 
 /// Representation of a game level during procedural map generation.
 #[derive(Clone, Debug)]
 pub struct Map {
-    contents: HashMap<CellVector, MapCell>,
+    contents: IndexMap<CellVector, MapCell>,
 }
 
 impl<'a> From<&'a Map> for mapsave::Prefab {
@@ -59,7 +56,7 @@ impl Map {
     /// Build an empty map.
     pub fn new() -> Map {
         Map {
-            contents: HashMap::new(),
+            contents: IndexMap::new(),
         }
     }
 
@@ -76,7 +73,7 @@ impl Map {
 
     /// Build a prefab vault map from ASCII map.
     pub fn new_vault(textmap: &str) -> Result<Self, Box<dyn Error>> {
-        let prefab: HashMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
+        let prefab: IndexMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
         let mut ret = Map::new();
 
         for (&pos, c) in &prefab {
@@ -190,12 +187,9 @@ impl Map {
     ///
     /// The result is guaranteed to be in stable order.
     pub fn find_positions(&self, p: impl Fn(CellVector, &MapCell) -> bool) -> Vec<CellVector> {
-        let mut ret: Vec<CellVector> = self
-            .iter()
+        self.iter()
             .filter_map(|(&pos, c)| if p(pos, c) { Some(pos) } else { None })
-            .collect();
-        ret.sort_by_key(|v| (v.x, v.y));
-        ret
+            .collect()
     }
 
     /// Return possible positions for placing a room on this map.
@@ -427,7 +421,7 @@ impl Map {
         let mut ret = self.clone();
         // Keep looping until all disjoint regions are joined.
         loop {
-            let floors: HashSet<CellVector> = ret
+            let floors: IndexSet<CellVector> = ret
                 .contents
                 .iter()
                 .filter_map(|(&p, c)| if c.is_walkable() { Some(p) } else { None })
@@ -494,15 +488,13 @@ impl Map {
         // good nodes in the open set.
         let mut seed = self.clone();
         seed.dig(p1);
-        let mut open = HashMap::new();
-        let mut closed = HashSet::new();
+        let mut open = IndexMap::new();
+        let mut closed = IndexSet::new();
         open.insert(p1, seed);
 
         while !open.is_empty() {
             let mut points: Vec<CellVector> = open.keys().cloned().collect();
-            // Sort them in regular order to remove instability from iterating HashMap.
-            points.sort_by_key(|v| (v.x, v.y));
-            // Now do the A* sort, pick the one that's closest to the target.
+            // A* sort, pick the one that's closest to the target.
             points.sort_by_key(|&v| (v - p2).hex_dist());
             let p = points[0];
 
@@ -558,7 +550,7 @@ impl fmt::Display for Map {
 
 impl<'a> IntoIterator for &'a Map {
     type Item = (&'a CellVector, &'a MapCell);
-    type IntoIter = hash_map::Iter<'a, CellVector, MapCell>;
+    type IntoIter = indexmap::map::Iter<'a, CellVector, MapCell>;
 
     fn into_iter(self) -> Self::IntoIter { self.contents.iter() }
 }
@@ -570,35 +562,28 @@ impl Index<CellVector> for Map {
 }
 
 /// Convert a point cloud into subsets of connected points.
-///
-/// Result is in stable order.
-fn separate_regions(mut points: HashSet<CellVector>) -> Vec<Vec<CellVector>> {
-    // Have to be extra nasty to get this whole thing kept in stable order, convert vecs to
-    // sortable tuples, sort, convert back.
-    let mut sets: Vec<Vec<(i32, i32)>> = Vec::new();
+fn separate_regions(mut points: IndexSet<CellVector>) -> Vec<Vec<CellVector>> {
+    let mut sets: Vec<Vec<CellVector>> = Vec::new();
 
     while !points.is_empty() {
         let seed = *points.iter().next().unwrap();
-        let subset = flood_fill(points.clone(), seed);
+        let subset = cut_floodfilled_region(&mut points, seed);
         debug_assert!(!subset.is_empty());
-        points = points.difference(&subset).cloned().collect();
-        let mut subset: Vec<(i32, i32)> = subset.into_iter().map(|p| (p.x, p.y)).collect();
-        subset.sort();
-        sets.push(subset);
+        sets.push(subset.into_iter().collect());
     }
 
-    sets.sort();
-
-    sets.into_iter()
-        .map(|a| a.into_iter().map(|(x, y)| vec2(x, y)).collect())
-        .collect()
+    sets
 }
 
-fn flood_fill(mut points: HashSet<CellVector>, seed: CellVector) -> HashSet<CellVector> {
-    let mut ret = HashSet::new();
-    let mut edge = HashSet::new();
+/// Return new set of points from input filled around seed, remove filled points from input.
+fn cut_floodfilled_region(
+    input: &mut IndexSet<CellVector>,
+    seed: CellVector,
+) -> IndexSet<CellVector> {
+    let mut ret = IndexSet::new();
+    let mut edge = IndexSet::new();
 
-    if !points.remove(&seed) {
+    if !input.remove(&seed) {
         return ret;
     }
     edge.insert(seed);
@@ -611,9 +596,9 @@ fn flood_fill(mut points: HashSet<CellVector>, seed: CellVector) -> HashSet<Cell
 
         for p in calx::hex_neighbors(pos) {
             let p = p.into();
-            if points.contains(&p) {
+            if input.contains(&p) {
                 debug_assert!(!ret.contains(&p) && !edge.contains(&p));
-                points.remove(&p);
+                input.remove(&p);
                 edge.insert(p);
             }
         }
