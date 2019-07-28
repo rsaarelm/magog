@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 
 [dependencies]
-euclid = "0.19"
+euclid = "0.20"
 image = "0.21"
 num = "0.2"
 rand = "0.7"

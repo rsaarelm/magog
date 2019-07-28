@@ -15,7 +15,7 @@ calx = { path = "calx" }
 calx-ecs = { path = "calx-ecs" }
 display = { path = "display" }
 env_logger = "0.6"
-euclid = "0.19"
+euclid = "0.20"
 glium = "0.23"
 log = "0.4"
 rand = { version = "0.7", features = ["serde1"] }

@@ -1,5 +1,9 @@
-use crate::ImageBuffer;
-use euclid::{point2, rect, vec2, Point2D, Rect, Size2D};
+use crate::{ImageBuffer, RectUtil};
+use euclid::{point2, rect, vec2};
+
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 /// Return the tiles on a tile sheet image.
 ///
@@ -20,7 +24,7 @@ pub fn tilesheet_bounds(image: &ImageBuffer) -> Vec<Rect<u32>> {
         for x in image_rect.min_x()..image_rect.max_x() {
             let pt = point2(x, y);
             // Skip areas that are already contained in known tiles.
-            if ret.iter().any(|&r| r.contains(&pt)) {
+            if ret.iter().any(|&r| r.contains(pt)) {
                 continue;
             }
 

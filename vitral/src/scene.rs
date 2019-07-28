@@ -3,9 +3,11 @@ use crate::backend::Backend;
 use crate::keycode::Keycode;
 use crate::{Builder, Canvas, FontData, ImageBuffer, ImageData, SubImageSpec};
 use crate::{Flick, FLICKS_PER_SECOND};
-use euclid::{size2, Size2D};
+use euclid::{size2};
 use std::error::Error;
 use std::sync::Mutex;
+
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 pub type ImageKey = SubImageSpec<String>;
 

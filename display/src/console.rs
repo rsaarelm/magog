@@ -1,12 +1,14 @@
 use calx::split_line;
-use euclid::{Point2D, Rect};
 use std::io;
 use std::io::prelude::*;
 use std::mem;
-use std::sync::Arc;
 use std::str;
+use std::sync::Arc;
 use time;
 use vitral::{Align, Canvas, FontData};
+
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
 
 struct Message {
     expire_time_s: f64,

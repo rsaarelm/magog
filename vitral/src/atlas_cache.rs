@@ -1,11 +1,13 @@
 use crate::tilesheet;
 use crate::atlas::Atlas;
 use crate::{CharData, FontData, ImageBuffer, ImageData};
-use euclid::{rect, size2, vec2, Rect};
+use euclid::{rect, size2, vec2};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::slice;
+
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]

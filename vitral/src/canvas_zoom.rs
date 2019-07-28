@@ -1,4 +1,6 @@
-use euclid::{Point2D, Rect, Size2D};
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 /// Configuration for displaying a deferred rendering canvas in a window.
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]

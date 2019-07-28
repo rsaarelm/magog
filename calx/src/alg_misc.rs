@@ -1,5 +1,5 @@
 use crate::seeded_rng;
-use euclid::{rect, TypedPoint2D, TypedRect};
+use euclid::{rect, Point2D, Rect};
 use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::Rng;
@@ -246,7 +246,7 @@ pub fn retry_gen<R: Rng + ?Sized, T, E>(
 
 /// Build an axis-aligned rectangle that contains the given points.
 ///
-/// It will add unit distance to the right and bottom edges to make sure the resulting `TypedRect`
+/// It will add unit distance to the right and bottom edges to make sure the resulting `Rect`
 /// will contain all the points. It would beneath
 ///
 /// # Examples
@@ -254,18 +254,19 @@ pub fn retry_gen<R: Rng + ?Sized, T, E>(
 /// ```
 /// # fn main() {
 /// use euclid::point2;
+/// type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
 ///
-/// let points: Vec<euclid::Point2D<i32>> = vec![point2(2, 3), point2(4, 5), point2(6, 7)];
+/// let points: Vec<Point2D<i32>> = vec![point2(2, 3), point2(4, 5), point2(6, 7)];
 /// let rect = calx::bounding_rect(&points);
-/// assert!(rect.contains(&point2(2, 3)));
-/// assert!(rect.contains(&point2(6, 7)));
-/// assert!(!rect.contains(&point2(7, 7)));
-/// assert!(!rect.contains(&point2(2, 2)));
+/// assert!(rect.contains(point2(2, 3)));
+/// assert!(rect.contains(point2(6, 7)));
+/// assert!(!rect.contains(point2(7, 7)));
+/// assert!(!rect.contains(point2(2, 2)));
 /// # }
 /// ```
-pub fn bounding_rect<'a, I, T, U>(points: I) -> TypedRect<T, U>
+pub fn bounding_rect<'a, I, T, U>(points: I) -> Rect<T, U>
 where
-    I: IntoIterator<Item = &'a TypedPoint2D<T, U>>,
+    I: IntoIterator<Item = &'a Point2D<T, U>>,
     T: Zero + One + Add + Sub<Output = T> + Ord + Copy + 'a,
     U: 'a,
 {
@@ -287,7 +288,7 @@ where
 
         rect(min_x, min_y, max_x - min_x, max_y - min_y)
     } else {
-        TypedRect::zero()
+        Rect::zero()
     }
 }
 

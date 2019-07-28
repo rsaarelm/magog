@@ -10,10 +10,15 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
-use euclid::{point2, rect, vec2, Point2D, Rect, Size2D, Vector2D};
+use euclid::{point2, rect, vec2};
 use std::collections::HashMap;
 use std::iter;
 use std::mem;
+
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
+type Vector2D<T> = euclid::Vector2D<T, euclid::UnknownUnit>;
 
 mod atlas;
 mod atlas_cache;
@@ -501,7 +506,7 @@ impl Canvas {
         // If this behavior becomes a problem, then some sort of ID tracking system will need to be
         // added.
 
-        let is_hovering = area.contains(&self.mouse_pos());
+        let is_hovering = area.contains(self.mouse_pos());
 
         let left_press = self.click_state[MouseButton::Left as usize].is_pressed() && is_hovering;
 

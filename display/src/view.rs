@@ -4,7 +4,7 @@ use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
 use calx::{clamp, cycle_anim, ease, lerp, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
-use euclid::{vec2, vec3, Rect, TypedRect, TypedVector2D, TypedVector3D};
+use euclid::{vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
@@ -23,7 +23,7 @@ pub struct WorldView {
 }
 
 impl WorldView {
-    pub fn new(camera_loc: Location, screen_area: Rect<i32>) -> WorldView {
+    pub fn new(camera_loc: Location, screen_area: Rect<i32, UnknownUnit>) -> WorldView {
         WorldView {
             cursor_loc: None,
             show_cursor: false,
@@ -50,7 +50,7 @@ impl WorldView {
             .to_vector();
             let bounds = self
                 .screen_area
-                .translate(&-(self.screen_area.origin + center).to_vector())
+                .translate(-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2, PIXEL_UNIT * 2);
 
             self.fov = Some(screen_fov(world, self.camera_loc, bounds));
@@ -68,7 +68,7 @@ impl WorldView {
         .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
-        let mouse_pos = ScreenVector::from_untyped(&canvas.mouse_pos().to_vector());
+        let mouse_pos = ScreenVector::from_untyped(canvas.mouse_pos().to_vector());
         let cursor_pos = (mouse_pos - center).to_cell_space();
 
         for (&chart_pos, origins) in chart.iter() {
@@ -350,7 +350,7 @@ impl<'a> FovValue for ScreenFov<'a> {
     fn advance(&self, offset: CellVector) -> Option<Self> {
         if !self
             .screen_area
-            .contains(&ScreenVector::from_cell_space(offset).to_point())
+            .contains(ScreenVector::from_cell_space(offset).to_point())
         {
             return None;
         }
@@ -434,8 +434,8 @@ impl Transformation for ScreenSpace {
     }
 }
 
-pub type ScreenVector = TypedVector2D<i32, ScreenSpace>;
-pub type ScreenRect = TypedRect<i32, ScreenSpace>;
+pub type ScreenVector = Vector2D<i32, ScreenSpace>;
+pub type ScreenRect = Rect<i32, ScreenSpace>;
 
 /// 3D physics space, used for eg. lighting.
 pub struct PhysicsSpace;
@@ -464,4 +464,4 @@ impl Transformation for PhysicsSpace {
     }
 }
 
-pub type PhysicsVector = TypedVector3D<f32, PhysicsSpace>;
+pub type PhysicsVector = Vector3D<f32, PhysicsSpace>;

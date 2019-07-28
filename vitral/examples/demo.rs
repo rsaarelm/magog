@@ -1,7 +1,11 @@
 use vitral;
 
-use euclid::{point2, Rect};
-use vitral::{Align, AppConfig, ButtonAction, Color, Canvas, PngBytes, RectUtil, Scene, SceneSwitch};
+use euclid::point2;
+use vitral::{
+    Align, AppConfig, ButtonAction, Canvas, Color, PngBytes, RectUtil, Scene, SceneSwitch,
+};
+
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
 
 struct World {
     font: vitral::FontData,
@@ -104,5 +108,6 @@ fn main() {
         AppConfig::new("Vitral Demo"),
         World::new(),
         vec![Box::new(DemoScene)],
-    ).unwrap();
+    )
+    .unwrap();
 }

@@ -1,9 +1,11 @@
 use crate::view::ScreenVector;
-use euclid::{rect, vec2, Rect};
+use euclid::{rect, vec2};
 use std::fmt;
 use std::sync::Arc;
 use vitral::color::*;
 use vitral::{ImageData, ImageKey, Rgba};
+
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
 
 /// Monochrome layer in a single frame.
 #[derive(Clone, PartialEq)]

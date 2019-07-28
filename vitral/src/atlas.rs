@@ -1,6 +1,9 @@
 use crate::{ImageBuffer, ImageData, TextureIndex};
-use euclid::{Point2D, Rect, Size2D};
 use std::cmp::max;
+
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 /// An incremental texture atlas.
 ///

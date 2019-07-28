@@ -10,7 +10,7 @@ name = "display"
 [dependencies]
 calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
-euclid = "0.19"
+euclid = "0.20"
 glium = "0.23"
 image = "0.21"
 lazy_static = "1.0"

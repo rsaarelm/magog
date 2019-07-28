@@ -7,7 +7,6 @@ use crate::canvas_zoom::CanvasZoom;
 use crate::{
     Canvas, ImageBuffer, InputEvent, Keycode, MouseButton, Scene, SceneSwitch, TextureIndex, Vertex,
 };
-use euclid::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
@@ -15,6 +14,9 @@ use glium::{self, Surface};
 use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
+
+type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
+type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;

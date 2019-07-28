@@ -1,4 +1,4 @@
-use euclid::{vec3, TypedVector2D, TypedVector3D};
+use euclid::{vec3, Vector2D, Vector3D};
 
 /// Unit tag for typed euclid structs.
 ///
@@ -12,7 +12,7 @@ use euclid::{vec3, TypedVector2D, TypedVector3D};
 /// neighbor hex. For a pointy-top hex map, x-axis points to the 3-o'clock (east) neighbor hex and
 /// y-axis points to the 7-o'clock (southwest) neighbor hex.
 pub struct CellSpace;
-pub type CellVector = TypedVector2D<i32, CellSpace>;
+pub type CellVector = Vector2D<i32, CellSpace>;
 
 /// Define a transformation from a space to `CellSpace`.
 ///
@@ -73,7 +73,7 @@ pub trait Space {
     fn from_cell_space(cell: CellVector) -> Self;
 }
 
-impl<T, U> Space for TypedVector2D<T, U>
+impl<T, U> Space for Vector2D<T, U>
 where
     T: Copy,
     U: Transformation<Element = T>,
@@ -82,7 +82,7 @@ where
     fn from_cell_space(cell: CellVector) -> Self { U::unproject(cell).into() }
 }
 
-impl<T, U> Space for TypedVector3D<T, U>
+impl<T, U> Space for Vector3D<T, U>
 where
     T: Copy + Default,
     U: Transformation<Element = T>,

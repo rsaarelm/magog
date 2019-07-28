@@ -1,6 +1,6 @@
 use crate::alg_misc::bounding_rect;
 use crate::space::{CellSpace, CellVector, Space, Transformation};
-use euclid::{point2, vec2, TypedPoint2D, TypedVector2D};
+use euclid::{point2, vec2, Point2D, Vector2D};
 use image::{self, Pixel};
 use num::Integer;
 use std::collections::{HashMap, HashSet};
@@ -99,7 +99,7 @@ pub trait FromPrefab {
 /// The oblique projection text map character coordinate space.
 pub struct TextSpace;
 
-pub type TextVector = TypedVector2D<i32, TextSpace>;
+pub type TextVector = Vector2D<i32, TextSpace>;
 
 // | 2  -1 |
 // | 0   1 |
@@ -348,7 +348,7 @@ where
 {
     fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
         // The coordinate space in which the image is in.
-        //type LocalVector = TypedVector2D<i32, U>;
+        //type LocalVector = Vector2D<i32, U>;
         let image = self.image;
 
         // Completely black pixels are assumed to be non-data.
@@ -436,9 +436,9 @@ where
     fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
         // Project points from the prefab (plus origin which we need in the image frame for anchor
         // encoding) to calculate the projected bounds.
-        let points: Vec<TypedPoint2D<i32, U>> = prefab
+        let points: Vec<Point2D<i32, U>> = prefab
             .iter()
-            .map(|(&p, _)| TypedVector2D::from_cell_space(p).to_point())
+            .map(|(&p, _)| Vector2D::from_cell_space(p).to_point())
             .chain(Some(point2(0, 0)))
             .collect();
 
@@ -446,7 +446,7 @@ where
         let bounds = bounding_rect(points.as_slice());
 
         debug_assert!({
-            let origin: TypedVector2D<i32, U> = TypedVector2D::from_cell_space(vec2(0, 0));
+            let origin: Vector2D<i32, U> = Vector2D::from_cell_space(vec2(0, 0));
             bounds.origin.x <= origin.x && bounds.origin.y <= origin.y
         });
 

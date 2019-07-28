@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 cfg-if = "0.1"
-euclid = "0.19"
+euclid = "0.20"
 glium = "0.23"
 image = "0.21"
 lazy_static = "1.2"
