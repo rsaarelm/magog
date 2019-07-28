@@ -89,6 +89,7 @@ impl Backend {
             // Get the most conservative DPI if there's a weird multi-monitor setup.
             let dpi_factor = display
                 .gl_window()
+                .window()
                 .get_available_monitors()
                 .map(|m| m.get_hidpi_factor())
                 .max_by(|x, y| x.partial_cmp(y).unwrap())
@@ -112,9 +113,11 @@ impl Backend {
 
             display
                 .gl_window()
+                .window()
                 .set_inner_size(window_size.to_logical(dpi_factor));
             display
                 .gl_window()
+                .window()
                 .set_position(window_pos.to_logical(dpi_factor));
         }
 
@@ -223,11 +226,11 @@ impl Backend {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == self.display.gl_window().id() => match event {
+                } if window_id == self.display.gl_window().window().id() => match event {
                     &WindowEvent::CloseRequested => return Err(()),
                     &WindowEvent::CursorMoved { position, .. } => {
-                        let position =
-                            position.to_physical(self.display.gl_window().get_hidpi_factor());
+                        let position = position
+                            .to_physical(self.display.gl_window().window().get_hidpi_factor());
                         let pos = self.zoom.screen_to_canvas(
                             self.window_size,
                             self.render_buffer.size(),
@@ -604,9 +607,10 @@ impl RenderBuffer {
 fn get_size(display: &glium::Display) -> (u32, u32) {
     let size = display
         .gl_window()
+        .window()
         .get_inner_size()
         .unwrap_or(LogicalSize::new(800.0, 600.0))
-        .to_physical(display.gl_window().get_hidpi_factor());
+        .to_physical(display.gl_window().window().get_hidpi_factor());
 
     (size.width as u32, size.height as u32)
 }

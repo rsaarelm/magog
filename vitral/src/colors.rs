@@ -102,15 +102,11 @@ impl From<Rgba> for SRgba {
 }
 
 impl From<image::Rgba<u8>> for SRgba {
-    fn from(c: image::Rgba<u8>) -> SRgba { SRgba::new(c.data[0], c.data[1], c.data[2], c.data[3]) }
+    fn from(c: image::Rgba<u8>) -> SRgba { SRgba::new(c.0[0], c.0[1], c.0[2], c.0[3]) }
 }
 
 impl From<SRgba> for image::Rgba<u8> {
-    fn from(c: SRgba) -> image::Rgba<u8> {
-        image::Rgba {
-            data: [c.r, c.g, c.b, c.a],
-        }
-    }
+    fn from(c: SRgba) -> image::Rgba<u8> { image::Rgba([c.r, c.g, c.b, c.a]) }
 }
 
 impl FromStr for SRgba {

@@ -11,8 +11,8 @@ name = "display"
 calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
 euclid = "0.20"
-glium = "0.23"
-image = "0.21"
+glium = "0.25"
+image = "0.22"
 lazy_static = "1.0"
 time = "0.1"
 vec_map = "0.8"

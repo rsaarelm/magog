@@ -16,7 +16,7 @@ calx-ecs = { path = "calx-ecs" }
 display = { path = "display" }
 env_logger = "0.6"
 euclid = "0.20"
-glium = "0.23"
+glium = "0.25"
 log = "0.4"
 rand = { version = "0.7", features = ["serde1"] }
 ron = "0.5"
@@ -27,4 +27,4 @@ vitral = { path = "vitral" }
 world = { path = "world" }
 
 [dev-dependencies]
-image = "0.21"
+image = "0.22"
