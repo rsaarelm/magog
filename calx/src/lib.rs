@@ -13,6 +13,7 @@ mod search;
 mod space;
 mod system;
 mod text;
+pub mod tiled;
 mod timing;
 
 pub use crate::alg_misc::{

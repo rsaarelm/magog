@@ -7,6 +7,9 @@ stdenv.mkDerivation {
 
     # Dev stuff cargo dependencies might need
     cmake gcc zlib pkgconfig openssl
+
+    # Map editor
+    tiled
   ];
 
   # XXX: This isn't the proper Nix way to do setup

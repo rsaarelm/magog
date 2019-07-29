@@ -15,6 +15,7 @@ rand = "0.7"
 rand_xorshift = { version = "0.2", features = ["serde1"] }
 serde = "1.0"
 serde_derive = "1.0"
+serde_json = "1.0"
 tempdir = "0.3"
 time = "0.1"
 vec_map = "0.8"
