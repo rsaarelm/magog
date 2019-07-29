@@ -14,6 +14,7 @@ mod space;
 pub mod stego;
 mod system;
 mod text;
+pub mod tiled;
 
 pub use crate::alg_misc::{
     bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban,
