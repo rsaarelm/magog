@@ -10,15 +10,11 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
+use euclid::default::{Point2D, Rect, Size2D, Vector2D};
 use euclid::{point2, rect, vec2};
 use std::collections::HashMap;
 use std::iter;
 use std::mem;
-
-type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
-type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
-type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
-type Vector2D<T> = euclid::Vector2D<T, euclid::UnknownUnit>;
 
 mod atlas;
 mod atlas_cache;

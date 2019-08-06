@@ -1,9 +1,6 @@
 use crate::{ImageBuffer, RectUtil};
+use euclid::default::{Point2D, Rect, Size2D};
 use euclid::{point2, rect, vec2};
-
-type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
-type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
-type Size2D<T> = euclid::Size2D<T, euclid::UnknownUnit>;
 
 /// Return the tiles on a tile sheet image.
 ///

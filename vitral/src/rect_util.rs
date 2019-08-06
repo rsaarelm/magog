@@ -8,9 +8,9 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 ///
 /// ```
 /// # fn main() {
+/// use euclid::default::Rect;
 /// use euclid::{rect, point2, size2};
 /// use vitral::RectUtil;
-/// type Rect<T> = euclid::Rect<T, euclid::UnknownUnit>;
 ///
 /// let bounds = rect(10, 10, 90, 90);
 /// assert_eq!(bounds.anchor(&point2(-1, -1)), bounds.origin);   // Top left
