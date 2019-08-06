@@ -185,7 +185,7 @@ impl Default for Terrain {
 #[cfg(test)]
 mod test {
     use super::*;
-    use calx::SRgba;
+    use vitral::SRgba;
 
     #[test]
     fn test_colors_are_unique() {
