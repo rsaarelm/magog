@@ -11,6 +11,7 @@ mod prefab;
 mod rng;
 mod search;
 mod space;
+pub mod stego;
 mod system;
 mod text;
 mod timing;

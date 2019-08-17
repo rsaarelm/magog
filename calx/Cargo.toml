@@ -8,8 +8,12 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 
 [dependencies]
+byteorder = "1"
+crc32fast = "1"
 euclid = "0.20"
 image = "0.22"
+libflate = "0.1"
+log = "0.4"
 num = "0.2"
 rand = "0.7"
 rand_xorshift = { version = "0.2", features = ["serde1"] }
