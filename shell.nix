@@ -24,10 +24,13 @@ stdenv.mkDerivation {
     rustup default stable
     rustup update
 
+    # Dev tools
+    rustup component add clippy
     rustup component add rls-preview rust-analysis rust-src
     rustup component add rls-preview rust-analysis rust-src --toolchain nightly
-    rustup component add rustfmt-preview clippy-preview --toolchain nightly
+    rustup component add rustfmt-preview --toolchain nightly
 
+    # Show outdated crates
     NIX_ENFORCE_PURITY=0 cargo install cargo-outdated
   '';
 
