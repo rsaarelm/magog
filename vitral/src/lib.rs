@@ -170,7 +170,7 @@ impl Builder {
             solid = user_solid;
         } else {
             solid = ImageData {
-                texture: make_t(ImageBuffer::from_fn(1, 1, |_, _| 0xffffffff)),
+                texture: make_t(ImageBuffer::from_fn(1, 1, |_, _| 0xffff_ffff)),
                 size: Size2D::new(1, 1),
                 tex_coords: rect(0.0, 0.0, 1.0, 1.0),
             };
@@ -185,7 +185,7 @@ pub fn build_default_font<F>(mut make_t: F) -> FontData
 where
     F: FnMut(ImageBuffer) -> TextureIndex,
 {
-    static DEFAULT_FONT: &'static [u8] = include_bytes!("font-96x48.raw");
+    static DEFAULT_FONT: &[u8] = include_bytes!("font-96x48.raw");
     let (char_width, char_height) = (6, 8);
     let (width, height) = (char_width * 16, char_height * 6);
     let start_char = 32;
@@ -218,7 +218,7 @@ where
                 image: ImageData {
                     texture: t,
                     size: Size2D::new(char_width, char_height),
-                    tex_coords: tex_coords,
+                    tex_coords,
                 },
                 draw_offset: vec2(0, 0),
                 advance: char_width as i32,
@@ -349,7 +349,7 @@ impl Canvas {
     pub fn screen_bounds(&self) -> Rect<i32> { Rect::new(point2(0, 0), self.screen_size) }
 
     pub fn start_solid_texture(&mut self) {
-        let t = self.solid_texture.texture.clone();
+        let t = self.solid_texture.texture;
         self.start_texture(t);
     }
 
@@ -388,12 +388,12 @@ impl Canvas {
             return;
         }
 
-        let texture = texture_needed
-            .unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture.clone());
+        let texture =
+            texture_needed.unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture);
 
         let clip = self.clip;
 
-        if self.current_batch_is_invalid(texture.clone()) {
+        if self.current_batch_is_invalid(texture) {
             self.draw_list.push(DrawBatch {
                 texture,
                 clip,
@@ -450,7 +450,7 @@ impl Canvas {
     }
 
     pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<i32>, color: Color) {
-        self.start_texture(image.texture.clone());
+        self.start_texture(image.texture);
         self.draw_tex_rect(
             &Rect::new(pos, image.size.to_i32()),
             &image.tex_coords,
@@ -569,7 +569,7 @@ impl Canvas {
         color: Color,
         back_color: Color,
     ) {
-        self.start_texture(image.texture.clone());
+        self.start_texture(image.texture);
 
         let area = rect(
             pos.x,
@@ -757,8 +757,8 @@ pub enum ButtonAction {
 }
 
 impl ButtonAction {
-    pub fn left_clicked(&self) -> bool { self == &ButtonAction::LeftClicked }
-    pub fn right_clicked(&self) -> bool { self == &ButtonAction::RightClicked }
+    pub fn left_clicked(self) -> bool { self == ButtonAction::LeftClicked }
+    pub fn right_clicked(self) -> bool { self == ButtonAction::RightClicked }
 }
 
 impl<I, P> From<I> for ImageBuffer

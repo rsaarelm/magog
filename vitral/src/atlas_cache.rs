@@ -43,7 +43,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             image_sheets: HashMap::new(),
             atlas_images: HashMap::new(),
             atlases: Vec::new(),
-            atlas_size: atlas_size,
+            atlas_size,
             next_index: starting_index,
         };
 
@@ -164,7 +164,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         let glyphs = tiles
             .into_iter()
             .map(|i| CharData {
-                image: self.get(&i).clone(),
+                image: *self.get(&i),
                 draw_offset: vec2(0, 0),
                 advance: i.bounds.size.width as i32,
             })

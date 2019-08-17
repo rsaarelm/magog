@@ -1,11 +1,8 @@
-#![cfg_attr(
-    feature = "cargo-clippy",
-    allow(
-        approx_constant,
-        cast_lossless,
-        many_single_char_names,
-        unreadable_literal,
-    )
+#![allow(
+    clippy::approx_constant,
+    clippy::cast_lossless,
+    clippy::many_single_char_names,
+    clippy::unreadable_literal
 )]
 
 use image;
@@ -44,11 +41,11 @@ impl SRgba {
 
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> SRgba { SRgba { r, g, b, a } }
 
-    pub fn luma(&self) -> u8 {
+    pub fn luma(self) -> u8 {
         // This is faster, but doesn't quite match with linear RGB luma
         //(self.r as f32 * 0.2126 + self.g as f32 * 0.7152 + self.b as f32 * 0.0722) as u8
 
-        (to_srgb(Rgba::from(*self).luma()) * 255.0).round() as u8
+        (to_srgb(Rgba::from(self).luma()) * 255.0).round() as u8
     }
 }
 

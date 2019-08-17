@@ -225,9 +225,9 @@ impl Backend {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == self.display.gl_window().window().id() => match event {
-                    &WindowEvent::CloseRequested => return Err(()),
-                    &WindowEvent::CursorMoved { position, .. } => {
+                } if window_id == self.display.gl_window().window().id() => match *event {
+                    WindowEvent::CloseRequested => return Err(()),
+                    WindowEvent::CursorMoved { position, .. } => {
                         let position = position
                             .to_physical(self.display.gl_window().window().get_hidpi_factor());
                         let pos = self.zoom.screen_to_canvas(
@@ -237,7 +237,7 @@ impl Backend {
                         );
                         canvas.input_mouse_move(pos.x as i32, pos.y as i32);
                     }
-                    &WindowEvent::MouseInput { state, button, .. } => canvas.input_mouse_button(
+                    WindowEvent::MouseInput { state, button, .. } => canvas.input_mouse_button(
                         match button {
                             glutin::MouseButton::Left => MouseButton::Left,
                             glutin::MouseButton::Right => MouseButton::Right,
@@ -245,10 +245,10 @@ impl Backend {
                         },
                         state == glutin::ElementState::Pressed,
                     ),
-                    &WindowEvent::ReceivedCharacter(c) => {
+                    WindowEvent::ReceivedCharacter(c) => {
                         scene_switches.push(self.dispatch(scene_stack, ctx, InputEvent::Typed(c)));
                     }
-                    &WindowEvent::KeyboardInput {
+                    WindowEvent::KeyboardInput {
                         input:
                             glutin::KeyboardInput {
                                 state,
@@ -259,9 +259,8 @@ impl Backend {
                         ..
                     } => {
                         let is_down = state == glutin::ElementState::Pressed;
-                        let key = virtual_keycode.map_or(None, |virtual_keycode| {
-                            Keycode::try_from(virtual_keycode).ok()
-                        });
+                        let key = virtual_keycode
+                            .and_then(|virtual_keycode| Keycode::try_from(virtual_keycode).ok());
                         // Glutin adjusts the Linux scancodes, take into account. Don't know if
                         // this belongs here in the glium module or in the Keycode translation
                         // maps...
@@ -608,7 +607,7 @@ fn get_size(display: &glium::Display) -> (u32, u32) {
         .gl_window()
         .window()
         .get_inner_size()
-        .unwrap_or(LogicalSize::new(800.0, 600.0))
+        .unwrap_or_else(|| LogicalSize::new(800.0, 600.0))
         .to_physical(display.gl_window().window().get_hidpi_factor());
 
     (size.width as u32, size.height as u32)

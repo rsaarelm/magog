@@ -75,7 +75,7 @@ impl AppConfig {
 
     pub fn frame_duration(mut self, frame_duration: Flick) -> AppConfig {
         self.frame_duration = frame_duration;
-        return self;
+        self
     }
 }
 
