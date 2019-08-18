@@ -13,13 +13,13 @@ image = "0.22"
 num = "0.2"
 rand = "0.7"
 rand_xorshift = { version = "0.2", features = ["serde1"] }
-serde = "1.0"
-serde_derive = "1.0"
+serde = "1"
+serde_derive = "1"
 tempdir = "0.3"
 time = "0.1"
 vec_map = "0.8"
 vitral = { path = "../vitral" }
 
 [dev-dependencies]
-serde_json = "1.0"
+serde_json = "1"
 term = "0.6"

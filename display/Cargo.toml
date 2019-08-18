@@ -13,7 +13,7 @@ calx-ecs = { path = "../calx-ecs" }
 euclid = "0.20"
 glium = "0.25"
 image = "0.22"
-lazy_static = "1.0"
+lazy_static = "1"
 time = "0.1"
 vec_map = "0.8"
 vitral = { path = "../vitral" }

@@ -13,12 +13,12 @@ calx-ecs = { path = "../calx-ecs" }
 euclid = "0.20"
 image = "0.22"
 indexmap = "1"
-lazy_static = "1.0"
+lazy_static = "1"
 log = "0.4"
 rand = "0.7"
 rand_xorshift = { version = "0.2", features = ["serde1"] }
 ron = "0.5"
-serde = "1.0"
-serde_derive = "1.0"
+serde = "1"
+serde_derive = "1"
 vec_map = "0.8"
 vitral = { path = "../vitral" }
