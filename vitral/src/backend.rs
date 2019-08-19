@@ -58,8 +58,6 @@ impl Backend {
     }
 
     /// Open a Glium window and start a backend for it.
-    ///
-    /// The custom shader must support a uniform named `tex` for texture data.
     pub fn start<S: Into<String>>(
         width: u32,
         height: u32,
