@@ -93,9 +93,9 @@ impl Backend {
                 .map(|m| m.get_hidpi_factor())
                 .max_by(|x, y| x.partial_cmp(y).unwrap())
                 .expect("No monitors found!");
-            debug!("Scaling starting size to monitor");
-            debug!("Monitor size {:?}", monitor_size);
-            debug!("DPI Factor {}", dpi_factor);
+            info!("Scaling starting size to monitor");
+            info!("Monitor size {:?}", monitor_size);
+            info!("DPI Factor {}", dpi_factor);
 
             let mut window_size = PhysicalSize::new(width, height);
             while window_size.width + width <= monitor_size.width - BUFFER
@@ -104,7 +104,7 @@ impl Backend {
                 window_size.width += width;
                 window_size.height += height;
             }
-            debug!("Adjusted window size: {:?}", window_size);
+            info!("Adjusted window size: {:?}", window_size);
             let window_pos = PhysicalPosition::new(
                 (monitor_size.width - window_size.width) / 2.0,
                 (monitor_size.height - window_size.height) / 2.0,
