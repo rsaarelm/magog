@@ -5,7 +5,7 @@
 use crate::atlas_cache::AtlasCache;
 use crate::canvas_zoom::CanvasZoom;
 use crate::{
-    Canvas, ImageBuffer, InputEvent, Keycode, MouseButton, Scene, SceneSwitch, TextureIndex, Vertex,
+    DrawBatch, ImageBuffer, InputEvent, Keycode, MouseButton, TextureIndex, UiState, Vertex,
 };
 use euclid::default::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
@@ -192,31 +192,12 @@ impl Backend {
         }
     }
 
-    fn dispatch<T>(
-        &self,
-        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
-        ctx: &mut T,
-        event: InputEvent,
-    ) -> Option<SceneSwitch<T>> {
-        if !scene_stack.is_empty() {
-            let idx = scene_stack.len() - 1;
-            scene_stack[idx].input(ctx, event)
-        } else {
-            None
-        }
-    }
-
-    fn process_events<T>(
-        &mut self,
-        canvas: &mut Canvas,
-        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
-        ctx: &mut T,
-    ) -> Result<Option<SceneSwitch<T>>, ()> {
+    pub fn process_events(&mut self, ui: &mut UiState) -> Result<Vec<InputEvent>, ()> {
         // polling and handling the events received by the window
         let mut event_list = Vec::new();
         self.events.poll_events(|event| event_list.push(event));
         // Accumulated scene switches from processing input
-        let mut scene_switches = Vec::new();
+        let mut input_events = Vec::new();
 
         for e in event_list {
             match e {
@@ -233,9 +214,9 @@ impl Backend {
                             self.render_buffer.size(),
                             Point2D::new(position.x as f32, position.y as f32),
                         );
-                        canvas.input_mouse_move(pos.x as i32, pos.y as i32);
+                        ui.input_mouse_move(pos.x as i32, pos.y as i32);
                     }
-                    WindowEvent::MouseInput { state, button, .. } => canvas.input_mouse_button(
+                    WindowEvent::MouseInput { state, button, .. } => ui.input_mouse_button(
                         match button {
                             glutin::MouseButton::Left => MouseButton::Left,
                             glutin::MouseButton::Right => MouseButton::Right,
@@ -244,7 +225,7 @@ impl Backend {
                         state == glutin::ElementState::Pressed,
                     ),
                     WindowEvent::ReceivedCharacter(c) => {
-                        scene_switches.push(self.dispatch(scene_stack, ctx, InputEvent::Typed(c)));
+                        input_events.push(InputEvent::Typed(c));
                     }
                     WindowEvent::KeyboardInput {
                         input:
@@ -269,15 +250,11 @@ impl Backend {
                         };
                         let hardware_key = Keycode::from_scancode(scancode);
                         if key.is_some() || hardware_key.is_some() {
-                            scene_switches.push(self.dispatch(
-                                scene_stack,
-                                ctx,
-                                InputEvent::KeyEvent {
-                                    is_down,
-                                    key,
-                                    hardware_key,
-                                },
-                            ));
+                            input_events.push(InputEvent::KeyEvent {
+                                is_down,
+                                key,
+                                hardware_key,
+                            });
                         }
                     }
                     _ => (),
@@ -292,23 +269,16 @@ impl Backend {
             }
         }
 
-        // Take the first scene switch that shows up.
-        let scene_switch = scene_switches
-            .into_iter()
-            .fold(None, |prev, e| match (prev, e) {
-                (Some(x), _) => Some(x),
-                (None, y) => y,
-            });
-
-        Ok(scene_switch)
+        Ok(input_events)
     }
 
-    fn render(&mut self, canvas: &mut Canvas) {
+    /// Render draw list from canvas into the frame buffer.
+    fn render_list(&mut self, draw_list: &Vec<DrawBatch>) {
         let mut target = self.render_buffer.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
 
-        for batch in canvas.end_frame() {
+        for batch in draw_list {
             // building the uniforms
             let uniforms = uniform! {
                 matrix: [
@@ -361,16 +331,10 @@ impl Backend {
     }
 
     /// Display the backend and read input events.
-    pub fn update<T>(
-        &mut self,
-        canvas: &mut Canvas,
-        scene_stack: &mut Vec<Box<dyn Scene<T>>>,
-        ctx: &mut T,
-    ) -> Result<Option<SceneSwitch<T>>, ()> {
+    pub fn render(&mut self, draw_list: &Vec<DrawBatch>) {
         self.update_window_size();
-        self.render(canvas);
+        self.render_list(draw_list);
         self.render_buffer.draw(&self.display, self.zoom);
-        self.process_events(canvas, scene_stack, ctx)
     }
 
     /// Return an image for the current contents of the screen.

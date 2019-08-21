@@ -1,7 +1,9 @@
-use calx::{Dir6, IncrementalState};
+use calx::{stego, Dir6, IncrementalState};
 use display;
 use euclid::default::{Point2D, Rect};
+use image;
 use std::io::prelude::*;
+use std::io::Cursor;
 use vitral::{self, color, Align, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene, SceneSwitch};
 use world::{ActionOutcome, Command, Event, ItemType, Location, Mutate, Query, Slot, World};
 
@@ -57,7 +59,8 @@ impl Scene<GameRuntime> for AimMode {
     fn input(
         &mut self,
         ctx: &mut GameRuntime,
-        event: InputEvent,
+        event: &InputEvent,
+        _canvas: &mut Canvas,
     ) -> Option<SceneSwitch<GameRuntime>> {
         if let InputEvent::KeyEvent {
             is_down: true,
@@ -141,7 +144,8 @@ impl Scene<GameRuntime> for InventoryMode {
     fn input(
         &mut self,
         ctx: &mut GameRuntime,
-        event: InputEvent,
+        event: &InputEvent,
+        _canvas: &mut Canvas,
     ) -> Option<SceneSwitch<GameRuntime>> {
         if let InputEvent::KeyEvent {
             is_down: true,
@@ -152,7 +156,7 @@ impl Scene<GameRuntime> for InventoryMode {
             use Keycode::*;
 
             for slot in SLOT_DATA.iter() {
-                if scancode == slot.code {
+                if *scancode == slot.code {
                     match self {
                         InventoryMode::Drop => ctx.command = Some(Command::Drop(slot.slot)),
                         InventoryMode::Equip => ctx.command = Some(Command::Equip(slot.slot)),
@@ -266,7 +270,8 @@ impl Scene<GameRuntime> for GameLoop {
     fn input(
         &mut self,
         ctx: &mut GameRuntime,
-        event: InputEvent,
+        event: &InputEvent,
+        canvas: &mut Canvas,
     ) -> Option<SceneSwitch<GameRuntime>> {
         if let InputEvent::KeyEvent {
             is_down: true,
@@ -317,6 +322,37 @@ impl Scene<GameRuntime> for GameLoop {
                 }
                 U => {
                     return Some(SceneSwitch::Push(Box::new(InventoryMode::Use)));
+                }
+                F5 => {
+                    // Quick save.
+
+                    let enc = ron::ser::to_string_pretty(&ctx.world, Default::default()).unwrap();
+                    let cover = canvas.screenshot();
+                    let save = stego::embed_gzipped(&image::RgbaImage::from(cover), enc.as_bytes());
+                    let _ = image::save_buffer(
+                        "save.png",
+                        &save,
+                        save.width(),
+                        save.height(),
+                        image::ColorType::RGB(8),
+                    );
+                }
+                F9 => {
+                    // Quick load
+
+                    // TODO: Error handling when file is missing or not an image.
+                    let save = image::open("save.png").unwrap().to_rgb();
+                    // TODO: Error handling when stego data can't be retrieved
+                    let save = stego::extract(&save).unwrap();
+                    // TODO: Error handling when stego data can't be deserialized into world
+                    let new_world: IncrementalState<World> =
+                        ron::de::from_reader(&mut Cursor::new(&save)).unwrap();
+                    ctx.world = new_world;
+                }
+                F12 => {
+                    // Capture screenshot.
+                    let shot = canvas.screenshot();
+                    let _ = calx::save_screenshot("magog", &shot.into());
                 }
 
                 _ => {}

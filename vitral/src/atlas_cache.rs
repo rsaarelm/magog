@@ -31,27 +31,37 @@ pub struct AtlasCache<T> {
     atlases: Vec<Atlas>,
     atlas_size: u32,
     next_index: usize,
+    solid: ImageData,
 }
 
 impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
-    fn default() -> AtlasCache<T> { AtlasCache::new(1024, 0) }
+    fn default() -> AtlasCache<T> {
+        let atlas_size = 1024;
+
+        let mut atlas0 = Atlas::new(0, size2(atlas_size, atlas_size));
+
+        // Hacky hack: Add one-pixel pure-white texture for drawing solid shapes without swapping
+        // out the atlas texture. Assume atlas behavior will make it go in a predictable position
+        // so we can just generate the image.
+        let solid = ImageBuffer::from_fn(1, 1, |_, _| 0xffff_ffff);
+        let solid = atlas0.add(&solid).unwrap();
+
+        // Let's just make it so we can use a dirty hack and assume it shows up in origin without
+        // even having AtlasCache reference available...
+        assert!(solid.tex_coords.origin == euclid::point2(0.0, 0.0));
+
+        AtlasCache {
+            image_sheets: HashMap::new(),
+            atlas_images: HashMap::new(),
+            atlases: vec![atlas0],
+            atlas_size,
+            next_index: 1,
+            solid,
+        }
+    }
 }
 
 impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
-    pub fn new(atlas_size: u32, starting_index: usize) -> AtlasCache<T> {
-        let mut ret = AtlasCache {
-            image_sheets: HashMap::new(),
-            atlas_images: HashMap::new(),
-            atlases: Vec::new(),
-            atlas_size,
-            next_index: starting_index,
-        };
-
-        ret.new_atlas();
-
-        ret
-    }
-
     pub fn atlases_mut(&mut self) -> slice::IterMut<'_, Atlas> { self.atlases.iter_mut() }
 
     pub fn atlas_size(&self) -> u32 { self.atlas_size }
@@ -99,6 +109,8 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             self.get(key)
         }
     }
+
+    pub fn get_solid(&self) -> &ImageData { &self.solid }
 
     fn new_atlas(&mut self) {
         self.atlases.push(Atlas::new(

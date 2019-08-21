@@ -139,47 +139,6 @@ impl ImageBuffer {
     }
 }
 
-/// Builder for Vitral `Core` structure.
-pub struct Builder {
-    user_solid: Option<ImageData>,
-}
-
-impl Builder {
-    pub fn new() -> Builder { Builder { user_solid: None } }
-
-    /// Give your own `ImageData` for the solid texture.
-    ///
-    /// You want to use this if you have an image atlas and you want to have both drawing solid
-    /// shapes and textured shapes use the same texture resource and go to the same draw batch.
-    pub fn solid_texture(mut self, solid: ImageData) -> Builder {
-        self.user_solid = Some(solid);
-        self
-    }
-
-    /// Construct an interface context instance.
-    ///
-    /// Needs to be provided a texture creation function. If the user has not specified them
-    /// earlier, this will be used to construct a separate texture for the solid color and a
-    /// default font texture.
-    pub fn build<F>(self, screen_size: Size2D<u32>, mut make_t: F) -> Canvas
-    where
-        F: FnMut(ImageBuffer) -> TextureIndex,
-    {
-        let solid;
-        if let Some(user_solid) = self.user_solid {
-            solid = user_solid;
-        } else {
-            solid = ImageData {
-                texture: make_t(ImageBuffer::from_fn(1, 1, |_, _| 0xffff_ffff)),
-                size: Size2D::new(1, 1),
-                tex_coords: rect(0.0, 0.0, 1.0, 1.0),
-            };
-        }
-
-        Canvas::new(solid, screen_size)
-    }
-}
-
 /// Build the default Vitral font given a texture constructor.
 pub fn build_default_font<F>(mut make_t: F) -> FontData
 where
@@ -266,38 +225,25 @@ impl Vertex {
 /// The context persists over a frame and receives commands that combine GUI
 /// description and input handling. At the end of the frame, the commands are
 /// converted into rendering instructions for the GUI.
-pub struct Canvas {
+pub struct Canvas<'a> {
     draw_list: Vec<DrawBatch>,
 
-    mouse_pos: Point2D<i32>,
-    click_state: [ClickState; 3],
-
-    solid_texture: ImageData,
-
-    tick: u64,
-
-    clip: Option<Rect<i32>>,
     screen_size: Size2D<i32>,
+    ui: &'a mut UiState,
+    backend: &'a mut backend::Backend,
 }
 
-impl Canvas {
-    pub fn new(solid_texture: ImageData, screen_size: Size2D<u32>) -> Canvas {
+impl<'a> Canvas<'a> {
+    pub fn new(
+        screen_size: Size2D<u32>,
+        ui: &'a mut UiState,
+        backend: &'a mut backend::Backend,
+    ) -> Canvas<'a> {
         Canvas {
             draw_list: Vec::new(),
-
-            mouse_pos: point2(0, 0),
-            click_state: [
-                ClickState::Unpressed,
-                ClickState::Unpressed,
-                ClickState::Unpressed,
-            ],
-
-            solid_texture,
-
-            tick: 0,
-
-            clip: None,
             screen_size: screen_size.to_i32(),
+            ui,
+            backend,
         }
     }
 
@@ -327,18 +273,18 @@ impl Canvas {
     }
 
     pub fn set_clip(&mut self, area: Rect<i32>) {
-        self.clip = Some(area);
+        self.ui.clip = Some(area);
         self.check_batch(None);
     }
 
     pub fn clear_clip(&mut self) {
-        self.clip = None;
+        self.ui.clip = None;
         self.check_batch(None);
     }
 
     /// Return the current draw bounds
     pub fn bounds(&self) -> Rect<i32> {
-        if let Some(clip) = self.clip {
+        if let Some(clip) = self.ui.clip {
             clip
         } else {
             self.screen_bounds()
@@ -349,11 +295,14 @@ impl Canvas {
     pub fn screen_bounds(&self) -> Rect<i32> { Rect::new(point2(0, 0), self.screen_size) }
 
     pub fn start_solid_texture(&mut self) {
-        let t = self.solid_texture.texture;
-        self.start_texture(t);
+        // XXX HACK assuming solid texture is at origin of texture 0
+        self.start_texture(0);
     }
 
-    pub fn solid_texture_texcoord(&self) -> Point2D<f32> { self.solid_texture.tex_coords.origin }
+    pub fn solid_texture_texcoord(&self) -> Point2D<f32> {
+        // XXX HACK assuming solid texture is at origin of texture 0
+        point2(0.0, 0.0)
+    }
 
     pub fn start_texture(&mut self, texture: TextureIndex) { self.check_batch(Some(texture)); }
 
@@ -366,7 +315,7 @@ impl Canvas {
             return true;
         }
 
-        if self.draw_list[self.draw_list.len() - 1].clip != self.clip {
+        if self.draw_list[self.draw_list.len() - 1].clip != self.ui.clip {
             return true;
         }
 
@@ -391,7 +340,7 @@ impl Canvas {
         let texture =
             texture_needed.unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture);
 
-        let clip = self.clip;
+        let clip = self.ui.clip;
 
         if self.current_batch_is_invalid(texture) {
             self.draw_list.push(DrawBatch {
@@ -504,16 +453,18 @@ impl Canvas {
 
         let is_hovering = area.contains(self.mouse_pos());
 
-        let left_press = self.click_state[MouseButton::Left as usize].is_pressed() && is_hovering;
+        let left_press =
+            self.ui.click_state[MouseButton::Left as usize].is_pressed() && is_hovering;
 
-        let right_press = self.click_state[MouseButton::Right as usize].is_pressed() && is_hovering;
+        let right_press =
+            self.ui.click_state[MouseButton::Right as usize].is_pressed() && is_hovering;
 
         let is_pressed = left_press || right_press;
 
         // Determine the return value.
-        if left_press && self.click_state[MouseButton::Left as usize].is_release() {
+        if left_press && self.ui.click_state[MouseButton::Left as usize].is_release() {
             ButtonAction::LeftClicked
-        } else if right_press && self.click_state[MouseButton::Right as usize].is_release() {
+        } else if right_press && self.ui.click_state[MouseButton::Right as usize].is_release() {
             ButtonAction::RightClicked
         } else if is_pressed {
             ButtonAction::Pressed
@@ -526,13 +477,13 @@ impl Canvas {
 
     pub fn begin_frame(&mut self) {
         self.check_batch(None);
-        self.tick += 1;
+        self.ui.tick += 1;
     }
 
     pub fn end_frame(&mut self) -> Vec<DrawBatch> {
         // Clean up transient mouse click info.
         for i in 0..3 {
-            self.click_state[i] = self.click_state[i].tick();
+            self.ui.click_state[i] = self.ui.click_state[i].tick();
         }
 
         let mut ret = Vec::new();
@@ -541,25 +492,11 @@ impl Canvas {
     }
 
     /// Get the mouse cursor position in global space.
-    pub fn mouse_pos(&self) -> Point2D<i32> { self.mouse_pos }
-
-    /// Register mouse button state.
-    pub(crate) fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
-        if is_down {
-            self.click_state[id as usize] =
-                self.click_state[id as usize].input_press(self.mouse_pos());
-        } else {
-            self.click_state[id as usize] =
-                self.click_state[id as usize].input_release(self.mouse_pos());
-        }
-    }
-
-    /// Register mouse motion.
-    pub(crate) fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
+    pub fn mouse_pos(&self) -> Point2D<i32> { self.ui.mouse_pos }
 
     /// Get whether mouse button was pressed
     pub fn is_mouse_pressed(&self, button: MouseButton) -> bool {
-        self.click_state[button as usize].is_pressed()
+        self.ui.click_state[button as usize].is_pressed()
     }
 
     pub fn draw_image_2color(
@@ -627,6 +564,48 @@ impl Canvas {
 
         self.draw_text(font, pos, align, color, text)
     }
+
+    pub fn screenshot(&self) -> ImageBuffer {
+        self.backend.screenshot()
+    }
+}
+
+pub struct UiState {
+    mouse_pos: Point2D<i32>,
+    click_state: [ClickState; 3],
+    tick: u64,
+    clip: Option<Rect<i32>>,
+}
+
+impl Default for UiState {
+    fn default() -> Self {
+        UiState {
+            mouse_pos: point2(0, 0),
+            click_state: [
+                ClickState::Unpressed,
+                ClickState::Unpressed,
+                ClickState::Unpressed,
+            ],
+            tick: 0,
+            clip: None,
+        }
+    }
+}
+
+impl UiState {
+    /// Register mouse button state.
+    pub(crate) fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
+        if is_down {
+            self.click_state[id as usize] =
+                self.click_state[id as usize].input_press(self.mouse_pos);
+        } else {
+            self.click_state[id as usize] =
+                self.click_state[id as usize].input_release(self.mouse_pos);
+        }
+    }
+
+    /// Register mouse motion.
+    pub(crate) fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
 }
 
 /// A sequence of primitive draw operarations.

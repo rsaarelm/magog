@@ -1,7 +1,7 @@
 use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
 use crate::keycode::Keycode;
-use crate::{Builder, Canvas, FontData, ImageBuffer, ImageData, SubImageSpec};
+use crate::{Canvas, FontData, ImageBuffer, ImageData, SubImageSpec, UiState};
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::size2;
@@ -20,17 +20,24 @@ pub trait Scene<T> {
     /// be followed by a change of scene.
     fn update(&mut self, _ctx: &mut T) -> Option<SceneSwitch<T>> { None }
 
-    /// Draw this scene to a Vitral core.
+    /// Draw this scene to a Vitral canvas.
     ///
     /// Render is separate from update for frame rate regulation reasons. If drawing is slow,
     /// multiple updates will be run for one render call.
     ///
     /// The render method can also introduce scene transitions in case there is immediate mode GUI
     /// logic written in the render code.
-    fn render(&mut self, _ctx: &mut T, _core: &mut Canvas) -> Option<SceneSwitch<T>> { None }
+    fn render(&mut self, _ctx: &mut T, _canvas: &mut Canvas) -> Option<SceneSwitch<T>> { None }
 
     /// Process an input event.
-    fn input(&mut self, _ctx: &mut T, _event: InputEvent) -> Option<SceneSwitch<T>> { None }
+    fn input(
+        &mut self,
+        _ctx: &mut T,
+        _event: &InputEvent,
+        _canvas: &mut Canvas,
+    ) -> Option<SceneSwitch<T>> {
+        None
+    }
 
     /// Return true if the scene below this one in the scene stack should be visible.
     ///
@@ -81,25 +88,12 @@ impl AppConfig {
 
 #[derive(Default)]
 struct EngineState {
-    // TODO: Save last frame image for screenshotting here. (Just store the render buffer inside
-    // EngineState all the while?)
     atlas_cache: AtlasCache<String>,
-}
-
-impl EngineState {
-    fn new() -> EngineState {
-        // TODO: Change to Default::default() once solid pixel is generated through atlasing.
-        // The starting index needs to be set to 1 instead of 0 to account for the kludged-up
-        // separate texture for the solid pixel currently in.
-        EngineState {
-            atlas_cache: AtlasCache::new(1024, 1),
-        }
-    }
 }
 
 lazy_static! {
     /// Global game engine state.
-    static ref ENGINE_STATE: Mutex<EngineState> = { Mutex::new(EngineState::new()) };
+    static ref ENGINE_STATE: Mutex<EngineState> = { Mutex::new(EngineState::default()) };
 }
 
 /// Start running a Scene state machine app with the given configuration.
@@ -198,21 +192,17 @@ pub struct GameLoop<T> {
     scene_stack: Vec<Box<dyn Scene<T>>>,
     world: T,
     backend: Backend,
-    core: Canvas,
+    ui: UiState,
 }
 
 impl<T> GameLoop<T> {
-    pub fn new(mut backend: Backend, world: T, scenes: Vec<Box<dyn Scene<T>>>) -> GameLoop<T> {
-        // TODO: Handle solid texture in atlaser. When it's first requested, generate it as a
-        // single solid pixel in the atlas page currently being filled.
-        let core = Builder::new().build(backend.canvas_size(), |img| backend.make_texture(img));
-
+    pub fn new(backend: Backend, world: T, scenes: Vec<Box<dyn Scene<T>>>) -> GameLoop<T> {
         GameLoop {
             frame_duration: Flick(FLICKS_PER_SECOND / 30),
             scene_stack: scenes,
             world,
             backend,
-            core,
+            ui: UiState::default(),
         }
     }
 
@@ -252,11 +242,18 @@ impl<T> GameLoop<T> {
         }
 
         let mut switch = None;
-        for i in begin..end {
-            // Only the switch result from the topmost state counts here.
-            switch = self.scene_stack[i].render(&mut self.world, &mut self.core);
-        }
+        let draw_list = {
+            let mut canvas =
+                Canvas::new(self.backend.canvas_size(), &mut self.ui, &mut self.backend);
+
+            for i in begin..end {
+                // Only the switch result from the topmost state counts here.
+                switch = self.scene_stack[i].render(&mut self.world, &mut canvas);
+            }
+            canvas.end_frame()
+        };
         self.process(switch);
+        self.backend.render(&draw_list);
     }
 
     pub fn run(&mut self) {
@@ -282,21 +279,32 @@ impl<T> GameLoop<T> {
                 .sync_with_atlas_cache(&mut ENGINE_STATE.lock().unwrap().atlas_cache);
 
             self.render();
+
             if self.scene_stack.is_empty() {
                 break 'gameloop;
             }
 
-            match self
-                .backend
-                .update(&mut self.core, &mut self.scene_stack, &mut self.world)
-            {
-                Ok(switch) => self.process(switch),
-                Err(()) => break 'gameloop,
-            }
-            if self.scene_stack.is_empty() {
+            if let Ok(events) = self.backend.process_events(&mut self.ui) {
+                for event in &events {
+                    let idx = self.scene_stack.len() - 1;
+                    let ret = {
+                        let mut canvas = Canvas::new(
+                            self.backend.canvas_size(),
+                            &mut self.ui,
+                            &mut self.backend,
+                        );
+                        self.scene_stack[idx].input(&mut self.world, event, &mut canvas)
+                    };
+                    self.process(ret);
+
+                    if self.scene_stack.is_empty() {
+                        break 'gameloop;
+                    }
+                }
+            } else {
+                // Window closed
                 break 'gameloop;
             }
         }
-        // TODO: Some kind of return value.
     }
 }
