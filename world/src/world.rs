@@ -14,11 +14,8 @@ use crate::worldgen::Worldgen;
 use crate::Rng;
 use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
-use ron;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::error::Error;
-use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::slice;
 
@@ -82,26 +79,6 @@ impl<'a> World {
         ret.spawn_player(player_entry);
 
         ret
-    }
-
-    pub fn load<R: Read>(reader: &mut R) -> Result<World, Box<dyn Error>> {
-        let ret: ron::de::Result<World> = ron::de::from_reader(reader);
-        if let Ok(ref x) = ret {
-            if x.version != GAME_VERSION {
-                panic!(
-                    "Save game version {} does not match current version {}",
-                    x.version, GAME_VERSION
-                );
-            }
-        }
-        Ok(ret?)
-    }
-
-    pub fn save<W: Write>(&self, writer: &mut W) -> Result<(), Box<dyn Error>> {
-        let enc = ron::ser::to_string_pretty(self, Default::default())?;
-        // TODO: Handle error from writer too...
-        writeln!(writer, "{}", enc)?;
-        Ok(())
     }
 
     pub fn events(&self) -> &Vec<Event> { &self.events }
