@@ -3,14 +3,14 @@ use vitral;
 use euclid::default::Rect;
 use euclid::point2;
 use vitral::{
-    Align, AppConfig, ButtonAction, Canvas, Color, PngBytes, RectUtil, Scene, SceneSwitch,
+    color, Align, AppConfig, ButtonAction, Canvas, PngBytes, RectUtil, Rgba, Scene, SceneSwitch,
 };
 
 struct World {
     font: vitral::FontData,
     image: vitral::ImageData,
-    fore_color: Color,
-    back_color: Color,
+    fore_color: Rgba,
+    back_color: Rgba,
 }
 
 impl World {
@@ -26,8 +26,8 @@ impl World {
         World {
             font,
             image,
-            fore_color: [1.0, 0.5, 0.1, 1.0],
-            back_color: [0.0, 0.0, 0.0, 1.0],
+            fore_color: Rgba::from([1.0, 0.5, 0.1]),
+            back_color: Rgba::from([0.0, 0.0, 0.0]),
         }
     }
 }
@@ -38,7 +38,7 @@ impl Scene<World> for DemoScene {
     fn update(&mut self, _ctx: &mut World) -> Option<SceneSwitch<World>> { None }
 
     fn render(&mut self, ctx: &mut World, canvas: &mut Canvas) -> Option<SceneSwitch<World>> {
-        canvas.draw_image(&ctx.image, point2(20, 20), [1.0, 1.0, 1.0, 1.0]);
+        canvas.draw_image(&ctx.image, point2(20, 20), color::WHITE);
         let bounds = canvas.bounds();
 
         let (_, title_area) = bounds.horizontal_split(12);
@@ -54,7 +54,7 @@ impl Scene<World> for DemoScene {
 }
 
 impl DemoScene {
-    fn bright_color(&self) -> Color { [1.0, 0.7, 0.2, 1.0] }
+    fn bright_color(&self) -> Rgba { Rgba::from([1.0, 0.7, 0.2]) }
 
     fn title_bar(&self, ctx: &World, canvas: &mut Canvas, bounds: &Rect<i32>, text: &str) {
         canvas.fill_rect(bounds, ctx.back_color);

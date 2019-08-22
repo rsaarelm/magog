@@ -106,7 +106,7 @@ impl Sprite {
         for splat in &self.brush[self.frame_idx] {
             let (fore, back) = self.color.apply(splat.color, splat.back_color);
             let pos = (self.offset - splat.offset).to_point().to_untyped();
-            canvas.draw_image_2color(&splat.image, pos, fore.into(), back.into());
+            canvas.draw_image_2color(&splat.image, pos, fore, back);
         }
     }
 }

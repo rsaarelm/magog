@@ -37,8 +37,6 @@ pub use crate::scene::{
 
 mod tilesheet;
 
-pub type Color = [f32; 4];
-
 /// Vitral representation for texture handle, consecutive positive integers.
 pub(crate) type TextureIndex = usize;
 
@@ -199,23 +197,23 @@ pub struct Vertex {
     /// Texture coordinates
     pub tex_coord: [f32; 2],
     /// Light pixel (foreground) color
-    pub color: Color,
+    pub color: [f32; 4],
     /// Dark pixel (background) color
-    pub back_color: Color,
+    pub back_color: [f32; 4],
 }
 
 impl Vertex {
-    pub fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Color) -> Self {
+    pub fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Rgba) -> Self {
         Vertex {
             pos: [pos.x, pos.y],
             tex_coord: [tex_coord.x, tex_coord.y],
-            color,
-            back_color: [0.0, 0.0, 0.0, 0.0],
+            color: color.into(),
+            back_color: color::BLACK.into(),
         }
     }
 
-    pub fn back_color(mut self, back_color: Color) -> Vertex {
-        self.back_color = back_color;
+    pub fn back_color(mut self, back_color: Rgba) -> Vertex {
+        self.back_color = back_color.into();
         self
     }
 }
@@ -260,7 +258,7 @@ impl<'a> Canvas<'a> {
     /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
-    pub fn push_vertex(&mut self, pos: Point2D<i32>, tex_coord: Point2D<f32>, color: Color) -> u16 {
+    pub fn push_vertex(&mut self, pos: Point2D<i32>, tex_coord: Point2D<f32>, color: Rgba) -> u16 {
         self.push_raw_vertex(Vertex::new(pos.to_f32(), tex_coord, color))
     }
 
@@ -352,7 +350,7 @@ impl<'a> Canvas<'a> {
         }
     }
 
-    pub fn draw_line(&mut self, thickness: f32, color: Color, p1: Point2D<i32>, p2: Point2D<i32>) {
+    pub fn draw_line(&mut self, thickness: f32, color: Rgba, p1: Point2D<i32>, p2: Point2D<i32>) {
         if p1 == p2 {
             return;
         }
@@ -382,7 +380,7 @@ impl<'a> Canvas<'a> {
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn draw_tex_rect(&mut self, area: &Rect<i32>, tex_coords: &Rect<f32>, color: Color) {
+    pub fn draw_tex_rect(&mut self, area: &Rect<i32>, tex_coords: &Rect<f32>, color: Rgba) {
         let idx = self.push_vertex(area.origin, tex_coords.origin, color);
         self.push_vertex(area.top_right(), tex_coords.top_right(), color);
         self.push_vertex(area.bottom_right(), tex_coords.bottom_right(), color);
@@ -392,13 +390,13 @@ impl<'a> Canvas<'a> {
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn fill_rect(&mut self, area: &Rect<i32>, color: Color) {
+    pub fn fill_rect(&mut self, area: &Rect<i32>, color: Rgba) {
         self.start_solid_texture();
         let p = self.solid_texture_texcoord();
         self.draw_tex_rect(area, &rect(p.x, p.y, 0.0, 0.0), color);
     }
 
-    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<i32>, color: Color) {
+    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<i32>, color: Rgba) {
         self.start_texture(image.texture);
         self.draw_tex_rect(
             &Rect::new(pos, image.size.to_i32()),
@@ -418,7 +416,7 @@ impl<'a> Canvas<'a> {
         font: &FontData,
         pos: Point2D<i32>,
         align: Align,
-        color: Color,
+        color: Rgba,
         text: &str,
     ) -> Point2D<i32> {
         let mut cursor_pos = pos;
@@ -503,8 +501,8 @@ impl<'a> Canvas<'a> {
         &mut self,
         image: &ImageData,
         pos: Point2D<i32>,
-        color: Color,
-        back_color: Color,
+        color: Rgba,
+        back_color: Rgba,
     ) {
         self.start_texture(image.texture);
 
@@ -554,8 +552,8 @@ impl<'a> Canvas<'a> {
         font: &FontData,
         pos: Point2D<i32>,
         align: Align,
-        color: Color,
-        back_color: Color,
+        color: Rgba,
+        back_color: Rgba,
         text: &str,
     ) -> Point2D<i32> {
         for offset in &[vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1)] {
@@ -565,9 +563,7 @@ impl<'a> Canvas<'a> {
         self.draw_text(font, pos, align, color, text)
     }
 
-    pub fn screenshot(&self) -> ImageBuffer {
-        self.backend.screenshot()
-    }
+    pub fn screenshot(&self) -> ImageBuffer { self.backend.screenshot() }
 }
 
 pub struct UiState {

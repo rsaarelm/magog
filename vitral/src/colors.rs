@@ -47,6 +47,11 @@ impl SRgba {
 
         (to_srgb(Rgba::from(self).luma()) * 255.0).round() as u8
     }
+
+    pub fn alpha(mut self, a: u8) -> Self {
+        self.a = a;
+        self
+    }
 }
 
 impl fmt::Display for SRgba {
@@ -204,6 +209,11 @@ impl Rgba {
     pub fn to_monochrome(&self) -> Rgba {
         let luma = self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722;
         Rgba::new(luma, luma, luma, self.a)
+    }
+
+    pub fn alpha(mut self, a: f32) -> Self {
+        self.a = a;
+        self
     }
 }
 

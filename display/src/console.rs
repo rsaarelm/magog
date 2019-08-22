@@ -6,7 +6,7 @@ use std::mem;
 use std::str;
 use std::sync::Arc;
 use time;
-use vitral::{Align, Canvas, FontData};
+use vitral::{color, Align, Canvas, FontData, Rgba};
 
 struct Message {
     expire_time_s: f64,
@@ -46,9 +46,6 @@ impl Console {
 
     /// Draw the console as a regular message display.
     pub fn draw_small(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
-        // TODO: Store color in draw context.
-        let color = [1.0, 1.0, 1.0, 0.4];
-
         let t = time::precise_time_s();
         let mut lines = Vec::new();
         // The log can be very long, and we're always most interested in the latest ones, so
@@ -68,15 +65,15 @@ impl Console {
         // Draw the lines
         let mut pos = screen_area.origin;
         for line in lines.iter().rev() {
-            pos = canvas.draw_text(&*self.font, pos, Align::Left, color, line);
+            pos = canvas.draw_text(&*self.font, pos, Align::Left, color::WHITE.alpha(0.4), line);
         }
     }
 
     /// Draw the console as a big drop-down with a command prompt.
     pub fn draw_large(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
         // TODO: Store color in draw context.
-        let color = [0.6, 0.6, 0.6, 1.0];
-        let background = [0.0, 0.0, 0.6, 0.8];
+        let color = Rgba::from([0.6, 0.6, 0.6]);
+        let background = Rgba::from([0.0, 0.0, 0.6, 0.8]);
 
         canvas.fill_rect(screen_area, background);
 

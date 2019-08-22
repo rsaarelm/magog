@@ -100,12 +100,12 @@ impl Scene<GameRuntime> for InventoryMode {
         };
 
         let (_, bounds) = canvas.bounds().vertical_split(320);
-        canvas.fill_rect(&bounds, [0.0, 0.0, 0.0, 0.99]);
+        canvas.fill_rect(&bounds, color::BLACK.alpha(0.99));
 
         let mut letter_pos = Point2D::new(0, 0);
         let mut slot_name_pos = Point2D::new(20, 0);
         let mut item_name_pos = Point2D::new(80, 0);
-        let text_color = [1.0, 1.0, 1.0, 1.0];
+        let text_color = color::WHITE;
 
         for slot in SLOT_DATA.iter() {
             // TODO: Bounding box for these is a button...
@@ -417,12 +417,12 @@ impl GameLoop {
     }
 
     pub fn status_draw(&self, canvas: &mut Canvas, area: &Rect<i32>) {
-        canvas.fill_rect(area, Rgba::from(0x33_11_11_ff).into());
+        canvas.fill_rect(area, Rgba::from(0x33_11_11_ff));
         canvas.draw_text(
             &*display::font(),
             area.origin,
             Align::Left,
-            color::RED.into(),
+            color::RED,
             "Welcome to status bar",
         );
     }
