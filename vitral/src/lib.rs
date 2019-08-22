@@ -137,58 +137,6 @@ impl ImageBuffer {
     }
 }
 
-/// Build the default Vitral font given a texture constructor.
-pub fn build_default_font<F>(mut make_t: F) -> FontData
-where
-    F: FnMut(ImageBuffer) -> TextureIndex,
-{
-    static DEFAULT_FONT: &[u8] = include_bytes!("font-96x48.raw");
-    let (char_width, char_height) = (6, 8);
-    let (width, height) = (char_width * 16, char_height * 6);
-    let start_char = 32;
-    let end_char = 127;
-    let columns = width / char_width;
-
-    let img = ImageBuffer::from_fn(width, height, |x, y| {
-        let a = DEFAULT_FONT[(x + y * width) as usize] as u32;
-        (a << 24) | (a << 16) | (a << 8) | a
-    });
-
-    let t = make_t(img);
-
-    let mut map = HashMap::new();
-
-    for i in start_char..end_char {
-        let x = char_width * ((i - start_char) % columns);
-        let y = char_height * ((i - start_char) / columns);
-
-        let tex_coords = rect(
-            x as f32 / width as f32,
-            y as f32 / height as f32,
-            char_width as f32 / width as f32,
-            char_height as f32 / height as f32,
-        );
-
-        map.insert(
-            std::char::from_u32(i).unwrap(),
-            CharData {
-                image: ImageData {
-                    texture: t,
-                    size: Size2D::new(char_width, char_height),
-                    tex_coords,
-                },
-                draw_offset: vec2(0, 0),
-                advance: char_width as i32,
-            },
-        );
-    }
-
-    FontData {
-        chars: map,
-        height: char_height as i32,
-    }
-}
-
 /// Vertex type for geometry points
 #[derive(Copy, Clone)]
 pub struct Vertex {
