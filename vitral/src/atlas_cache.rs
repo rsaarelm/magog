@@ -1,8 +1,9 @@
 use crate::atlas::Atlas;
 use crate::tilesheet;
-use crate::{CharData, FontData, ImageBuffer, ImageData};
+use crate::{CharData, FontData, ImageData};
 use euclid::default::Rect;
 use euclid::{rect, size2, vec2};
+use image::{Pixel, RgbaImage};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -26,7 +27,7 @@ impl<T> SubImageSpec<T> {
 
 /// Updateable incremental cache for multiple texture atlases.
 pub struct AtlasCache<T> {
-    image_sheets: HashMap<T, ImageBuffer>,
+    image_sheets: HashMap<T, RgbaImage>,
     atlas_images: HashMap<SubImageSpec<T>, ImageData>,
     atlases: Vec<Atlas>,
     atlas_size: u32,
@@ -43,7 +44,7 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
         // Hacky hack: Add one-pixel pure-white texture for drawing solid shapes without swapping
         // out the atlas texture. Assume atlas behavior will make it go in a predictable position
         // so we can just generate the image.
-        let solid = ImageBuffer::from_fn(1, 1, |_, _| 0xffff_ffff);
+        let solid = RgbaImage::from_pixel(1, 1, Pixel::from_channels(0xff, 0xff, 0xff, 0xff));
         let solid = atlas0.add(&solid).unwrap();
 
         // Let's just make it so we can use a dirty hack and assume it shows up in origin without
@@ -84,8 +85,8 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             // Add a new image to the atlas.
 
             // First create the buffer image.
-            ImageBuffer::from_fn(key.bounds.size.width, key.bounds.size.height, |x, y| {
-                image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
+            RgbaImage::from_fn(key.bounds.size.width, key.bounds.size.height, |x, y| {
+                *image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
             })
         } else {
             panic!("Image sheet {:?} not found in cache", key.id);
@@ -124,17 +125,13 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     ///
     /// Return the `SubImageSpec` for the entire sheet in case it is a single image that should be
     /// used as is.
-    pub fn add_sheet<U, I>(&mut self, id: U, sheet: I) -> SubImageSpec<T>
-    where
-        U: Into<T>,
-        I: Into<ImageBuffer>,
-    {
-        let id = id.into();
+    pub fn add_sheet(&mut self, id: impl Into<T>, sheet: impl Into<RgbaImage>) -> SubImageSpec<T> {
         let sheet = sheet.into();
+        let id = id.into();
 
         let ret = SubImageSpec {
             id: id.clone(),
-            bounds: rect(0, 0, sheet.size.width, sheet.size.height),
+            bounds: rect(0, 0, sheet.width(), sheet.height()),
         };
 
         self.image_sheets.insert(id, sheet);
@@ -145,13 +142,13 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     /// Add a named tile source and generate tile data using image properties.
     ///
     /// Calls the `tilesheet_bounds` function to determine tilesheet subimages.
-    pub fn add_tilesheet<U, I>(&mut self, id: U, sheet: I) -> Vec<SubImageSpec<T>>
-    where
-        U: Into<T>,
-        I: Into<ImageBuffer>,
-    {
-        let id = id.into();
+    pub fn add_tilesheet(
+        &mut self,
+        id: impl Into<T>,
+        sheet: impl Into<RgbaImage>,
+    ) -> Vec<SubImageSpec<T>> {
         let sheet = sheet.into();
+        let id = id.into();
 
         let ret = tilesheet::tilesheet_bounds(&sheet)
             .into_iter()
@@ -165,12 +162,12 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         ret
     }
 
-    pub fn add_tilesheet_font<U, I, J>(&mut self, id: U, sheet: I, span: J) -> FontData
-    where
-        U: Into<T>,
-        I: Into<ImageBuffer>,
-        J: IntoIterator<Item = char>,
-    {
+    pub fn add_tilesheet_font(
+        &mut self,
+        id: impl Into<T>,
+        sheet: impl Into<RgbaImage>,
+        span: impl IntoIterator<Item = char>,
+    ) -> FontData {
         let tiles = self.add_tilesheet(id, sheet);
 
         let glyphs = tiles

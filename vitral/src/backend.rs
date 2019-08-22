@@ -4,14 +4,13 @@
 
 use crate::atlas_cache::AtlasCache;
 use crate::canvas_zoom::CanvasZoom;
-use crate::{
-    DrawBatch, ImageBuffer, InputEvent, Keycode, MouseButton, TextureIndex, UiState, Vertex,
-};
+use crate::{DrawBatch, InputEvent, Keycode, MouseButton, TextureIndex, UiState, Vertex};
 use euclid::default::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
 use glium::{self, Surface};
+use image::{Pixel, RgbImage, RgbaImage};
 
 use std::error::Error;
 use std::fmt::Debug;
@@ -141,32 +140,28 @@ impl Backend {
     }
 
     /// Rewrite an internal texture.
-    pub fn write_to_texture(&mut self, img: &ImageBuffer, texture: TextureIndex) {
+    pub fn write_to_texture(&mut self, img: RgbaImage, texture: TextureIndex) {
         assert!(
             texture < self.textures.len(),
             "Trying to write nonexistent texture"
         );
+        let (width, height) = img.dimensions();
         let rect = glium::Rect {
             left: 0,
             bottom: 0,
-            width: img.size.width,
-            height: img.size.height,
+            width,
+            height,
         };
-        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
-            img.pixels.clone(),
-            (img.size.width, img.size.height),
-        );
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), (width, height));
         raw.format = glium::texture::ClientFormat::U8U8U8U8;
 
         self.textures[texture].write(rect, raw);
     }
 
     /// Make a new internal texture using image data.
-    pub fn make_texture(&mut self, img: ImageBuffer) -> TextureIndex {
-        let mut raw = glium::texture::RawImage2d::from_raw_rgba(
-            img.pixels,
-            (img.size.width, img.size.height),
-        );
+    pub fn make_texture(&mut self, img: RgbaImage) -> TextureIndex {
+        let size = img.dimensions();
+        let mut raw = glium::texture::RawImage2d::from_raw_rgba(img.into_raw(), size);
         raw.format = glium::texture::ClientFormat::U8U8U8U8;
 
         let tex = glium::texture::SrgbTexture2d::new(&self.display, raw).unwrap();
@@ -188,7 +183,7 @@ impl Backend {
             }
 
             // Write the updated texture atlas to internal texture.
-            a.update_texture(|buf, idx| self.write_to_texture(buf, idx));
+            a.update_texture(|buf, idx| self.write_to_texture(buf.clone(), idx));
         }
     }
 
@@ -338,7 +333,7 @@ impl Backend {
     }
 
     /// Return an image for the current contents of the screen.
-    pub fn screenshot(&self) -> ImageBuffer { self.render_buffer.screenshot() }
+    pub fn screenshot(&self) -> RgbImage { self.render_buffer.screenshot() }
 }
 
 /// Shader for two parametrizable colors and discarding fully transparent pixels
@@ -551,15 +546,12 @@ impl RenderBuffer {
 
     pub fn size(&self) -> Size2D<u32> { self.size }
 
-    pub fn screenshot(&self) -> ImageBuffer {
+    pub fn screenshot(&self) -> RgbImage {
         let image: glium::texture::RawImage2d<'_, u8> = self.buffer.read();
 
-        ImageBuffer::from_fn(image.width, image.height, |x, y| {
+        RgbImage::from_fn(image.width, image.height, |x, y| {
             let i = (x * 4 + (image.height - y - 1) * image.width * 4) as usize;
-            image.data[i] as u32
-                + ((image.data[i + 1] as u32) << 8)
-                + ((image.data[i + 2] as u32) << 16)
-                + ((image.data[i + 3] as u32) << 24)
+            Pixel::from_channels(image.data[i], image.data[i + 1], image.data[i + 2], 0xff)
         })
     }
 }

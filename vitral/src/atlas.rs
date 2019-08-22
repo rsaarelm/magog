@@ -1,5 +1,7 @@
-use crate::{ImageBuffer, ImageData, TextureIndex};
+use crate::{ImageData, TextureIndex};
 use euclid::default::{Point2D, Rect, Size2D};
+use euclid::size2;
+use image::{GenericImage, RgbaImage};
 use std::cmp::max;
 
 /// An incremental texture atlas.
@@ -10,7 +12,7 @@ pub struct Atlas {
     texture: TextureIndex,
     slots: Vec<Rect<u32>>,
     placed: Vec<Rect<u32>>,
-    atlas: ImageBuffer,
+    atlas: RgbaImage,
     is_dirty: bool,
 }
 
@@ -20,21 +22,21 @@ impl Atlas {
             texture,
             slots: vec![Rect::new(Point2D::new(0, 0), size)],
             placed: Vec::new(),
-            atlas: ImageBuffer::new(size.width, size.height),
+            atlas: RgbaImage::new(size.width, size.height),
             is_dirty: false,
         }
     }
 
     pub fn is_empty(&self) -> bool { self.placed.is_empty() }
 
-    pub fn add(&mut self, image: &ImageBuffer) -> Option<ImageData> {
-        if let Some(area) = self.place(image.size) {
+    pub fn add(&mut self, image: &RgbaImage) -> Option<ImageData> {
+        if let Some(area) = self.place(size2(image.width(), image.height())) {
             // Draw the new image into the atlas image.
             self.atlas.copy_from(image, area.origin.x, area.origin.y);
 
             // Map texture coordinates to the unit rectangle.
-            let x_scale = 1.0 / self.atlas.size.width as f32;
-            let y_scale = 1.0 / self.atlas.size.height as f32;
+            let x_scale = 1.0 / self.atlas.width() as f32;
+            let y_scale = 1.0 / self.atlas.height() as f32;
 
             let tex_pos = Point2D::new(
                 area.origin.x as f32 * x_scale,
@@ -46,7 +48,7 @@ impl Atlas {
             );
             Some(ImageData {
                 texture: self.texture.clone(),
-                size: image.size,
+                size: size2(image.width(), image.height()),
                 tex_coords: Rect::new(tex_pos, tex_size),
             })
         } else {
@@ -54,7 +56,7 @@ impl Atlas {
         }
     }
 
-    pub fn size(&self) -> Size2D<u32> { self.atlas.size }
+    pub fn size(&self) -> Size2D<u32> { size2(self.atlas.width(), self.atlas.height()) }
 
     pub fn texture(&self) -> TextureIndex { self.texture }
 
@@ -63,7 +65,7 @@ impl Atlas {
     /// The texture update function must be provided by the caller.
     pub fn update_texture<F>(&mut self, mut f: F)
     where
-        F: FnMut(&ImageBuffer, TextureIndex),
+        F: FnMut(&RgbaImage, TextureIndex),
     {
         if self.is_dirty {
             f(&self.atlas, self.texture);

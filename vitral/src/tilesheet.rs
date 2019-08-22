@@ -1,6 +1,9 @@
-use crate::{ImageBuffer, RectUtil};
+use crate::RectUtil;
 use euclid::default::{Point2D, Rect, Size2D};
 use euclid::{point2, rect, vec2};
+use image::{self, RgbaImage};
+
+type Pixel = image::Rgba<u8>;
 
 /// Return the tiles on a tile sheet image.
 ///
@@ -12,11 +15,11 @@ use euclid::{point2, rect, vec2};
 ///
 /// Note that the background color is a solid color, not transparent pixels. The inner tiles may
 /// have transparent parts, so a solid color is needed to separate them.
-pub fn tilesheet_bounds(image: &ImageBuffer) -> Vec<Rect<u32>> {
+pub fn tilesheet_bounds(image: &RgbaImage) -> Vec<Rect<u32>> {
     let mut ret: Vec<Rect<i32>> = Vec::new();
-    let image_rect: Rect<i32> = rect(0, 0, image.size.width as i32, image.size.height as i32);
+    let image_rect: Rect<i32> = rect(0, 0, image.width() as i32, image.height() as i32);
 
-    let background = image.get_pixel(image.size.width - 1, image.size.height - 1);
+    let background = image.get_pixel(image.width() - 1, image.height() - 1);
     for y in image_rect.min_y()..image_rect.max_y() {
         for x in image_rect.min_x()..image_rect.max_x() {
             let pt = point2(x, y);
@@ -26,7 +29,7 @@ pub fn tilesheet_bounds(image: &ImageBuffer) -> Vec<Rect<u32>> {
             }
 
             if image.get_pixel(pt.x as u32, pt.y as u32) != background {
-                ret.push(tile_bounds(image, pt, background));
+                ret.push(tile_bounds(image, pt, *background));
             }
         }
     }
@@ -39,8 +42,8 @@ pub fn tilesheet_bounds(image: &ImageBuffer) -> Vec<Rect<u32>> {
 
 /// Find the smallest bounding box around seed pixel whose sides are either all background color or
 /// image edge.
-fn tile_bounds(image: &ImageBuffer, seed_pos: Point2D<i32>, background: u32) -> Rect<i32> {
-    let image_rect = rect(0, 0, image.size.width as i32, image.size.height as i32);
+fn tile_bounds(image: &RgbaImage, seed_pos: Point2D<i32>, background: Pixel) -> Rect<i32> {
+    let image_rect = rect(0, 0, image.width() as i32, image.height() as i32);
     let mut ret = Rect::new(seed_pos, Size2D::new(1, 1));
 
     // How many consecutive edges couldn't be expanded. Once this hits 4, the tile is complete.
@@ -66,7 +69,7 @@ fn tile_bounds(image: &ImageBuffer, seed_pos: Point2D<i32>, background: u32) -> 
             // The new area is all background pixels, the tile ends here.
             if (new_area.min_x()..new_area.max_x())
                 .zip(new_area.min_y()..new_area.max_y())
-                .all(|(x, y)| image.get_pixel(x as u32, y as u32) == background)
+                .all(|(x, y)| *image.get_pixel(x as u32, y as u32) == background)
             {
                 unchanged_count += 1;
                 continue;

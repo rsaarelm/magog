@@ -1,10 +1,11 @@
 use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
 use crate::keycode::Keycode;
-use crate::{Canvas, FontData, ImageBuffer, ImageData, SubImageSpec, UiState};
+use crate::{Canvas, FontData, ImageData, SubImageSpec, UiState};
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::size2;
+use image::RgbaImage;
 use std::error::Error;
 use std::sync::Mutex;
 
@@ -132,7 +133,7 @@ pub fn get_frame_duration() -> Flick {
 }
 
 /// Add a named image into the engine image atlas.
-pub fn add_sheet(id: impl Into<String>, sheet: impl Into<ImageBuffer>) -> ImageKey {
+pub fn add_sheet(id: impl Into<String>, sheet: impl Into<RgbaImage>) -> ImageKey {
     ENGINE_STATE
         .lock()
         .unwrap()
@@ -152,7 +153,7 @@ pub fn add_sheet(id: impl Into<String>, sheet: impl Into<ImageBuffer>) -> ImageK
 /// have transparent parts, so a solid color is needed to separate them.
 pub fn add_tilesheet(
     id: impl Into<String>,
-    sheet: impl Into<ImageBuffer>,
+    sheet: impl Into<RgbaImage>,
     _span: impl IntoIterator<Item = char>,
 ) -> Vec<ImageKey> {
     ENGINE_STATE
@@ -165,7 +166,7 @@ pub fn add_tilesheet(
 /// Add a bitmap font read from a tilesheet image.
 pub fn add_tilesheet_font(
     id: impl Into<String>,
-    sheet: impl Into<ImageBuffer>,
+    sheet: impl Into<RgbaImage>,
     span: impl IntoIterator<Item = char>,
 ) -> FontData {
     ENGINE_STATE

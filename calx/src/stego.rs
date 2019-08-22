@@ -2,7 +2,7 @@
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use crc32fast::Hasher;
-use image::{GenericImage, Pixel, Rgb, RgbImage, Rgba};
+use image::{GenericImage, Pixel, Rgb, RgbImage};
 use libflate::gzip;
 use log::{info, warn};
 use std::io::{self, Cursor, Read};
@@ -23,7 +23,7 @@ fn encode_capacity(w: u32, h: u32) -> usize {
     (w * h) as usize
 }
 
-fn embed_raw(cover: &impl GenericImage<Pixel = Rgba<u8>>, data: &[u8]) -> RgbImage {
+fn embed_raw(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     info!(
         "Embedding {} bytes into {} x {} cover",
         data.len(),
@@ -99,7 +99,7 @@ where
 }
 
 fn embed_base(
-    cover: &impl GenericImage<Pixel = Rgba<u8>>,
+    cover: &impl GenericImage<Pixel = Rgb<u8>>,
     magic_number: u32,
     data: &[u8],
 ) -> RgbImage {
@@ -131,7 +131,7 @@ fn embed_base(
 /// 8:  big-endian u32 data payload byte count
 /// 12: data payload bytes
 /// ```
-pub fn embed(cover: &impl GenericImage<Pixel = Rgba<u8>>, data: &[u8]) -> RgbImage {
+pub fn embed(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     embed_base(cover, STGO_MAGIC, data)
 }
 
@@ -151,7 +151,7 @@ pub fn embed(cover: &impl GenericImage<Pixel = Rgba<u8>>, data: &[u8]) -> RgbIma
 /// 8:  big-endian u32 gzipped data payload byte count
 /// 12: gzipped data payload bytes
 /// ```
-pub fn embed_gzipped(cover: &impl GenericImage<Pixel = Rgba<u8>>, data: &[u8]) -> RgbImage {
+pub fn embed_gzipped(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     let mut encoder = gzip::Encoder::new(Vec::new()).unwrap();
     io::copy(&mut Cursor::new(data), &mut encoder).unwrap();
     let data = encoder.finish().into_result().unwrap();
@@ -215,11 +215,11 @@ pub fn extract(cover: &impl GenericImage<Pixel = Rgb<u8>>) -> Result<Vec<u8>, ()
 #[cfg(test)]
 mod test {
     use super::*;
-    use image::{Rgba, RgbaImage};
+    use image::{Rgb, RgbImage};
 
     #[test]
     fn test_simple() {
-        let cover = RgbaImage::from_pixel(8, 8, Rgba::from_channels(255, 255, 255, 255));
+        let cover = RgbImage::from_pixel(8, 8, Rgb::from_channels(255, 255, 255, 255));
         let payload: Vec<u8> = "squeamish ossifrage".as_bytes().iter().cloned().collect();
 
         let stego = embed(&cover, &payload);

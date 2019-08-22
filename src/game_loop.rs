@@ -328,7 +328,7 @@ impl Scene<GameRuntime> for GameLoop {
 
                     let enc = ron::ser::to_string_pretty(&ctx.world, Default::default()).unwrap();
                     let cover = canvas.screenshot();
-                    let save = stego::embed_gzipped(&image::RgbaImage::from(cover), enc.as_bytes());
+                    let save = stego::embed_gzipped(&cover, enc.as_bytes());
                     let _ = image::save_buffer(
                         "save.png",
                         &save,

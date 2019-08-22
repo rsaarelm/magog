@@ -12,8 +12,8 @@ extern crate log;
 
 use euclid::default::{Point2D, Rect, Size2D, Vector2D};
 use euclid::{point2, rect, vec2};
+use image::{RgbImage, RgbaImage};
 use std::collections::HashMap;
-use std::iter;
 use std::mem;
 
 mod atlas;
@@ -43,21 +43,21 @@ pub(crate) type TextureIndex = usize;
 /// Wrapper for the bytes of a PNG image file.
 ///
 /// This is mostly intended for image data that is included in binaries using `include_bytes!`. It
-/// implements an `Into` conversion to `ImageBuffer` that will panic if the included bytes do not
+/// implements an `Into` conversion to `RgbaImage` that will panic if the included bytes do not
 /// resolve as an image file of the specified format.
 ///
 /// This is a convenience type. If you are using data where you can't be sure it's a valid PNG,
 /// call `image::load` explicitly to load it, check for errors and then convert the image to
-/// `ImageBuffer`.
+/// `RgbaImage`.
 pub struct PngBytes<'a>(pub &'a [u8]);
 
-impl<'a> From<PngBytes<'a>> for ImageBuffer {
+impl<'a> From<PngBytes<'a>> for RgbaImage {
     fn from(data: PngBytes<'_>) -> Self {
         use std::io::Cursor;
 
         let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)
             .expect("Failed to load PNG data");
-        img.into()
+        img.to_rgba()
     }
 }
 
@@ -67,74 +67,6 @@ pub struct ImageData {
     pub texture: TextureIndex,
     pub size: Size2D<u32>,
     pub tex_coords: Rect<f32>,
-}
-
-/// Simple 32-bit image container.
-///
-/// The pixel data structure is RGBA.
-#[derive(Clone, Eq, PartialEq)]
-pub struct ImageBuffer {
-    /// Image size.
-    pub size: Size2D<u32>,
-    /// RGBA pixels, in rows from top left down, len must be width * height.
-    pub pixels: Vec<u32>,
-}
-
-impl ImageBuffer {
-    /// Build an empty buffer.
-    pub fn new(width: u32, height: u32) -> ImageBuffer {
-        ImageBuffer {
-            size: Size2D::new(width, height),
-            pixels: iter::repeat(0u32).take((width * height) as usize).collect(),
-        }
-    }
-
-    /// Build the buffer from a function.
-    pub fn from_fn<F>(width: u32, height: u32, f: F) -> ImageBuffer
-    where
-        F: Fn(u32, u32) -> u32,
-    {
-        let pixels = (0..)
-            .take((width * height) as usize)
-            .map(|i| f(i % width, i / width))
-            .collect();
-        ImageBuffer {
-            size: Size2D::new(width, height),
-            pixels,
-        }
-    }
-
-    /// Build the buffer from RGBA pixel iterator.
-    pub fn from_iter<I>(width: u32, height: u32, pixels: &mut I) -> ImageBuffer
-    where
-        I: Iterator<Item = u32>,
-    {
-        ImageBuffer {
-            size: Size2D::new(width, height),
-            pixels: pixels.take((width * height) as usize).collect(),
-        }
-    }
-
-    /// Copy all pixels from source buffer to self starting at given coordinates in self.
-    pub fn copy_from(&mut self, source: &ImageBuffer, x: u32, y: u32) {
-        let blit_rect: Rect<u32> = rect(x, y, source.size.width, source.size.height);
-
-        if let Some(blit_rect) =
-            blit_rect.intersection(&rect(0, 0, self.size.width, self.size.height))
-        {
-            for y2 in blit_rect.min_y()..blit_rect.max_y() {
-                for x2 in blit_rect.min_x()..blit_rect.max_x() {
-                    let self_idx = (x2 + y2 * self.size.width) as usize;
-                    let source_idx = ((x2 - x) + (y2 - y) * source.size.width) as usize;
-                    self.pixels[self_idx] = source.pixels[source_idx];
-                }
-            }
-        }
-    }
-
-    pub fn get_pixel(&self, x: u32, y: u32) -> u32 {
-        self.pixels[(x + y * self.size.width) as usize]
-    }
 }
 
 /// Vertex type for geometry points
@@ -511,7 +443,7 @@ impl<'a> Canvas<'a> {
         self.draw_text(font, pos, align, color, text)
     }
 
-    pub fn screenshot(&self) -> ImageBuffer { self.backend.screenshot() }
+    pub fn screenshot(&self) -> RgbImage { self.backend.screenshot() }
 }
 
 pub struct UiState {
@@ -682,67 +614,4 @@ pub enum ButtonAction {
 impl ButtonAction {
     pub fn left_clicked(self) -> bool { self == ButtonAction::LeftClicked }
     pub fn right_clicked(self) -> bool { self == ButtonAction::RightClicked }
-}
-
-impl<I, P> From<I> for ImageBuffer
-where
-    I: image::GenericImage<Pixel = P>,
-    P: image::Pixel<Subpixel = u8>,
-{
-    fn from(image: I) -> ImageBuffer {
-        let (w, h) = image.dimensions();
-        let size = Size2D::new(w, h);
-
-        let pixels = image
-            .pixels()
-            .map(|(_, _, p)| {
-                let (r, g, b, a) = p.channels4();
-                r as u32 + ((g as u32) << 8) + ((b as u32) << 16) + ((a as u32) << 24)
-            })
-            .collect();
-
-        ImageBuffer { size, pixels }
-    }
-}
-
-impl From<ImageBuffer> for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-        use image::Pixel;
-
-        image::ImageBuffer::from_fn(image.size.width, image.size.height, |x, y| {
-            let p = image.pixels[(x + y * image.size.width) as usize];
-            image::Rgba::from_channels(p as u8, (p >> 8) as u8, (p >> 16) as u8, (p >> 24) as u8)
-        })
-    }
-}
-
-impl From<ImageBuffer> for image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
-    fn from(image: ImageBuffer) -> image::ImageBuffer<image::Rgb<u8>, Vec<u8>> {
-        use image::Pixel;
-
-        image::ImageBuffer::from_fn(image.size.width, image.size.height, |x, y| {
-            let p = image.pixels[(x + y * image.size.width) as usize];
-            image::Rgb::from_channels(p as u8, (p >> 8) as u8, (p >> 16) as u8, 0xff)
-        })
-    }
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn image_roundtrip() {
-        use super::ImageBuffer;
-        use euclid::size2;
-        use image;
-
-        let image = ImageBuffer {
-            pixels: vec![0xca11ab1e, 0x5ca1ab1e, 0xdeadbeef, 0xb01dface],
-            size: size2(2, 2),
-        };
-
-        let image2: image::ImageBuffer<image::Rgba<u8>, Vec<u8>> = image.clone().into();
-        let image2: ImageBuffer = image2.into();
-
-        assert!(image == image2);
-    }
 }
