@@ -1,3 +1,4 @@
+use crate::animations::Animations;
 use crate::components;
 use crate::event::Event;
 use crate::flags::Flags;
@@ -237,5 +238,36 @@ impl Terraform for World {
 
     fn remove_portal(&mut self, _loc: Location) {
         unimplemented!();
+    }
+}
+
+impl Animations for World {
+    fn anim_tick(&self) -> u64 { self.flags.anim_tick }
+    fn anim(&self, e: Entity) -> Option<&components::Anim> { self.ecs.anim.get(e) }
+    fn anim_mut(&mut self, e: Entity) -> Option<&mut components::Anim> { self.ecs.anim.get_mut(e) }
+
+    fn tick_anims(&mut self) {
+        let entities: Vec<Entity> = self.entities().cloned().collect();
+        for e in entities {
+            self.anim_mut(e).map(|a| a.tick());
+
+            if self.is_expired_fx(e) {
+                self.remove_entity(e);
+            }
+        }
+        self.flags.anim_tick += 1;
+    }
+
+    fn spawn_fx(&mut self, loc: Location) -> Entity {
+        let e = self.ecs.make();
+        self.place_entity(e, loc);
+        let t = self.anim_tick();
+        let mut anim = components::Anim::default();
+        // Give it some starting state that makes it get cleaned up by default.
+        // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
+        // since that denotes an permanent entity.
+        anim.state = components::AnimState::Explosion;
+        self.ecs.anim.insert(e, anim);
+        e
     }
 }

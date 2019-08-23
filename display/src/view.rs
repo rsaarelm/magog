@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::Canvas;
-use world::{FovStatus, Location, Query, TerrainQuery, World};
+use world::{AnimState, Animations, FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -170,10 +170,19 @@ impl WorldView {
 
             let mut entity_sprite_buffer = Vec::new();
 
-            let (mobs, items): (Vec<Entity>, Vec<Entity>) = world
-                .entities_at(loc)
-                .into_iter()
-                .partition(|&e| world.is_mob(e));
+            let mut mobs = Vec::new();
+            let mut items = Vec::new();
+            let mut fx = Vec::new();
+
+            for e in world.entities_at(loc) {
+                if world.is_mob(e) {
+                    mobs.push(e);
+                } else if world.is_fx(e) {
+                    fx.push(e);
+                } else {
+                    items.push(e);
+                }
+            }
 
             // Draw non-mob entities, these are static and shown in map memory
             // FIXME: This should not use live entity data for the remembered objects, since it
@@ -202,7 +211,8 @@ impl WorldView {
 
                     // Is the mob doing a tweening move, interpolate it's position between old and
                     // new locations.
-                    if let Some(anim) = world.ecs().anim.get(i) {
+                    // TODO: Push some of this towards world-side anim logic.
+                    if let Some(anim) = world.anim(i) {
                         if anim.tween_current != 0 {
                             if let Some(towards_prev_pos) = loc.v2_at(anim.tween_from) {
                                 let tween_factor =
@@ -236,6 +246,46 @@ impl WorldView {
                                 }),
                         );
                         draw_health_pips(&mut entity_sprite_buffer, world, i, screen_pos);
+                    }
+                }
+
+                for &i in &fx {
+                    let mut pos = screen_pos;
+                    // TODO: Tweening support, as in mobs
+
+                    if let Some(anim) = world.anim(i) {
+                        if anim.state == AnimState::Explosion {
+                            // Figure out the frame.
+                            const EXPLOSION_FRAMES: usize = 5;
+                            const EXPLOSION_FUSE: usize = 4;
+                            const FRAME_DURATION: usize = 2;
+
+                            let t = (world.anim_tick() - anim.anim_start) as usize;
+
+                            let idx = match t {
+                                t if t < EXPLOSION_FUSE => None,
+                                t if t
+                                    > (EXPLOSION_FRAMES * FRAME_DURATION + EXPLOSION_FUSE - 1) =>
+                                {
+                                    None
+                                }
+                                t => Some((t - EXPLOSION_FUSE) / FRAME_DURATION),
+                            };
+                            if let Some(idx) = idx {
+                                entity_sprite_buffer.push(
+                                    Sprite::new(
+                                        Layer::Effect,
+                                        pos,
+                                        cache::misc(Icon::BigExplosion),
+                                    )
+                                    .idx(idx)
+                                    .color(Coloring::Shaded {
+                                        ambient: 1.0, // Be bright
+                                        diffuse: 1.0,
+                                    }),
+                                );
+                            }
+                        }
                     }
                 }
             }

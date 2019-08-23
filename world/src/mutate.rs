@@ -1,3 +1,4 @@
+use crate::animations::Animations;
 use crate::command::ActionOutcome;
 use crate::components::{Brain, BrainState, MapMemory, Status};
 use crate::effect::{Damage, Effect};
@@ -18,19 +19,9 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 
 /// World-mutating methods that are not exposed outside the crate.
-pub trait Mutate: Query + Terraform + Sized {
+pub trait Mutate: Query + Terraform + Sized + Animations {
     /// Advance world state after player input has been received.
     fn next_tick(&mut self);
-
-    /// Advance animations without ticking the world logic.
-    ///
-    /// Use this when waiting for player input to finish pending animations.
-    fn tick_anims(&mut self) {
-        let entities: Vec<Entity> = self.entities().cloned().collect();
-        for e in entities {
-            self.ecs_mut().anim.get_mut(e).map(|a| a.tick());
-        }
-    }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location);
 
@@ -311,6 +302,7 @@ pub trait Mutate: Query + Terraform + Sized {
                     let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
                     let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                     self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
+                    self.spawn_explosion(center);
                 }
                 MagicEffect::Confuse => {
                     const CONFUSION_RANGE: u32 = 9;

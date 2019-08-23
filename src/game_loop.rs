@@ -5,7 +5,7 @@ use image;
 use std::io::prelude::*;
 use std::io::Cursor;
 use vitral::{self, color, Align, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene, SceneSwitch};
-use world::{ActionOutcome, Command, Event, ItemType, Location, Mutate, Query, Slot, World};
+use world::{ActionOutcome, Animations, Command, Event, ItemType, Location, Query, Slot, World};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum InventoryMode {
