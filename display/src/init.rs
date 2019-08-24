@@ -16,6 +16,10 @@ pub fn load_graphics() {
         PngBytes(include_bytes!("../assets/blobs.png")),
     );
     vitral::add_sheet(
+        "assets/explosion.png",
+        PngBytes(include_bytes!("../assets/explosion.png")),
+    );
+    vitral::add_sheet(
         "assets/floors.png",
         PngBytes(include_bytes!("../assets/floors.png")),
     );
@@ -152,6 +156,16 @@ pub fn misc_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(HealthPip as usize, Builder::new("assets/gui.png").color(LIMEGREEN).rect(0, 8, 4, 4).finish());
     ret.insert(DarkHealthPip as usize, Builder::new("assets/gui.png").color(DARKSLATEGRAY).rect(0, 8, 4, 4).finish());
     ret.insert(BlockedOffSectorCell as usize, Builder::new("assets/floors.png").color(LIGHTGRAY).tile(0, 32).finish());
+
+    ret.insert(BigExplosion as usize, Builder::new("assets/explosion.png")
+        .color(WHITE) // Initial bright white flash
+        .big_tile(0, 0).merge()
+        .color(GOLD)  // Change the white initial flash into yellow fire
+        .big_tile(64, 0).merge()
+        .big_tile(128, 0).merge()
+        .big_tile(192, 0).merge()
+        .big_tile(0, 64).merge()
+        .finish());
 
     ret
 }
