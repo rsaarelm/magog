@@ -1,17 +1,19 @@
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
-use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab};
+use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise};
 use euclid::vec2;
 use indexmap::{IndexMap, IndexSet};
 use log::Level::Trace;
 use log::{log_enabled, trace};
+use rand::distributions::Uniform;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::error::Error;
 use std::fmt;
 use std::ops::Index;
 use std::str::FromStr;
+use std::u32;
 
 // NOTE ON STABLE ORDER
 //
@@ -24,6 +26,7 @@ use std::str::FromStr;
 #[derive(Clone, Debug)]
 pub struct Map {
     contents: IndexMap<CellVector, MapCell>,
+    player_entrance: Option<CellVector>,
 }
 
 impl<'a> From<&'a Map> for mapsave::Prefab {
@@ -53,10 +56,23 @@ impl Map {
 
     pub fn get(&self, pos: CellVector) -> Option<&MapCell> { self.contents.get(&pos) }
 
+    /// Return either the designated entry point or an arbitrary deterministic one.
+    pub fn player_entrance(&self) -> CellVector {
+        self.player_entrance.unwrap_or_else(|| {
+            let mut options = self.open_ground();
+            debug_assert!(!options.is_empty());
+            // Sort candidate cells via deterministic noise.
+            let distr = Uniform::new_inclusive(0, u32::MAX);
+            options.sort_by_key(|p| distr.noise(p));
+            options[0]
+        })
+    }
+
     /// Build an empty map.
     pub fn new() -> Map {
         Map {
             contents: IndexMap::new(),
+            player_entrance: None,
         }
     }
 
@@ -112,6 +128,9 @@ impl Map {
                     cell.terrain = Exit;
                 }
                 '<' => {
+                    if ret.player_entrance.is_none() {
+                        ret.player_entrance = Some(pos);
+                    }
                     cell.terrain = Entrance;
                 }
                 '~' => {
@@ -314,6 +333,11 @@ impl Map {
 
             self.insert(pos, c);
         }
+
+        // If you don't have an entrance yet, grab one from the other room.
+        if let (None, Some(pos)) = (self.player_entrance, room.player_entrance) {
+            self.player_entrance = Some(pos + offset);
+        }
     }
 
     /// Helper function to randomly place a room
@@ -398,7 +422,7 @@ impl Map {
     ///
     /// Do nothing when going through a vault interior, the premade vault map should take care of
     /// connectivity there, but the tunnel can still path through it.
-    fn dig(&mut self, pos: CellVector) {
+    pub fn dig(&mut self, pos: CellVector) {
         if !self.contains(pos) {
             return;
         }

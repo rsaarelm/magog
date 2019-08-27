@@ -97,8 +97,6 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
 mod animations;
 pub use crate::animations::Animations;
 
-mod biome;
-
 mod command;
 pub use crate::command::{ActionOutcome, Command};
 
@@ -154,7 +152,7 @@ mod volume;
 mod world;
 pub use crate::world::{Ecs, World};
 
-mod worldgen;
+mod world_cache;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum FovStatus {

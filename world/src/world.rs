@@ -7,12 +7,14 @@ use crate::item::Slot;
 use crate::location::{Location, Portal};
 use crate::mutate::Mutate;
 use crate::query::Query;
-use crate::sector::SECTOR_WIDTH;
+use crate::sector::{WorldSkeleton, SECTOR_WIDTH};
 use crate::spatial::{Place, Spatial};
+use crate::spec::EntitySpawn;
 use crate::terraform::{Terraform, TerrainQuery};
 use crate::terrain::Terrain;
 use crate::volume::Volume;
-use crate::worldgen::Worldgen;
+use crate::world_cache::WorldCache;
+use crate::Distribution;
 use crate::Rng;
 use calx::{seeded_rng, HexFov, HexFovIter};
 use calx_ecs::Entity;
@@ -43,7 +45,9 @@ pub struct World {
     /// Entity component system.
     ecs: Ecs,
     /// Static startup game world
-    worldgen: Worldgen,
+    world_cache: WorldCache,
+    /// Spawns from worldgen that have been generated in world.
+    generated_spawns: HashSet<(Location, EntitySpawn)>,
     /// Spatial index for game entities.
     spatial: Spatial,
     /// Global gamestate flags.
@@ -54,31 +58,23 @@ pub struct World {
     pub(crate) events: Vec<Event>,
 }
 
-impl<'a> World {
-    pub fn new(seed: u32) -> World {
+impl World {
+    pub fn new(seed: u32, skeleton: WorldSkeleton) -> World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            worldgen: Worldgen::new(seed),
+            world_cache: WorldCache::new(seed, skeleton),
+            generated_spawns: Default::default(),
             spatial: Spatial::new(),
             flags: Flags::new(),
             rng: seeded_rng(&seed),
             events: Vec::new(),
         };
 
-        // XXX: Clone to not run into borrow checker...
-        for (loc, spawn) in ret
-            .worldgen
-            .spawns()
-            .cloned()
-            .collect::<Vec<(Location, Loadout)>>()
-        {
-            ret.spawn(&spawn, loc);
-        }
-
         // TODO non-lexical borrow
-        let player_entry = ret.worldgen.player_entry();
+        let player_entry = ret.world_cache.player_entrance();
         ret.spawn_player(player_entry);
+        ret.generate_world_spawns();
 
         ret
     }
@@ -86,6 +82,20 @@ impl<'a> World {
     pub fn events(&self) -> &Vec<Event> { &self.events }
 
     pub(crate) fn clear_events(&mut self) { self.events.clear() }
+
+    fn generate_world_spawns(&mut self) {
+        let mut spawns = self.world_cache.drain_spawns();
+        spawns.retain(|s| !self.generated_spawns.contains(s));
+        let seed = self.rng_seed();
+
+        for (loc, s) in &spawns {
+            // Create one-off RNG from just the spawn info, will always run the same for same info.
+            let mut rng = calx::seeded_rng(&(seed, loc, s));
+            // Construct loadout from the spawn info and generate it in world.
+            self.spawn(&s.sample(&mut rng), *loc);
+            self.generated_spawns.insert((*loc, s.clone()));
+        }
+    }
 }
 
 impl TerrainQuery for World {
@@ -95,7 +105,7 @@ impl TerrainQuery for World {
     }
 
     fn terrain(&self, loc: Location) -> Terrain {
-        let mut t = self.worldgen.get_terrain(loc);
+        let mut t = self.world_cache.get_terrain(loc);
 
         if t == Terrain::Door && self.has_mobs(loc) {
             // Standing in the doorway opens the door.
@@ -105,7 +115,7 @@ impl TerrainQuery for World {
         t
     }
 
-    fn portal(&self, loc: Location) -> Option<Location> { self.worldgen.get_portal(loc) }
+    fn portal(&self, loc: Location) -> Option<Location> { self.world_cache.get_portal(loc) }
 
     fn is_untouched(&self, _loc: Location) -> bool { unimplemented!() }
 }
@@ -131,7 +141,7 @@ impl Query for World {
 
     fn get_tick(&self) -> u64 { self.flags.tick }
 
-    fn rng_seed(&self) -> u32 { self.worldgen.seed() }
+    fn rng_seed(&self) -> u32 { self.world_cache.seed() }
 
     fn entities(&self) -> slice::Iter<'_, Entity> { self.ecs.iter() }
 
@@ -156,6 +166,7 @@ impl Query for World {
 
 impl Mutate for World {
     fn next_tick(&mut self) {
+        self.generate_world_spawns();
         self.tick_anims();
 
         self.ai_main();

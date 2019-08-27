@@ -1,6 +1,7 @@
 use crate::item::Slot;
 use crate::mutate::Mutate;
 use crate::query::Query;
+use crate::sector::WorldSkeleton;
 use crate::world::World;
 use calx::Dir6;
 use calx::Incremental;
@@ -43,7 +44,7 @@ impl Incremental for World {
     type Seed = u32;
     type Event = Command;
 
-    fn from_seed(s: &Self::Seed) -> Self { World::new(*s) }
+    fn from_seed(s: &Self::Seed) -> Self { World::new(*s, WorldSkeleton::dungeon_dive()) }
 
     fn update(&mut self, e: &Command) {
         if self.player_can_act() {
@@ -62,9 +63,7 @@ impl World {
     fn process_cmd(&mut self, cmd: &Command) -> ActionOutcome {
         use Command::*;
         match cmd {
-            Wait => {
-                Some(())
-            }
+            Wait => Some(()),
             Pass => {
                 let player = self.player()?;
                 self.idle(player)
