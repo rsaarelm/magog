@@ -1,8 +1,9 @@
 //! Game world generation
 
 use crate::biome::{Biome, Dungeon};
-use crate::location::{Location, Portal, Sector};
+use crate::location::{Location, Portal};
 use crate::map::{Map, MapCell};
+use crate::sector::Sector;
 use crate::terrain::Terrain;
 use crate::world::Loadout;
 use crate::Distribution;

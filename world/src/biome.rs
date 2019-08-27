@@ -1,5 +1,6 @@
-use crate::location::{Location, Sector};
+use crate::location::Location;
 use crate::map::Map;
+use crate::sector::Sector;
 use crate::spec::{self, EntitySpawn};
 use crate::vaults;
 use crate::{Distribution, Rng};

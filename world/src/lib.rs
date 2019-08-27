@@ -120,7 +120,7 @@ mod item;
 pub use crate::item::{ItemType, Slot};
 
 mod location;
-pub use crate::location::{Location, Portal, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
+pub use crate::location::{Location, Portal};
 
 mod location_set;
 
@@ -133,6 +133,9 @@ mod mutate;
 
 mod query;
 pub use crate::query::Query;
+
+mod sector;
+pub use crate::sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod spatial;
 mod spec;
