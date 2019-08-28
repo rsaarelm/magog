@@ -1,6 +1,8 @@
 with import <nixpkgs> {};
 
-stdenv.mkDerivation {
+let
+  log_level = "info";
+in stdenv.mkDerivation {
   name = "rust-env";
   buildInputs = [
     rustup
@@ -21,6 +23,7 @@ stdenv.mkDerivation {
     }"
 
     rustup install stable
+    rustup install nightly
     rustup default stable
     rustup update
 
@@ -36,4 +39,6 @@ stdenv.mkDerivation {
 
   # Set Environment Variables
   RUST_BACKTRACE = 1;
+
+  RUST_LOG = "calx-ecs=${log_level},vitral=${log_level},calx=${log_level},display=${log_level},world=${log_level},magog=${log_level}";
 }
