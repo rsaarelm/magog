@@ -615,8 +615,8 @@ fn cut_floodfilled_region(
 pub struct MapCell {
     pub terrain: Terrain,
     pub spawns: Vec<EntitySpawn>,
-    pub can_dig: bool,
-    pub vault_kind: Option<VaultKind>,
+    can_dig: bool,
+    vault_kind: Option<VaultKind>,
 }
 
 impl Default for MapCell {

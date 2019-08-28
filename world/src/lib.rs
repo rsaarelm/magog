@@ -16,20 +16,20 @@ macro_rules! msg {
 
 // XXX: Lots of code for pretty simple end result on the MessageFormatter...
 #[must_use]
-pub struct MessageFormatter0<'a, W> {
+pub(crate) struct MessageFormatter0<'a, W> {
     world: &'a mut W,
     msg: String,
 }
 
 #[must_use]
-pub struct MessageFormatter1<'a, W> {
+pub(crate) struct MessageFormatter1<'a, W> {
     world: &'a mut W,
     subject: grammar::Noun,
     msg: String,
 }
 
 #[must_use]
-pub struct MessageFormatter2<'a, W> {
+pub(crate) struct MessageFormatter2<'a, W> {
     world: &'a mut W,
     subject: grammar::Noun,
     object: grammar::Noun,
@@ -130,7 +130,6 @@ pub use crate::mapsave::MapSave;
 mod map;
 
 mod mutate;
-pub use crate::mutate::Mutate;
 
 mod query;
 pub use crate::query::Query;
