@@ -15,8 +15,8 @@ use std::ops::{Add, Deref, DerefMut};
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub const SECTOR_WIDTH: i32 = 38;
-pub const SECTOR_HEIGHT: i32 = 18;
+pub const SECTOR_WIDTH: i32 = 40;
+pub const SECTOR_HEIGHT: i32 = 20;
 
 pub struct SectorSpace;
 pub type SectorVector = Vector3D<i16, SectorSpace>;
