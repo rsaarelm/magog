@@ -44,8 +44,8 @@ pub fn load_graphics() {
         PngBytes(include_bytes!("../assets/props.png")),
     );
     vitral::add_sheet(
-        "assets/splatter.png",
-        PngBytes(include_bytes!("../assets/splatter.png")),
+        "assets/fx.png",
+        PngBytes(include_bytes!("../assets/fx.png")),
     );
     vitral::add_sheet(
         "assets/walls.png",
