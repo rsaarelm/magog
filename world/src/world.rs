@@ -237,6 +237,19 @@ impl Mutate for World {
     fn rng(&mut self) -> &mut Rng { &mut self.rng }
 
     fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
+
+    fn spawn_fx(&mut self, loc: Location) -> Entity {
+        let e = self.ecs.make();
+        self.place_entity(e, loc);
+        let t = self.anim_tick();
+        let mut anim = components::Anim::default();
+        // Give it some starting state that makes it get cleaned up by default.
+        // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
+        // since that denotes an permanent entity.
+        anim.state = components::AnimState::Explosion;
+        self.ecs.anim.insert(e, anim);
+        e
+    }
 }
 
 impl Terraform for World {
@@ -268,18 +281,5 @@ impl Animations for World {
             }
         }
         self.flags.anim_tick += 1;
-    }
-
-    fn spawn_fx(&mut self, loc: Location) -> Entity {
-        let e = self.ecs.make();
-        self.place_entity(e, loc);
-        let t = self.anim_tick();
-        let mut anim = components::Anim::default();
-        // Give it some starting state that makes it get cleaned up by default.
-        // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
-        // since that denotes an permanent entity.
-        anim.state = components::AnimState::Explosion;
-        self.ecs.anim.insert(e, anim);
-        e
     }
 }

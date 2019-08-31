@@ -17,16 +17,6 @@ pub trait Animations: Query + Sized {
     /// Use this when waiting for player input to finish pending animations.
     fn tick_anims(&mut self);
 
-    fn spawn_fx(&mut self, loc: Location) -> Entity;
-
-    fn spawn_explosion(&mut self, loc: Location) {
-        let e = self.spawn_fx(loc);
-        let tick = self.anim_tick();
-        let anim = self.anim_mut(e).unwrap();
-        anim.state = AnimState::Explosion;
-        anim.anim_start = tick;
-    }
-
     /// Return whether entity is a transient effect.
     fn is_fx(&self, e: Entity) -> bool {
         if let Some(anim) = self.anim(e) {

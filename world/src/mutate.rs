@@ -1,6 +1,6 @@
 use crate::animations::Animations;
 use crate::command::ActionOutcome;
-use crate::components::{Brain, BrainState, MapMemory, Status};
+use crate::components::{AnimState, Brain, BrainState, MapMemory, Status};
 use crate::effect::{Damage, Effect};
 use crate::event::Event;
 use crate::item::{ItemType, MagicEffect, Slot};
@@ -51,6 +51,9 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
     /// Mutable access to ecs
     fn ecs_mut(&mut self) -> &mut Ecs;
+
+    /// Spawn an effect entity
+    fn spawn_fx(&mut self, loc: Location) -> Entity;
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
@@ -646,5 +649,14 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
+    }
+
+    /// Spawn an explosion effect
+    fn spawn_explosion(&mut self, loc: Location) {
+        let e = self.spawn_fx(loc);
+        let tick = self.anim_tick();
+        let anim = self.anim_mut(e).unwrap();
+        anim.state = AnimState::Explosion;
+        anim.anim_start = tick;
     }
 }
