@@ -1,5 +1,4 @@
 use crate::components::{Anim, AnimState};
-use crate::location::Location;
 use crate::query::Query;
 use calx_ecs::Entity;
 
