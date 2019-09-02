@@ -147,6 +147,14 @@ pub trait Query: TerrainQuery + Sized {
             .map_or(false, |loc| self.can_enter(e, loc.jump(self, dir)))
     }
 
+    /// Return whether the entity can move in a direction based on just the terrain.
+    ///
+    /// There might be blocking mobs but they are ignored
+    fn can_step_on_terrain(&self, e: Entity, dir: Dir6) -> bool {
+        self.location(e)
+            .map_or(false, |loc| self.can_enter_terrain(e, loc.jump(self, dir)))
+    }
+
     /// Return whether location blocks line of sight.
     fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
 
@@ -157,6 +165,17 @@ pub trait Query: TerrainQuery + Sized {
             return false;
         }
         if self.blocks_walk(loc) {
+            return false;
+        }
+        true
+    }
+
+    fn can_enter_terrain(&self, e: Entity, loc: Location) -> bool {
+        if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
+            // Can't open doors without hands.
+            return false;
+        }
+        if self.terrain_blocks_walk(loc) {
             return false;
         }
         true
@@ -180,10 +199,7 @@ pub trait Query: TerrainQuery + Sized {
 
     /// Return whether the location obstructs entity movement.
     fn blocks_walk(&self, loc: Location) -> bool {
-        if !self.is_valid_location(loc) {
-            return true;
-        }
-        if self.terrain(loc).blocks_walk() {
+        if self.terrain_blocks_walk(loc) {
             return true;
         }
         if self
@@ -191,6 +207,17 @@ pub trait Query: TerrainQuery + Sized {
             .into_iter()
             .any(|e| self.is_blocking_entity(e))
         {
+            return true;
+        }
+        false
+    }
+
+    /// Return whether the location obstructs entity movement.
+    fn terrain_blocks_walk(&self, loc: Location) -> bool {
+        if !self.is_valid_location(loc) {
+            return true;
+        }
+        if self.terrain(loc).blocks_walk() {
             return true;
         }
         false

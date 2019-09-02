@@ -374,6 +374,23 @@ impl GameLoop {
     fn smart_step(&self, ctx: &mut GameRuntime, dir: Dir6) -> ActionOutcome {
         let player = ctx.world.player()?;
         let loc = ctx.world.location(player)?;
+
+        // Wall slide
+        let dir = {
+            let (left, fwd, right) = (
+                ctx.world.can_step_on_terrain(player, dir - 1),
+                ctx.world.can_step_on_terrain(player, dir),
+                ctx.world.can_step_on_terrain(player, dir + 1),
+            );
+            if !fwd && left {
+                dir - 1
+            } else if !fwd && right {
+                dir + 1
+            } else {
+                dir
+            }
+        };
+
         let destination = loc.jump(&*ctx.world, dir);
 
         if let Some(mob) = ctx.world.mob_at(destination) {
