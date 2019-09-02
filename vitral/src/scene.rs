@@ -6,6 +6,7 @@ use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::size2;
 use image::RgbaImage;
+use log::{debug, warn};
 use std::error::Error;
 use std::sync::Mutex;
 
@@ -90,6 +91,7 @@ impl AppConfig {
 #[derive(Default)]
 struct EngineState {
     atlas_cache: AtlasCache<String>,
+    average_frame_duration: Flick,
 }
 
 lazy_static! {
@@ -121,9 +123,7 @@ pub fn run_app<T>(
 /// Return the average frame duration for recent frames.
 ///
 /// Panics if called when an app isn't running via `run_app`.
-pub fn get_frame_duration() -> Flick {
-    unimplemented!();
-}
+pub fn get_frame_duration() -> Flick { ENGINE_STATE.lock().unwrap().average_frame_duration }
 
 /// Add a named image into the engine image atlas.
 pub fn add_sheet(id: impl Into<String>, sheet: impl Into<RgbaImage>) -> ImageKey {
@@ -254,15 +254,46 @@ impl<T> GameLoop<T> {
         // Inspired by https://gafferongames.com/post/fix_your_timestep/
         let mut t = Flick::now();
         let mut accum = Flick(0);
+        let mut average_duration = self.frame_duration;
+
         'gameloop: loop {
             let new_t = Flick::now();
             let frame_duration = new_t - t;
+
+            average_duration =
+                Flick((0.95 * average_duration.0 as f64 + 0.05 * frame_duration.0 as f64) as u64);
+            ENGINE_STATE.lock().unwrap().average_frame_duration = average_duration;
+            debug!(
+                "FPS {:.1}",
+                FLICKS_PER_SECOND as f64 / average_duration.0 as f64
+            );
+
             t = new_t;
 
             accum += frame_duration;
 
             while accum >= self.frame_duration {
+                let update_time = Flick::now();
                 self.update();
+                let update_time = Flick::now() - update_time;
+                let update_ratio = update_time.0 as f64 / self.frame_duration.0 as f64;
+
+                // If a single update takes most of the frame time, things are bad. Game loop may
+                // enter a death spiral where every cycle needs more updates and makes the lag
+                // worse. If an over-long update is detected, cut things short and flush the
+                // accumulator.
+                //
+                // XXX: This has not been tested.
+                if update_ratio > 0.9 {
+                    warn!(
+                        "Scene update took {} % of alotted frame time. Skipping further updates",
+                        (update_ratio * 100.0) as i32
+                    );
+
+                    accum = Flick(0);
+                    break;
+                }
+
                 accum -= self.frame_duration;
                 if self.scene_stack.is_empty() {
                     break 'gameloop;
@@ -272,7 +303,19 @@ impl<T> GameLoop<T> {
             self.backend
                 .sync_with_atlas_cache(&mut ENGINE_STATE.lock().unwrap().atlas_cache);
 
+            let render_time = Flick::now();
             self.render();
+            let render_time = Flick::now() - render_time;
+            let render_ratio = render_time.0 as f64 / self.frame_duration.0 as f64;
+
+            // Renders can be expected to go over budget occasionally, but it's still a problem if
+            // you want to keep a steady FPS, so make some log noise.
+            if render_ratio > 1.0 {
+                debug!(
+                    "Scene render too {} % of alotted frame time",
+                    (render_ratio * 100.0) as i32
+                );
+            }
 
             if self.scene_stack.is_empty() {
                 break 'gameloop;
