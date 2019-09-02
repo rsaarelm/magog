@@ -189,6 +189,7 @@ impl WorldView {
             // will then show the object moving around without the player observing it.
             for &i in &items {
                 if let Some(desc) = world.ecs().desc.get(i) {
+                    let screen_pos = screen_pos + lerp_offset(world, i, loc);
                     let color = if in_map_memory {
                         Coloring::MapMemory
                     } else {
@@ -207,29 +208,7 @@ impl WorldView {
             // Draw mobs in directly seen cells
             if !in_map_memory {
                 for &i in &mobs {
-                    let mut mob_pos = screen_pos;
-
-                    // Is the mob doing a tweening move, interpolate it's position between old and
-                    // new locations.
-                    // TODO: Push some of this towards world-side anim logic.
-                    if let Some(anim) = world.anim(i) {
-                        if anim.tween_current != 0 {
-                            if let Some(towards_prev_pos) = loc.v2_at(anim.tween_from) {
-                                let tween_factor =
-                                    anim.tween_current as f32 / anim.tween_max as f32;
-                                let prev_pos =
-                                    ScreenVector::from_cell_space(chart_pos + towards_prev_pos)
-                                        + center;
-                                mob_pos = lerp(
-                                    screen_pos.to_f32(),
-                                    prev_pos.to_f32(),
-                                    ease::cubic_in_out(tween_factor),
-                                )
-                                .round()
-                                .to_i32();
-                            }
-                        }
-                    }
+                    let screen_pos = screen_pos + lerp_offset(world, i, loc);
 
                     if let Some(desc) = world.ecs().desc.get(i) {
                         let frame_idx = if world.is_bobbing(i) {
@@ -238,7 +217,7 @@ impl WorldView {
                             0
                         };
                         entity_sprite_buffer.push(
-                            Sprite::new(Layer::Object, mob_pos, cache::entity(desc.icon))
+                            Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
                                 .idx(frame_idx)
                                 .color(Coloring::Shaded {
                                     ambient,
@@ -250,7 +229,7 @@ impl WorldView {
                 }
 
                 for &i in &fx {
-                    let mut pos = screen_pos;
+                    let screen_pos = screen_pos + lerp_offset(world, i, loc);
                     // TODO: Tweening support, as in mobs
 
                     if let Some(anim) = world.anim(i) {
@@ -275,7 +254,7 @@ impl WorldView {
                                 entity_sprite_buffer.push(
                                     Sprite::new(
                                         Layer::Effect,
-                                        pos,
+                                        screen_pos,
                                         cache::misc(Icon::BigExplosion),
                                     )
                                     .idx(idx)
@@ -375,6 +354,26 @@ impl WorldView {
                 });
                 sprites.push(Sprite::new(Layer::Effect, pos, brush));
             }
+        }
+
+        /// Return vector to add to position if entity's position is being animated.
+        fn lerp_offset(world: &World, e: Entity, loc: Location) -> ScreenVector {
+            if let Some(anim) = world.anim(e) {
+                if anim.tween_current != 0 {
+                    if let Some(towards_prev_pos) = loc.v2_at(anim.tween_from) {
+                        let tween_factor = anim.tween_current as f32 / anim.tween_max as f32;
+                        let prev_pos = ScreenVector::from_cell_space(towards_prev_pos);
+                        return lerp(
+                            vec2(0.0, 0.0),
+                            prev_pos.to_f32(),
+                            ease::cubic_in_out(tween_factor),
+                        )
+                        .round()
+                        .to_i32();
+                    }
+                }
+            }
+            vec2(0, 0)
         }
     }
 }
