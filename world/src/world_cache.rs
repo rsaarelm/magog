@@ -121,6 +121,14 @@ impl WorldCache {
                     .insert(loc, *terrain);
             }
 
+            // World cache uses (location, spawn string) as the key to see if it already has
+            // created a spawn. Duplicate spawn strings from one location will be ignored after the
+            // first one when mapgen wanted to create multiple entities.
+            debug_assert!(
+                spawns.iter().collect::<HashSet<_>>().len() == spawns.len(),
+                "Duplicates in mapgen spawns will not be generated correctly"
+            );
+
             // Put spawns in pending list, don't want them to go live yet because they'd trigger a
             // cache cascade once their AI starts running.
             for s in spawns {
