@@ -32,7 +32,7 @@ pub use crate::rect_util::RectUtil;
 mod scene;
 pub use crate::scene::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
-    save_screenshot, AppConfig, ImageKey, InputEvent, Scene, SceneSwitch,
+    AppConfig, ImageKey, InputEvent, Scene, SceneSwitch,
 };
 
 mod tilesheet;

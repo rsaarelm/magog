@@ -118,13 +118,6 @@ pub fn run_app<T>(
     Ok(())
 }
 
-/// Saves a screenshot with the given name prefix to disk.
-///
-/// Panics if called when an app isn't running via `run_app`.
-pub fn save_screenshot(_prefix: &str) -> Result<(), Box<dyn Error>> {
-    unimplemented!();
-}
-
 /// Return the average frame duration for recent frames.
 ///
 /// Panics if called when an app isn't running via `run_app`.
