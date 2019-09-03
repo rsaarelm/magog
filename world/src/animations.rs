@@ -1,5 +1,6 @@
 use crate::location::Location;
 use crate::query::Query;
+use calx::{ease, CellVector};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 
@@ -46,27 +47,38 @@ pub trait Animations: Query + Sized {
     fn anim_frame(&self, e: Entity) -> Option<usize> {
         unimplemented!();
     }
+
+    /// Return vector by which entity's current position tweening frame displaces it from its base
+    /// location.
+    ///
+    /// Since the current projection system is fixed to integer-coordinate cell vectors, the return
+    /// value is scalar a and cell vector v, with the actual displacement vector being a * v.
+    fn tween_displacement_vector(&self, e: Entity) -> (f32, CellVector) {
+        if let (Some(anim), Some(origin)) = (self.anim(e), self.location(e)) {
+            let frame = (self.anim_tick() - anim.tween_start) as u32;
+            if frame < anim.tween_duration {
+                if let Some(vec) = origin.v2_at(anim.tween_from) {
+                    let scalar = frame as f32 / anim.tween_duration as f32;
+                    return (ease::cubic_in_out(1.0 - scalar), vec);
+                }
+            }
+        }
+        (0.0, Default::default())
+    }
 }
 
 /// Entity animation state.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Anim {
     pub tween_from: Location,
-    // TODO: Write tweening in terms of starting time anim tick, tween_start: u64
-    pub tween_current: u32,
-    pub tween_max: u32,
+    /// Anim_tick when tweening started
+    pub tween_start: u64,
+    /// How many frames does the tweening take
+    pub tween_duration: u32,
 
     /// Anim_tick when the animation started
     pub anim_start: u64,
     pub state: AnimState,
-}
-
-impl Anim {
-    pub fn tick(&mut self) {
-        if self.tween_current > 0 {
-            self.tween_current -= 1;
-        }
-    }
 }
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]

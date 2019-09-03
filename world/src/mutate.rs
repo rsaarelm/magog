@@ -348,10 +348,11 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
             let delay = self.action_delay(e);
             debug_assert!(delay > 0);
+            let anim_tick = self.anim_tick();
             if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
                 anim.tween_from = origin;
-                anim.tween_current = delay - 1;
-                anim.tween_max = delay;
+                anim.tween_start = anim_tick;
+                anim.tween_duration = delay;
             }
             self.end_turn(e);
             return Some(());

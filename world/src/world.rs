@@ -241,7 +241,6 @@ impl Mutate for World {
     fn spawn_fx(&mut self, loc: Location) -> Entity {
         let e = self.ecs.make();
         self.place_entity(e, loc);
-        let t = self.anim_tick();
         let mut anim = Anim::default();
         // Give it some starting state that makes it get cleaned up by default.
         // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
@@ -274,8 +273,6 @@ impl Animations for World {
     fn tick_anims(&mut self) {
         let entities: Vec<Entity> = self.entities().cloned().collect();
         for e in entities {
-            self.anim_mut(e).map(|a| a.tick());
-
             if self.is_expired_fx(e) {
                 self.remove_entity(e);
             }
