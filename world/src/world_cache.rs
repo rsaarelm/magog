@@ -79,12 +79,6 @@ impl WorldCache {
         )
     }
 
-    /// Activate location in cache
-    ///
-    /// If the location's sector has world data specified, that world data will become available in
-    /// the cache.
-    fn touch(&self, loc: Location) { self.finalize(loc.sector()); }
-
     fn generate(&self, sector: Sector) {
         if !self.skeleton.contains_key(&sector) {
             // Outside world, skip.
