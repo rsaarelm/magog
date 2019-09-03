@@ -1,4 +1,4 @@
-use crate::animations::Animations;
+use crate::animations::{Anim, AnimState, Animations};
 use crate::components;
 use crate::event::Event;
 use crate::flags::Flags;
@@ -27,7 +27,7 @@ pub const GAME_VERSION: &str = "0.1.0";
 
 calx_ecs::build_ecs! {
     desc: components::Desc,
-    anim: components::Anim,
+    anim: Anim,
     map_memory: components::MapMemory,
     health: components::Health,
     brain: components::Brain,
@@ -242,11 +242,11 @@ impl Mutate for World {
         let e = self.ecs.make();
         self.place_entity(e, loc);
         let t = self.anim_tick();
-        let mut anim = components::Anim::default();
+        let mut anim = Anim::default();
         // Give it some starting state that makes it get cleaned up by default.
         // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
         // since that denotes an permanent entity.
-        anim.state = components::AnimState::Explosion;
+        anim.state = AnimState::Explosion;
         self.ecs.anim.insert(e, anim);
         e
     }
@@ -268,8 +268,8 @@ impl Terraform for World {
 
 impl Animations for World {
     fn anim_tick(&self) -> u64 { self.flags.anim_tick }
-    fn anim(&self, e: Entity) -> Option<&components::Anim> { self.ecs.anim.get(e) }
-    fn anim_mut(&mut self, e: Entity) -> Option<&mut components::Anim> { self.ecs.anim.get_mut(e) }
+    fn anim(&self, e: Entity) -> Option<&Anim> { self.ecs.anim.get(e) }
+    fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim> { self.ecs.anim.get_mut(e) }
 
     fn tick_anims(&mut self) {
         let entities: Vec<Entity> = self.entities().cloned().collect();

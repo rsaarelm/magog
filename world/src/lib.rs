@@ -95,13 +95,13 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
 }
 
 mod animations;
-pub use crate::animations::Animations;
+pub use crate::animations::{Anim, AnimState, Animations};
 
 mod command;
 pub use crate::command::{ActionOutcome, Command};
 
 mod components;
-pub use crate::components::{Anim, AnimState, Icon};
+pub use crate::components::Icon;
 
 mod effect;
 

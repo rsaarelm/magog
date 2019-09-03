@@ -38,45 +38,6 @@ pub struct Desc {
     pub icon: Icon,
 }
 
-/// Entity animation state.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Anim {
-    pub tween_from: Location,
-    // TODO: Write tweening in terms of starting time anim tick, tween_start: u64
-    pub tween_current: u32,
-    pub tween_max: u32,
-
-    /// Anim_tick when the animation started
-    pub anim_start: u64,
-    pub state: AnimState,
-}
-
-#[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
-pub enum AnimState {
-    /// Mob decorator, doing nothing in particular
-    Mob,
-    /// Show mob hurt animation
-    MobHurt,
-    /// Show mob blocking autoexplore animation
-    MobBlocks,
-    /// An explosion
-    Explosion,
-    /// A death gib
-    Gib,
-}
-
-impl Default for AnimState {
-    fn default() -> Self { AnimState::Mob }
-}
-
-impl Anim {
-    pub fn tick(&mut self) {
-        if self.tween_current > 0 {
-            self.tween_current -= 1;
-        }
-    }
-}
-
 impl Desc {
     pub fn new(name: &str, icon: Icon) -> Desc {
         // XXX: Not idiomatic to set this to be called with a non-owned

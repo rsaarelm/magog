@@ -1,6 +1,6 @@
-use crate::animations::Animations;
+use crate::animations::{AnimState, Animations};
 use crate::command::ActionOutcome;
-use crate::components::{AnimState, Brain, BrainState, MapMemory, Status};
+use crate::components::{Brain, BrainState, MapMemory, Status};
 use crate::effect::{Damage, Effect};
 use crate::event::Event;
 use crate::item::{ItemType, MagicEffect, Slot};

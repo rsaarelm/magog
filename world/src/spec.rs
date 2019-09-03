@@ -1,6 +1,5 @@
-use crate::components::{
-    Anim, Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses,
-};
+use crate::animations::Anim;
+use crate::components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use crate::item::ItemType;
 use crate::stats::{Intrinsic, Stats};
 use crate::world::Loadout;

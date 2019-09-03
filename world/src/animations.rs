@@ -1,6 +1,7 @@
-use crate::components::{Anim, AnimState};
+use crate::location::Location;
 use crate::query::Query;
 use calx_ecs::Entity;
+use serde_derive::{Deserialize, Serialize};
 
 /// Trait for advancing animations.
 ///
@@ -45,4 +46,43 @@ pub trait Animations: Query + Sized {
     fn anim_frame(&self, e: Entity) -> Option<usize> {
         unimplemented!();
     }
+}
+
+/// Entity animation state.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Anim {
+    pub tween_from: Location,
+    // TODO: Write tweening in terms of starting time anim tick, tween_start: u64
+    pub tween_current: u32,
+    pub tween_max: u32,
+
+    /// Anim_tick when the animation started
+    pub anim_start: u64,
+    pub state: AnimState,
+}
+
+impl Anim {
+    pub fn tick(&mut self) {
+        if self.tween_current > 0 {
+            self.tween_current -= 1;
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
+pub enum AnimState {
+    /// Mob decorator, doing nothing in particular
+    Mob,
+    /// Show mob hurt animation
+    MobHurt,
+    /// Show mob blocking autoexplore animation
+    MobBlocks,
+    /// An explosion
+    Explosion,
+    /// A death gib
+    Gib,
+}
+
+impl Default for AnimState {
+    fn default() -> Self { AnimState::Mob }
 }
