@@ -6,6 +6,7 @@ use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::size2;
 use image::RgbaImage;
+use lazy_static::lazy_static;
 use log::{debug, warn};
 use std::error::Error;
 use std::sync::Mutex;

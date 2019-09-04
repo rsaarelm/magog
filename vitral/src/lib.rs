@@ -1,15 +1,3 @@
-extern crate cfg_if;
-
-#[cfg(feature = "image")]
-extern crate image;
-
-#[macro_use]
-extern crate glium;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-
 use euclid::default::{Point2D, Rect, Size2D, Vector2D};
 use euclid::{point2, rect, vec2};
 use image::{RgbImage, RgbaImage};

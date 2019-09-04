@@ -9,8 +9,9 @@ use euclid::default::{Point2D, Size2D};
 use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
 use glium::glutin::{self, Event, WindowEvent};
 use glium::index::PrimitiveType;
-use glium::{self, Surface};
+use glium::{self, implement_vertex, program, uniform, Surface};
 use image::{Pixel, RgbImage, RgbaImage};
+use log::info;
 
 use std::error::Error;
 use std::fmt::Debug;
