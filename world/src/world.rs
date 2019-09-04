@@ -173,6 +173,20 @@ impl Mutate for World {
 
         self.clean_dead();
         self.flags.tick += 1;
+
+        // Expiring entities (animation effects) disappear if their time is up.
+        let es: Vec<Entity> = self.ecs.anim.ent_iter().cloned().collect();
+        for e in es.into_iter() {
+            if let Some(anim) = self.anim(e) {
+                if anim
+                    .anim_done_world_tick
+                    .map(|t| t <= self.get_tick())
+                    .unwrap_or(false)
+                {
+                    self.kill_entity(e);
+                }
+            }
+        }
     }
 
     fn set_entity_location(&mut self, e: Entity, loc: Location) { self.spatial.insert_at(e, loc); }
@@ -266,17 +280,8 @@ impl Terraform for World {
 }
 
 impl Animations for World {
-    fn anim_tick(&self) -> u64 { self.flags.anim_tick }
+    fn get_anim_tick(&self) -> u64 { self.flags.anim_tick }
     fn anim(&self, e: Entity) -> Option<&Anim> { self.ecs.anim.get(e) }
     fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim> { self.ecs.anim.get_mut(e) }
-
-    fn tick_anims(&mut self) {
-        let entities: Vec<Entity> = self.entities().cloned().collect();
-        for e in entities {
-            if self.is_expired_fx(e) {
-                self.remove_entity(e);
-            }
-        }
-        self.flags.anim_tick += 1;
-    }
+    fn tick_anims(&mut self) { self.flags.anim_tick += 1; }
 }

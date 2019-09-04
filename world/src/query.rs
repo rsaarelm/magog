@@ -298,7 +298,9 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity is dead and should be removed from the world.
-    fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
+    fn is_alive(&self, e: Entity) -> bool {
+        self.location(e).is_some()
+    }
 
     /// Return true if the game has ended and the player can make no further
     /// actions.

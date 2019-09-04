@@ -239,7 +239,7 @@ impl WorldView {
                             const EXPLOSION_FUSE: usize = 4;
                             const FRAME_DURATION: usize = 2;
 
-                            let t = (world.anim_tick() - anim.anim_start) as usize;
+                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
 
                             let idx = match t {
                                 t if t < EXPLOSION_FUSE => None,

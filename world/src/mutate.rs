@@ -348,7 +348,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
             let delay = self.action_delay(e);
             debug_assert!(delay > 0);
-            let anim_tick = self.anim_tick();
+            let anim_tick = self.get_anim_tick();
             if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
                 anim.tween_from = origin;
                 anim.tween_start = anim_tick;
@@ -655,9 +655,16 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// Spawn an explosion effect
     fn spawn_explosion(&mut self, loc: Location) {
         let e = self.spawn_fx(loc);
-        let tick = self.anim_tick();
+        let tick = self.get_anim_tick();
+        let world_tick = self.get_tick();
         let anim = self.anim_mut(e).unwrap();
         anim.state = AnimState::Explosion;
         anim.anim_start = tick;
+
+        // Set the (world clock, not anim clock to preserve determinism) time when animation entity
+        // should be cleaned up.
+        // XXX: Animations stick around for a bunch of time after becoming spent and invisible,
+        // simpler than trying to figure out precise durations.
+        anim.anim_done_world_tick = Some(world_tick + 300);
     }
 }
