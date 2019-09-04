@@ -4,23 +4,23 @@ use std::time::Duration;
 use time;
 
 /// Conversion factor for the flick time unit
-pub const FLICKS_PER_SECOND: u64 = 705_600_000;
+pub const FLICKS_PER_SECOND: i64 = 705_600_000;
 
 /// Flick time unit.
 ///
 /// See https://github.com/OculusVR/Flicks
 #[derive(Copy, Clone, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct Flick(pub u64);
+pub struct Flick(pub i64);
 
 impl Flick {
     pub fn from_seconds(seconds: f64) -> Flick {
-        Flick((seconds * FLICKS_PER_SECOND as f64) as u64)
+        Flick((seconds * FLICKS_PER_SECOND as f64) as i64)
     }
 
-    pub fn from_nanoseconds(nanos: u64) -> Flick { Flick(nanos * 7056 / 10_000) }
+    pub fn from_nanoseconds(nanos: i64) -> Flick { Flick(nanos * 7056 / 10_000) }
 
     /// Return current time in Flicks since an unspecified epoch.
-    pub fn now() -> Flick { Flick::from_nanoseconds(time::precise_time_ns()) }
+    pub fn now() -> Flick { Flick::from_nanoseconds(time::precise_time_ns() as i64) }
 }
 
 impl fmt::Display for Flick {
@@ -31,14 +31,14 @@ impl fmt::Display for Flick {
 
 impl From<Duration> for Flick {
     fn from(d: Duration) -> Flick {
-        let nano = d.as_secs() as u64 * 1_000_000_000 + d.subsec_nanos() as u64;
+        let nano = d.as_secs() as i64 * 1_000_000_000 + d.subsec_nanos() as i64;
         Flick::from_nanoseconds(nano)
     }
 }
 
 impl From<Flick> for Duration {
     fn from(f: Flick) -> Duration {
-        let secs = f.0 / FLICKS_PER_SECOND;
+        let secs = (f.0 / FLICKS_PER_SECOND) as u64;
         let nanos = ((f.0 % FLICKS_PER_SECOND) * 1_000_000_000 / FLICKS_PER_SECOND) as u32;
         Duration::new(secs, nanos)
     }

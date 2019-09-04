@@ -262,7 +262,7 @@ impl<T> GameLoop<T> {
             let frame_duration = new_t - t;
 
             average_duration =
-                Flick((0.95 * average_duration.0 as f64 + 0.05 * frame_duration.0 as f64) as u64);
+                Flick((0.95 * average_duration.0 as f64 + 0.05 * frame_duration.0 as f64) as i64);
             ENGINE_STATE.lock().unwrap().average_frame_duration = average_duration;
             debug!(
                 "FPS {:.1}",
