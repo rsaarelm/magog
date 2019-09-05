@@ -72,6 +72,12 @@ pub struct AppConfig {
     pub frame_duration: Flick,
     pub resolution: Size2D<u32>,
     pub window_title: String,
+    /// If true, scale graphics only in integer multiples of pixel size.
+    ///
+    /// All pixels on a pixel-perfect window will have equal size, which prevents scaling artifacts
+    /// from messing up pixel art, but there may also be large unused areas on the borders of the
+    /// application window.
+    pub pixel_perfect: bool,
 }
 
 impl AppConfig {
@@ -80,6 +86,7 @@ impl AppConfig {
             frame_duration: Flick(FLICKS_PER_SECOND / 30),
             resolution: size2(640, 360),
             window_title: title.into(),
+            pixel_perfect: true,
         }
     }
 
@@ -112,6 +119,7 @@ pub fn run_app<T>(
         config.resolution.width,
         config.resolution.height,
         config.window_title,
+        config.pixel_perfect,
     )?;
 
     let mut gameloop = GameLoop::new(backend, world, scenes).frame_duration(config.frame_duration);

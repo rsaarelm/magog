@@ -36,7 +36,7 @@ impl Backend {
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
     /// to render data of that type as argument to the constructor.
-    pub fn new(
+    fn new(
         display: glium::Display,
         events: glutin::EventsLoop,
         program: glium::Program,
@@ -62,6 +62,7 @@ impl Backend {
         width: u32,
         height: u32,
         title: S,
+        pixel_perfect: bool,
     ) -> Result<Backend, Box<dyn Error>> {
         let events = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new().with_title(title);
@@ -118,7 +119,12 @@ impl Backend {
                 .set_position(window_pos.to_logical(dpi_factor));
         }
 
-        Ok(Backend::new(display, events, program, width, height))
+        let mut ret = Backend::new(display, events, program, width, height);
+        if !pixel_perfect {
+            ret.zoom = CanvasZoom::AspectPreserving;
+        }
+
+        Ok(ret)
     }
 
     /// Return the pixel resolution of the backend.
