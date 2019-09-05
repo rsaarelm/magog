@@ -130,7 +130,7 @@ impl WorldCache {
                     .borrow_mut()
                     .pending_spawns
                     .entry(sector)
-                    .or_insert_with(|| Vec::new())
+                    .or_insert_with(Vec::new)
                     .push((loc, s.clone()));
             }
         }

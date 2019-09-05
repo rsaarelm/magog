@@ -342,10 +342,7 @@ impl Distribution<Loadout> for EntitySpawn {
     fn sample(&self, rng: &mut Rng) -> Loadout {
         SPECS
             .get(self)
-            .expect(&format!(
-                "EntitySpawn {:?} not found in spec database",
-                self
-            ))
+            .unwrap_or_else(|| panic!("EntitySpawn {:?} not found in spec database", self))
             .sample(rng)
     }
 }

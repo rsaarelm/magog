@@ -15,9 +15,9 @@ pub struct HexPolarPoint {
 
 impl HexPolarPoint {
     /// Index of the discrete hex cell along the circle that corresponds to this point.
-    fn winding_index(&self) -> i32 { (self.pos + 0.5).floor() as i32 }
+    fn winding_index(self) -> i32 { (self.pos + 0.5).floor() as i32 }
 
-    fn end_index(&self) -> i32 { (self.pos + 0.5).ceil() as i32 }
+    fn end_index(self) -> i32 { (self.pos + 0.5).ceil() as i32 }
 }
 
 impl PolarPoint for HexPolarPoint {

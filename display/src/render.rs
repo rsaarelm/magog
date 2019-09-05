@@ -93,6 +93,7 @@ pub enum Layer {
 ///
 /// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
 /// the blob but doesn't have visible walls.
+#[allow(clippy::cognitive_complexity)]
 fn blobform<F>(kernel: &Kernel, brush: &Arc<Brush>, is_solid: bool, draw: &mut F)
 where
     F: FnMut(Layer, Angle, &Arc<Brush>, usize),
@@ -248,7 +249,7 @@ where
             draw(Layer::Floor, Up, &brush, 0);
         }
         terrain::Form::Gate => {
-            if let Some(d12) = Dir12::away_from(&kernel.walk_mask()) {
+            if let Some(d12) = Dir12::away_from(kernel.walk_mask()) {
                 draw(Layer::Floor, Up, &brush, d12 as usize + 1);
             } else {
                 draw(Layer::Floor, Up, &brush, 0);

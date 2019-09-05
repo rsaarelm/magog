@@ -47,7 +47,7 @@ impl Atlas {
                 area.size.height as f32 * y_scale,
             );
             Some(ImageData {
-                texture: self.texture.clone(),
+                texture: self.texture,
                 size: size2(image.width(), image.height()),
                 tex_coords: Rect::new(tex_pos, tex_size),
             })

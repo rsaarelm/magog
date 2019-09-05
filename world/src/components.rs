@@ -60,9 +60,9 @@ pub struct MapMemory {
 
 impl MapMemory {
     pub fn status(&self, loc: Location) -> Option<FovStatus> {
-        if self.seen.contains(&loc) {
+        if self.seen.contains(loc) {
             Some(FovStatus::Seen)
-        } else if self.remembered.contains(&loc) {
+        } else if self.remembered.contains(loc) {
             Some(FovStatus::Remembered)
         } else {
             None

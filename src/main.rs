@@ -35,7 +35,7 @@ pub fn main() {
         AppConfig::new(format!("Magog v{}", env!("CARGO_PKG_VERSION")))
             .frame_duration(Flick::from_seconds(1.0 / FPS)),
         game_loop::GameRuntime::new(seed),
-        vec![Box::new(GameLoop::new())],
+        vec![Box::new(GameLoop::default())],
     )
     .unwrap();
 }

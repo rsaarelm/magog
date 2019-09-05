@@ -71,9 +71,9 @@ impl<P: PolarPoint, T: FovValue> Iterator for Fov<P, T> {
             current.advance(&mut self.stack);
 
             if let Some(ret) = ret {
-                return Some((pos, ret));
+                Some((pos, ret))
             } else {
-                return self.next();
+                self.next()
             }
         } else {
             None

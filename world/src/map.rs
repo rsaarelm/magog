@@ -23,7 +23,7 @@ use std::u32;
 // be used instead in the internal logic where iteration order matters for map construction logic.
 
 /// Representation of a game level during procedural map generation.
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Map {
     contents: IndexMap<CellVector, MapCell>,
     player_entrance: Option<CellVector>,
@@ -51,7 +51,7 @@ impl Map {
 
     pub fn push_spawn(&mut self, pos: CellVector, spawn: EntitySpawn) {
         debug_assert!(self.contains(pos));
-        self.contents.get_mut(&pos).map(|c| c.spawns.push(spawn));
+        self.contents[&pos].spawns.push(spawn);
     }
 
     pub fn get(&self, pos: CellVector) -> Option<&MapCell> { self.contents.get(&pos) }
@@ -68,17 +68,9 @@ impl Map {
         })
     }
 
-    /// Build an empty map.
-    pub fn new() -> Map {
-        Map {
-            contents: IndexMap::new(),
-            player_entrance: None,
-        }
-    }
-
     /// Build a map with a shaped base of default tiles.
     pub fn new_base(points: impl IntoIterator<Item = CellVector>) -> Map {
-        let mut ret = Map::new();
+        let mut ret = Map::default();
 
         for p in points.into_iter() {
             ret.insert(p, MapCell::default());
@@ -90,7 +82,7 @@ impl Map {
     /// Build a prefab vault map from ASCII map.
     pub fn new_vault(textmap: &str) -> Result<Self, Box<dyn Error>> {
         let prefab: IndexMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
-        let mut ret = Map::new();
+        let mut ret = Map::default();
 
         for (&pos, c) in &prefab {
             use crate::Terrain::*;
@@ -176,10 +168,10 @@ impl Map {
     pub fn new_plain_room(rng: &mut (impl Rng + ?Sized)) -> Map {
         let (w, h) = (rng.gen_range(2, 8), rng.gen_range(2, 8));
 
-        let mut ret = Map::new();
+        let mut ret = Map::default();
 
-        for y in -1..h + 1 {
-            for x in -1..w + 1 {
+        for y in -1..=h {
+            for x in -1..=w {
                 let x_wall = x == -1 || x == w;
                 let y_wall = y == -1 || y == h;
                 let p = vec2(x, y);
@@ -316,7 +308,7 @@ impl Map {
 
                 // Putting the border cell on top of a dug tunnel, create a door.
                 if existing.is_walkable() && c.is_border() && c.can_dig {
-                    c = c.to_door();
+                    c = c.as_door();
                 }
 
                 // Undiggability propagates to new cells, otherwise clobber the old cell.
@@ -432,9 +424,9 @@ impl Map {
         debug_assert!(existing.can_dig);
 
         if existing.is_walkable() || existing.is_interior() {
-            return;
+            // do nothing.
         } else if existing.is_border() {
-            self.insert(pos, existing.to_door());
+            self.insert(pos, existing.as_door());
         } else {
             self.insert(pos, MapCell::new_terrain(Terrain::Ground));
         }
@@ -619,7 +611,6 @@ fn cut_floodfilled_region(
         ret.insert(pos);
 
         for p in calx::hex_neighbors(pos) {
-            let p = p.into();
             if input.contains(&p) {
                 debug_assert!(!ret.contains(&p) && !edge.contains(&p));
                 input.remove(&p);
@@ -671,9 +662,9 @@ impl MapCell {
 
     /// This is a fake cell that doesn't describe actual terrain but limits the positioning of a
     /// vault to ensure that you can connect to its entrance.
-    pub fn is_bumper(&self) -> bool { return self.terrain == Terrain::Empty && self.can_dig; }
+    pub fn is_bumper(&self) -> bool { self.terrain == Terrain::Empty && self.can_dig }
 
-    pub fn to_door(mut self) -> MapCell {
+    pub fn as_door(mut self) -> MapCell {
         self.terrain = Terrain::Door;
         self
     }

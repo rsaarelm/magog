@@ -27,7 +27,7 @@ impl WorldView {
         WorldView {
             cursor_loc: None,
             show_cursor: false,
-            camera_loc: camera_loc,
+            camera_loc,
             screen_area: ScreenRect::from_untyped(&screen_area),
             fov: None,
         }
@@ -427,8 +427,8 @@ pub fn screen_fov(
     screen_area: ScreenRect,
 ) -> HashMap<CellVector, Vec<Location>> {
     let init = ScreenFov {
-        w: w,
-        screen_area: screen_area,
+        w,
+        screen_area,
         origins: vec![origin],
     };
 

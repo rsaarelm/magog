@@ -63,7 +63,7 @@ impl Mul<f32> for TermColorInterpolator {
 impl Add<TermColorInterpolator> for TermColor {
     type Output = PseudoTermColor;
 
-    fn add(self, other: TermColorInterpolator) -> PseudoTermColor { self.lerp(&other.0, other.1) }
+    fn add(self, other: TermColorInterpolator) -> PseudoTermColor { self.lerp(other.0, other.1) }
 }
 
 impl From<TermColor> for u32 {
@@ -79,7 +79,7 @@ impl TermColor {
     ///
     /// Return a gradient pseudocolor value. This can be printed using the unicode gradient
     /// characters and the specified terminal colors.
-    pub fn lerp(&self, other: &TermColor, x: f32) -> PseudoTermColor {
+    pub fn lerp(self, other: TermColor, x: f32) -> PseudoTermColor {
         if self.is_bright {
             // Cannot use self as background color.
             if !other.is_bright {
@@ -87,38 +87,38 @@ impl TermColor {
                 other.lerp(self, 1.0 - x)
             } else if x < 0.5 {
                 // Otherwise just do a hard switch at 50 %, can't gradient.
-                PseudoTermColor::Solid(*self)
+                PseudoTermColor::Solid(self)
             } else {
-                PseudoTermColor::Solid(*other)
+                PseudoTermColor::Solid(other)
             }
         } else if x < 0.125 {
-            PseudoTermColor::Solid(*self)
+            PseudoTermColor::Solid(self)
         } else if x < 0.375 {
             PseudoTermColor::Mixed {
-                fore: *other,
+                fore: other,
                 back: self.base,
                 mix: ColorMix::Mix25,
             }
         } else if x < 0.5 {
             PseudoTermColor::Mixed {
-                fore: *other,
+                fore: other,
                 back: self.base,
                 mix: ColorMix::Mix50Low,
             }
         } else if x < 0.625 {
             PseudoTermColor::Mixed {
-                fore: *other,
+                fore: other,
                 back: self.base,
                 mix: ColorMix::Mix50High,
             }
         } else if x < 0.875 {
             PseudoTermColor::Mixed {
-                fore: *other,
+                fore: other,
                 back: self.base,
                 mix: ColorMix::Mix75,
             }
         } else {
-            PseudoTermColor::Solid(*other)
+            PseudoTermColor::Solid(other)
         }
     }
 }
@@ -315,7 +315,7 @@ impl From<SRgba> for Xterm256Color {
         // different RGB values.
 
         /// Return square of distance to other color
-        fn distance2(one: &SRgba, other: &SRgba) -> i32 {
+        fn distance2(one: SRgba, other: SRgba) -> i32 {
             let x = one.r as i32 - other.r as i32;
             let y = one.g as i32 - other.g as i32;
             let z = one.b as i32 - other.b as i32;
@@ -362,7 +362,7 @@ impl From<SRgba> for Xterm256Color {
             Xterm256Color(232 + gray_channel(gray))
         };
 
-        if distance2(&c, &rgb_color.into()) < distance2(&c, &gray_color.into()) {
+        if distance2(c, rgb_color.into()) < distance2(c, gray_color.into()) {
             rgb_color
         } else {
             gray_color

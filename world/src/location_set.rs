@@ -17,12 +17,12 @@ pub struct LocationSet {
 impl LocationSet {
     /// Return the chunk index and the bit offset for a location.
     #[inline]
-    fn chunk(loc: &Location) -> (u64, u64) {
+    fn chunk(loc: Location) -> (u64, u64) {
         let morton = loc.to_morton();
         (morton >> 6, 1 << (morton % 64))
     }
 
-    pub fn contains(&self, loc: &Location) -> bool {
+    pub fn contains(&self, loc: Location) -> bool {
         let (index, bit) = LocationSet::chunk(loc);
         match self.chunks.get(&index) {
             Some(b) => b & bit != 0,
@@ -33,12 +33,12 @@ impl LocationSet {
     pub fn clear(&mut self) { self.chunks.clear(); }
 
     pub fn insert(&mut self, loc: Location) {
-        let (index, bit) = LocationSet::chunk(&loc);
+        let (index, bit) = LocationSet::chunk(loc);
         let n = bit | self.chunks.get(&index).unwrap_or(&0);
         self.chunks.insert(index, n);
     }
 
-    pub fn _remove(&mut self, loc: &Location) {
+    pub fn _remove(&mut self, loc: Location) {
         let (index, bit) = LocationSet::chunk(loc);
         let n = !bit & self.chunks.get(&index).unwrap_or(&0);
         if n == 0 {

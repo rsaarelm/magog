@@ -90,10 +90,10 @@ pub trait Query: TerrainQuery + Sized {
     fn fov_status(&self, loc: Location) -> Option<FovStatus> {
         if let Some(p) = self.player() {
             if self.ecs().map_memory.contains(p) {
-                if self.ecs().map_memory[p].seen.contains(&loc) {
+                if self.ecs().map_memory[p].seen.contains(loc) {
                     return Some(FovStatus::Seen);
                 }
-                if self.ecs().map_memory[p].remembered.contains(&loc) {
+                if self.ecs().map_memory[p].remembered.contains(loc) {
                     return Some(FovStatus::Remembered);
                 }
                 return None;
@@ -298,9 +298,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity is dead and should be removed from the world.
-    fn is_alive(&self, e: Entity) -> bool {
-        self.location(e).is_some()
-    }
+    fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
 
     /// Return true if the game has ended and the player can make no further
     /// actions.
@@ -344,7 +342,7 @@ pub trait Query: TerrainQuery + Sized {
     fn find_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
         let origin = self.location(shooter).unwrap();
         let mut loc = origin;
-        for _ in 1..(range + 1) {
+        for _ in 1..=range {
             loc = loc.jump(self, dir);
             if self.terrain(loc).blocks_shot() {
                 break;

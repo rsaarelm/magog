@@ -278,7 +278,9 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     msg!(self, "TODO cast untargeted spell {:?}", effect).send();
                 }
             }
-            caster.map(|e| self.end_turn(e));
+            if let Some(e) = caster {
+                self.end_turn(e);
+            }
             Some(())
         } else {
             None
@@ -317,7 +319,9 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     msg!(self, "TODO cast directed spell {:?}", effect).send();
                 }
             }
-            caster.map(|e| self.end_turn(e));
+            if let Some(e) = caster {
+                self.end_turn(e);
+            }
             Some(())
         } else {
             None
@@ -572,10 +576,8 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             }
         }
 
-        if emptied {
-            if self.destroy_after_use(item) {
-                self.kill_entity(item);
-            }
+        if emptied && self.destroy_after_use(item) {
+            self.kill_entity(item);
         }
     }
 

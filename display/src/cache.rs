@@ -22,7 +22,7 @@ pub fn terrain(t: world::Terrain) -> Arc<Brush> {
     Arc::clone(
         TERRAIN_BRUSHES
             .get(t as usize)
-            .expect(&format!("No brush for terrain {:?}", t)),
+            .unwrap_or_else(|| panic!("No brush for terrain {:?}", t)),
     )
 }
 
@@ -30,7 +30,7 @@ pub fn entity(e: world::Icon) -> Arc<Brush> {
     Arc::clone(
         ENTITY_BRUSHES
             .get(e as usize)
-            .expect(&format!("No brush for entity {:?}", e)),
+            .unwrap_or_else(|| panic!("No brush for entity {:?}", e)),
     )
 }
 
@@ -38,7 +38,7 @@ pub fn misc(e: Icon) -> Arc<Brush> {
     Arc::clone(
         MISC_BRUSHES
             .get(e as usize)
-            .expect(&format!("No brush for icon {:?}", e)),
+            .unwrap_or_else(|| panic!("No brush for icon {:?}", e)),
     )
 }
 

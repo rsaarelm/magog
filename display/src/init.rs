@@ -53,7 +53,7 @@ pub fn load_graphics() {
     );
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     use world::Terrain::*;
     let mut ret = VecMap::new();
@@ -112,7 +112,8 @@ pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     ret
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
+#[allow(clippy::identity_op)]
 pub fn entity_brushes() -> VecMap<Arc<Brush>> {
     use world::Icon::*;
     let mut ret = VecMap::new();
@@ -123,7 +124,7 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(Ogre as usize, Builder::new("assets/mobs.png").color(DARKCYAN).mob(3*32, 0).finish());
     ret.insert(Wraith as usize, Builder::new("assets/mobs.png").color(GRAY).mob(4*32, 0).finish());
     ret.insert(Octopus as usize, Builder::new("assets/mobs.png").color(WHEAT).mob(5*32, 0).finish());
-    ret.insert(Bug as usize, Builder::new("assets/mobs.png").color(0xFF00FFFF).mob(6*32, 0).finish());
+    ret.insert(Bug as usize, Builder::new("assets/mobs.png").color(0xFF_00_FF_FF).mob(6*32, 0).finish());
     ret.insert(Ooze as usize, Builder::new("assets/mobs.png").color(LIGHTSKYBLUE).mob(7*32, 0).finish());
     ret.insert(Efreet as usize, Builder::new("assets/mobs.png").color(ORANGE).mob(0, 1*32).finish());
 
@@ -144,7 +145,7 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
     ret
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 pub fn misc_brushes() -> VecMap<Arc<Brush>> {
     use crate::Icon::*;
     let mut ret = VecMap::new();

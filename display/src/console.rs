@@ -1,3 +1,4 @@
+use crate::cache;
 use calx::split_line;
 use euclid::default::{Point2D, Rect};
 use std::io;
@@ -18,8 +19,8 @@ impl Message {
         const TIME_TO_READ_CHAR_S: f64 = 0.1;
         let expire_time_s = time_start_s + text.len() as f64 * TIME_TO_READ_CHAR_S;
         Message {
-            expire_time_s: expire_time_s,
-            text: text,
+            expire_time_s,
+            text,
         }
     }
 }
@@ -33,17 +34,19 @@ pub struct Console {
     done_reading_s: f64,
 }
 
-impl Console {
-    pub fn new(font: Arc<FontData>) -> Console {
+impl Default for Console {
+    fn default() -> Self {
         Console {
-            font,
+            font: cache::font(),
             lines: Vec::new(),
             input_buffer: String::new(),
             output_buffer: String::new(),
             done_reading_s: 0.0,
         }
     }
+}
 
+impl Console {
     /// Draw the console as a regular message display.
     pub fn draw_small(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
         let t = time::precise_time_s();

@@ -136,7 +136,7 @@ impl WorldSkeleton {
 /// Note that this function does not take a rng. The idea is that map generation should be
 /// perfectly deterministic given a world seed and the sector position, so new sectors can be
 /// lazily generated at any point of the game.
-pub fn generate<'a>(seed: u32, pos: Sector, world_skeleton: &WorldSkeleton) -> Map {
+pub fn generate(seed: u32, pos: Sector, world_skeleton: &WorldSkeleton) -> Map {
     ConnectedSectorSpec::new(pos, world_skeleton).sample(&mut calx::seeded_rng(&(seed, pos)))
 }
 

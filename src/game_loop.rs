@@ -34,6 +34,7 @@ impl GameRuntime {
     }
 }
 
+#[derive(Default)]
 pub struct GameLoop {
     pub console: display::Console,
     camera_loc: Location,
@@ -352,7 +353,7 @@ impl Scene<GameRuntime> for GameLoop {
                 F12 => {
                     // Capture screenshot.
                     let shot = canvas.screenshot();
-                    let _ = calx::save_screenshot("magog", &shot.into());
+                    let _ = calx::save_screenshot("magog", &shot);
                 }
 
                 _ => {}
@@ -363,13 +364,6 @@ impl Scene<GameRuntime> for GameLoop {
 }
 
 impl GameLoop {
-    pub fn new() -> GameLoop {
-        GameLoop {
-            console: display::Console::new(display::font()),
-            camera_loc: Location::new(0, 0, 0),
-        }
-    }
-
     /// Step command that turns into melee attack if an enemy is in the way.
     fn smart_step(&self, ctx: &mut GameRuntime, dir: Dir6) -> ActionOutcome {
         let player = ctx.world.player()?;
@@ -452,7 +446,7 @@ struct SlotData {
     name: &'static str,
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 static SLOT_DATA: [SlotData; 34] = [
     SlotData { key: '1', code: Keycode::Num1, slot: Slot::Spell1,     name: "Ability" },
     SlotData { key: '2', code: Keycode::Num2, slot: Slot::Spell2,     name: "Ability" },

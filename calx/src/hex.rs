@@ -164,7 +164,7 @@ impl Dir6 {
     pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
-    pub fn to_v2(&self) -> CellVector { CellVector::from(*self) }
+    pub fn to_v2(self) -> CellVector { CellVector::from(self) }
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
@@ -232,7 +232,7 @@ pub enum Dir12 {
 impl Dir12 {
     /// If there is exactly one cluster of neighbors in the neighbor mask,
     /// return a direction pointing away from that cluster.
-    pub fn away_from(neighbors: &[bool; 6]) -> Option<Dir12> {
+    pub fn away_from(neighbors: [bool; 6]) -> Option<Dir12> {
         let (begin, end) = match find_cluster(neighbors) {
             Some((a, b)) => (a, b),
             None => return None,
@@ -257,7 +257,7 @@ impl Dir12 {
         // XXX: Unsafe because I'm too lazy to do int conversion func by hand.
         return Some(unsafe { ::std::mem::transmute(away_dir) });
 
-        fn find_cluster(neighbors: &[bool; 6]) -> Option<(usize, usize)> {
+        fn find_cluster(neighbors: [bool; 6]) -> Option<(usize, usize)> {
             // Start of the active cluster, inclusive.
             let mut cluster_start = None;
             // End of the active cluster, exclusive.
@@ -276,7 +276,7 @@ impl Dir12 {
             Some((cluster_start?, cluster_end?))
         }
 
-        fn is_single_cluster(neighbors: &[bool; 6], start: usize, end: usize) -> bool {
+        fn is_single_cluster(neighbors: [bool; 6], start: usize, end: usize) -> bool {
             let mut in_cluster = true;
 
             for i in 0..6 {
@@ -340,43 +340,40 @@ mod test {
     fn test_dir12() {
         assert_eq!(
             None,
-            Dir12::away_from(&[false, false, false, false, false, false])
+            Dir12::away_from([false, false, false, false, false, false])
+        );
+        assert_eq!(None, Dir12::away_from([true, true, true, true, true, true]));
+        assert_eq!(
+            None,
+            Dir12::away_from([false, true, false, false, true, false])
         );
         assert_eq!(
             None,
-            Dir12::away_from(&[true, true, true, true, true, true])
+            Dir12::away_from([true, true, false, true, false, false])
         );
         assert_eq!(
             None,
-            Dir12::away_from(&[false, true, false, false, true, false])
-        );
-        assert_eq!(
-            None,
-            Dir12::away_from(&[true, true, false, true, false, false])
-        );
-        assert_eq!(
-            None,
-            Dir12::away_from(&[true, false, true, false, true, false])
+            Dir12::away_from([true, false, true, false, true, false])
         );
         assert_eq!(
             Some(Dir12::South),
-            Dir12::away_from(&[true, false, false, false, false, false])
+            Dir12::away_from([true, false, false, false, false, false])
         );
         assert_eq!(
             Some(Dir12::East),
-            Dir12::away_from(&[true, false, false, true, true, true])
+            Dir12::away_from([true, false, false, true, true, true])
         );
         assert_eq!(
             Some(Dir12::SouthSouthwest),
-            Dir12::away_from(&[true, true, false, false, false, false])
+            Dir12::away_from([true, true, false, false, false, false])
         );
         assert_eq!(
             Some(Dir12::Southwest),
-            Dir12::away_from(&[true, true, true, false, false, false])
+            Dir12::away_from([true, true, true, false, false, false])
         );
         assert_eq!(
             Some(Dir12::SouthSoutheast),
-            Dir12::away_from(&[true, true, false, false, true, true])
+            Dir12::away_from([true, true, false, false, true, true])
         );
     }
 

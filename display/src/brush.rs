@@ -35,8 +35,8 @@ impl Splat {
             })
             .unwrap(),
             offset: geom.offset,
-            color: color,
-            back_color: back_color,
+            color,
+            back_color,
         }
     }
 }
@@ -235,12 +235,10 @@ impl Geom {
     /// Single 64x64 pixel tile represeting a 7 hex cluster.
     ///
     /// The offset is centered on the centex hex
-    pub fn big_tile(x: u32, y: u32) -> Option<Geom> {
-        Some(Geom::new(32, 32, x, y, 64, 64))
-    }
+    pub fn big_tile(x: u32, y: u32) -> Option<Geom> { Some(Geom::new(32, 32, x, y, 64, 64)) }
 
     /// Standard blobform tileset.
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     pub fn blob(vert_x: u32, vert_y: u32, rear_x: u32, rear_y: u32, x: u32, y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, vert_x, vert_y, 16, 32),       // 0: Top left    VERTICAL SIDES
@@ -287,7 +285,7 @@ impl Geom {
     }
 
     /// Standard wallform tileset.
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     pub fn wall(center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Vec<Geom> {
         vec![
             Geom::new(16, 16, center_x, center_y, 16, 32),       // 0

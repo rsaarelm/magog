@@ -1,3 +1,5 @@
+#![allow(clippy::cast_lossless)]
+
 use crate::sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
 use crate::terraform::TerrainQuery;
 use calx::{
@@ -53,7 +55,7 @@ impl Location {
     ///
     /// Spatially close locations are often numerically close in Morton codes, these are useful for
     /// quadtree-like structures.
-    pub fn to_morton(&self) -> u64 {
+    pub fn to_morton(self) -> u64 {
         let mut ret = 0;
         let x: u16 = unsafe { ::std::mem::transmute(self.x) };
         let y: u16 = unsafe { ::std::mem::transmute(self.y) };
@@ -66,7 +68,7 @@ impl Location {
 
     /// Vector pointing from this location into the other one if the locations
     /// are on the same Euclidean plane.
-    pub fn v2_at(&self, other: Location) -> Option<CellVector> {
+    pub fn v2_at(self, other: Location) -> Option<CellVector> {
         if self.z != other.z {
             return None;
         }
@@ -74,7 +76,7 @@ impl Location {
     }
 
     /// Hex distance from this location to the other one, if applicable.
-    pub fn distance_from(&self, other: Location) -> Option<i32> {
+    pub fn distance_from(self, other: Location) -> Option<i32> {
         if let Some(v) = self.v2_at(other) {
             Some(v.hex_dist())
         } else {
@@ -85,11 +87,11 @@ impl Location {
     /// Distance that defaults to max integer value for separate zones.
     ///
     /// Can be used for situations that want a straightforward metric function like A* search.
-    pub fn metric_distance(&self, other: Location) -> i32 {
+    pub fn metric_distance(self, other: Location) -> i32 {
         self.distance_from(other).unwrap_or(i32::max_value())
     }
 
-    pub fn dir6_towards(&self, other: Location) -> Option<Dir6> {
+    pub fn dir6_towards(self, other: Location) -> Option<Dir6> {
         if let Some(v) = self.v2_at(other) {
             Some(Dir6::from_v2(v))
         } else {

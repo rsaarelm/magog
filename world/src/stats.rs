@@ -62,6 +62,7 @@ impl Stats {
 
 impl Add<Stats> for Stats {
     type Output = Stats;
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn add(self, other: Stats) -> Stats {
         Stats {
             power: self.power + other.power,

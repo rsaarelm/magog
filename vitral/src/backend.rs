@@ -269,7 +269,7 @@ impl Backend {
     }
 
     /// Render draw list from canvas into the frame buffer.
-    fn render_list(&mut self, draw_list: &Vec<DrawBatch>) {
+    fn render_list(&mut self, draw_list: &[DrawBatch]) {
         let mut target = self.render_buffer.get_framebuffer_target(&self.display);
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         let (w, h) = target.get_dimensions();
@@ -327,7 +327,7 @@ impl Backend {
     }
 
     /// Display the backend and read input events.
-    pub fn render(&mut self, draw_list: &Vec<DrawBatch>) {
+    pub fn render(&mut self, draw_list: &[DrawBatch]) {
         self.update_window_size();
         self.render_list(draw_list);
         self.render_buffer.draw(&self.display, self.zoom);
