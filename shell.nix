@@ -35,10 +35,14 @@ in stdenv.mkDerivation {
 
     # Show outdated crates
     NIX_ENFORCE_PURITY=0 cargo install cargo-outdated
+
+    # Run clippy without showing stuff I don't care about.
+    alias clippy="cargo clippy -- -A clippy::cast_lossless"
   '';
 
   # Set Environment Variables
   RUST_BACKTRACE = 1;
 
   RUST_LOG = "calx-ecs=${log_level},vitral=${log_level},calx=${log_level},display=${log_level},world=${log_level},magog=${log_level}";
+
 }
