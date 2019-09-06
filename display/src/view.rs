@@ -2,7 +2,7 @@ use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
-use calx::{clamp, cycle_anim, CellVector, FovValue, HexFov, Space, Transformation};
+use calx::{clamp, CellVector, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
 use euclid::{vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
@@ -212,7 +212,7 @@ impl WorldView {
 
                     if let Some(desc) = world.ecs().desc.get(i) {
                         let frame_idx = if world.is_bobbing(i) {
-                            cycle_anim(1.0 / 3.0, 2)
+                            ((world.get_anim_tick() / 10) % 2) as usize
                         } else {
                             0
                         };
