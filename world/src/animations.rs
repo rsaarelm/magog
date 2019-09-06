@@ -20,15 +20,8 @@ pub trait Animations: Query + Sized {
 
     /// Return whether entity is a transient effect.
     fn is_fx(&self, e: Entity) -> bool {
-        if let Some(anim) = self.anim(e) {
-            use AnimState::*;
-            match anim.state {
-                Mob | MobHurt | MobBlocks => false,
-                Explosion | Gib => true,
-            }
-        } else {
-            false
-        }
+        self.anim(e)
+            .map_or(false, |a| a.state.is_transient_anim_state())
     }
 
     /// If an entity is undergoing animation, return the current frame
@@ -86,6 +79,22 @@ pub enum AnimState {
     Explosion,
     /// A death gib
     Gib,
+    /// Puff of smoke
+    Smoke,
+    /// Single-cell explosion
+    SmallExplosion,
+}
+
+impl AnimState {
+    /// This is a state that belongs to an animation that gets removed, not a status marker for a
+    /// permanent entity.
+    pub fn is_transient_anim_state(self) -> bool {
+        use AnimState::*;
+        match self {
+            Mob | MobHurt | MobBlocks => false,
+            Explosion | Gib | Smoke | SmallExplosion => true,
+        }
+    }
 }
 
 impl Default for AnimState {

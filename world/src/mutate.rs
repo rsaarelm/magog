@@ -53,7 +53,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     fn ecs_mut(&mut self) -> &mut Ecs;
 
     /// Spawn an effect entity
-    fn spawn_fx(&mut self, loc: Location) -> Entity;
+    fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity;
 
     /// Run AI for all autonomous mobs.
     fn ai_main(&mut self) {
@@ -307,7 +307,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
                     let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                     self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
-                    self.spawn_explosion(center);
+                    self.spawn_fx(center, AnimState::Explosion);
                 }
                 MagicEffect::Confuse => {
                     const CONFUSION_RANGE: u32 = 9;
@@ -467,6 +467,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     .subject(e)
                     .send();
                 }
+                self.spawn_fx(loc, AnimState::Gib);
             }
             self.kill_entity(e);
         }
@@ -663,21 +664,5 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
-    }
-
-    /// Spawn an explosion effect
-    fn spawn_explosion(&mut self, loc: Location) {
-        let e = self.spawn_fx(loc);
-        let tick = self.get_anim_tick();
-        let world_tick = self.get_tick();
-        let anim = self.anim_mut(e).unwrap();
-        anim.state = AnimState::Explosion;
-        anim.anim_start = tick;
-
-        // Set the (world clock, not anim clock to preserve determinism) time when animation entity
-        // should be cleaned up.
-        // XXX: Animations stick around for a bunch of time after becoming spent and invisible,
-        // simpler than trying to figure out precise durations.
-        anim.anim_done_world_tick = Some(world_tick + 300);
     }
 }

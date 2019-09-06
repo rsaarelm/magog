@@ -258,25 +258,22 @@ impl WorldView {
 
                 for &i in &fx {
                     let screen_pos = screen_pos + lerp_offset(world, i);
-                    // TODO: Tweening support, as in mobs
 
                     if let Some(anim) = world.anim(i) {
+                        // TODO: Speccing anim drawing is way verbose and messy, how to make it
+                        // tighter?
                         if anim.state == AnimState::Explosion {
                             // Figure out the frame.
-                            const EXPLOSION_FRAMES: usize = 5;
-                            const EXPLOSION_FUSE: usize = 4;
+                            const FRAMES: usize = 6;
+                            const FUSE: usize = 4;
                             const FRAME_DURATION: usize = 2;
 
                             let t = (world.get_anim_tick() - anim.anim_start) as usize;
 
                             let idx = match t {
-                                t if t < EXPLOSION_FUSE => None,
-                                t if t
-                                    > (EXPLOSION_FRAMES * FRAME_DURATION + EXPLOSION_FUSE - 1) =>
-                                {
-                                    None
-                                }
-                                t => Some((t - EXPLOSION_FUSE) / FRAME_DURATION),
+                                t if t < FUSE => None,
+                                t if t > (FRAMES * FRAME_DURATION + FUSE - 1) => None,
+                                t => Some((t - FUSE) / FRAME_DURATION),
                             };
                             if let Some(idx) = idx {
                                 entity_sprite_buffer.push(
@@ -284,6 +281,84 @@ impl WorldView {
                                         Layer::Effect,
                                         screen_pos,
                                         cache::misc(Icon::BigExplosion),
+                                    )
+                                    .idx(idx)
+                                    .color(Coloring::Shaded {
+                                        ambient: 1.0, // Be bright
+                                        diffuse: 1.0,
+                                    }),
+                                );
+                            }
+                        }
+
+                        if anim.state == AnimState::Gib {
+                            // XXX: Frame 5 of the gib anim is the splatter on ground, it doesn't
+                            // really work visually that well as part of the animation, so just
+                            // show the first four splatter frames here. Maybe refactor the frames
+                            // into a separate ground decal / corpse object later?
+                            const FRAMES: usize = 4;
+                            const FRAME_DURATION: usize = 4;
+
+                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+
+                            let idx = match t {
+                                t if t > (FRAMES * FRAME_DURATION - 1) => None,
+                                t => Some(t / FRAME_DURATION),
+                            };
+                            if let Some(idx) = idx {
+                                entity_sprite_buffer.push(
+                                    Sprite::new(Layer::Effect, screen_pos, cache::misc(Icon::Gib))
+                                        .idx(idx)
+                                        .color(Coloring::Shaded {
+                                            ambient,
+                                            diffuse: 1.0,
+                                        }),
+                                );
+                            }
+                        }
+
+                        if anim.state == AnimState::Smoke {
+                            const FRAMES: usize = 5;
+                            const FRAME_DURATION: usize = 4;
+
+                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+
+                            let idx = match t {
+                                t if t > (FRAMES * FRAME_DURATION - 1) => None,
+                                t => Some(t / FRAME_DURATION),
+                            };
+                            if let Some(idx) = idx {
+                                entity_sprite_buffer.push(
+                                    Sprite::new(
+                                        Layer::Effect,
+                                        screen_pos,
+                                        cache::misc(Icon::Smoke),
+                                    )
+                                    .idx(idx)
+                                    .color(Coloring::Shaded {
+                                        ambient,
+                                        diffuse: 1.0,
+                                    }),
+                                );
+                            }
+                        }
+
+                        if anim.state == AnimState::SmallExplosion {
+                            const FRAMES: usize = 8;
+                            const FRAME_DURATION: usize = 2;
+
+                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+
+                            let idx = match t {
+                                t if t > (FRAMES * FRAME_DURATION - 1) => None,
+                                t => Some(t / FRAME_DURATION),
+                            };
+                            if let Some(idx) = idx {
+                                entity_sprite_buffer.push(
+                                    Sprite::new(
+                                        Layer::Effect,
+                                        screen_pos,
+                                        cache::misc(Icon::SmallExplosion),
                                     )
                                     .idx(idx)
                                     .color(Coloring::Shaded {

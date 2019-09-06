@@ -146,6 +146,7 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
 }
 
 #[rustfmt::skip]
+#[allow(clippy::identity_op)]
 pub fn misc_brushes() -> VecMap<Arc<Brush>> {
     use crate::Icon::*;
     let mut ret = VecMap::new();
@@ -158,14 +159,47 @@ pub fn misc_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(DarkHealthPip as usize, Builder::new("assets/gui.png").color(DARKSLATEGRAY).rect(0, 8, 4, 4).finish());
     ret.insert(BlockedOffSectorCell as usize, Builder::new("assets/floors.png").color(LIGHTGRAY).tile(0, 32).finish());
 
+    // Some animations are tweaked to repeat frames, this controls the relative speed in parts of
+    // the animation. Usually the end dispersion needs to look faster than the initial expansion.
     ret.insert(BigExplosion as usize, Builder::new("assets/explosion.png")
         .color(WHITE) // Initial bright white flash
         .big_tile(0, 0).merge()
-        .color(GOLD)  // Change the white initial flash into yellow fire
-        .big_tile(64, 0).merge()
-        .big_tile(128, 0).merge()
-        .big_tile(192, 0).merge()
-        .big_tile(0, 64).merge()
+        .color(YELLOW)  // Change the white initial flash into yellow fire
+        .big_tile(1*64, 0).merge()
+        .big_tile(2*64, 0).merge()
+        .big_tile(2*64, 0).merge()
+        .big_tile(3*64, 0).merge()
+        .big_tile(0, 1*64).merge()
+        .finish());
+
+    ret.insert(Gib as usize, Builder::new("assets/fx.png")
+        .color(RED)
+        .tile(0*32, 0).merge()
+        .tile(1*32, 0).merge()
+        .tile(2*32, 0).merge()
+        .tile(3*32, 0).merge()
+        .tile(4*32, 0).merge()
+        .finish());
+
+    ret.insert(Smoke as usize, Builder::new("assets/fx.png")
+        .color(LIGHTGRAY)
+        .tile(5*32, 0).merge()
+        .tile(5*32, 0).merge()
+        .tile(6*32, 0).merge()
+        .tile(6*32, 0).merge()
+        .tile(7*32, 0).merge()
+        .finish());
+
+    ret.insert(SmallExplosion as usize, Builder::new("assets/fx.png")
+        .color(YELLOW)
+        .tile(0*32, 1*32).merge()
+        .tile(0*32, 1*32).merge()
+        .tile(1*32, 1*32).merge()
+        .tile(1*32, 1*32).merge()
+        .tile(2*32, 1*32).merge()
+        .tile(2*32, 1*32).merge()
+        .tile(3*32, 1*32).merge()
+        .tile(4*32, 1*32).merge()
         .finish());
 
     ret

@@ -252,14 +252,22 @@ impl Mutate for World {
 
     fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 
-    fn spawn_fx(&mut self, loc: Location) -> Entity {
+    /// Spawn a transient animation effect.
+    fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity {
         let e = self.ecs.make();
         self.place_entity(e, loc);
+
         let mut anim = Anim::default();
-        // Give it some starting state that makes it get cleaned up by default.
-        // Doesn't matter which fx state in particular, we just don't want the 'Mob' default state,
-        // since that denotes an permanent entity.
-        anim.state = AnimState::Explosion;
+        debug_assert!(state.is_transient_anim_state());
+        anim.state = state;
+        anim.anim_start = self.get_anim_tick();
+
+        // Set the (world clock, not anim clock to preserve determinism) time when animation entity
+        // should be cleaned up.
+        // XXX: Animations stick around for a bunch of time after becoming spent and invisible,
+        // simpler than trying to figure out precise durations.
+        anim.anim_done_world_tick = Some(self.get_tick() + 300);
+
         self.ecs.anim.insert(e, anim);
         e
     }
