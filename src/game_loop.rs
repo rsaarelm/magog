@@ -311,6 +311,23 @@ impl Scene<GameRuntime> for GameLoop {
                     ctx.command = Some(Command::Pass);
                 }
 
+                // XXX: Wizard mode key, disable in legit gameplay mode
+                Backspace => {
+                    ctx.world.edit_history(|history| {
+                        // Find the last non-Wait command and cut off before that.
+                        if let Some((idx, _)) = history
+                            .events
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .find(|(_, &c)| c != Command::Wait)
+                        {
+                            println!("DEBUG Undoing last turn");
+                            history.events.truncate(idx);
+                        }
+                    });
+                }
+
                 G => {
                     ctx.command = Some(Command::Take);
                 }
