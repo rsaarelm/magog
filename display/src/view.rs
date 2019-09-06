@@ -8,7 +8,7 @@ use euclid::{vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
-use vitral::Canvas;
+use vitral::{color, Canvas};
 use world::{AnimState, Animations, FovStatus, Location, Query, TerrainQuery, World};
 
 /// Useful general constant for cell dimension ops.
@@ -207,6 +207,8 @@ impl WorldView {
 
             // Draw mobs in directly seen cells
             if !in_map_memory {
+                const BLINK_FRAMES: u64 = 5;
+
                 for &i in &mobs {
                     let screen_pos = screen_pos + lerp_offset(world, i);
 
@@ -216,13 +218,39 @@ impl WorldView {
                         } else {
                             0
                         };
+
+                        let coloring = {
+                            if let Some(anim) = world.anim(i) {
+                                match anim.state {
+                                    AnimState::MobHurt
+                                        if world.get_anim_tick() - anim.anim_start
+                                            < BLINK_FRAMES =>
+                                    {
+                                        Coloring::Solid(color::WHITE)
+                                    }
+                                    AnimState::MobBlocks
+                                        if world.get_anim_tick() - anim.anim_start
+                                            < BLINK_FRAMES =>
+                                    {
+                                        Coloring::Solid(color::RED)
+                                    }
+                                    _ => Coloring::Shaded {
+                                        ambient,
+                                        diffuse: 1.0,
+                                    },
+                                }
+                            } else {
+                                Coloring::Shaded {
+                                    ambient,
+                                    diffuse: 1.0,
+                                }
+                            }
+                        };
+
                         entity_sprite_buffer.push(
                             Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
                                 .idx(frame_idx)
-                                .color(Coloring::Shaded {
-                                    ambient,
-                                    diffuse: 1.0,
-                                }),
+                                .color(coloring),
                         );
                         draw_health_pips(&mut entity_sprite_buffer, world, i, screen_pos);
                     }

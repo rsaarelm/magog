@@ -428,14 +428,25 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
         let max_hp = self.max_hp(e);
 
+        let mut hurt = false;
         let mut kill = false;
         if let Some(health) = self.ecs_mut().health.get_mut(e) {
             if amount > 0 {
+                hurt = true;
                 health.wounds += amount;
 
                 if health.wounds > max_hp {
                     kill = true;
                 }
+            }
+        }
+
+        // Animate damage
+        if hurt {
+            let anim_tick = self.get_anim_tick();
+            if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
+                anim.anim_start = anim_tick;
+                anim.state = AnimState::MobHurt;
             }
         }
 

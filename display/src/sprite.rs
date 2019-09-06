@@ -12,6 +12,8 @@ pub enum Coloring {
     MapMemory,
     /// Use the darkness level in [0.0, 1.0] for this sprite.
     Shaded { ambient: f32, diffuse: f32 },
+    /// Entirely single color.
+    Solid(Rgba),
 }
 
 impl Default for Coloring {
@@ -45,6 +47,9 @@ impl Coloring {
                 );
                 let (fore, back) = (darken(ambient, fore), darken(ambient, back));
                 (fore, back)
+            }
+            Coloring::Solid(col) => {
+                (col, col)
             }
         }
     }
