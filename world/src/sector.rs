@@ -98,14 +98,6 @@ pub struct SectorSpec {
     // TODO: Terrain variants, dungeon, overland etc.
 }
 
-impl SectorSpec {
-    /// Return the terrain that unfilled areas on this sector should be.
-    pub fn default_terrain(&self) -> Terrain {
-        // TODO: Different terrain for overland cells
-        Terrain::Rock
-    }
-}
-
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct WorldSkeleton(HashMap<Sector, SectorSpec>);
 
@@ -245,6 +237,7 @@ impl<'a> ConnectedSectorSpec<'a> {
 
     fn new_map(&self) -> Map {
         Map::new_base(
+            Terrain::Rock,
             Sector::points()
                 .filter(|p| !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()),
         )

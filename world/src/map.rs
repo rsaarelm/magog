@@ -68,12 +68,12 @@ impl Map {
         })
     }
 
-    /// Build a map with a shaped base of default tiles.
-    pub fn new_base(points: impl IntoIterator<Item = CellVector>) -> Map {
+    /// Build a map with a shaped base of filled with the given terrain
+    pub fn new_base(terrain: Terrain, points: impl IntoIterator<Item = CellVector>) -> Map {
         let mut ret = Map::default();
 
         for p in points.into_iter() {
-            ret.insert(p, MapCell::default());
+            ret.insert(p, MapCell::new_terrain(terrain));
         }
 
         ret

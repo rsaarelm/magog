@@ -51,9 +51,7 @@ impl WorldCache {
         if let Some(t) = self.internal_cache.borrow().terrain.get(&loc).cloned() {
             t
         } else {
-            self.skeleton
-                .get(&sector)
-                .map_or(FALLBACK_TERRAIN, |s| s.default_terrain())
+            FALLBACK_TERRAIN
         }
     }
 
@@ -108,7 +106,7 @@ impl WorldCache {
         {
             let loc = sector.origin() + *vec;
 
-            if *terrain != Terrain::Empty {
+            if *terrain != Terrain::default() {
                 self.internal_cache
                     .borrow_mut()
                     .terrain
