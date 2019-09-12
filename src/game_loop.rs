@@ -220,11 +220,21 @@ impl Scene<GameRuntime> for GameLoop {
                 ctx.world.tick_anims();
             }
         } else {
-            // When playing turn-based and running the animations between player's inputs, speed
-            // things up so that the pace feels snappy.
-            const FAST_FORWARD: usize = 3;
+            // Not waiting for player input, do we speed up?
+            let fast_forward_speed = if ctx.world.player().is_some() {
+                if ctx.command.is_some() {
+                    // Impatient player is already tapping the keys, time to really speed up.
+                    30
+                } else {
+                    // Otherwise just move at a moderately snappy pace.
+                    3
+                }
+            } else {
+                // Don't fast forward when player is dead.
+                1
+            };
 
-            for _ in 0..FAST_FORWARD {
+            for _ in 0..fast_forward_speed {
                 if ctx.world.player_can_act() {
                     break;
                 }
