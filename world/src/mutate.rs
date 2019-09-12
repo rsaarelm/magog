@@ -299,7 +299,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             match effect {
                 MagicEffect::Fireball => {
                     const FIREBALL_RANGE: u32 = 9;
-                    const FIREBALL_RADIUS: u32 = 2;
+                    const FIREBALL_RADIUS: u32 = 1;
                     const FIREBALL_EFFECT: Effect = Effect::Hit {
                         amount: 6,
                         damage: Damage::Fire,
