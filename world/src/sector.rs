@@ -15,8 +15,8 @@ use std::ops::{Add, Deref, DerefMut};
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub const SECTOR_WIDTH: i32 = 40;
-pub const SECTOR_HEIGHT: i32 = 20;
+pub const SECTOR_WIDTH: i32 = 38;
+pub const SECTOR_HEIGHT: i32 = 18;
 
 pub struct SectorSpace;
 pub type SectorVector = Vector3D<i16, SectorSpace>;
@@ -86,6 +86,17 @@ impl Sector {
     }
 }
 
+#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+pub enum Biome {
+    Dungeon,
+    Grassland,
+    Forest,
+    Mountain,
+    Desert,
+    Water,
+    City,
+}
+
 /// Specification for generating a Sector's map.
 ///
 /// This serves as the top-level entry point to map generation routines.
@@ -95,7 +106,7 @@ pub struct SectorSpec {
     // TODO: flags for blocked connection to N,E,W,S,up and down neighbor sectors
     // By default create path/stairs if adjacent sector exists.
     pub depth: i32,
-    // TODO: Terrain variants, dungeon, overland etc.
+    pub biome: Biome,
 }
 
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -116,9 +127,71 @@ impl WorldSkeleton {
         let mut ret = WorldSkeleton::default();
         for depth in 0..10 {
             let sector = Sector::new(0, 0, -(depth as i16));
-            let spec = SectorSpec { depth };
+            let spec = SectorSpec {
+                depth,
+                biome: Biome::Dungeon,
+            };
             ret.insert(sector, spec);
         }
+        ret
+    }
+
+    pub fn overworld_sprawl() -> WorldSkeleton {
+        use calx::{DenseTextMap, IntoPrefab};
+        const OVERWORLD_MAP: &str = "\
+             ~ ~ ~ ~ ~ ~ ^ ^ ^ ^
+             ~ ~ ~ ~ . % %|- - ^
+             ~ ~ . # . . %L- - ^
+             ~ . . . 0 . . .|- ^
+             ~ . . . . % ._-_- ^
+             ~ . . . . . . . . ^
+             ~ . . . # # . . . ^
+             ~ ~ . . # . . . . ^
+             ~ ~ . . . . . . . ^
+             ~ ~ ~ ~ ~ ~ ~ ^ ^ ^";
+
+        // Legend (sector centers):
+        // 0: player start sector
+        // ~: sea
+        // .: grassland
+        // %: forest
+        // -: desert
+        // ^: mountain
+        // #: city
+        //
+        // Legend (sector edges):
+        // I, L, _: Edges between sectors to left, right and lower right
+
+        let mut ret = WorldSkeleton::default();
+        // Overworld
+        for y in -4..=4i16 {
+            for x in -4..=4i16 {
+                let is_edge = y.abs() == 4 || x.abs() == 4;
+                // TODO: Use overworld map to configure sectors
+                let sector = Sector::new(x, y, 0);
+                let spec = SectorSpec {
+                    depth: 0,
+                    biome: if is_edge {
+                        Biome::Water
+                    } else {
+                        Biome::Grassland
+                    },
+                };
+
+                ret.insert(sector, spec);
+            }
+        }
+
+        // Dungeons
+        for depth in 1..10 {
+            let sector = Sector::new(0, 0, -(depth as i16));
+            let spec = SectorSpec {
+                depth,
+                biome: Biome::Dungeon,
+            };
+            ret.insert(sector, spec);
+        }
+
         ret
     }
 }
@@ -169,8 +242,16 @@ impl<'a> Deref for ConnectedSectorSpec<'a> {
 
 impl<'a> Distribution<Map> for ConnectedSectorSpec<'a> {
     fn sample(&self, rng: &mut Rng) -> Map {
-        // TODO: Switch between different biomes, do more than just the default dungeon.
-        self.build_dungeon(rng)
+        use Biome::*;
+        match self.biome {
+            Dungeon => self.build_dungeon(rng),
+            Grassland => self.build_grassland(rng),
+            Forest => unimplemented!(),
+            Mountain => self.base_map(Terrain::Rock),
+            Desert => unimplemented!(),
+            Water => self.base_map(Terrain::Water),
+            City => unimplemented!(),
+        }
     }
 }
 
@@ -179,13 +260,9 @@ impl<'a> ConnectedSectorSpec<'a> {
         // TODO: Connect to side levels if they exist
 
         debug!("Starting mapgen");
-        let mut map = self.new_map();
+        let mut map = self.dungeon_base_map();
 
-        if self.up.is_some() {
-            let room: Entrance = self.sample(rng);
-            debug!("Placing upstairs");
-            map.place_room(rng, &*room.0)?;
-        }
+        self.place_stairs(rng, &mut map)?;
 
         loop {
             let room: Room = self.sample(rng);
@@ -195,17 +272,28 @@ impl<'a> ConnectedSectorSpec<'a> {
             }
         }
 
-        if self.down.is_some() {
-            debug!("Placing downstairs");
-            let room = vaults::EXITS.choose(rng).unwrap();
-            map.place_room(rng, &*room)?;
-        }
-
         if let Some(map) = map.join_disjoint_regions(rng) {
             Ok(map)
         } else {
             die!("Failed to join map");
         }
+    }
+
+    fn place_stairs(&self, rng: &mut Rng, map: &mut Map) -> Result<(), Box<dyn Error>> {
+        // TODO: Biome affects vault distribution
+        if self.up.is_some() {
+            let room: Entrance = self.sample(rng);
+            debug!("Placing upstairs");
+            map.place_room(rng, &*room.0)?;
+        }
+
+        if self.down.is_some() {
+            // TODO: Make exit use a sampled type like Entrance does
+            debug!("Placing downstairs");
+            let room = vaults::EXITS.choose(rng).unwrap();
+            map.place_room(rng, &*room)?;
+        }
+        Ok(())
     }
 
     fn build_dungeon(&self, rng: &mut Rng) -> Map {
@@ -221,10 +309,12 @@ impl<'a> ConnectedSectorSpec<'a> {
     }
 
     fn build_bigroom(&self, rng: &mut Rng) -> Map {
-        let mut map = self.new_map();
+        let mut map = self.dungeon_base_map();
         for p in map.find_positions(|_, _| true) {
             map.dig(p);
         }
+
+        self.place_stairs(rng, &mut map).unwrap();
 
         for &pos in &map.open_ground() {
             if let Some(spawn) = self.sample(rng) {
@@ -235,12 +325,27 @@ impl<'a> ConnectedSectorSpec<'a> {
         map
     }
 
-    fn new_map(&self) -> Map {
+    fn dungeon_base_map(&self) -> Map {
         Map::new_base(
             Terrain::Rock,
             Sector::points()
                 .filter(|p| !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()),
         )
+    }
+
+    fn base_map(&self, terrain: Terrain) -> Map { Map::new_base(terrain, Sector::points()) }
+
+    fn build_grassland(&self, rng: &mut Rng) -> Map {
+        let mut map = self.base_map(Terrain::Grass);
+        self.place_stairs(rng, &mut map).unwrap();
+
+        for &pos in &map.open_ground() {
+            if let Some(spawn) = self.sample(rng) {
+                map.push_spawn(pos, spawn);
+            }
+        }
+
+        map
     }
 }
 
@@ -265,7 +370,13 @@ impl Distribution<EntitySpawn> for ConnectedSectorSpec<'_> {
 /// XXX: You maybe want something smarter than this to handle clustering of mobs etc.
 impl Distribution<Option<EntitySpawn>> for ConnectedSectorSpec<'_> {
     fn sample(&self, rng: &mut Rng) -> Option<EntitySpawn> {
-        if rng.one_chance_in(10) {
+        use Biome::*;
+        let spawn_one_in = match self.biome {
+            Dungeon => 10,
+            _ => 100,
+        };
+
+        if rng.one_chance_in(spawn_one_in) {
             Some(self.sample(rng))
         } else {
             None

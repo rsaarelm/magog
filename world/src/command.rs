@@ -44,7 +44,7 @@ impl Incremental for World {
     type Seed = u32;
     type Event = Command;
 
-    fn from_seed(s: &Self::Seed) -> Self { World::new(*s, WorldSkeleton::dungeon_dive()) }
+    fn from_seed(s: &Self::Seed) -> Self { World::new(*s, WorldSkeleton::overworld_sprawl()) }
 
     fn update(&mut self, e: &Command) {
         if self.player_can_act() {
