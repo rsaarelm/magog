@@ -262,35 +262,6 @@ impl WorldView {
                     if let Some(anim) = world.anim(i) {
                         // TODO: Speccing anim drawing is way verbose and messy, how to make it
                         // tighter?
-                        if anim.state == AnimState::Explosion {
-                            // Figure out the frame.
-                            const FRAMES: usize = 6;
-                            const FUSE: usize = 4;
-                            const FRAME_DURATION: usize = 2;
-
-                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
-
-                            let idx = match t {
-                                t if t < FUSE => None,
-                                t if t > (FRAMES * FRAME_DURATION + FUSE - 1) => None,
-                                t => Some((t - FUSE) / FRAME_DURATION),
-                            };
-                            if let Some(idx) = idx {
-                                entity_sprite_buffer.push(
-                                    Sprite::new(
-                                        Layer::Effect,
-                                        screen_pos,
-                                        cache::misc(Icon::BigExplosion),
-                                    )
-                                    .idx(idx)
-                                    .color(Coloring::Shaded {
-                                        ambient: 1.0, // Be bright
-                                        diffuse: 1.0,
-                                    }),
-                                );
-                            }
-                        }
-
                         if anim.state == AnimState::Gib {
                             // XXX: Frame 5 of the gib anim is the splatter on ground, it doesn't
                             // really work visually that well as part of the animation, so just
@@ -343,7 +314,7 @@ impl WorldView {
                             }
                         }
 
-                        if anim.state == AnimState::SmallExplosion {
+                        if anim.state == AnimState::Explosion {
                             const FRAMES: usize = 8;
                             const FRAME_DURATION: usize = 2;
 
@@ -358,7 +329,7 @@ impl WorldView {
                                     Sprite::new(
                                         Layer::Effect,
                                         screen_pos,
-                                        cache::misc(Icon::SmallExplosion),
+                                        cache::misc(Icon::Explosion),
                                     )
                                     .idx(idx)
                                     .color(Coloring::Shaded {

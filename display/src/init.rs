@@ -16,10 +16,6 @@ pub fn load_graphics() {
         PngBytes(include_bytes!("../assets/blobs.png")),
     );
     vitral::add_sheet(
-        "assets/explosion.png",
-        PngBytes(include_bytes!("../assets/explosion.png")),
-    );
-    vitral::add_sheet(
         "assets/floors.png",
         PngBytes(include_bytes!("../assets/floors.png")),
     );
@@ -161,17 +157,6 @@ pub fn misc_brushes() -> VecMap<Arc<Brush>> {
 
     // Some animations are tweaked to repeat frames, this controls the relative speed in parts of
     // the animation. Usually the end dispersion needs to look faster than the initial expansion.
-    ret.insert(BigExplosion as usize, Builder::new("assets/explosion.png")
-        .color(WHITE) // Initial bright white flash
-        .big_tile(0, 0).merge()
-        .color(YELLOW)  // Change the white initial flash into yellow fire
-        .big_tile(1*64, 0).merge()
-        .big_tile(2*64, 0).merge()
-        .big_tile(2*64, 0).merge()
-        .big_tile(3*64, 0).merge()
-        .big_tile(0, 1*64).merge()
-        .finish());
-
     ret.insert(Gib as usize, Builder::new("assets/fx.png")
         .color(RED)
         .tile(0*32, 0).merge()
@@ -190,7 +175,7 @@ pub fn misc_brushes() -> VecMap<Arc<Brush>> {
         .tile(7*32, 0).merge()
         .finish());
 
-    ret.insert(SmallExplosion as usize, Builder::new("assets/fx.png")
+    ret.insert(Explosion as usize, Builder::new("assets/fx.png")
         .color(YELLOW)
         .tile(0*32, 1*32).merge()
         .tile(0*32, 1*32).merge()

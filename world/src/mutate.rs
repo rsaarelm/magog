@@ -307,7 +307,9 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
                     let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                     self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
-                    self.spawn_fx(center, AnimState::Explosion);
+                    for &pt in &volume.0 {
+                        self.spawn_fx(pt, AnimState::Explosion);
+                    }
                 }
                 MagicEffect::Confuse => {
                     const CONFUSION_RANGE: u32 = 9;

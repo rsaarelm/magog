@@ -20,8 +20,7 @@ pub enum Icon {
     HealthPip,
     DarkHealthPip,
     BlockedOffSectorCell,
-    BigExplosion,
     Gib,
     Smoke,
-    SmallExplosion,
+    Explosion,
 }

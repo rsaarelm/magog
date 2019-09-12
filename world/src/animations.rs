@@ -75,14 +75,12 @@ pub enum AnimState {
     MobHurt,
     /// Show mob blocking autoexplore animation
     MobBlocks,
-    /// An explosion
-    Explosion,
     /// A death gib
     Gib,
     /// Puff of smoke
     Smoke,
     /// Single-cell explosion
-    SmallExplosion,
+    Explosion,
 }
 
 impl AnimState {
@@ -92,7 +90,7 @@ impl AnimState {
         use AnimState::*;
         match self {
             Mob | MobHurt | MobBlocks => false,
-            Explosion | Gib | Smoke | SmallExplosion => true,
+            Gib | Smoke | Explosion => true,
         }
     }
 }
