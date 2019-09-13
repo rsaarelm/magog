@@ -1,6 +1,6 @@
 use crate::location::Location;
 use crate::map::Map;
-use crate::spec::{self, EntitySpawn};
+use crate::spec::{self, EntitySpawn, Spec};
 use crate::terrain::Terrain;
 use crate::vaults;
 use crate::{Distribution, Rng};
@@ -86,9 +86,9 @@ impl Sector {
     }
 }
 
-#[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum Biome {
-    Dungeon,
+    Dungeon = 1,
     Grassland,
     Forest,
     Mountain,
@@ -348,13 +348,17 @@ impl<'a> ConnectedSectorSpec<'a> {
 
         map
     }
+
+    fn can_spawn(&self, spec: &dyn Spec) -> bool {
+        spec.min_depth() <= self.depth && (spec.habitat() & (1 << self.biome as u64)) != 0
+    }
 }
 
 impl Distribution<EntitySpawn> for ConnectedSectorSpec<'_> {
     fn sample(&self, rng: &mut Rng) -> EntitySpawn {
         let item = spec::iter_specs()
             .weighted_choice(rng, |item| {
-                if item.rarity() == 0.0 || item.min_depth() > self.depth {
+                if item.rarity() == 0.0 || !self.can_spawn(&**item) {
                     0.0
                 } else {
                     1.0 / item.rarity()

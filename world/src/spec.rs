@@ -1,6 +1,7 @@
 use crate::animations::Anim;
 use crate::components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use crate::item::ItemType;
+use crate::sector::Biome;
 use crate::stats::{Intrinsic, Stats};
 use crate::world::Loadout;
 use crate::{Distribution, Rng};
@@ -24,8 +25,17 @@ pub trait Spec: Distribution<Loadout> + Sync + Send {
     /// More powerful items and entities should only start spawning at lower depths.
     fn min_depth(&self) -> i32;
 
+    /// What biomes can this spawn in
+    fn habitat(&self) -> u64;
+
     fn name(&self) -> &str;
 }
+
+const EVERYWHERE: u64 = 0xffff_ffff_ffff_ffff;
+const DUNGEON: u64 = (1 << Biome::Dungeon as u64);
+const TEMPERATE: u64 = (1 << Biome::Grassland as u64) | (1 << Biome::Forest as u64);
+const ARID: u64 = (1 << Biome::Desert as u64) | (1 << Biome::Mountain as u64);
+const URBAN: u64 = (1 << Biome::City as u64);
 
 #[derive(Debug)]
 pub struct MobSpec {
@@ -33,6 +43,7 @@ pub struct MobSpec {
     icon: Icon,
     depth: i32,
     rarity: f32,
+    habitat: u64,
     power: i32,
     intrinsics: Vec<Intrinsic>,
     shout: ShoutType,
@@ -45,6 +56,7 @@ impl Default for MobSpec {
             icon: Icon::Player,
             depth: 0,
             rarity: 1.0,
+            habitat: EVERYWHERE,
             power: 0,
             intrinsics: Vec::new(),
             shout: ShoutType::Silent,
@@ -70,6 +82,7 @@ impl Distribution<Loadout> for MobSpec {
 impl Spec for MobSpec {
     fn rarity(&self) -> f32 { self.rarity }
     fn min_depth(&self) -> i32 { self.depth }
+    fn habitat(&self) -> u64 { self.habitat }
     fn name(&self) -> &str { &self.name }
 }
 
@@ -79,6 +92,7 @@ pub struct ItemSpec {
     icon: Icon,
     depth: i32,
     rarity: f32,
+    habitat: u64,
     item_type: ItemType,
     power: i32,
     armor: i32,
@@ -94,6 +108,8 @@ impl Default for ItemSpec {
             icon: Icon::Sword,
             depth: 0,
             rarity: 1.0,
+            // As a rule, you don't find items laying around in the wilderness.
+            habitat: DUNGEON,
             item_type: ItemType::MeleeWeapon,
             power: 0,
             armor: 0,
@@ -124,6 +140,7 @@ impl Distribution<Loadout> for ItemSpec {
 impl Spec for ItemSpec {
     fn rarity(&self) -> f32 { self.rarity }
     fn min_depth(&self) -> i32 { self.depth }
+    fn habitat(&self) -> u64 { self.habitat }
     fn name(&self) -> &str { &self.name }
 }
 
@@ -163,6 +180,7 @@ specs! {
     MobSpec {
         name: "dreg".into(),
         icon: I::Dreg,
+        habitat: DUNGEON,
         power: 2,
         intrinsics: vec![Hands],
         shout: Shout,
@@ -171,6 +189,7 @@ specs! {
     MobSpec {
         name: "snake".into(),
         icon: I::Snake,
+        habitat: DUNGEON | TEMPERATE | ARID | URBAN,
         power: 1,
         shout: Hiss,
         ..d()
@@ -179,6 +198,7 @@ specs! {
         name: "ooze".into(),
         icon: I::Ooze,
         depth: 1,
+        habitat: DUNGEON,
         power: 3,
         shout: Gurgle,
         ..d()
@@ -195,6 +215,7 @@ specs! {
         name: "octopus".into(),
         icon: I::Octopus,
         depth: 2,
+        habitat: DUNGEON | TEMPERATE,
         power: 5,
         intrinsics: vec![Hands],
         ..d()
@@ -204,6 +225,7 @@ specs! {
         icon: I::Ogre,
         depth: 4,
         rarity: 4.0,
+        habitat: DUNGEON | ARID,
         power: 7,
         intrinsics: vec![Hands],
         shout: Shout,
@@ -213,6 +235,7 @@ specs! {
         name: "wraith".into(),
         icon: I::Wraith,
         depth: 5,
+        habitat: DUNGEON,
         rarity: 6.0,
         power: 10,
         intrinsics: vec![Hands],
@@ -222,6 +245,7 @@ specs! {
         name: "efreet".into(),
         icon: I::Efreet,
         depth: 7,
+        habitat: DUNGEON,
         rarity: 8.0,
         power: 14,
         intrinsics: vec![Hands],
@@ -231,6 +255,7 @@ specs! {
         name: "serpent".into(),
         icon: I::Serpent,
         depth: 9,
+        habitat: DUNGEON,
         rarity: 10.0,
         power: 20,
         shout: Hiss,
