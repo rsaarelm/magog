@@ -167,10 +167,11 @@ impl WorldSkeleton {
         for y in -4..=4i16 {
             for x in -4..=4i16 {
                 let is_edge = y.abs() == 4 || x.abs() == 4;
+                let dist = x.abs() + y.abs();
                 // TODO: Use overworld map to configure sectors
                 let sector = Sector::new(x, y, 0);
                 let spec = SectorSpec {
-                    depth: 0,
+                    depth: dist as i32,
                     biome: if is_edge {
                         Biome::Water
                     } else {
@@ -183,8 +184,8 @@ impl WorldSkeleton {
         }
 
         // Dungeons
-        for depth in 1..10 {
-            let sector = Sector::new(0, 0, -(depth as i16));
+        for depth in 0..10 {
+            let sector = Sector::new(0, 0, -(depth as i16 + 1));
             let spec = SectorSpec {
                 depth,
                 biome: Biome::Dungeon,
