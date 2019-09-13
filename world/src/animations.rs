@@ -1,3 +1,5 @@
+//! Animation effects embedded in the game world.
+
 use crate::location::Location;
 use crate::query::Query;
 use calx::{ease, CellVector};

@@ -1,3 +1,5 @@
+//! Gameplay logic that changes things
+
 use crate::animations::{AnimState, Animations};
 use crate::command::ActionOutcome;
 use crate::components::{Brain, BrainState, MapMemory, Status};

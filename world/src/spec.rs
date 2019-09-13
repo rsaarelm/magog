@@ -1,3 +1,5 @@
+//! Data for generating game entities.
+
 use crate::animations::Anim;
 use crate::components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
 use crate::item::ItemType;

@@ -1,3 +1,5 @@
+//! Map generation for individual sectors
+
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;

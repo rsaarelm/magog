@@ -1,3 +1,5 @@
+//! Top level world generation logic
+
 use crate::location::Location;
 use crate::map::Map;
 use crate::spec::{self, EntitySpawn, Spec};

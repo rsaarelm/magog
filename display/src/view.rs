@@ -1,3 +1,5 @@
+//! Main module for drawing the game map
+
 use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};

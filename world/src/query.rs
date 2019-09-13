@@ -1,3 +1,5 @@
+//! Gameplay logic that answers questions but doesn't change anything
+
 use crate::components::{Alignment, BrainState, Icon, Status};
 use crate::grammar::{Noun, Pronoun};
 use crate::item::{EquipType, ItemType, Slot};
