@@ -176,6 +176,16 @@ impl Terrain {
 
         SRgba::new(r << 4, g << 4, b << 4, 0xff)
     }
+
+    /// Vertical delta (up a level / down a level / flat) for this terrain.
+    pub fn dz(self) -> i32 {
+        use Terrain::*;
+        match self {
+            Upstairs => -1,
+            Downstairs => 1,
+            _ => 0,
+        }
+    }
 }
 
 impl Default for Terrain {

@@ -51,6 +51,11 @@ impl Map {
 
     pub fn insert(&mut self, pos: CellVector, value: MapCell) { self.contents.insert(pos, value); }
 
+    pub fn set_terrain(&mut self, pos: CellVector, terrain: Terrain) {
+        debug_assert!(self.contains(pos));
+        self.contents[&pos].terrain = terrain;
+    }
+
     pub fn push_spawn(&mut self, pos: CellVector, spawn: EntitySpawn) {
         debug_assert!(self.contains(pos));
         self.contents[&pos].spawns.push(spawn);
@@ -105,8 +110,10 @@ impl Map {
                     cell = MapCell::new_bumper();
                 }
                 '%' => {
-                    cell.can_dig = false;
                     // Designate undiggable edge of the default blocking terrain
+                    cell.can_dig = false;
+                    // Not interior, other vaults are free to overlap with their non-diggy bits.
+                    cell.vault_kind = None;
                 }
                 '#' => {
                     cell.terrain = Wall;
@@ -263,7 +270,9 @@ impl Map {
                         return false;
                     }
                 } else {
-                    // Not landing on border, check time.
+                    // Not merging with existing border, check that we're not adjacent to another
+                    // border then.
+                    //
                     // Assume that these are fake-isometric walls and only check adjacency along
                     // the fake-isometric axes.
                     for p in calx::taxicab_neighbors(p) {
@@ -491,6 +500,16 @@ impl Map {
     /// Return if the cell is an on-map vault-exterior cell.
     fn is_vault_exterior(&self, pos: CellVector) -> bool {
         self.get(pos).map_or(false, |c| c.vault_kind.is_none())
+    }
+
+    pub fn dump(&self) -> Result<MapSave, Box<dyn Error>> {
+        let (mut prefab, legend) = build_textmap(&mapsave::Prefab::from(self))?;
+        for (&p, c) in &self.contents {
+            if !c.can_dig {
+                prefab.insert(p, 'x');
+            }
+        }
+        Ok(MapSave::new(prefab, legend))
     }
 
     /// Try to find a tunnel from `p1` to `p2`.
