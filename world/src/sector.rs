@@ -205,7 +205,7 @@ impl WorldSkeleton {
 /// perfectly deterministic given a world seed and the sector position, so new sectors can be
 /// lazily generated at any point of the game.
 pub fn generate(seed: u32, pos: Sector, world_skeleton: &WorldSkeleton) -> Map {
-    ConnectedSectorSpec::new(pos, world_skeleton).sample(&mut calx::seeded_rng(&(seed, pos)))
+    ConnectedSectorSpec::new(seed, pos, world_skeleton).sample(&mut calx::seeded_rng(&(seed, pos)))
 }
 
 /// Wrapper for `SectorSpec` with references to neighboring sectors.
@@ -214,6 +214,8 @@ pub fn generate(seed: u32, pos: Sector, world_skeleton: &WorldSkeleton) -> Map {
 /// will be placed based on the neighboring sectors. Map generation will try to build connective
 /// pathways to traversable neighboring sectors unless the central spec specifically forbids it.
 pub struct ConnectedSectorSpec<'a> {
+    pub seed: u32,
+    pub sector: Sector,
     pub spec: &'a SectorSpec,
     pub north: Option<&'a SectorSpec>,
     pub east: Option<&'a SectorSpec>,
@@ -224,15 +226,17 @@ pub struct ConnectedSectorSpec<'a> {
 }
 
 impl<'a> ConnectedSectorSpec<'a> {
-    pub fn new(spec_location: Sector, world_skeleton: &'a WorldSkeleton) -> Self {
+    pub fn new(seed: u32, sector: Sector, world_skeleton: &'a WorldSkeleton) -> Self {
         ConnectedSectorSpec {
-            spec: world_skeleton.get(&spec_location).unwrap(),
-            north: world_skeleton.get(&(spec_location + vec3(0, -1, 0))),
-            east: world_skeleton.get(&(spec_location + vec3(1, 0, 0))),
-            south: world_skeleton.get(&(spec_location + vec3(0, 1, 0))),
-            west: world_skeleton.get(&(spec_location + vec3(-1, 0, 0))),
-            up: world_skeleton.get(&(spec_location + vec3(0, 0, 1))),
-            down: world_skeleton.get(&(spec_location + vec3(0, 0, -1))),
+            seed,
+            sector,
+            spec: world_skeleton.get(&sector).unwrap(),
+            north: world_skeleton.get(&(sector + vec3(0, -1, 0))),
+            east: world_skeleton.get(&(sector + vec3(1, 0, 0))),
+            south: world_skeleton.get(&(sector + vec3(0, 1, 0))),
+            west: world_skeleton.get(&(sector + vec3(-1, 0, 0))),
+            up: world_skeleton.get(&(sector + vec3(0, 0, 1))),
+            down: world_skeleton.get(&(sector + vec3(0, 0, -1))),
         }
     }
 }
