@@ -250,6 +250,11 @@ impl Map {
 
             let existing = &self[pos];
 
+            // Abort if a stairwell isn't lining up with an existing hole.
+            if c.terrain.dz() != existing.terrain.dz() {
+                return false;
+            }
+
             if existing.is_interior() {
                 // Never clobber existing interior.
                 return false;

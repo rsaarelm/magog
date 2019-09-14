@@ -6,10 +6,11 @@ use crate::spec::{self, EntitySpawn, Spec};
 use crate::terrain::Terrain;
 use crate::vaults;
 use crate::{Distribution, Rng};
-use calx::{self, die, CellVector, RngExt, WeightedChoice};
+use calx::{self, die, seeded_rng, CellVector, RngExt, WeightedChoice};
 use euclid::{vec3, Vector3D};
 use log::{debug, warn};
 use rand::seq::SliceRandom;
+use rand::Rng as _;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
@@ -85,6 +86,40 @@ impl Sector {
         ((self.x as i32) - (other.x as i32)).abs()
             + ((self.y as i32) - (other.y as i32)).abs()
             + ((self.z as i32) - (other.z as i32)).abs()
+    }
+
+    /// Generate pseudorandom downstairs pos guaranteed not to collide with upstairs pos for this
+    /// sector.
+    pub fn downstairs_location(self, seed: u32) -> Location {
+        // The trick: Split the sector into vertical strips. Use odd strips for odd z coordinate
+        // floor's downstairs and even strips for even z coordinate floor's downstairs. This way
+        // consecutive stairwells are always guaranteed not to end up on the same spot.
+        //
+        // Since stairwells have some architecture around them, also keep the strips with one cell
+        // of padding between them. So we actually end up with
+        //
+        //     even: 1 + 4n
+        //     odd:  3 + 4n
+        //
+        // These are using the rectangular (u, v) sector coordinates instead of the regular (x, y)
+        // hex coordinates because the trick is formulated in terms of rectangular coordinate space
+        // columns.
+
+        // Bump for odd z floors.
+        // TODO: Use rem_euclid when it's stable (2019-10?), get rid of the ".abs()"
+        let u_offset = 1 + (self.z.abs() as i32 % 2) * 2;
+
+        let n = (SECTOR_WIDTH - 1) / 4;
+        debug_assert!(n > 0);
+        debug_assert!(SECTOR_HEIGHT > 6);
+
+        let mut rng = seeded_rng(&(&seed, &self));
+        let u = 4 * rng.gen_range(0, n) + u_offset;
+        // Leave space to top and bottom so you can make a path from the stairwell. Stairs usually
+        // have a vertical enclosure.
+        let v = rng.gen_range(3, SECTOR_HEIGHT - 3);
+
+        self.rect_coord_loc(u, v)
     }
 }
 
@@ -317,11 +352,12 @@ impl<'a> ConnectedSectorSpec<'a> {
 
     fn build_bigroom(&self, rng: &mut Rng) -> Map {
         let mut map = self.dungeon_base_map();
+
+        self.place_stairs(rng, &mut map).unwrap();
+
         for p in map.find_positions(|_, _| true) {
             map.dig(p);
         }
-
-        self.place_stairs(rng, &mut map).unwrap();
 
         for &pos in &map.open_ground() {
             if let Some(spawn) = self.sample(rng) {
@@ -332,15 +368,53 @@ impl<'a> ConnectedSectorSpec<'a> {
         map
     }
 
+    fn downstairs_pos(&self) -> Option<CellVector> {
+        self.down.map(|_| {
+            self.sector
+                .origin()
+                .v2_at(self.sector.downstairs_location(self.seed))
+                .unwrap()
+        })
+    }
+
+    fn upstairs_pos(&self) -> Option<CellVector> {
+        self.up.map(|_| {
+            let mut upstairs_pos = (self.sector + vec3(0, 0, 1)).downstairs_location(self.seed);
+            upstairs_pos.z -= 1;
+            // Offset it so that the exits line up nicer.
+            upstairs_pos.x -= 1;
+            upstairs_pos.y -= 1;
+            self.sector.origin().v2_at(upstairs_pos).unwrap()
+        })
+    }
+
+    fn place_stairwells(&self, map: &mut Map) {
+        if let Some(down_pos) = self.downstairs_pos() {
+            map.set_terrain(down_pos, Terrain::Downstairs);
+            debug!("Downstairs for {:?} at {:?}", self.sector, down_pos);
+        }
+
+        if let Some(up_pos) = self.upstairs_pos() {
+            map.set_terrain(up_pos, Terrain::Upstairs);
+            debug!("Upstairs for {:?} at {:?}", self.sector, up_pos);
+        }
+    }
+
     fn dungeon_base_map(&self) -> Map {
-        Map::new_base(
+        let mut ret = Map::new_base(
             Terrain::Rock,
             Sector::points()
                 .filter(|p| !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()),
-        )
+        );
+        self.place_stairwells(&mut ret);
+        ret
     }
 
-    fn base_map(&self, terrain: Terrain) -> Map { Map::new_base(terrain, Sector::points()) }
+    fn base_map(&self, terrain: Terrain) -> Map {
+        let mut ret = Map::new_base(terrain, Sector::points());
+        self.place_stairwells(&mut ret);
+        ret
+    }
 
     fn build_grassland(&self, rng: &mut Rng) -> Map {
         let mut map = self.base_map(Terrain::Grass);
@@ -428,4 +502,38 @@ struct Exit(Arc<Map>);
 
 impl Distribution<Exit> for ConnectedSectorSpec<'_> {
     fn sample(&self, rng: &mut Rng) -> Exit { Exit(vaults::EXITS.choose(rng).unwrap().clone()) }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
+    use crate::location::Location;
+    use euclid::vec3;
+
+    #[test]
+    fn test_rect_space() {
+        let s = Sector::new(0, 0, 0);
+        for v in 0..SECTOR_HEIGHT {
+            for u in 0..SECTOR_WIDTH {
+                let loc = s.rect_coord_loc(u, v);
+                assert!(s.iter().find(|x| x == &loc).is_some());
+            }
+        }
+    }
+
+    #[test]
+    fn test_stair_locations() {
+        for z in -1000..1000 {
+            let s = Sector::new(0, 0, z);
+            let loc = s.downstairs_location(123);
+
+            // Locations must be placed inside sector.
+            assert!(s.iter().find(|x| x == &loc).is_some());
+
+            // Location must not collide with the other stair location.
+            let mut upstairs_loc = (s + vec3(0, 0, 1)).downstairs_location(123);
+            upstairs_loc.z = loc.z;
+            assert!(loc.distance_from(upstairs_loc).unwrap() > 1);
+        }
+    }
 }
