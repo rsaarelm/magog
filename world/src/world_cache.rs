@@ -205,7 +205,7 @@ impl WorldCache {
     fn downstairs(&self, sector: Sector) -> Option<Location> {
         self.generate(sector);
         for loc in sector.iter() {
-            if let Some(Terrain::Exit) = self.internal_cache.borrow().terrain.get(&loc) {
+            if let Some(Terrain::Downstairs) = self.internal_cache.borrow().terrain.get(&loc) {
                 return Some(loc);
             }
         }
@@ -215,7 +215,7 @@ impl WorldCache {
     fn upstairs(&self, sector: Sector) -> Option<Location> {
         self.generate(sector);
         for loc in sector.iter() {
-            if let Some(Terrain::Entrance) = self.internal_cache.borrow().terrain.get(&loc) {
+            if let Some(Terrain::Upstairs) = self.internal_cache.borrow().terrain.get(&loc) {
                 return Some(loc);
             }
         }

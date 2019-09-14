@@ -55,7 +55,7 @@ pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     let mut ret = VecMap::new();
 
     ret.insert(Empty as usize, Builder::new("assets/floors.png").tile(0, 0).finish());
-    ret.insert(Entrance as usize, Builder::new("assets/portals.png")
+    ret.insert(Upstairs as usize, Builder::new("assets/portals.png")
         .color(LIGHTCYAN)
         .tile(0, 0).merge()
         .tile(32, 0).merge()
@@ -70,7 +70,7 @@ pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
         .tile(320, 0).merge()
         .tile(352, 0).merge()
         .tile(384, 0).finish());
-    ret.insert(Exit as usize, Builder::new("assets/portals.png")
+    ret.insert(Downstairs as usize, Builder::new("assets/portals.png")
         .color(LIGHTCYAN)
         .tile(0, 0).merge()
         .tile(32, 0).merge()

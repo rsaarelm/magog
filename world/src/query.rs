@@ -409,14 +409,14 @@ pub trait Query: TerrainQuery + Sized {
 
         // Draw gates under portals when drawing non-portaled stuff
         if t == Empty && self.portal(loc).is_some() {
-            return Exit;
+            return Downstairs;
         }
 
         // Floor terrain dot means "you can step here". So if the floor is outside the valid play
         // area, don't show the dot.
         //
         // XXX: Hardcoded set of floors, must be updated whenever a new floor type is added.
-        if !self.is_valid_location(loc) && (t == Ground || t == Grass || t == Exit || t == Entrance)
+        if !self.is_valid_location(loc) && (t == Ground || t == Grass || t == Downstairs || t == Upstairs)
         {
             t = Empty;
         }

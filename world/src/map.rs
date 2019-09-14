@@ -119,13 +119,13 @@ impl Map {
                     cell.terrain = Ground;
                 }
                 '>' => {
-                    cell.terrain = Exit;
+                    cell.terrain = Downstairs;
                 }
                 '<' => {
                     if ret.player_entrance.is_none() {
                         ret.player_entrance = Some(pos);
                     }
-                    cell.terrain = Entrance;
+                    cell.terrain = Upstairs;
                 }
                 '~' => {
                     cell.terrain = Water;
@@ -212,12 +212,12 @@ impl Map {
         self.find_positions(|p, _| self.is_valid_placement(p, room))
     }
 
-    pub fn entrances(&self) -> Vec<CellVector> {
-        self.find_positions(|_, c| c.terrain == Terrain::Entrance)
+    pub fn upstairses(&self) -> Vec<CellVector> {
+        self.find_positions(|_, c| c.terrain == Terrain::Upstairs)
     }
 
-    pub fn exits(&self) -> Vec<CellVector> {
-        self.find_positions(|_, c| c.terrain == Terrain::Exit)
+    pub fn downstairses(&self) -> Vec<CellVector> {
+        self.find_positions(|_, c| c.terrain == Terrain::Downstairs)
     }
 
     pub fn open_ground(&self) -> Vec<CellVector> {
