@@ -551,7 +551,7 @@ impl Map {
             }
 
             closed.insert(p);
-            open.remove(&p);
+            open.swap_remove(&p);
         }
 
         None
@@ -601,7 +601,7 @@ fn cut_floodfilled_region(
     let mut ret = IndexSet::new();
     let mut edge = IndexSet::new();
 
-    if !input.remove(&seed) {
+    if !input.swap_remove(&seed) {
         return ret;
     }
     edge.insert(seed);
@@ -609,13 +609,13 @@ fn cut_floodfilled_region(
     while !edge.is_empty() {
         // XXX: Is there a set data type that supports 'pop'?
         let pos = *edge.iter().next().unwrap();
-        edge.remove(&pos);
+        edge.swap_remove(&pos);
         ret.insert(pos);
 
         for p in calx::hex_neighbors(pos) {
             if input.contains(&p) {
                 debug_assert!(!ret.contains(&p) && !edge.contains(&p));
-                input.remove(&p);
+                input.swap_remove(&p);
                 edge.insert(p);
             }
         }
