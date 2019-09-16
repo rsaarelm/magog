@@ -152,16 +152,16 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     msg!(self, "[One] shout[s] angrily.").subject(e).send();
                 }
                 ShoutType::Hiss => {
-                    msg!(self, "[One] hiss[es] angrily.").subject(e).send();
+                    msg!(self, "[One] hiss[es].").subject(e).send();
                 }
                 ShoutType::Buzz => {
                     msg!(self, "[One] buzz[es] loudly.").subject(e).send();
                 }
                 ShoutType::Roar => {
-                    msg!(self, "[One] roar[s] angrily.").subject(e).send();
+                    msg!(self, "[One] roar[s] ferociously.").subject(e).send();
                 }
                 ShoutType::Gurgle => {
-                    msg!(self, "[One] gurgle[s] loudly.").subject(e).send();
+                    msg!(self, "[One] gurgle[s].").subject(e).send();
                 }
                 ShoutType::Silent => {}
             }

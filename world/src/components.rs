@@ -93,6 +93,11 @@ impl Brain {
             ..Default::default()
         }
     }
+
+    pub fn shout(mut self, shout: ShoutType) -> Brain {
+        self.shout = shout;
+        self
+    }
 }
 
 impl Default for Brain {

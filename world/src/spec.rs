@@ -74,7 +74,7 @@ impl Distribution<Loadout> for MobSpec {
                 &self.intrinsics,
             )))
             .c(Desc::new(&self.name, self.icon))
-            .c(Brain::enemy())
+            .c(Brain::enemy().shout(self.shout))
             .c(Anim::default())
             .c(Health::default())
             .c(Statuses::default())
