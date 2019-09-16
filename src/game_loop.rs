@@ -204,18 +204,7 @@ impl Scene<GameRuntime> for GameLoop {
             if let Some(cmd) = ctx.command {
                 ctx.world.update(cmd);
                 ctx.command = None;
-                for e in ctx.world.events() {
-                    match e {
-                        Event::Msg(text) => {
-                            let _ = writeln!(&mut self.console, "{}", text);
-                        }
-                        Event::Damage { entity, amount } => {
-                            let name = ctx.world.entity_name(*entity);
-                            // TODO: Use graphical effect
-                            let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
-                        }
-                    }
-                }
+                self.process_events(ctx);
             } else {
                 ctx.world.tick_anims();
             }
@@ -238,8 +227,8 @@ impl Scene<GameRuntime> for GameLoop {
                 if ctx.world.player_can_act() {
                     break;
                 }
-                // TODO FIXME process events in return value.
                 ctx.world.update(Command::Wait);
+                self.process_events(ctx);
             }
         }
 
@@ -463,6 +452,21 @@ impl GameLoop {
             color::RED,
             "Welcome to status bar",
         );
+    }
+
+    fn process_events(&mut self, ctx: &mut GameRuntime) {
+        for e in ctx.world.events() {
+            match e {
+                Event::Msg(text) => {
+                    let _ = writeln!(&mut self.console, "{}", text);
+                }
+                Event::Damage { entity, amount } => {
+                    let name = ctx.world.entity_name(*entity);
+                    // TODO: Use graphical effect
+                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
+                }
+            }
+        }
     }
 }
 
