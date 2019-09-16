@@ -309,8 +309,21 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                     let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
                     let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                     self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
+
+                    // TODO: Maybe move anim generation to own procedure?
+                    const PROJECTILE_TIME: u64 = 8;
                     for &pt in &volume.0 {
-                        self.spawn_fx(pt, AnimState::Explosion);
+                        let fx = self.spawn_fx(pt, AnimState::Explosion);
+                        self.anim_mut(fx).unwrap().anim_start += PROJECTILE_TIME;
+                    }
+
+                    let anim_tick = self.get_anim_tick();
+                    let projectile = self.spawn_fx(center, AnimState::Firespell);
+                    {
+                        let anim = self.anim_mut(projectile).unwrap();
+                        anim.tween_from = origin;
+                        anim.tween_start = anim_tick;
+                        anim.tween_duration = PROJECTILE_TIME as u32;
                     }
                 }
                 MagicEffect::Confuse => {

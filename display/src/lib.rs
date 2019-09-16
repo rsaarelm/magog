@@ -23,4 +23,5 @@ pub enum Icon {
     Gib,
     Smoke,
     Explosion,
+    Firespell,
 }

@@ -83,6 +83,8 @@ pub enum AnimState {
     Smoke,
     /// Single-cell explosion
     Explosion,
+    /// Pre-exploded fireball
+    Firespell,
 }
 
 impl AnimState {
@@ -92,7 +94,7 @@ impl AnimState {
         use AnimState::*;
         match self {
             Mob | MobHurt | MobBlocks => false,
-            Gib | Smoke | Explosion => true,
+            Gib | Smoke | Explosion | Firespell => true,
         }
     }
 }

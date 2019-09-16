@@ -341,6 +341,27 @@ impl WorldView {
                                 );
                             }
                         }
+
+                        if anim.state == AnimState::Firespell {
+                            const FRAMES: usize = 2;
+
+                            let t = world.get_anim_tick() - anim.anim_start;
+
+                            if t <= anim.tween_duration as u64 {
+                                entity_sprite_buffer.push(
+                                    Sprite::new(
+                                        Layer::Effect,
+                                        screen_pos,
+                                        cache::misc(Icon::Firespell),
+                                    )
+                                    .idx(t as usize % FRAMES)
+                                    .color(Coloring::Shaded {
+                                        ambient: 1.0, // Be bright
+                                        diffuse: 1.0,
+                                    }),
+                                );
+                            }
+                        }
                     }
                 }
             }

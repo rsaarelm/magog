@@ -187,5 +187,11 @@ pub fn misc_brushes() -> VecMap<Arc<Brush>> {
         .tile(4*32, 1*32).merge()
         .finish());
 
+    ret.insert(Firespell as usize, Builder::new("assets/fx.png")
+        .color(YELLOW)
+        .tile(5*32, 1*32).merge()
+        .tile(6*32, 1*32).merge()
+        .finish());
+
     ret
 }
