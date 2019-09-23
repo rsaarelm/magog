@@ -119,19 +119,6 @@ impl WorldView {
 
             let ambient = world.light_level(loc);
 
-            // Tile is outside current sector and can't be entered, graphical cues to point this
-            // out may be needed.
-            let blocked_offsector =
-                loc.sector() != current_sector && world.terrain(loc).is_narrow_obstacle();
-
-            if blocked_offsector && !in_map_memory {
-                sprites.push(Sprite::new(
-                    Layer::Decal,
-                    screen_pos,
-                    cache::misc(Icon::BlockedOffSectorCell),
-                ));
-            }
-
             let mut terrain_sprite_buffer = Vec::new();
 
             render::draw_terrain_sprites(world, loc, |layer, angle, brush, frame_idx| {

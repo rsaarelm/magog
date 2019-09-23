@@ -19,7 +19,6 @@ pub enum Icon {
     Portal,
     HealthPip,
     DarkHealthPip,
-    BlockedOffSectorCell,
     Gib,
     Smoke,
     Explosion,
