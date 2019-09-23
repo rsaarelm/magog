@@ -134,16 +134,22 @@ pub enum Biome {
     City,
 }
 
+impl Default for Biome {
+    fn default() -> Self { Biome::Water }
+}
+
 /// Specification for generating a Sector's map.
 ///
 /// This serves as the top-level entry point to map generation routines.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SectorSpec {
     // TODO: Sectors can be predefined maps.
     // TODO: flags for blocked connection to N,E,W,S,up and down neighbor sectors
     // By default create path/stairs if adjacent sector exists.
     pub depth: i32,
     pub biome: Biome,
+    pub west_wall: bool,
+    pub south_wall: bool,
 }
 
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -167,6 +173,7 @@ impl WorldSkeleton {
             let spec = SectorSpec {
                 depth,
                 biome: Biome::Dungeon,
+                ..Default::default()
             };
             ret.insert(sector, spec);
         }
@@ -175,7 +182,7 @@ impl WorldSkeleton {
 
     pub fn overworld_sprawl() -> WorldSkeleton {
         use calx::{DenseTextMap, IntoPrefab};
-        const OVERWORLD_MAP: &str = "\
+        const OVERWORLD_MAP: &str = "
              ~ ~ ~ ~ ~ ~ ^ ^ ^ ^
              ~ ~ ~ ~ . % %|- - ^
              ~ ~ . # . . %L- - ^
@@ -186,6 +193,53 @@ impl WorldSkeleton {
              ~ ~ . . # . . . . ^
              ~ ~ . . . . . . . ^
              ~ ~ ~ ~ ~ ~ ~ ^ ^ ^";
+
+        let wide_map: HashMap<CellVector, char> = DenseTextMap(OVERWORLD_MAP)
+            .into_prefab()
+            .expect("Invalid overworld map");
+
+        let origin = wide_map
+            .iter()
+            .find(|(_, &c)| c == '0')
+            .map(|(&p, _)| p)
+            .expect("No origin sector defined");
+
+        let mut map = HashMap::new();
+
+        for (&wide_p, &c) in &wide_map {
+            if c == ' ' {
+                continue;
+            }
+
+            let wide_p = wide_p - origin;
+            let (p, is_side) = (CellVector::new(wide_p.x / 2, wide_p.y), wide_p.x % 2 != 0);
+
+            // (is_blocked_west, is_blocked_south, sector_biome)
+            let entry = map.entry(p).or_insert((false, false, Biome::Water));
+
+            if is_side {
+                match c {
+                    '|' => (*entry).0 = true,
+                    'L' => {
+                        (*entry).0 = true;
+                        (*entry).1 = true;
+                    }
+                    '_' => (*entry).1 = true,
+                    _ => panic!("Bad side char {}", c),
+                }
+            } else {
+                match c {
+                    '~' => (*entry).2 = Biome::Water,
+                    '-' => (*entry).2 = Biome::Desert,
+                    '.' => (*entry).2 = Biome::Grassland,
+                    '0' => (*entry).2 = Biome::Grassland,
+                    '%' => (*entry).2 = Biome::Forest,
+                    '#' => (*entry).2 = Biome::City,
+                    '^' => (*entry).2 = Biome::Mountain,
+                    _ => panic!("Unknown biome char {}", c),
+                }
+            }
+        }
 
         // Legend (sector centers):
         // 0: player start sector
@@ -201,23 +255,16 @@ impl WorldSkeleton {
 
         let mut ret = WorldSkeleton::default();
         // Overworld
-        for y in -4..=4i16 {
-            for x in -4..=4i16 {
-                let is_edge = y.abs() == 4 || x.abs() == 4;
-                let dist = x.abs() + y.abs();
-                // TODO: Use overworld map to configure sectors
-                let sector = Sector::new(x, y, 0);
-                let spec = SectorSpec {
-                    depth: dist as i32,
-                    biome: if is_edge {
-                        Biome::Water
-                    } else {
-                        Biome::Grassland
-                    },
-                };
-
-                ret.insert(sector, spec);
-            }
+        for (p, (west_wall, south_wall, biome)) in &map {
+            let depth = (p.x.abs() + p.y.abs()) / 2;
+            let sector = Sector::new(p.x as i16, p.y as i16, 0);
+            let spec = SectorSpec {
+                depth,
+                biome: *biome,
+                west_wall: *west_wall,
+                south_wall: *south_wall,
+            };
+            ret.insert(sector, spec);
         }
 
         // Dungeons
@@ -226,6 +273,7 @@ impl WorldSkeleton {
             let spec = SectorSpec {
                 depth,
                 biome: Biome::Dungeon,
+                ..Default::default()
             };
             ret.insert(sector, spec);
         }
@@ -288,11 +336,11 @@ impl<'a> Distribution<Map> for ConnectedSectorSpec<'a> {
         match self.biome {
             Dungeon => self.build_dungeon(rng),
             Grassland => self.build_grassland(rng),
-            Forest => unimplemented!(),
+            Forest => self.base_map(Terrain::Tree), // TODO
             Mountain => self.base_map(Terrain::Rock),
-            Desert => unimplemented!(),
+            Desert => self.base_map(Terrain::Sand), // TODO
             Water => self.base_map(Terrain::Water),
-            City => unimplemented!(),
+            City => self.base_map(Terrain::Ground), // TODO
         }
     }
 }
