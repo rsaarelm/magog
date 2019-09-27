@@ -20,8 +20,16 @@ pub fn load_graphics() {
         PngBytes(include_bytes!("../assets/floors.png")),
     );
     vitral::add_sheet(
+        "assets/fx.png",
+        PngBytes(include_bytes!("../assets/fx.png")),
+    );
+    vitral::add_sheet(
         "assets/gui.png",
         PngBytes(include_bytes!("../assets/gui.png")),
+    );
+    vitral::add_sheet(
+        "assets/items.png",
+        PngBytes(include_bytes!("../assets/items.png")),
     );
     vitral::add_sheet(
         "assets/logo.png",
@@ -38,10 +46,6 @@ pub fn load_graphics() {
     vitral::add_sheet(
         "assets/props.png",
         PngBytes(include_bytes!("../assets/props.png")),
-    );
-    vitral::add_sheet(
-        "assets/fx.png",
-        PngBytes(include_bytes!("../assets/fx.png")),
     );
     vitral::add_sheet(
         "assets/walls.png",
@@ -93,8 +97,8 @@ pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(Shallows as usize, Builder::new("assets/floors.png").colors(STEELBLUE, ROYALBLUE).tile(96, 0).finish());
     ret.insert(Magma as usize, Builder::new("assets/floors.png").colors(YELLOW, DARKRED).tile(96, 0).finish());
     ret.insert(Tree as usize, Builder::new("assets/props.png")
-        .color(SADDLEBROWN).tile(160, 64)
-        .color(GREEN).tile(192, 64).finish());
+        .color(SADDLEBROWN).tile(160, 32)
+        .color(GREEN).tile(192, 32).finish());
     ret.insert(Wall as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 32, 0).finish());
     ret.insert(Rock as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
     ret.insert(Door as usize, Builder::new("assets/walls.png")
@@ -131,13 +135,13 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
         .tile(1*32, 32).tile(2*32, 32).merge()
         .finish());
 
-    ret.insert(Sword as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(4*32, 1*32).finish());
-    ret.insert(Helmet as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(5*32, 1*32).finish());
-    ret.insert(Armor as usize, Builder::new("assets/props.png").color(LIGHTGRAY).tile(2*32, 2*32).finish());
+    ret.insert(Sword as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(0*16, 0*16).finish());
+    ret.insert(Helmet as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(1*16, 0*16).finish());
+    ret.insert(Armor as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(6*16, 0*16).finish());
 
-    ret.insert(Scroll1 as usize, Builder::new("assets/props.png").color(LIGHTYELLOW).tile(7*32, 2*32).finish());
-    ret.insert(Wand1 as usize, Builder::new("assets/props.png").color(RED).tile(7*32, 1*32).finish());
-    ret.insert(Wand2 as usize, Builder::new("assets/props.png").color(CYAN).tile(7*32, 1*32).finish());
+    ret.insert(Scroll1 as usize, Builder::new("assets/items.png").color(LIGHTYELLOW).item(0*16, 1*16).finish());
+    ret.insert(Wand1 as usize, Builder::new("assets/items.png").color(RED).item(4*16, 0*16).finish());
+    ret.insert(Wand2 as usize, Builder::new("assets/items.png").color(CYAN).item(4*16, 0*16).finish());
     ret
 }
 

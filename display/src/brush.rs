@@ -127,6 +127,9 @@ impl Builder {
     /// Add a single-frame splat for a standard tile to the splat matrix.
     pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
+    /// Add a single-frame splat for an item to the splat matrix.
+    pub fn item(self, x: u32, y: u32) -> Builder { self.splat(Geom::item(x, y)) }
+
     /// Add an arbitrary sized rectangle.
     pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder {
         self.splat(Some(Geom::new(0, 0, x, y, w, h)))
@@ -228,6 +231,9 @@ impl Geom {
         // one-shot iterable instead of a naked value.
         Some(Geom::new(16, 16, x, y, 32, 32))
     }
+
+    /// Single item sized tile.
+    pub fn item(x: u32, y: u32) -> Option<Geom> { Some(Geom::new(8, 6, x, y, 16, 16)) }
 
     /// Standard blobform tileset.
     #[rustfmt::skip]
