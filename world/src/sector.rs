@@ -106,8 +106,7 @@ impl Sector {
         // columns.
 
         // Bump for odd z floors.
-        // TODO: Use rem_euclid when it's stable (2019-10?), get rid of the ".abs()"
-        let u_offset = 1 + (self.z.abs() as i32 % 2) * 2;
+        let u_offset = 1 + (self.z as i32).rem_euclid(2) * 2;
 
         let n = (SECTOR_WIDTH - 1) / 4;
         debug_assert!(n > 0);
