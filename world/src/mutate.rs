@@ -196,7 +196,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
     fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
-            Some(())
+            Some(true)
         } else {
             self.really_step(e, dir)
         }
@@ -204,7 +204,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
     fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
-            Some(())
+            Some(true)
         } else {
             self.really_melee(e, dir)
         }
@@ -235,7 +235,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             }
 
             self.end_turn(e);
-            Some(())
+            Some(true)
         } else {
             // No more inventory space
             None
@@ -283,7 +283,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             if let Some(e) = caster {
                 self.end_turn(e);
             }
-            Some(())
+            Some(true)
         } else {
             None
         }
@@ -339,7 +339,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             if let Some(e) = caster {
                 self.end_turn(e);
             }
-            Some(())
+            Some(true)
         } else {
             None
         }
@@ -356,7 +356,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             }
         }
         self.end_turn(e);
-        Some(())
+        Some(true)
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -376,7 +376,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                 anim.tween_duration = delay;
             }
             self.end_turn(e);
-            return Some(());
+            return Some(true);
         }
 
         None
@@ -405,7 +405,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
         self.damage(target, damage, Damage::Physical, Some(e));
         self.end_turn(e);
-        Some(())
+        Some(true)
     }
 
     /// Randomly make a confused mob move erratically.
@@ -658,7 +658,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         let mut stats = self.base_stats(e);
 
         // Add in stat modifiers from equipped items.
-        for &slot in Slot::equipped_iter() {
+        for &slot in Slot::equipment_iter() {
             if let Some(item) = self.entity_equipped(e, slot) {
                 stats = stats + self.stats(item);
             }

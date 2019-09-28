@@ -11,7 +11,7 @@ use std::collections::BTreeMap;
 #[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub enum Place {
     At(Location),
-    In(Entity, Option<Slot>),
+    In(Entity, Slot),
 }
 
 /// Spatial index for game entities
@@ -38,13 +38,11 @@ impl Spatial {
                 !self.contains(e, parent),
                 "Trying to create circular containment"
             );
-        }
 
-        if let In(_, Some(_)) = p {
-            // Slotted in-places are a special case that can hold at most one entity.
-            if self.place_to_entities.contains_key(&p) {
-                panic!("Equipping to an occupied inventory slot");
-            }
+            assert!(
+                !self.place_to_entities.contains_key(&p),
+                "Equipping to an occupied inventory slot"
+            );
         }
 
         self.entity_to_place.insert(e, p);
@@ -78,7 +76,7 @@ impl Spatial {
             !self.contains(e, parent),
             "Trying to create circular containment"
         );
-        self.insert(e, In(parent, Some(slot)));
+        self.insert(e, In(parent, slot));
     }
 
     /// Remove an entity from the local structures but do not pop out its
@@ -140,7 +138,7 @@ impl Spatial {
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
         self.place_to_entities
-            .range(In(parent, None)..)
+            .range(In(parent, Slot::Bag(0))..)
             // Consume the contiguous elements for the parent container.
             // This expects the ordering of the `Place` type to group contents
             // of the same parent together.
@@ -156,7 +154,7 @@ impl Spatial {
     }
 
     pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
-        match self.place_to_entities.get(&In(parent, Some(slot))) {
+        match self.place_to_entities.get(&In(parent, slot)) {
             None => None,
             Some(v) => {
                 assert_eq!(v.len(), 1, "Slot entity container corrupt");
@@ -216,28 +214,29 @@ mod test {
         let e1 = ecs.make();
         let e2 = ecs.make();
 
-        // Test that the Place type gets a lexical ordering where elements in
-        // the same parent entity get sorted next to each other, and that None
-        // is the minimum value for the slot option.
+        // Test that the Place type gets a lexical ordering where elements in the same parent
+        // entity get sorted next to each other, and that Bag(0) is the minimum value for the slot
+        // option.
         //
-        // This needs to be right for the containment logic to function, but
-        // it's not obvious which way the derived lexical order sorts, so put
-        // an unit test here to check it out.
+        // This needs to be right for the containment logic to function, but it's not obvious which
+        // way the derived lexical order sorts, so put an unit test here to check it out.
         let mut places = vec![
-            Place::In(e1, Some(Slot::Melee)),
-            Place::In(e2, None),
-            Place::In(e1, Some(Slot::Ranged)),
-            Place::In(e1, None),
+            Place::In(e1, Slot::RightHand),
+            Place::In(e2, Slot::Bag(0)),
+            Place::In(e1, Slot::Ranged),
+            Place::In(e1, Slot::Bag(1)),
+            Place::In(e1, Slot::Bag(0)),
         ];
 
         places.sort();
         assert_eq!(
             places,
             vec![
-                Place::In(e1, None),
-                Place::In(e1, Some(Slot::Melee)),
-                Place::In(e1, Some(Slot::Ranged)),
-                Place::In(e2, None),
+                Place::In(e1, Slot::Bag(0)),
+                Place::In(e1, Slot::Bag(1)),
+                Place::In(e1, Slot::Ranged),
+                Place::In(e1, Slot::RightHand),
+                Place::In(e2, Slot::Bag(0)),
             ]
         );
     }
@@ -253,7 +252,7 @@ mod test {
 
         let mut spatial = Spatial::new();
         let p1 = Place::At(Location::new(10, 10, 0));
-        let p2 = Place::In(e1, None);
+        let p2 = Place::In(e1, Slot::Bag(0));
         spatial.insert(e1, p1);
         spatial.insert(e2, p2);
 

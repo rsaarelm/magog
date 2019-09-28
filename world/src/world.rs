@@ -159,6 +159,14 @@ impl Query for World {
         self.spatial.contains(parent, child)
     }
 
+    fn entity_slot(&self, e: Entity) -> Option<Slot> {
+        if let Some(Place::In(_, slot)) = self.spatial.get(e) {
+            Some(slot)
+        } else {
+            None
+        }
+    }
+
     fn sphere_volume(&self, origin: Location, radius: u32) -> Volume {
         Volume::sphere(self, origin, radius)
     }

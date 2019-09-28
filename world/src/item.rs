@@ -1,84 +1,52 @@
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
 
+pub const BAG_CAPACITY: u32 = 50;
+
 /// Inventory slots.
 #[derive(Copy, Eq, PartialEq, Clone, Debug, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Slot {
-    Spell1,
-    Spell2,
-    Spell3,
-    Spell4,
-    Spell5,
-    Spell6,
-    Spell7,
-    Spell8,
-    Melee,
-    Ranged,
+    Bag(u32),
     Head,
+    Ranged,
+    RightHand,
     Body,
+    LeftHand,
     Feet,
-    TrinketF,
-    TrinketG,
-    TrinketH,
-    TrinketI,
-    InventoryJ,
-    InventoryK,
-    InventoryL,
-    InventoryM,
-    InventoryN,
-    InventoryO,
-    InventoryP,
-    InventoryQ,
-    InventoryR,
-    InventoryS,
-    InventoryT,
-    InventoryU,
-    InventoryV,
-    InventoryW,
-    InventoryX,
-    InventoryY,
-    InventoryZ,
+    Trinket1,
+    Trinket2,
+    Trinket3,
 }
 
 impl Slot {
-    pub fn is_equipment_slot(self) -> bool { (self as u32) <= (Slot::TrinketI as u32) }
-
-    pub fn accepts(self, equip_type: EquipType) -> bool {
-        use self::Slot::*;
+    pub fn is_equipment_slot(self) -> bool {
         match self {
-            Spell1 | Spell2 | Spell3 | Spell4 | Spell5 | Spell6 | Spell7 | Spell8 => {
-                equip_type == EquipType::Spell
-            }
-            Melee => equip_type == EquipType::Melee,
-            Ranged => equip_type == EquipType::Ranged,
-            Head => equip_type == EquipType::Head,
-            Body => equip_type == EquipType::Body,
-            Feet => equip_type == EquipType::Feet,
-            TrinketF | TrinketG | TrinketH | TrinketI => equip_type == EquipType::Trinket,
-            _ => false,
+            Slot::Bag(_) => false,
+            _ => true,
         }
     }
 
-    pub fn equipped_iter() -> slice::Iter<'static, Slot> {
+    pub fn accepts(self, equip_type: Option<EquipType>) -> bool {
         use self::Slot::*;
-        static EQUIPPED: [Slot; 17] = [
-            Spell1, Spell2, Spell3, Spell4, Spell5, Spell6, Spell7, Spell8, Melee, Ranged, Head,
-            Body, Feet, TrinketF, TrinketG, TrinketH, TrinketI,
+        match self {
+            RightHand => equip_type == Some(EquipType::Melee),
+            LeftHand => false, // TODO: Shields etc
+            Ranged => equip_type == Some(EquipType::Ranged),
+            Head => equip_type == Some(EquipType::Head),
+            Body => equip_type == Some(EquipType::Body),
+            Feet => equip_type == Some(EquipType::Feet),
+            Trinket1 | Trinket2 | Trinket3 => equip_type == Some(EquipType::Trinket),
+            Bag(_) => true,
+        }
+    }
+
+    pub fn equipment_iter() -> slice::Iter<'static, Slot> {
+        use self::Slot::*;
+        static EQUIPPED: [Slot; 9] = [
+            Head, Ranged, RightHand, Body, LeftHand, Feet, Trinket1, Trinket2, Trinket3,
         ];
 
         EQUIPPED.iter()
-    }
-
-    pub fn iter() -> slice::Iter<'static, Slot> {
-        use self::Slot::*;
-        static ALL: [Slot; 34] = [
-            Spell1, Spell2, Spell3, Spell4, Spell5, Spell6, Spell7, Spell8, Melee, Ranged, Head,
-            Body, Feet, TrinketF, TrinketG, TrinketH, TrinketI, InventoryJ, InventoryK, InventoryL,
-            InventoryM, InventoryN, InventoryO, InventoryP, InventoryQ, InventoryR, InventoryS,
-            InventoryT, InventoryU, InventoryV, InventoryW, InventoryX, InventoryY, InventoryZ,
-        ];
-
-        ALL.iter()
     }
 }
 
@@ -91,7 +59,6 @@ pub enum ItemType {
     Boots,
     /// Passive effects when equipped
     Trinket,
-    Spell,
     UntargetedUsable(MagicEffect),
     TargetedUsable(MagicEffect),
     /// Consumed instantly when stepped on.
@@ -113,6 +80,5 @@ pub enum EquipType {
     Head,
     Body,
     Feet,
-    Spell,
     Trinket,
 }

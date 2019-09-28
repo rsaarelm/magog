@@ -5,15 +5,18 @@ use crate::sector::WorldSkeleton;
 use crate::world::World;
 use calx::Dir6;
 use calx::Incremental;
+use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 
 /// Return type for actions that might fail.
 ///
 /// Used for early exit with ?-operator in the action functions.
-pub type ActionOutcome = Option<()>;
+///
+/// Return true if the action advances time, false if the player can keep giving commands.
+pub type ActionOutcome = Option<bool>;
 
 /// Player command events that the world is updated with.
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub enum Command {
     /// Called to update the state on frames where the player can't act.
     Wait,
@@ -34,6 +37,10 @@ pub enum Command {
     /// Items in equipment slots are unequipped to inventory. Items in inventory slots are equipped
     /// to the appropriate equipment slot.
     Equip(Slot),
+    /// Place an item in inventory slot.
+    InventoryPlace(Entity, Slot),
+    /// Swap two slotted items in inventory.
+    InventorySwap(Slot, Slot),
     /// Use a nontargeted inventory item.
     UseItem(Slot),
     /// Use a directionally targeted inventory item.
@@ -60,10 +67,60 @@ impl Incremental for World {
 }
 
 impl World {
+    /// Return whether a command will work in the current world state.
+    ///
+    /// Mostly for cases where the feedback is important for the UI (eg. inventory logic).
+    pub fn can_command(&self, cmd: &Command) -> bool {
+        use Command::*;
+
+        if self.player().is_none() {
+            return *cmd == Command::Wait;
+        }
+        let player = self.player().unwrap();
+
+        match cmd {
+            Wait => !self.player_can_act(),
+
+            InventoryPlace(item, slot) => {
+                if !self.entity_contains(player, *item) {
+                    return false;
+                }
+                if self.entity_equipped(player, *slot).is_some() {
+                    return false;
+                }
+                if !slot.accepts(self.equip_type(*item)) {
+                    return false;
+                }
+                true
+            }
+
+            InventorySwap(slot1, slot2) => {
+                if slot1 == slot2 {
+                    return false;
+                }
+                if let Some(e) = self.entity_equipped(player, *slot1) {
+                    if !slot2.accepts(self.equip_type(e)) {
+                        return false;
+                    }
+                }
+
+                if let Some(e) = self.entity_equipped(player, *slot2) {
+                    if !slot1.accepts(self.equip_type(e)) {
+                        return false;
+                    }
+                }
+                true
+            }
+
+            // TODO: Add failure checks for the rest as needed.
+            _ => true,
+        }
+    }
+
     fn process_cmd(&mut self, cmd: &Command) -> ActionOutcome {
         use Command::*;
         match cmd {
-            Wait => Some(()),
+            Wait => Some(true),
             Pass => {
                 let player = self.player()?;
                 self.idle(player)
@@ -84,7 +141,7 @@ impl World {
             Drop(slot) => {
                 let player = self.player()?;
                 self.place_entity(self.entity_equipped(player, *slot)?, self.location(player)?);
-                Some(())
+                Some(true)
             }
             Equip(slot) => {
                 let player = self.player()?;
@@ -100,7 +157,44 @@ impl World {
                 };
 
                 self.equip_item(item, player, swap_slot);
-                Some(())
+                Some(false)
+            }
+            InventoryPlace(item, slot) => {
+                // TODO: Check curses, limits etc, as in Equip
+                let player = self.player()?;
+
+                // Checks implemented in can_command, piggyback on those.
+                if !self.can_command(cmd) {
+                    return None;
+                }
+
+                self.equip_item(*item, player, *slot);
+                Some(false)
+            }
+            InventorySwap(slot1, slot2) => {
+                // TODO: Check curses, limits etc, as in Equip
+                let player = self.player()?;
+
+                // Checks implemented in can_command, piggyback on those.
+                if !self.can_command(cmd) {
+                    return None;
+                }
+
+                let e1 = self.entity_equipped(player, *slot1);
+                let e2 = self.entity_equipped(player, *slot2);
+
+                if let Some(e1) = e1 {
+                    // XXX: Ad hoc "move it out of the way" slot.
+                    self.equip_item(e1, player, Slot::Bag(999999));
+                }
+                if let Some(e2) = e2 {
+                    self.equip_item(e2, player, *slot1);
+                }
+                if let Some(e1) = e1 {
+                    self.equip_item(e1, player, *slot2);
+                }
+
+                Some(false)
             }
             UseItem(slot) => {
                 let player = self.player()?;

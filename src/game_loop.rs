@@ -1,28 +1,21 @@
 use calx::{stego, Dir6, IncrementalState};
-use display;
+use calx_ecs::Entity;
+use display::{self, CanvasExt};
 use euclid::default::{Point2D, Rect};
+use euclid::{point2, rect, size2, vec2};
 use image;
 use std::io::prelude::*;
 use std::io::Cursor;
-use vitral::{self, color, Align, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene, SceneSwitch};
-use world::{ActionOutcome, Animations, Command, Event, ItemType, Location, Query, Slot, World};
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum InventoryMode {
-    Drop,
-    Equip,
-    Use,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum AimMode {
-    Zap(Slot),
-    // Maybe add intrinsic abilities not tied to a specific entity later
-}
+use vitral::{
+    self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
+    SceneSwitch,
+};
+use world::{ActionOutcome, Animations, Command, Event, Location, Query, Slot, World};
 
 pub(crate) struct GameRuntime {
     world: IncrementalState<World>,
     command: Option<Command>,
+    cursor_item: Option<Entity>,
 }
 
 impl GameRuntime {
@@ -30,7 +23,26 @@ impl GameRuntime {
         GameRuntime {
             world: IncrementalState::new(seed),
             command: None,
+            cursor_item: None,
         }
+    }
+
+    /// Method to force commands from eg. inventory mode
+    pub fn force_command(&mut self, cmd: Command) -> bool {
+        if !self.world.can_command(&cmd) {
+            return false;
+        }
+
+        while self.world.player().is_some() && !self.world.player_can_act() {
+            self.world.update(Command::Wait);
+        }
+
+        if self.world.player().is_some() {
+            debug_assert!(self.world.player_can_act());
+            // TODO FIXME Process events not getting called on events generated here.
+            self.world.update(cmd);
+        }
+        true
     }
 }
 
@@ -43,159 +55,6 @@ pub struct GameLoop {
 enum Side {
     West,
     East,
-}
-
-impl AimMode {
-    fn act(&self, ctx: &mut GameRuntime, dir: Dir6) -> Option<SceneSwitch<GameRuntime>> {
-        match self {
-            AimMode::Zap(slot) => {
-                ctx.command = Some(Command::Zap(*slot, dir));
-                Some(SceneSwitch::Pop)
-            }
-        }
-    }
-}
-
-impl Scene<GameRuntime> for AimMode {
-    fn input(
-        &mut self,
-        ctx: &mut GameRuntime,
-        event: &InputEvent,
-        _canvas: &mut Canvas,
-    ) -> Option<SceneSwitch<GameRuntime>> {
-        if let InputEvent::KeyEvent {
-            is_down: true,
-            hardware_key: Some(scancode),
-            ..
-        } = event
-        {
-            use Keycode::*;
-            match scancode {
-                Q | Pad7 | Home => return self.act(ctx, Dir6::Northwest),
-                W | Up | Pad8 => return self.act(ctx, Dir6::North),
-                E | Pad9 | PageUp => return self.act(ctx, Dir6::Northeast),
-                A | Pad1 | End => return self.act(ctx, Dir6::Southwest),
-                S | Down | Pad2 => return self.act(ctx, Dir6::South),
-                D | Pad3 | PageDown => return self.act(ctx, Dir6::Southeast),
-                Escape => {
-                    return Some(SceneSwitch::Pop);
-                }
-                _ => {}
-            }
-        }
-        None
-    }
-
-    fn draw_previous(&self) -> bool { true }
-}
-
-impl Scene<GameRuntime> for InventoryMode {
-    fn render(
-        &mut self,
-        ctx: &mut GameRuntime,
-        canvas: &mut Canvas,
-    ) -> Option<SceneSwitch<GameRuntime>> {
-        let player = match ctx.world.player() {
-            Some(p) => p,
-            None => return Some(SceneSwitch::Pop),
-        };
-
-        let (_, bounds) = canvas.bounds().vertical_split(320);
-        canvas.fill_rect(&bounds, color::BLACK.alpha(0.99));
-
-        let mut letter_pos = Point2D::new(0, 0);
-        let mut slot_name_pos = Point2D::new(20, 0);
-        let mut item_name_pos = Point2D::new(80, 0);
-        let text_color = color::WHITE;
-
-        for slot in SLOT_DATA.iter() {
-            // TODO: Bounding box for these is a button...
-            letter_pos = canvas.draw_text(
-                &*display::font(),
-                letter_pos,
-                Align::Left,
-                text_color,
-                &format!("{})", slot.key),
-            );
-            slot_name_pos = canvas.draw_text(
-                &*display::font(),
-                slot_name_pos,
-                Align::Left,
-                text_color,
-                slot.name,
-            );
-            let item_name = if let Some(item) = ctx.world.entity_equipped(player, slot.slot) {
-                ctx.world.entity_name(item)
-            } else {
-                "".to_string()
-            };
-
-            item_name_pos = canvas.draw_text(
-                &*display::font(),
-                item_name_pos,
-                Align::Left,
-                text_color,
-                &item_name,
-            );
-        }
-
-        None
-    }
-
-    fn input(
-        &mut self,
-        ctx: &mut GameRuntime,
-        event: &InputEvent,
-        _canvas: &mut Canvas,
-    ) -> Option<SceneSwitch<GameRuntime>> {
-        if let InputEvent::KeyEvent {
-            is_down: true,
-            hardware_key: Some(scancode),
-            ..
-        } = event
-        {
-            use Keycode::*;
-
-            for slot in SLOT_DATA.iter() {
-                if *scancode == slot.code {
-                    match self {
-                        InventoryMode::Drop => ctx.command = Some(Command::Drop(slot.slot)),
-                        InventoryMode::Equip => ctx.command = Some(Command::Equip(slot.slot)),
-                        InventoryMode::Use => {
-                            // Need to see what happens when you use it.
-                            let player = ctx.world.player()?;
-                            let item = ctx.world.entity_equipped(player, slot.slot)?;
-
-                            match ctx.world.item_type(item) {
-                                Some(ItemType::UntargetedUsable(_)) => {
-                                    // No further input needed, just fire off the command
-                                    ctx.command = Some(Command::UseItem(slot.slot));
-                                }
-                                Some(ItemType::TargetedUsable(_)) => {
-                                    // Items needs aiming, switch to aim mode.
-                                    return Some(SceneSwitch::Replace(Box::new(AimMode::Zap(
-                                        slot.slot,
-                                    ))));
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    return Some(SceneSwitch::Pop);
-                }
-            }
-
-            match scancode {
-                Escape => {
-                    return Some(SceneSwitch::Pop);
-                }
-                _ => {}
-            }
-        }
-        None
-    }
-
-    fn draw_previous(&self) -> bool { true }
 }
 
 impl Scene<GameRuntime> for GameLoop {
@@ -331,14 +190,8 @@ impl Scene<GameRuntime> for GameLoop {
                     ctx.command = Some(Command::Take);
                 }
 
-                I => {
-                    return Some(SceneSwitch::Push(Box::new(InventoryMode::Equip)));
-                }
-                B => {
-                    return Some(SceneSwitch::Push(Box::new(InventoryMode::Drop)));
-                }
-                U => {
-                    return Some(SceneSwitch::Push(Box::new(InventoryMode::Use)));
+                Escape => {
+                    return Some(SceneSwitch::Push(Box::new(InventoryScreen)));
                 }
                 F5 => {
                     // Quick save.
@@ -415,7 +268,7 @@ impl GameLoop {
         } else {
             ctx.command = Some(Command::Step(dir));
         }
-        Some(())
+        Some(true)
     }
 
     fn side_step(&self, ctx: &mut GameRuntime, side: Side) -> ActionOutcome {
@@ -470,47 +323,166 @@ impl GameLoop {
     }
 }
 
-struct SlotData {
-    key: char,
-    code: Keycode,
-    slot: Slot,
-    name: &'static str,
+struct InventoryScreen;
+
+enum PickAction {
+    Pick(Entity),
+    Place(Entity),
+    Swap(Entity, Entity),
 }
 
-#[rustfmt::skip]
-static SLOT_DATA: [SlotData; 34] = [
-    SlotData { key: '1', code: Keycode::Num1, slot: Slot::Spell1,     name: "Ability" },
-    SlotData { key: '2', code: Keycode::Num2, slot: Slot::Spell2,     name: "Ability" },
-    SlotData { key: '3', code: Keycode::Num3, slot: Slot::Spell3,     name: "Ability" },
-    SlotData { key: '4', code: Keycode::Num4, slot: Slot::Spell4,     name: "Ability" },
-    SlotData { key: '5', code: Keycode::Num5, slot: Slot::Spell5,     name: "Ability" },
-    SlotData { key: '6', code: Keycode::Num6, slot: Slot::Spell6,     name: "Ability" },
-    SlotData { key: '7', code: Keycode::Num7, slot: Slot::Spell7,     name: "Ability" },
-    SlotData { key: '8', code: Keycode::Num8, slot: Slot::Spell8,     name: "Ability" },
-    SlotData { key: 'a', code: Keycode::A,    slot: Slot::Melee,      name: "Weapon" },
-    SlotData { key: 'b', code: Keycode::B,    slot: Slot::Ranged,     name: "Ranged" },
-    SlotData { key: 'c', code: Keycode::C,    slot: Slot::Head,       name: "Head" },
-    SlotData { key: 'd', code: Keycode::D,    slot: Slot::Body,       name: "Body" },
-    SlotData { key: 'e', code: Keycode::E,    slot: Slot::Feet,       name: "Feet" },
-    SlotData { key: 'f', code: Keycode::F,    slot: Slot::TrinketF,   name: "Trinket" },
-    SlotData { key: 'g', code: Keycode::G,    slot: Slot::TrinketG,   name: "Trinket" },
-    SlotData { key: 'h', code: Keycode::H,    slot: Slot::TrinketH,   name: "Trinket" },
-    SlotData { key: 'i', code: Keycode::I,    slot: Slot::TrinketI,   name: "Trinket" },
-    SlotData { key: 'j', code: Keycode::J,    slot: Slot::InventoryJ, name: "" },
-    SlotData { key: 'k', code: Keycode::K,    slot: Slot::InventoryK, name: "" },
-    SlotData { key: 'l', code: Keycode::L,    slot: Slot::InventoryL, name: "" },
-    SlotData { key: 'm', code: Keycode::M,    slot: Slot::InventoryM, name: "" },
-    SlotData { key: 'n', code: Keycode::N,    slot: Slot::InventoryN, name: "" },
-    SlotData { key: 'o', code: Keycode::O,    slot: Slot::InventoryO, name: "" },
-    SlotData { key: 'p', code: Keycode::P,    slot: Slot::InventoryP, name: "" },
-    SlotData { key: 'q', code: Keycode::Q,    slot: Slot::InventoryQ, name: "" },
-    SlotData { key: 'r', code: Keycode::R,    slot: Slot::InventoryR, name: "" },
-    SlotData { key: 's', code: Keycode::S,    slot: Slot::InventoryS, name: "" },
-    SlotData { key: 't', code: Keycode::T,    slot: Slot::InventoryT, name: "" },
-    SlotData { key: 'u', code: Keycode::U,    slot: Slot::InventoryU, name: "" },
-    SlotData { key: 'v', code: Keycode::V,    slot: Slot::InventoryV, name: "" },
-    SlotData { key: 'w', code: Keycode::W,    slot: Slot::InventoryW, name: "" },
-    SlotData { key: 'x', code: Keycode::X,    slot: Slot::InventoryX, name: "" },
-    SlotData { key: 'y', code: Keycode::Y,    slot: Slot::InventoryY, name: "" },
-    SlotData { key: 'z', code: Keycode::Z,    slot: Slot::InventoryZ, name: "" },
-];
+impl Scene<GameRuntime> for InventoryScreen {
+    fn render(
+        &mut self,
+        ctx: &mut GameRuntime,
+        canvas: &mut Canvas,
+    ) -> Option<SceneSwitch<GameRuntime>> {
+        use PickAction::*;
+
+        fn handle_action(ctx: &mut GameRuntime, slot: Slot, action: Option<PickAction>) {
+            match action {
+                Some(Pick(e)) => {
+                    ctx.cursor_item = Some(e);
+                }
+                Some(Place(e)) => {
+                    // Putting it back where you took it, no-op but change UI.
+                    if let Some(old_slot) = ctx.world.entity_slot(e) {
+                        if old_slot == slot {
+                            ctx.cursor_item = None;
+                        }
+                    }
+
+                    // Put in new slot, emit command
+                    if ctx.force_command(Command::InventoryPlace(e, slot)) {
+                        ctx.cursor_item = None;
+                    }
+                }
+                Some(Swap(current, new)) => {
+                    ctx.cursor_item = Some(new);
+                    if let Some(old_slot) = ctx.world.entity_slot(current) {
+                        if ctx.force_command(Command::InventorySwap(old_slot, slot)) {
+                            ctx.cursor_item = Some(new);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        // Inventory items
+        for y in 0..5 {
+            for x in 0..10 {
+                let pos = point2(8 + x * 24, 8 + y * 24);
+                let bounds = Rect::new(pos, size2(16, 16));
+                canvas.fill_rect(&bounds.inflate(1, 1), color::GREEN);
+                canvas.fill_rect(&bounds, color::BLACK);
+
+                let slot = Slot::Bag((x + y * 10) as u32);
+
+                let action = self.item_button(ctx, canvas, pos, slot);
+                handle_action(ctx, slot, action);
+            }
+        }
+
+        // Equipment
+        for (i, &slot) in [
+            Slot::Trinket1,
+            Slot::Head,
+            Slot::Ranged,
+            Slot::RightHand,
+            Slot::Body,
+            Slot::LeftHand,
+            Slot::Trinket2,
+            Slot::Feet,
+            Slot::Trinket3,
+        ]
+        .iter()
+        .enumerate()
+        {
+            let (x, y) = (i as i32 % 3, i as i32 / 3);
+            let pos = point2(256 + x * 24, 8 + y * 24);
+            let bounds = Rect::new(pos, size2(16, 16));
+            canvas.fill_rect(&bounds.inflate(1, 1), color::SILVER);
+            canvas.fill_rect(&bounds, color::BLACK);
+
+            let action = self.item_button(ctx, canvas, pos, slot);
+            handle_action(ctx, slot, action);
+        }
+
+        // Hotbar
+        for x in 0..10 {
+            let bounds = rect(204 + x * 24, 344, 16, 16);
+            canvas.fill_rect(&bounds.inflate(1, 1), color::RED);
+            canvas.fill_rect(&bounds, color::BLACK);
+            // TODO Interactive buttons
+        }
+
+        // Draw cursor item as cursor
+        if let Some(item) = ctx.cursor_item {
+            let pos = canvas.mouse_pos();
+            canvas.draw_item_icon(pos, ctx.world.entity_icon(item).expect("Item icon missing"));
+        }
+        None
+    }
+
+    fn input(
+        &mut self,
+        ctx: &mut GameRuntime,
+        event: &InputEvent,
+        _canvas: &mut Canvas,
+    ) -> Option<SceneSwitch<GameRuntime>> {
+        if let InputEvent::KeyEvent {
+            is_down: true,
+            hardware_key: Some(scancode),
+            ..
+        } = event
+        {
+            use Keycode::*;
+            match scancode {
+                Escape => {
+                    ctx.cursor_item = None;
+                    return Some(SceneSwitch::Pop);
+                }
+                _ => {}
+            }
+        }
+        None
+    }
+}
+
+impl InventoryScreen {
+    /// Return entity if item was clicked and grabbed.
+    fn item_button(
+        &self,
+        ctx: &mut GameRuntime,
+        canvas: &mut Canvas,
+        pos: Point2D<i32>,
+        slot: Slot,
+    ) -> Option<PickAction> {
+        let item: Option<Entity> = (|| ctx.world.entity_equipped(ctx.world.player()?, slot))();
+        let bounds = Rect::new(pos, size2(16, 16));
+
+        if item != ctx.cursor_item {
+            if let Some(e) = item {
+                canvas.draw_item_icon(
+                    pos + vec2(8, 8),
+                    ctx.world.entity_icon(e).expect("Item icon missing"),
+                );
+                if canvas.click_state(&bounds) == ButtonAction::LeftClicked {
+                    return match ctx.cursor_item {
+                        None => Some(PickAction::Pick(e)),
+                        Some(c) => Some(PickAction::Swap(c, e)),
+                    };
+                }
+            }
+        }
+
+        if let Some(item) = ctx.cursor_item {
+            if canvas.click_state(&bounds) == ButtonAction::LeftClicked {
+                return Some(PickAction::Place(item));
+            }
+        }
+
+        None
+    }
+}

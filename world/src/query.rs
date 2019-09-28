@@ -2,7 +2,7 @@
 
 use crate::components::{Alignment, BrainState, Icon, Status};
 use crate::grammar::{Noun, Pronoun};
-use crate::item::{EquipType, ItemType, Slot};
+use crate::item::{self, EquipType, ItemType, Slot};
 use crate::location::Location;
 use crate::mapsave;
 use crate::spec::EntitySpawn;
@@ -60,6 +60,9 @@ pub trait Query: TerrainQuery + Sized {
     fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity>;
 
     fn entity_contains(&self, parent: Entity, child: Entity) -> bool;
+
+    /// Return slot entity is equipped in.
+    fn entity_slot(&self, e: Entity) -> Option<Slot>;
 
     fn sphere_volume(&self, origin: Location, radius: u32) -> Volume;
 
@@ -416,7 +419,8 @@ pub trait Query: TerrainQuery + Sized {
         // area, don't show the dot.
         //
         // XXX: Hardcoded set of floors, must be updated whenever a new floor type is added.
-        if !self.is_valid_location(loc) && (t == Ground || t == Grass || t == Downstairs || t == Upstairs)
+        if !self.is_valid_location(loc)
+            && (t == Ground || t == Grass || t == Downstairs || t == Upstairs)
         {
             t = Empty;
         }
@@ -470,19 +474,15 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
-        Slot::iter()
-            .find(|&&x| !x.is_equipment_slot() && self.entity_equipped(e, x).is_none())
-            .cloned()
+        (0..item::BAG_CAPACITY)
+            .find(|&i| self.entity_equipped(e, Slot::Bag(i)).is_none())
+            .map(|i| Slot::Bag(i))
     }
 
     fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
-        if let Some(equip_type) = self.equip_type(item) {
-            Slot::iter()
-                .find(|&&x| x.accepts(equip_type) && self.entity_equipped(e, x).is_none())
-                .cloned()
-        } else {
-            None
-        }
+        Slot::equipment_iter()
+            .find(|&&x| x.accepts(self.equip_type(item)) && self.entity_equipped(e, x).is_none())
+            .cloned()
     }
 
     /// Find a drop position for an item, trying to keep one item per cell.
@@ -582,7 +582,6 @@ pub trait Query: TerrainQuery + Sized {
             Some(Helmet) => Some(EquipType::Head),
             Some(Armor) => Some(EquipType::Body),
             Some(Boots) => Some(EquipType::Feet),
-            Some(Spell) => Some(EquipType::Spell),
             Some(Trinket) => Some(EquipType::Trinket),
             _ => None,
         }
