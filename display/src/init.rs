@@ -140,8 +140,8 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(Armor as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(6*16, 0*16).finish());
 
     ret.insert(Scroll1 as usize, Builder::new("assets/items.png").color(LIGHTYELLOW).item(0*16, 1*16).finish());
-    ret.insert(Wand1 as usize, Builder::new("assets/items.png").color(RED).item(4*16, 0*16).finish());
-    ret.insert(Wand2 as usize, Builder::new("assets/items.png").color(CYAN).item(4*16, 0*16).finish());
+    ret.insert(Wand1 as usize, Builder::new("assets/items.png").color(RED).item(3*16, 0*16).finish());
+    ret.insert(Wand2 as usize, Builder::new("assets/items.png").color(CYAN).item(3*16, 0*16).finish());
     ret
 }
 
