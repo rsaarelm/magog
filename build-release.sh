@@ -10,9 +10,9 @@ WORK_DIR=`mktemp -d`
 git clone . $WORK_DIR
 pushd $WORK_DIR
 
-cat >> cargo.toml << EOF
+cat >> Cargo.toml << EOF
 [profile.release]
-lto = 1
+lto = true
 codegen-units = 1
 panic = 'abort'
 EOF
