@@ -478,7 +478,6 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                             Damage::Physical => "die[s]",
                             Damage::Fire => "burn[s] to ash",
                             Damage::Electricity => "[is] electrocuted",
-                            Damage::Cold => "shatter[s] to frozen pieces",
                         }
                     )
                     .subject(e)
@@ -565,18 +564,12 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
         use crate::effect::Effect::*;
         match *effect {
-            Heal(_amount) => {
-                unimplemented!();
-            }
             Hit { amount, damage } => {
                 self.damage(target, amount as i32, damage, source);
             }
             Confuse => {
                 self.gain_status(target, Status::Confused, 40);
                 msg!(self, "[One] [is] confused.").subject(target).send();
-            }
-            MagicMap => {
-                unimplemented!();
             }
         }
     }

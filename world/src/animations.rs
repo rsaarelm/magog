@@ -26,11 +26,6 @@ pub trait Animations: Query + Sized {
             .map_or(false, |a| a.state.is_transient_anim_state())
     }
 
-    /// If an entity is undergoing animation, return the current frame
-    fn anim_frame(&self, e: Entity) -> Option<usize> {
-        unimplemented!();
-    }
-
     /// Return vector by which entity's current position tweening frame displaces it from its base
     /// location.
     ///

@@ -554,7 +554,6 @@ impl Distribution<Exit> for ConnectedSectorSpec<'_> {
 #[cfg(test)]
 mod test {
     use super::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
-    use crate::location::Location;
     use euclid::vec3;
 
     #[test]
