@@ -9,7 +9,7 @@ use crate::world::Loadout;
 use crate::{Distribution, Rng};
 use lazy_static::lazy_static;
 use serde;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
@@ -151,8 +151,8 @@ macro_rules! specs {
     =>
     {
         lazy_static! {
-            pub static ref SPECS: HashMap<EntitySpawn, Arc<dyn Spec>> = {
-                let mut ret: HashMap<EntitySpawn, Arc<dyn Spec>> = HashMap::new();
+            pub static ref SPECS: BTreeMap<EntitySpawn, Arc<dyn Spec>> = {
+                let mut ret: BTreeMap<EntitySpawn, Arc<dyn Spec>> = BTreeMap::new();
                 $(ret.insert(EntitySpawn($item.name().to_string()), Arc::new($item));)+
                 ret
             };
