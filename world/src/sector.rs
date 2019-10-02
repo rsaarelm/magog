@@ -7,7 +7,7 @@ use crate::terrain::Terrain;
 use crate::vaults;
 use crate::{Distribution, Rng};
 use calx::{self, die, seeded_rng, CellVector, RngExt, WeightedChoice};
-use euclid::{vec3, Vector3D};
+use euclid::{vec2, vec3, Vector3D};
 use log::{debug, warn};
 use rand::seq::SliceRandom;
 use rand::Rng as _;
@@ -28,7 +28,9 @@ pub type SectorVector = Vector3D<i16, SectorSpace>;
 ///
 /// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
 /// coordinates form their own sector space that tiles the location space with sectors.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Default, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize,
+)]
 pub struct Sector {
     pub x: i16,
     pub y: i16,
@@ -255,7 +257,12 @@ impl WorldSkeleton {
         let mut ret = WorldSkeleton::default();
         // Overworld
         for (p, (west_wall, south_wall, biome)) in &map {
-            let depth = (p.x.abs() + p.y.abs()) / 2;
+            let depth = if *p == vec2(0, 0) {
+                // No spawns in entrance sector.
+                -1
+            } else {
+                (p.x.abs() + p.y.abs()) / 2
+            };
             let sector = Sector::new(p.x as i16, p.y as i16, 0);
             let spec = SectorSpec {
                 depth,
@@ -503,6 +510,10 @@ impl Distribution<EntitySpawn> for ConnectedSectorSpec<'_> {
 impl Distribution<Option<EntitySpawn>> for ConnectedSectorSpec<'_> {
     fn sample(&self, rng: &mut Rng) -> Option<EntitySpawn> {
         use Biome::*;
+        if self.depth == -1 {
+            return None;
+        }
+
         let spawn_one_in = match self.biome {
             Dungeon => 10,
             _ => 100,
