@@ -17,11 +17,7 @@ Better UX is planned. Current gameplay is keyboard only:
 
 QWE,ASD: move around
 
-I: View inventory, equip item (ESC exits)
-
-U: Use item in inventory (ESC exits)
-
-G, B: Get item, drop item
+Esc: Open inventory screen
 
 Space: Wait for turn
 
