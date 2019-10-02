@@ -7,8 +7,18 @@ in stdenv.mkDerivation {
   buildInputs = [
     rustup
 
-    # Dev stuff cargo dependencies might need
+    # Needed by cargo dependencies.
     cmake gcc zlib pkgconfig openssl
+
+    # Not needed for glium version, but if we upgrade to gfx-rs these are
+    # needed to run Vulkan programs.
+    x11 vulkan-loader vulkan-tools
+
+    # X11 headers. Not currently used, but some Rust apps might want these.
+    xorg.libXrandr
+    xorg.libXinerama
+    xorg.libXcursor
+    xorg.libXi
 
     # Map editor
     tiled
@@ -22,7 +32,7 @@ in stdenv.mkDerivation {
     # Load the GL and X11 stuff the graphics app wants to link dynamically to
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
       with pkgs.xlibs; lib.makeLibraryPath
-      [ pkgs.libGL libX11 libXcursor libXxf86vm libXi libXrandr ]
+      [ pkgs.libGL libX11 libXcursor libXxf86vm libXi libXrandr vulkan-loader ]
     }"
 
     rustup install stable
