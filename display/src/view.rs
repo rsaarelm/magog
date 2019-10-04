@@ -353,20 +353,8 @@ impl WorldView {
                 }
             }
 
-            // A doorway wall should be drawn on top of entities, but regular terrain blocks should
-            // go below them.
-            //
-            // (Disabled. This is visually correct, but the wall graphic ends up obstructing the
-            // mob sprite almost completely, and it's more important to be able to see what mob is
-            // standing in the doorway than for things to be visually nice.)
-
-            // if world.terrain(loc).is_wall() {
-            //     sprites.extend_from_slice(&entity_sprite_buffer);
-            //     sprites.extend_from_slice(&terrain_sprite_buffer);
-            // } else {
             sprites.extend_from_slice(&terrain_sprite_buffer);
             sprites.extend_from_slice(&entity_sprite_buffer);
-            // }
         }
 
         // Draw cursor.
