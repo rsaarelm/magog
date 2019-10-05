@@ -3,13 +3,14 @@
 # After https://eipi.xyz/blog/packaging-a-rust-project-for-nix/
 # Run `nix-build` to build
 #
-# `src = ./.` grabs everything from local dir, needs to be used on a clean
-# checkout of the repo. Do `git clean -fdx` to clean up all local generated
-# stuff before running.
-#
 # The cargoSha256 will get invalidated whenever new commits are made, running
 # nix-build will give you an error message that contains the correct hash,
 # replace value with that, then re-run nix-build.
+#
+# Use `src = ./.` instead of `src = fetchFromGithub { ... }` to build from
+# local sources. Having build artifacts (`target/` directory) in the local
+# directory seems to mess up `nix-build`, so do a `git clean -fdx` or clone a
+# fresh instance repository before trying this.
 
 with import <nixpkgs> { };
 
@@ -17,22 +18,23 @@ rustPlatform.buildRustPackage rec {
   name = "magog-${version}";
   version = "0.1.0";
 
-  # Currently set to build from local sources. Once there are actual official
-  # releases, switch to pulling the latest release from the web site:
-  #
-  #src = fetchFromGitHub {
-  #  owner = "rsaarelm";
-  #  repo = "magog";
-  #  rev = "${version}";
-  #  sha256 = "0avdnnhr5yscp1832g2y72x8msnc536n18ywkg6xdqd2ihm8bpca";
-  #};
+  src = fetchFromGitHub {
+    owner = "rsaarelm";
+    repo = "magog";
 
-  src = ./.;
+    # TODO: Start using release versions when we have them.
+    # Now just using an arbitrary master commit from when this script was
+    # being set up.
+    rev = "fa716ed154937b641a22fdc0c6366b1a4ace279c";
+    # rev = "${version}";
+
+    sha256 = "0z7ddzpibs5cgk3ijd6zhcyngkb0bfp7zfv4ykw1b2yhm4pi8vf0";
+  };
 
   buildInputs = [ openssl pkgconfig zlib gcc cmake ];
 
-  checkPhase = "";
-  cargoSha256 = "sha256:0avdnnhr5yscp1832g2y72x8msnc536n18ywkg6xdqd2ihm8bpca";
+  checkPhase = "cargo test --all";
+  cargoSha256 = "sha256:0z54m1xnzfhgh8b6cscdp8dm036g39lwnnmrlv4vcxrvbp3x0ndw";
 
   # Binary size optimization
   prePatch = ''
