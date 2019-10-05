@@ -1,11 +1,11 @@
 use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage};
-use vitral::SRgba;
 use euclid::vec2;
 use image;
 use image::{GenericImage, GenericImageView, Pixel, SubImage};
 use std::collections::HashMap;
 use structopt;
 use structopt::StructOpt;
+use vitral::SRgba;
 use world::{Location, Sector, Terrain};
 
 type ImageBuffer = image::ImageBuffer<image::Rgba<u8>, Vec<u8>>;

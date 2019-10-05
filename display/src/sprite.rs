@@ -48,9 +48,7 @@ impl Coloring {
                 let (fore, back) = (darken(ambient, fore), darken(ambient, back));
                 (fore, back)
             }
-            Coloring::Solid(col) => {
-                (col, col)
-            }
+            Coloring::Solid(col) => (col, col),
         }
     }
 }
