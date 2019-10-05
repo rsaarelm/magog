@@ -42,6 +42,18 @@ impl WorldView {
         }
     }
 
+    /// Convert screen location to cell vector
+    pub fn screen_to_cell(&self, pos: ScreenVector) -> Location {
+        // NB: This cuts corners with straightforward Location add, if the portaling map system is
+        // ever brought back there needs to be a World reference added here for chart lookup.
+
+        // XXX: Repeating the formula in draw
+        let center = (self.screen_area.origin + self.screen_area.size / 2
+            - vec2(PIXEL_UNIT / 2, 10))
+        .to_vector();
+        self.camera_loc + (pos - center).to_cell_space()
+    }
+
     /// Recompute the cached screen view if the cache has been invalidated.
     fn ensure_fov(&mut self, world: &World) {
         if self.fov.is_none() {

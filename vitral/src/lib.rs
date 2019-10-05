@@ -325,6 +325,9 @@ impl<'a> Canvas<'a> {
         let right_press =
             self.ui.click_state[MouseButton::Right as usize].is_pressed() && is_hovering;
 
+        let middle_press =
+            self.ui.click_state[MouseButton::Middle as usize].is_pressed() && is_hovering;
+
         let is_pressed = left_press || right_press;
 
         // Determine the return value.
@@ -332,6 +335,8 @@ impl<'a> Canvas<'a> {
             ButtonAction::LeftClicked
         } else if right_press && self.ui.click_state[MouseButton::Right as usize].is_release() {
             ButtonAction::RightClicked
+        } else if middle_press && self.ui.click_state[MouseButton::Middle as usize].is_release() {
+            ButtonAction::MiddleClicked
         } else if is_pressed {
             ButtonAction::Pressed
         } else if is_hovering {
@@ -597,6 +602,7 @@ pub enum ButtonAction {
     Pressed,
     LeftClicked,
     RightClicked,
+    MiddleClicked,
 }
 
 impl ButtonAction {

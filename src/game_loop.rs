@@ -1,6 +1,6 @@
-use calx::{stego, Dir6, IncrementalState};
+use calx::{stego, CellVector, Dir6, IncrementalState};
 use calx_ecs::Entity;
-use display::{self, CanvasExt};
+use display::{self, CanvasExt, ScreenVector};
 use euclid::default::{Point2D, Rect};
 use euclid::{point2, rect, size2, vec2};
 use image;
@@ -122,6 +122,26 @@ impl Scene<GameRuntime> for GameLoop {
         let mut console_area = screen_area;
         console_area.size.height = 32;
         self.console.draw_small(canvas, &console_area);
+
+        if view_area.contains(canvas.mouse_pos()) {
+            let mouse_loc =
+                view.screen_to_cell(ScreenVector::from_untyped(canvas.mouse_pos().to_vector()));
+            (|| {
+                let player = ctx.world.player()?;
+                let relative_vec = ctx.world.location(player)?.v2_at(mouse_loc)?;
+                let click_state = canvas.click_state(&view_area);
+
+                if click_state == ButtonAction::LeftClicked {
+                    if relative_vec == CellVector::zero() {
+                        ctx.command = Some(Command::Take);
+                    } else {
+                        let dir = Dir6::from_v2(relative_vec);
+                        self.smart_step(ctx, dir);
+                    }
+                }
+                Some(())
+            })();
+        }
 
         None
     }
@@ -329,6 +349,7 @@ enum PickAction {
     Pick(Entity),
     Place(Entity),
     Swap(Entity, Entity),
+    Drop(Entity),
 }
 
 impl Scene<GameRuntime> for InventoryScreen {
@@ -364,6 +385,9 @@ impl Scene<GameRuntime> for InventoryScreen {
                             ctx.cursor_item = Some(new);
                         }
                     }
+                }
+                Some(Drop(_e)) => {
+                    ctx.force_command(Command::Drop(slot));
                 }
                 _ => {}
             }
@@ -473,6 +497,11 @@ impl InventoryScreen {
                         None => Some(PickAction::Pick(e)),
                         Some(c) => Some(PickAction::Swap(c, e)),
                     };
+                }
+                if canvas.click_state(&bounds) == ButtonAction::MiddleClicked {
+                    if ctx.cursor_item.is_none() {
+                        return Some(PickAction::Drop(e));
+                    }
                 }
             }
         }
