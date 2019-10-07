@@ -611,4 +611,10 @@ pub trait Query: TerrainQuery + Sized {
         // Otherwise things are bright.
         1.0
     }
+
+    /// Return count on entity if it's a stack
+    fn count(&self, _e: Entity) -> u32 {
+        // TODO: Implement stacking logic
+        1
+    }
 }

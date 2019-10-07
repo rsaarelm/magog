@@ -16,6 +16,11 @@ lazy_static! {
         PngBytes(include_bytes!("../assets/font.png")),
         (32u8..128).map(|c| c as char)
     ));
+    static ref TINY_FONT: Arc<FontData> = Arc::new(vitral::add_tilesheet_font(
+        "tiny-font",
+        PngBytes(include_bytes!("../assets/tiny-font.png")),
+        (32u8..128).map(|c| c as char)
+    ));
 }
 
 pub fn terrain(t: world::Terrain) -> Arc<Brush> {
@@ -43,3 +48,5 @@ pub fn misc(e: Icon) -> Arc<Brush> {
 }
 
 pub fn font() -> Arc<FontData> { Arc::clone(&*FONT) }
+
+pub fn tiny_font() -> Arc<FontData> { Arc::clone(&*TINY_FONT) }

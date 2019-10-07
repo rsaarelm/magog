@@ -444,7 +444,11 @@ impl Scene<GameRuntime> for InventoryScreen {
         // Draw cursor item as cursor
         if let Some(item) = ctx.cursor_item {
             let pos = canvas.mouse_pos();
-            canvas.draw_item_icon(pos, ctx.world.entity_icon(item).expect("Item icon missing"));
+            canvas.draw_item_icon(
+                pos,
+                ctx.world.entity_icon(item).expect("Item icon missing"),
+                ctx.world.count(item),
+            );
         }
         None
     }
@@ -491,6 +495,7 @@ impl InventoryScreen {
                 canvas.draw_item_icon(
                     pos + vec2(8, 8),
                     ctx.world.entity_icon(e).expect("Item icon missing"),
+                    ctx.world.count(e),
                 );
                 if canvas.click_state(&bounds) == ButtonAction::LeftClicked {
                     return match ctx.cursor_item {
