@@ -164,7 +164,7 @@ pub fn iter_specs() -> impl Iterator<Item = Arc<dyn Spec + 'static>> { SPECS.val
 
 use self::Intrinsic::*;
 use self::ShoutType::*;
-use crate::item::MagicEffect::*;
+use crate::effect::Ability::*;
 use crate::Icon as I;
 use crate::ItemType::*;
 
@@ -312,7 +312,7 @@ specs! {
         name: "scroll of lightning".into(),
         icon: I::Scroll1,
         power: 1,
-        item_type: UntargetedUsable(Lightning),
+        item_type: UntargetedUsable(LightningBolt),
         ..d()
     },
 }

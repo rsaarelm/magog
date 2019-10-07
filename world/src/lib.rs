@@ -104,6 +104,7 @@ mod components;
 pub use crate::components::Icon;
 
 mod effect;
+pub use effect::Ability;
 
 mod event;
 pub use crate::event::Event;

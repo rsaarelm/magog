@@ -1,3 +1,4 @@
+use crate::effect::Ability;
 use crate::item::Slot;
 use crate::mutate::Mutate;
 use crate::query::Query;
@@ -41,10 +42,17 @@ pub enum Command {
     InventoryPlace(Entity, Slot),
     /// Swap two slotted items in inventory.
     InventorySwap(Slot, Slot),
-    /// Use a nontargeted inventory item.
-    UseItem(Slot),
-    /// Use a directionally targeted inventory item.
-    Zap(Slot, Dir6),
+    /// Use an undirected action that may be invoked via an item.
+    UntargetedAbility {
+        ability: Ability,
+        item: Option<Entity>,
+    },
+    /// Use a directed action that may be invoked via an item.
+    TargetedAbility {
+        ability: Ability,
+        dir: Dir6,
+        item: Option<Entity>,
+    },
 }
 
 impl Incremental for World {
@@ -196,23 +204,27 @@ impl World {
 
                 Some(false)
             }
-            UseItem(slot) => {
+
+            UntargetedAbility { ability, item } => {
+                // XXX: Should these be asserts or just returns?
+                debug_assert!(!ability.is_targeted());
+
                 let player = self.player()?;
-                let item = self.entity_equipped(player, *slot)?;
-                let location = self.location(player)?;
-                if self.uses_left(item) > 0 {
-                    self.drain_charge(item);
-                    self.cast_spell(location, item, Some(player))
+                if let Some(item) = item {
+                    self.use_item_ability(player, *item, *ability)
                 } else {
-                    msg!(self, "Nothing happens.").send();
-                    None
+                    self.use_ability(player, *ability)
                 }
             }
-            Zap(slot, dir) => {
+
+            TargetedAbility { ability, dir, item } => {
+                debug_assert!(ability.is_targeted());
                 let player = self.player()?;
-                let item = self.entity_equipped(player, *slot)?;
-                let location = self.location(player)?;
-                self.cast_directed_spell(location, *dir, item, Some(player))
+                if let Some(item) = item {
+                    self.use_targeted_item_ability(player, *item, *ability, *dir)
+                } else {
+                    self.use_targeted_ability(player, *ability, *dir)
+                }
             }
         }
     }

@@ -3,9 +3,9 @@
 use crate::animations::{AnimState, Animations};
 use crate::command::ActionOutcome;
 use crate::components::{Brain, BrainState, MapMemory, Status};
-use crate::effect::{Damage, Effect};
+use crate::effect::{Ability, Damage, Effect};
 use crate::event::Event;
-use crate::item::{ItemType, MagicEffect, Slot};
+use crate::item::Slot;
 use crate::location::Location;
 use crate::mapsave;
 use crate::query::Query;
@@ -238,109 +238,6 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
             Some(true)
         } else {
             // No more inventory space
-            None
-        }
-    }
-
-    /// Cast an undirected spell
-    fn cast_spell(
-        &mut self,
-        origin: Location,
-        effect: Entity,
-        caster: Option<Entity>,
-    ) -> ActionOutcome {
-        if let ItemType::UntargetedUsable(effect) = self.ecs().item.get(effect)?.item_type {
-            match effect {
-                MagicEffect::Lightning => {
-                    const LIGHTNING_RANGE: u32 = 4;
-                    const LIGHTNING_EFFECT: Effect = Effect::Hit {
-                        amount: 12,
-                        damage: Damage::Electricity,
-                    };
-
-                    // TODO: Make an API, more efficient lookup of entities within an area
-
-                    let targets: Vec<Entity> = self
-                        .sphere_volume(origin, LIGHTNING_RANGE)
-                        .0
-                        .into_iter()
-                        .flat_map(|loc| self.entities_at(loc))
-                        .filter(|&e| self.is_mob(e) && Some(e) != caster)
-                        .collect();
-
-                    if let Some(target) = targets.choose(self.rng()) {
-                        msg!(self, "There is a peal of thunder.").send();
-                        let loc = self.location(*target).unwrap();
-                        self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), caster);
-                    } else {
-                        msg!(self, "The spell fizzles.").send();
-                    }
-                }
-                _ => {
-                    msg!(self, "TODO cast untargeted spell {:?}", effect).send();
-                }
-            }
-            if let Some(e) = caster {
-                self.end_turn(e);
-            }
-            Some(true)
-        } else {
-            None
-        }
-    }
-
-    /// Cast a directed spell
-    fn cast_directed_spell(
-        &mut self,
-        origin: Location,
-        dir: Dir6,
-        effect: Entity,
-        caster: Option<Entity>,
-    ) -> ActionOutcome {
-        if let ItemType::TargetedUsable(effect) = self.ecs().item.get(effect)?.item_type {
-            match effect {
-                MagicEffect::Fireball => {
-                    const FIREBALL_RANGE: u32 = 9;
-                    const FIREBALL_RADIUS: u32 = 1;
-                    const FIREBALL_EFFECT: Effect = Effect::Hit {
-                        amount: 6,
-                        damage: Damage::Fire,
-                    };
-                    let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
-                    let volume = self.sphere_volume(center, FIREBALL_RADIUS);
-                    self.apply_effect(&FIREBALL_EFFECT, &volume, caster);
-
-                    // TODO: Maybe move anim generation to own procedure?
-                    const PROJECTILE_TIME: u64 = 8;
-                    for &pt in &volume.0 {
-                        let fx = self.spawn_fx(pt, AnimState::Explosion);
-                        self.anim_mut(fx).unwrap().anim_start += PROJECTILE_TIME;
-                    }
-
-                    let anim_tick = self.get_anim_tick();
-                    let projectile = self.spawn_fx(center, AnimState::Firespell);
-                    {
-                        let anim = self.anim_mut(projectile).unwrap();
-                        anim.tween_from = origin;
-                        anim.tween_start = anim_tick;
-                        anim.tween_duration = PROJECTILE_TIME as u32;
-                    }
-                }
-                MagicEffect::Confuse => {
-                    const CONFUSION_RANGE: u32 = 9;
-
-                    let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
-                    self.apply_effect(&Effect::Confuse, &Volume::point(center), caster);
-                }
-                _ => {
-                    msg!(self, "TODO cast directed spell {:?}", effect).send();
-                }
-            }
-            if let Some(e) = caster {
-                self.end_turn(e);
-            }
-            Some(true)
-        } else {
             None
         }
     }
@@ -674,5 +571,114 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
+    }
+
+    fn use_ability(&mut self, _e: Entity, _a: Ability) -> ActionOutcome {
+        // TODO
+        None
+    }
+
+    fn use_item_ability(&mut self, e: Entity, item: Entity, a: Ability) -> ActionOutcome {
+        debug_assert!(!a.is_targeted());
+        // TODO: Lift to generic ability use method
+        if !self.has_ability(item, a) {
+            return None;
+        }
+        let origin = self.location(e)?;
+
+        match a {
+            Ability::LightningBolt => {
+                const LIGHTNING_RANGE: u32 = 4;
+                const LIGHTNING_EFFECT: Effect = Effect::Hit {
+                    amount: 12,
+                    damage: Damage::Electricity,
+                };
+
+                // TODO: Make an API, more efficient lookup of entities within an area
+
+                let targets: Vec<Entity> = self
+                    .sphere_volume(origin, LIGHTNING_RANGE)
+                    .0
+                    .into_iter()
+                    .flat_map(|loc| self.entities_at(loc))
+                    .filter(|&x| self.is_mob(x) && x != e)
+                    .collect();
+
+                if let Some(target) = targets.choose(self.rng()) {
+                    msg!(self, "There is a peal of thunder.").send();
+                    let loc = self.location(*target).unwrap();
+                    self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), Some(e));
+                } else {
+                    msg!(self, "The spell fizzles.").send();
+                }
+            }
+            _ => {
+                msg!(self, "TODO cast untargeted spell {:?}", a).send();
+            }
+        }
+        self.drain_charge(item);
+        Some(true)
+    }
+
+    fn use_targeted_ability(&mut self, _e: Entity, _a: Ability, _dir: Dir6) -> ActionOutcome {
+        // TODO
+        None
+    }
+
+    fn use_targeted_item_ability(
+        &mut self,
+        e: Entity,
+        item: Entity,
+        a: Ability,
+        dir: Dir6,
+    ) -> ActionOutcome {
+        debug_assert!(a.is_targeted());
+        if !self.has_ability(item, a) {
+            return None;
+        }
+        let origin = self.location(e)?;
+
+        // TODO: Lift to generic ability use method
+
+        match a {
+            Ability::Fireball => {
+                const FIREBALL_RANGE: u32 = 9;
+                const FIREBALL_RADIUS: u32 = 1;
+                const FIREBALL_EFFECT: Effect = Effect::Hit {
+                    amount: 6,
+                    damage: Damage::Fire,
+                };
+                let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
+                let volume = self.sphere_volume(center, FIREBALL_RADIUS);
+                self.apply_effect(&FIREBALL_EFFECT, &volume, Some(e));
+
+                // TODO: Maybe move anim generation to own procedure?
+                const PROJECTILE_TIME: u64 = 8;
+                for &pt in &volume.0 {
+                    let fx = self.spawn_fx(pt, AnimState::Explosion);
+                    self.anim_mut(fx).unwrap().anim_start += PROJECTILE_TIME;
+                }
+
+                let anim_tick = self.get_anim_tick();
+                let projectile = self.spawn_fx(center, AnimState::Firespell);
+                {
+                    let anim = self.anim_mut(projectile).unwrap();
+                    anim.tween_from = origin;
+                    anim.tween_start = anim_tick;
+                    anim.tween_duration = PROJECTILE_TIME as u32;
+                }
+            }
+            Ability::Confuse => {
+                const CONFUSION_RANGE: u32 = 9;
+
+                let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
+                self.apply_effect(&Effect::Confuse, &Volume::point(center), Some(e));
+            }
+            _ => {
+                msg!(self, "TODO cast directed spell {:?}", a).send();
+            }
+        }
+        self.drain_charge(item);
+        Some(true)
     }
 }

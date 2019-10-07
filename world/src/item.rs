@@ -1,3 +1,4 @@
+use crate::effect::Ability;
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
 
@@ -59,18 +60,13 @@ pub enum ItemType {
     Boots,
     /// Passive effects when equipped
     Trinket,
-    UntargetedUsable(MagicEffect),
-    TargetedUsable(MagicEffect),
+    /// Trigges an untargeted ability.
+    ///
+    /// By convention these items are spent after single use.
+    UntargetedUsable(Ability),
+    TargetedUsable(Ability),
     /// Consumed instantly when stepped on.
-    Instant(MagicEffect),
-}
-
-#[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
-pub enum MagicEffect {
-    Heal,
-    Confuse,
-    Lightning,
-    Fireball,
+    Instant(Ability),
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]

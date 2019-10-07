@@ -2,7 +2,7 @@ use calx::{stego, CellVector, Dir6, IncrementalState};
 use calx_ecs::Entity;
 use display::{self, CanvasExt, ScreenVector};
 use euclid::default::{Point2D, Rect};
-use euclid::{point2, rect, size2, vec2};
+use euclid::{point2, size2, vec2};
 use image;
 use std::io::prelude::*;
 use std::io::Cursor;
@@ -10,12 +10,20 @@ use vitral::{
     self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
     SceneSwitch,
 };
-use world::{ActionOutcome, Animations, Command, Event, Location, Query, Slot, World};
+use world::{Ability, ActionOutcome, Animations, Command, Event, Location, Query, Slot, World};
+
+pub struct HotbarAction {
+    ability: Ability,
+    // Is the ability activated via an item instead of being innate.
+    item: Option<Entity>,
+}
 
 pub(crate) struct GameRuntime {
     world: IncrementalState<World>,
     command: Option<Command>,
     cursor_item: Option<Entity>,
+    hotbar: [Option<HotbarAction>; 10],
+    hotbar_focus: Option<usize>,
 }
 
 impl GameRuntime {
@@ -24,6 +32,8 @@ impl GameRuntime {
             world: IncrementalState::new(seed),
             command: None,
             cursor_item: None,
+            hotbar: Default::default(),
+            hotbar_focus: None,
         }
     }
 
@@ -44,6 +54,104 @@ impl GameRuntime {
         }
         true
     }
+
+    fn is_bindable_hotbar_action(&self, slot: usize) -> bool {
+        match self.hotbar[slot] {
+            Some(HotbarAction { ability, .. }) => ability.is_targeted(),
+            _ => false,
+        }
+    }
+
+    fn is_untargeted_hotbar_action(&self, slot: usize) -> bool {
+        match self.hotbar[slot] {
+            Some(HotbarAction { ability, .. }) => !ability.is_targeted(),
+            _ => false,
+        }
+    }
+
+    pub fn draw_hotbar(&mut self, canvas: &mut Canvas) {
+        for x in 0..10 {
+            let pos = point2(204 + x as i32 * 24, 344);
+            let bounds = Rect::new(pos, size2(16, 16));
+            let color = if Some(x) == self.hotbar_focus {
+                color::ORANGE
+            } else {
+                color::RED
+            };
+            canvas.fill_rect(&bounds.inflate(1, 1), color);
+            canvas.fill_rect(&bounds, color::BLACK);
+
+            match self.hotbar[x] {
+                None => {}
+                Some(HotbarAction {
+                    item: Some(item), ..
+                }) => {
+                    canvas.draw_item_icon(
+                        pos + vec2(8, 8),
+                        self.world.entity_icon(item).expect("Item icon missing"),
+                        self.world.count(item),
+                    );
+                }
+                Some(HotbarAction {
+                    ability: _ability, ..
+                }) => {
+                    // TODO: Icons for raw abilities
+                }
+            }
+
+            if let Some(item) = self.cursor_item {
+                match canvas.click_state(&bounds) {
+                    ButtonAction::LeftClicked => {
+                        // Bind a usable item into the hotbar
+                        if let Some(&ability) = self.world.list_abilities(item).iter().next() {
+                            self.hotbar[x] = Some(HotbarAction {
+                                ability,
+                                item: Some(item),
+                            });
+
+                            self.cursor_item = None;
+                        }
+                    }
+                    _ => {}
+                }
+            } else {
+                match canvas.click_state(&bounds) {
+                    ButtonAction::LeftClicked if self.is_bindable_hotbar_action(x) => {
+                        self.hotbar_focus = Some(x);
+                    }
+                    ButtonAction::RightClicked if self.is_bindable_hotbar_action(x) => {
+                        self.hotbar_focus = Some(x);
+                    }
+
+                    // Right-click to immediately fire an untargeted action
+                    ButtonAction::RightClicked if self.is_untargeted_hotbar_action(x) => {
+                        if let Some(HotbarAction { ability, item }) = self.hotbar[x] {
+                            self.force_command(Command::UntargetedAbility { ability, item });
+                        }
+                    }
+
+                    ButtonAction::MiddleClicked => {
+                        self.hotbar[x] = None;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    /// Handle missing items and invalidated abilities
+    fn update_hotbar(&mut self) {
+        for i in 0..self.hotbar.len() {
+            if let Some(HotbarAction {
+                item: Some(item), ..
+            }) = self.hotbar[i]
+            {
+                if !self.world.is_alive(item) {
+                    self.hotbar[i] = None;
+                }
+            }
+        }
+    }
 }
 
 #[derive(Default)]
@@ -59,6 +167,8 @@ enum Side {
 
 impl Scene<GameRuntime> for GameLoop {
     fn update(&mut self, ctx: &mut GameRuntime) -> Option<SceneSwitch<GameRuntime>> {
+        ctx.update_hotbar();
+
         if ctx.world.player_can_act() {
             if let Some(cmd) = ctx.command {
                 ctx.world.update(cmd);
@@ -99,6 +209,8 @@ impl Scene<GameRuntime> for GameLoop {
         ctx: &mut GameRuntime,
         canvas: &mut Canvas,
     ) -> Option<SceneSwitch<GameRuntime>> {
+        ctx.update_hotbar();
+
         let screen_area = canvas.screen_bounds();
 
         let (view_area, status_area) = screen_area.horizontal_split(-32);
@@ -116,7 +228,7 @@ impl Scene<GameRuntime> for GameLoop {
         canvas.clear_clip();
 
         canvas.set_clip(status_area);
-        self.status_draw(canvas, &status_area);
+        self.status_draw(ctx, canvas, &status_area);
         canvas.clear_clip();
 
         let mut console_area = screen_area;
@@ -137,6 +249,18 @@ impl Scene<GameRuntime> for GameLoop {
                     } else {
                         let dir = Dir6::from_v2(relative_vec);
                         self.smart_step(ctx, dir);
+                    }
+                }
+
+                // Use targeted ability with RMB
+                if click_state == ButtonAction::RightClicked {
+                    if let Some(i) = ctx.hotbar_focus {
+                        if let Some(HotbarAction { ability, item }) = ctx.hotbar[i] {
+                            if relative_vec != CellVector::zero() {
+                                let dir = Dir6::from_v2(relative_vec);
+                                ctx.command = Some(Command::TargetedAbility { ability, dir, item });
+                            }
+                        }
                     }
                 }
                 Some(())
@@ -316,7 +440,7 @@ impl GameLoop {
         self.smart_step(ctx, actual_dir)
     }
 
-    pub fn status_draw(&self, canvas: &mut Canvas, area: &Rect<i32>) {
+    fn status_draw(&self, ctx: &mut GameRuntime, canvas: &mut Canvas, area: &Rect<i32>) {
         canvas.fill_rect(area, Rgba::from(0x33_11_11_ff));
         canvas.draw_text(
             &*display::font(),
@@ -325,6 +449,8 @@ impl GameLoop {
             color::RED,
             "Welcome to status bar",
         );
+
+        ctx.draw_hotbar(canvas);
     }
 
     fn process_events(&mut self, ctx: &mut GameRuntime) {
@@ -433,13 +559,7 @@ impl Scene<GameRuntime> for InventoryScreen {
             handle_action(ctx, slot, action);
         }
 
-        // Hotbar
-        for x in 0..10 {
-            let bounds = rect(204 + x * 24, 344, 16, 16);
-            canvas.fill_rect(&bounds.inflate(1, 1), color::RED);
-            canvas.fill_rect(&bounds, color::BLACK);
-            // TODO Interactive buttons
-        }
+        ctx.draw_hotbar(canvas);
 
         // Draw cursor item as cursor
         if let Some(item) = ctx.cursor_item {

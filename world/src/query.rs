@@ -1,6 +1,7 @@
 //! Gameplay logic that answers questions but doesn't change anything
 
 use crate::components::{Alignment, BrainState, Icon, Status};
+use crate::effect::Ability;
 use crate::grammar::{Noun, Pronoun};
 use crate::item::{self, EquipType, ItemType, Slot};
 use crate::location::Location;
@@ -616,5 +617,33 @@ pub trait Query: TerrainQuery + Sized {
     fn count(&self, _e: Entity) -> u32 {
         // TODO: Implement stacking logic
         1
+    }
+
+    fn has_ability(&self, e: Entity, ability: Ability) -> bool {
+        self.list_abilities(e)
+            .into_iter()
+            .find(|&x| x == ability)
+            .is_some()
+    }
+
+    fn list_abilities(&self, e: Entity) -> Vec<Ability> {
+        // Check for item abilities.
+        if let Some(item) = self.ecs().item.get(e) {
+            match item.item_type {
+                ItemType::UntargetedUsable(ability) => {
+                    return vec![ability];
+                }
+                ItemType::TargetedUsable(ability) => {
+                    return vec![ability];
+                }
+                ItemType::Instant(ability) => {
+                    return vec![ability];
+                }
+                _ => {}
+            }
+        }
+
+        // Entity has no abilites.
+        Vec::new()
     }
 }
