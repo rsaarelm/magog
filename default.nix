@@ -14,6 +14,10 @@
 
 with import <nixpkgs> { };
 
+let
+    rpath = with pkgs.xlibs; lib.makeLibraryPath
+      [ pkgs.libGL libX11 libXcursor libXxf86vm libXi libXrandr vulkan-loader ];
+in
 rustPlatform.buildRustPackage rec {
   name = "magog-${version}";
   version = "0.1.0";
@@ -31,9 +35,8 @@ rustPlatform.buildRustPackage rec {
     sha256 = "0z7ddzpibs5cgk3ijd6zhcyngkb0bfp7zfv4ykw1b2yhm4pi8vf0";
   };
 
-  buildInputs = [ openssl pkgconfig zlib gcc cmake ];
+  buildInputs = [ openssl pkgconfig zlib gcc cmake makeWrapper x11 libGL ];
 
-  checkPhase = "cargo test --all";
   cargoSha256 = "sha256:0z54m1xnzfhgh8b6cscdp8dm036g39lwnnmrlv4vcxrvbp3x0ndw";
 
   # Binary size optimization
@@ -44,6 +47,11 @@ rustPlatform.buildRustPackage rec {
     codegen-units = 1
     panic = 'abort'
     EOF
+  '';
+
+  # Binary wants to link dynamically to X11 libs, generate wrapper.
+  postInstall = ''
+    wrapProgram $out/bin/magog --prefix LD_LIBRARY_PATH : "${rpath}"
   '';
 
   meta = with stdenv.lib; {
