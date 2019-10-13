@@ -12,6 +12,10 @@ use vitral::{self, PngBytes, Rgba};
 /// Must be called before the main game loop starts and tries to render tiles.
 pub fn load_graphics() {
     vitral::add_sheet(
+        "assets/abilities.png",
+        PngBytes(include_bytes!("../assets/abilities.png")),
+    );
+    vitral::add_sheet(
         "assets/blobs.png",
         PngBytes(include_bytes!("../assets/blobs.png")),
     );
