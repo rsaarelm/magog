@@ -37,6 +37,7 @@ rustPlatform.buildRustPackage rec {
 
   buildInputs = [ openssl pkgconfig zlib gcc cmake makeWrapper x11 libGL ];
 
+  checkPhase = "cargo test --all";
   cargoSha256 = "sha256:0z54m1xnzfhgh8b6cscdp8dm036g39lwnnmrlv4vcxrvbp3x0ndw";
 
   # Binary size optimization
