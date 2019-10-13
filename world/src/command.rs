@@ -149,7 +149,9 @@ impl World {
             Drop(slot) => {
                 let player = self.player()?;
                 self.place_entity(self.entity_equipped(player, *slot)?, self.location(player)?);
-                Some(true)
+                // Dropping items does not cost a turn since you'll be doing it from the inventory
+                // screen.
+                Some(false)
             }
             Equip(slot) => {
                 let player = self.player()?;
