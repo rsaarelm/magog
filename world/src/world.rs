@@ -226,6 +226,7 @@ impl Mutate for World {
             const OVERLAND_FOV_RANGE: u32 = SECTOR_WIDTH as u32;
 
             // Long-range sight while in overworld.
+            // XXX: Presumes that overland iff z == 0, this might not be guaranteed...
             let range = if origin.z == 0 {
                 OVERLAND_FOV_RANGE
             } else {
@@ -245,11 +246,7 @@ impl Mutate for World {
 
             for &loc in &fov {
                 memory.seen.insert(loc);
-                // Don't spread map memory to other sectors we haven't "properly" seen yet.
-                // The edges are still shown in visual FOV for display niceness.
-                if loc.sector() == origin.sector() {
-                    memory.remembered.insert(loc);
-                }
+                memory.remembered.insert(loc);
             }
         }
     }

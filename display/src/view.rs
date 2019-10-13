@@ -72,9 +72,7 @@ impl WorldView {
     }
 
     pub fn draw(&mut self, world: &World, canvas: &mut Canvas) {
-        let current_sector = self.camera_loc.sector();
-        self.camera_loc = current_sector.center();
-
+        self.camera_loc = self.camera_loc.sector().center();
         self.ensure_fov(world);
 
         let center = (self.screen_area.origin + self.screen_area.size / 2

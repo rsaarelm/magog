@@ -457,8 +457,7 @@ impl<'a> ConnectedSectorSpec<'a> {
     fn dungeon_base_map(&self) -> Map {
         let mut ret = Map::new_base(
             Terrain::Rock,
-            Sector::points()
-                .filter(|p| !Location::new(p.x as i16, p.y as i16, 0).is_next_to_diagonal_sector()),
+            Sector::points().filter(|&p| !(Location::default() + p).is_next_to_diagonal_sector()),
         );
         self.place_stairwells(&mut ret);
         ret
@@ -475,8 +474,15 @@ impl<'a> ConnectedSectorSpec<'a> {
         self.place_stairs(rng, &mut map).unwrap();
 
         for &pos in &map.open_ground() {
-            if let Some(spawn) = self.sample(rng) {
-                map.push_spawn(pos, spawn);
+            // TODO: Move sector edge spawn prevention to central place, we'll have multiple
+            // open-space sector types.
+
+            // Don't spawn entities on sector edge, makes them show to the neighboring sector.
+            // Sector edges are a liminal zone of strange and inscrutable ways.
+            if !(Location::default() + pos).on_sector_edge() {
+                if let Some(spawn) = self.sample(rng) {
+                    map.push_spawn(pos, spawn);
+                }
             }
         }
 
