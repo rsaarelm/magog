@@ -183,10 +183,7 @@ pub fn add_tilesheet_font(
 /// If the `ImageKey` specifies a sheet not found in the cache or invalid dimensions, will return
 /// `None`.
 pub fn get_image(key: &ImageKey) -> Option<ImageData> {
-    // TODO: Convert AtlasCache::get to match this API instead of panicing at failure
-    // (Best done when conversion to new gameloop is done and AtlasCache API isn't used publicly
-    // anymore.)
-    Some(*ENGINE_STATE.lock().unwrap().atlas_cache.get(key))
+    ENGINE_STATE.lock().unwrap().atlas_cache.get(key)
 }
 
 /// `Scene` stack based game loop runner.

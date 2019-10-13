@@ -4,6 +4,7 @@ use crate::{CharData, FontData, ImageData};
 use euclid::default::Rect;
 use euclid::{rect, size2, vec2};
 use image::{Pixel, RgbaImage};
+use log::warn;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -74,10 +75,10 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     ///
     /// If the added image is larger than `atlas_size` of the atlas cache in either x or y
     /// dimension, the image cannot be added and the method will panic.
-    pub fn get<'a>(&'a mut self, key: &SubImageSpec<T>) -> &'a ImageData {
+    pub fn get<'a>(&'a mut self, key: &SubImageSpec<T>) -> Option<ImageData> {
         // This subimage already exists, return it.
         if self.atlas_images.contains_key(key) {
-            return &self.atlas_images[key];
+            return self.atlas_images.get(key).cloned();
         }
 
         // Subimage does not exist yet, construct the ImageData for it.
@@ -89,7 +90,8 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
                 *image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
             })
         } else {
-            panic!("Image sheet {:?} not found in cache", key.id);
+            warn!("Image sheet {:?} not found in cache", key.id);
+            return None;
         };
 
         assert!(!self.atlases.is_empty());
@@ -98,11 +100,12 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         if let Some(image_data) = self.atlases[atlas_id].add(&sub_image) {
             // Try to fit it into the current atlas sheet.
             self.atlas_images.insert(key.clone(), image_data);
-            &self.atlas_images[key]
+            self.atlas_images.get(key).cloned()
         } else if self.atlases[atlas_id].is_empty() {
             // The atlas is empty but adding the image still failed. Assuming image is too large to
             // fit on an atlas sheet even on its own.
-            panic!("Image {:?} too large, won't fit in empty atlas.", key);
+            warn!("Image {:?} too large, won't fit in empty atlas.", key);
+            None
         } else {
             // Add an empty atlas sheet and retry.
             self.new_atlas();
@@ -173,7 +176,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         let glyphs = tiles
             .into_iter()
             .map(|i| CharData {
-                image: *self.get(&i),
+                image: self.get(&i).unwrap(),
                 draw_offset: vec2(0, 0),
                 advance: i.bounds.size.width as i32,
             })
