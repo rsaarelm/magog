@@ -102,17 +102,38 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                 }
             }
             Hunting(target) => {
-                if let (Some(my_loc), Some(target_loc)) =
-                    (self.location(npc), self.location(target))
-                {
-                    if my_loc.metric_distance(target_loc) == 1 {
-                        let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
-                    } else if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
-                        let _ = self.entity_step(npc, move_dir);
-                    }
+                if self.rng().one_chance_in(12) {
+                    self.ai_drift(npc);
+                } else {
+                    self.ai_hunt(npc, target);
                 }
             }
             PlayerControl => {}
+        }
+    }
+
+    /// Approach and attack target entity.
+    fn ai_hunt(&mut self, npc: Entity, target: Entity) {
+        if let (Some(my_loc), Some(target_loc)) = (self.location(npc), self.location(target)) {
+            if my_loc.metric_distance(target_loc) == 1 {
+                let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
+            } else {
+                if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
+                    let _ = self.entity_step(npc, move_dir);
+                } else {
+                    self.ai_drift(npc);
+                }
+            }
+        }
+    }
+
+    /// Wander around aimlessly
+    fn ai_drift(&mut self, npc: Entity) {
+        let dirs = Dir6::permuted_dirs(self.rng());
+        for &dir in &dirs {
+            if self.entity_step(npc, dir).is_some() {
+                return;
+            }
         }
     }
 
