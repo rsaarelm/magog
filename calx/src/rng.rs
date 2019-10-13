@@ -46,13 +46,13 @@ impl<T: Rng + ?Sized> RngExt for T {
 }
 
 /// Lazily evaluated random permutation.
-pub struct RandomPermutation<'a, R: Rng + 'static> {
+pub struct RandomPermutation<'a, R: Rng + ?Sized> {
     remain: usize,
     shuffle: VecMap<usize>,
     rng: &'a mut R,
 }
 
-impl<'a, R: Rng + 'static> RandomPermutation<'a, R> {
+impl<'a, R: Rng + ?Sized> RandomPermutation<'a, R> {
     pub fn new(rng: &'a mut R, n: usize) -> RandomPermutation<'a, R> {
         RandomPermutation {
             remain: n,
@@ -62,7 +62,7 @@ impl<'a, R: Rng + 'static> RandomPermutation<'a, R> {
     }
 }
 
-impl<'a, R: Rng + 'static> Iterator for RandomPermutation<'a, R> {
+impl<'a, R: Rng + ?Sized> Iterator for RandomPermutation<'a, R> {
     type Item = usize;
 
     fn next(&mut self) -> Option<usize> {

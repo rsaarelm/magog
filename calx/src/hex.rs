@@ -1,3 +1,4 @@
+use crate::rng::RandomPermutation;
 use crate::CellVector;
 use euclid::vec2;
 use num::Integer;
@@ -168,6 +169,11 @@ impl Dir6 {
 
     /// Iterate through the six hex dirs in the standard order.
     pub fn iter() -> slice::Iter<'static, Dir6> { DIRS.iter() }
+
+    /// Return random permutation of all dirs.
+    pub fn permuted_dirs(rng: &mut (impl Rng + ?Sized)) -> Vec<Dir6> {
+        RandomPermutation::new(rng, 6).map(|i| DIRS[i]).collect()
+    }
 
     /// Return whether the direction is along the axes used in fake isometric graphics.
     pub fn is_fake_isometric(self) -> bool {
