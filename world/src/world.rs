@@ -49,7 +49,7 @@ pub struct World {
     /// Spawns from worldgen that have been generated in world.
     generated_spawns: HashSet<(Location, EntitySpawn)>,
     /// Spatial index for game entities.
-    spatial: Spatial,
+    pub(crate) spatial: Spatial,
     /// Global gamestate flags.
     flags: Flags,
     /// Persistent random number generator.
