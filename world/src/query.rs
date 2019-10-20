@@ -588,7 +588,7 @@ pub trait Query: TerrainQuery + Sized {
         }
     }
 
-    fn is_underground(&self, loc: Location) -> bool { loc.z > 0 }
+    fn is_underground(&self, loc: Location) -> bool { loc.z < 0 }
 
     fn light_level(&self, loc: Location) -> f32 {
         // Lit terrain is lit.
