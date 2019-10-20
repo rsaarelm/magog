@@ -46,7 +46,7 @@ pub trait Animations: Query + Sized {
 }
 
 /// Entity animation state.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct Anim {
     pub tween_from: Location,
     /// Anim_tick when tweening started

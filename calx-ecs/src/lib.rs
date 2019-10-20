@@ -351,7 +351,7 @@ macro_rules! build_ecs {
 
         /// A straightforward representation for the complete data of an
         /// entity.
-        #[derive(Clone, Debug, Serialize, Deserialize)]
+        #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
         pub struct Loadout {
             $(pub $compname: Option<$comptype>),+
         }

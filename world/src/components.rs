@@ -32,7 +32,7 @@ pub enum Icon {
 }
 
 /// Entity name and appearance.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Desc {
     pub name: String,
     pub icon: Icon,
@@ -52,7 +52,7 @@ impl Desc {
 }
 
 /// Map field-of-view and remembered terrain.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct MapMemory {
     pub seen: LocationSet,
     pub remembered: LocationSet,
@@ -70,7 +70,7 @@ impl MapMemory {
     }
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Brain {
     pub state: BrainState,
     pub alignment: Alignment,
@@ -152,7 +152,7 @@ pub enum Alignment {
 }
 
 /// Damage state component. The default state is undamaged and unarmored.
-#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct Health {
     /// The more wounds you have, the more hurt you are. How much damage you
     /// can take before dying depends on entity power level, not described by
@@ -167,7 +167,7 @@ impl Health {
 }
 
 /// Items can be picked up and carried and they do stuff.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Item {
     pub item_type: ItemType,
     /// How many uses a wand or similar has left.
@@ -194,7 +194,7 @@ pub enum Status {
 pub type Statuses = BTreeMap<Status, u32>;
 
 /// Stats component in the ECS that supports caching applied modifiers for efficiency.
-#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct StatsComponent {
     /// Base stats that are intrinsic to this entity
     pub base: Stats,

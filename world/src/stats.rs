@@ -6,7 +6,7 @@ use std::ops::Add;
 /// together to build composites. The Default value for Stats must be an
 /// algebraic zero element, adding it to any Stats value must leave that value
 /// unchanged.
-#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct Stats {
     /// Generic power level
     pub power: i32,
