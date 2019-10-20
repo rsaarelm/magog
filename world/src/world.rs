@@ -147,7 +147,9 @@ impl Query for World {
 
     fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
-    fn entities_in(&self, parent: Entity) -> Vec<Entity> { self.spatial.entities_in(parent) }
+    fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)> {
+        self.spatial.entities_in(parent)
+    }
 
     fn ecs(&self) -> &Ecs { &self.ecs }
 

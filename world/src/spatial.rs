@@ -11,6 +11,10 @@ use std::collections::BTreeMap;
 #[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub enum Place {
     At(Location),
+    // XXX: Implementation can store multiple entities in a single Slot-place, but in practice
+    // it's always one entity per slot, the player's inventory needs to be able to have gaps in it
+    // because of the UI. Using separate indices for Location -> Vec<Entity> and (Entity, Slot) ->
+    // Entity might be worth considering to simplify this.
     In(Entity, Slot),
 }
 
@@ -119,8 +123,8 @@ impl Spatial {
     /// also be removed from the space.
     pub fn remove(&mut self, e: Entity) {
         // Remove the contents
-        for &content in &self.entities_in(e) {
-            self.remove(content);
+        for (_, content) in &self.entities_in(e) {
+            self.remove(*content);
         }
         self.single_remove(e);
     }
@@ -136,7 +140,7 @@ impl Spatial {
     pub fn entities_at(&self, loc: Location) -> Vec<Entity> { self.entities(At(loc)) }
 
     /// List entities in a container.
-    pub fn entities_in(&self, parent: Entity) -> Vec<Entity> {
+    pub fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)> {
         self.place_to_entities
             .range(In(parent, Slot::Bag(0))..)
             // Consume the contiguous elements for the parent container.
@@ -149,7 +153,13 @@ impl Spatial {
                     false
                 }
             })
-            .flat_map(|(_, e)| e.iter().cloned())
+            .flat_map(|(p, e)| {
+                if let In(_, slot) = p {
+                    e.iter().map(move |e| (*slot, *e))
+                } else {
+                    panic!("Corrupt place_to_entities spatial index");
+                }
+            })
             .collect()
     }
 

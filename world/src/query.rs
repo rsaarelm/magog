@@ -52,7 +52,7 @@ pub trait Query: TerrainQuery + Sized {
     fn entities_at(&self, loc: Location) -> Vec<Entity>;
 
     /// Return entities inside another entity.
-    fn entities_in(&self, parent: Entity) -> Vec<Entity>;
+    fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)>;
 
     /// Return reference to the world entity component system.
     fn ecs(&self) -> &Ecs;
