@@ -163,6 +163,18 @@ impl Spatial {
             .collect()
     }
 
+    pub fn is_empty(&self, entity: Entity) -> bool {
+        if let Some((In(ref parent, _), _)) = self
+            .place_to_entities
+            .range(In(entity, Slot::Bag(0))..)
+            .next()
+        {
+            return *parent != entity;
+        } else {
+            return true;
+        }
+    }
+
     pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
         match self.place_to_entities.get(&In(parent, slot)) {
             None => None,

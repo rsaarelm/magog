@@ -1,4 +1,3 @@
-use crate::item::ItemType;
 use crate::location::Location;
 use crate::location_set::LocationSet;
 use crate::stats::Stats;
@@ -164,14 +163,6 @@ pub struct Health {
 
 impl Health {
     pub fn new() -> Health { Default::default() }
-}
-
-/// Items can be picked up and carried and they do stuff.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Item {
-    pub item_type: ItemType,
-    /// How many uses a wand or similar has left.
-    pub charges: u32,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]

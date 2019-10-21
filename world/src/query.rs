@@ -54,6 +54,9 @@ pub trait Query: TerrainQuery + Sized {
     /// Return entities inside another entity.
     fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)>;
 
+    /// Return true if entity contains nothing.
+    fn is_empty(&self, e: Entity) -> bool;
+
     /// Return reference to the world entity component system.
     fn ecs(&self) -> &Ecs;
 
@@ -614,9 +617,21 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return count on entity if it's a stack
-    fn count(&self, _e: Entity) -> u32 {
-        // TODO: Implement stacking logic
-        1
+    fn count(&self, e: Entity) -> u32 {
+        if let Some(stacking) = self.ecs().stacking.get(e) {
+            debug_assert!(stacking.count >= 1, "Invalid item stack size");
+            stacking.count
+        } else {
+            1
+        }
+    }
+
+    fn max_stack_size(&self, e: Entity) -> u32 {
+        if self.ecs().stacking.contains(e) {
+            99
+        } else {
+            1
+        }
     }
 
     fn has_ability(&self, e: Entity, ability: Ability) -> bool {

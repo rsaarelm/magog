@@ -1,8 +1,9 @@
 //! Data for generating game entities.
 
 use crate::animations::Anim;
-use crate::components::{Brain, Desc, Health, Icon, Item, ShoutType, StatsComponent, Statuses};
+use crate::components::{Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses};
 use crate::item::ItemType;
+use crate::item::{Item, Stacking};
 use crate::sector::Biome;
 use crate::stats::{Intrinsic, Stats};
 use crate::world::Loadout;
@@ -101,6 +102,7 @@ pub struct ItemSpec {
     attack: i32,
     defense: i32,
     intrinsics: Vec<Intrinsic>,
+    stacks: bool,
 }
 
 impl Default for ItemSpec {
@@ -118,13 +120,14 @@ impl Default for ItemSpec {
             attack: 0,
             defense: 0,
             intrinsics: Vec::new(),
+            stacks: false,
         }
     }
 }
 
 impl Distribution<Loadout> for ItemSpec {
     fn sample(&self, _: &mut Rng) -> Loadout {
-        Loadout::new()
+        let mut ret = Loadout::new()
             .c(Desc::new(&self.name, self.icon))
             .c(StatsComponent::new(
                 Stats::new(self.power, &self.intrinsics)
@@ -135,7 +138,11 @@ impl Distribution<Loadout> for ItemSpec {
             .c(Item {
                 item_type: self.item_type,
                 charges: 1,
-            })
+            });
+        if self.stacks {
+            ret = ret.c(Stacking::default());
+        }
+        ret
     }
 }
 
@@ -313,6 +320,7 @@ specs! {
         icon: I::Scroll1,
         power: 1,
         item_type: UntargetedUsable(LightningBolt),
+        stacks: true,
         ..d()
     },
 }

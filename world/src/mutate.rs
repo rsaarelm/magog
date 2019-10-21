@@ -231,38 +231,6 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn entity_take(&mut self, e: Entity, item: Entity) -> ActionOutcome {
-        // Only mobs can take items.
-        if !self.is_mob(e) {
-            return None;
-        }
-
-        if !self.is_item(item) {
-            return None;
-        }
-
-        // Somehow trying to pick up something we're inside of. Pls don't break the universe.
-        if self.entity_contains(item, e) {
-            panic!("Trying to pick up an entity you are inside of. This shouldn't happen");
-        }
-
-        if let Some(slot) = self.free_bag_slot(e) {
-            self.equip_item(item, e, slot);
-            if self.is_player(e) {
-                msg!(self, "[One] pick[s] up [another].")
-                    .subject(e)
-                    .object(item)
-                    .send();
-            }
-
-            self.end_turn(e);
-            Some(true)
-        } else {
-            // No more inventory space
-            None
-        }
-    }
-
     /// The entity spends its action waiting.
     fn idle(&mut self, e: Entity) -> ActionOutcome {
         if self.consume_nutrition(e) {
@@ -505,19 +473,14 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     fn drain_charge(&mut self, item: Entity) {
-        let mut emptied = false;
+        if self.destroy_after_use(item) {
+            self.kill_entity(item);
+        }
+
         if let Some(i) = self.ecs_mut().item.get_mut(item) {
             if i.charges > 0 {
                 i.charges -= 1;
-
-                if i.charges == 0 {
-                    emptied = true;
-                }
             }
-        }
-
-        if emptied && self.destroy_after_use(item) {
-            self.kill_entity(item);
         }
     }
 

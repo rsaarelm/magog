@@ -3,7 +3,7 @@ use crate::components;
 use crate::event::Event;
 use crate::flags::Flags;
 use crate::fov::SightFov;
-use crate::item::Slot;
+use crate::item::{Item, Slot, Stacking};
 use crate::location::{Location, Portal};
 use crate::mutate::Mutate;
 use crate::query::Query;
@@ -31,7 +31,8 @@ calx_ecs::build_ecs! {
     map_memory: components::MapMemory,
     health: components::Health,
     brain: components::Brain,
-    item: components::Item,
+    item: Item,
+    stacking: Stacking,
     stats: components::StatsComponent,
     status: components::Statuses,
 }
@@ -151,6 +152,8 @@ impl Query for World {
         self.spatial.entities_in(parent)
     }
 
+    fn is_empty(&self, e: Entity) -> bool { self.spatial.is_empty(e) }
+
     fn ecs(&self) -> &Ecs { &self.ecs }
 
     fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
@@ -214,7 +217,13 @@ impl Mutate for World {
         e
     }
 
-    fn kill_entity(&mut self, e: Entity) { self.spatial.remove(e); }
+    fn kill_entity(&mut self, e: Entity) {
+        if self.count(e) > 1 {
+            self.ecs_mut().stacking[e].count -= 1;
+        } else {
+            self.spatial.remove(e);
+        }
+    }
 
     fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 
