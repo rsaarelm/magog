@@ -158,7 +158,7 @@ impl World {
         if let Some(slot) = self.free_bag_slot(e) {
             self.equip_item(item, e, slot);
             if self.is_player(e) {
-                msg!(self, "[One] pick[s] up [another].")
+                msg!(self, "[One] pick[s] up [a thing].")
                     .subject(e)
                     .object(item)
                     .send();

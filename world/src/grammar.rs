@@ -14,6 +14,7 @@ pub struct Noun {
     is_you: bool,
     name: String,
     pronoun: Pronoun,
+    is_plural: bool,
 }
 
 impl Noun {
@@ -22,7 +23,13 @@ impl Noun {
             is_you: false,
             pronoun: Pronoun::It,
             name,
+            is_plural: false,
         }
+    }
+
+    pub fn plural(mut self) -> Noun {
+        self.is_plural = true;
+        self
     }
 
     pub fn pronoun(mut self, pronoun: Pronoun) -> Noun {
@@ -51,6 +58,8 @@ impl Noun {
         if self.is_you {
             "you".to_string()
         } else if self.is_proper_noun() {
+            self.name.to_string()
+        } else if self.is_plural {
             self.name.to_string()
         } else {
             // TODO: Add look-up table of irregular words ('honor', 'unit') as they show up in game
@@ -247,6 +256,7 @@ impl Templater for ObjectTemplater {
     fn convert(&mut self, token: &str) -> Option<String> {
         let ret = match token {
             "another" => self.object.the_name(),
+            "a thing" => self.object.a_name(),
             "another's" => self.object.possessive(),
             "them" => self.object.them(),
 
@@ -317,6 +327,7 @@ mod test {
             "Alexander" => ret.pronoun(Pronoun::He),
             "Athena" => ret.pronoun(Pronoun::She),
             "Tiresias" => ret.pronoun(Pronoun::They),
+            "2 rocks" => ret.plural(),
             _ => ret,
         }
     }
@@ -445,6 +456,28 @@ mod test {
                  Alexander
                  [One] chase[s] after [them].
                  You chase after him.
+                 ",
+        )
+        .into_iter()
+        {
+            let mut t =
+                ObjectTemplater::new(SubjectTemplater::new(make_noun(subject)), make_noun(object));
+            assert_eq!(t.format(template), Ok(message.to_string()));
+        }
+    }
+
+    #[test]
+    fn test_plural() {
+        for (subject, object, template, message) in parse_obj(
+            "PLAYER
+                 rock
+                 [One] take[s] [a thing].
+                 You take a rock.
+
+                 PLAYER
+                 2 rocks
+                 [One] take[s] [a thing].
+                 You take 2 rocks.
                  ",
         )
         .into_iter()

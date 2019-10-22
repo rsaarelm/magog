@@ -221,7 +221,7 @@ specs! {
         ..d()
     },
     MobSpec {
-        name: "octopus".into(),
+        name: "octopus|octopi".into(),
         icon: I::Octopus,
         depth: 2,
         habitat: DUNGEON | TEMPERATE,
@@ -251,7 +251,7 @@ specs! {
         ..d()
     },
     MobSpec {
-        name: "efreet".into(),
+        name: "efreeti|efreet".into(),
         icon: I::Efreet,
         depth: 7,
         habitat: DUNGEON,
@@ -298,7 +298,7 @@ specs! {
         ..d()
     },
     ItemSpec {
-        name: "wand of fireball".into(),
+        name: "wand of fireball|wands of fireball".into(),
         icon: I::Wand1,
         power: 5,
         item_type: TargetedUsable(Fireball),
@@ -307,7 +307,7 @@ specs! {
         ..d()
     },
     ItemSpec {
-        name: "wand of confusion".into(),
+        name: "wand of confusion|wands of confusion".into(),
         icon: I::Wand2,
         power: 5,
         item_type: TargetedUsable(Confuse),
@@ -316,7 +316,7 @@ specs! {
         ..d()
     },
     ItemSpec {
-        name: "scroll of lightning".into(),
+        name: "scroll of lightning|scrolls of lightning".into(),
         icon: I::Scroll1,
         power: 1,
         item_type: UntargetedUsable(LightningBolt),

@@ -116,16 +116,26 @@ pub trait Query: TerrainQuery + Sized {
     fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
     fn entity_name(&self, e: Entity) -> String {
-        self.ecs()
-            .desc
-            .get(e)
-            .map_or_else(|| "N/A".to_string(), |x| x.name.clone())
+        if let Some(desc) = self.ecs().desc.get(e) {
+            let count = self.count(e);
+
+            if count > 1 {
+                format!("{} {}", count, desc.plural_name())
+            } else {
+                desc.singular_name.clone()
+            }
+        } else {
+            "N/A".to_string()
+        }
     }
 
     fn noun(&self, e: Entity) -> Noun {
         let mut ret = Noun::new(self.entity_name(e));
         if self.is_player(e) {
             ret = ret.you().pronoun(Pronoun::They);
+        }
+        if self.count(e) > 1 {
+            ret = ret.plural();
         }
         // TODO: Human mobs get he/she pronoun instead of it.
         ret
@@ -441,7 +451,10 @@ pub trait Query: TerrainQuery + Sized {
     /// Return the name that can be used to spawn this entity.
     fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
-        self.ecs().desc.get(e).and_then(|desc| Some(&desc.name[..]))
+        self.ecs()
+            .desc
+            .get(e)
+            .and_then(|desc| Some(&desc.singular_name[..]))
     }
 
     fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
