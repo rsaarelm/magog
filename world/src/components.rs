@@ -21,6 +21,28 @@ pub enum Icon {
     Ooze,
     Efreet,
     Serpent,
+    Bear,
+    Spider,
+    TotemGuardian,
+    Bat,
+    Centaur,
+    ArmorConstruct,
+    CurseSkull,
+    GelatinousCube,
+    Crocodile,
+    Wisp,
+    Vortex,
+    Moloch,
+    Lizardman,
+    Centipede,
+    FloatingEye,
+    EyeHorror,
+    Dog,
+    Cat,
+    Rat,
+
+    PlaceholderMob,
+    InvisibleMob,
 
     Sword,
     Helmet,
@@ -171,6 +193,9 @@ pub enum ShoutType {
     Roar,
     /// Slimes
     Gurgle,
+    Bark,
+    Meow,
+    Squeak,
     Silent,
 }
 

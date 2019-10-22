@@ -139,6 +139,29 @@ pub fn entity_brushes() -> VecMap<Arc<Brush>> {
         .tile(1*32, 32).tile(2*32, 32).merge()
         .finish());
 
+    ret.insert(Bear as usize, Builder::new("assets/mobs.png").color(OLIVE).mob(3*32, 1*32).finish());
+    ret.insert(Spider as usize, Builder::new("assets/mobs.png").color(MIDNIGHTBLUE).mob(4*32, 1*32).finish());
+    ret.insert(TotemGuardian as usize, Builder::new("assets/mobs.png").color(GOLDENROD).mob(5*32, 1*32).finish());
+    ret.insert(Bat as usize, Builder::new("assets/mobs.png").color(DIMGRAY).mob(6*32, 1*32).finish());
+    ret.insert(Centaur as usize, Builder::new("assets/mobs.png").color(DARKRED).mob(7*32, 1*32).finish());
+    ret.insert(ArmorConstruct as usize, Builder::new("assets/mobs.png").color(DARKSLATEGRAY).mob(0*32, 2*32).finish());
+    ret.insert(CurseSkull as usize, Builder::new("assets/mobs.png").color(KHAKI).mob(1*32, 2*32).finish());
+    ret.insert(GelatinousCube as usize, Builder::new("assets/mobs.png").color(LEMONCHIFFON).mob(2*32, 2*32).finish());
+    ret.insert(Crocodile as usize, Builder::new("assets/mobs.png").color(DARKOLIVEGREEN).mob(3*32, 2*32).finish());
+    ret.insert(Wisp as usize, Builder::new("assets/mobs.png").color(SKYBLUE).mob(4*32, 2*32).finish());
+    ret.insert(Vortex as usize, Builder::new("assets/mobs.png").color(LAVENDER).mob(5*32, 2*32).finish());
+    ret.insert(Moloch as usize, Builder::new("assets/mobs.png").color(BROWN).mob(6*32, 2*32).finish());
+    ret.insert(Lizardman as usize, Builder::new("assets/mobs.png").color(CADETBLUE).mob(7*32, 2*32).finish());
+    ret.insert(Centipede as usize, Builder::new("assets/mobs.png").color(DARKTURQUOISE).mob(2*32, 3*32).finish());
+    ret.insert(FloatingEye as usize, Builder::new("assets/mobs.png").color(LIGHTBLUE).mob(3*32, 3*32).finish());
+    ret.insert(EyeHorror as usize, Builder::new("assets/mobs.png").color(ORCHID).mob(4*32, 3*32).finish());
+    ret.insert(Dog as usize, Builder::new("assets/mobs.png").color(OLIVE).mob(5*32, 3*32).finish());
+    ret.insert(Cat as usize, Builder::new("assets/mobs.png").color(LIGHTSLATEGRAY).mob(6*32, 3*32).finish());
+    ret.insert(Rat as usize, Builder::new("assets/mobs.png").color(ROSYBROWN).mob(7*32, 3*32).finish());
+
+    ret.insert(PlaceholderMob as usize, Builder::new("assets/mobs.png").color(LIGHTGRAY).mob(0*32, 3*32).finish());
+    ret.insert(InvisibleMob as usize, Builder::new("assets/mobs.png").color(LIGHTGRAY).mob(1*32, 3*32).finish());
+
     ret.insert(Sword as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(0*16, 0*16).finish());
     ret.insert(Helmet as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(1*16, 0*16).finish());
     ret.insert(Armor as usize, Builder::new("assets/items.png").color(LIGHTGRAY).item(6*16, 0*16).finish());

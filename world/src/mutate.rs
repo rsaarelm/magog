@@ -184,6 +184,15 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
                 ShoutType::Gurgle => {
                     msg!(self, "[One] gurgle[s].").subject(e).send();
                 }
+                ShoutType::Bark => {
+                    msg!(self, "[One] bark[s].").subject(e).send();
+                }
+                ShoutType::Meow => {
+                    msg!(self, "[One] meow[s].").subject(e).send();
+                }
+                ShoutType::Squeak => {
+                    msg!(self, "[One] squeak[s].").subject(e).send();
+                }
                 ShoutType::Silent => {}
             }
         }

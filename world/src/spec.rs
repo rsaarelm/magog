@@ -232,7 +232,7 @@ specs! {
     MobSpec {
         name: "ogre".into(),
         icon: I::Ogre,
-        depth: 4,
+        depth: 5,
         rarity: 4.0,
         habitat: DUNGEON | ARID,
         power: 7,
@@ -243,7 +243,7 @@ specs! {
     MobSpec {
         name: "wraith".into(),
         icon: I::Wraith,
-        depth: 5,
+        depth: 6,
         habitat: DUNGEON,
         rarity: 6.0,
         power: 10,
@@ -268,6 +268,174 @@ specs! {
         rarity: 10.0,
         power: 20,
         shout: Hiss,
+        ..d()
+    },
+    MobSpec {
+        name: "bear".into(),
+        icon: I::Bear,
+        depth: 2,
+        habitat: TEMPERATE,
+        power: 7,
+        shout: Roar,
+        ..d()
+    },
+    MobSpec {
+        name: "spider".into(),
+        icon: I::Spider,
+        depth: 4,
+        habitat: DUNGEON | ARID,
+        power: 20,
+        rarity: 10.0,
+        shout: Hiss,
+        ..d()
+    },
+    MobSpec {
+        name: "totem guardian".into(),
+        icon: I::TotemGuardian,
+        depth: 4,
+        habitat: DUNGEON,
+        rarity: 5.0,
+        power: 5,
+        ..d()
+    },
+    MobSpec {
+        name: "bat".into(),
+        icon: I::Bat,
+        habitat: DUNGEON | TEMPERATE | URBAN | ARID,
+        power: 1,
+        ..d()
+    },
+    MobSpec {
+        name: "centaur".into(),
+        icon: I::Centaur,
+        habitat: DUNGEON | TEMPERATE | ARID,
+        depth: 4,
+        power: 5,
+        rarity: 3.0,
+        shout: Shout,
+        ..d()
+    },
+    MobSpec {
+        name: "armored construct".into(),
+        icon: I::ArmorConstruct,
+        habitat: DUNGEON,
+        depth: 6,
+        power: 8,
+        rarity: 5.0,
+        ..d()
+    },
+    MobSpec {
+        name: "curse skull".into(),
+        icon: I::CurseSkull,
+        habitat: DUNGEON,
+        depth: 6,
+        power: 8,
+        rarity: 5.0,
+        shout: Shout,
+        ..d()
+    },
+    MobSpec {
+        name: "gelatinous cube".into(),
+        icon: I::GelatinousCube,
+        habitat: DUNGEON,
+        depth: 3,
+        power: 5,
+        rarity: 3.0,
+        shout: Gurgle,
+        ..d()
+    },
+    MobSpec {
+        name: "crocodile".into(),
+        icon: I::Crocodile,
+        habitat: TEMPERATE | ARID,
+        depth: 3,
+        power: 5,
+        rarity: 2.0,
+        shout: Roar,
+        ..d()
+    },
+    MobSpec {
+        name: "wisp".into(),
+        icon: I::Wisp,
+        habitat: DUNGEON,
+        depth: 5,
+        power: 5,
+        rarity: 10.0,
+        ..d()
+    },
+    MobSpec {
+        name: "vortex|vortices".into(),
+        icon: I::Vortex,
+        habitat: DUNGEON,
+        depth: 8,
+        power: 10,
+        rarity: 10.0,
+        ..d()
+    },
+    MobSpec {
+        name: "moloch".into(),
+        icon: I::Moloch,
+        habitat: DUNGEON,
+        depth: 10,
+        power: 50,
+        rarity: 20.0,
+        ..d()
+    },
+    MobSpec {
+        name: "lizardman|lizardmen".into(),
+        icon: I::Lizardman,
+        habitat: TEMPERATE | ARID,
+        power: 2,
+        rarity: 2.0,
+        shout: Shout,
+        ..d()
+    },
+    MobSpec {
+        name: "centipede".into(),
+        icon: I::Centipede,
+        habitat: DUNGEON,
+        depth: 8,
+        power: 10,
+        rarity: 8.0,
+        ..d()
+    },
+    MobSpec {
+        name: "floating eye".into(),
+        icon: I::FloatingEye,
+        habitat: DUNGEON,
+        power: 2,
+        ..d()
+    },
+    MobSpec {
+        name: "eye horror".into(),
+        icon: I::EyeHorror,
+        habitat: DUNGEON,
+        depth: 6,
+        power: 8,
+        rarity: 3.0,
+        ..d()
+    },
+    MobSpec {
+        name: "dog".into(),
+        icon: I::Dog,
+        habitat: DUNGEON,
+        power: 3,
+        rarity: 10.0,
+        ..d()
+    },
+    MobSpec {
+        name: "cat".into(),
+        icon: I::Cat,
+        habitat: DUNGEON,
+        power: 3,
+        rarity: 10.0,
+        ..d()
+    },
+    MobSpec {
+        name: "rat".into(),
+        icon: I::Rat,
+        habitat: DUNGEON | TEMPERATE | ARID,
+        power: 1,
         ..d()
     },
 
