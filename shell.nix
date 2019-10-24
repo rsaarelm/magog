@@ -27,8 +27,6 @@ in stdenv.mkDerivation {
   # XXX: This isn't the proper Nix way to do setup
   # TODO: Support cross-compilation to target x86_64-pc-windows-gnu
   shellHook = ''
-    export RUST_BACKTRACE=1
-
     # Load the GL and X11 stuff the graphics app wants to link dynamically to
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
       with pkgs.xlibs; lib.makeLibraryPath
