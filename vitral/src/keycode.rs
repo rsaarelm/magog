@@ -1,5 +1,5 @@
 use cfg_if::cfg_if;
-use winit::VirtualKeyCode;
+use winit::event::VirtualKeyCode;
 
 /// Identifiers for keyboard keys.
 ///

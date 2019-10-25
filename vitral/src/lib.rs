@@ -13,15 +13,17 @@ mod colors;
 pub use crate::colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
+mod game_loop;
+pub use crate::game_loop::{
+    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
+    AppConfig, ImageKey,
+};
 mod keycode;
 pub use crate::keycode::Keycode;
 mod rect_util;
 pub use crate::rect_util::RectUtil;
 mod scene;
-pub use crate::scene::{
-    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
-    AppConfig, ImageKey, InputEvent, Scene, SceneSwitch,
-};
+pub use crate::scene::{InputEvent, Scene, SceneSwitch};
 
 mod tilesheet;
 

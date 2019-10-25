@@ -37,5 +37,4 @@ pub fn main() {
         game_loop::GameRuntime::new(seed),
         vec![Box::new(GameLoop::default())],
     )
-    .unwrap();
 }

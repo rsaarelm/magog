@@ -4,15 +4,14 @@
 
 use crate::atlas_cache::AtlasCache;
 use crate::canvas_zoom::CanvasZoom;
-use crate::{DrawBatch, InputEvent, Keycode, MouseButton, TextureIndex, UiState, Vertex};
-use euclid::default::{Point2D, Size2D};
+use crate::{DrawBatch, TextureIndex, Vertex};
+use euclid::default::Size2D;
 use glium::glutin;
 use glium::index::PrimitiveType;
 use glium::{self, implement_vertex, program, uniform, Surface};
 use image::{Pixel, RgbImage, RgbaImage};
-use log::info;
-use winit::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
-use winit::{Event, WindowEvent};
+use winit::event_loop::EventLoop;
+use winit::window::WindowBuilder;
 
 use std::error::Error;
 use std::fmt::Debug;
@@ -23,13 +22,12 @@ type GliumTexture = glium::texture::SrgbTexture2d;
 
 /// Glium-rendering backend for Vitral.
 pub struct Backend {
-    display: glium::Display,
-    events: winit::EventsLoop,
+    pub display: glium::Display,
     program: glium::Program,
     textures: Vec<GliumTexture>,
-    render_buffer: RenderBuffer,
-    zoom: CanvasZoom,
-    window_size: Size2D<u32>,
+    pub render_buffer: RenderBuffer,
+    pub zoom: CanvasZoom,
+    pub window_size: Size2D<u32>,
 }
 
 impl Backend {
@@ -37,19 +35,12 @@ impl Backend {
     ///
     /// The backend requires an user-supplied vertex type as a type parameter and a shader program
     /// to render data of that type as argument to the constructor.
-    fn new(
-        display: glium::Display,
-        events: winit::EventsLoop,
-        program: glium::Program,
-        width: u32,
-        height: u32,
-    ) -> Backend {
+    fn new(display: glium::Display, program: glium::Program, width: u32, height: u32) -> Backend {
         let (w, h) = get_size(&display);
         let render_buffer = RenderBuffer::new(&display, width, height);
 
         Backend {
             display,
-            events,
             program,
             textures: Vec::new(),
             render_buffer,
@@ -59,68 +50,19 @@ impl Backend {
     }
 
     /// Open a Glium window and start a backend for it.
-    pub fn start<S: Into<String>>(
+    pub fn start<T>(
+        event_loop: &EventLoop<T>,
+        window: WindowBuilder,
         width: u32,
         height: u32,
-        title: S,
         pixel_perfect: bool,
     ) -> Result<Backend, Box<dyn Error>> {
-        let events = winit::EventsLoop::new();
-        let window = winit::WindowBuilder::new().with_title(title);
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)));
-        let display = glium::Display::new(window, context, &events)?;
+        let display = glium::Display::new(window, context, event_loop)?;
         let program = glium::Program::new(&display, DEFAULT_SHADER)?;
 
-        {
-            // Start the window as a good fit on the primary monitor.
-
-            // Don't make it a completely fullscreen window, that might put the window title bar
-            // outside the screen.
-            const BUFFER: f64 = 8.0;
-            let (width, height) = (width as f64, height as f64);
-
-            let monitor_size = display
-                .gl_window()
-                .window()
-                .get_primary_monitor()
-                .get_dimensions();
-            // Get the most conservative DPI if there's a weird multi-monitor setup.
-            let dpi_factor = display
-                .gl_window()
-                .window()
-                .get_available_monitors()
-                .map(|m| m.get_hidpi_factor())
-                .max_by(|x, y| x.partial_cmp(y).unwrap())
-                .expect("No monitors found!");
-            info!("Scaling starting size to monitor");
-            info!("Monitor size {:?}", monitor_size);
-            info!("DPI Factor {}", dpi_factor);
-
-            let mut window_size = PhysicalSize::new(width, height);
-            while window_size.width + width <= monitor_size.width - BUFFER
-                && window_size.height + height <= monitor_size.height - BUFFER
-            {
-                window_size.width += width;
-                window_size.height += height;
-            }
-            info!("Adjusted window size: {:?}", window_size);
-            let window_pos = PhysicalPosition::new(
-                (monitor_size.width - window_size.width) / 2.0,
-                (monitor_size.height - window_size.height) / 2.0,
-            );
-
-            display
-                .gl_window()
-                .window()
-                .set_inner_size(window_size.to_logical(dpi_factor));
-            display
-                .gl_window()
-                .window()
-                .set_position(window_pos.to_logical(dpi_factor));
-        }
-
-        let mut ret = Backend::new(display, events, program, width, height);
+        let mut ret = Backend::new(display, program, width, height);
         if !pixel_perfect {
             ret.zoom = CanvasZoom::AspectPreserving;
         }
@@ -193,86 +135,6 @@ impl Backend {
             // Write the updated texture atlas to internal texture.
             a.update_texture(|buf, idx| self.write_to_texture(buf.clone(), idx));
         }
-    }
-
-    pub fn process_events(&mut self, ui: &mut UiState) -> Result<Vec<InputEvent>, ()> {
-        // polling and handling the events received by the window
-        let mut event_list = Vec::new();
-        self.events.poll_events(|event| event_list.push(event));
-        // Accumulated scene switches from processing input
-        let mut input_events = Vec::new();
-
-        for e in event_list {
-            match e {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == self.display.gl_window().window().id() => match *event {
-                    WindowEvent::CloseRequested => return Err(()),
-                    WindowEvent::CursorMoved { position, .. } => {
-                        let position = position
-                            .to_physical(self.display.gl_window().window().get_hidpi_factor());
-                        let pos = self.zoom.screen_to_canvas(
-                            self.window_size,
-                            self.render_buffer.size(),
-                            Point2D::new(position.x as f32, position.y as f32),
-                        );
-                        ui.input_mouse_move(pos.x as i32, pos.y as i32);
-                    }
-                    WindowEvent::MouseInput { state, button, .. } => ui.input_mouse_button(
-                        match button {
-                            winit::MouseButton::Left => MouseButton::Left,
-                            winit::MouseButton::Right => MouseButton::Right,
-                            _ => MouseButton::Middle,
-                        },
-                        state == winit::ElementState::Pressed,
-                    ),
-                    WindowEvent::ReceivedCharacter(c) => {
-                        input_events.push(InputEvent::Typed(c));
-                    }
-                    WindowEvent::KeyboardInput {
-                        input:
-                            winit::KeyboardInput {
-                                state,
-                                scancode,
-                                virtual_keycode,
-                                ..
-                            },
-                        ..
-                    } => {
-                        let is_down = state == winit::ElementState::Pressed;
-                        let key = virtual_keycode
-                            .and_then(|virtual_keycode| Keycode::try_from(virtual_keycode).ok());
-                        // Winit adjusts the Linux scancodes, take into account. Don't know if
-                        // this belongs here in the glium module or in the Keycode translation
-                        // maps...
-                        let scancode = if cfg!(target_os = "linux") {
-                            scancode + 8
-                        } else {
-                            scancode
-                        };
-                        let hardware_key = Keycode::from_scancode(scancode);
-                        if key.is_some() || hardware_key.is_some() {
-                            input_events.push(InputEvent::KeyEvent {
-                                is_down,
-                                key,
-                                hardware_key,
-                            });
-                        }
-                    }
-                    _ => (),
-                },
-                // Events in other windows, ignore
-                Event::WindowEvent { .. } => {}
-                Event::Awakened => {
-                    // TODO: Suspend/awaken behavior
-                }
-                Event::DeviceEvent { .. } => {}
-                Event::Suspended(_) => {}
-            }
-        }
-
-        Ok(input_events)
     }
 
     /// Render draw list from canvas into the frame buffer.
@@ -394,7 +256,7 @@ const DEFAULT_SHADER: glium::program::SourceCode<'_> = glium::program::SourceCod
 implement_vertex!(Vertex, pos, tex_coord, color, back_color);
 
 /// A deferred rendering buffer for pixel-perfect display.
-struct RenderBuffer {
+pub struct RenderBuffer {
     size: Size2D<u32>,
     buffer: glium::texture::SrgbTexture2d,
     depth_buffer: glium::framebuffer::DepthRenderBuffer,
@@ -568,9 +430,8 @@ fn get_size(display: &glium::Display) -> (u32, u32) {
     let size = display
         .gl_window()
         .window()
-        .get_inner_size()
-        .unwrap_or_else(|| LogicalSize::new(800.0, 600.0))
-        .to_physical(display.gl_window().window().get_hidpi_factor());
+        .inner_size()
+        .to_physical(display.gl_window().window().hidpi_factor());
 
     (size.width as u32, size.height as u32)
 }

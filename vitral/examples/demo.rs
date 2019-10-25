@@ -108,5 +108,4 @@ fn main() {
         World::new(),
         vec![Box::new(DemoScene)],
     )
-    .unwrap();
 }
