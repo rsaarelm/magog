@@ -1,5 +1,5 @@
 use cfg_if::cfg_if;
-use glium::glutin::VirtualKeyCode;
+use winit::VirtualKeyCode;
 
 /// Identifiers for keyboard keys.
 ///

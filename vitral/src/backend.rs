@@ -6,12 +6,13 @@ use crate::atlas_cache::AtlasCache;
 use crate::canvas_zoom::CanvasZoom;
 use crate::{DrawBatch, InputEvent, Keycode, MouseButton, TextureIndex, UiState, Vertex};
 use euclid::default::{Point2D, Size2D};
-use glium::glutin::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
-use glium::glutin::{self, Event, WindowEvent};
+use glium::glutin;
 use glium::index::PrimitiveType;
 use glium::{self, implement_vertex, program, uniform, Surface};
 use image::{Pixel, RgbImage, RgbaImage};
 use log::info;
+use winit::dpi::{LogicalSize, PhysicalPosition, PhysicalSize};
+use winit::{Event, WindowEvent};
 
 use std::error::Error;
 use std::fmt::Debug;
@@ -23,7 +24,7 @@ type GliumTexture = glium::texture::SrgbTexture2d;
 /// Glium-rendering backend for Vitral.
 pub struct Backend {
     display: glium::Display,
-    events: glutin::EventsLoop,
+    events: winit::EventsLoop,
     program: glium::Program,
     textures: Vec<GliumTexture>,
     render_buffer: RenderBuffer,
@@ -38,7 +39,7 @@ impl Backend {
     /// to render data of that type as argument to the constructor.
     fn new(
         display: glium::Display,
-        events: glutin::EventsLoop,
+        events: winit::EventsLoop,
         program: glium::Program,
         width: u32,
         height: u32,
@@ -64,8 +65,8 @@ impl Backend {
         title: S,
         pixel_perfect: bool,
     ) -> Result<Backend, Box<dyn Error>> {
-        let events = glutin::EventsLoop::new();
-        let window = glutin::WindowBuilder::new().with_title(title);
+        let events = winit::EventsLoop::new();
+        let window = winit::WindowBuilder::new().with_title(title);
         let context = glutin::ContextBuilder::new()
             .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2)));
         let display = glium::Display::new(window, context, &events)?;
@@ -220,18 +221,18 @@ impl Backend {
                     }
                     WindowEvent::MouseInput { state, button, .. } => ui.input_mouse_button(
                         match button {
-                            glutin::MouseButton::Left => MouseButton::Left,
-                            glutin::MouseButton::Right => MouseButton::Right,
+                            winit::MouseButton::Left => MouseButton::Left,
+                            winit::MouseButton::Right => MouseButton::Right,
                             _ => MouseButton::Middle,
                         },
-                        state == glutin::ElementState::Pressed,
+                        state == winit::ElementState::Pressed,
                     ),
                     WindowEvent::ReceivedCharacter(c) => {
                         input_events.push(InputEvent::Typed(c));
                     }
                     WindowEvent::KeyboardInput {
                         input:
-                            glutin::KeyboardInput {
+                            winit::KeyboardInput {
                                 state,
                                 scancode,
                                 virtual_keycode,
@@ -239,10 +240,10 @@ impl Backend {
                             },
                         ..
                     } => {
-                        let is_down = state == glutin::ElementState::Pressed;
+                        let is_down = state == winit::ElementState::Pressed;
                         let key = virtual_keycode
                             .and_then(|virtual_keycode| Keycode::try_from(virtual_keycode).ok());
-                        // Glutin adjusts the Linux scancodes, take into account. Don't know if
+                        // Winit adjusts the Linux scancodes, take into account. Don't know if
                         // this belongs here in the glium module or in the Keycode translation
                         // maps...
                         let scancode = if cfg!(target_os = "linux") {
