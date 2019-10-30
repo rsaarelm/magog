@@ -16,7 +16,7 @@ with import <nixpkgs> { };
 
 let
     rpath = with pkgs.xlibs; lib.makeLibraryPath
-      [ pkgs.libGL libX11 libXcursor libXxf86vm libXi libXrandr vulkan-loader ];
+      [ libXcursor libXi libXrandr vulkan-loader ];
 in
 rustPlatform.buildRustPackage rec {
   name = "magog-${version}";

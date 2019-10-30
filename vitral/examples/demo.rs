@@ -105,9 +105,10 @@ impl DemoScene {
 fn main() {
     env_logger::init();
 
-    vitral::run_app(
+    vitral::App::new(
         AppConfig::new("Vitral Demo"),
         World::new(),
         vec![Box::new(DemoScene)],
     )
+    .run()
 }

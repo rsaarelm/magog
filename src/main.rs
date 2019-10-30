@@ -31,10 +31,11 @@ pub fn main() {
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
     info!("World seed: {}", seed);
 
-    vitral::run_app(
+    vitral::App::new(
         AppConfig::new(format!("Magog v{}", env!("CARGO_PKG_VERSION")))
             .frame_duration(Flick::from_seconds(1.0 / FPS)),
         game_loop::GameRuntime::new(seed),
         vec![Box::new(GameLoop::default())],
     )
+    .run()
 }

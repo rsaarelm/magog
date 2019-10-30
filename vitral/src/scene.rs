@@ -1,5 +1,84 @@
-use crate::keycode::Keycode;
-use crate::Canvas;
+use crate::{flick::Flick, keycode::Keycode, Canvas};
+
+pub(crate) struct SceneStack<T> {
+    stack: Vec<Box<dyn Scene<T>>>,
+    frame_duration: Flick,
+    t: Flick,
+}
+
+impl<T> SceneStack<T> {
+    pub fn new(frame_duration: Flick, stack: Vec<Box<dyn Scene<T>>>) -> SceneStack<T> {
+        SceneStack {
+            stack,
+            frame_duration,
+            t: Flick::now(),
+        }
+    }
+
+    pub fn apply(&mut self, switch: Option<SceneSwitch<T>>) {
+        let top = self.stack.len() - 1;
+        match switch {
+            Some(SceneSwitch::Pop) => {
+                self.stack.pop();
+            }
+            Some(SceneSwitch::Push(scene)) => {
+                self.stack.push(scene);
+            }
+            Some(SceneSwitch::Replace(scene)) => {
+                self.stack[top] = scene;
+            }
+            None => (),
+        }
+    }
+
+    /// True if scene stack is empty and the application should be closed.
+    pub fn is_empty(&self) -> bool { self.stack.is_empty() }
+
+    /// Update stack based on accumulated time and apply scene changes.
+    pub fn update(&mut self, ctx: &mut T) {
+        let now = Flick::now();
+        while (now - self.t) >= self.frame_duration {
+            self.t += self.frame_duration;
+            if self.is_empty() {
+                continue;
+            }
+
+            let top = self.stack.len() - 1;
+            let switch = self.stack[top].update(ctx);
+            self.apply(switch);
+        }
+    }
+
+    /// Render the stack of states and apply scene changes from the topmost scene.
+    pub fn render(&mut self, ctx: &mut T, canvas: &mut Canvas) {
+        if self.is_empty() {
+            return;
+        }
+        let end = self.stack.len();
+        let mut begin = end - 1;
+        while begin > 0 && self.stack[begin].draw_previous() {
+            begin -= 1;
+        }
+
+        let mut switch = None;
+        for i in begin..end {
+            // Only the switch result from the topmost state counts here.
+            switch = self.stack[i].render(ctx, canvas);
+        }
+        self.apply(switch);
+    }
+
+    /// Process input events at the topmost state and apply scene changes.
+    pub fn input(&mut self, ctx: &mut T, event: &InputEvent, canvas: &mut Canvas) {
+        if self.is_empty() {
+            return;
+        }
+
+        let idx = self.stack.len() - 1;
+        let switch = self.stack[idx].input(ctx, event, canvas);
+        self.apply(switch);
+    }
+}
 
 /// Toplevel type for current program GUI state.
 ///

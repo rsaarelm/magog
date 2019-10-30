@@ -10,15 +10,15 @@ in stdenv.mkDerivation {
     # Needed by cargo dependencies.
     cmake gcc zlib pkgconfig openssl
 
-    # Not needed for glium version, but if we upgrade to gfx-rs these are
-    # needed to run Vulkan programs.
-    x11 vulkan-loader vulkan-tools
-
-    # X11 headers. Not currently used, but some Rust apps might want these.
-    xorg.libXrandr
-    xorg.libXinerama
+    # wgpu graphics dependencies
+    vulkan-loader
+    vulkan-tools
     xorg.libXcursor
     xorg.libXi
+    xorg.libXrandr
+
+    # SPIR-V shader compiler
+    shaderc
 
     # Map editor
     tiled
@@ -27,10 +27,15 @@ in stdenv.mkDerivation {
   # XXX: This isn't the proper Nix way to do setup
   # TODO: Support cross-compilation to target x86_64-pc-windows-gnu
   shellHook = ''
-    # Load the GL and X11 stuff the graphics app wants to link dynamically to
+    # Dynamic linking for Vulkan stuff for wgpu graphics
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
       with pkgs.xlibs; lib.makeLibraryPath
-      [ pkgs.libGL libX11 libXcursor libXxf86vm libXi libXrandr vulkan-loader ]
+      [
+        libXcursor
+        libXi
+        libXrandr
+        vulkan-loader
+      ]
     }"
 
     rustup install stable

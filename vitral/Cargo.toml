@@ -11,14 +11,15 @@ edition = "2018"
 [dependencies]
 cfg-if = "0.1"
 euclid = "0.20"
-glium = "0.26.0-alpha3"
 image = "0.22"
 lazy_static = "1.2"
 log = "0.4"
+raw-window-handle = "0.1"
 serde = "1"
 serde_derive = "1"
 time = "0.1"
-winit = "0.20.0-alpha4"
+wgpu = { version = "0.3", features = ["vulkan"] }
+winit = "=0.20.0-alpha3"
 
 [dev-dependencies]
 env_logger = "0.7"

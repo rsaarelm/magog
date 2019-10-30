@@ -8,13 +8,11 @@ mod atlas;
 mod atlas_cache;
 pub use atlas_cache::ImageKey;
 mod backend;
-mod canvas_zoom;
+pub use backend::{App, AppConfig};
 mod colors;
 pub use crate::colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
-mod game_loop;
-pub use crate::game_loop::{run_app, AppConfig};
 mod keycode;
 pub use crate::keycode::Keycode;
 mod rect_util;
@@ -99,14 +97,14 @@ pub struct Canvas<'a> {
 
     screen_size: Size2D<i32>,
     ui: &'a mut UiState,
-    backend: &'a mut backend::Backend,
+    backend: backend::Screenshotter<'a>,
 }
 
 impl<'a> Canvas<'a> {
-    pub fn new(
+    pub(crate) fn new(
         screen_size: Size2D<u32>,
         ui: &'a mut UiState,
-        backend: &'a mut backend::Backend,
+        backend: backend::Screenshotter<'a>,
     ) -> Canvas<'a> {
         Canvas {
             draw_list: Vec::new(),
@@ -439,7 +437,17 @@ impl<'a> Canvas<'a> {
         self.draw_text(font, pos, align, color, text)
     }
 
-    pub fn screenshot(&self) -> RgbImage { self.backend.screenshot() }
+    /// Screenshot using async callback.
+    pub fn screenshot_cb(&mut self, cb: impl FnOnce(image::RgbImage) + 'static) {
+        self.backend.screenshot(cb)
+    }
+
+    /// Screenshot function that blocks until the screenshot is received.
+    pub fn screenshot(&mut self) -> RgbImage {
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+        self.screenshot_cb(move |img| sender.send(img).unwrap());
+        receiver.recv().unwrap()
+    }
 }
 
 pub struct UiState {
@@ -611,4 +619,46 @@ pub enum ButtonAction {
 impl ButtonAction {
     pub fn left_clicked(self) -> bool { self == ButtonAction::LeftClicked }
     pub fn right_clicked(self) -> bool { self == ButtonAction::RightClicked }
+}
+
+/// Normalized device coordinates for the top left corner of a pixel-perfect canvas in a window.
+pub(crate) fn pixel_canvas_pos(window_size: Size2D<u32>, canvas_size: Size2D<u32>) -> Point2D<f32> {
+    // Clip window dimensions to even numbers, pixel-perfect rendering has artifacts with odd
+    // window dimensions.
+    let window_size = Size2D::new(window_size.width & !1, window_size.height & !1);
+
+    // Scale based on whichever of X or Y axis is the tighter fit.
+    let mut scale = (window_size.width as f32 / canvas_size.width as f32)
+        .min(window_size.height as f32 / canvas_size.height as f32);
+
+    if scale > 1.0 {
+        // Snap to pixel scale if more than 1 window pixel per canvas pixel.
+        scale = scale.floor();
+    }
+
+    point2(
+        -scale * canvas_size.width as f32 / window_size.width as f32,
+        -scale * canvas_size.height as f32 / window_size.height as f32,
+    )
+}
+
+pub(crate) fn window_to_canvas_coordinates(
+    window_size: Size2D<u32>,
+    canvas_size: Size2D<u32>,
+    window_pos: Point2D<i32>,
+) -> Point2D<i32> {
+    // Clip odd dimensions again.
+    let window_size = Size2D::new(window_size.width & !1, window_size.height & !1);
+
+    let rp = pixel_canvas_pos(window_size, canvas_size);
+    let rs = Size2D::new(rp.x.abs() * 2.0, rp.y.abs() * 2.0);
+
+    // Transform to device coordinates.
+    let sx = window_pos.x as f32 * 2.0 / window_size.width as f32 - 1.0;
+    let sy = window_pos.y as f32 * 2.0 / window_size.height as f32 - 1.0;
+
+    point2(
+        ((sx - rp.x) * canvas_size.width as f32 / rs.width) as i32,
+        ((sy - rp.y) * canvas_size.height as f32 / rs.height) as i32,
+    )
 }
