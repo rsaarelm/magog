@@ -2,7 +2,7 @@
 
 #![deny(missing_docs)]
 
-use crate::atlas_cache::AtlasCache;
+use crate::atlas_cache::TextureInterface;
 use crate::canvas_zoom::CanvasZoom;
 use crate::{DrawBatch, TextureIndex, Vertex};
 use euclid::default::Size2D;
@@ -14,8 +14,6 @@ use winit::event_loop::EventLoop;
 use winit::window::WindowBuilder;
 
 use std::error::Error;
-use std::fmt::Debug;
-use std::hash::Hash;
 
 /// Default texture type used by the backend.
 type GliumTexture = glium::texture::SrgbTexture2d;
@@ -24,10 +22,33 @@ type GliumTexture = glium::texture::SrgbTexture2d;
 pub struct Backend {
     pub display: glium::Display,
     program: glium::Program,
-    textures: Vec<GliumTexture>,
+    pub textures: Vec<GliumTexture>,
     pub render_buffer: RenderBuffer,
     pub zoom: CanvasZoom,
     pub window_size: Size2D<u32>,
+}
+
+impl TextureInterface for glium::Display {
+    type Texture = GliumTexture;
+
+    fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage) {
+        let (width, height) = image.dimensions();
+        let rect = glium::Rect {
+            left: 0,
+            bottom: 0,
+            width,
+            height,
+        };
+        let mut raw =
+            glium::texture::RawImage2d::from_raw_rgba(image.clone().into_raw(), (width, height));
+        raw.format = glium::texture::ClientFormat::U8U8U8U8;
+
+        texture.write(rect, raw);
+    }
+
+    fn new_texture(&mut self, size: Size2D<u32>) -> Self::Texture {
+        glium::texture::SrgbTexture2d::empty(self, size.width, size.height).unwrap()
+    }
 }
 
 impl Backend {
@@ -117,24 +138,6 @@ impl Backend {
         let tex = glium::texture::SrgbTexture2d::new(&self.display, raw).unwrap();
         self.textures.push(tex);
         self.textures.len() - 1
-    }
-
-    /// Update or construct textures based on changes in atlas cache.
-    pub fn sync_with_atlas_cache<T: Eq + Hash + Clone + Debug>(
-        &mut self,
-        atlas_cache: &mut AtlasCache<T>,
-    ) {
-        for a in atlas_cache.atlases_mut() {
-            let idx = a.texture();
-            // If there are sheets in the atlas that don't have corresponding textures yet,
-            // construct those now.
-            while idx >= self.texture_count() {
-                self.make_empty_texture(a.size().width, a.size().height);
-            }
-
-            // Write the updated texture atlas to internal texture.
-            a.update_texture(|buf, idx| self.write_to_texture(buf.clone(), idx));
-        }
     }
 
     /// Render draw list from canvas into the frame buffer.

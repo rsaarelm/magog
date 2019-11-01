@@ -6,7 +6,7 @@ use std::mem;
 
 mod atlas;
 mod atlas_cache;
-pub use atlas_cache::SubImageSpec;
+pub use atlas_cache::ImageKey;
 mod backend;
 mod canvas_zoom;
 mod colors;
@@ -27,8 +27,6 @@ pub use crate::state::{
 };
 
 mod tilesheet;
-
-pub type ImageKey = SubImageSpec<String>;
 
 /// Vitral representation for texture handle, consecutive positive integers.
 pub(crate) type TextureIndex = usize;

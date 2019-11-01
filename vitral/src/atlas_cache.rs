@@ -1,14 +1,16 @@
-use crate::atlas::Atlas;
-use crate::tilesheet;
-use crate::{CharData, FontData, ImageData};
-use euclid::default::Rect;
-use euclid::{rect, size2, vec2};
-use image::{Pixel, RgbaImage};
-use log::warn;
+use crate::{
+    atlas::Atlas,
+    tilesheet, {CharData, FontData, ImageData},
+};
+use euclid::{
+    default::{Rect, Size2D},
+    {rect, size2, vec2},
+};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::slice;
+
+pub type ImageKey = SubImageSpec<String>;
 
 /// Fetch key for atlas images.
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -26,14 +28,20 @@ impl<T> SubImageSpec<T> {
     }
 }
 
+pub trait TextureInterface {
+    type Texture;
+
+    fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage);
+    fn new_texture(&mut self, size: Size2D<u32>) -> Self::Texture;
+}
+
 /// Updateable incremental cache for multiple texture atlases.
 pub struct AtlasCache<T> {
-    image_sheets: HashMap<T, RgbaImage>,
+    image_sheets: HashMap<T, image::RgbaImage>,
     atlas_images: HashMap<SubImageSpec<T>, ImageData>,
     atlases: Vec<Atlas>,
     atlas_size: u32,
     next_index: usize,
-    solid: ImageData,
 }
 
 impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
@@ -45,7 +53,8 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
         // Hacky hack: Add one-pixel pure-white texture for drawing solid shapes without swapping
         // out the atlas texture. Assume atlas behavior will make it go in a predictable position
         // so we can just generate the image.
-        let solid = RgbaImage::from_pixel(1, 1, Pixel::from_channels(0xff, 0xff, 0xff, 0xff));
+        let solid =
+            image::RgbaImage::from_pixel(1, 1, image::Pixel::from_channels(0xff, 0xff, 0xff, 0xff));
         let solid = atlas0.add(&solid).unwrap();
 
         // Let's just make it so we can use a dirty hack and assume it shows up in origin without
@@ -58,15 +67,27 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
             atlases: vec![atlas0],
             atlas_size,
             next_index: 1,
-            solid,
         }
     }
 }
 
 impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
-    pub fn atlases_mut(&mut self) -> slice::IterMut<'_, Atlas> { self.atlases.iter_mut() }
+    pub fn update_system_textures<S>(&mut self, system: &mut S, textures: &mut Vec<S::Texture>)
+    where
+        S: TextureInterface,
+    {
+        // If there are more atlases than system textures, create new system textures.
+        for (i, a) in self.atlases.iter_mut().enumerate() {
+            if i == textures.len() {
+                textures.push(system.new_texture(a.size()));
+            }
 
-    pub fn atlas_size(&self) -> u32 { self.atlas_size }
+            if a.is_dirty {
+                system.update_texture(&mut textures[i], &a.atlas);
+                a.is_dirty = false;
+            }
+        }
+    }
 
     /// Get a drawable `ImageData` corresponding to a subimage specification.
     ///
@@ -86,11 +107,11 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             // Add a new image to the atlas.
 
             // First create the buffer image.
-            RgbaImage::from_fn(key.bounds.size.width, key.bounds.size.height, |x, y| {
+            image::RgbaImage::from_fn(key.bounds.size.width, key.bounds.size.height, |x, y| {
                 *image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
             })
         } else {
-            warn!("Image sheet {:?} not found in cache", key.id);
+            log::warn!("Image sheet {:?} not found in cache", key.id);
             return None;
         };
 
@@ -104,7 +125,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
         } else if self.atlases[atlas_id].is_empty() {
             // The atlas is empty but adding the image still failed. Assuming image is too large to
             // fit on an atlas sheet even on its own.
-            warn!("Image {:?} too large, won't fit in empty atlas.", key);
+            log::warn!("Image {:?} too large, won't fit in empty atlas.", key);
             None
         } else {
             // Add an empty atlas sheet and retry.
@@ -113,8 +134,6 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             self.get(key)
         }
     }
-
-    pub fn get_solid(&self) -> &ImageData { &self.solid }
 
     fn new_atlas(&mut self) {
         self.atlases.push(Atlas::new(
@@ -128,7 +147,11 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     ///
     /// Return the `SubImageSpec` for the entire sheet in case it is a single image that should be
     /// used as is.
-    pub fn add_sheet(&mut self, id: impl Into<T>, sheet: impl Into<RgbaImage>) -> SubImageSpec<T> {
+    pub fn add_sheet(
+        &mut self,
+        id: impl Into<T>,
+        sheet: impl Into<image::RgbaImage>,
+    ) -> SubImageSpec<T> {
         let sheet = sheet.into();
         let id = id.into();
 
@@ -148,7 +171,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     pub fn add_tilesheet(
         &mut self,
         id: impl Into<T>,
-        sheet: impl Into<RgbaImage>,
+        sheet: impl Into<image::RgbaImage>,
     ) -> Vec<SubImageSpec<T>> {
         let sheet = sheet.into();
         let id = id.into();
@@ -168,7 +191,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     pub fn add_tilesheet_font(
         &mut self,
         id: impl Into<T>,
-        sheet: impl Into<RgbaImage>,
+        sheet: impl Into<image::RgbaImage>,
         span: impl IntoIterator<Item = char>,
     ) -> FontData {
         let tiles = self.add_tilesheet(id, sheet);

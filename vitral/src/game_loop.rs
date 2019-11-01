@@ -2,8 +2,8 @@ use crate::backend::Backend;
 use crate::keycode::Keycode;
 use crate::scene::Scene;
 use crate::scene::SceneSwitch;
-use crate::{Canvas, InputEvent, MouseButton, UiState};
 use crate::state::ENGINE_STATE;
+use crate::{Canvas, InputEvent, MouseButton, UiState};
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::{point2, size2};
@@ -331,8 +331,11 @@ impl<T: 'static> GameLoop<T> {
     }
 
     fn render_step(&mut self) {
-        self.backend
-            .sync_with_atlas_cache(&mut ENGINE_STATE.lock().unwrap().atlas_cache);
+        ENGINE_STATE
+            .lock()
+            .unwrap()
+            .atlas_cache
+            .update_system_textures(&mut self.backend.display, &mut self.backend.textures);
 
         let render_time = Flick::now();
         self.render();

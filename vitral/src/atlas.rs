@@ -1,7 +1,9 @@
 use crate::{ImageData, TextureIndex};
-use euclid::default::{Point2D, Rect, Size2D};
-use euclid::size2;
-use image::{GenericImage, RgbaImage};
+use euclid::{
+    default::{Point2D, Rect, Size2D},
+    size2,
+};
+use image::GenericImage;
 use std::cmp::max;
 
 /// An incremental texture atlas.
@@ -12,8 +14,8 @@ pub struct Atlas {
     texture: TextureIndex,
     slots: Vec<Rect<u32>>,
     placed: Vec<Rect<u32>>,
-    atlas: RgbaImage,
-    is_dirty: bool,
+    pub atlas: image::RgbaImage,
+    pub is_dirty: bool,
 }
 
 impl Atlas {
@@ -22,14 +24,14 @@ impl Atlas {
             texture,
             slots: vec![Rect::new(Point2D::new(0, 0), size)],
             placed: Vec::new(),
-            atlas: RgbaImage::new(size.width, size.height),
+            atlas: image::RgbaImage::new(size.width, size.height),
             is_dirty: false,
         }
     }
 
     pub fn is_empty(&self) -> bool { self.placed.is_empty() }
 
-    pub fn add(&mut self, image: &RgbaImage) -> Option<ImageData> {
+    pub fn add(&mut self, image: &image::RgbaImage) -> Option<ImageData> {
         if let Some(area) = self.place(size2(image.width(), image.height())) {
             // Draw the new image into the atlas image.
             self.atlas.copy_from(image, area.origin.x, area.origin.y);
@@ -57,21 +59,6 @@ impl Atlas {
     }
 
     pub fn size(&self) -> Size2D<u32> { size2(self.atlas.width(), self.atlas.height()) }
-
-    pub fn texture(&self) -> TextureIndex { self.texture }
-
-    /// Write the current atlas image to the system texture handle if the atlas has changed.
-    ///
-    /// The texture update function must be provided by the caller.
-    pub fn update_texture<F>(&mut self, mut f: F)
-    where
-        F: FnMut(&RgbaImage, TextureIndex),
-    {
-        if self.is_dirty {
-            f(&self.atlas, self.texture);
-            self.is_dirty = false;
-        }
-    }
 
     /// Find the smallest slot in the slot vector that will fit the given item.
     ///
