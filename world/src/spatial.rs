@@ -169,9 +169,9 @@ impl Spatial {
             .range(In(entity, Slot::Bag(0))..)
             .next()
         {
-            return *parent != entity;
+            *parent != entity
         } else {
-            return true;
+            true
         }
     }
 

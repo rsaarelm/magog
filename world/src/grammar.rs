@@ -57,9 +57,7 @@ impl Noun {
     pub fn a_name(&self) -> String {
         if self.is_you {
             "you".to_string()
-        } else if self.is_proper_noun() {
-            self.name.to_string()
-        } else if self.is_plural {
+        } else if self.is_proper_noun() || self.is_plural {
             self.name.to_string()
         } else {
             // TODO: Add look-up table of irregular words ('honor', 'unit') as they show up in game

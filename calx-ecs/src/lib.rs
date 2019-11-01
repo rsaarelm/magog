@@ -80,7 +80,7 @@ impl<C> ComponentData<C> {
             self.inner.entities.push(e);
             self.entity_idx_to_data[e.idx as usize] = Index {
                 uid: e.uid,
-                data_idx: data_idx,
+                data_idx,
             };
         }
     }
@@ -191,8 +191,8 @@ impl<'a, C: serde::Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> 
         }
 
         Ok(ComponentData {
-            inner: inner,
-            entity_idx_to_data: entity_idx_to_data,
+            inner,
+            entity_idx_to_data,
         })
     }
 }
@@ -242,7 +242,7 @@ impl<ST: Default + Store> Ecs<ST> {
             self.next_idx - 1
         };
 
-        let ret = Entity { uid: uid, idx: idx };
+        let ret = Entity { uid, idx };
         self.active.insert(ret, true);
         ret
     }

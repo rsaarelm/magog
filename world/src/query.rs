@@ -493,7 +493,7 @@ pub trait Query: TerrainQuery + Sized {
     fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
         (0..item::BAG_CAPACITY)
             .find(|&i| self.entity_equipped(e, Slot::Bag(i)).is_none())
-            .map(|i| Slot::Bag(i))
+            .map(Slot::Bag)
     }
 
     fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
@@ -648,10 +648,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     fn has_ability(&self, e: Entity, ability: Ability) -> bool {
-        self.list_abilities(e)
-            .into_iter()
-            .find(|&x| x == ability)
-            .is_some()
+        self.list_abilities(e).into_iter().any(|x| x == ability)
     }
 
     fn list_abilities(&self, e: Entity) -> Vec<Ability> {

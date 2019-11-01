@@ -195,7 +195,7 @@ impl World {
 
                 if let Some(e1) = e1 {
                     // XXX: Ad hoc "move it out of the way" slot.
-                    self.equip_item(e1, player, Slot::Bag(999999));
+                    self.equip_item(e1, player, Slot::Bag(999_999));
                 }
                 if let Some(e2) = e2 {
                     self.equip_item(e2, player, *slot1);

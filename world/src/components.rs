@@ -74,8 +74,8 @@ impl Desc {
 
         let singular_name;
         let plural_name;
-        if name.contains("|") {
-            let parts: Vec<&str> = name.split("|").collect();
+        if name.contains('|') {
+            let parts: Vec<&str> = name.split('|').collect();
             if parts.len() != 2 {
                 panic!("Malformed name string '{}'", name);
             }
@@ -96,15 +96,13 @@ impl Desc {
     pub fn plural_name(&self) -> String {
         if let Some(plural) = &self.plural_name {
             plural.clone()
+        } else if self.singular_name.ends_with('s')
+            || self.singular_name.ends_with('x')
+            || self.singular_name.ends_with('z')
+        {
+            format!("{}es", self.singular_name)
         } else {
-            if self.singular_name.ends_with("s")
-                || self.singular_name.ends_with("x")
-                || self.singular_name.ends_with("z")
-            {
-                format!("{}es", self.singular_name)
-            } else {
-                format!("{}s", self.singular_name)
-            }
+            format!("{}s", self.singular_name)
         }
     }
 }

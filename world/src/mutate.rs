@@ -117,12 +117,10 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         if let (Some(my_loc), Some(target_loc)) = (self.location(npc), self.location(target)) {
             if my_loc.metric_distance(target_loc) == 1 {
                 let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
+            } else if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
+                let _ = self.entity_step(npc, move_dir);
             } else {
-                if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
-                    let _ = self.entity_step(npc, move_dir);
-                } else {
-                    self.ai_drift(npc);
-                }
+                self.ai_drift(npc);
             }
         }
     }

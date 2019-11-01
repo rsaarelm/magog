@@ -155,9 +155,7 @@ impl Location {
     /// True for locations that are adjacent to a cell from a different sector.
     pub fn on_sector_edge(self) -> bool {
         let sec = self.sector();
-        hex_neighbors(self)
-            .find(|loc| loc.sector() != sec)
-            .is_some()
+        hex_neighbors(self).any(|loc| loc.sector() != sec)
     }
 }
 
