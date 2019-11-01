@@ -103,6 +103,8 @@ impl DemoScene {
 }
 
 fn main() {
+    env_logger::init();
+
     vitral::run_app(
         AppConfig::new("Vitral Demo"),
         World::new(),
