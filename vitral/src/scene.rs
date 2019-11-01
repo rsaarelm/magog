@@ -78,6 +78,8 @@ impl<T> SceneStack<T> {
         let switch = self.stack[idx].input(ctx, event, canvas);
         self.apply(switch);
     }
+
+    pub fn update_clock(&mut self) { self.t = Flick::now(); }
 }
 
 /// Toplevel type for current program GUI state.

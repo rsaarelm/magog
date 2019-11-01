@@ -103,8 +103,8 @@ impl<T: 'static> App<T> {
 
         let mut input_events = Vec::new();
         let mut ui = UiState::default();
+        let mut running = true;
         event_loop.run(move |event, _, control_flow| {
-            *control_flow = ControlFlow::Poll;
             match event {
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::Resized(size) => {
@@ -168,9 +168,25 @@ impl<T: 'static> App<T> {
                             });
                         }
                     }
+                    WindowEvent::Focused(has_focus) => {
+                        if has_focus {
+                            log::info!("Focused");
+                            running = true;
+                            *control_flow = ControlFlow::Poll;
+                            self.scenes.update_clock();
+                        } else {
+                            log::info!("Unfocused");
+                            running = false;
+                            *control_flow = ControlFlow::Wait;
+                        }
+                    }
                     _ => {}
                 },
                 Event::EventsCleared => {
+                    if !running {
+                        // Window is out of focus, don't waste CPU cycles running app.
+                        return;
+                    }
                     // Load atlas cache stuff to textures
                     //
                     crate::state::ENGINE_STATE
