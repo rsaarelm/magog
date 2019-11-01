@@ -1,23 +1,17 @@
-use crate::atlas_cache::AtlasCache;
 use crate::backend::Backend;
 use crate::keycode::Keycode;
 use crate::scene::Scene;
 use crate::scene::SceneSwitch;
-use crate::{Canvas, FontData, ImageData, InputEvent, MouseButton, SubImageSpec, UiState};
+use crate::{Canvas, InputEvent, MouseButton, UiState};
+use crate::state::ENGINE_STATE;
 use crate::{Flick, FLICKS_PER_SECOND};
 use euclid::default::Size2D;
 use euclid::{point2, size2};
-use image::RgbaImage;
-use lazy_static::lazy_static;
-use log::info;
 use log::{debug, warn};
-use std::sync::Mutex;
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, Event, KeyboardInput, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
-
-pub type ImageKey = SubImageSpec<String>;
 
 pub struct AppConfig {
     pub frame_duration: Flick,
@@ -47,17 +41,6 @@ impl AppConfig {
     }
 }
 
-#[derive(Default)]
-struct EngineState {
-    atlas_cache: AtlasCache<String>,
-    average_frame_duration: Flick,
-}
-
-lazy_static! {
-    /// Global game engine state.
-    static ref ENGINE_STATE: Mutex<EngineState> = { Mutex::new(EngineState::default()) };
-}
-
 /// Grow the window so it'll fit the current monitor.
 fn window_geometry<T>(
     resolution: Size2D<u32>,
@@ -76,9 +59,9 @@ fn window_geometry<T>(
         .map(|m| m.hidpi_factor())
         .max_by(|x, y| x.partial_cmp(y).unwrap())
         .expect("No monitors found!");
-    info!("Scaling starting size to monitor");
-    info!("Monitor size {:?}", monitor_size);
-    info!("DPI Factor {}", dpi_factor);
+    log::info!("Scaling starting size to monitor");
+    log::info!("Monitor size {:?}", monitor_size);
+    log::info!("DPI Factor {}", dpi_factor);
 
     let mut window_size = PhysicalSize::new(width, height);
     while window_size.width + width <= monitor_size.width - BUFFER
@@ -87,7 +70,7 @@ fn window_geometry<T>(
         window_size.width += width;
         window_size.height += height;
     }
-    info!("Adjusted window size: {:?}", window_size);
+    log::info!("Adjusted window size: {:?}", window_size);
     let window_pos = PhysicalPosition::new(
         (monitor_size.width - window_size.width) / 2.0,
         (monitor_size.height - window_size.height) / 2.0,
@@ -128,63 +111,6 @@ pub fn run_app<T: 'static>(config: AppConfig, world: T, scenes: Vec<Box<dyn Scen
     GameLoop::new(backend, world, scenes)
         .frame_duration(config.frame_duration)
         .run(event_loop)
-}
-
-/// Return the average frame duration for recent frames.
-///
-/// Panics if called when an app isn't running via `run_app`.
-pub fn get_frame_duration() -> Flick { ENGINE_STATE.lock().unwrap().average_frame_duration }
-
-/// Add a named image into the engine image atlas.
-pub fn add_sheet(id: impl Into<String>, sheet: impl Into<RgbaImage>) -> ImageKey {
-    ENGINE_STATE
-        .lock()
-        .unwrap()
-        .atlas_cache
-        .add_sheet(id, sheet)
-}
-
-/// Add a tilesheet image that gets automatically split to subimages based on image structure.
-///
-/// Tiles are bounding boxes of non-background pixel groups surrounded by only background pixels or
-/// image edges. Background color is the color of the bottom right corner pixel of the image. The
-/// bounding boxes are returned lexically sorted by the coordinates of their bottom right corners,
-/// first along the y-axis then along the x-axis. This produces a natural left-to-right,
-/// bottom-to-top ordering for a cleanly laid out tile sheet.
-///
-/// Note that the background color is a solid color, not transparent pixels. The inner tiles may
-/// have transparent parts, so a solid color is needed to separate them.
-pub fn add_tilesheet(
-    id: impl Into<String>,
-    sheet: impl Into<RgbaImage>,
-    _span: impl IntoIterator<Item = char>,
-) -> Vec<ImageKey> {
-    ENGINE_STATE
-        .lock()
-        .unwrap()
-        .atlas_cache
-        .add_tilesheet(id, sheet)
-}
-
-/// Add a bitmap font read from a tilesheet image.
-pub fn add_tilesheet_font(
-    id: impl Into<String>,
-    sheet: impl Into<RgbaImage>,
-    span: impl IntoIterator<Item = char>,
-) -> FontData {
-    ENGINE_STATE
-        .lock()
-        .unwrap()
-        .atlas_cache
-        .add_tilesheet_font(id, sheet, span)
-}
-
-/// Get a drawable (sub)image from the cache corresponding to the given `ImageKey`.
-///
-/// If the `ImageKey` specifies a sheet not found in the cache or invalid dimensions, will return
-/// `None`.
-pub fn get_image(key: &ImageKey) -> Option<ImageData> {
-    ENGINE_STATE.lock().unwrap().atlas_cache.get(key)
 }
 
 /// `Scene` stack based game loop runner.

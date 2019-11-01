@@ -14,18 +14,21 @@ pub use crate::colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_CO
 mod flick;
 pub use crate::flick::{Flick, FLICKS_PER_SECOND};
 mod game_loop;
-pub use crate::game_loop::{
-    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image, run_app,
-    AppConfig, ImageKey,
-};
+pub use crate::game_loop::{run_app, AppConfig};
 mod keycode;
 pub use crate::keycode::Keycode;
 mod rect_util;
 pub use crate::rect_util::RectUtil;
 mod scene;
 pub use crate::scene::{InputEvent, Scene, SceneSwitch};
+mod state;
+pub use crate::state::{
+    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image,
+};
 
 mod tilesheet;
+
+pub type ImageKey = SubImageSpec<String>;
 
 /// Vitral representation for texture handle, consecutive positive integers.
 pub(crate) type TextureIndex = usize;
