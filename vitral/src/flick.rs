@@ -17,7 +17,7 @@ impl Flick {
         Flick((seconds * FLICKS_PER_SECOND as f64) as i64)
     }
 
-    pub fn from_nanoseconds(nanos: i64) -> Flick { Flick(nanos * 7056 / 10_000) }
+    pub fn from_nanoseconds(nanos: i64) -> Flick { Flick((nanos as i128 * 7056 / 10_000) as i64) }
 
     /// Return current time in Flicks since an unspecified epoch.
     pub fn now() -> Flick { Flick::from_nanoseconds(time::precise_time_ns() as i64) }
