@@ -109,7 +109,7 @@ where
 {
     type Item = (CellVector, T);
 
-    fn next(&mut self) -> Option<(Self::Item)> {
+    fn next(&mut self) -> Option<Self::Item> {
         use std::mem;
 
         if self.extra.is_some() {
