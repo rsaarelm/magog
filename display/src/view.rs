@@ -198,8 +198,7 @@ impl WorldView {
                         }
                     };
                     entity_sprite_buffer.push(
-                        Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
-                            .color(color),
+                        Sprite::new(Layer::Item, screen_pos, cache::entity(desc.icon)).color(color),
                     );
                 }
             }
