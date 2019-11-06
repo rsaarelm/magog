@@ -2,7 +2,10 @@ with import <nixpkgs> {};
 
 let
   log_level = "info";
-in stdenv.mkDerivation {
+
+# XXX: using 'gcc9Stdenv' to get lld linking. Replace with 'stdenv' once NixOS
+# has gcc9 as the default version.
+in gcc9Stdenv.mkDerivation {
   name = "rust-env";
   buildInputs = [
     rustup
@@ -16,6 +19,9 @@ in stdenv.mkDerivation {
     xorg.libXcursor
     xorg.libXi
     xorg.libXrandr
+
+    # Linker
+    lld
 
     # SPIR-V shader compiler
     shaderc
@@ -57,8 +63,12 @@ in stdenv.mkDerivation {
   '';
 
   # Set Environment Variables
-  RUST_BACKTRACE = 1;
 
+  # Useful backtraces
+  RUST_BACKTRACE = 1;
+  # Better linking
+  RUSTFLAGS = "-C link-arg=-fuse-ld=lld";
+  # Activate logging, but from local crates only.
   RUST_LOG = "calx-ecs=${log_level},vitral=${log_level},calx=${log_level},display=${log_level},world=${log_level},magog=${log_level}";
 
 }
