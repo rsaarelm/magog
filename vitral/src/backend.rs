@@ -68,15 +68,14 @@ impl<T: 'static> App<T> {
 
         // WGPU setup
         //
-        let instance = wgpu::Instance::new();
-        let surface = instance.create_surface(
-            raw_window_handle::HasRawWindowHandle::raw_window_handle(&window),
-        );
-        let adapter = instance.request_adapter(&wgpu::RequestAdapterOptions {
+        let surface = wgpu::Surface::create(&window);
+        let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
             power_preference: wgpu::PowerPreference::Default,
-        });
+            backends: wgpu::BackendBit::PRIMARY,
+        })
+        .expect("No WGPU adapter found");
 
-        let mut device = adapter.request_device(&wgpu::DeviceDescriptor {
+        let (device, mut queue) = adapter.request_device(&wgpu::DeviceDescriptor {
             extensions: wgpu::Extensions {
                 anisotropic_filtering: false,
             },
@@ -98,7 +97,7 @@ impl<T: 'static> App<T> {
 
         // Main loop
         //
-        let mut render_buffer = RenderBuffer::new(&mut device, self.config.resolution);
+        let mut render_buffer = RenderBuffer::new(&device, self.config.resolution);
         render_buffer.update_canvas_pos(size2(sc_desc.width, sc_desc.height));
 
         let mut input_events = Vec::new();
@@ -193,7 +192,13 @@ impl<T: 'static> App<T> {
                         .lock()
                         .unwrap()
                         .atlas_cache
-                        .update_system_textures(&mut TextureInterface(&mut device), &mut textures);
+                        .update_system_textures(
+                            &mut TextureInterface {
+                                device: &device,
+                                queue: &mut queue,
+                            },
+                            &mut textures,
+                        );
 
                     // Main update step
                     //
@@ -201,7 +206,8 @@ impl<T: 'static> App<T> {
 
                     let draw_batch = {
                         let screenshotter = Screenshotter {
-                            device: &mut device,
+                            device: &device,
+                            queue: &mut queue,
                             render_buffer: &render_buffer,
                         };
                         let mut canvas =
@@ -223,12 +229,12 @@ impl<T: 'static> App<T> {
                     // Render graphics to buffer.
                     let sub_frame = render_buffer.render_buffer.texture.create_default_view();
                     let command_buffer = gfx.render(&device, &sub_frame, &textures, &draw_batch);
-                    device.get_queue().submit(&[command_buffer]);
+                    queue.submit(&[command_buffer]);
 
                     // Render buffer to window.
                     let frame = swap_chain.get_next_texture();
                     let command_buffer = render_buffer.render(&device, &frame.view);
-                    device.get_queue().submit(&[command_buffer]);
+                    queue.submit(&[command_buffer]);
                 }
                 _ => (),
             }
@@ -499,7 +505,7 @@ struct RenderBuffer {
 }
 
 impl RenderBuffer {
-    pub fn new(device: &mut wgpu::Device, resolution: Size2D<u32>) -> RenderBuffer {
+    pub fn new(device: &wgpu::Device, resolution: Size2D<u32>) -> RenderBuffer {
         let canvas_pos = point2(-1.0, -1.0);
 
         let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -566,7 +572,7 @@ impl RenderBuffer {
             alpha_to_coverage_enabled: false,
         });
 
-        let render_buffer = Texture::new_bgra(device, resolution.width, resolution.height);
+        let render_buffer = Texture::new_target(device, resolution.width, resolution.height);
         // TODO: Add depth buffer.
 
         RenderBuffer {
@@ -635,7 +641,8 @@ impl RenderBuffer {
 }
 
 pub(crate) struct Screenshotter<'a> {
-    device: &'a mut wgpu::Device,
+    device: &'a wgpu::Device,
+    queue: &'a mut wgpu::Queue,
     render_buffer: &'a RenderBuffer,
 }
 
@@ -683,7 +690,7 @@ impl<'a> Screenshotter<'a> {
                 encoder.finish()
             };
 
-            self.device.get_queue().submit(&[command_buffer]);
+            self.queue.submit(&[command_buffer]);
             output_buffer
         };
 
@@ -708,17 +715,20 @@ impl<'a> Screenshotter<'a> {
 // Texture wrapper
 //
 
-struct TextureInterface<'a>(&'a mut wgpu::Device);
+struct TextureInterface<'a> {
+    device: &'a wgpu::Device,
+    queue: &'a mut wgpu::Queue,
+}
 
 impl<'a> crate::atlas_cache::TextureInterface for TextureInterface<'a> {
     type Texture = Texture;
 
     fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage) {
-        texture.blit(self.0, &image.as_flat_samples().samples);
+        texture.blit(self.device, self.queue, &image.as_flat_samples().samples);
     }
 
     fn new_texture(&mut self, size: Size2D<u32>) -> Self::Texture {
-        Texture::new(self.0, size.width, size.height)
+        Texture::new(self.device, size.width, size.height)
     }
 }
 
@@ -731,7 +741,7 @@ pub struct Texture {
 
 impl Texture {
     /// Fill texture with raw image data in the correct format
-    pub fn blit(&self, device: &mut wgpu::Device, bytes: &[u8]) {
+    pub fn blit(&self, device: &wgpu::Device, queue: &mut wgpu::Queue, bytes: &[u8]) {
         assert_eq!(
             bytes.len() as u32,
             4 * self.extent.width * self.extent.height
@@ -761,15 +771,30 @@ impl Texture {
             },
             self.extent,
         );
-        device.get_queue().submit(&[init_encoder.finish()]);
+        queue.submit(&[init_encoder.finish()]);
     }
 
     pub fn new(device: &wgpu::Device, width: u32, height: u32) -> Texture {
-        Texture::new_typed(device, width, height, wgpu::TextureFormat::Rgba8UnormSrgb)
+        Texture::new_typed(
+            device,
+            width,
+            height,
+            wgpu::TextureFormat::Rgba8UnormSrgb,
+            wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+        )
     }
 
-    pub fn new_bgra(device: &wgpu::Device, width: u32, height: u32) -> Texture {
-        Texture::new_typed(device, width, height, wgpu::TextureFormat::Bgra8UnormSrgb)
+    pub fn new_target(device: &wgpu::Device, width: u32, height: u32) -> Texture {
+        Texture::new_typed(
+            device,
+            width,
+            height,
+            wgpu::TextureFormat::Bgra8UnormSrgb,
+            wgpu::TextureUsage::SAMPLED
+                | wgpu::TextureUsage::COPY_DST
+                | wgpu::TextureUsage::COPY_SRC
+                | wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+        )
     }
 
     fn new_typed(
@@ -777,6 +802,7 @@ impl Texture {
         width: u32,
         height: u32,
         format: wgpu::TextureFormat,
+        usage: wgpu::TextureUsage,
     ) -> Texture {
         let extent = wgpu::Extent3d {
             width,
@@ -792,7 +818,7 @@ impl Texture {
             sample_count: 1,
             dimension: wgpu::TextureDimension::D2,
             format,
-            usage: wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+            usage,
         });
 
         let view = texture.create_default_view();

@@ -14,12 +14,12 @@ euclid = "0.20"
 image = "0.22"
 lazy_static = "1.2"
 log = "0.4"
-raw-window-handle = "0.1"
+raw-window-handle = "0.3"
 serde = "1"
 serde_derive = "1"
 time = "0.1"
-wgpu = { version = "0.3", features = ["vulkan"] }
-winit = "=0.20.0-alpha3"
+wgpu = { version = "0.4", features = ["vulkan"] }
+winit = "=0.20.0-alpha4"
 
 [dev-dependencies]
 env_logger = "0.7"
