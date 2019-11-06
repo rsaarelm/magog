@@ -103,6 +103,7 @@ impl<T: 'static> App<T> {
         let mut input_events = Vec::new();
         let mut ui = UiState::default();
         let mut running = true;
+        let mut redraw_requested = false;
         event_loop.run(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent { event, .. } => match event {
@@ -179,13 +180,21 @@ impl<T: 'static> App<T> {
                             *control_flow = ControlFlow::Wait;
                         }
                     }
+                    WindowEvent::RedrawRequested => {
+                        // Do a one-off render even if not running after redraw was requested.
+                        self.scenes.update_clock();
+                        redraw_requested = true;
+                    }
                     _ => {}
                 },
                 Event::EventsCleared => {
-                    if !running {
-                        // Window is out of focus, don't waste CPU cycles running app.
+                    // If window is out of focus, don't drain CPU cycles redrawing it unless a
+                    // window redraw has been explicitly requested.
+                    if !running && !redraw_requested {
                         return;
                     }
+                    redraw_requested = false;
+
                     // Load atlas cache stuff to textures
                     //
                     crate::state::ENGINE_STATE
