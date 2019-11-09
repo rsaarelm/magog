@@ -10,17 +10,17 @@ pub use atlas_cache::ImageKey;
 mod backend;
 pub use backend::{App, AppConfig};
 mod colors;
-pub use crate::colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
+pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 mod flick;
-pub use crate::flick::{Flick, FLICKS_PER_SECOND};
+pub use flick::{Flick, FLICKS_PER_SECOND};
 mod keycode;
-pub use crate::keycode::Keycode;
+pub use keycode::Keycode;
 mod rect_util;
-pub use crate::rect_util::RectUtil;
+pub use rect_util::RectUtil;
 mod scene;
-pub use crate::scene::{InputEvent, Scene, SceneSwitch};
+pub use scene::{InputEvent, Scene, SceneSwitch};
 mod state;
-pub use crate::state::{
+pub use state::{
     add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image,
 };
 

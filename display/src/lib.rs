@@ -1,17 +1,17 @@
 mod brush;
 mod cache;
 mod canvas_ext;
-pub use crate::cache::font;
+pub use cache::font;
 mod console;
 mod init;
-pub use crate::init::load_graphics;
+pub use init::load_graphics;
 mod render;
 mod sprite;
 mod view;
 
-pub use crate::canvas_ext::CanvasExt;
-pub use crate::console::Console;
-pub use crate::view::{ScreenVector, WorldView};
+pub use canvas_ext::CanvasExt;
+pub use console::Console;
+pub use view::{ScreenVector, WorldView};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Icon {

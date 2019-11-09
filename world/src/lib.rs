@@ -96,19 +96,19 @@ impl<'a> MessageFormatter2<'a, World> {
 }
 
 mod animations;
-pub use crate::animations::{Anim, AnimState};
+pub use animations::{Anim, AnimState};
 
 mod command;
-pub use crate::command::{ActionOutcome, Command};
+pub use command::{ActionOutcome, Command};
 
 mod components;
-pub use crate::components::Icon;
+pub use components::Icon;
 
 mod effect;
 pub use effect::Ability;
 
 mod event;
-pub use crate::event::Event;
+pub use event::Event;
 
 mod extract;
 pub use extract::ExternalEntity;
@@ -120,15 +120,15 @@ mod fov;
 mod grammar;
 
 mod item;
-pub use crate::item::{ItemType, Slot};
+pub use item::{ItemType, Slot};
 
 mod location;
-pub use crate::location::{Location, Portal};
+pub use location::{Location, Portal};
 
 mod location_set;
 
 mod mapsave;
-pub use crate::mapsave::MapSave;
+pub use mapsave::MapSave;
 
 mod map;
 
@@ -137,21 +137,21 @@ mod mutate;
 mod query;
 
 mod sector;
-pub use crate::sector::{Sector, WorldSkeleton, SECTOR_HEIGHT, SECTOR_WIDTH};
+pub use sector::{Sector, WorldSkeleton, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod spatial;
 mod spec;
 mod stats;
 
 pub mod terrain;
-pub use crate::terrain::Terrain;
+pub use terrain::Terrain;
 
 mod vaults;
 
 mod volume;
 
 mod world;
-pub use crate::world::{Ecs, World};
+pub use crate::world::{Ecs, World, WorldSeed};
 
 mod world_cache;
 
