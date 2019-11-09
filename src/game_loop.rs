@@ -10,7 +10,7 @@ use vitral::{
     self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
     SceneSwitch,
 };
-use world::{Ability, ActionOutcome, Command, Event, Location, Slot, World};
+use world::{Ability, ActionOutcome, Command, Event, Location, Slot, World, WorldSeed};
 
 pub struct HotbarAction {
     ability: Ability,
@@ -27,7 +27,7 @@ pub(crate) struct GameRuntime {
 }
 
 impl GameRuntime {
-    pub fn new(seed: u32) -> GameRuntime {
+    pub fn new(seed: WorldSeed) -> GameRuntime {
         GameRuntime {
             world: IncrementalState::new(seed),
             command: None,

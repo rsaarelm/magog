@@ -1,7 +1,4 @@
-use crate::effect::Ability;
-use crate::item::Slot;
-use crate::sector::WorldSkeleton;
-use crate::world::World;
+use crate::{Ability, Slot, World, WorldSeed};
 use calx::Dir6;
 use calx::Incremental;
 use calx_ecs::Entity;
@@ -54,10 +51,10 @@ pub enum Command {
 }
 
 impl Incremental for World {
-    type Seed = u32;
+    type Seed = WorldSeed;
     type Event = Command;
 
-    fn from_seed(s: &Self::Seed) -> Self { World::new(*s, WorldSkeleton::overworld_sprawl()) }
+    fn from_seed(s: &Self::Seed) -> Self { World::new(s) }
 
     fn update(&mut self, e: &Command) {
         self.clear_events();

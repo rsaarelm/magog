@@ -5,7 +5,7 @@ use crate::{
     spatial::Spatial,
     spec::EntitySpawn,
     world_cache::WorldCache,
-    Anim, Distribution, Event, Location, Rng, WorldSkeleton,
+    Anim, Distribution, Event, ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
 use serde_derive::{Deserialize, Serialize};
@@ -23,6 +23,13 @@ calx_ecs::build_ecs! {
     stacking: Stacking,
     stats: components::StatsComponent,
     status: components::Statuses,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct WorldSeed {
+    pub rng_seed: u32,
+    pub world_skeleton: WorldSkeleton,
+    pub player_character: ExternalEntity,
 }
 
 /// Toplevel game state object.
@@ -48,19 +55,22 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(seed: u32, skeleton: WorldSkeleton) -> World {
+    pub fn new(world_seed: &WorldSeed) -> World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            world_cache: WorldCache::new(seed, skeleton),
+            world_cache: WorldCache::new(world_seed.rng_seed, world_seed.world_skeleton.clone()),
             generated_spawns: Default::default(),
             spatial: Spatial::new(),
             flags: Flags::new(),
-            rng: seeded_rng(&seed),
+            rng: seeded_rng(&world_seed.rng_seed),
             events: Vec::new(),
         };
 
-        ret.spawn_player(ret.world_cache.player_entrance());
+        ret.spawn_player(
+            ret.world_cache.player_entrance(),
+            &world_seed.player_character,
+        );
         ret.generate_world_spawns();
 
         ret

@@ -2,15 +2,13 @@
 
 use crate::{
     attack_damage,
-    components::{Brain, BrainState, MapMemory, Status},
+    components::{Brain, BrainState, Status},
     effect::{Damage, Effect},
     fov::SightFov,
     roll,
     sector::SECTOR_WIDTH,
-    spec,
     volume::Volume,
-    Ability, ActionOutcome, Anim, AnimState, Distribution, Ecs, Event, ExternalEntity, Location,
-    Slot, World,
+    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity, Location, Slot, World,
 };
 use calx::{Dir6, HexFov, HexFovIter, RngExt};
 use calx_ecs::Entity;
@@ -496,19 +494,19 @@ impl World {
     /// If player exists, but is not placed in spatial, teleport the player here.
     ///
     /// If player does not exist, create the initial player entity.
-    pub(crate) fn spawn_player(&mut self, loc: Location) {
+    pub(crate) fn spawn_player(&mut self, loc: Location, spec: &ExternalEntity) {
         if let Some(player) = self.player() {
             if self.location(player).is_none() {
                 // Teleport player from limbo.
                 self.place_entity(player, loc);
             }
         } else {
-            // Initialize new player object. Add some special components you don't get on regular
-            // mob spawns.
-            let mut player = spec::PLAYER_SPAWN.sample(self.rng());
-            player.loadout = player.loadout.c(Brain::player()).c(MapMemory::default());
-            let player = self.spawn(&player, loc);
+            let player = self.inject(&spec);
+            // Playerify with the boring component stuff.
+            self.ecs_mut().brain.insert(player, Brain::player());
+            self.ecs_mut().map_memory.insert(player, Default::default());
             self.set_player(Some(player));
+            self.place_entity(player, loc);
         }
     }
 

@@ -10,6 +10,7 @@ use rand::Rng;
 use structopt;
 use structopt::StructOpt;
 use vitral::{self, AppConfig, Flick};
+use world::{ExternalEntity, WorldSeed, WorldSkeleton};
 
 pub mod game_loop;
 
@@ -27,14 +28,20 @@ pub fn main() {
 
     display::load_graphics();
 
-    let seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
+    let rng_seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.
-    info!("World seed: {}", seed);
+    info!("World seed: {}", rng_seed);
+
+    let world_seed = WorldSeed {
+        rng_seed,
+        world_skeleton: WorldSkeleton::overworld_sprawl(),
+        player_character: ExternalEntity::from_name("player").unwrap(),
+    };
 
     vitral::App::new(
         AppConfig::new(format!("Magog v{}", env!("CARGO_PKG_VERSION")))
             .frame_duration(Flick::from_seconds(1.0 / FPS)),
-        game_loop::GameRuntime::new(seed),
+        game_loop::GameRuntime::new(world_seed),
         vec![Box::new(GameLoop::default())],
     )
     .run()
