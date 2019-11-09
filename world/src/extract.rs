@@ -1,7 +1,5 @@
 use crate::item::Slot;
-use crate::mutate::Mutate;
 use crate::world::{Loadout, World};
-use crate::Query;
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;

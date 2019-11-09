@@ -1,8 +1,12 @@
-use crate::fov::SphereVolumeFov;
-use crate::location::Location;
-use crate::world::World;
+use crate::{fov::SphereVolumeFov, Location, World};
 use calx::HexFov;
 use std::iter::FromIterator;
+
+impl World {
+    pub fn sphere_volume(&self, origin: Location, radius: u32) -> Volume {
+        Volume::sphere(self, origin, radius)
+    }
+}
 
 /// `Volume` is a specific area of the game world.
 pub struct Volume(pub Vec<Location>);

@@ -1,7 +1,9 @@
 #![allow(clippy::cast_lossless)]
 
-use crate::sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
-use crate::terraform::TerrainQuery;
+use crate::{
+    sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH},
+    World,
+};
 use calx::{
     compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom,
 };
@@ -100,11 +102,7 @@ impl Location {
     }
 
     /// Offset location and follow any portals in target site.
-    pub fn jump<T: TerrainQuery, V: Into<CellVector> + Sized>(
-        self,
-        ctx: &T,
-        offset: V,
-    ) -> Location {
+    pub fn jump<V: Into<CellVector> + Sized>(self, ctx: &World, offset: V) -> Location {
         let loc = self + offset.into();
         ctx.portal(loc).unwrap_or(loc)
     }

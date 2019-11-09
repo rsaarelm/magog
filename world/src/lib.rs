@@ -15,6 +15,7 @@ macro_rules! msg {
 }
 
 // XXX: Lots of code for pretty simple end result on the MessageFormatter...
+// XXX: W should be some trait that just provides the "push message" method
 #[must_use]
 pub(crate) struct MessageFormatter0<'a, W> {
     world: &'a mut W,
@@ -36,12 +37,12 @@ pub(crate) struct MessageFormatter2<'a, W> {
     msg: String,
 }
 
-impl<'a, W: mutate::Mutate> MessageFormatter0<'a, W> {
-    pub fn new(world: &'a mut W, msg: String) -> MessageFormatter0<'a, W> {
+impl<'a> MessageFormatter0<'a, World> {
+    pub fn new(world: &'a mut World, msg: String) -> MessageFormatter0<'a, World> {
         MessageFormatter0 { world, msg }
     }
 
-    pub fn subject(self, e: calx_ecs::Entity) -> MessageFormatter1<'a, W> {
+    pub fn subject(self, e: calx_ecs::Entity) -> MessageFormatter1<'a, World> {
         let subject = self.world.noun(e);
         MessageFormatter1 {
             world: self.world,
@@ -57,8 +58,8 @@ impl<'a, W: mutate::Mutate> MessageFormatter0<'a, W> {
     }
 }
 
-impl<'a, W: mutate::Mutate> MessageFormatter1<'a, W> {
-    pub fn object(self, e: calx_ecs::Entity) -> MessageFormatter2<'a, W> {
+impl<'a> MessageFormatter1<'a, World> {
+    pub fn object(self, e: calx_ecs::Entity) -> MessageFormatter2<'a, World> {
         let object = self.world.noun(e);
         MessageFormatter2 {
             world: self.world,
@@ -79,7 +80,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter1<'a, W> {
     }
 }
 
-impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
+impl<'a> MessageFormatter2<'a, World> {
     pub fn send(self) {
         use crate::grammar::Templater;
         let event = Event::Msg(
@@ -95,7 +96,7 @@ impl<'a, W: mutate::Mutate> MessageFormatter2<'a, W> {
 }
 
 mod animations;
-pub use crate::animations::{Anim, AnimState, Animations};
+pub use crate::animations::{Anim, AnimState};
 
 mod command;
 pub use crate::command::{ActionOutcome, Command};
@@ -110,6 +111,7 @@ mod event;
 pub use crate::event::Event;
 
 mod extract;
+pub use extract::ExternalEntity;
 
 mod flags;
 
@@ -133,17 +135,13 @@ mod map;
 mod mutate;
 
 mod query;
-pub use crate::query::Query;
 
 mod sector;
-pub use crate::sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
+pub use crate::sector::{Sector, WorldSkeleton, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod spatial;
 mod spec;
 mod stats;
-
-mod terraform;
-pub use crate::terraform::{Terraform, TerrainQuery};
 
 pub mod terrain;
 pub use crate::terrain::Terrain;

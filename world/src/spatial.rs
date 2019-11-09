@@ -1,10 +1,64 @@
 use self::Place::*;
-use crate::item::Slot;
-use crate::location::Location;
+use crate::{Slot, Location, World};
 use calx_ecs::Entity;
 use serde;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::slice;
+
+impl World {
+    /// Return the location of an entity.
+    ///
+    /// Returns the location of the containing entity for entities inside
+    /// containers. It is possible for entities to not have a location.
+    pub fn location(&self, e: Entity) -> Option<Location> {
+        match self.spatial.get(e) {
+            Some(Place::At(loc)) => Some(loc),
+            Some(Place::In(container, _)) => self.location(container),
+            _ => None,
+        }
+    }
+
+    /// Return all entities in the world.
+    pub fn entities(&self) -> slice::Iter<'_, Entity> { self.ecs.iter() }
+
+    // XXX: Would be nicer if entities_at returned an iterator. Probably want to wait for impl
+    // Trait return types before jumping to this.
+
+    /// Return entities at the given location.
+    pub fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
+
+    /// Return entities inside another entity.
+    pub fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)> {
+        self.spatial.entities_in(parent)
+    }
+
+    /// Return true if entity contains nothing.
+    pub fn is_empty(&self, e: Entity) -> bool { self.spatial.is_empty(e) }
+
+    /// Return the item parent has equipped in slot.
+    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
+        self.spatial.entity_equipped(parent, slot)
+    }
+
+    pub fn entity_contains(&self, parent: Entity, child: Entity) -> bool {
+        self.spatial.contains(parent, child)
+    }
+
+    /// Return slot entity is equipped in.
+    pub fn entity_slot(&self, e: Entity) -> Option<Slot> {
+        if let Some(Place::In(_, slot)) = self.spatial.get(e) {
+            Some(slot)
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn set_entity_location(&mut self, e: Entity, loc: Location) {
+        self.spatial.insert_at(e, loc);
+    }
+
+}
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.

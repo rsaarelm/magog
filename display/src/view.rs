@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, Animations, FovStatus, Location, Query, TerrainQuery, World};
+use world::{AnimState, FovStatus, Location, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;

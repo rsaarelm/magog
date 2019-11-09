@@ -1,64 +1,142 @@
 //! Gameplay logic that changes things
 
-use crate::animations::{AnimState, Animations};
-use crate::command::ActionOutcome;
-use crate::components::{Brain, BrainState, MapMemory, Status};
-use crate::effect::{Ability, Damage, Effect};
-use crate::event::Event;
-use crate::item::Slot;
-use crate::location::Location;
-use crate::mapsave;
-use crate::query::Query;
-use crate::spec;
-use crate::terraform::Terraform;
-use crate::volume::Volume;
-use crate::world::{Ecs, Loadout};
-use crate::Distribution;
-use crate::{attack_damage, roll};
-use calx::{Dir6, RngExt};
+use crate::{
+    attack_damage,
+    components::{Brain, BrainState, MapMemory, Status},
+    effect::{Damage, Effect},
+    fov::SightFov,
+    roll,
+    sector::SECTOR_WIDTH,
+    spec,
+    volume::Volume,
+    world::Loadout,
+    Ability, ActionOutcome, Anim, AnimState, Distribution, Ecs, Event, Location, Slot, World,
+};
+use calx::{Dir6, HexFov, HexFovIter, RngExt};
 use calx_ecs::Entity;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 /// World-mutating methods that are not exposed outside the crate.
-pub trait Mutate: Query + Terraform + Sized + Animations {
+impl World {
     /// Advance world state after player input has been received.
-    fn next_tick(&mut self);
+    pub(crate) fn next_tick(&mut self) {
+        self.generate_world_spawns();
+        self.tick_anims();
 
-    fn set_entity_location(&mut self, e: Entity, loc: Location);
+        self.ai_main();
 
-    fn equip_item(&mut self, e: Entity, parent: Entity, slot: Slot);
+        self.clean_dead();
+        self.flags.tick += 1;
 
-    fn set_player(&mut self, player: Option<Entity>);
+        // Expiring entities (animation effects) disappear if their time is up.
+        let es: Vec<Entity> = self.ecs.anim.ent_iter().cloned().collect();
+        for e in es.into_iter() {
+            if let Some(anim) = self.anim(e) {
+                if anim
+                    .anim_done_world_tick
+                    .map(|t| t <= self.get_tick())
+                    .unwrap_or(false)
+                {
+                    self.kill_entity(e);
+                }
+            }
+        }
+    }
+
+    pub(crate) fn equip_item(&mut self, e: Entity, parent: Entity, slot: Slot) {
+        self.spatial.equip(e, parent, slot);
+        self.rebuild_stats(parent);
+    }
+
+    pub(crate) fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
 
     /// Mark an entity as dead, but don't remove it from the system yet.
-    fn kill_entity(&mut self, e: Entity);
+    pub(crate) fn kill_entity(&mut self, e: Entity) {
+        if self.count(e) > 1 {
+            self.ecs_mut().stacking[e].count -= 1;
+        } else {
+            self.spatial.remove(e);
+        }
+    }
 
     /// Remove an entity from the system.
     ///
     /// You generally do not want to call this directly. Mark the entity as dead and it will be
     /// removed at the end of the turn.
-    fn remove_entity(&mut self, e: Entity);
+    pub(crate) fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 
     /// Compute field-of-view into entity's map memory.
     ///
     /// Does nothing for entities without a map memory component.
-    fn do_fov(&mut self, e: Entity);
+    pub(crate) fn do_fov(&mut self, e: Entity) {
+        if !self.ecs.map_memory.contains(e) {
+            return;
+        }
+
+        if let Some(origin) = self.location(e) {
+            const DEFAULT_FOV_RANGE: u32 = 7;
+            const OVERLAND_FOV_RANGE: u32 = SECTOR_WIDTH as u32;
+
+            // Long-range sight while in overworld.
+            // XXX: Presumes that overland iff z == 0, this might not be guaranteed...
+            let range = if origin.z == 0 {
+                OVERLAND_FOV_RANGE
+            } else {
+                DEFAULT_FOV_RANGE
+            };
+
+            let fov: HashSet<Location> = HashSet::from_iter(
+                HexFov::new(SightFov::new(self, range, origin))
+                    .add_fake_isometric_acute_corners(|pos, a| {
+                        self.terrain(a.origin + pos).is_wall()
+                    })
+                    .map(|(pos, a)| a.origin + pos),
+            );
+
+            let memory = &mut self.ecs.map_memory[e];
+            memory.seen.clear();
+
+            for &loc in &fov {
+                memory.seen.insert(loc);
+                memory.remembered.insert(loc);
+            }
+        }
+    }
 
     /// Push an event to the event queue for this tick.
-    fn push_event(&mut self, event: Event);
+    pub(crate) fn push_event(&mut self, event: Event) { self.events.push(event); }
 
     /// Access the persistent random number generator.
-    fn rng(&mut self) -> &mut crate::Rng;
+    pub(crate) fn rng(&mut self) -> &mut crate::Rng { &mut self.rng }
 
     /// Mutable access to ecs
-    fn ecs_mut(&mut self) -> &mut Ecs;
+    pub(crate) fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 
     /// Spawn an effect entity
-    fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity;
+    pub(crate) fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity {
+        let e = self.ecs.make();
+        self.place_entity(e, loc);
+
+        let mut anim = Anim::default();
+        debug_assert!(state.is_transient_anim_state());
+        anim.state = state;
+        anim.anim_start = self.get_anim_tick();
+
+        // Set the (world clock, not anim clock to preserve determinism) time when animation entity
+        // should be cleaned up.
+        // XXX: Animations stick around for a bunch of time after becoming spent and invisible,
+        // simpler than trying to figure out precise durations.
+        anim.anim_done_world_tick = Some(self.get_tick() + 300);
+
+        self.ecs.anim.insert(e, anim);
+        e
+    }
 
     /// Run AI for all autonomous mobs.
-    fn ai_main(&mut self) {
+    pub(crate) fn ai_main(&mut self) {
         for npc in self.active_mobs() {
             self.heartbeat(npc);
 
@@ -72,7 +150,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// Run AI for one non-player-controlled creature.
-    fn run_ai_for(&mut self, npc: Entity) {
+    pub(crate) fn run_ai_for(&mut self, npc: Entity) {
         const WAKEUP_DISTANCE: i32 = 5;
 
         use crate::components::BrainState::*;
@@ -113,7 +191,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// Approach and attack target entity.
-    fn ai_hunt(&mut self, npc: Entity, target: Entity) {
+    pub(crate) fn ai_hunt(&mut self, npc: Entity, target: Entity) {
         if let (Some(my_loc), Some(target_loc)) = (self.location(npc), self.location(target)) {
             if my_loc.metric_distance(target_loc) == 1 {
                 let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
@@ -126,7 +204,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// Wander around aimlessly
-    fn ai_drift(&mut self, npc: Entity) {
+    pub(crate) fn ai_drift(&mut self, npc: Entity) {
         let dirs = Dir6::permuted_dirs(self.rng());
         for &dir in &dirs {
             if self.entity_step(npc, dir).is_some() {
@@ -138,18 +216,18 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// End move for entity.
     ///
     /// Applies delay.
-    fn end_turn(&mut self, e: Entity) {
+    pub(crate) fn end_turn(&mut self, e: Entity) {
         let delay = self.action_delay(e);
         self.gain_status(e, Status::Delayed, delay);
     }
 
-    fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
+    pub(crate) fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
         // TODO: Check if victim is already in close combat and don't disengage against new target
         // if it is.
         self.designate_enemy(victim, attacker);
     }
 
-    fn designate_enemy(&mut self, e: Entity, target: Entity) {
+    pub(crate) fn designate_enemy(&mut self, e: Entity, target: Entity) {
         // TODO: Probably want this logic to be more complex eventually.
         if self.is_npc(e) {
             if self.brain_state(e) == Some(BrainState::Asleep) {
@@ -162,7 +240,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// Make a mob shout according to its type.
-    fn shout(&mut self, e: Entity) {
+    pub(crate) fn shout(&mut self, e: Entity) {
         // TODO: Create noise, wake up other nearby monsters.
         use crate::components::ShoutType;
         if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
@@ -197,7 +275,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// Remove destroyed entities from system
-    fn clean_dead(&mut self) {
+    pub(crate) fn clean_dead(&mut self) {
         let kill_list: Vec<Entity> = self
             .entities()
             .filter(|&&e| !self.is_alive(e))
@@ -209,7 +287,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn place_entity(&mut self, e: Entity, mut loc: Location) {
+    pub(crate) fn place_entity(&mut self, e: Entity, mut loc: Location) {
         if self.is_item(e) {
             loc = self.empty_item_drop_location(loc);
         }
@@ -217,12 +295,12 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         self.after_entity_moved(e);
     }
 
-    fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
+    pub(crate) fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
 
     ////////////////////////////////////////////////////////////////////////////////
     // High-level commands, actual action can change because of eg. confusion.
 
-    fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -230,7 +308,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -239,7 +317,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     }
 
     /// The entity spends its action waiting.
-    fn idle(&mut self, e: Entity) -> ActionOutcome {
+    pub(crate) fn idle(&mut self, e: Entity) -> ActionOutcome {
         if self.consume_nutrition(e) {
             if let Some(regen) = self.tick_regeneration(e) {
                 self.push_event(Event::Damage {
@@ -254,7 +332,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         let origin = self.location(e)?;
         let loc = origin.jump(self, dir);
         if self.can_enter(e, loc) {
@@ -275,7 +353,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         None
     }
 
-    fn really_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn really_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         let loc = self.location(e)?;
         let target = self.mob_at(loc.jump(self, dir))?;
 
@@ -304,7 +382,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// Randomly make a confused mob move erratically.
     ///
     /// Return true if confusion kicked in.
-    fn confused_move(&mut self, e: Entity) -> bool {
+    pub(crate) fn confused_move(&mut self, e: Entity) -> bool {
         const CONFUSE_CHANCE_ONE_IN: u32 = 3;
 
         if !self.has_status(e, Status::Confused) {
@@ -331,7 +409,13 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn damage(&mut self, e: Entity, amount: i32, damage_type: Damage, source: Option<Entity>) {
+    pub(crate) fn damage(
+        &mut self,
+        e: Entity,
+        amount: i32,
+        damage_type: Damage,
+        source: Option<Entity>,
+    ) {
         if let Some(attacker) = source {
             self.notify_attacked_by(e, attacker);
         }
@@ -385,7 +469,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// Do a single step of natural regeneration for a creature.
     ///
     /// Return amount of health gained, or None if at full health.
-    fn tick_regeneration(&mut self, e: Entity) -> Option<i32> {
+    pub(crate) fn tick_regeneration(&mut self, e: Entity) -> Option<i32> {
         let max_hp = self.max_hp(e);
         let increase = (max_hp / 30).max(1);
 
@@ -399,34 +483,10 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity;
-
-    fn deploy_prefab(&mut self, origin: Location, prefab: &mapsave::Prefab) {
-        for (&p, &(ref terrain, _)) in prefab.iter() {
-            let loc = origin + p;
-
-            // Annihilate any existing entities in the drop zone.
-            let es = self.entities_at(loc);
-            for &e in &es {
-                self.remove_entity(e);
-            }
-
-            self.set_terrain(loc, *terrain);
-        }
-
-        // Spawn entities after all terrain is in place so that initial FOV is good.
-        for (&p, &(_, ref entities)) in prefab.iter() {
-            let loc = origin + p;
-
-            for spawn in entities.iter() {
-                if spawn == &*spec::PLAYER_SPAWN {
-                    self.spawn_player(loc);
-                } else {
-                    let loadout = spawn.sample(self.rng());
-                    self.spawn(&loadout, loc);
-                }
-            }
-        }
+    pub(crate) fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity {
+        let e = loadout.make(&mut self.ecs);
+        self.place_entity(e, loc);
+        e
     }
 
     /// Special method for setting the player start position.
@@ -436,7 +496,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// If player exists, but is not placed in spatial, teleport the player here.
     ///
     /// If player does not exist, create the initial player entity.
-    fn spawn_player(&mut self, loc: Location) {
+    pub(crate) fn spawn_player(&mut self, loc: Location) {
         if let Some(player) = self.player() {
             if self.location(player).is_none() {
                 // Teleport player from limbo.
@@ -454,7 +514,12 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn apply_effect_to_entity(&mut self, effect: &Effect, target: Entity, source: Option<Entity>) {
+    pub(crate) fn apply_effect_to_entity(
+        &mut self,
+        effect: &Effect,
+        target: Entity,
+        source: Option<Entity>,
+    ) {
         use crate::effect::Effect::*;
         match *effect {
             Hit { amount, damage } => {
@@ -467,19 +532,29 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn apply_effect_to(&mut self, effect: &Effect, loc: Location, source: Option<Entity>) {
+    pub(crate) fn apply_effect_to(
+        &mut self,
+        effect: &Effect,
+        loc: Location,
+        source: Option<Entity>,
+    ) {
         if let Some(mob) = self.mob_at(loc) {
             self.apply_effect_to_entity(effect, mob, source);
         }
     }
 
-    fn apply_effect(&mut self, effect: &Effect, volume: &Volume, source: Option<Entity>) {
+    pub(crate) fn apply_effect(
+        &mut self,
+        effect: &Effect,
+        volume: &Volume,
+        source: Option<Entity>,
+    ) {
         for loc in &volume.0 {
             self.apply_effect_to(effect, *loc, source);
         }
     }
 
-    fn drain_charge(&mut self, item: Entity) {
+    pub(crate) fn drain_charge(&mut self, item: Entity) {
         if self.destroy_after_use(item) {
             self.kill_entity(item);
         }
@@ -495,9 +570,9 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     ///
     /// This runs regardless of the action speed or awakeness status of the entity. The exact same
     /// is run for player and AI entities.
-    fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
+    pub(crate) fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
 
-    fn gain_status(&mut self, e: Entity, status: Status, duration: u32) {
+    pub(crate) fn gain_status(&mut self, e: Entity, status: Status, duration: u32) {
         if duration == 0 {
             return;
         }
@@ -515,7 +590,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         }
     }
 
-    fn tick_statuses(&mut self, e: Entity) {
+    pub(crate) fn tick_statuses(&mut self, e: Entity) {
         if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
             let mut remove = Vec::new();
 
@@ -537,7 +612,7 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     ///
     /// Must be explicitly called any time either the entity's base stats or anything relating to
     /// attached stat-affecting entities like equipped items is changed.
-    fn rebuild_stats(&mut self, e: Entity) {
+    pub(crate) fn rebuild_stats(&mut self, e: Entity) {
         if !self.ecs().stats.contains(e) {
             return;
         }
@@ -559,17 +634,22 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
     /// Consume one unit of nutrition
     ///
     /// Return false if the entity has an empty stomach.
-    fn consume_nutrition(&mut self, _: Entity) -> bool {
+    pub(crate) fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
     }
 
-    fn use_ability(&mut self, _e: Entity, _a: Ability) -> ActionOutcome {
+    pub(crate) fn use_ability(&mut self, _e: Entity, _a: Ability) -> ActionOutcome {
         // TODO
         None
     }
 
-    fn use_item_ability(&mut self, e: Entity, item: Entity, a: Ability) -> ActionOutcome {
+    pub(crate) fn use_item_ability(
+        &mut self,
+        e: Entity,
+        item: Entity,
+        a: Ability,
+    ) -> ActionOutcome {
         debug_assert!(!a.is_targeted());
         // TODO: Lift to generic ability use method
         if !self.has_ability(item, a) {
@@ -611,12 +691,17 @@ pub trait Mutate: Query + Terraform + Sized + Animations {
         Some(true)
     }
 
-    fn use_targeted_ability(&mut self, _e: Entity, _a: Ability, _dir: Dir6) -> ActionOutcome {
+    pub(crate) fn use_targeted_ability(
+        &mut self,
+        _e: Entity,
+        _a: Ability,
+        _dir: Dir6,
+    ) -> ActionOutcome {
         // TODO
         None
     }
 
-    fn use_targeted_item_ability(
+    pub(crate) fn use_targeted_item_ability(
         &mut self,
         e: Entity,
         item: Entity,

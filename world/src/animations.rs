@@ -1,27 +1,22 @@
 //! Animation effects embedded in the game world.
 
 use crate::location::Location;
-use crate::query::Query;
+use crate::world::World;
 use calx::{ease, CellVector};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 
-/// Trait for advancing animations.
-///
-/// Kept separate from trait `Mutate` to emphasize the contract that advancing animation logic must
-/// never cause game logic changes.
-pub trait Animations: Query + Sized {
-    fn get_anim_tick(&self) -> u64;
-    fn anim(&self, e: Entity) -> Option<&Anim>;
-    fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim>;
-
+impl World {
+    pub fn get_anim_tick(&self) -> u64 { self.flags.anim_tick }
+    pub fn anim(&self, e: Entity) -> Option<&Anim> { self.ecs.anim.get(e) }
+    pub(crate) fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim> { self.ecs.anim.get_mut(e) }
     /// Advance animations without ticking the world logic.
     ///
     /// Use this when waiting for player input to finish pending animations.
-    fn tick_anims(&mut self);
+    pub fn tick_anims(&mut self) { self.flags.anim_tick += 1; }
 
     /// Return whether entity is a transient effect.
-    fn is_fx(&self, e: Entity) -> bool {
+    pub fn is_fx(&self, e: Entity) -> bool {
         self.anim(e)
             .map_or(false, |a| a.state.is_transient_anim_state())
     }
@@ -31,7 +26,7 @@ pub trait Animations: Query + Sized {
     ///
     /// Since the current projection system is fixed to integer-coordinate cell vectors, the return
     /// value is scalar a and cell vector v, with the actual displacement vector being a * v.
-    fn tween_displacement_vector(&self, e: Entity) -> (f32, CellVector) {
+    pub fn tween_displacement_vector(&self, e: Entity) -> (f32, CellVector) {
         if let (Some(anim), Some(origin)) = (self.anim(e), self.location(e)) {
             let frame = (self.get_anim_tick() - anim.tween_start) as u32;
             if frame < anim.tween_duration {

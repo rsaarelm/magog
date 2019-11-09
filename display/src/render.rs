@@ -7,7 +7,7 @@ use crate::Icon;
 use calx::{Dir12, Dir6};
 use euclid::vec3;
 use std::sync::Arc;
-use world::{terrain, Location, Query, Terrain, TerrainQuery, World};
+use world::{terrain, Location, Terrain, World};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///

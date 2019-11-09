@@ -1,92 +1,64 @@
 //! Gameplay logic that answers questions but doesn't change anything
 
-use crate::components::{Alignment, BrainState, Icon, Status};
-use crate::effect::Ability;
-use crate::grammar::{Noun, Pronoun};
-use crate::item::{self, EquipType, ItemType, Slot};
-use crate::location::Location;
-use crate::mapsave;
-use crate::spec::EntitySpawn;
-use crate::stats::{self, Intrinsic};
-use crate::terraform::TerrainQuery;
-use crate::terrain::Terrain;
-use crate::volume::Volume;
-use crate::world::Ecs;
-use crate::FovStatus;
+use crate::{
+    components::{Alignment, BrainState, Status},
+    grammar::{Noun, Pronoun},
+    item::{self, EquipType},
+    location::Location,
+    mapsave,
+    spec::EntitySpawn,
+    stats::{self, Intrinsic},
+    Ability, Ecs, FovStatus, Icon, ItemType, Slot, Terrain, World,
+};
 use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom, Noise};
 use calx_ecs::Entity;
 use euclid::vec2;
 use rand::distributions::Uniform;
 use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
-use std::slice;
 use std::str::FromStr;
 
-/// Immutable querying of game world state.
-pub trait Query: TerrainQuery + Sized {
-    /// Return the location of an entity.
-    ///
-    /// Returns the location of the containing entity for entities inside
-    /// containers. It is possible for entities to not have a location.
-    fn location(&self, e: Entity) -> Option<Location>;
-
+impl World {
     /// Return the player entity if one exists.
-    fn player(&self) -> Option<Entity>;
+    pub fn player(&self) -> Option<Entity> {
+        if let Some(p) = self.flags.player {
+            if self.is_alive(p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
 
     /// Return current time of the world logic clock.
-    fn get_tick(&self) -> u64;
+    pub fn get_tick(&self) -> u64 { self.flags.tick }
 
     /// Return world RNG seed
-    fn rng_seed(&self) -> u32;
+    pub fn rng_seed(&self) -> u32 { self.world_cache.seed() }
 
     /// Return maximum health of an entity.
-    fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
-
-    /// Return all entities in the world.
-    fn entities(&self) -> slice::Iter<'_, Entity>;
-
-    // XXX: Would be nicer if entities_at returned an iterator. Probably want to wait for impl
-    // Trait return types before jumping to this.
-
-    /// Return entities at the given location.
-    fn entities_at(&self, loc: Location) -> Vec<Entity>;
-
-    /// Return entities inside another entity.
-    fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)>;
-
-    /// Return true if entity contains nothing.
-    fn is_empty(&self, e: Entity) -> bool;
+    pub fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
 
     /// Return reference to the world entity component system.
-    fn ecs(&self) -> &Ecs;
-
-    /// Return the item parent has equipped in slot.
-    fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity>;
-
-    fn entity_contains(&self, parent: Entity, child: Entity) -> bool;
-
-    /// Return slot entity is equipped in.
-    fn entity_slot(&self, e: Entity) -> Option<Slot>;
-
-    fn sphere_volume(&self, origin: Location, radius: u32) -> Volume;
+    pub fn ecs(&self) -> &Ecs { &self.ecs }
 
     /// Return the AI state of an entity.
-    fn brain_state(&self, e: Entity) -> Option<BrainState> {
+    pub fn brain_state(&self, e: Entity) -> Option<BrainState> {
         self.ecs().brain.get(e).and_then(|brain| Some(brain.state))
     }
 
     /// Return whether the entity is a mobile object (eg. active creature).
-    fn is_mob(&self, e: Entity) -> bool { self.ecs().brain.contains(e) }
+    pub fn is_mob(&self, e: Entity) -> bool { self.ecs().brain.contains(e) }
 
-    fn is_item(&self, e: Entity) -> bool { self.ecs().item.contains(e) }
+    pub fn is_item(&self, e: Entity) -> bool { self.ecs().item.contains(e) }
 
     /// Return the value for how a mob will react to other mobs.
-    fn alignment(&self, e: Entity) -> Option<Alignment> {
+    pub fn alignment(&self, e: Entity) -> Option<Alignment> {
         self.ecs().brain.get(e).map(|b| b.alignment)
     }
 
     /// Return current health of an entity.
-    fn hp(&self, e: Entity) -> i32 {
+    pub fn hp(&self, e: Entity) -> i32 {
         self.max_hp(e)
             - if self.ecs().health.contains(e) {
                 self.ecs().health[e].wounds
@@ -96,7 +68,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return field of view for a location.
-    fn fov_status(&self, loc: Location) -> Option<FovStatus> {
+    pub fn fov_status(&self, loc: Location) -> Option<FovStatus> {
         if let Some(p) = self.player() {
             if self.ecs().map_memory.contains(p) {
                 if self.ecs().map_memory[p].seen.contains(loc) {
@@ -113,9 +85,9 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return visual brush for an entity.
-    fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
+    pub fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
-    fn entity_name(&self, e: Entity) -> String {
+    pub fn entity_name(&self, e: Entity) -> String {
         if let Some(desc) = self.ecs().desc.get(e) {
             let count = self.count(e);
 
@@ -129,7 +101,7 @@ pub trait Query: TerrainQuery + Sized {
         }
     }
 
-    fn noun(&self, e: Entity) -> Noun {
+    pub fn noun(&self, e: Entity) -> Noun {
         let mut ret = Noun::new(self.entity_name(e));
         if self.is_player(e) {
             ret = ret.you().pronoun(Pronoun::They);
@@ -145,7 +117,7 @@ pub trait Query: TerrainQuery + Sized {
     ///
     /// Will return the default value for the Stats type (additive identity in the stat algebra)
     /// for entities that have no stats component defined.
-    fn stats(&self, e: Entity) -> stats::Stats {
+    pub fn stats(&self, e: Entity) -> stats::Stats {
         self.ecs()
             .stats
             .get(e)
@@ -156,12 +128,12 @@ pub trait Query: TerrainQuery + Sized {
     /// Return the base stats of the entity. Does not include any added effects.
     ///
     /// You usually want to use the `stats` method instead of this one.
-    fn base_stats(&self, e: Entity) -> stats::Stats {
+    pub fn base_stats(&self, e: Entity) -> stats::Stats {
         self.ecs().stats.get(e).map(|s| s.base).unwrap_or_default()
     }
 
     /// Return whether the entity can move in a direction.
-    fn can_step(&self, e: Entity, dir: Dir6) -> bool {
+    pub fn can_step(&self, e: Entity, dir: Dir6) -> bool {
         self.location(e)
             .map_or(false, |loc| self.can_enter(e, loc.jump(self, dir)))
     }
@@ -169,16 +141,16 @@ pub trait Query: TerrainQuery + Sized {
     /// Return whether the entity can move in a direction based on just the terrain.
     ///
     /// There might be blocking mobs but they are ignored
-    fn can_step_on_terrain(&self, e: Entity, dir: Dir6) -> bool {
+    pub fn can_step_on_terrain(&self, e: Entity, dir: Dir6) -> bool {
         self.location(e)
             .map_or(false, |loc| self.can_enter_terrain(e, loc.jump(self, dir)))
     }
 
     /// Return whether location blocks line of sight.
-    fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
+    pub fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
 
     /// Return whether the entity can occupy a location.
-    fn can_enter(&self, e: Entity, loc: Location) -> bool {
+    pub fn can_enter(&self, e: Entity, loc: Location) -> bool {
         if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
@@ -189,7 +161,7 @@ pub trait Query: TerrainQuery + Sized {
         true
     }
 
-    fn can_enter_terrain(&self, e: Entity, loc: Location) -> bool {
+    pub fn can_enter_terrain(&self, e: Entity, loc: Location) -> bool {
         if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
@@ -200,7 +172,7 @@ pub trait Query: TerrainQuery + Sized {
         true
     }
 
-    fn can_drop_item_at(&self, loc: Location) -> bool {
+    pub fn can_drop_item_at(&self, loc: Location) -> bool {
         if !self.is_valid_location(loc) {
             return false;
         }
@@ -214,10 +186,10 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity blocks movement of other entities.
-    fn is_blocking_entity(&self, e: Entity) -> bool { self.is_mob(e) }
+    pub fn is_blocking_entity(&self, e: Entity) -> bool { self.is_mob(e) }
 
     /// Return whether the location obstructs entity movement.
-    fn blocks_walk(&self, loc: Location) -> bool {
+    pub fn blocks_walk(&self, loc: Location) -> bool {
         if self.terrain_blocks_walk(loc) {
             return true;
         }
@@ -232,7 +204,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the location obstructs entity movement.
-    fn terrain_blocks_walk(&self, loc: Location) -> bool {
+    pub fn terrain_blocks_walk(&self, loc: Location) -> bool {
         if !self.is_valid_location(loc) {
             return true;
         }
@@ -243,25 +215,25 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether a location contains mobs.
-    fn has_mobs(&self, loc: Location) -> bool { self.mob_at(loc).is_some() }
+    pub fn has_mobs(&self, loc: Location) -> bool { self.mob_at(loc).is_some() }
 
     /// Return mob (if any) at given location.
-    fn mob_at(&self, loc: Location) -> Option<Entity> {
+    pub fn mob_at(&self, loc: Location) -> Option<Entity> {
         self.entities_at(loc).into_iter().find(|&e| self.is_mob(e))
     }
 
     /// Return first item at given location.
-    fn item_at(&self, loc: Location) -> Option<Entity> {
+    pub fn item_at(&self, loc: Location) -> Option<Entity> {
         self.entities_at(loc).into_iter().find(|&e| self.is_item(e))
     }
 
     /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
-    fn has_intrinsic(&self, e: Entity, intrinsic: Intrinsic) -> bool {
+    pub fn has_intrinsic(&self, e: Entity, intrinsic: Intrinsic) -> bool {
         self.stats(e).intrinsics & (1 << intrinsic as u32) != 0
     }
 
     /// Return whether the entity has a specific temporary status
-    fn has_status(&self, e: Entity, status: Status) -> bool {
+    pub fn has_status(&self, e: Entity, status: Status) -> bool {
         self.ecs()
             .status
             .get(e)
@@ -269,7 +241,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return how many frames the entity will delay after an action.
-    fn action_delay(&self, e: Entity) -> u32 {
+    pub fn action_delay(&self, e: Entity) -> u32 {
         // Granular speed system:
         // | slow and slowed  | 1 |
         // | slow or slowed   | 2 |
@@ -304,7 +276,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Return if the entity is a mob that should get an update this frame
     /// based on its speed properties. Does not check for status effects like
     /// sleep that might prevent actual action.
-    fn ticks_this_frame(&self, e: Entity) -> bool {
+    pub fn ticks_this_frame(&self, e: Entity) -> bool {
         if !self.is_mob(e) || !self.is_alive(e) {
             return false;
         }
@@ -317,23 +289,23 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity is dead and should be removed from the world.
-    fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
+    pub fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
 
     /// Return true if the game has ended and the player can make no further
     /// actions.
-    fn game_over(&self) -> bool { self.player().is_none() }
+    pub fn game_over(&self) -> bool { self.player().is_none() }
 
     /// Return whether an entity is the player avatar mob.
-    fn is_player(&self, e: Entity) -> bool {
+    pub fn is_player(&self, e: Entity) -> bool {
         // TODO: Should this just check self.flags.player?
         self.brain_state(e) == Some(BrainState::PlayerControl) && self.is_alive(e)
     }
 
     /// Return whether an entity is under computer control
-    fn is_npc(&self, e: Entity) -> bool { self.is_mob(e) && !self.is_player(e) }
+    pub fn is_npc(&self, e: Entity) -> bool { self.is_mob(e) && !self.is_player(e) }
 
     /// Return whether the entity is an awake mob.
-    fn is_active(&self, e: Entity) -> bool {
+    pub fn is_active(&self, e: Entity) -> bool {
         match self.brain_state(e) {
             Some(BrainState::Asleep) => false,
             Some(_) => true,
@@ -342,14 +314,14 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity is a mob that will act this frame.
-    fn acts_this_frame(&self, e: Entity) -> bool {
+    pub fn acts_this_frame(&self, e: Entity) -> bool {
         if !self.is_active(e) {
             return false;
         }
         self.ticks_this_frame(e)
     }
 
-    fn player_can_act(&self) -> bool {
+    pub fn player_can_act(&self) -> bool {
         if let Some(p) = self.player() {
             self.acts_this_frame(p)
         } else {
@@ -358,7 +330,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Look for targets to shoot in a direction.
-    fn find_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
+    pub fn find_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
         let origin = self.location(shooter).unwrap();
         let mut loc = origin;
         for _ in 1..=range {
@@ -378,7 +350,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Try to get the next step on the path from origin towards destination.
     ///
     /// Tries to be fast, not necessarily doing proper pathfinding.
-    fn pathing_dir_towards(&self, e: Entity, destination: Location) -> Option<Dir6> {
+    pub fn pathing_dir_towards(&self, e: Entity, destination: Location) -> Option<Dir6> {
         // Could do all sorts of cool things here eventually like a Dijkstra map cache, but for now
         // just doing very simple stuff.
         if let Some(origin) = self.location(e) {
@@ -398,7 +370,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity wants to fight the other entity.
-    fn is_hostile_to(&self, e: Entity, other: Entity) -> bool {
+    pub fn is_hostile_to(&self, e: Entity, other: Entity) -> bool {
         let (a, b) = (self.alignment(e), self.alignment(other));
         if a.is_none() || b.is_none() {
             return false;
@@ -409,9 +381,9 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the entity should have an idle animation.
-    fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
+    pub fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
-    fn item_type(&self, e: Entity) -> Option<ItemType> {
+    pub fn item_type(&self, e: Entity) -> Option<ItemType> {
         self.ecs().item.get(e).and_then(|item| Some(item.item_type))
     }
 
@@ -419,7 +391,7 @@ pub trait Query: TerrainQuery + Sized {
     ///
     /// Terrain is sometimes replaced with a variant for visual effect, but
     /// this should not be reflected in the logical terrain.
-    fn visual_terrain(&self, loc: Location) -> Terrain {
+    pub fn visual_terrain(&self, loc: Location) -> Terrain {
         use crate::Terrain::*;
 
         let mut t = self.terrain(loc);
@@ -449,7 +421,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return the name that can be used to spawn this entity.
-    fn spawn_name(&self, e: Entity) -> Option<&str> {
+    pub fn spawn_name(&self, e: Entity) -> Option<&str> {
         // TODO: Create a special component for this.
         self.ecs()
             .desc
@@ -457,7 +429,7 @@ pub trait Query: TerrainQuery + Sized {
             .and_then(|desc| Some(&desc.singular_name[..]))
     }
 
-    fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
+    pub fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
@@ -490,13 +462,13 @@ pub trait Query: TerrainQuery + Sized {
         mapsave::Prefab::from_iter(map.into_iter())
     }
 
-    fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
+    pub fn free_bag_slot(&self, e: Entity) -> Option<Slot> {
         (0..item::BAG_CAPACITY)
             .find(|&i| self.entity_equipped(e, Slot::Bag(i)).is_none())
             .map(Slot::Bag)
     }
 
-    fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
+    pub fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
         Slot::equipment_iter()
             .find(|&&x| x.accepts(self.equip_type(item)) && self.entity_equipped(e, x).is_none())
             .cloned()
@@ -507,7 +479,7 @@ pub trait Query: TerrainQuery + Sized {
     /// Dropping several items in the same location will cause them to spread out to the adjacent
     /// cells. If there is no room for the items to spread out, they will be stacked on the initial
     /// drop site.
-    fn empty_item_drop_location(&self, origin: Location) -> Location {
+    pub fn empty_item_drop_location(&self, origin: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
         let is_valid = |v: CellVector| {
             self.can_drop_item_at(origin.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
@@ -543,7 +515,7 @@ pub trait Query: TerrainQuery + Sized {
     ///
     /// Explosion centers will penetrate and hit cells with mobs, they will stop before cells with
     /// blocking terrain.
-    fn projected_explosion_center(&self, origin: Location, dir: Dir6, range: u32) -> Location {
+    pub fn projected_explosion_center(&self, origin: Location, dir: Dir6, range: u32) -> Location {
         let mut loc = origin;
         for _ in 0..range {
             let new_loc = loc.jump(self, dir);
@@ -562,12 +534,14 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return whether the player can currently directly see the given location.
-    fn player_sees(&self, loc: Location) -> bool { self.fov_status(loc) == Some(FovStatus::Seen) }
+    pub fn player_sees(&self, loc: Location) -> bool {
+        self.fov_status(loc) == Some(FovStatus::Seen)
+    }
 
     /// Return the set of mobs that are in update range.
     ///
     /// In a large game world, the active set is limited to the player's surroundings.
-    fn active_mobs(&self) -> Vec<Entity> {
+    pub fn active_mobs(&self) -> Vec<Entity> {
         self.entities()
             .filter(|&&e| self.is_mob(e))
             .cloned()
@@ -575,9 +549,11 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return number of times item can be used.
-    fn uses_left(&self, item: Entity) -> u32 { self.ecs().item.get(item).map_or(0, |i| i.charges) }
+    pub fn uses_left(&self, item: Entity) -> u32 {
+        self.ecs().item.get(item).map_or(0, |i| i.charges)
+    }
 
-    fn destroy_after_use(&self, item: Entity) -> bool {
+    pub fn destroy_after_use(&self, item: Entity) -> bool {
         // XXX: Fragile. What we want here is to tag potions and scrolls as destroyed when used and
         // wands to stick around. Current item data doesn't have is_potion or is_scroll, but
         // coincidentally the scrolls tend to be untargeted and the wands tend to be targeted
@@ -591,7 +567,7 @@ pub trait Query: TerrainQuery + Sized {
         })
     }
 
-    fn equip_type(&self, item: Entity) -> Option<EquipType> {
+    pub fn equip_type(&self, item: Entity) -> Option<EquipType> {
         use crate::ItemType::*;
         match self.item_type(item) {
             Some(MeleeWeapon) => Some(EquipType::Melee),
@@ -604,9 +580,9 @@ pub trait Query: TerrainQuery + Sized {
         }
     }
 
-    fn is_underground(&self, loc: Location) -> bool { loc.z < 0 }
+    pub fn is_underground(&self, loc: Location) -> bool { loc.z < 0 }
 
-    fn light_level(&self, loc: Location) -> f32 {
+    pub fn light_level(&self, loc: Location) -> f32 {
         // Lit terrain is lit.
         if self.terrain(loc).is_luminous() {
             return 1.0;
@@ -630,7 +606,7 @@ pub trait Query: TerrainQuery + Sized {
     }
 
     /// Return count on entity if it's a stack
-    fn count(&self, e: Entity) -> u32 {
+    pub fn count(&self, e: Entity) -> u32 {
         if let Some(stacking) = self.ecs().stacking.get(e) {
             debug_assert!(stacking.count >= 1, "Invalid item stack size");
             stacking.count
@@ -639,7 +615,7 @@ pub trait Query: TerrainQuery + Sized {
         }
     }
 
-    fn max_stack_size(&self, e: Entity) -> u32 {
+    pub fn max_stack_size(&self, e: Entity) -> u32 {
         if self.ecs().stacking.contains(e) {
             99
         } else {
@@ -647,11 +623,11 @@ pub trait Query: TerrainQuery + Sized {
         }
     }
 
-    fn has_ability(&self, e: Entity, ability: Ability) -> bool {
+    pub fn has_ability(&self, e: Entity, ability: Ability) -> bool {
         self.list_abilities(e).into_iter().any(|x| x == ability)
     }
 
-    fn list_abilities(&self, e: Entity) -> Vec<Ability> {
+    pub fn list_abilities(&self, e: Entity) -> Vec<Ability> {
         // Check for item abilities.
         if let Some(item) = self.ecs().item.get(e) {
             match item.item_type {

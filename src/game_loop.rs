@@ -10,7 +10,7 @@ use vitral::{
     self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
     SceneSwitch,
 };
-use world::{Ability, ActionOutcome, Animations, Command, Event, Location, Query, Slot, World};
+use world::{Ability, ActionOutcome, Command, Event, Location, Slot, World};
 
 pub struct HotbarAction {
     ability: Ability,

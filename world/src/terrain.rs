@@ -1,6 +1,54 @@
+use crate::{Location, World};
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
 use vitral::SRgba;
+
+impl World {
+    /// Return whether location is contained in the current play area.
+    pub fn is_valid_location(&self, _loc: Location) -> bool {
+        //Location::origin().v2_at(loc).map_or(false, ::on_screen)
+        true
+    }
+
+    /// Return terrain at location.
+    pub fn terrain(&self, loc: Location) -> Terrain {
+        let mut t = self.world_cache.get_terrain(loc);
+
+        if t == Terrain::Door && self.has_mobs(loc) {
+            // Standing in the doorway opens the door.
+            t = Terrain::OpenDoor;
+        }
+
+        t
+    }
+
+    /// If location contains a portal, return the destination of the portal.
+    pub fn portal(&self, loc: Location) -> Option<Location> { self.world_cache.get_portal(loc) }
+
+    /// Return whether location has a border portals.
+    ///
+    /// Portals are divided into border and hole portals. A hole portal is usually surrounded by
+    /// local scenery at all sides, while border portals are assumed to be at the edges of a convex
+    /// patch of local terrain with nothing local past them.
+    ///
+    /// The difference between the two is important in how map memory works, map memory display
+    /// goes through border portals normally, but ignores hole portals.
+    pub fn is_border_portal(&self, _loc: Location) -> bool {
+        // TODO: Implement internal data for border portals
+        // Turn type Portal in the internal portal data into enum { Border(Portal), Edge(Portal) }
+        false
+    }
+
+    /// Return a portal if it can be seen through.
+    pub fn visible_portal(&self, loc: Location) -> Option<Location> {
+        // Only void-form is transparent to portals.
+        if self.terrain(loc).form() == Form::Void {
+            self.portal(loc)
+        } else {
+            None
+        }
+    }
+}
 
 /// Movement effect of a terrain tile.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

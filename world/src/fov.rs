@@ -1,6 +1,4 @@
-use crate::location::Location;
-use crate::terraform::TerrainQuery;
-use crate::world::World;
+use crate::{Location, World};
 use calx::{CellVector, FovValue, HexGeom};
 
 #[derive(Clone)]

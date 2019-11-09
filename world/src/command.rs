@@ -1,7 +1,5 @@
 use crate::effect::Ability;
 use crate::item::Slot;
-use crate::mutate::Mutate;
-use crate::query::Query;
 use crate::sector::WorldSkeleton;
 use crate::world::World;
 use calx::Dir6;

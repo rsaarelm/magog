@@ -1,8 +1,6 @@
 use crate::command::ActionOutcome;
 use crate::effect::Ability;
-use crate::mutate::Mutate;
 use crate::world::World;
-use crate::Query;
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
