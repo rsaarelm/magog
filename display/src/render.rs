@@ -83,8 +83,6 @@ pub enum Layer {
     Floor,
     /// Blood splatters etc. on floor.
     Decal,
-    /// Items, always under entities.
-    Item,
     /// Large map objects, walls, most entities etc.
     Object,
     /// Transient effects shown on top of other map content.
