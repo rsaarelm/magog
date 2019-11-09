@@ -72,9 +72,7 @@ impl World {
             events: Vec::new(),
         };
 
-        // TODO non-lexical borrow
-        let player_entry = ret.world_cache.player_entrance();
-        ret.spawn_player(player_entry);
+        ret.spawn_player(ret.world_cache.player_entrance());
         ret.generate_world_spawns();
 
         ret
