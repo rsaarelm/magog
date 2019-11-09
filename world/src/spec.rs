@@ -1,13 +1,14 @@
 //! Data for generating game entities.
 
-use crate::animations::Anim;
-use crate::components::{Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses};
-use crate::item::ItemType;
-use crate::item::{Item, Stacking};
-use crate::sector::Biome;
-use crate::stats::{Intrinsic, Stats};
-use crate::world::Loadout;
-use crate::{Distribution, Rng};
+use crate::{
+    components::{Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses},
+    item::ItemType,
+    item::{Item, Stacking},
+    sector::Biome,
+    stats::{Intrinsic, Stats},
+    world::Loadout,
+    Anim, Distribution, ExternalEntity, Rng,
+};
 use lazy_static::lazy_static;
 use serde;
 use std::collections::BTreeMap;
@@ -16,7 +17,7 @@ use std::fmt;
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub trait Spec: Distribution<Loadout> + Sync + Send {
+pub trait Spec: Distribution<ExternalEntity> + Sync + Send {
     /// How rare is this spec?
     ///
     /// Rarity is the inverse of spawn probability. Rarity zero means the spec will never spawn
@@ -67,18 +68,20 @@ impl Default for MobSpec {
     }
 }
 
-impl Distribution<Loadout> for MobSpec {
-    fn sample(&self, _: &mut Rng) -> Loadout {
-        Loadout::new()
-            .c(StatsComponent::new(Stats::new(
-                self.power,
-                &self.intrinsics,
-            )))
-            .c(Desc::new(&self.name, self.icon))
-            .c(Brain::enemy().shout(self.shout))
-            .c(Anim::default())
-            .c(Health::default())
-            .c(Statuses::default())
+impl Distribution<ExternalEntity> for MobSpec {
+    fn sample(&self, _: &mut Rng) -> ExternalEntity {
+        ExternalEntity::new(
+            Loadout::new()
+                .c(StatsComponent::new(Stats::new(
+                    self.power,
+                    &self.intrinsics,
+                )))
+                .c(Desc::new(&self.name, self.icon))
+                .c(Brain::enemy().shout(self.shout))
+                .c(Anim::default())
+                .c(Health::default())
+                .c(Statuses::default()),
+        )
     }
 }
 
@@ -125,9 +128,9 @@ impl Default for ItemSpec {
     }
 }
 
-impl Distribution<Loadout> for ItemSpec {
-    fn sample(&self, _: &mut Rng) -> Loadout {
-        let mut ret = Loadout::new()
+impl Distribution<ExternalEntity> for ItemSpec {
+    fn sample(&self, _: &mut Rng) -> ExternalEntity {
+        let mut loadout = Loadout::new()
             .c(Desc::new(&self.name, self.icon))
             .c(StatsComponent::new(
                 Stats::new(self.power, &self.intrinsics)
@@ -140,9 +143,9 @@ impl Distribution<Loadout> for ItemSpec {
                 charges: 1,
             });
         if self.stacks {
-            ret = ret.c(Stacking::default());
+            loadout = loadout.c(Stacking::default());
         }
-        ret
+        ExternalEntity::new(loadout)
     }
 }
 
@@ -541,8 +544,8 @@ impl<'a> serde::Deserialize<'a> for EntitySpawn {
     }
 }
 
-impl Distribution<Loadout> for EntitySpawn {
-    fn sample(&self, rng: &mut Rng) -> Loadout {
+impl Distribution<ExternalEntity> for EntitySpawn {
+    fn sample(&self, rng: &mut Rng) -> ExternalEntity {
         SPECS
             .get(self)
             .unwrap_or_else(|| panic!("EntitySpawn {:?} not found in spec database", self))

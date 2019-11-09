@@ -9,8 +9,8 @@ use crate::{
     sector::SECTOR_WIDTH,
     spec,
     volume::Volume,
-    world::Loadout,
-    Ability, ActionOutcome, Anim, AnimState, Distribution, Ecs, Event, Location, Slot, World,
+    Ability, ActionOutcome, Anim, AnimState, Distribution, Ecs, Event, ExternalEntity, Location,
+    Slot, World,
 };
 use calx::{Dir6, HexFov, HexFovIter, RngExt};
 use calx_ecs::Entity;
@@ -483,8 +483,8 @@ impl World {
         }
     }
 
-    pub(crate) fn spawn(&mut self, loadout: &Loadout, loc: Location) -> Entity {
-        let e = loadout.make(&mut self.ecs);
+    pub(crate) fn spawn(&mut self, entity: &ExternalEntity, loc: Location) -> Entity {
+        let e = self.inject(entity);
         self.place_entity(e, loc);
         e
     }
@@ -505,11 +505,9 @@ impl World {
         } else {
             // Initialize new player object. Add some special components you don't get on regular
             // mob spawns.
-            let loadout = spec::PLAYER_SPAWN
-                .sample(self.rng())
-                .c(Brain::player())
-                .c(MapMemory::default());
-            let player = self.spawn(&loadout, loc);
+            let mut player = spec::PLAYER_SPAWN.sample(self.rng());
+            player.loadout = player.loadout.c(Brain::player()).c(MapMemory::default());
+            let player = self.spawn(&player, loc);
             self.set_player(Some(player));
         }
     }

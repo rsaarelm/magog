@@ -1,5 +1,5 @@
 use self::Place::*;
-use crate::{Slot, Location, World};
+use crate::{Location, Slot, World};
 use calx_ecs::Entity;
 use serde;
 use serde_derive::{Deserialize, Serialize};
@@ -57,7 +57,6 @@ impl World {
     pub(crate) fn set_entity_location(&mut self, e: Entity, loc: Location) {
         self.spatial.insert_at(e, loc);
     }
-
 }
 
 /// Entities can be placed either on open locations or inside other entities.
