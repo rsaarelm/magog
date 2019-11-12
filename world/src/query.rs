@@ -10,7 +10,7 @@ use crate::{
     stats::{self, Intrinsic},
     Ability, Ecs, FovStatus, Icon, ItemType, Slot, Terrain, World,
 };
-use calx::{clamp, hex_neighbors, CellVector, Dir6, HexGeom, Noise};
+use calx::{hex_neighbors, CellVector, Clamp, Dir6, HexGeom, Noise};
 use calx_ecs::Entity;
 use euclid::vec2;
 use rand::distributions::Uniform;
@@ -595,7 +595,7 @@ impl World {
                     // XXX: This is going to get so messed up with portals, should be done in
                     // player chart space, not here...
                     if let Some(dist) = player_loc.distance_from(loc) {
-                        return clamp(0.0, 1.0, 1.0 - (dist as f32 / 8.0));
+                        return (0.0..=1.0).clamp(1.0 - (dist as f32 / 8.0));
                     }
                 }
             }

@@ -1,4 +1,4 @@
-use calx::Deciban;
+use calx::{Clamp, Deciban};
 
 /// Helper macro for formatting textual event messages.
 macro_rules! msg {
@@ -176,8 +176,8 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
     const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
 
     let roll = roll + advantage as f32;
-    (weapon_power as f32 * calx::clamp(0.0, MAX_DAMAGE_MULTIPLIER, (roll - 2.0) * 0.05)) as i32
+    (weapon_power as f32 * (0.0..=MAX_DAMAGE_MULTIPLIER).clamp((roll - 2.0) * 0.05)) as i32
 }
 
 /// Standard deciban roll, clamp into [-20, 20].
-pub fn roll(rng: &mut impl rand::Rng) -> f32 { calx::clamp(-20.0, 20.0, rng.gen::<Deciban>().0) }
+pub fn roll(rng: &mut impl rand::Rng) -> f32 { (-20.0..=20.0).clamp(rng.gen::<Deciban>().0) }

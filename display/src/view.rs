@@ -4,7 +4,7 @@ use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
-use calx::{clamp, CellVector, FovValue, HexFov, Space, Transformation};
+use calx::{CellVector, Clamp, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
 use euclid::{vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
@@ -155,7 +155,7 @@ impl WorldView {
                         } else {
                             vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
                         };
-                        clamp(0.1, 1.0, -light_dir.dot(normal))
+                        (0.1..=1.0).clamp(-light_dir.dot(normal))
                     };
 
                     Coloring::Shaded { ambient, diffuse }

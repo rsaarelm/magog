@@ -17,7 +17,7 @@ mod text;
 pub mod tiled;
 
 pub use alg_misc::{
-    bounding_rect, clamp, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Deciban,
+    bounding_rect, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Clamp, Deciban,
     GenericError, LerpPath, Noise, WeightedChoice,
 };
 pub use colors::{term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color};

@@ -1,21 +1,62 @@
 use crate::seeded_rng;
-use euclid::{rect, Point2D, Rect};
+use euclid::{point2, rect, Point2D, Rect};
 use num::{Float, One, Zero};
 use rand::distributions::{Distribution, Standard, Uniform};
 use rand::Rng;
 use std::error::Error;
 use std::fmt;
 use std::hash::Hash;
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Range, RangeInclusive, Sub, SubAssign};
 
-/// Clamp a value to range.
-pub fn clamp<C: PartialOrd + Copy>(mn: C, mx: C, x: C) -> C {
-    if x < mn {
-        mn
-    } else if x > mx {
-        mx
-    } else {
-        x
+/// A type that represents convex bounds in space of `Self::T`.
+pub trait Clamp {
+    type T;
+
+    /// Return the closest point inside the bounds to the argument.
+    fn clamp(&self, point: Self::T) -> Self::T;
+}
+
+impl<T: Copy + PartialOrd> Clamp for RangeInclusive<T> {
+    type T = T;
+
+    fn clamp(&self, point: Self::T) -> Self::T {
+        let (start, end) = (*self.start(), *self.end());
+        if point < start {
+            start
+        } else if point > end {
+            end
+        } else {
+            point
+        }
+    }
+}
+
+// Bit mathematically incorrect to define clamp for non-inclusive range, but we need it anyway for
+// the Rect that we only have a non-inclusive version of, so gonna just go with it.
+impl<T: Copy + PartialOrd> Clamp for Range<T> {
+    type T = T;
+
+    fn clamp(&self, point: Self::T) -> Self::T { (self.start..=self.end).clamp(point) }
+}
+
+// Impls of Clamp for RangeFrom and RangeToInclusive are trivial to add here if they're ever
+// needed.
+
+impl<
+        T: Copy
+            + Clone
+            + euclid::num::Zero
+            + PartialOrd
+            + PartialEq
+            + Add<T, Output = T>
+            + Sub<T, Output = T>,
+        U,
+    > Clamp for Rect<T, U>
+{
+    type T = Point2D<T, U>;
+
+    fn clamp(&self, point: Self::T) -> Self::T {
+        point2(self.x_range().clamp(point.x), self.y_range().clamp(point.y))
     }
 }
 
