@@ -8,7 +8,7 @@ use crate::{
     mapsave,
     spec::EntitySpawn,
     stats::{self, Intrinsic},
-    Ability, Ecs, FovStatus, Icon, ItemType, Slot, Terrain, World,
+    Ability, Ecs, FovStatus, Icon, ItemType, Sector, Slot, Terrain, World,
 };
 use calx::{hex_neighbors, CellVector, Clamp, Dir6, HexGeom, Noise};
 use calx_ecs::Entity;
@@ -647,4 +647,6 @@ impl World {
         // Entity has no abilites.
         Vec::new()
     }
+
+    pub fn sector_exists(&self, sector: Sector) -> bool { self.world_cache.sector_exists(sector) }
 }

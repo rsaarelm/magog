@@ -64,6 +64,8 @@ impl WorldCache {
             .map(|&p| loc + p)
     }
 
+    pub fn sector_exists(&self, sector: Sector) -> bool { self.skeleton.contains_key(&sector) }
+
     /// Return latest list of spawns.
     ///
     /// `WorldCache` will return spawns from regions that have been loaded into cache. Caller will
