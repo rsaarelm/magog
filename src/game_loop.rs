@@ -10,7 +10,7 @@ use vitral::{
     self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
     SceneSwitch,
 };
-use world::{Ability, ActionOutcome, Command, Event, Location, Slot, World, WorldSeed};
+use world::{Ability, ActionOutcome, Command, Event, LerpLocation, Slot, World, WorldSeed};
 
 pub struct HotbarAction {
     ability: Ability,
@@ -157,7 +157,7 @@ impl GameRuntime {
 #[derive(Default)]
 pub struct GameLoop {
     pub console: display::Console,
-    camera_loc: Location,
+    camera_loc: LerpLocation,
 }
 
 enum Side {
@@ -215,10 +215,13 @@ impl Scene<GameRuntime> for GameLoop {
 
         let (view_area, status_area) = screen_area.horizontal_split(-32);
 
-        // Ugh
-        ctx.world
+        if let Some(loc) = ctx
+            .world
             .player()
-            .map(|x| ctx.world.location(x).map(|l| self.camera_loc = l));
+            .map(|x| ctx.world.lerp_location(x).unwrap())
+        {
+            self.camera_loc = loc;
+        }
 
         let mut view = display::WorldView::new(self.camera_loc, view_area);
         view.show_cursor = true;

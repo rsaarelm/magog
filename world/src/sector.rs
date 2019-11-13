@@ -63,7 +63,7 @@ impl Sector {
 
     /// Center location for this sector.
     ///
-    /// Usually you want the camera positioned here.
+    /// Default camera position.
     pub fn center(self) -> Location {
         // XXX: If the width/height are even (as they currently are), there isn't a centered cell.
         self.rect_coord_loc(SECTOR_WIDTH / 2 - 1, SECTOR_HEIGHT / 2 - 1)

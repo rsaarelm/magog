@@ -2,9 +2,50 @@
 
 use crate::location::Location;
 use crate::world::World;
-use calx::{ease, CellVector};
+use calx::{ease, CellSpace};
 use calx_ecs::Entity;
+use euclid::{vec2, Vector2D};
 use serde_derive::{Deserialize, Serialize};
+
+/// Location with a non-integer offset delta.
+///
+/// Use for tweened animations.
+#[derive(Copy, Clone, PartialEq, Debug, Default)]
+pub struct LerpLocation {
+    location: Location,
+    offset: Vector2D<f32, CellSpace>,
+}
+
+impl LerpLocation {
+    /// Create a normalized `LerpLocation` that offsets `Location` by integer parts of `offset`.
+    ///
+    /// Result is guaranteed to describe a point within unit radius of its location's center.
+    pub fn new(location: Location, offset: Vector2D<f32, CellSpace>) -> LerpLocation {
+        LerpLocation {
+            location: Location::new(
+                location.x + offset.x.trunc() as i16,
+                location.y + offset.y.trunc() as i16,
+                location.z,
+            ),
+            offset: vec2(offset.x.fract(), offset.y.fract()),
+        }
+    }
+
+    #[inline]
+    pub fn location(self) -> Location { self.location }
+
+    #[inline]
+    pub fn offset(self) -> Vector2D<f32, CellSpace> { self.offset }
+}
+
+impl From<Location> for LerpLocation {
+    fn from(location: Location) -> LerpLocation {
+        LerpLocation {
+            location,
+            offset: Default::default(),
+        }
+    }
+}
 
 impl World {
     pub fn get_anim_tick(&self) -> u64 { self.flags.anim_tick }
@@ -21,22 +62,25 @@ impl World {
             .map_or(false, |a| a.state.is_transient_anim_state())
     }
 
-    /// Return vector by which entity's current position tweening frame displaces it from its base
-    /// location.
-    ///
-    /// Since the current projection system is fixed to integer-coordinate cell vectors, the return
-    /// value is scalar a and cell vector v, with the actual displacement vector being a * v.
-    pub fn tween_displacement_vector(&self, e: Entity) -> (f32, CellVector) {
-        if let (Some(anim), Some(origin)) = (self.anim(e), self.location(e)) {
-            let frame = (self.get_anim_tick() - anim.tween_start) as u32;
-            if frame < anim.tween_duration {
-                if let Some(vec) = origin.v2_at(anim.tween_from) {
-                    let scalar = frame as f32 / anim.tween_duration as f32;
-                    return (ease::cubic_in_out(1.0 - scalar), vec);
+    /// Return a location structure that includes the entity's animation displacement
+    pub fn lerp_location(&self, e: Entity) -> Option<LerpLocation> {
+        if let Some(location) = self.location(e) {
+            if let Some(anim) = self.anim(e) {
+                let frame = (self.get_anim_tick() - anim.tween_start) as u32;
+                if frame < anim.tween_duration {
+                    if let Some(vec) = location.v2_at(anim.tween_from) {
+                        let scalar = frame as f32 / anim.tween_duration as f32;
+                        let scalar = ease::cubic_in_out(1.0 - scalar);
+
+                        let offset: euclid::Vector2D<f32, CellSpace> = vec.cast();
+                        return Some(LerpLocation::new(location, offset * scalar));
+                    }
                 }
             }
+            Some(location.into())
+        } else {
+            None
         }
-        (0.0, Default::default())
     }
 }
 

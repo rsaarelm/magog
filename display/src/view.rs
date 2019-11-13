@@ -4,14 +4,14 @@ use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
-use calx::{CellVector, Clamp, FovValue, HexFov, Space, Transformation};
+use calx::{CellSpace, CellVector, Clamp, FovValue, HexFov, Space, Transformation};
 use calx_ecs::Entity;
-use euclid::{vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
+use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, FovStatus, Location, World};
+use world::{AnimState, FovStatus, LerpLocation, Location, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -19,26 +19,19 @@ pub static PIXEL_UNIT: i32 = 16;
 pub struct WorldView {
     pub cursor_loc: Option<Location>,
     pub show_cursor: bool,
-    camera_loc: Location,
+    camera_loc: LerpLocation,
     screen_area: ScreenRect,
     fov: Option<HashMap<CellVector, Vec<Location>>>,
 }
 
 impl WorldView {
-    pub fn new(camera_loc: Location, screen_area: Rect<i32, UnknownUnit>) -> WorldView {
+    pub fn new(camera_loc: LerpLocation, screen_area: Rect<i32, UnknownUnit>) -> WorldView {
         WorldView {
             cursor_loc: None,
             show_cursor: false,
             camera_loc,
             screen_area: ScreenRect::from_untyped(&screen_area),
             fov: None,
-        }
-    }
-
-    pub fn set_camera(&mut self, loc: Location) {
-        if loc != self.camera_loc {
-            self.camera_loc = loc;
-            self.fov = None;
         }
     }
 
@@ -49,9 +42,10 @@ impl WorldView {
 
         // XXX: Repeating the formula in draw
         let center = (self.screen_area.origin + self.screen_area.size / 2
-            - vec2(PIXEL_UNIT / 2, 10))
+            - vec2(PIXEL_UNIT / 2, 10)
+            - cell_offset_to_screen_space(self.camera_loc.offset()))
         .to_vector();
-        self.camera_loc + (pos - center).to_cell_space()
+        self.camera_loc.location() + (pos - center).to_cell_space()
     }
 
     /// Recompute the cached screen view if the cache has been invalidated.
@@ -67,16 +61,17 @@ impl WorldView {
                 .translate(-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2, PIXEL_UNIT * 2);
 
-            self.fov = Some(screen_fov(world, self.camera_loc, bounds));
+            self.fov = Some(screen_fov(world, self.camera_loc.location(), bounds));
         }
     }
 
     pub fn draw(&mut self, world: &World, canvas: &mut Canvas) {
-        self.camera_loc = self.camera_loc.sector().center();
+        self.camera_loc = clip_camera(world, self.camera_loc);
         self.ensure_fov(world);
 
         let center = (self.screen_area.origin + self.screen_area.size / 2
-            - vec2(PIXEL_UNIT / 2, 10))
+            - vec2(PIXEL_UNIT / 2, 10)
+            - cell_offset_to_screen_space(self.camera_loc.offset()))
         .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
@@ -440,10 +435,9 @@ impl WorldView {
 
         /// Return vector to add to position if entity's position is being animated.
         fn lerp_offset(world: &World, e: Entity) -> ScreenVector {
-            let (scalar, vec) = world.tween_displacement_vector(e);
-            (ScreenVector::from_cell_space(vec).to_f32() * scalar)
-                .round()
-                .to_i32()
+            let loc = world.lerp_location(e).unwrap_or_else(|| Default::default());
+
+            cell_offset_to_screen_space(loc.offset())
         }
     }
 }
@@ -555,6 +549,76 @@ impl Transformation for ScreenSpace {
 
 pub type ScreenVector = Vector2D<i32, ScreenSpace>;
 pub type ScreenRect = Rect<i32, ScreenSpace>;
+
+// XXX: Nasty custom projection functions for fractional cell space used in LerpLocation.
+fn cell_offset_to_screen_space(offset: Vector2D<f32, CellSpace>) -> ScreenVector {
+    let a = PIXEL_UNIT as f32;
+    vec2(
+        offset.x * a - offset.y * a,
+        offset.x * a / 2.0 + offset.y * a / 2.0,
+    )
+    .cast()
+}
+
+fn screen_space_to_lerp_location(
+    screen_vector: ScreenVector,
+) -> (CellVector, Vector2D<f32, CellSpace>) {
+    let a = PIXEL_UNIT as f32;
+
+    let x = screen_vector.x as f32 / (a * 2.0) + screen_vector.y as f32 / a;
+    let y = -screen_vector.x as f32 / (a * 2.0) + screen_vector.y as f32 / a;
+
+    (
+        vec2(x.trunc() as i32, y.trunc() as i32),
+        vec2(x.fract(), y.fract()),
+    )
+}
+
+/// Constrain a scrolling camera when there's no sector to scroll to.
+fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
+    // XXX: Some messy stuff going on here due to the original CellSpace design not being good
+    // with non-integer coordinates.
+
+    let sector = camera_loc.location().sector();
+
+    let center = sector.center();
+    // Construct a screen space rectangle where camera position must stay in.
+    // Origin is the center of the sector camera_loc is in.
+    let screen_bounds: Rect<i32, ScreenSpace> = {
+        // Start with a rectangle, halfway to neighboring sectors, lots of buffer.
+        let p0 = (sector + vec3(-1, -1, 0)).center();
+        let p1 = (sector + vec3(1, 1, 0)).center();
+
+        let (mut min_x, mut min_y) =
+            ScreenVector::from_cell_space(center.v2_at(p0).unwrap()).to_tuple();
+        let (mut max_x, mut max_y) =
+            ScreenVector::from_cell_space(center.v2_at(p1).unwrap()).to_tuple();
+
+        // For each neighboring sector that does not exist, block scrolling towards that
+        // direction.
+        if !world.sector_exists(sector + vec3(1, 0, 0)) {
+            max_x = 0;
+        }
+        if !world.sector_exists(sector + vec3(-1, 0, 0)) {
+            min_x = 0
+        }
+        if !world.sector_exists(sector + vec3(0, 1, 0)) {
+            max_y = 0;
+        }
+        if !world.sector_exists(sector + vec3(0, -1, 0)) {
+            min_y = 0
+        }
+
+        rect(min_x, min_y, max_x - min_x, max_y - min_y)
+    };
+
+    let camera_pos = ScreenVector::from_cell_space(center.v2_at(camera_loc.location()).unwrap())
+        + cell_offset_to_screen_space(camera_loc.offset());
+    let camera_pos = screen_bounds.clamp(camera_pos.to_point());
+
+    let (vec, offset) = screen_space_to_lerp_location(camera_pos.to_vector());
+    LerpLocation::new(center + vec, offset)
+}
 
 /// 3D physics space, used for eg. lighting.
 pub struct PhysicsSpace;
