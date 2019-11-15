@@ -225,7 +225,9 @@ impl Health {
     pub fn new() -> Health { Default::default() }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize,
+)]
 /// Temporary creature properties
 pub enum Status {
     /// Creature is acting erratically
@@ -256,5 +258,7 @@ pub struct StatsComponent {
 }
 
 impl StatsComponent {
-    pub fn new(base: Stats) -> StatsComponent { StatsComponent { base, actual: base } }
+    pub fn new(base: Stats) -> StatsComponent {
+        StatsComponent { base, actual: base }
+    }
 }

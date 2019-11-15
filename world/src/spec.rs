@@ -1,7 +1,9 @@
 //! Data for generating game entities.
 
 use crate::{
-    components::{Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses},
+    components::{
+        Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses,
+    },
     item::ItemType,
     item::{Item, Stacking},
     sector::Biome,
@@ -37,7 +39,8 @@ pub trait Spec: Distribution<ExternalEntity> + Sync + Send {
 
 const EVERYWHERE: u64 = 0xffff_ffff_ffff_ffff;
 const DUNGEON: u64 = (1 << Biome::Dungeon as u64);
-const TEMPERATE: u64 = (1 << Biome::Grassland as u64) | (1 << Biome::Forest as u64);
+const TEMPERATE: u64 =
+    (1 << Biome::Grassland as u64) | (1 << Biome::Forest as u64);
 const ARID: u64 = (1 << Biome::Desert as u64) | (1 << Biome::Mountain as u64);
 const URBAN: u64 = (1 << Biome::City as u64);
 
@@ -170,7 +173,9 @@ macro_rules! specs {
     }
 }
 
-pub fn iter_specs() -> impl Iterator<Item = Arc<dyn Spec + 'static>> { SPECS.values().cloned() }
+pub fn iter_specs() -> impl Iterator<Item = Arc<dyn Spec + 'static>> {
+    SPECS.values().cloned()
+}
 
 use self::Intrinsic::*;
 use self::ShoutType::*;
@@ -501,11 +506,14 @@ specs! {
 pub struct EntitySpawn(String);
 
 impl fmt::Display for EntitySpawn {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
 lazy_static! {
-    pub static ref PLAYER_SPAWN: EntitySpawn = EntitySpawn("player".to_string());
+    pub static ref PLAYER_SPAWN: EntitySpawn =
+        EntitySpawn("player".to_string());
 }
 
 #[derive(Debug)]
@@ -548,7 +556,9 @@ impl Distribution<ExternalEntity> for EntitySpawn {
     fn sample(&self, rng: &mut Rng) -> ExternalEntity {
         SPECS
             .get(self)
-            .unwrap_or_else(|| panic!("EntitySpawn {:?} not found in spec database", self))
+            .unwrap_or_else(|| {
+                panic!("EntitySpawn {:?} not found in spec database", self)
+            })
             .sample(rng)
     }
 }
@@ -579,6 +589,9 @@ mod test {
         );
 
         // Names not in database don't.
-        assert!(ron::de::from_str::<EntitySpawn>(&"\"tyop txet\"".to_string()).is_err());
+        assert!(
+            ron::de::from_str::<EntitySpawn>(&"\"tyop txet\"".to_string())
+                .is_err()
+        );
     }
 }

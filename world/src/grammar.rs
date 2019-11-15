@@ -62,7 +62,8 @@ impl Noun {
         } else {
             // TODO: Add look-up table of irregular words ('honor', 'unit') as they show up in game
             // text.
-            let article = if is_vowel(self.name.chars().next().unwrap_or('\0')) {
+            let article = if is_vowel(self.name.chars().next().unwrap_or('\0'))
+            {
                 "an"
             } else {
                 "a"
@@ -177,7 +178,8 @@ impl Templater for SubjectTemplater {
             "one's" => self.subject.possessive(),
             "oneself" => self.subject.reflexive(),
             "they" => {
-                if !self.subject.is_you && self.subject.pronoun == Pronoun::They {
+                if !self.subject.is_you && self.subject.pronoun == Pronoun::They
+                {
                     // If the pronoun for the subject actually is 'they', the grammar must change
                     // from "He does" to "They do".
                     //
@@ -330,7 +332,9 @@ mod test {
         }
     }
 
-    fn parse_subj<'a>(test_script: &'a str) -> Vec<(&'a str, &'a str, &'a str)> {
+    fn parse_subj<'a>(
+        test_script: &'a str,
+    ) -> Vec<(&'a str, &'a str, &'a str)> {
         test_script
             .lines()
             .filter_map(|s| {
@@ -347,7 +351,9 @@ mod test {
             .collect()
     }
 
-    fn parse_obj<'a>(test_script: &'a str) -> Vec<(&'a str, &'a str, &'a str, &'a str)> {
+    fn parse_obj<'a>(
+        test_script: &'a str,
+    ) -> Vec<(&'a str, &'a str, &'a str, &'a str)> {
         test_script
             .lines()
             .filter_map(|s| {
@@ -458,8 +464,10 @@ mod test {
         )
         .into_iter()
         {
-            let mut t =
-                ObjectTemplater::new(SubjectTemplater::new(make_noun(subject)), make_noun(object));
+            let mut t = ObjectTemplater::new(
+                SubjectTemplater::new(make_noun(subject)),
+                make_noun(object),
+            );
             assert_eq!(t.format(template), Ok(message.to_string()));
         }
     }
@@ -480,8 +488,10 @@ mod test {
         )
         .into_iter()
         {
-            let mut t =
-                ObjectTemplater::new(SubjectTemplater::new(make_noun(subject)), make_noun(object));
+            let mut t = ObjectTemplater::new(
+                SubjectTemplater::new(make_noun(subject)),
+                make_noun(object),
+            );
             assert_eq!(t.format(template), Ok(message.to_string()));
         }
     }

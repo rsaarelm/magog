@@ -7,7 +7,11 @@ use std::ops::{Add, AddAssign};
 ///
 /// Will treat newlines in the input as regular whitespace, you probably want to split your input
 /// at newlines before using `split_line` on the individual lines.
-pub fn split_line<F, N>(text: &str, char_width: F, max_width: N) -> LineSplit<'_, F, N>
+pub fn split_line<F, N>(
+    text: &str,
+    char_width: F,
+    max_width: N,
+) -> LineSplit<'_, F, N>
 where
     F: Fn(char) -> N,
     N: Add + PartialOrd + Copy,
@@ -56,9 +60,14 @@ where
                 }
             }
 
-            fn update<F: Fn(char) -> N>(&mut self, char_width: &F, c: char) -> Option<(usize, N)> {
+            fn update<F: Fn(char) -> N>(
+                &mut self,
+                char_width: &F,
+                c: char,
+            ) -> Option<(usize, N)> {
                 if c.is_whitespace() && !self.prev.is_whitespace() {
-                    self.last_word_break = Some((self.clip_pos, self.total_width));
+                    self.last_word_break =
+                        Some((self.clip_pos, self.total_width));
                 }
                 self.clip_pos += c.len_utf8();
                 self.total_width += char_width(c);

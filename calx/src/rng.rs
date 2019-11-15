@@ -15,7 +15,8 @@ pub fn seeded_rng(seed: &impl Hash) -> XorShiftRng {
     // XorShift seed mustn't be all-0.
     let hash = if hash == 0 { 1 } else { hash };
 
-    let seed = unsafe { ::std::mem::transmute::<[u64; 2], [u8; 16]>([hash, hash]) };
+    let seed =
+        unsafe { ::std::mem::transmute::<[u64; 2], [u8; 16]>([hash, hash]) };
     SeedableRng::from_seed(seed)
 }
 
@@ -38,11 +39,15 @@ pub trait RngExt {
 impl<T: Rng + ?Sized> RngExt for T {
     fn coinflip(&mut self) -> bool { self.gen_bool(1.0 / 2.0) }
 
-    fn one_chance_in(&mut self, n: u32) -> bool { self.gen_bool(1.0 / n as f64) }
+    fn one_chance_in(&mut self, n: u32) -> bool {
+        self.gen_bool(1.0 / n as f64)
+    }
 
     fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0, 1.0) < p }
 
-    fn with_log_odds(&mut self, db: Deciban) -> bool { db > self.gen::<Deciban>() }
+    fn with_log_odds(&mut self, db: Deciban) -> bool {
+        db > self.gen::<Deciban>()
+    }
 }
 
 /// Lazily evaluated random permutation.

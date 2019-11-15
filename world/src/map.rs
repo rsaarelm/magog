@@ -3,7 +3,9 @@
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
-use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise};
+use calx::{
+    self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise,
+};
 use euclid::vec2;
 use indexmap::{IndexMap, IndexSet};
 use log::Level::Trace;
@@ -47,9 +49,13 @@ impl<'a> From<&'a Map> for mapsave::Prefab {
 }
 
 impl Map {
-    pub fn iter(&self) -> impl Iterator<Item = (&CellVector, &MapCell)> { self.contents.iter() }
+    pub fn iter(&self) -> impl Iterator<Item = (&CellVector, &MapCell)> {
+        self.contents.iter()
+    }
 
-    pub fn insert(&mut self, pos: CellVector, value: MapCell) { self.contents.insert(pos, value); }
+    pub fn insert(&mut self, pos: CellVector, value: MapCell) {
+        self.contents.insert(pos, value);
+    }
 
     pub fn set_terrain(&mut self, pos: CellVector, terrain: Terrain) {
         debug_assert!(self.contains(pos));
@@ -61,7 +67,9 @@ impl Map {
         self.contents[&pos].spawns.push(spawn);
     }
 
-    pub fn get(&self, pos: CellVector) -> Option<&MapCell> { self.contents.get(&pos) }
+    pub fn get(&self, pos: CellVector) -> Option<&MapCell> {
+        self.contents.get(&pos)
+    }
 
     /// Return either the designated entry point or an arbitrary deterministic one.
     pub fn player_entrance(&self) -> CellVector {
@@ -76,7 +84,10 @@ impl Map {
     }
 
     /// Build a map with a shaped base of filled with the given terrain
-    pub fn new_base(terrain: Terrain, points: impl IntoIterator<Item = CellVector>) -> Map {
+    pub fn new_base(
+        terrain: Terrain,
+        points: impl IntoIterator<Item = CellVector>,
+    ) -> Map {
         let mut ret = Map::default();
 
         for p in points.into_iter() {
@@ -88,12 +99,14 @@ impl Map {
 
     /// Build a prefab vault map from ASCII map.
     pub fn new_vault(textmap: &str) -> Result<Self, Box<dyn Error>> {
-        let prefab: IndexMap<CellVector, char> = DenseTextMap(textmap).into_prefab()?;
+        let prefab: IndexMap<CellVector, char> =
+            DenseTextMap(textmap).into_prefab()?;
         let mut ret = Map::default();
 
         for (&pos, c) in &prefab {
             use crate::Terrain::*;
-            let is_border_pos = !calx::hex_neighbors(pos).all(|p| prefab.contains_key(&p));
+            let is_border_pos =
+                !calx::hex_neighbors(pos).all(|p| prefab.contains_key(&p));
             let mut cell = MapCell::default();
             // The only cells that get marked as Border are wall tiles or similar shaped blocks.
             // Regular ground style terrain at the edge of the prefab is still counts as Interior.
@@ -187,12 +200,23 @@ impl Map {
 
                 if x_wall || y_wall {
                     if !(x_wall && y_wall) {
-                        ret.insert(p, MapCell::new_terrain(Terrain::Wall).border());
+                        ret.insert(
+                            p,
+                            MapCell::new_terrain(Terrain::Wall).border(),
+                        );
                     } else {
-                        ret.insert(p, MapCell::new_terrain(Terrain::Wall).undiggable().border());
+                        ret.insert(
+                            p,
+                            MapCell::new_terrain(Terrain::Wall)
+                                .undiggable()
+                                .border(),
+                        );
                     }
                 } else {
-                    ret.insert(p, MapCell::new_terrain(Terrain::Ground).interior());
+                    ret.insert(
+                        p,
+                        MapCell::new_terrain(Terrain::Ground).interior(),
+                    );
                 }
             }
         }
@@ -201,12 +225,17 @@ impl Map {
     }
 
     /// Return whether position is in defined area of this map.
-    pub fn contains(&self, pos: CellVector) -> bool { self.contents.contains_key(&pos) }
+    pub fn contains(&self, pos: CellVector) -> bool {
+        self.contents.contains_key(&pos)
+    }
 
     /// Return positions from the map that satisfy the given predicate.
     ///
     /// The result is guaranteed to be in stable order.
-    pub fn find_positions(&self, p: impl Fn(CellVector, &MapCell) -> bool) -> Vec<CellVector> {
+    pub fn find_positions(
+        &self,
+        p: impl Fn(CellVector, &MapCell) -> bool,
+    ) -> Vec<CellVector> {
         self.iter()
             .filter_map(|(&pos, c)| if p(pos, c) { Some(pos) } else { None })
             .collect()
@@ -282,7 +311,9 @@ impl Map {
                     // the fake-isometric axes.
                     for p in calx::taxicab_neighbors(p) {
                         let pos = offset + p;
-                        if !room.contains(p) && self.get(pos).map_or(false, |c| c.is_border()) {
+                        if !room.contains(p)
+                            && self.get(pos).map_or(false, |c| c.is_border())
+                        {
                             // Bad touch
                             return false;
                         }
@@ -293,8 +324,12 @@ impl Map {
                     // The border is going to get a door here. Check that there won't be any
                     // adjacent doors.
                     for p in calx::hex_neighbors(p) {
-                        if room.get(p).map_or(false, |c| c.is_border() && c.can_dig)
-                            && self.get(offset + p).map_or(false, |c| c.is_walkable())
+                        if room
+                            .get(p)
+                            .map_or(false, |c| c.is_border() && c.can_dig)
+                            && self
+                                .get(offset + p)
+                                .map_or(false, |c| c.is_walkable())
                         {
                             // Two doors in a row, no-no.
                             return false;
@@ -343,7 +378,8 @@ impl Map {
         }
 
         // If you don't have an entrance yet, grab one from the other room.
-        if let (None, Some(pos)) = (self.player_entrance, room.player_entrance) {
+        if let (None, Some(pos)) = (self.player_entrance, room.player_entrance)
+        {
             self.player_entrance = Some(pos + offset);
         }
     }
@@ -384,7 +420,9 @@ impl Map {
         // Use fake-isometric logic for side-walls when digging along the fake isometric axes, and
         // a more strict hex-based logic when digging along the third axis.
         for &p in &match dir {
-            Dir6::North => vec![vec2(-1, 0), vec2(0, -1), vec2(-2, -1), vec2(-1, -2)],
+            Dir6::North => {
+                vec![vec2(-1, 0), vec2(0, -1), vec2(-2, -1), vec2(-1, -2)]
+            }
             Dir6::Northeast => vec![vec2(-1, -1), vec2(1, -1)],
             Dir6::Southeast => vec![vec2(1, -1), vec2(1, 1)],
             Dir6::South => vec![vec2(1, 0), vec2(0, 1), vec2(2, 1), vec2(1, 2)],
@@ -416,7 +454,9 @@ impl Map {
             }
         }
 
-        if self.get(pos).map_or(false, |c| c.is_border()) && !dir.is_fake_isometric() {
+        if self.get(pos).map_or(false, |c| c.is_border())
+            && !dir.is_fake_isometric()
+        {
             // Also you can't move out of a border except in a fake-isometric direction, so if
             // you're moving out from a vault and starting a tunnel, you need to make a clean space
             // in front of the door.
@@ -449,14 +489,19 @@ impl Map {
     }
 
     /// Join disconnected regions on map with tunnels.
-    pub fn join_disjoint_regions(&mut self, rng: &mut (impl Rng + ?Sized)) -> Option<Map> {
+    pub fn join_disjoint_regions(
+        &mut self,
+        rng: &mut (impl Rng + ?Sized),
+    ) -> Option<Map> {
         let mut ret = self.clone();
         // Keep looping until all disjoint regions are joined.
         loop {
             let floors: IndexSet<CellVector> = ret
                 .contents
                 .iter()
-                .filter_map(|(&p, c)| if c.is_walkable() { Some(p) } else { None })
+                .filter_map(
+                    |(&p, c)| if c.is_walkable() { Some(p) } else { None },
+                )
                 .collect();
 
             // Remove vault interior bubbles from consideration, they can't be connected.
@@ -493,11 +538,15 @@ impl Map {
     /// vault and is also entirely surrounded by cells inside a vault (interior or border). This
     /// method is used to recognize and discard sealed decorative chambers that may be present in
     /// prefab vaults but should not factor into map connectivity analysis.
-    fn is_interior_bubble<'a>(&self, points: impl IntoIterator<Item = &'a CellVector>) -> bool {
+    fn is_interior_bubble<'a>(
+        &self,
+        points: impl IntoIterator<Item = &'a CellVector>,
+    ) -> bool {
         points.into_iter().all(|&p| {
             !self.is_vault_exterior(p)
                 && calx::hex_neighbors(p).all(|p_edge| {
-                    !self.is_vault_exterior(p_edge) && self.get(p_edge).map_or(true, |c| !c.can_dig)
+                    !self.is_vault_exterior(p_edge)
+                        && self.get(p_edge).map_or(true, |c| !c.can_dig)
                 })
         })
     }
@@ -542,7 +591,9 @@ impl Map {
 
             let map = open[&p].clone();
             if log_enabled!(Trace) {
-                if let Ok((mut prefab, legend)) = build_textmap(&mapsave::Prefab::from(&map)) {
+                if let Ok((mut prefab, legend)) =
+                    build_textmap(&mapsave::Prefab::from(&map))
+                {
                     for (&p, c) in &map.contents {
                         if !c.can_dig {
                             prefab.insert(p, 'x');
@@ -600,7 +651,9 @@ impl<'a> IntoIterator for &'a Map {
 impl Index<CellVector> for Map {
     type Output = MapCell;
 
-    fn index(&self, key: CellVector) -> &MapCell { self.get(key).expect("no entry found for key") }
+    fn index(&self, key: CellVector) -> &MapCell {
+        self.get(key).expect("no entry found for key")
+    }
 }
 
 /// Convert a point cloud into subsets of connected points.
@@ -682,13 +735,19 @@ impl MapCell {
 
     pub fn is_walkable(&self) -> bool { !self.terrain.blocks_walk() }
 
-    pub fn is_border(&self) -> bool { self.vault_kind == Some(VaultKind::Border) }
+    pub fn is_border(&self) -> bool {
+        self.vault_kind == Some(VaultKind::Border)
+    }
 
-    pub fn is_interior(&self) -> bool { self.vault_kind == Some(VaultKind::Interior) }
+    pub fn is_interior(&self) -> bool {
+        self.vault_kind == Some(VaultKind::Interior)
+    }
 
     /// This is a fake cell that doesn't describe actual terrain but limits the positioning of a
     /// vault to ensure that you can connect to its entrance.
-    pub fn is_bumper(&self) -> bool { self.terrain == Terrain::Empty && self.can_dig }
+    pub fn is_bumper(&self) -> bool {
+        self.terrain == Terrain::Empty && self.can_dig
+    }
 
     pub fn as_door(mut self) -> MapCell {
         self.terrain = Terrain::Door;

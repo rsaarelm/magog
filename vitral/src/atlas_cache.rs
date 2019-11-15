@@ -20,7 +20,13 @@ pub struct SubImageSpec<T> {
 }
 
 impl<T> SubImageSpec<T> {
-    pub fn new<U: Into<T>>(id: U, x: u32, y: u32, width: u32, height: u32) -> SubImageSpec<T> {
+    pub fn new<U: Into<T>>(
+        id: U,
+        x: u32,
+        y: u32,
+        width: u32,
+        height: u32,
+    ) -> SubImageSpec<T> {
         SubImageSpec {
             id: id.into(),
             bounds: rect(x, y, width, height),
@@ -31,7 +37,11 @@ impl<T> SubImageSpec<T> {
 pub trait TextureInterface {
     type Texture;
 
-    fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage);
+    fn update_texture(
+        &mut self,
+        texture: &mut Self::Texture,
+        image: &image::RgbaImage,
+    );
     fn new_texture(&mut self, size: Size2D<u32>) -> Self::Texture;
 }
 
@@ -53,8 +63,11 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
         // Hacky hack: Add one-pixel pure-white texture for drawing solid shapes without swapping
         // out the atlas texture. Assume atlas behavior will make it go in a predictable position
         // so we can just generate the image.
-        let solid =
-            image::RgbaImage::from_pixel(1, 1, image::Pixel::from_channels(0xff, 0xff, 0xff, 0xff));
+        let solid = image::RgbaImage::from_pixel(
+            1,
+            1,
+            image::Pixel::from_channels(0xff, 0xff, 0xff, 0xff),
+        );
         let solid = atlas0.add(&solid).unwrap();
 
         // Let's just make it so we can use a dirty hack and assume it shows up in origin without
@@ -72,8 +85,11 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
 }
 
 impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
-    pub fn update_system_textures<S>(&mut self, system: &mut S, textures: &mut Vec<S::Texture>)
-    where
+    pub fn update_system_textures<S>(
+        &mut self,
+        system: &mut S,
+        textures: &mut Vec<S::Texture>,
+    ) where
         S: TextureInterface,
     {
         // If there are more atlases than system textures, create new system textures.
@@ -107,9 +123,16 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
             // Add a new image to the atlas.
 
             // First create the buffer image.
-            image::RgbaImage::from_fn(key.bounds.size.width, key.bounds.size.height, |x, y| {
-                *image.get_pixel(x + key.bounds.origin.x, y + key.bounds.origin.y)
-            })
+            image::RgbaImage::from_fn(
+                key.bounds.size.width,
+                key.bounds.size.height,
+                |x, y| {
+                    *image.get_pixel(
+                        x + key.bounds.origin.x,
+                        y + key.bounds.origin.y,
+                    )
+                },
+            )
         } else {
             log::warn!("Image sheet {:?} not found in cache", key.id);
             return None;

@@ -3,7 +3,8 @@ use vitral;
 use euclid::default::Rect;
 use euclid::point2;
 use vitral::{
-    color, Align, AppConfig, ButtonAction, Canvas, PngBytes, RectUtil, Rgba, Scene, SceneSwitch,
+    color, Align, AppConfig, ButtonAction, Canvas, PngBytes, RectUtil, Rgba,
+    Scene, SceneSwitch,
 };
 
 struct World {
@@ -20,7 +21,10 @@ impl World {
             PngBytes(include_bytes!("../tilesheet-font.png")),
             (32u8..128).map(|c| c as char),
         );
-        let image = vitral::add_sheet("julia", PngBytes(include_bytes!("../julia.png")));
+        let image = vitral::add_sheet(
+            "julia",
+            PngBytes(include_bytes!("../julia.png")),
+        );
         let image = vitral::get_image(&image).unwrap();
 
         World {
@@ -35,9 +39,15 @@ impl World {
 struct DemoScene;
 
 impl Scene<World> for DemoScene {
-    fn update(&mut self, _ctx: &mut World) -> Option<SceneSwitch<World>> { None }
+    fn update(&mut self, _ctx: &mut World) -> Option<SceneSwitch<World>> {
+        None
+    }
 
-    fn render(&mut self, ctx: &mut World, canvas: &mut Canvas) -> Option<SceneSwitch<World>> {
+    fn render(
+        &mut self,
+        ctx: &mut World,
+        canvas: &mut Canvas,
+    ) -> Option<SceneSwitch<World>> {
         canvas.draw_image(&ctx.image, point2(20, 20), color::WHITE);
         let bounds = canvas.bounds();
 
@@ -56,7 +66,13 @@ impl Scene<World> for DemoScene {
 impl DemoScene {
     fn bright_color(&self) -> Rgba { Rgba::from([1.0, 0.7, 0.2]) }
 
-    fn title_bar(&self, ctx: &World, canvas: &mut Canvas, bounds: &Rect<i32>, text: &str) {
+    fn title_bar(
+        &self,
+        ctx: &World,
+        canvas: &mut Canvas,
+        bounds: &Rect<i32>,
+        text: &str,
+    ) {
         canvas.fill_rect(bounds, ctx.back_color);
         {
             let bounds = bounds.inclusivize();
@@ -80,7 +96,12 @@ impl DemoScene {
         );
     }
 
-    fn quit_button(&self, ctx: &World, canvas: &mut Canvas, bounds: &Rect<i32>) -> bool {
+    fn quit_button(
+        &self,
+        ctx: &World,
+        canvas: &mut Canvas,
+        bounds: &Rect<i32>,
+    ) -> bool {
         let click_state = canvas.click_state(bounds);
 
         let color = if click_state != ButtonAction::Inert {

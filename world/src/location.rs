@@ -5,7 +5,8 @@ use crate::{
     World,
 };
 use calx::{
-    compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom,
+    compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6,
+    GridNode, HexGeom,
 };
 use euclid::vec2;
 use serde_derive::{Deserialize, Serialize};
@@ -14,7 +15,17 @@ use std::ops::{Add, Sub};
 
 /// Unambiguous location in the game world.
 #[derive(
-    Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Default, Serialize, Deserialize,
+    Copy,
+    Eq,
+    PartialEq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
 )]
 pub struct Location {
     pub x: i16,
@@ -74,7 +85,10 @@ impl Location {
         if self.z != other.z {
             return None;
         }
-        Some(vec2(other.x as i32, other.y as i32) - vec2(self.x as i32, self.y as i32))
+        Some(
+            vec2(other.x as i32, other.y as i32)
+                - vec2(self.x as i32, self.y as i32),
+        )
     }
 
     /// Hex distance from this location to the other one, if applicable.
@@ -102,7 +116,11 @@ impl Location {
     }
 
     /// Offset location and follow any portals in target site.
-    pub fn jump<V: Into<CellVector> + Sized>(self, ctx: &World, offset: V) -> Location {
+    pub fn jump<V: Into<CellVector> + Sized>(
+        self,
+        ctx: &World,
+        offset: V,
+    ) -> Location {
         let loc = self + offset.into();
         ctx.portal(loc).unwrap_or(loc)
     }
@@ -196,7 +214,18 @@ impl GridNode for Location {
     fn neighbors(&self) -> Vec<Location> { hex_neighbors(*self).collect() }
 }
 
-#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy,
+    Eq,
+    PartialEq,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Debug,
+    Serialize,
+    Deserialize,
+)]
 pub struct Portal {
     pub dx: i16,
     pub dy: i16,

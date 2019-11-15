@@ -20,7 +20,10 @@ impl LerpLocation {
     /// Create a normalized `LerpLocation` that offsets `Location` by integer parts of `offset`.
     ///
     /// Result is guaranteed to describe a point within unit radius of its location's center.
-    pub fn new(location: Location, offset: Vector2D<f32, CellSpace>) -> LerpLocation {
+    pub fn new(
+        location: Location,
+        offset: Vector2D<f32, CellSpace>,
+    ) -> LerpLocation {
         LerpLocation {
             location: Location::new(
                 location.x + offset.x.trunc() as i16,
@@ -50,7 +53,9 @@ impl From<Location> for LerpLocation {
 impl World {
     pub fn get_anim_tick(&self) -> u64 { self.flags.anim_tick }
     pub fn anim(&self, e: Entity) -> Option<&Anim> { self.ecs.anim.get(e) }
-    pub(crate) fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim> { self.ecs.anim.get_mut(e) }
+    pub(crate) fn anim_mut(&mut self, e: Entity) -> Option<&mut Anim> {
+        self.ecs.anim.get_mut(e)
+    }
     /// Advance animations without ticking the world logic.
     ///
     /// Use this when waiting for player input to finish pending animations.
@@ -72,8 +77,12 @@ impl World {
                         let scalar = frame as f32 / anim.tween_duration as f32;
                         let scalar = ease::cubic_in_out(1.0 - scalar);
 
-                        let offset: euclid::Vector2D<f32, CellSpace> = vec.cast();
-                        return Some(LerpLocation::new(location, offset * scalar));
+                        let offset: euclid::Vector2D<f32, CellSpace> =
+                            vec.cast();
+                        return Some(LerpLocation::new(
+                            location,
+                            offset * scalar,
+                        ));
                     }
                 }
             }

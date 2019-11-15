@@ -4,7 +4,9 @@ use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
-use calx::{CellSpace, CellVector, Clamp, FovValue, HexFov, Space, Transformation};
+use calx::{
+    CellSpace, CellVector, Clamp, FovValue, HexFov, Space, Transformation,
+};
 use calx_ecs::Entity;
 use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
@@ -25,7 +27,10 @@ pub struct WorldView {
 }
 
 impl WorldView {
-    pub fn new(camera_loc: LerpLocation, screen_area: Rect<i32, UnknownUnit>) -> WorldView {
+    pub fn new(
+        camera_loc: LerpLocation,
+        screen_area: Rect<i32, UnknownUnit>,
+    ) -> WorldView {
         WorldView {
             cursor_loc: None,
             show_cursor: false,
@@ -61,7 +66,8 @@ impl WorldView {
                 .translate(-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2, PIXEL_UNIT * 2);
 
-            self.fov = Some(screen_fov(world, self.camera_loc.location(), bounds));
+            self.fov =
+                Some(screen_fov(world, self.camera_loc.location(), bounds));
         }
     }
 
@@ -75,7 +81,8 @@ impl WorldView {
         .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
-        let mouse_pos = ScreenVector::from_untyped(canvas.mouse_pos().to_vector());
+        let mouse_pos =
+            ScreenVector::from_untyped(canvas.mouse_pos().to_vector());
         let cursor_pos = (mouse_pos - center).to_cell_space();
 
         for (&chart_pos, origins) in chart.iter() {
@@ -114,7 +121,9 @@ impl WorldView {
                     }
                 }
 
-                if !gate_point && get_fov(world, loc) != Some(FovStatus::Remembered) {
+                if !gate_point
+                    && get_fov(world, loc) != Some(FovStatus::Remembered)
+                {
                     // Bail out if there's no memory
                     continue;
                 }
@@ -126,41 +135,54 @@ impl WorldView {
 
             let mut terrain_sprite_buffer = Vec::new();
 
-            render::draw_terrain_sprites(world, loc, |layer, angle, brush, frame_idx| {
-                let color = if in_map_memory {
-                    Coloring::MapMemory
-                } else {
-                    let diffuse = if angle == Angle::Up || angle == Angle::South {
-                        // Angle::South is for all the non-wall props, don't shade them
-                        1.0
+            render::draw_terrain_sprites(
+                world,
+                loc,
+                |layer, angle, brush, frame_idx| {
+                    let color = if in_map_memory {
+                        Coloring::MapMemory
                     } else {
-                        let normal = angle.normal();
-                        // When underground, use the player position as light position instead of
-                        // constant-dir sunlight.
-                        let light_dir = if world.is_underground(loc) && player_pos.is_some() {
-                            // XXX: Things get screwy if location is the same as player location
-                            // (eg. when player stands in a doorway), hack around that by
-                            // displacing the zero position.
-                            let center_pos = if player_pos == Some(vec2(0, 0)) {
-                                vec2(1, 1)
+                        let diffuse =
+                            if angle == Angle::Up || angle == Angle::South {
+                                // Angle::South is for all the non-wall props, don't shade them
+                                1.0
                             } else {
-                                player_pos.unwrap()
+                                let normal = angle.normal();
+                                // When underground, use the player position as light position instead of
+                                // constant-dir sunlight.
+                                let light_dir = if world.is_underground(loc)
+                                    && player_pos.is_some()
+                                {
+                                    // XXX: Things get screwy if location is the same as player location
+                                    // (eg. when player stands in a doorway), hack around that by
+                                    // displacing the zero position.
+                                    let center_pos =
+                                        if player_pos == Some(vec2(0, 0)) {
+                                            vec2(1, 1)
+                                        } else {
+                                            player_pos.unwrap()
+                                        };
+                                    PhysicsVector::from_cell_space(center_pos)
+                                        .normalize()
+                                } else {
+                                    vec3(
+                                        -(2.0f32.sqrt()) / 2.0,
+                                        2.0f32.sqrt() / 2.0,
+                                        0.0,
+                                    )
+                                };
+                                (0.1..=1.0).clamp(-light_dir.dot(normal))
                             };
-                            PhysicsVector::from_cell_space(center_pos).normalize()
-                        } else {
-                            vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
-                        };
-                        (0.1..=1.0).clamp(-light_dir.dot(normal))
-                    };
 
-                    Coloring::Shaded { ambient, diffuse }
-                };
-                terrain_sprite_buffer.push(
-                    Sprite::new(layer, screen_pos, Arc::clone(brush))
-                        .idx(frame_idx)
-                        .color(color),
-                );
-            });
+                        Coloring::Shaded { ambient, diffuse }
+                    };
+                    terrain_sprite_buffer.push(
+                        Sprite::new(layer, screen_pos, Arc::clone(brush))
+                            .idx(frame_idx)
+                            .color(color),
+                    );
+                },
+            );
 
             let mut entity_sprite_buffer = Vec::new();
 
@@ -193,8 +215,12 @@ impl WorldView {
                         }
                     };
                     entity_sprite_buffer.push(
-                        Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
-                            .color(color),
+                        Sprite::new(
+                            Layer::Object,
+                            screen_pos,
+                            cache::entity(desc.icon),
+                        )
+                        .color(color),
                     );
                 }
             }
@@ -217,13 +243,15 @@ impl WorldView {
                             if let Some(anim) = world.anim(i) {
                                 match anim.state {
                                     AnimState::MobHurt
-                                        if world.get_anim_tick() - anim.anim_start
+                                        if world.get_anim_tick()
+                                            - anim.anim_start
                                             < BLINK_FRAMES =>
                                     {
                                         Coloring::Solid(color::WHITE)
                                     }
                                     AnimState::MobBlocks
-                                        if world.get_anim_tick() - anim.anim_start
+                                        if world.get_anim_tick()
+                                            - anim.anim_start
                                             < BLINK_FRAMES =>
                                     {
                                         Coloring::Solid(color::RED)
@@ -242,11 +270,20 @@ impl WorldView {
                         };
 
                         entity_sprite_buffer.push(
-                            Sprite::new(Layer::Object, screen_pos, cache::entity(desc.icon))
-                                .idx(frame_idx)
-                                .color(coloring),
+                            Sprite::new(
+                                Layer::Object,
+                                screen_pos,
+                                cache::entity(desc.icon),
+                            )
+                            .idx(frame_idx)
+                            .color(coloring),
                         );
-                        draw_health_pips(&mut entity_sprite_buffer, world, i, screen_pos);
+                        draw_health_pips(
+                            &mut entity_sprite_buffer,
+                            world,
+                            i,
+                            screen_pos,
+                        );
                     }
                 }
 
@@ -264,7 +301,8 @@ impl WorldView {
                             const FRAMES: usize = 4;
                             const FRAME_DURATION: usize = 4;
 
-                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+                            let t = (world.get_anim_tick() - anim.anim_start)
+                                as usize;
 
                             let idx = match t {
                                 t if t > (FRAMES * FRAME_DURATION - 1) => None,
@@ -272,12 +310,16 @@ impl WorldView {
                             };
                             if let Some(idx) = idx {
                                 entity_sprite_buffer.push(
-                                    Sprite::new(Layer::Effect, screen_pos, cache::misc(Icon::Gib))
-                                        .idx(idx)
-                                        .color(Coloring::Shaded {
-                                            ambient,
-                                            diffuse: 1.0,
-                                        }),
+                                    Sprite::new(
+                                        Layer::Effect,
+                                        screen_pos,
+                                        cache::misc(Icon::Gib),
+                                    )
+                                    .idx(idx)
+                                    .color(Coloring::Shaded {
+                                        ambient,
+                                        diffuse: 1.0,
+                                    }),
                                 );
                             }
                         }
@@ -286,7 +328,8 @@ impl WorldView {
                             const FRAMES: usize = 5;
                             const FRAME_DURATION: usize = 4;
 
-                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+                            let t = (world.get_anim_tick() - anim.anim_start)
+                                as usize;
 
                             let idx = match t {
                                 t if t > (FRAMES * FRAME_DURATION - 1) => None,
@@ -312,7 +355,8 @@ impl WorldView {
                             const FRAMES: usize = 8;
                             const FRAME_DURATION: usize = 2;
 
-                            let t = (world.get_anim_tick() - anim.anim_start) as usize;
+                            let t = (world.get_anim_tick() - anim.anim_start)
+                                as usize;
 
                             let idx = match t {
                                 t if t > (FRAMES * FRAME_DURATION - 1) => None,
@@ -435,7 +479,8 @@ impl WorldView {
 
         /// Return vector to add to position if entity's position is being animated.
         fn lerp_offset(world: &World, e: Entity) -> ScreenVector {
-            let loc = world.lerp_location(e).unwrap_or_else(|| Default::default());
+            let loc =
+                world.lerp_location(e).unwrap_or_else(|| Default::default());
 
             cell_offset_to_screen_space(loc.offset())
         }
@@ -551,7 +596,9 @@ pub type ScreenVector = Vector2D<i32, ScreenSpace>;
 pub type ScreenRect = Rect<i32, ScreenSpace>;
 
 // XXX: Nasty custom projection functions for fractional cell space used in LerpLocation.
-fn cell_offset_to_screen_space(offset: Vector2D<f32, CellSpace>) -> ScreenVector {
+fn cell_offset_to_screen_space(
+    offset: Vector2D<f32, CellSpace>,
+) -> ScreenVector {
     let a = PIXEL_UNIT as f32;
     vec2(
         offset.x * a - offset.y * a,
@@ -612,8 +659,9 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
         rect(min_x, min_y, max_x - min_x, max_y - min_y)
     };
 
-    let camera_pos = ScreenVector::from_cell_space(center.v2_at(camera_loc.location()).unwrap())
-        + cell_offset_to_screen_space(camera_loc.offset());
+    let camera_pos = ScreenVector::from_cell_space(
+        center.v2_at(camera_loc.location()).unwrap(),
+    ) + cell_offset_to_screen_space(camera_loc.offset());
     let camera_pos = screen_bounds.clamp(camera_pos.to_point());
 
     let (vec, offset) = screen_space_to_lerp_location(camera_pos.to_vector());

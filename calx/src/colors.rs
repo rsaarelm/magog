@@ -11,7 +11,9 @@ impl From<Rgba> for Xterm256Color {
 }
 
 /// Base terminal color, no bright colors allowed.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub enum BaseTermColor {
     Black,
     Red,
@@ -32,7 +34,9 @@ impl From<BaseTermColor> for SRgba {
 }
 
 /// Terminal color, include both dark and bright colors.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub struct TermColor {
     pub base: BaseTermColor,
     pub is_bright: bool,
@@ -63,15 +67,21 @@ impl Mul<f32> for TermColorInterpolator {
 impl Add<TermColorInterpolator> for TermColor {
     type Output = PseudoTermColor;
 
-    fn add(self, other: TermColorInterpolator) -> PseudoTermColor { self.lerp(other.0, other.1) }
+    fn add(self, other: TermColorInterpolator) -> PseudoTermColor {
+        self.lerp(other.0, other.1)
+    }
 }
 
 impl From<TermColor> for u32 {
-    fn from(t: TermColor) -> u32 { t.base as u32 + if t.is_bright { 8 } else { 0 } }
+    fn from(t: TermColor) -> u32 {
+        t.base as u32 + if t.is_bright { 8 } else { 0 }
+    }
 }
 
 impl From<TermColor> for SRgba {
-    fn from(t: TermColor) -> SRgba { SRgba::from(Xterm256Color(u32::from(t) as u8)) }
+    fn from(t: TermColor) -> SRgba {
+        SRgba::from(Xterm256Color(u32::from(t) as u8))
+    }
 }
 
 impl TermColor {
@@ -127,7 +137,9 @@ impl TermColor {
 ///
 /// Background color must be `BaseColor`. It's assumed that the partial mixes are implemented with
 /// the unicode ░▒▓█ gradient characters.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub enum PseudoTermColor {
     Mixed {
         fore: TermColor,
@@ -137,7 +149,9 @@ pub enum PseudoTermColor {
     Solid(TermColor),
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub enum ColorMix {
     Mix25,
     Mix50Low,
@@ -272,7 +286,9 @@ pub mod term_color {
 /// The values from 16 to 231 are RGB values with 6 steps per channel. The values from 232 to 255
 /// are a grayscale gradient. Only color values that have the exact same R, G and B components are guaranteed
 /// to use the grayscale area.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub struct Xterm256Color(pub u8);
 
 impl From<Xterm256Color> for SRgba {

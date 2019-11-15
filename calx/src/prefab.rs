@@ -22,7 +22,9 @@ pub enum PrefabError {
 }
 
 impl fmt::Display for PrefabError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.description()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
 }
 
 impl Error for PrefabError {
@@ -30,7 +32,9 @@ impl Error for PrefabError {
         match *self {
             PrefabError::InvalidInput => "Invalid input",
             PrefabError::MissingAnchor => "Anchor not found in input",
-            PrefabError::MultipleAnchors => "Multiple anchor positions found in input",
+            PrefabError::MultipleAnchors => {
+                "Multiple anchor positions found in input"
+            }
         }
     }
 }
@@ -65,7 +69,9 @@ impl Error for PrefabError {
 /// # }
 /// ```
 pub trait IntoPrefab<T> {
-    fn into_prefab<P: FromIterator<(CellVector, T)>>(self) -> Result<P, PrefabError>;
+    fn into_prefab<P: FromIterator<(CellVector, T)>>(
+        self,
+    ) -> Result<P, PrefabError>;
 }
 
 /// Trait for types that can be constructed from prefab data.
@@ -127,7 +133,9 @@ impl TextSpace {
 }
 
 impl<S: Into<String>> IntoPrefab<char> for S {
-    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(
+        self,
+    ) -> Result<P, PrefabError> {
         /// Recognize the point set that only contains the origin markup and return the
         /// corresponding origin value.
         fn is_origin(points: &HashMap<TextVector, char>) -> Option<TextVector> {
@@ -293,7 +301,9 @@ impl FromPrefab for String {
 pub struct DenseTextMap<'a>(pub &'a str);
 
 impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
-    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(
+        self,
+    ) -> Result<P, PrefabError> {
         let mut elts = Vec::new();
         let mut min_x = i32::MAX;
         let mut min_y = i32::MAX;
@@ -346,13 +356,17 @@ where
     P: image::Pixel<Subpixel = u8>,
     U: Transformation<Element = i32>,
 {
-    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(
+        self,
+    ) -> Result<Q, PrefabError> {
         // The coordinate space in which the image is in.
         //type LocalVector = Vector2D<i32, U>;
         let image = self.image;
 
         // Completely black pixels are assumed to be non-data.
-        fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(p: P) -> Option<SRgba> {
+        fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(
+            p: P,
+        ) -> Option<SRgba> {
             let (r, g, b, _) = p.channels4();
             if r != 0 || g != 0 || b != 0 {
                 Some(SRgba::new(r, g, b, 0xff))
@@ -404,7 +418,9 @@ where
 
         Ok(Q::from_iter(points.into_iter().flat_map(|(x, y)| {
             if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
-                let p = vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y).to_cell_space();
+                let p =
+                    vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y)
+                        .to_cell_space();
 
                 // Only insert a cell the first time we see it.
                 if !seen_cells.contains(&p) {
@@ -420,14 +436,19 @@ where
     }
 }
 
-impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>> IntoPrefab<SRgba> for I {
-    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
+impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>>
+    IntoPrefab<SRgba> for I
+{
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(
+        self,
+    ) -> Result<Q, PrefabError> {
         let t: ProjectedImage<I, CellSpace> = ProjectedImage::new(self);
         t.into_prefab()
     }
 }
 
-impl<U> FromPrefab for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
+impl<U> FromPrefab
+    for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
 where
     U: Transformation<Element = i32>,
 {
@@ -446,13 +467,16 @@ where
         let bounds = bounding_rect(points.as_slice());
 
         debug_assert!({
-            let origin: Vector2D<i32, U> = Vector2D::from_cell_space(vec2(0, 0));
+            let origin: Vector2D<i32, U> =
+                Vector2D::from_cell_space(vec2(0, 0));
             bounds.origin.x <= origin.x && bounds.origin.y <= origin.y
         });
 
         // Add space for the origin axes
-        let mut image =
-            image::ImageBuffer::new(bounds.size.width as u32 + 1, bounds.size.height as u32 + 1);
+        let mut image = image::ImageBuffer::new(
+            bounds.size.width as u32 + 1,
+            bounds.size.height as u32 + 1,
+        );
 
         // Draw anchor dots.
         image.put_pixel(
@@ -468,7 +492,8 @@ where
 
         for y in 0..bounds.size.height {
             for x in 0..bounds.size.width {
-                let prefab_pos = (bounds.origin.to_vector() + vec2(x, y)).to_cell_space();
+                let prefab_pos =
+                    (bounds.origin.to_vector() + vec2(x, y)).to_cell_space();
                 // Don't use #000000 as actual data in your prefab because you'll lose it here.
                 // (Add the assert to that effect.)
                 let c = if let Some(&c) = prefab.get(&prefab_pos) {
@@ -492,7 +517,8 @@ impl FromPrefab for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
     type Cell = SRgba;
 
     fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
-        let t: ProjectedImage<Self, CellSpace> = FromPrefab::from_prefab(prefab);
+        let t: ProjectedImage<Self, CellSpace> =
+            FromPrefab::from_prefab(prefab);
         t.image
     }
 }

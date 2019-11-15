@@ -59,10 +59,16 @@ impl Incremental for World {
     fn update(&mut self, e: &Command) {
         self.clear_events();
         if self.player_can_act() {
-            debug_assert!(*e != Command::Wait, "Calling wait during player's turn");
+            debug_assert!(
+                *e != Command::Wait,
+                "Calling wait during player's turn"
+            );
             self.process_cmd(e);
         } else {
-            debug_assert!(*e == Command::Wait, "Giving inputs outside player's turn");
+            debug_assert!(
+                *e == Command::Wait,
+                "Giving inputs outside player's turn"
+            );
         }
 
         self.next_tick();
@@ -143,7 +149,10 @@ impl World {
             }
             Drop(slot) => {
                 let player = self.player()?;
-                self.place_entity(self.entity_equipped(player, *slot)?, self.location(player)?);
+                self.place_entity(
+                    self.entity_equipped(player, *slot)?,
+                    self.location(player)?,
+                );
                 // Dropping items does not cost a turn since you'll be doing it from the inventory
                 // screen.
                 Some(false)
@@ -218,7 +227,9 @@ impl World {
                 debug_assert!(ability.is_targeted());
                 let player = self.player()?;
                 if let Some(item) = item {
-                    self.use_targeted_item_ability(player, *item, *ability, *dir)
+                    self.use_targeted_item_ability(
+                        player, *item, *ability, *dir,
+                    )
                 } else {
                     self.use_targeted_ability(player, *ability, *dir)
                 }

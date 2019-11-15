@@ -8,7 +8,8 @@ use crate::{
     roll,
     sector::SECTOR_WIDTH,
     volume::Volume,
-    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity, Location, Slot, World,
+    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity,
+    Location, Slot, World,
 };
 use calx::{Dir6, HexFov, HexFovIter, RngExt};
 use calx_ecs::Entity;
@@ -49,7 +50,9 @@ impl World {
         self.rebuild_stats(parent);
     }
 
-    pub(crate) fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
+    pub(crate) fn set_player(&mut self, player: Option<Entity>) {
+        self.flags.player = player;
+    }
 
     /// Mark an entity as dead, but don't remove it from the system yet.
     pub(crate) fn kill_entity(&mut self, e: Entity) {
@@ -105,7 +108,9 @@ impl World {
     }
 
     /// Push an event to the event queue for this tick.
-    pub(crate) fn push_event(&mut self, event: Event) { self.events.push(event); }
+    pub(crate) fn push_event(&mut self, event: Event) {
+        self.events.push(event);
+    }
 
     /// Access the persistent random number generator.
     pub(crate) fn rng(&mut self) -> &mut crate::Rng { &mut self.rng }
@@ -114,7 +119,11 @@ impl World {
     pub(crate) fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 
     /// Spawn an effect entity
-    pub(crate) fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity {
+    pub(crate) fn spawn_fx(
+        &mut self,
+        loc: Location,
+        state: AnimState,
+    ) -> Entity {
         let e = self.ecs.make();
         self.place_entity(e, loc);
 
@@ -152,7 +161,8 @@ impl World {
         const WAKEUP_DISTANCE: i32 = 5;
 
         use crate::components::BrainState::*;
-        let brain_state = self.brain_state(npc).expect("Running AI for non-mob");
+        let brain_state =
+            self.brain_state(npc).expect("Running AI for non-mob");
         match brain_state {
             Asleep => {
                 // XXX: Only treat player mob as potential hostile.
@@ -190,10 +200,17 @@ impl World {
 
     /// Approach and attack target entity.
     pub(crate) fn ai_hunt(&mut self, npc: Entity, target: Entity) {
-        if let (Some(my_loc), Some(target_loc)) = (self.location(npc), self.location(target)) {
+        if let (Some(my_loc), Some(target_loc)) =
+            (self.location(npc), self.location(target))
+        {
             if my_loc.metric_distance(target_loc) == 1 {
-                let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
-            } else if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
+                let _ = self.entity_melee(
+                    npc,
+                    my_loc.dir6_towards(target_loc).unwrap(),
+                );
+            } else if let Some(move_dir) =
+                self.pathing_dir_towards(npc, target_loc)
+            {
                 let _ = self.entity_step(npc, move_dir);
             } else {
                 self.ai_drift(npc);
@@ -219,7 +236,11 @@ impl World {
         self.gain_status(e, Status::Delayed, delay);
     }
 
-    pub(crate) fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
+    pub(crate) fn notify_attacked_by(
+        &mut self,
+        victim: Entity,
+        attacker: Entity,
+    ) {
         // TODO: Check if victim is already in close combat and don't disengage against new target
         // if it is.
         self.designate_enemy(victim, attacker);
@@ -298,7 +319,11 @@ impl World {
     ////////////////////////////////////////////////////////////////////////////////
     // High-level commands, actual action can change because of eg. confusion.
 
-    pub(crate) fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn entity_step(
+        &mut self,
+        e: Entity,
+        dir: Dir6,
+    ) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -306,7 +331,11 @@ impl World {
         }
     }
 
-    pub(crate) fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn entity_melee(
+        &mut self,
+        e: Entity,
+        dir: Dir6,
+    ) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -330,7 +359,11 @@ impl World {
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    pub(crate) fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn really_step(
+        &mut self,
+        e: Entity,
+        dir: Dir6,
+    ) -> ActionOutcome {
         let origin = self.location(e)?;
         let loc = origin.jump(self, dir);
         if self.can_enter(e, loc) {
@@ -351,15 +384,20 @@ impl World {
         None
     }
 
-    pub(crate) fn really_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
+    pub(crate) fn really_melee(
+        &mut self,
+        e: Entity,
+        dir: Dir6,
+    ) -> ActionOutcome {
         let loc = self.location(e)?;
         let target = self.mob_at(loc.jump(self, dir))?;
 
         // XXX: Using power stat for damage, should this be different?
         // Do +5 since dmg 1 is really, really useless.
-        let advantage =
-            self.stats(e).attack - self.stats(target).defense + 2 * self.stats(target).armor;
-        let damage = attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
+        let advantage = self.stats(e).attack - self.stats(target).defense
+            + 2 * self.stats(target).armor;
+        let damage =
+            attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
 
         if damage == 0 {
             msg!(self, "[One] miss[es] [another].")
@@ -481,7 +519,11 @@ impl World {
         }
     }
 
-    pub(crate) fn spawn(&mut self, entity: &ExternalEntity, loc: Location) -> Entity {
+    pub(crate) fn spawn(
+        &mut self,
+        entity: &ExternalEntity,
+        loc: Location,
+    ) -> Entity {
         let e = self.inject(entity);
         self.place_entity(e, loc);
         e
@@ -494,7 +536,11 @@ impl World {
     /// If player exists, but is not placed in spatial, teleport the player here.
     ///
     /// If player does not exist, create the initial player entity.
-    pub(crate) fn spawn_player(&mut self, loc: Location, spec: &ExternalEntity) {
+    pub(crate) fn spawn_player(
+        &mut self,
+        loc: Location,
+        spec: &ExternalEntity,
+    ) {
         if let Some(player) = self.player() {
             if self.location(player).is_none() {
                 // Teleport player from limbo.
@@ -568,7 +614,12 @@ impl World {
     /// is run for player and AI entities.
     pub(crate) fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
 
-    pub(crate) fn gain_status(&mut self, e: Entity, status: Status, duration: u32) {
+    pub(crate) fn gain_status(
+        &mut self,
+        e: Entity,
+        status: Status,
+        duration: u32,
+    ) {
         if duration == 0 {
             return;
         }
@@ -635,7 +686,11 @@ impl World {
         true
     }
 
-    pub(crate) fn use_ability(&mut self, _e: Entity, _a: Ability) -> ActionOutcome {
+    pub(crate) fn use_ability(
+        &mut self,
+        _e: Entity,
+        _a: Ability,
+    ) -> ActionOutcome {
         // TODO
         None
     }
@@ -674,7 +729,11 @@ impl World {
                 if let Some(target) = targets.choose(self.rng()) {
                     msg!(self, "There is a peal of thunder.").send();
                     let loc = self.location(*target).unwrap();
-                    self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), Some(e));
+                    self.apply_effect(
+                        &LIGHTNING_EFFECT,
+                        &Volume::point(loc),
+                        Some(e),
+                    );
                 } else {
                     msg!(self, "The spell fizzles.").send();
                 }
@@ -720,7 +779,11 @@ impl World {
                     amount: 6,
                     damage: Damage::Fire,
                 };
-                let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
+                let center = self.projected_explosion_center(
+                    origin,
+                    dir,
+                    FIREBALL_RANGE,
+                );
                 let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                 self.apply_effect(&FIREBALL_EFFECT, &volume, Some(e));
 
@@ -743,8 +806,16 @@ impl World {
             Ability::Confuse => {
                 const CONFUSION_RANGE: u32 = 9;
 
-                let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
-                self.apply_effect(&Effect::Confuse, &Volume::point(center), Some(e));
+                let center = self.projected_explosion_center(
+                    origin,
+                    dir,
+                    CONFUSION_RANGE,
+                );
+                self.apply_effect(
+                    &Effect::Confuse,
+                    &Volume::point(center),
+                    Some(e),
+                );
             }
             _ => {
                 msg!(self, "TODO cast directed spell {:?}", a).send();

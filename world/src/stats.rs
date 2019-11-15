@@ -29,7 +29,8 @@ pub struct Stats {
 
 impl Stats {
     pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
-        let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
+        let intrinsics =
+            intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
         Stats {
             power,
             intrinsics,

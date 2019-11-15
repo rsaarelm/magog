@@ -85,7 +85,9 @@ impl World {
     }
 
     /// Return visual brush for an entity.
-    pub fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
+    pub fn entity_icon(&self, e: Entity) -> Option<Icon> {
+        self.ecs().desc.get(e).map(|x| x.icon)
+    }
 
     pub fn entity_name(&self, e: Entity) -> String {
         if let Some(desc) = self.ecs().desc.get(e) {
@@ -147,11 +149,15 @@ impl World {
     }
 
     /// Return whether location blocks line of sight.
-    pub fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
+    pub fn blocks_sight(&self, loc: Location) -> bool {
+        self.terrain(loc).blocks_sight()
+    }
 
     /// Return whether the entity can occupy a location.
     pub fn can_enter(&self, e: Entity, loc: Location) -> bool {
-        if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
+        if self.terrain(loc).is_door()
+            && !self.has_intrinsic(e, Intrinsic::Hands)
+        {
             // Can't open doors without hands.
             return false;
         }
@@ -162,7 +168,9 @@ impl World {
     }
 
     pub fn can_enter_terrain(&self, e: Entity, loc: Location) -> bool {
-        if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
+        if self.terrain(loc).is_door()
+            && !self.has_intrinsic(e, Intrinsic::Hands)
+        {
             // Can't open doors without hands.
             return false;
         }
@@ -298,11 +306,14 @@ impl World {
     /// Return whether an entity is the player avatar mob.
     pub fn is_player(&self, e: Entity) -> bool {
         // TODO: Should this just check self.flags.player?
-        self.brain_state(e) == Some(BrainState::PlayerControl) && self.is_alive(e)
+        self.brain_state(e) == Some(BrainState::PlayerControl)
+            && self.is_alive(e)
     }
 
     /// Return whether an entity is under computer control
-    pub fn is_npc(&self, e: Entity) -> bool { self.is_mob(e) && !self.is_player(e) }
+    pub fn is_npc(&self, e: Entity) -> bool {
+        self.is_mob(e) && !self.is_player(e)
+    }
 
     /// Return whether the entity is an awake mob.
     pub fn is_active(&self, e: Entity) -> bool {
@@ -330,7 +341,12 @@ impl World {
     }
 
     /// Look for targets to shoot in a direction.
-    pub fn find_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
+    pub fn find_target(
+        &self,
+        shooter: Entity,
+        dir: Dir6,
+        range: usize,
+    ) -> Option<Entity> {
         let origin = self.location(shooter).unwrap();
         let mut loc = origin;
         for _ in 1..=range {
@@ -350,7 +366,11 @@ impl World {
     /// Try to get the next step on the path from origin towards destination.
     ///
     /// Tries to be fast, not necessarily doing proper pathfinding.
-    pub fn pathing_dir_towards(&self, e: Entity, destination: Location) -> Option<Dir6> {
+    pub fn pathing_dir_towards(
+        &self,
+        e: Entity,
+        destination: Location,
+    ) -> Option<Dir6> {
         // Could do all sorts of cool things here eventually like a Dijkstra map cache, but for now
         // just doing very simple stuff.
         if let Some(origin) = self.location(e) {
@@ -381,7 +401,9 @@ impl World {
     }
 
     /// Return whether the entity should have an idle animation.
-    pub fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
+    pub fn is_bobbing(&self, e: Entity) -> bool {
+        self.is_active(e) && !self.is_player(e)
+    }
 
     pub fn item_type(&self, e: Entity) -> Option<ItemType> {
         self.ecs().item.get(e).and_then(|item| Some(item.item_type))
@@ -429,7 +451,10 @@ impl World {
             .and_then(|desc| Some(&desc.singular_name[..]))
     }
 
-    pub fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
+    pub fn extract_prefab<I: IntoIterator<Item = Location>>(
+        &self,
+        locs: I,
+    ) -> mapsave::Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
@@ -470,7 +495,10 @@ impl World {
 
     pub fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
         Slot::equipment_iter()
-            .find(|&&x| x.accepts(self.equip_type(item)) && self.entity_equipped(e, x).is_none())
+            .find(|&&x| {
+                x.accepts(self.equip_type(item))
+                    && self.entity_equipped(e, x).is_none()
+            })
             .cloned()
     }
 
@@ -482,7 +510,8 @@ impl World {
     pub fn empty_item_drop_location(&self, origin: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
         let is_valid = |v: CellVector| {
-            self.can_drop_item_at(origin.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
+            self.can_drop_item_at(origin.jump(self, v))
+                && v.hex_dist() <= MAX_SPREAD_DISTANCE
         };
         let mut seen = HashSet::new();
         let mut incoming = VecDeque::new();
@@ -502,7 +531,10 @@ impl World {
 
             let current_dist = offset.hex_dist();
             for v in hex_neighbors(offset) {
-                if v.hex_dist() > current_dist && !seen.contains(&v) && is_valid(v) {
+                if v.hex_dist() > current_dist
+                    && !seen.contains(&v)
+                    && is_valid(v)
+                {
                     incoming.push_back(v);
                 }
             }
@@ -515,7 +547,12 @@ impl World {
     ///
     /// Explosion centers will penetrate and hit cells with mobs, they will stop before cells with
     /// blocking terrain.
-    pub fn projected_explosion_center(&self, origin: Location, dir: Dir6, range: u32) -> Location {
+    pub fn projected_explosion_center(
+        &self,
+        origin: Location,
+        dir: Dir6,
+        range: u32,
+    ) -> Location {
         let mut loc = origin;
         for _ in 0..range {
             let new_loc = loc.jump(self, dir);
@@ -648,5 +685,7 @@ impl World {
         Vec::new()
     }
 
-    pub fn sector_exists(&self, sector: Sector) -> bool { self.world_cache.sector_exists(sector) }
+    pub fn sector_exists(&self, sector: Sector) -> bool {
+        self.world_cache.sector_exists(sector)
+    }
 }

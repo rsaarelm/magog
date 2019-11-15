@@ -1,3 +1,4 @@
 format_strings = false
 reorder_imports = true
 fn_single_line = true
+max_width = 80

@@ -39,13 +39,16 @@ impl Coloring {
         }
 
         match self {
-            Coloring::MapMemory => (Rgba::from(0x2222_22ffu32), Rgba::from(0x0408_08ff)),
+            Coloring::MapMemory => {
+                (Rgba::from(0x2222_22ffu32), Rgba::from(0x0408_08ff))
+            }
             Coloring::Shaded { ambient, diffuse } => {
                 let (fore, back) = (
                     lerp(color::BLACK, fore, diffuse),
                     lerp(color::BLACK, back, diffuse),
                 );
-                let (fore, back) = (darken(ambient, fore), darken(ambient, back));
+                let (fore, back) =
+                    (darken(ambient, fore), darken(ambient, back));
                 (fore, back)
             }
             Coloring::Solid(col) => (col, col),
@@ -71,7 +74,11 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn new(layer: Layer, offset: ScreenVector, brush: Arc<Brush>) -> Sprite {
+    pub fn new(
+        layer: Layer,
+        offset: ScreenVector,
+        brush: Arc<Brush>,
+    ) -> Sprite {
         Sprite {
             layer,
             offset,
@@ -101,7 +108,9 @@ impl Ord for Sprite {
 }
 
 impl PartialOrd for Sprite {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Sprite {

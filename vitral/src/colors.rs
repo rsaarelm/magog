@@ -23,7 +23,9 @@ use std::str::FromStr;
 /// alpha channel and with 4 or 8 bits per channel). "RED", "red",
 /// "#F00", "#F00F", "#FF0000" and "#FF0000FF" all correspond to the
 /// same opaque pure red color.
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Serialize, Deserialize,
+)]
 pub struct SRgba {
     /// sRGB red component
     pub r: u8,
@@ -104,7 +106,9 @@ impl From<Rgba> for SRgba {
 }
 
 impl From<image::Rgba<u8>> for SRgba {
-    fn from(c: image::Rgba<u8>) -> SRgba { SRgba::new(c.0[0], c.0[1], c.0[2], c.0[3]) }
+    fn from(c: image::Rgba<u8>) -> SRgba {
+        SRgba::new(c.0[0], c.0[1], c.0[2], c.0[3])
+    }
 }
 
 impl From<SRgba> for image::Rgba<u8> {
@@ -115,7 +119,9 @@ impl FromStr for SRgba {
     type Err = ();
 
     fn from_str(s: &str) -> Result<SRgba, ()> {
-        if let Some(idx) = parse_color_name(&s.to_string().to_ascii_uppercase()[..]) {
+        if let Some(idx) =
+            parse_color_name(&s.to_string().to_ascii_uppercase()[..])
+        {
             return Ok(NAMED_COLORS[idx].2);
         }
 
@@ -203,7 +209,9 @@ pub struct Rgba {
 impl Rgba {
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Rgba { Rgba { r, g, b, a } }
 
-    pub fn luma(&self) -> f32 { self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722 }
+    pub fn luma(&self) -> f32 {
+        self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722
+    }
 
     /// Turn color to monochrome preserving brightness.
     pub fn to_monochrome(&self) -> Rgba {
@@ -281,7 +289,9 @@ impl Sub<Rgba> for Rgba {
 
 impl Mul<f32> for Rgba {
     type Output = Rgba;
-    fn mul(self, rhs: f32) -> Rgba { Rgba::new(self.r * rhs, self.g * rhs, self.b * rhs, self.a) }
+    fn mul(self, rhs: f32) -> Rgba {
+        Rgba::new(self.r * rhs, self.g * rhs, self.b * rhs, self.a)
+    }
 }
 
 impl Mul<Rgba> for Rgba {

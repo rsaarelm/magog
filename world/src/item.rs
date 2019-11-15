@@ -8,7 +8,9 @@ use std::slice;
 pub const BAG_CAPACITY: u32 = 50;
 
 /// Inventory slots.
-#[derive(Copy, Eq, PartialEq, Clone, Debug, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Copy, Eq, PartialEq, Clone, Debug, PartialOrd, Ord, Serialize, Deserialize,
+)]
 pub enum Slot {
     Bag(u32),
     Head,
@@ -39,7 +41,9 @@ impl Slot {
             Head => equip_type == Some(EquipType::Head),
             Body => equip_type == Some(EquipType::Body),
             Feet => equip_type == Some(EquipType::Feet),
-            Trinket1 | Trinket2 | Trinket3 => equip_type == Some(EquipType::Trinket),
+            Trinket1 | Trinket2 | Trinket3 => {
+                equip_type == Some(EquipType::Trinket)
+            }
             Bag(_) => true,
         }
     }
@@ -47,7 +51,8 @@ impl Slot {
     pub fn equipment_iter() -> slice::Iter<'static, Slot> {
         use self::Slot::*;
         static EQUIPPED: [Slot; 9] = [
-            Head, Ranged, RightHand, Body, LeftHand, Feet, Trinket1, Trinket2, Trinket3,
+            Head, Ranged, RightHand, Body, LeftHand, Feet, Trinket1, Trinket2,
+            Trinket3,
         ];
 
         EQUIPPED.iter()
@@ -104,11 +109,17 @@ impl World {
     pub fn entities_in_bag(&self, parent: Entity) -> Vec<(Slot, Entity)> {
         self.entities_in(parent)
             .into_iter()
-            .filter(|(slot, _)| if let Slot::Bag(_) = slot { true } else { false })
+            .filter(
+                |(slot, _)| if let Slot::Bag(_) = slot { true } else { false },
+            )
             .collect()
     }
 
-    pub(crate) fn entity_take(&mut self, e: Entity, item: Entity) -> ActionOutcome {
+    pub(crate) fn entity_take(
+        &mut self,
+        e: Entity,
+        item: Entity,
+    ) -> ActionOutcome {
         // Only mobs can take items.
         if !self.is_mob(e) {
             return None;
@@ -197,5 +208,7 @@ impl World {
         e == other
     }
 
-    pub fn is_stackable(&self, e: Entity) -> bool { self.ecs().stacking.contains(e) }
+    pub fn is_stackable(&self, e: Entity) -> bool {
+        self.ecs().stacking.contains(e)
+    }
 }

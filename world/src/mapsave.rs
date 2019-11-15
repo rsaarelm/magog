@@ -40,7 +40,8 @@ pub fn build_textmap(
         }
     };
 
-    let mut legend_builder = calx::LegendBuilder::new(ALPHABET.to_string(), chars_f);
+    let mut legend_builder =
+        calx::LegendBuilder::new(ALPHABET.to_string(), chars_f);
 
     let prefab: HashMap<CellVector, _> = prefab
         .clone()
@@ -53,7 +54,8 @@ pub fn build_textmap(
     }
 
     // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
-    let prefab: HashMap<CellVector, _> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
+    let prefab: HashMap<CellVector, _> =
+        prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
 
     Ok((prefab, legend_builder.legend))
 }

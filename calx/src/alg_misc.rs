@@ -6,7 +6,9 @@ use rand::Rng;
 use std::error::Error;
 use std::fmt;
 use std::hash::Hash;
-use std::ops::{Add, AddAssign, Div, Mul, Range, RangeInclusive, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Div, Mul, Range, RangeInclusive, Sub, SubAssign,
+};
 
 /// A type that represents convex bounds in space of `Self::T`.
 pub trait Clamp {
@@ -36,7 +38,9 @@ impl<T: Copy + PartialOrd> Clamp for RangeInclusive<T> {
 impl<T: Copy + PartialOrd> Clamp for Range<T> {
     type T = T;
 
-    fn clamp(&self, point: Self::T) -> Self::T { (self.start..=self.end).clamp(point) }
+    fn clamp(&self, point: Self::T) -> Self::T {
+        (self.start..=self.end).clamp(point)
+    }
 }
 
 // Impls of Clamp for RangeFrom and RangeToInclusive are trivial to add here if they're ever
@@ -83,7 +87,9 @@ pub trait Noise<T> {
 }
 
 impl<T: Distribution<U>, U> Noise<U> for T {
-    fn noise(&self, seed: &impl Hash) -> U { self.sample(&mut seeded_rng(&seed)) }
+    fn noise(&self, seed: &impl Hash) -> U {
+        self.sample(&mut seeded_rng(&seed))
+    }
 }
 
 /// A deciban unit log odds value.
@@ -192,7 +198,8 @@ where
 
         for i in 1..self.points.len() {
             if t < self.points[i].0 {
-                let scaled = (t - self.points[i - 1].0) / (self.points[i].0 - self.points[i - 1].0);
+                let scaled = (t - self.points[i - 1].0)
+                    / (self.points[i].0 - self.points[i - 1].0);
                 return lerp(self.points[i - 1].1, self.points[i].1, scaled);
             }
         }
@@ -210,7 +217,11 @@ pub trait WeightedChoice {
     type Item;
 
     /// Choose an item from the iteration with probability weighted by item weight.
-    fn weighted_choice<R: Rng + ?Sized, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+    fn weighted_choice<R: Rng + ?Sized, F>(
+        self,
+        rng: &mut R,
+        weight_fn: F,
+    ) -> Option<Self::Item>
     where
         F: Fn(&Self::Item) -> f32;
 }
@@ -218,14 +229,18 @@ pub trait WeightedChoice {
 impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
     type Item = T;
 
-    fn weighted_choice<R: Rng + ?Sized, F>(self, rng: &mut R, weight_fn: F) -> Option<Self::Item>
+    fn weighted_choice<R: Rng + ?Sized, F>(
+        self,
+        rng: &mut R,
+        weight_fn: F,
+    ) -> Option<Self::Item>
     where
         F: Fn(&Self::Item) -> f32,
     {
         let dist = Uniform::new(0.0, 1.0);
-        let (_, ret) = self
-            .into_iter()
-            .fold((0.0, None), |(weight_sum, prev_item), item| {
+        let (_, ret) = self.into_iter().fold(
+            (0.0, None),
+            |(weight_sum, prev_item), item| {
                 let item_weight = weight_fn(&item);
                 debug_assert!(item_weight >= 0.0);
                 let p = item_weight / (weight_sum + item_weight);
@@ -235,7 +250,8 @@ impl<T, I: IntoIterator<Item = T> + Sized> WeightedChoice for I {
                     prev_item
                 };
                 (weight_sum + item_weight, next_item)
-            });
+            },
+        );
         ret
     }
 }
@@ -340,7 +356,9 @@ pub struct GenericError(pub String);
 impl Error for GenericError {}
 
 impl fmt::Display for GenericError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
 /// Construct a `GenericError`.

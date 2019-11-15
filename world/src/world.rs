@@ -59,7 +59,10 @@ impl World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            world_cache: WorldCache::new(world_seed.rng_seed, world_seed.world_skeleton.clone()),
+            world_cache: WorldCache::new(
+                world_seed.rng_seed,
+                world_seed.world_skeleton.clone(),
+            ),
             generated_spawns: Default::default(),
             spatial: Spatial::new(),
             flags: Flags::new(),

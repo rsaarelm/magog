@@ -52,10 +52,11 @@ impl FromIterator<(Point2D<i32>, u32)> for ChunkMap {
             };
 
             let origin = point2(x * CHUNK_WIDTH, y * CHUNK_HEIGHT);
-            let offset = (pt.x - origin.x + (pt.y - origin.y) * CHUNK_WIDTH) as usize;
-            chunks
-                .entry(origin)
-                .or_insert_with(|| vec![0; (CHUNK_WIDTH * CHUNK_HEIGHT) as usize])[offset] = c;
+            let offset =
+                (pt.x - origin.x + (pt.y - origin.y) * CHUNK_WIDTH) as usize;
+            chunks.entry(origin).or_insert_with(|| {
+                vec![0; (CHUNK_WIDTH * CHUNK_HEIGHT) as usize]
+            })[offset] = c;
         }
 
         // Turn chunks into ChunkMap data.

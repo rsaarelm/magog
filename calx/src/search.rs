@@ -21,7 +21,11 @@ pub struct Dijkstra<N> {
 impl<N: GridNode> Dijkstra<N> {
     /// Create a new Dijkstra map up to limit distance from goals, omitting
     /// nodes for which the is_valid predicate returns false.
-    pub fn new<F: Fn(&N) -> bool>(goals: Vec<N>, is_valid: F, limit: u32) -> Dijkstra<N> {
+    pub fn new<F: Fn(&N) -> bool>(
+        goals: Vec<N>,
+        is_valid: F,
+        limit: u32,
+    ) -> Dijkstra<N> {
         assert!(!goals.is_empty());
 
         let mut weights = HashMap::new();
@@ -89,7 +93,9 @@ where
         fn cmp(&self, other: &Self) -> Ordering { self.value.cmp(&other.value) }
     }
     impl<N: Eq> PartialOrd for MetricNode<N> {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+            Some(self.cmp(other))
+        }
     }
 
     fn node<N: Eq>(item: N, dist: f32, come_from: Option<N>) -> MetricNode<N> {
@@ -130,7 +136,8 @@ where
             }
 
             for (item, dist) in neighbors(&closest.item) {
-                let already_seen = come_from.contains_key(&item) || item == start;
+                let already_seen =
+                    come_from.contains_key(&item) || item == start;
                 if already_seen {
                     continue;
                 }

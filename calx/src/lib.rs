@@ -17,17 +17,22 @@ mod text;
 pub mod tiled;
 
 pub use alg_misc::{
-    bounding_rect, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Clamp, Deciban,
-    GenericError, LerpPath, Noise, WeightedChoice,
+    bounding_rect, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Clamp,
+    Deciban, GenericError, LerpPath, Noise, WeightedChoice,
 };
-pub use colors::{term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color};
+pub use colors::{
+    term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color,
+};
 pub use fov::{Fov, FovValue, PolarPoint};
-pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
+pub use hex::{
+    hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom,
+};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use incremental::{History, Incremental, IncrementalState};
 pub use legend_builder::LegendBuilder;
 pub use prefab::{
-    DenseTextMap, FromPrefab, IntoPrefab, MinimapSpace, PrefabError, ProjectedImage, TextSpace,
+    DenseTextMap, FromPrefab, IntoPrefab, MinimapSpace, PrefabError,
+    ProjectedImage, TextSpace,
 };
 pub use rng::{seeded_rng, RandomPermutation, RngExt};
 pub use search::{astar_path, Dijkstra, GridNode};
