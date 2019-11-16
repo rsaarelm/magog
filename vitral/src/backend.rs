@@ -10,9 +10,9 @@ use euclid::{
 };
 use winit::{
     dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize},
-    event::{ElementState, Event, KeyboardInput, WindowEvent},
+    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    window::{Fullscreen, WindowBuilder},
 };
 
 pub struct AppConfig {
@@ -111,6 +111,9 @@ impl<T: 'static> App<T> {
         let mut ui = UiState::default();
         let mut running = true;
         let mut redraw_requested = false;
+        // Cached position for returning from fullscreen mode.
+        let mut restore_position = window.outer_position().ok();
+
         event_loop.run(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent { event, .. } => match event {
@@ -160,11 +163,43 @@ impl<T: 'static> App<T> {
                                 state,
                                 scancode,
                                 virtual_keycode,
-                                ..
+                                modifiers,
                             },
                         ..
                     } => {
                         let is_down = state == ElementState::Pressed;
+                        if is_down && virtual_keycode == Some(VirtualKeyCode::Return)
+                            && modifiers.alt
+                        {
+                            // Toggle fullscreen with Alt-Enter
+                            if window.fullscreen().is_none() {
+                                restore_position = {
+                                    // XXX: Sometimes the position gets crazy coordinates like y:
+                                    // -4294966858.0. Ignore the value if this happens.
+                                    let new_pos = window.outer_position().ok();
+                                    if let Some(pos) = new_pos {
+                                        if pos.x < -10000.0 || pos.y < -10000.0 {
+                                            log::warn!("Ignoring invalid window.outer_position(): {:?}", pos);
+                                            restore_position
+                                        } else {
+                                            log::info!("window.outer_position(): {:?}", pos);
+                                            new_pos
+                                        }
+                                    } else {
+                                        new_pos
+                                    }
+                                };
+                                window.set_fullscreen(Some(
+                                    Fullscreen::Borderless( window.primary_monitor()
+                                    ),
+                                ));
+                            } else {
+                                window.set_fullscreen(None);
+                                if let Some(pos) = restore_position {
+                                    window.set_outer_position(pos);
+                                }
+                            }
+                        }
                         let key = virtual_keycode.and_then(|virtual_keycode| {
                             Keycode::try_from(virtual_keycode).ok()
                         });
