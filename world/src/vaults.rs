@@ -42,10 +42,10 @@ vaults! {ENTRANCES,
 
 vaults! {EXITS,
     "
-    _
-      %
-     %.%
+     _
+      .%
       %>%
-       %%
+       %V%
+        %%
     ",
 }

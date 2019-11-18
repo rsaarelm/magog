@@ -130,7 +130,8 @@ macro_rules! terrain_enum {
 }
 
 terrain_enum! {
-    Empty:       TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_regular: true,  color: 0xF0F },
+    Empty:       TerrainData { name: "n/a",       kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_regular: true,  color: 0xF0F },
+    Void:        TerrainData { name: "void",      kind: Kind::Block,  form: Form::Void,  map_chars: "",    is_regular: true,  color: 0x011 },
     Downstairs:  TerrainData { name: "exit down", kind: Kind::Ground, form: Form::Gate,  map_chars: ">",   is_regular: true,  color: 0x0EE },
     Upstairs:    TerrainData { name: "exit up",   kind: Kind::Ground, form: Form::Gate,  map_chars: "<",   is_regular: true,  color: 0x0FF },
     Ground:      TerrainData { name: "ground",    kind: Kind::Ground, form: Form::Floor, map_chars: ".,_", is_regular: true,  color: 0x111 },

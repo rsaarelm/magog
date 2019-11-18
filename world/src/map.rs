@@ -135,6 +135,9 @@ impl Map {
                         cell.vault_kind = Some(VaultKind::Border);
                     }
                 }
+                'V' => {
+                    cell.terrain = Void;
+                }
                 '.' => {
                     cell.terrain = Ground;
                 }
