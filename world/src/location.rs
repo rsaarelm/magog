@@ -173,6 +173,28 @@ impl Location {
         let sec = self.sector();
         hex_neighbors(self).any(|loc| loc.sector() != sec)
     }
+
+    /// Smooth noise offset for determinining overland cell boundaries at this location.
+    pub fn terrain_cell_displacement(self) -> CellVector {
+        use lazy_static::lazy_static;
+        use noise::NoiseFn;
+        lazy_static! {
+            static ref NOISE: noise::OpenSimplex = noise::OpenSimplex::new();
+        }
+
+        let (dx, dy) = {
+            const ZOOM: f64 = 1.0 / 2.0;
+            const SCALE: f64 = 4.0;
+            let (x, y) = (self.x as f64 * ZOOM, self.y as f64 * ZOOM);
+            // Use 3D hex coordinates to get a symmetric kernel.
+            // Sample the different components from different places in the noise plane.
+            let dx = SCALE * NOISE.get([x, y]);
+            let dy = SCALE * NOISE.get([x + 6553.0, y + 9203.0]);
+            let dz = SCALE * NOISE.get([x + 9203.0, y + 6553.0]);
+            (dx + dz, dy + dz)
+        };
+        vec2(dx.round() as i32, dy.round() as i32)
+    }
 }
 
 impl<V: Into<CellVector>> Add<V> for Location {
