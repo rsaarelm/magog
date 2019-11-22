@@ -8,6 +8,7 @@ use crate::vaults;
 use crate::{Distribution, Rng};
 use calx::{self, die, seeded_rng, CellVector, RngExt, WeightedChoice};
 use euclid::{vec2, vec3, Vector3D};
+use lazy_static::lazy_static;
 use log::{debug, warn};
 use rand::seq::SliceRandom;
 use rand::Rng as _;
@@ -131,6 +132,144 @@ impl Sector {
         let v = rng.gen_range(3, SECTOR_HEIGHT - 3);
 
         self.rect_coord_loc(u, v)
+    }
+}
+
+pub struct TerrainHexSpace;
+pub type HexVector = euclid::Vector2D<i32, TerrainHexSpace>;
+
+// Macro-hexes (uv) in cell space (xy)
+//
+//     o-------+===-->x
+//     |\  00  | 11
+//     | \ .   |   .
+//     |  \    |
+//     | . +---+   *
+//     |   |01  \
+//     |-10|   . \ .
+//     |   |      \
+//     +---+ . * . +
+//     I-11 \      |
+//     I   . \ .   |
+//     I      \    |
+//     + . * . +---+
+//     |
+//     v
+//     y
+//
+// The above rectangle produces a repeating pattern of terrain hexes that lines up perfectly with
+// the sector grid.
+
+lazy_static! {
+    static ref TERRAIN_HEX_OFFSETS: Vec<Vec<HexVector>> = {
+        fn to_signed(u2: u32) -> i32 {
+            if u2 > 1 {
+                -4 + u2 as i32
+            } else {
+                u2 as i32
+            }
+        }
+
+        fn delta(c: char) -> HexVector {
+            let c = c.to_digit(16).expect("invalid pattern");
+            vec2(to_signed(c % 4), to_signed(c / 4))
+        }
+
+        // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
+        // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
+        const PATTERN: &str = "\
+000000000000000000000000000000000000000011111111111111111111
+300000000000000000000000000000000000000055555555555555555555
+330000000000000000000000000000000000000055555555555555555555
+333000000000000000000000000000000000000055555555555555555555
+333300000000000000000000000000000000000055555555555555555555
+333330000000000000000000000000000000000055555555555555555555
+333333000000000000000000000000000000000055555555555555555555
+333333300000000000000000000000000000000055555555555555555555
+333333330000000000000000000000000000000055555555555555555555
+333333333000000000000000000000000000000055555555555555555555
+333333333300000000000000000000000000000055555555555555555555
+333333333330000000000000000000000000000055555555555555555555
+333333333333000000000000000000000000000055555555555555555555
+333333333333300000000000000000000000000055555555555555555555
+333333333333330000000000000000000000000055555555555555555555
+333333333333333000000000000000000000000055555555555555555555
+333333333333333300000000000000000000000055555555555555555555
+333333333333333330000000000000000000000055555555555555555555
+333333333333333333000000000000000000000055555555555555555555
+333333333333333333300000000000000000000055555555555555555555
+333333333333333333330000000000000000000055555555555555555555
+333333333333333333334444444444444444444445555555555555555555
+333333333333333333334444444444444444444444555555555555555555
+333333333333333333334444444444444444444444455555555555555555
+333333333333333333334444444444444444444444445555555555555555
+333333333333333333334444444444444444444444444555555555555555
+333333333333333333334444444444444444444444444455555555555555
+333333333333333333334444444444444444444444444445555555555555
+333333333333333333334444444444444444444444444444555555555555
+333333333333333333334444444444444444444444444444455555555555
+333333333333333333334444444444444444444444444444445555555555
+333333333333333333334444444444444444444444444444444555555555
+333333333333333333334444444444444444444444444444444455555555
+333333333333333333334444444444444444444444444444444445555555
+333333333333333333334444444444444444444444444444444444555555
+333333333333333333334444444444444444444444444444444444455555
+333333333333333333334444444444444444444444444444444444445555
+333333333333333333334444444444444444444444444444444444444555
+333333333333333333334444444444444444444444444444444444444455
+333333333333333333334444444444444444444444444444444444444445
+333333333333333333334444444444444444444444444444444444444444
+777777777777777777777444444444444444444444444444444444444444
+777777777777777777777744444444444444444444444444444444444444
+777777777777777777777774444444444444444444444444444444444444
+777777777777777777777777444444444444444444444444444444444444
+777777777777777777777777744444444444444444444444444444444444
+777777777777777777777777774444444444444444444444444444444444
+777777777777777777777777777444444444444444444444444444444444
+777777777777777777777777777744444444444444444444444444444444
+777777777777777777777777777774444444444444444444444444444444
+777777777777777777777777777777444444444444444444444444444444
+777777777777777777777777777777744444444444444444444444444444
+777777777777777777777777777777774444444444444444444444444444
+777777777777777777777777777777777444444444444444444444444444
+777777777777777777777777777777777744444444444444444444444444
+777777777777777777777777777777777774444444444444444444444444
+777777777777777777777777777777777777444444444444444444444444
+777777777777777777777777777777777777744444444444444444444444
+777777777777777777777777777777777777774444444444444444444444
+777777777777777777777777777777777777777444444444444444444444";
+
+        PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
+    };
+}
+
+// TODO: Derive the pattern from TERRAIN_HEX_SIZE procedurally instead of having the ASCII art blob
+// over there. The fiddly part is that it must be pixel-perfect to line up with the sectors.
+
+const TERRAIN_HEX_SIZE: i32 = 20;
+const TERRAIN_HEX_PATTERN_W: i32 = TERRAIN_HEX_SIZE * 3;
+const TERRAIN_HEX_PATTERN_H: i32 = TERRAIN_HEX_SIZE * 3;
+
+impl calx::Transformation for TerrainHexSpace {
+    type Element = i32;
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let [x, y] = v.into();
+        let (pattern_x, pattern_y) =
+            (x.div_euclid(TERRAIN_HEX_PATTERN_W), y.div_euclid(TERRAIN_HEX_PATTERN_H));
+        let (x, y) = (
+            x.rem_euclid(TERRAIN_HEX_PATTERN_W),
+            y.rem_euclid(TERRAIN_HEX_PATTERN_H),
+        );
+        let offset = TERRAIN_HEX_OFFSETS[y as usize][x as usize];
+
+        (vec2(pattern_x * 2 - pattern_y, pattern_x + pattern_y) + offset).into()
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let a = TERRAIN_HEX_SIZE;
+        let v = v.into();
+        [v[0] * a + v[1] * a, -v[0] * a + v[1] * 2 * a]
     }
 }
 
@@ -600,8 +739,10 @@ impl Distribution<Exit> for ConnectedSectorSpec<'_> {
 
 #[cfg(test)]
 mod test {
-    use super::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
-    use euclid::vec3;
+    use super::{
+        CellVector, Sector, TerrainHexSpace, SECTOR_HEIGHT, SECTOR_WIDTH,
+    };
+    use euclid::{vec2, vec3};
 
     #[test]
     fn test_rect_space() {
@@ -628,5 +769,70 @@ mod test {
             upstairs_loc.z = loc.z;
             assert!(loc.distance_from(upstairs_loc).unwrap() > 1);
         }
+    }
+
+    #[test]
+    fn test_sector_terrain_hex_overlap() {
+        use calx::Transformation;
+        use std::collections::HashSet;
+
+        // Get a couple sectors to brute force the cells over.
+        let mut scan_space = Vec::new();
+        for y in -1..=1 {
+            for x in -1..=1 {
+                scan_space.extend(
+                    Sector::new(x, y, 0)
+                        .iter()
+                        .map(|loc| vec2(loc.x as i32, loc.y as i32)),
+                );
+            }
+        }
+
+        //           _
+        //      |  _- -_  |
+        //      |_-hex 0-_|
+        //   ---o---------+---        CellSpace origin at 'o'
+        // side I sector 0I sectors
+        // -1,0 I overlapsI 1,0
+        //      I  hex 0  I
+        //   ---+---------+---
+        //      |-_hex 0_-|
+        //      |  -_ _-  |
+        //           -
+        //
+        // Origin hex and origin sector desired overlap. The hex should line up perfectly with the
+        // sector and not touch the neighboring sectors.
+        //
+        // NB: Picture is in screen/sector projection, NOT in the CellSpace xy projection.
+
+        // Points of the origin hex.
+        let hex_points: HashSet<CellVector> = scan_space
+            .iter()
+            .filter(|&p| TerrainHexSpace::unproject(*p) == [0, 0])
+            .cloned()
+            .collect();
+
+        // Center sector, must be fully covered by hex.
+        let center_sector: HashSet<CellVector> = Sector::new(0, 0, 0)
+            .iter()
+            .map(|loc| vec2(loc.x as i32, loc.y as i32))
+            .collect();
+
+        // Side sectors, must be untouched by hex.
+        let sector_sides: HashSet<CellVector> = Sector::new(1, 0, 0)
+            .iter()
+            .chain(Sector::new(-1, 0, 0).iter())
+            .map(|loc| vec2(loc.x as i32, loc.y as i32))
+            .collect();
+
+        // Sanity check projection pairs.
+        for p in &scan_space {
+            let hex = TerrainHexSpace::unproject(*p);
+            let center = TerrainHexSpace::project(hex);
+            assert_eq!(TerrainHexSpace::unproject(center), hex);
+        }
+
+        assert!(hex_points.is_superset(&center_sector));
+        assert!(hex_points.is_disjoint(&sector_sides));
     }
 }
