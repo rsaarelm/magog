@@ -255,21 +255,92 @@ impl calx::Transformation for TerrainHexSpace {
 
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
         let [x, y] = v.into();
-        let (pattern_x, pattern_y) =
-            (x.div_euclid(TERRAIN_HEX_PATTERN_W), y.div_euclid(TERRAIN_HEX_PATTERN_H));
+        let (pattern_x, pattern_y) = (
+            x.div_euclid(TERRAIN_HEX_PATTERN_W),
+            y.div_euclid(TERRAIN_HEX_PATTERN_H),
+        );
         let (x, y) = (
             x.rem_euclid(TERRAIN_HEX_PATTERN_W),
             y.rem_euclid(TERRAIN_HEX_PATTERN_H),
         );
         let offset = TERRAIN_HEX_OFFSETS[y as usize][x as usize];
 
-        (vec2(pattern_x * 2 - pattern_y, pattern_x + pattern_y) + offset).into()
+        (vec2(2 * pattern_x - pattern_y, pattern_x + pattern_y) + offset).into()
     }
 
     fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
         let a = TERRAIN_HEX_SIZE;
         let v = v.into();
-        [v[0] * a + v[1] * a, -v[0] * a + v[1] * 2 * a]
+        [a * v[0] + a * v[1], -a * v[0] + 2 * a * v[1]]
+    }
+}
+
+/// Herringbone Wang tiles space
+///
+/// Tiles with even x are horizontal, tiles with odd x are vertical.
+pub struct HerringboneSpace;
+pub type HerringboneVector = euclid::Vector2D<i32, HerringboneSpace>;
+
+lazy_static! {
+    static ref HERRINGBONE_OFFSETS: Vec<Vec<HerringboneVector>> = {
+        fn to_signed(u2: u32) -> i32 {
+            if u2 > 1 {
+                -4 + u2 as i32
+            } else {
+                u2 as i32
+            }
+        }
+
+        fn delta(c: char) -> HerringboneVector {
+            let c = c.to_digit(16).expect("invalid pattern");
+            // Table values are offset to fit into the -2, 1 range, correct this here.
+            vec2(to_signed(c % 4), to_signed(c / 4)) + vec2(0, 2)
+        }
+
+        // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
+        // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
+        const PATTERN: &str = "\
+889d
+fccd
+f300
+2374";
+
+        PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
+    };
+}
+
+pub const HERRINGBONE_SIZE: i32 = 11;
+const HERRINGBONE_PATTERN_W: i32 = HERRINGBONE_SIZE * 4;
+const HERRINGBONE_PATTERN_H: i32 = HERRINGBONE_SIZE * 4;
+
+impl calx::Transformation for HerringboneSpace {
+    type Element = i32;
+
+    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
+        let [x, y] = v.into();
+        let (pattern_x, pattern_y) = (
+            x.div_euclid(HERRINGBONE_PATTERN_W),
+            y.div_euclid(HERRINGBONE_PATTERN_H),
+        );
+        let (x, y) = (
+            x.rem_euclid(HERRINGBONE_PATTERN_W),
+            y.rem_euclid(HERRINGBONE_PATTERN_H),
+        );
+        let offset = HERRINGBONE_OFFSETS[(y / HERRINGBONE_SIZE) as usize]
+            [(x / HERRINGBONE_SIZE) as usize];
+
+        (vec2(2 * pattern_x - 2 * pattern_y, pattern_x + 3 * pattern_y)
+            + offset)
+            .into()
+    }
+
+    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+        let a = HERRINGBONE_SIZE;
+        let v = v.into();
+        // Uneven step pattern for x
+        let sx = ((v[0] as f32 * 3.0) / 2.0).ceil() as i32;
+        let sx2 = (v[0] as f32 / 2.0).ceil() as i32;
+        [a * sx + a * v[1], -a * sx2 + a * v[1]]
     }
 }
 
@@ -739,9 +810,7 @@ impl Distribution<Exit> for ConnectedSectorSpec<'_> {
 
 #[cfg(test)]
 mod test {
-    use super::{
-        CellVector, Sector, TerrainHexSpace, SECTOR_HEIGHT, SECTOR_WIDTH,
-    };
+    use super::{CellVector, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
     use euclid::{vec2, vec3};
 
     #[test]
@@ -772,7 +841,8 @@ mod test {
     }
 
     #[test]
-    fn test_sector_terrain_hex_overlap() {
+    fn test_terrain_hex() {
+        use super::TerrainHexSpace;
         use calx::Transformation;
         use std::collections::HashSet;
 
@@ -828,11 +898,27 @@ mod test {
         // Sanity check projection pairs.
         for p in &scan_space {
             let hex = TerrainHexSpace::unproject(*p);
-            let center = TerrainHexSpace::project(hex);
-            assert_eq!(TerrainHexSpace::unproject(center), hex);
+            let pos = TerrainHexSpace::project(hex);
+            assert_eq!(TerrainHexSpace::unproject(pos), hex);
         }
 
         assert!(hex_points.is_superset(&center_sector));
         assert!(hex_points.is_disjoint(&sector_sides));
+    }
+
+    #[test]
+    fn test_herringbone_space() {
+        use super::{HerringboneSpace, HerringboneVector};
+        use calx::Transformation;
+
+        assert_eq!(HerringboneSpace::unproject([5, 5]), [0, 0]);
+        for y in 0..80 {
+            for x in 0..80 {
+                let p = HerringboneVector::new(x as i32, y as i32);
+                let chunk = HerringboneSpace::unproject(p);
+                let chunk_pos = HerringboneSpace::project(chunk);
+                assert_eq!(HerringboneSpace::unproject(chunk_pos), chunk);
+            }
+        }
     }
 }
