@@ -1,12 +1,15 @@
 //! Top level world generation logic
 
-use crate::location::Location;
-use crate::map::Map;
-use crate::spec::{self, EntitySpawn, Spec};
-use crate::terrain::Terrain;
-use crate::vaults;
-use crate::{Distribution, Rng};
-use calx::{self, die, seeded_rng, CellVector, RngExt, WeightedChoice};
+use crate::{
+    location::Location,
+    map::{Map, MapCell},
+    spec::{self, EntitySpawn, Spec},
+    terrain::Terrain,
+    vaults, {Distribution, Rng},
+};
+use calx::{
+    self, die, seeded_rng, CellVector, RngExt, Transformation, WeightedChoice,
+};
 use euclid::{vec2, vec3, Vector3D};
 use lazy_static::lazy_static;
 use log::{debug, warn};
@@ -250,7 +253,7 @@ const TERRAIN_HEX_SIZE: i32 = 20;
 const TERRAIN_HEX_PATTERN_W: i32 = TERRAIN_HEX_SIZE * 3;
 const TERRAIN_HEX_PATTERN_H: i32 = TERRAIN_HEX_SIZE * 3;
 
-impl calx::Transformation for TerrainHexSpace {
+impl Transformation for TerrainHexSpace {
     type Element = i32;
 
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
@@ -313,7 +316,7 @@ pub const HERRINGBONE_SIZE: i32 = 11;
 const HERRINGBONE_PATTERN_W: i32 = HERRINGBONE_SIZE * 4;
 const HERRINGBONE_PATTERN_H: i32 = HERRINGBONE_SIZE * 4;
 
-impl calx::Transformation for HerringboneSpace {
+impl Transformation for HerringboneSpace {
     type Element = i32;
 
     fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
@@ -357,6 +360,51 @@ pub enum Biome {
 
 impl Default for Biome {
     fn default() -> Self { Biome::Water }
+}
+
+impl Biome {
+    /// Return terrain for the biome at a given position.
+    ///
+    /// Wilderness biomes produce useful terrain via just this function. Dungeon terrains will just
+    /// produce solid rock and must be generated with a separate map generator.
+    pub fn terrain_at(self, seed: u32, loc: Location) -> Terrain {
+        use Biome::*;
+
+        // Get the tile-less ones out of the way.
+        // XXX: Should Dungeon and City have herringbone sets too?
+        match self {
+            Dungeon => return Terrain::Rock,
+            Water => return Terrain::Water,
+            City => return Terrain::Ground,
+            Mountain => return Terrain::Rock,
+            _ => {}
+        }
+
+        let pos: CellVector = vec2(loc.x as i32, loc.y as i32);
+        let chunk: HerringboneVector = HerringboneSpace::unproject(pos).into();
+
+        let map = {
+            let (horiz, vert) = match self {
+                // TODO: Make biome-appropriate tiles
+                Grassland => (&*vaults::GRASS_HORIZ, &*vaults::GRASS_VERT),
+                Forest => (&*vaults::FOREST_HORIZ, &*vaults::FOREST_VERT),
+                Desert => (&*vaults::DESERT_HORIZ, &*vaults::DESERT_VERT),
+                _ => panic!("Unsupported biome {:?}", self),
+            };
+            let mut rng = calx::seeded_rng(&(seed, chunk));
+            if (chunk.x % 2) == 0 {
+                horiz.choose(&mut rng).unwrap().clone()
+            } else {
+                vert.choose(&mut rng).unwrap().clone()
+            }
+        };
+
+        let offset = pos - CellVector::from(HerringboneSpace::project(chunk));
+        let cell = map.get(offset).unwrap_or_else(|| {
+            panic!("No offset {:?} in herringbone chunk at {:?}", offset, loc)
+        });
+        cell.terrain
+    }
 }
 
 /// Specification for generating a Sector's map.
@@ -564,15 +612,9 @@ impl<'a> Deref for ConnectedSectorSpec<'a> {
 
 impl<'a> Distribution<Map> for ConnectedSectorSpec<'a> {
     fn sample(&self, rng: &mut Rng) -> Map {
-        use Biome::*;
         match self.biome {
-            Dungeon => self.build_dungeon(rng),
-            Grassland => self.build_grassland(rng),
-            Forest => self.base_map(Terrain::Tree), // TODO
-            Mountain => self.base_map(Terrain::Rock),
-            Desert => self.base_map(Terrain::Sand), // TODO
-            Water => self.base_map(Terrain::Water),
-            City => self.base_map(Terrain::Ground), // TODO
+            Biome::Dungeon => self.build_dungeon(rng),
+            x => self.build_biome_sample_map(rng, |_| x),
         }
     }
 }
@@ -700,26 +742,29 @@ impl<'a> ConnectedSectorSpec<'a> {
         ret
     }
 
-    fn base_map(&self, terrain: Terrain) -> Map {
-        let mut ret = Map::new_base(terrain, Sector::points());
-        self.place_stairwells(&mut ret);
-        ret
-    }
+    fn build_biome_sample_map(
+        &self,
+        rng: &mut Rng,
+        biome_fn: impl Fn(Location) -> Biome,
+    ) -> Map {
+        let mut map = Map::default();
+        for p in Sector::points() {
+            let loc = self.sector.origin() + p;
+            let biome = biome_fn(loc);
 
-    fn build_grassland(&self, rng: &mut Rng) -> Map {
-        let mut map = self.base_map(Terrain::Grass);
-        self.place_stairs(rng, &mut map).unwrap();
+            // TODO: If biome changes in three neighboring cells, turn terrain to ground
+            let terrain = biome.terrain_at(self.seed, loc);
+
+            map.insert(p, MapCell::new_terrain(terrain));
+        }
+
+        // TODO: Add enclosures
+        self.place_stairwells(&mut map);
 
         for &pos in &map.open_ground() {
-            // TODO: Move sector edge spawn prevention to central place, we'll have multiple
-            // open-space sector types.
-
-            // Don't spawn entities on sector edge, makes them show to the neighboring sector.
-            // Sector edges are a liminal zone of strange and inscrutable ways.
-            if !(Location::default() + pos).on_sector_edge() {
-                if let Some(spawn) = self.sample(rng) {
-                    map.push_spawn(pos, spawn);
-                }
+            // TODO: Pick distribution based on biome...
+            if let Some(spawn) = self.sample(rng) {
+                map.push_spawn(pos, spawn);
             }
         }
 

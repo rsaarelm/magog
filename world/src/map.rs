@@ -116,7 +116,7 @@ impl Map {
                 ' ' => {
                     continue;
                 }
-                '_' => {
+                'Q' => {
                     // This is a dummy tile that expands the bounds of the vault.
                     // They're put in vault maps to prevent a narrow vault with a single exit from
                     // being spawned in a place where the exit is blocked.
@@ -141,6 +141,18 @@ impl Map {
                 '.' => {
                     cell.terrain = Ground;
                 }
+                '_' => {
+                    cell.terrain = Sand;
+                }
+                ',' => {
+                    cell.terrain = Grass;
+                }
+                'T' => {
+                    cell.terrain = Tree;
+                }
+                't' => {
+                    cell.terrain = DeadTree;
+                }
                 '>' => {
                     cell.terrain = Downstairs;
                 }
@@ -153,8 +165,14 @@ impl Map {
                 '~' => {
                     cell.terrain = Water;
                 }
+                '=' => {
+                    cell.terrain = Shallows;
+                }
                 'I' => {
                     cell.terrain = Pillar;
+                }
+                'w' => {
+                    cell.terrain = Window;
                 }
                 '+' => {
                     // Door.

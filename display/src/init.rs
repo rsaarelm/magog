@@ -104,6 +104,8 @@ pub fn terrain_brushes() -> VecMap<Arc<Brush>> {
     ret.insert(Tree as usize, Builder::new("assets/props.png")
         .color(SADDLEBROWN).tile(160, 32)
         .color(GREEN).tile(192, 32).finish());
+    ret.insert(DeadTree as usize, Builder::new("assets/props.png")
+        .color(SADDLEBROWN).tile(160, 32).finish());
     ret.insert(Wall as usize, Builder::new("assets/walls.png").color(LIGHTSLATEGRAY).wall(0, 0, 32, 0).finish());
     ret.insert(Rock as usize, Builder::new("assets/blobs.png").color(DARKGOLDENROD).blob(0, 0, 0, 32, 0, 160).finish());
     ret.insert(Door as usize, Builder::new("assets/walls.png")

@@ -142,6 +142,7 @@ terrain_enum! {
     Shallows:    TerrainData { name: "shallows",  kind: Kind::Ground, form: Form::Floor, map_chars: "~=",  is_regular: true,  color: 0x08B },
     Magma:       TerrainData { name: "magma",     kind: Kind::Magma,  form: Form::Floor, map_chars: "=~",  is_regular: true,  color: 0xF22 },
     Tree:        TerrainData { name: "tree",      kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_regular: true,  color: 0x8B1 },
+    DeadTree:    TerrainData { name: "dead tree", kind: Kind::Block,  form: Form::Prop,  map_chars: "",    is_regular: true,  color: 0x690 },
     Wall:        TerrainData { name: "wall",      kind: Kind::Block,  form: Form::Wall,  map_chars: "#*",  is_regular: true,  color: 0xBBB },
     Rock:        TerrainData { name: "rock",      kind: Kind::Block,  form: Form::Blob,  map_chars: "*#",  is_regular: true,  color: 0xB84 },
     Door:        TerrainData { name: "door",      kind: Kind::Door,   form: Form::Wall,  map_chars: "|",   is_regular: true,  color: 0x842 },
