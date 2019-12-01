@@ -304,6 +304,7 @@ specs! {
         habitat: DUNGEON,
         rarity: 5.0,
         power: 5,
+        intrinsics: vec![Hands],
         ..d()
     },
     MobSpec {
@@ -311,6 +312,7 @@ specs! {
         icon: I::Bat,
         habitat: DUNGEON | TEMPERATE | URBAN | ARID,
         power: 1,
+        intrinsics: vec![Hyperactive],
         ..d()
     },
     MobSpec {
@@ -321,6 +323,7 @@ specs! {
         power: 5,
         rarity: 3.0,
         shout: Shout,
+        intrinsics: vec![Hands],
         ..d()
     },
     MobSpec {
@@ -330,6 +333,7 @@ specs! {
         depth: 6,
         power: 8,
         rarity: 5.0,
+        intrinsics: vec![Hands],
         ..d()
     },
     MobSpec {
@@ -396,6 +400,7 @@ specs! {
         power: 2,
         rarity: 2.0,
         shout: Shout,
+        intrinsics: vec![Hands],
         ..d()
     },
     MobSpec {
@@ -421,6 +426,7 @@ specs! {
         depth: 6,
         power: 8,
         rarity: 3.0,
+        intrinsics: vec![Deathsplosion],
         ..d()
     },
     MobSpec {

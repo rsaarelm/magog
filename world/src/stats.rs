@@ -94,4 +94,6 @@ pub enum Intrinsic {
     Hands,
     /// Explodes on death
     Deathsplosion,
+    /// Always roaming, can't go to sleep state
+    Hyperactive,
 }
