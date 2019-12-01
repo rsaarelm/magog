@@ -4,19 +4,16 @@ use crate::{
     attack_damage,
     components::{Brain, BrainState, Status},
     effect::{Damage, Effect},
-    fov::SightFov,
     roll,
     sector::SECTOR_WIDTH,
     volume::Volume,
     Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity,
     Location, Slot, World,
 };
-use calx::{Dir6, HexFov, HexFovIter, RngExt};
+use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
 use rand::seq::SliceRandom;
 use rand::Rng;
-use std::collections::HashSet;
-use std::iter::FromIterator;
 
 /// World-mutating methods that are not exposed outside the crate.
 impl World {
@@ -78,24 +75,17 @@ impl World {
         }
 
         if let Some(origin) = self.location(e) {
-            const DEFAULT_FOV_RANGE: u32 = 7;
-            const OVERLAND_FOV_RANGE: u32 = SECTOR_WIDTH as u32;
+            const DEFAULT_FOV_RANGE: i32 = 7;
+            const OVERLAND_FOV_RANGE: i32 = SECTOR_WIDTH;
 
             // Long-range sight while in overworld.
-            // XXX: Presumes that overland iff z == 0, this might not be guaranteed...
-            let range = if origin.z == 0 {
-                OVERLAND_FOV_RANGE
-            } else {
+            let range = if self.is_underground(origin) {
                 DEFAULT_FOV_RANGE
+            } else {
+                OVERLAND_FOV_RANGE
             };
 
-            let fov: HashSet<Location> = HashSet::from_iter(
-                HexFov::new(SightFov::new(self, range, origin))
-                    .add_fake_isometric_acute_corners(|pos, a| {
-                        self.terrain(a.origin + pos).is_wall()
-                    })
-                    .map(|(pos, a)| a.origin + pos),
-            );
+            let fov = self.fov_from(origin, range);
 
             let memory = &mut self.ecs.map_memory[e];
             memory.seen.clear();

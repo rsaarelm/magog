@@ -2,6 +2,7 @@
 
 use crate::{
     components::{Alignment, BrainState, Status},
+    fov::SightFov,
     grammar::{Noun, Pronoun},
     item::{self, EquipType},
     location::Location,
@@ -10,9 +11,12 @@ use crate::{
     stats::{self, Intrinsic},
     Ability, Ecs, FovStatus, Icon, ItemType, Sector, Slot, Terrain, World,
 };
-use calx::{hex_neighbors, CellVector, Clamp, Dir6, HexGeom, Noise};
+use calx::{
+    hex_neighbors, CellVector, Clamp, Dir6, HexFov, HexFovIter, HexGeom, Noise,
+};
 use calx_ecs::Entity;
 use euclid::vec2;
+use indexmap::IndexSet;
 use rand::distributions::Uniform;
 use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
@@ -687,5 +691,23 @@ impl World {
 
     pub fn sector_exists(&self, sector: Sector) -> bool {
         self.world_cache.sector_exists(sector)
+    }
+
+    pub fn fov_from(&self, origin: Location, range: i32) -> IndexSet<Location> {
+        // Use IndexSet as return type because eg. AI logic for dealing with seen things may depend
+        // on iteration order.
+        debug_assert!(range >= 0);
+
+        IndexSet::from_iter(
+            HexFov::new(SightFov::new(self, range as u32, origin))
+                .add_fake_isometric_acute_corners(|pos, a| {
+                    self.terrain(a.origin + pos).is_wall()
+                })
+                .map(|(pos, a)| a.origin + pos),
+        )
+    }
+
+    pub fn distance_between(&self, e1: Entity, e2: Entity) -> Option<i32> {
+        self.location(e1)?.distance_from(self.location(e2)?)
     }
 }
