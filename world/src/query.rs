@@ -646,24 +646,6 @@ impl World {
         1.0
     }
 
-    /// Return count on entity if it's a stack
-    pub fn count(&self, e: Entity) -> u32 {
-        if let Some(stacking) = self.ecs().stacking.get(e) {
-            debug_assert!(stacking.count >= 1, "Invalid item stack size");
-            stacking.count
-        } else {
-            1
-        }
-    }
-
-    pub fn max_stack_size(&self, e: Entity) -> u32 {
-        if self.ecs().stacking.contains(e) {
-            99
-        } else {
-            1
-        }
-    }
-
     pub fn has_ability(&self, e: Entity, ability: Ability) -> bool {
         self.list_abilities(e).into_iter().any(|x| x == ability)
     }

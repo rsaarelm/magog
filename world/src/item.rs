@@ -1,6 +1,6 @@
-use crate::command::ActionOutcome;
-use crate::effect::Ability;
-use crate::world::World;
+//! Item and equipment logic
+
+use crate::{command::ActionOutcome, effect::Ability, world::World};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
@@ -210,5 +210,23 @@ impl World {
 
     pub fn is_stackable(&self, e: Entity) -> bool {
         self.ecs().stacking.contains(e)
+    }
+
+    /// Return count on entity if it's a stack
+    pub fn count(&self, e: Entity) -> u32 {
+        if let Some(stacking) = self.ecs().stacking.get(e) {
+            debug_assert!(stacking.count >= 1, "Invalid item stack size");
+            stacking.count
+        } else {
+            1
+        }
+    }
+
+    pub fn max_stack_size(&self, e: Entity) -> u32 {
+        if self.ecs().stacking.contains(e) {
+            99
+        } else {
+            1
+        }
     }
 }
