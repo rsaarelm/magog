@@ -1,9 +1,8 @@
 //! Data for generating game entities.
 
 use crate::{
-    components::{
-        Brain, Desc, Health, Icon, ShoutType, StatsComponent, Statuses,
-    },
+    ai::{Brain, ShoutType},
+    components::{Desc, Health, Icon, StatsComponent, Statuses},
     item::ItemType,
     item::{Item, Stacking},
     sector::Biome,

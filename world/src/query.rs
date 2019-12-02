@@ -1,7 +1,7 @@
 //! Gameplay logic that answers questions but doesn't change anything
 
 use crate::{
-    components::{Alignment, BrainState, Status},
+    components::Status,
     fov::SightFov,
     grammar::{Noun, Pronoun},
     item::{self, EquipType},
@@ -46,20 +46,7 @@ impl World {
     /// Return reference to the world entity component system.
     pub fn ecs(&self) -> &Ecs { &self.ecs }
 
-    /// Return the AI state of an entity.
-    pub fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs().brain.get(e).and_then(|brain| Some(brain.state))
-    }
-
-    /// Return whether the entity is a mobile object (eg. active creature).
-    pub fn is_mob(&self, e: Entity) -> bool { self.ecs().brain.contains(e) }
-
     pub fn is_item(&self, e: Entity) -> bool { self.ecs().item.contains(e) }
-
-    /// Return the value for how a mob will react to other mobs.
-    pub fn alignment(&self, e: Entity) -> Option<Alignment> {
-        self.ecs().brain.get(e).map(|b| b.alignment)
-    }
 
     /// Return current health of an entity.
     pub fn hp(&self, e: Entity) -> i32 {
@@ -252,162 +239,9 @@ impl World {
             .map_or(false, |s| s.contains_key(&status))
     }
 
-    /// Return how many frames the entity will delay after an action.
-    pub fn action_delay(&self, e: Entity) -> u32 {
-        // Granular speed system:
-        // | slow and slowed  | 1 |
-        // | slow or slowed   | 2 |
-        // | normal           | 3 |
-        // | quick or hasted  | 4 |
-        // | quick and hasted | 5 |
-
-        let mut speed = 3;
-        if self.has_intrinsic(e, Intrinsic::Slow) {
-            speed -= 1;
-        }
-        if self.has_status(e, Status::Slowed) {
-            speed -= 1;
-        }
-        if self.has_intrinsic(e, Intrinsic::Quick) {
-            speed += 1;
-        }
-        if self.has_status(e, Status::Hasted) {
-            speed += 1;
-        }
-
-        match speed {
-            1 => 36,
-            2 => 18,
-            3 => 12,
-            4 => 9,
-            5 => 7,
-            _ => panic!("Invalid speed value {}", speed),
-        }
-    }
-
-    /// Return if the entity is a mob that should get an update this frame
-    /// based on its speed properties. Does not check for status effects like
-    /// sleep that might prevent actual action.
-    pub fn ticks_this_frame(&self, e: Entity) -> bool {
-        if !self.is_mob(e) || !self.is_alive(e) {
-            return false;
-        }
-
-        if self.has_status(e, Status::Delayed) {
-            return false;
-        }
-
-        true
-    }
-
-    /// Return whether the entity is dead and should be removed from the world.
-    pub fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
-
     /// Return true if the game has ended and the player can make no further
     /// actions.
     pub fn game_over(&self) -> bool { self.player().is_none() }
-
-    /// Return whether an entity is the player avatar mob.
-    pub fn is_player(&self, e: Entity) -> bool {
-        // TODO: Should this just check self.flags.player?
-        self.brain_state(e) == Some(BrainState::PlayerControl)
-            && self.is_alive(e)
-    }
-
-    /// Return whether an entity is under computer control
-    pub fn is_npc(&self, e: Entity) -> bool {
-        self.is_mob(e) && !self.is_player(e)
-    }
-
-    /// Return whether the entity is an awake mob.
-    pub fn is_active(&self, e: Entity) -> bool {
-        match self.brain_state(e) {
-            Some(BrainState::Asleep) => false,
-            Some(_) => true,
-            _ => false,
-        }
-    }
-
-    /// Return whether the entity is a mob that will act this frame.
-    pub fn acts_this_frame(&self, e: Entity) -> bool {
-        if !self.is_active(e) {
-            return false;
-        }
-        self.ticks_this_frame(e)
-    }
-
-    pub fn player_can_act(&self) -> bool {
-        if let Some(p) = self.player() {
-            self.acts_this_frame(p)
-        } else {
-            false
-        }
-    }
-
-    /// Look for targets to shoot in a direction.
-    pub fn find_target(
-        &self,
-        shooter: Entity,
-        dir: Dir6,
-        range: usize,
-    ) -> Option<Entity> {
-        let origin = self.location(shooter).unwrap();
-        let mut loc = origin;
-        for _ in 1..=range {
-            loc = loc.jump(self, dir);
-            if self.terrain(loc).blocks_shot() {
-                break;
-            }
-            if let Some(e) = self.mob_at(loc) {
-                if self.is_hostile_to(shooter, e) {
-                    return Some(e);
-                }
-            }
-        }
-        None
-    }
-
-    /// Try to get the next step on the path from origin towards destination.
-    ///
-    /// Tries to be fast, not necessarily doing proper pathfinding.
-    pub fn pathing_dir_towards(
-        &self,
-        e: Entity,
-        destination: Location,
-    ) -> Option<Dir6> {
-        // Could do all sorts of cool things here eventually like a Dijkstra map cache, but for now
-        // just doing very simple stuff.
-        if let Some(origin) = self.location(e) {
-            if let Some(dir) = origin.dir6_towards(destination) {
-                // Try direct approach, the the other directions.
-                for &turn in &[0, 1, -1, 2, -2, 3] {
-                    let dir = dir + turn;
-                    let next_loc = origin.jump(self, dir);
-                    if self.can_enter(e, next_loc) {
-                        return Some(dir);
-                    }
-                }
-                return None;
-            }
-        }
-        None
-    }
-
-    /// Return whether the entity wants to fight the other entity.
-    pub fn is_hostile_to(&self, e: Entity, other: Entity) -> bool {
-        let (a, b) = (self.alignment(e), self.alignment(other));
-        if a.is_none() || b.is_none() {
-            return false;
-        }
-
-        // Chaotics fight everything, otherwise different alignments fight.
-        a == Some(Alignment::Chaotic) || a != b
-    }
-
-    /// Return whether the entity should have an idle animation.
-    pub fn is_bobbing(&self, e: Entity) -> bool {
-        self.is_active(e) && !self.is_player(e)
-    }
 
     pub fn item_type(&self, e: Entity) -> Option<ItemType> {
         self.ecs().item.get(e).and_then(|item| Some(item.item_type))
@@ -577,16 +411,6 @@ impl World {
     /// Return whether the player can currently directly see the given location.
     pub fn player_sees(&self, loc: Location) -> bool {
         self.fov_status(loc) == Some(FovStatus::Seen)
-    }
-
-    /// Return the set of mobs that are in update range.
-    ///
-    /// In a large game world, the active set is limited to the player's surroundings.
-    pub fn active_mobs(&self) -> Vec<Entity> {
-        self.entities()
-            .filter(|&&e| self.is_mob(e))
-            .cloned()
-            .collect()
     }
 
     /// Return number of times item can be used.

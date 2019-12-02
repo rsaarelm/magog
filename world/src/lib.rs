@@ -99,6 +99,8 @@ impl<'a> MessageFormatter2<'a, World> {
     }
 }
 
+mod ai;
+
 mod animations;
 pub use animations::{Anim, AnimState, LerpLocation};
 

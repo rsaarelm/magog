@@ -1,8 +1,9 @@
 //! Gameplay logic that changes things
 
 use crate::{
+    ai::Brain,
     attack_damage,
-    components::{Brain, BrainState, Status},
+    components::Status,
     effect::{Damage, Effect},
     roll,
     sector::SECTOR_WIDTH,
@@ -130,157 +131,6 @@ impl World {
 
         self.ecs.anim.insert(e, anim);
         e
-    }
-
-    /// Run AI for all autonomous mobs.
-    pub(crate) fn ai_main(&mut self) {
-        for npc in self.active_mobs() {
-            self.heartbeat(npc);
-
-            if !self.is_npc(npc) {
-                continue;
-            }
-            if self.ticks_this_frame(npc) {
-                self.run_ai_for(npc)
-            }
-        }
-    }
-
-    /// Run AI for one non-player-controlled creature.
-    pub(crate) fn run_ai_for(&mut self, npc: Entity) {
-        const WAKEUP_DISTANCE: i32 = 5;
-
-        use crate::components::BrainState::*;
-        let brain_state =
-            self.brain_state(npc).expect("Running AI for non-mob");
-        match brain_state {
-            Asleep => {
-                // XXX: Only treat player mob as potential hostile.
-                // Can't model area conflict effects yet.
-                if let (Some(loc), Some(player), Some(player_loc)) = (
-                    self.location(npc),
-                    self.player(),
-                    self.player().map(|p| self.location(p)).unwrap_or(None),
-                ) {
-                    if self.player_sees(loc) {
-                        // Okay, tricky spot. Player might be seeing mob across a portal, in
-                        // which case we can't do naive distance check.
-                        // This could have a helper method that finds chart distance to self in
-                        // player's map memory.
-                        //
-                        // For now, let's just go with mobs past portals not waking up to
-                        // player.
-
-                        if loc.metric_distance(player_loc) <= WAKEUP_DISTANCE {
-                            self.designate_enemy(npc, player);
-                        }
-                    }
-                }
-            }
-            Hunting(target) => {
-                if self.rng().one_chance_in(12) {
-                    self.ai_drift(npc);
-                } else {
-                    self.ai_hunt(npc, target);
-                }
-            }
-            PlayerControl => {}
-        }
-    }
-
-    /// Approach and attack target entity.
-    pub(crate) fn ai_hunt(&mut self, npc: Entity, target: Entity) {
-        if let (Some(my_loc), Some(target_loc)) =
-            (self.location(npc), self.location(target))
-        {
-            if my_loc.metric_distance(target_loc) == 1 {
-                let _ = self.entity_melee(
-                    npc,
-                    my_loc.dir6_towards(target_loc).unwrap(),
-                );
-            } else if let Some(move_dir) =
-                self.pathing_dir_towards(npc, target_loc)
-            {
-                let _ = self.entity_step(npc, move_dir);
-            } else {
-                self.ai_drift(npc);
-            }
-        }
-    }
-
-    /// Wander around aimlessly
-    pub(crate) fn ai_drift(&mut self, npc: Entity) {
-        let dirs = Dir6::permuted_dirs(self.rng());
-        for &dir in &dirs {
-            if self.entity_step(npc, dir).is_some() {
-                return;
-            }
-        }
-    }
-
-    /// End move for entity.
-    ///
-    /// Applies delay.
-    pub(crate) fn end_turn(&mut self, e: Entity) {
-        let delay = self.action_delay(e);
-        self.gain_status(e, Status::Delayed, delay);
-    }
-
-    pub(crate) fn notify_attacked_by(
-        &mut self,
-        victim: Entity,
-        attacker: Entity,
-    ) {
-        // TODO: Check if victim is already in close combat and don't disengage against new target
-        // if it is.
-        self.designate_enemy(victim, attacker);
-    }
-
-    pub(crate) fn designate_enemy(&mut self, e: Entity, target: Entity) {
-        // TODO: Probably want this logic to be more complex eventually.
-        if self.is_npc(e) {
-            if self.brain_state(e) == Some(BrainState::Asleep) {
-                self.shout(e);
-            }
-            if let Some(brain) = self.ecs_mut().brain.get_mut(e) {
-                brain.state = BrainState::Hunting(target);
-            }
-        }
-    }
-
-    /// Make a mob shout according to its type.
-    pub(crate) fn shout(&mut self, e: Entity) {
-        // TODO: Create noise, wake up other nearby monsters.
-        use crate::components::ShoutType;
-        if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
-            match shout {
-                ShoutType::Shout => {
-                    msg!(self, "[One] shout[s] angrily.").subject(e).send();
-                }
-                ShoutType::Hiss => {
-                    msg!(self, "[One] hiss[es].").subject(e).send();
-                }
-                ShoutType::Buzz => {
-                    msg!(self, "[One] buzz[es] loudly.").subject(e).send();
-                }
-                ShoutType::Roar => {
-                    msg!(self, "[One] roar[s] ferociously.").subject(e).send();
-                }
-                ShoutType::Gurgle => {
-                    msg!(self, "[One] gurgle[s].").subject(e).send();
-                }
-                ShoutType::Bark => {
-                    msg!(self, "[One] bark[s].").subject(e).send();
-                }
-                ShoutType::Meow => {
-                    msg!(self, "[One] meow[s].").subject(e).send();
-                }
-                ShoutType::Squeak => {
-                    msg!(self, "[One] squeak[s].").subject(e).send();
-                }
-                ShoutType::Silent => {}
-            }
-        }
     }
 
     /// Remove destroyed entities from system

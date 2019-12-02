@@ -1,11 +1,7 @@
 use crate::{
-    components,
-    flags::Flags,
-    item::{Item, Stacking},
-    spatial::Spatial,
-    spec::EntitySpawn,
-    world_cache::WorldCache,
-    Anim, Distribution, Event, ExternalEntity, Location, Rng, WorldSkeleton,
+    ai, animations, components, flags::Flags, item, spatial::Spatial,
+    spec::EntitySpawn, world_cache::WorldCache, Distribution, Event,
+    ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
 use serde_derive::{Deserialize, Serialize};
@@ -14,13 +10,13 @@ use std::collections::HashSet;
 pub const GAME_VERSION: &str = "0.1.0";
 
 calx_ecs::build_ecs! {
+    anim: animations::Anim,
+    brain: ai::Brain,
     desc: components::Desc,
-    anim: Anim,
-    map_memory: components::MapMemory,
     health: components::Health,
-    brain: components::Brain,
-    item: Item,
-    stacking: Stacking,
+    item: item::Item,
+    map_memory: components::MapMemory,
+    stacking: item::Stacking,
     stats: components::StatsComponent,
     status: components::Statuses,
 }

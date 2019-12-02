@@ -2,7 +2,6 @@ use crate::location::Location;
 use crate::location_set::LocationSet;
 use crate::stats::Stats;
 use crate::FovStatus;
-use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -124,90 +123,6 @@ impl MapMemory {
             None
         }
     }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub struct Brain {
-    pub state: BrainState,
-    pub alignment: Alignment,
-    pub shout: ShoutType,
-}
-
-impl Brain {
-    /// Create default enemy brain.
-    pub fn enemy() -> Brain {
-        Brain {
-            ..Default::default()
-        }
-    }
-
-    /// Create default player brain.
-    pub fn player() -> Brain {
-        Brain {
-            state: BrainState::PlayerControl,
-            alignment: Alignment::Good,
-            ..Default::default()
-        }
-    }
-
-    pub fn shout(mut self, shout: ShoutType) -> Brain {
-        self.shout = shout;
-        self
-    }
-}
-
-impl Default for Brain {
-    fn default() -> Brain {
-        Brain {
-            state: BrainState::Asleep,
-            alignment: Alignment::Evil,
-            shout: ShoutType::Silent,
-        }
-    }
-}
-
-/// Mob behavior state.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub enum BrainState {
-    /// AI mob is inactive, but can be startled into action by noise or
-    /// motion.
-    Asleep,
-    /// AI mob is looking for a fight.
-    Hunting(Entity),
-    /// Mob is under player control.
-    PlayerControl,
-}
-
-/// How does a mob vocalize when alerted?
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub enum ShoutType {
-    /// Humanoids
-    Shout,
-    /// Reptiles
-    Hiss,
-    /// Insects
-    Buzz,
-    /// Large monsters
-    Roar,
-    /// Slimes
-    Gurgle,
-    Bark,
-    Meow,
-    Squeak,
-    Silent,
-}
-
-/// Used to determine who tries to fight whom.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub enum Alignment {
-    /// Attack anything and everything.
-    Chaotic,
-    /// Player alignment. The noble path of slaughtering everything that moves
-    /// and gets in the way of taking their shiny stuff.
-    Good,
-    /// Enemy alignment. The foul cause of working together to defend your
-    /// home and belongings against a powerful and devious intruder.
-    Evil,
 }
 
 /// Damage state component. The default state is undamaged and unarmored.
