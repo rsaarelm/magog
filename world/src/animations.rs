@@ -17,19 +17,20 @@ pub struct LerpLocation {
 }
 
 impl LerpLocation {
-    /// Create a normalized `LerpLocation` that offsets `Location` by integer parts of `offset`.
-    ///
-    /// Result is guaranteed to describe a point within unit radius of its location's center.
     pub fn new(
         location: Location,
         offset: Vector2D<f32, CellSpace>,
     ) -> LerpLocation {
+        // XXX: This could be normalized so that location gets displaced if offset is longer than a
+        // cell's width, but that doesn't work with the current display code that always draws
+        // entities in their logical location, not whatever LerpLocation says it is. Would need to
+        // develop a new spatial index that finds entities in the cell of LerpLocation for drawing.
+        // (This is mostly relevant to projectiles that fly across several cells).
+        //
+        // As it stands, the location field is a bit useless since it will always match the
+        // entity's logical location. It used to get moved before I noticed the bug with it.
         LerpLocation {
-            location: Location::new(
-                location.x + offset.x.trunc() as i16,
-                location.y + offset.y.trunc() as i16,
-                location.z,
-            ),
+            location,
             offset: vec2(offset.x.fract(), offset.y.fract()),
         }
     }
