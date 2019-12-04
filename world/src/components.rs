@@ -1,9 +1,7 @@
 use crate::location::Location;
 use crate::location_set::LocationSet;
-use crate::stats::Stats;
 use crate::FovStatus;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 
 /// The visual representation for an entity
 ///
@@ -122,58 +120,5 @@ impl MapMemory {
         } else {
             None
         }
-    }
-}
-
-/// Damage state component. The default state is undamaged and unarmored.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
-pub struct Health {
-    /// The more wounds you have, the more hurt you are. How much damage you
-    /// can take before dying depends on entity power level, not described by
-    /// Wounds component. Probably in MobStat or something.
-    pub wounds: i32,
-    /// Armor points get eaten away before you start getting wounds.
-    pub armor: i32,
-}
-
-impl Health {
-    pub fn new() -> Health { Default::default() }
-}
-
-#[derive(
-    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize,
-)]
-/// Temporary creature properties
-pub enum Status {
-    /// Creature is acting erratically
-    Confused,
-    /// Is dead (not undead-dead, no-longer-subject-to-animate-things-logic-dead)
-    Dead,
-    /// Moves 1/3 slower than usual, stacks with Slow intrinsic.
-    Slowed,
-    /// Moves 1/3 faster than usual, stacks with Quick intrinsic.
-    Hasted,
-    /// Creature is delayed.
-    ///
-    /// This gets jumped up every time after the creature acted.
-    Delayed,
-}
-
-pub type Statuses = BTreeMap<Status, u32>;
-
-/// Stats component in the ECS that supports caching applied modifiers for efficiency.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
-pub struct StatsComponent {
-    /// Base stats that are intrinsic to this entity
-    pub base: Stats,
-    /// Modified stats derived from base and various effects that apply.
-    ///
-    /// Must be explicitly regenerated whenever an attached stats-affecting entity changes.
-    pub actual: Stats,
-}
-
-impl StatsComponent {
-    pub fn new(base: Stats) -> StatsComponent {
-        StatsComponent { base, actual: base }
     }
 }

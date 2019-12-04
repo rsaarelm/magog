@@ -1,15 +1,14 @@
 //! Gameplay logic that answers questions but doesn't change anything
 
 use crate::{
-    components::Status,
     fov::SightFov,
     grammar::{Noun, Pronoun},
     item::{self, EquipType},
     location::Location,
     mapsave,
     spec::EntitySpawn,
-    stats::{self, Intrinsic},
-    Ability, Ecs, FovStatus, Icon, ItemType, Sector, Slot, Terrain, World,
+    stats::Intrinsic,
+    Ecs, FovStatus, Icon, ItemType, Sector, Slot, Terrain, World,
 };
 use calx::{
     hex_neighbors, CellVector, Clamp, Dir6, HexFov, HexFovIter, HexGeom, Noise,
@@ -40,23 +39,10 @@ impl World {
     /// Return world RNG seed
     pub fn rng_seed(&self) -> u32 { self.world_cache.seed() }
 
-    /// Return maximum health of an entity.
-    pub fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
-
     /// Return reference to the world entity component system.
     pub fn ecs(&self) -> &Ecs { &self.ecs }
 
     pub fn is_item(&self, e: Entity) -> bool { self.ecs().item.contains(e) }
-
-    /// Return current health of an entity.
-    pub fn hp(&self, e: Entity) -> i32 {
-        self.max_hp(e)
-            - if self.ecs().health.contains(e) {
-                self.ecs().health[e].wounds
-            } else {
-                0
-            }
-    }
 
     /// Return field of view for a location.
     pub fn fov_status(&self, loc: Location) -> Option<FovStatus> {
@@ -104,25 +90,6 @@ impl World {
         }
         // TODO: Human mobs get he/she pronoun instead of it.
         ret
-    }
-
-    /// Return the (composite) stats for an entity.
-    ///
-    /// Will return the default value for the Stats type (additive identity in the stat algebra)
-    /// for entities that have no stats component defined.
-    pub fn stats(&self, e: Entity) -> stats::Stats {
-        self.ecs()
-            .stats
-            .get(e)
-            .map(|s| s.actual)
-            .unwrap_or_default()
-    }
-
-    /// Return the base stats of the entity. Does not include any added effects.
-    ///
-    /// You usually want to use the `stats` method instead of this one.
-    pub fn base_stats(&self, e: Entity) -> stats::Stats {
-        self.ecs().stats.get(e).map(|s| s.base).unwrap_or_default()
     }
 
     /// Return whether the entity can move in a direction.
@@ -224,19 +191,6 @@ impl World {
     /// Return first item at given location.
     pub fn item_at(&self, loc: Location) -> Option<Entity> {
         self.entities_at(loc).into_iter().find(|&e| self.is_item(e))
-    }
-
-    /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
-    pub fn has_intrinsic(&self, e: Entity, intrinsic: Intrinsic) -> bool {
-        self.stats(e).intrinsics & (1 << intrinsic as u32) != 0
-    }
-
-    /// Return whether the entity has a specific temporary status
-    pub fn has_status(&self, e: Entity, status: Status) -> bool {
-        self.ecs()
-            .status
-            .get(e)
-            .map_or(false, |s| s.contains_key(&status))
     }
 
     /// Return true if the game has ended and the player can make no further
@@ -468,31 +422,6 @@ impl World {
 
         // Otherwise things are bright.
         1.0
-    }
-
-    pub fn has_ability(&self, e: Entity, ability: Ability) -> bool {
-        self.list_abilities(e).into_iter().any(|x| x == ability)
-    }
-
-    pub fn list_abilities(&self, e: Entity) -> Vec<Ability> {
-        // Check for item abilities.
-        if let Some(item) = self.ecs().item.get(e) {
-            match item.item_type {
-                ItemType::UntargetedUsable(ability) => {
-                    return vec![ability];
-                }
-                ItemType::TargetedUsable(ability) => {
-                    return vec![ability];
-                }
-                ItemType::Instant(ability) => {
-                    return vec![ability];
-                }
-                _ => {}
-            }
-        }
-
-        // Entity has no abilites.
-        Vec::new()
     }
 
     pub fn sector_exists(&self, sector: Sector) -> bool {

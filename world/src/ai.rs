@@ -1,6 +1,9 @@
 //! Creature AI and activity loop logic
 
-use crate::{components::Status, stats::Intrinsic, Location, World};
+use crate::{
+    stats::{Intrinsic, Status},
+    Location, World,
+};
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};

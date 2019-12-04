@@ -1,6 +1,6 @@
 use crate::{
     ai, animations, components, flags::Flags, item, spatial::Spatial,
-    spec::EntitySpawn, world_cache::WorldCache, Distribution, Event,
+    spec::EntitySpawn, stats, world_cache::WorldCache, Distribution, Event,
     ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
@@ -13,12 +13,12 @@ calx_ecs::build_ecs! {
     anim: animations::Anim,
     brain: ai::Brain,
     desc: components::Desc,
-    health: components::Health,
+    health: stats::Health,
     item: item::Item,
     map_memory: components::MapMemory,
     stacking: item::Stacking,
-    stats: components::StatsComponent,
-    status: components::Statuses,
+    stats: stats::StatsComponent,
+    status: stats::Statuses,
 }
 
 #[derive(Serialize, Deserialize)]

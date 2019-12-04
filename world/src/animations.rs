@@ -31,7 +31,7 @@ impl LerpLocation {
         // entity's logical location. It used to get moved before I noticed the bug with it.
         LerpLocation {
             location,
-            offset: vec2(offset.x.fract(), offset.y.fract()),
+            offset: vec2(offset.x, offset.y),
         }
     }
 

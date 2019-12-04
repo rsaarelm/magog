@@ -3,10 +3,10 @@
 use crate::{
     ai::Brain,
     attack_damage,
-    components::Status,
     effect::{Damage, Effect},
     roll,
     sector::SECTOR_WIDTH,
+    stats::Status,
     volume::Volume,
     Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity,
     Location, Slot, World,
@@ -285,80 +285,6 @@ impl World {
         }
     }
 
-    pub(crate) fn damage(
-        &mut self,
-        e: Entity,
-        amount: i32,
-        damage_type: Damage,
-        source: Option<Entity>,
-    ) {
-        if let Some(attacker) = source {
-            self.notify_attacked_by(e, attacker);
-        }
-
-        let max_hp = self.max_hp(e);
-
-        let mut hurt = false;
-        let mut kill = false;
-        if let Some(health) = self.ecs_mut().health.get_mut(e) {
-            if amount > 0 {
-                hurt = true;
-                health.wounds += amount;
-
-                if health.wounds > max_hp {
-                    kill = true;
-                }
-            }
-        }
-
-        // Animate damage
-        if hurt {
-            let anim_tick = self.get_anim_tick();
-            if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
-                anim.anim_start = anim_tick;
-                anim.state = AnimState::MobHurt;
-            }
-        }
-
-        if kill {
-            if let Some(loc) = self.location(e) {
-                if self.player_sees(loc) {
-                    // TODO: message templating
-                    msg!(
-                        self,
-                        "[One] {}.",
-                        match damage_type {
-                            Damage::Physical => "die[s]",
-                            Damage::Fire => "burn[s] to ash",
-                            Damage::Electricity => "[is] electrocuted",
-                        }
-                    )
-                    .subject(e)
-                    .send();
-                }
-                self.spawn_fx(loc, AnimState::Gib);
-            }
-            self.kill_entity(e);
-        }
-    }
-
-    /// Do a single step of natural regeneration for a creature.
-    ///
-    /// Return amount of health gained, or None if at full health.
-    pub(crate) fn tick_regeneration(&mut self, e: Entity) -> Option<i32> {
-        let max_hp = self.max_hp(e);
-        let increase = (max_hp / 30).max(1);
-
-        let health = self.ecs_mut().health.get_mut(e)?;
-        if health.wounds > 0 {
-            let increase = increase.min(health.wounds);
-            health.wounds -= increase;
-            Some(increase)
-        } else {
-            None
-        }
-    }
-
     pub(crate) fn spawn(
         &mut self,
         entity: &ExternalEntity,
@@ -453,78 +379,6 @@ impl World {
     /// This runs regardless of the action speed or awakeness status of the entity. The exact same
     /// is run for player and AI entities.
     pub(crate) fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
-
-    pub(crate) fn gain_status(
-        &mut self,
-        e: Entity,
-        status: Status,
-        duration: u32,
-    ) {
-        if duration == 0 {
-            return;
-        }
-
-        if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
-            if let Some(current_duration) = statuses.get(&status).cloned() {
-                if duration > current_duration {
-                    // Pump up the duration.
-                    statuses.insert(status, duration);
-                }
-            } else {
-                // TODO: Special stuff when status first goes into effect goes here
-                statuses.insert(status, duration);
-            }
-        }
-    }
-
-    pub(crate) fn tick_statuses(&mut self, e: Entity) {
-        if let Some(statuses) = self.ecs_mut().status.get_mut(e) {
-            let mut remove = Vec::new();
-
-            for (k, d) in statuses.iter_mut() {
-                *d -= 1;
-                if *d == 0 {
-                    remove.push(*k);
-                }
-            }
-
-            // TODO: Special stuff when status goes out of effect for dropped statuses.
-            for k in remove.into_iter() {
-                statuses.remove(&k);
-            }
-        }
-    }
-
-    /// Rebuild cached derived stats of an entity.
-    ///
-    /// Must be explicitly called any time either the entity's base stats or anything relating to
-    /// attached stat-affecting entities like equipped items is changed.
-    pub(crate) fn rebuild_stats(&mut self, e: Entity) {
-        if !self.ecs().stats.contains(e) {
-            return;
-        }
-
-        // Start with the entity's base stats.
-        let mut stats = self.base_stats(e);
-
-        // Add in stat modifiers from equipped items.
-        for &slot in Slot::equipment_iter() {
-            if let Some(item) = self.entity_equipped(e, slot) {
-                stats = stats + self.stats(item);
-            }
-        }
-
-        // Set the derived stats.
-        self.ecs_mut().stats[e].actual = stats;
-    }
-
-    /// Consume one unit of nutrition
-    ///
-    /// Return false if the entity has an empty stomach.
-    pub(crate) fn consume_nutrition(&mut self, _: Entity) -> bool {
-        // TODO nutrition system
-        true
-    }
 
     pub(crate) fn use_ability(
         &mut self,

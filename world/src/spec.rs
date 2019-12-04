@@ -2,11 +2,11 @@
 
 use crate::{
     ai::{Brain, ShoutType},
-    components::{Desc, Health, Icon, StatsComponent, Statuses},
+    components::{Desc, Icon},
     item::ItemType,
     item::{Item, Stacking},
     sector::Biome,
-    stats::{Intrinsic, Stats},
+    stats::{Health, Intrinsic, Stats, StatsComponent, Statuses},
     world::Loadout,
     Anim, Distribution, ExternalEntity, Rng,
 };
