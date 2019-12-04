@@ -1,4 +1,8 @@
-use crate::{effect::Damage, Ability, AnimState, ItemType, Slot, World};
+use crate::{
+    attack_damage, effect::Damage, roll, Ability, ActionOutcome, AnimState,
+    ItemType, Slot, World,
+};
+use calx::Dir6;
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -12,11 +16,11 @@ use std::ops::Add;
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub struct Stats {
     /// Generic power level
-    pub power: i32,
+    pub base_power: i32,
     /// Attack bonus
-    pub attack: i32,
+    pub base_attack: i32,
     /// Defense bonus
-    pub defense: i32,
+    pub base_defense: i32,
     /// Damage reduction
     pub armor: i32,
     /// Mana pool / mana drain
@@ -26,26 +30,41 @@ pub struct Stats {
     /// Ranged attack power
     pub ranged_power: i32,
 
+    /// Character level
+    pub level: i32,
+    /// Experience points
+    pub xp: i32,
+
     /// Bit flags for intrinsics
     pub intrinsics: u32,
 }
 
 impl Stats {
-    pub fn new(power: i32, intrinsics: &[Intrinsic]) -> Stats {
+    pub fn new(base_power: i32, intrinsics: &[Intrinsic]) -> Stats {
         let intrinsics =
             intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
         Stats {
-            power,
+            base_power,
             intrinsics,
-            attack: power,
+            base_attack: base_power,
             ..Default::default()
         }
     }
 
     pub fn mana(self, mana: i32) -> Stats { Stats { mana, ..self } }
     pub fn armor(self, armor: i32) -> Stats { Stats { armor, ..self } }
-    pub fn attack(self, attack: i32) -> Stats { Stats { attack, ..self } }
-    pub fn defense(self, defense: i32) -> Stats { Stats { defense, ..self } }
+    pub fn attack(self, base_attack: i32) -> Stats {
+        Stats {
+            base_attack,
+            ..self
+        }
+    }
+    pub fn defense(self, base_defense: i32) -> Stats {
+        Stats {
+            base_defense,
+            ..self
+        }
+    }
     pub fn ranged_range(self, ranged_range: u32) -> Stats {
         Stats {
             ranged_range,
@@ -69,9 +88,9 @@ impl Add<Stats> for Stats {
     #[allow(clippy::suspicious_arithmetic_impl)]
     fn add(self, other: Stats) -> Stats {
         Stats {
-            power: self.power + other.power,
-            attack: self.attack + other.attack,
-            defense: self.defense + other.defense,
+            base_power: self.base_power + other.base_power,
+            base_attack: self.base_attack + other.base_attack,
+            base_defense: self.base_defense + other.base_defense,
             armor: self.armor + other.armor,
             mana: self.mana + other.mana,
             // XXX: Must be careful to have exactly one "ranged weapon" item
@@ -81,6 +100,10 @@ impl Add<Stats> for Stats {
             // type dealie.
             ranged_range: self.ranged_range + other.ranged_range,
             ranged_power: self.ranged_power + other.ranged_power,
+
+            level: self.level + other.level,
+            xp: self.xp + other.xp,
+
             intrinsics: self.intrinsics | other.intrinsics,
         }
     }
@@ -155,8 +178,20 @@ pub enum Intrinsic {
 }
 
 impl World {
+    pub fn power(&self, e: Entity) -> i32 {
+        self.stats(e).base_power + self.stats(e).level * 2
+    }
+
+    pub fn attack(&self, e: Entity) -> i32 {
+        self.stats(e).base_attack + self.stats(e).level * 2
+    }
+
+    pub fn defense(&self, e: Entity) -> i32 {
+        self.stats(e).base_defense + self.stats(e).level * 2
+    }
+
     /// Return maximum health of an entity.
-    pub fn max_hp(&self, e: Entity) -> i32 { self.stats(e).power }
+    pub fn max_hp(&self, e: Entity) -> i32 { self.power(e) }
 
     /// Return current health of an entity.
     pub fn hp(&self, e: Entity) -> i32 {
@@ -185,6 +220,10 @@ impl World {
     /// You usually want to use the `stats` method instead of this one.
     pub fn base_stats(&self, e: Entity) -> Stats {
         self.ecs().stats.get(e).map(|s| s.base).unwrap_or_default()
+    }
+
+    fn base_stats_mut(&mut self, e: Entity) -> Option<&mut Stats> {
+        self.ecs_mut().stats.get_mut(e).map(|s| &mut s.base)
     }
 
     /// Return whether the entity has a specific intrinsic property (eg. poison resistance).
@@ -261,6 +300,10 @@ impl World {
         }
 
         if kill {
+            if let Some(attacker) = source {
+                self.gain_kill_xp(attacker, e);
+            }
+
             if let Some(loc) = self.location(e) {
                 if self.player_sees(loc) {
                     // TODO: message templating
@@ -369,5 +412,94 @@ impl World {
     pub(crate) fn consume_nutrition(&mut self, _: Entity) -> bool {
         // TODO nutrition system
         true
+    }
+
+    pub(crate) fn really_melee(
+        &mut self,
+        e: Entity,
+        dir: Dir6,
+    ) -> ActionOutcome {
+        let loc = self.location(e)?;
+        let target = self.mob_at(loc.jump(self, dir))?;
+
+        // XXX: Using power stat for damage, should this be different?
+        // Do +5 since dmg 1 is really, really useless.
+        let advantage = self.attack(e) - self.defense(target)
+            + 2 * self.stats(target).armor;
+        let damage =
+            attack_damage(roll(self.rng()), advantage, 5 + self.power(e));
+
+        if damage == 0 {
+            msg!(self, "[One] miss[es] [another].")
+                .subject(e)
+                .object(target)
+                .send();
+        } else {
+            msg!(self, "[One] hit[s] [another] for {}.", damage)
+                .subject(e)
+                .object(target)
+                .send();
+        }
+        self.damage(target, damage, Damage::Physical, Some(e));
+        self.end_turn(e);
+        Some(true)
+    }
+
+    fn gain_kill_xp(&mut self, e: Entity, kill: Entity) {
+        let power_diff = self.power(kill) - self.power(e);
+        // XXX: Just threw something together, needs blanning and balancing.
+        let xp = match power_diff {
+            x if x > 2 => 15,
+            2 => 10,
+            1 => 8,
+            0 => 5,
+            -1 => 4,
+            -2 => 2,
+            _ => 1,
+        };
+
+        self.gain_xp(e, xp);
+    }
+
+    pub(crate) fn gain_xp(&mut self, e: Entity, xp: i32) {
+        const XP_PER_LEVEL: i32 = 100;
+
+        let mut new_xp = self.stats(e).xp + xp;
+
+        while new_xp >= XP_PER_LEVEL {
+            self.gain_level(e, 1);
+            new_xp -= XP_PER_LEVEL;
+        }
+
+        // Level drain!
+        while new_xp < 0 {
+            self.gain_level(e, -1);
+            new_xp += XP_PER_LEVEL;
+        }
+        self.base_stats_mut(e).unwrap().xp = new_xp;
+        self.rebuild_stats(e);
+    }
+
+    fn gain_level(&mut self, e: Entity, change: i32) {
+        if change == 0 {
+            return;
+        }
+        if change < 0 {
+            // TODO
+            panic!("Level drain not yet implemented");
+        }
+
+        self.base_stats_mut(e).unwrap().level += change;
+        self.rebuild_stats(e);
+
+        if let Some(health) = self.ecs_mut().health.get_mut(e) {
+            health.wounds = 0;
+        }
+
+        if self.is_player(e) {
+            msg!(self, "[One] feel[s] stronger.").subject(e).send();
+        } else {
+            msg!(self, "[One] look[s] stronger.").subject(e).send();
+        }
     }
 }

@@ -2,9 +2,7 @@
 
 use crate::{
     ai::Brain,
-    attack_damage,
     effect::{Damage, Effect},
-    roll,
     sector::SECTOR_WIDTH,
     stats::Status,
     volume::Volume,
@@ -222,37 +220,6 @@ impl World {
         }
 
         None
-    }
-
-    pub(crate) fn really_melee(
-        &mut self,
-        e: Entity,
-        dir: Dir6,
-    ) -> ActionOutcome {
-        let loc = self.location(e)?;
-        let target = self.mob_at(loc.jump(self, dir))?;
-
-        // XXX: Using power stat for damage, should this be different?
-        // Do +5 since dmg 1 is really, really useless.
-        let advantage = self.stats(e).attack - self.stats(target).defense
-            + 2 * self.stats(target).armor;
-        let damage =
-            attack_damage(roll(self.rng()), advantage, 5 + self.stats(e).power);
-
-        if damage == 0 {
-            msg!(self, "[One] miss[es] [another].")
-                .subject(e)
-                .object(target)
-                .send();
-        } else {
-            msg!(self, "[One] hit[s] [another] for {}.", damage)
-                .subject(e)
-                .object(target)
-                .send();
-        }
-        self.damage(target, damage, Damage::Physical, Some(e));
-        self.end_turn(e);
-        Some(true)
     }
 
     /// Randomly make a confused mob move erratically.
