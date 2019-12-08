@@ -10,7 +10,7 @@ use crate::{
 use calx::{
     self, die, seeded_rng, CellVector, RngExt, Transformation, WeightedChoice,
 };
-use euclid::{vec2, vec3, Vector3D};
+use euclid::{vec2, vec3};
 use lazy_static::lazy_static;
 use log::{debug, warn};
 use rand::seq::SliceRandom;
@@ -26,7 +26,7 @@ pub const SECTOR_WIDTH: i32 = 40;
 pub const SECTOR_HEIGHT: i32 = 20;
 
 pub struct SectorSpace;
-pub type SectorVector = Vector3D<i16, SectorSpace>;
+pub type SectorVector = euclid::Vector3D<i16, SectorSpace>;
 
 /// Non-scrolling screen.
 ///
@@ -58,6 +58,17 @@ impl Add<SectorVector> for Sector {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z,
+        }
+    }
+}
+
+impl Add<euclid::Vector2D<i32, SectorSpace>> for Sector {
+    type Output = Sector;
+    fn add(self, other: euclid::Vector2D<i32, SectorSpace>) -> Sector {
+        Sector {
+            x: self.x + other.x as i16,
+            y: self.y + other.y as i16,
+            z: self.z,
         }
     }
 }
@@ -140,6 +151,27 @@ impl Sector {
 
 pub struct TerrainHexSpace;
 pub type HexVector = euclid::Vector2D<i32, TerrainHexSpace>;
+
+impl TerrainHexSpace {
+    /// Return the group of sectors a terrain hex overlaps.
+    pub fn sectors(terrain_hex: HexVector) -> Vec<Sector> {
+        let out_of_phase = terrain_hex.y.rem_euclid(2) == 1;
+        let origin = TerrainHexSpace::project(terrain_hex);
+        let sector =
+            Location::new(origin[0] as i16, origin[1] as i16, 0).sector();
+
+        if out_of_phase {
+            vec![
+                sector,
+                sector + vec2(1, 0),
+                sector + vec2(0, 1),
+                sector + vec2(1, 1),
+            ]
+        } else {
+            vec![sector, sector + vec2(0, -1), sector + vec2(0, 1)]
+        }
+    }
+}
 
 // Macro-hexes (uv) in cell space (xy)
 //
@@ -949,6 +981,40 @@ mod test {
 
         assert!(hex_points.is_superset(&center_sector));
         assert!(hex_points.is_disjoint(&sector_sides));
+    }
+
+    #[test]
+    fn test_terrain_hex_cover() {
+        use super::TerrainHexSpace;
+        use euclid::vec2;
+        use std::collections::HashSet;
+
+        assert_eq!(
+            TerrainHexSpace::sectors(vec2(0, 0))
+                .into_iter()
+                .collect::<HashSet<_>>(),
+            vec![
+                Sector::new(0, -1, 0),
+                Sector::new(0, 0, 0),
+                Sector::new(0, 1, 0)
+            ]
+            .into_iter()
+            .collect()
+        );
+
+        assert_eq!(
+            TerrainHexSpace::sectors(vec2(0, 1))
+                .into_iter()
+                .collect::<HashSet<_>>(),
+            vec![
+                Sector::new(0, 1, 0),
+                Sector::new(-1, 1, 0),
+                Sector::new(0, 2, 0),
+                Sector::new(-1, 2, 0),
+            ]
+            .into_iter()
+            .collect()
+        );
     }
 
     #[test]
