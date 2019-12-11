@@ -52,7 +52,7 @@ impl Transformation for CellSpace {
 }
 
 /// Projection from a different space into `CellSpace`.
-pub trait Space {
+pub trait DeprecatedSpace {
     /// Project from local space to `CellSpace`.
     fn to_cell_space(self) -> CellVector;
 
@@ -60,7 +60,7 @@ pub trait Space {
     fn from_cell_space(cell: CellVector) -> Self;
 }
 
-impl<T, U> Space for Vector2D<T, U>
+impl<T, U> DeprecatedSpace for Vector2D<T, U>
 where
     T: Copy,
     U: Transformation<Element = T>,
@@ -69,7 +69,7 @@ where
     fn from_cell_space(cell: CellVector) -> Self { U::unproject(cell).into() }
 }
 
-impl<T, U> Space for Vector3D<T, U>
+impl<T, U> DeprecatedSpace for Vector3D<T, U>
 where
     T: Copy + Default,
     U: Transformation<Element = T>,

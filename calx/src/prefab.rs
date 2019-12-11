@@ -1,7 +1,7 @@
 use crate::{
     alg_misc::bounding_rect,
     cell::{CellSpace, CellVector},
-    space::{Space, Transformation},
+    deprecated_space::{DeprecatedSpace, Transformation},
 };
 use euclid::{point2, vec2, Point2D, Vector2D};
 use image::{self, Pixel};
@@ -566,7 +566,7 @@ impl Transformation for MinimapSpace {
 #[cfg(test)]
 mod test {
     use super::MinimapSpace;
-    use crate::space::Transformation;
+    use crate::deprecated_space::Transformation;
 
     #[test]
     fn test_minimap_projection() {

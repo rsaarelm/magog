@@ -1,6 +1,7 @@
 mod alg_misc;
 mod cell;
 mod colors;
+mod deprecated_space;
 pub mod ease;
 mod hex;
 mod hex_fov;
@@ -10,7 +11,6 @@ mod parser;
 mod prefab;
 mod rng;
 mod search;
-mod space;
 pub mod stego;
 mod system;
 mod text;
@@ -24,6 +24,7 @@ pub use cell::{CellSpace, CellVector, Fov, FovValue, PolarPoint};
 pub use colors::{
     term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color,
 };
+pub use deprecated_space::{DeprecatedSpace, Transformation};
 pub use hex::{
     hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom,
 };
@@ -36,6 +37,5 @@ pub use prefab::{
 };
 pub use rng::{seeded_rng, RandomPermutation, RngExt};
 pub use search::{astar_path, Dijkstra, GridNode};
-pub use space::{Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};

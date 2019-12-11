@@ -5,7 +5,8 @@ use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
 use calx::{
-    CellSpace, CellVector, Clamp, FovValue, HexFov, Space, Transformation,
+    CellSpace, CellVector, Clamp, DeprecatedSpace, FovValue, HexFov,
+    Transformation,
 };
 use calx_ecs::Entity;
 use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
