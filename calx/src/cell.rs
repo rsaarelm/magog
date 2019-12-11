@@ -1,6 +1,17 @@
-use crate::CellVector;
-///! Generic field-of-view algorithm.
+///! Cell grid utilities
 use euclid::vec2;
+
+/// Space for a cell grid. Used for both square and hex tile maps.
+///
+/// When used for hex maps, `CellSpace` is still a regular euclidean space and does not use axis
+/// staggering. Squares in `CellSpace` coordinates are distorted into lozenges when displayed as a
+/// hex map. For a flat-top hex map, the convention is that the positive x-axis points to the
+/// 4-o'clock (southeast) neighbor hex and the positive y-axis points to the 8-o'clock (southwest)
+/// neighbor hex. For a pointy-top hex map, x-axis points to the 3-o'clock (east) neighbor hex and
+/// y-axis points to the 7-o'clock (southwest) neighbor hex.
+pub struct CellSpace;
+
+pub type CellVector = euclid::Vector2D<i32, CellSpace>;
 
 /// User data for field of view cells.
 pub trait FovValue: PartialEq + Clone {

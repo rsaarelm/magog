@@ -1,4 +1,4 @@
-use crate::fov::{Fov, PolarPoint};
+use crate::cell::{Fov, PolarPoint};
 use crate::hex::Dir6;
 use crate::CellVector;
 use euclid::vec2;
@@ -160,8 +160,7 @@ where
 mod test {
     use super::CellVector;
     use super::{HexFov, HexFovIter};
-    use crate::fov::FovValue;
-    use crate::hex::HexGeom;
+    use crate::{cell::FovValue, hex::HexGeom};
     use euclid::vec2;
     use std::collections::HashMap;
     use std::iter::FromIterator;

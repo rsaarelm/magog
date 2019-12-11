@@ -1,5 +1,8 @@
-use crate::alg_misc::bounding_rect;
-use crate::space::{CellSpace, CellVector, Space, Transformation};
+use crate::{
+    alg_misc::bounding_rect,
+    cell::{CellSpace, CellVector},
+    space::{Space, Transformation},
+};
 use euclid::{point2, vec2, Point2D, Vector2D};
 use image::{self, Pixel};
 use num::Integer;

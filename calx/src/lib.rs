@@ -1,7 +1,7 @@
 mod alg_misc;
+mod cell;
 mod colors;
 pub mod ease;
-mod fov;
 mod hex;
 mod hex_fov;
 mod incremental;
@@ -20,10 +20,10 @@ pub use alg_misc::{
     bounding_rect, compact_bits_by_2, lerp, retry_gen, spread_bits_by_2, Clamp,
     Deciban, GenericError, LerpPath, Noise, WeightedChoice,
 };
+pub use cell::{CellSpace, CellVector, Fov, FovValue, PolarPoint};
 pub use colors::{
     term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color,
 };
-pub use fov::{Fov, FovValue, PolarPoint};
 pub use hex::{
     hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom,
 };
@@ -36,6 +36,6 @@ pub use prefab::{
 };
 pub use rng::{seeded_rng, RandomPermutation, RngExt};
 pub use search::{astar_path, Dijkstra, GridNode};
-pub use space::{CellSpace, CellVector, Space, Transformation};
+pub use space::{Space, Transformation};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};
