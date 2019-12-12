@@ -1,7 +1,8 @@
 use crate::{
     alg_misc::bounding_rect,
     cell::{CellSpace, CellVector},
-    deprecated_space::{DeprecatedSpace, Transformation},
+    project,
+    space::{ProjectVec, Space},
 };
 use euclid::{point2, vec2, Point2D, Vector2D};
 use image::{self, Pixel};
@@ -108,27 +109,33 @@ pub trait FromPrefab {
 /// The oblique projection text map character coordinate space.
 pub struct TextSpace;
 
-pub type TextVector = Vector2D<i32, TextSpace>;
+impl Space for TextSpace {
+    type T = i32;
+}
 
-// | 2  -1 |
-// | 0   1 |
-//
 // | 1/2  1/2 |
 // |   0    1 |
+//
+// | 2  -1 |
+// | 0   1 |
 
-impl Transformation for TextSpace {
-    type Element = i32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let v = v.into();
-        [2 * v[0] - v[1], v[1]]
-    }
-
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        [(v[0] + v[1]) / 2, v[1]]
+impl project::From<TextSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<TextSpace as Space>::T, TextSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        vec2((vec.x + vec.y) / 2, vec.y)
     }
 }
+
+impl project::From<CellSpace> for TextSpace {
+    fn vec_from(
+        vec: Vector2D<<CellSpace as Space>::T, CellSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        vec2(2 * vec.x - vec.y, vec.y)
+    }
+}
+
+pub type TextVector = Vector2D<i32, TextSpace>;
 
 impl TextSpace {
     /// Which of the two possible map lattices is this vector in?
@@ -188,7 +195,7 @@ impl<S: Into<String>> IntoPrefab<char> for S {
             // Set origin
             let text_pos = *p - offset;
             // Store into cell space.
-            (text_pos.to_cell_space(), *c)
+            (text_pos.project(), *c)
         })))
     }
 }
@@ -216,7 +223,7 @@ impl FromPrefab for String {
         let min_x = prefab
             .iter()
             .chain(append)
-            .map(|(&pos, _)| TextVector::from_cell_space(pos).x)
+            .map(|(&pos, _)| pos.project::<TextSpace>().x)
             .min()
             .unwrap_or(0)
             - 1;
@@ -225,7 +232,7 @@ impl FromPrefab for String {
         let mut sorted: Vec<(TextVector, char)> = prefab
             .iter()
             .chain(append)
-            .map(|(&pos, &c)| (TextVector::from_cell_space(pos), c))
+            .map(|(&pos, &c)| (pos.project(), c))
             .collect();
 
         sorted.sort_by(|a, b| (a.0.y, a.0.x).cmp(&(b.0.y, b.0.x)));
@@ -343,7 +350,8 @@ impl<I, P, U> ProjectedImage<I, U>
 where
     I: image::GenericImage<Pixel = P>,
     P: image::Pixel<Subpixel = u8>,
-    U: Transformation<Element = i32>,
+    U: Space<T = i32>,
+    CellSpace: project::From<U>,
 {
     pub fn new(image: I) -> ProjectedImage<I, U> {
         ProjectedImage {
@@ -357,7 +365,8 @@ impl<I, P, U> IntoPrefab<SRgba> for ProjectedImage<I, U>
 where
     I: image::GenericImage<Pixel = P>,
     P: image::Pixel<Subpixel = u8>,
-    U: Transformation<Element = i32>,
+    U: Space<T = i32>,
+    CellSpace: project::From<U>,
 {
     fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(
         self,
@@ -422,8 +431,8 @@ where
         Ok(Q::from_iter(points.into_iter().flat_map(|(x, y)| {
             if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
                 let p =
-                    vec2::<i32, U>(x as i32 - anchor.x, y as i32 - anchor.y)
-                        .to_cell_space();
+                    vec2::<U::T, U>(x as i32 - anchor.x, y as i32 - anchor.y)
+                        .project();
 
                 // Only insert a cell the first time we see it.
                 if !seen_cells.contains(&p) {
@@ -453,7 +462,9 @@ impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>>
 impl<U> FromPrefab
     for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
 where
-    U: Transformation<Element = i32>,
+    U: Space<T = i32>,
+    CellSpace: project::From<U>,
+    U: project::From<CellSpace>,
 {
     type Cell = SRgba;
 
@@ -462,7 +473,7 @@ where
         // encoding) to calculate the projected bounds.
         let points: Vec<Point2D<i32, U>> = prefab
             .iter()
-            .map(|(&p, _)| Vector2D::from_cell_space(p).to_point())
+            .map(|(&p, _)| p.project().to_point())
             .chain(Some(point2(0, 0)))
             .collect();
 
@@ -470,8 +481,7 @@ where
         let bounds = bounding_rect(points.as_slice());
 
         debug_assert!({
-            let origin: Vector2D<i32, U> =
-                Vector2D::from_cell_space(vec2(0, 0));
+            let origin: Vector2D<U::T, U> = CellVector::new(0, 0).project();
             bounds.origin.x <= origin.x && bounds.origin.y <= origin.y
         });
 
@@ -495,8 +505,8 @@ where
 
         for y in 0..bounds.size.height {
             for x in 0..bounds.size.width {
-                let prefab_pos =
-                    (bounds.origin.to_vector() + vec2(x, y)).to_cell_space();
+                let prefab_pos: CellVector =
+                    (bounds.origin.to_vector() + vec2(x, y)).project();
                 // Don't use #000000 as actual data in your prefab because you'll lose it here.
                 // (Add the assert to that effect.)
                 let c = if let Some(&c) = prefab.get(&prefab_pos) {
@@ -529,50 +539,60 @@ impl FromPrefab for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
 /// The on-screen minimap pixel coordinate space.
 pub struct MinimapSpace;
 
-// | 2  -2 |
-// | 1   1 |
-//
+impl Space for MinimapSpace {
+    type T = i32;
+}
+
 // |  1/4  1/2 |
 // | -1/4  1/2 |
+//
+// | 2  -2 |
+// | 1   1 |
 
-impl Transformation for MinimapSpace {
-    type Element = i32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let v = v.into();
-        [2 * v[0] - 2 * v[1], v[0] + v[1]]
-    }
-
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let mut v = v.into();
+impl project::From<MinimapSpace> for CellSpace {
+    fn vec_from(
+        mut vec: Vector2D<<MinimapSpace as Space>::T, MinimapSpace>,
+    ) -> Vector2D<Self::T, Self> {
         // Snap in square cells
-        v[0] &= -1; // Two-pixel columns
-        if v[0].mod_floor(&4) < 2 {
+        vec.x &= -1; // Two-pixel columns
+        if vec.x.mod_floor(&4) < 2 {
             // Even column
-            v[1] &= !1;
+            vec.y &= !1;
         } else {
             // Odd column
-            v[1] = ((v[1] + 1) & !1) - 1;
+            vec.y = ((vec.y + 1) & !1) - 1;
         }
 
-        let v = [v[0] as f32, v[1] as f32];
-        [
-            (v[0] / 4.0 + v[1] / 2.0).round() as i32,
-            (v[1] / 2.0 - v[0] / 4.0).round() as i32,
-        ]
+        let (x, y) = (vec.x as f32, vec.y as f32);
+        vec2(
+            (x / 4.0 + y / 2.0).round() as i32,
+            (y / 2.0 - x / 4.0).round() as i32,
+        )
+    }
+}
+
+impl project::From<CellSpace> for MinimapSpace {
+    fn vec_from(
+        vec: Vector2D<<CellSpace as Space>::T, CellSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        vec2(2 * vec.x - 2 * vec.y, vec.x + vec.y)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::MinimapSpace;
-    use crate::deprecated_space::Transformation;
+    use crate::space::ProjectVec;
+    use crate::CellSpace;
 
     #[test]
     fn test_minimap_projection() {
-        assert_eq!([0, 0], MinimapSpace::project([0, 0]));
-        assert_eq!([0, 0], MinimapSpace::project([1, 0]));
-        assert_eq!([0, 0], MinimapSpace::project([0, 1]));
-        assert_eq!([0, 0], MinimapSpace::project([1, 1]));
+        use euclid::vec2;
+        type MinimapVector = euclid::Vector2D<i32, MinimapSpace>;
+
+        assert_eq!(vec2(0, 0), MinimapVector::new(0, 0).project::<CellSpace>());
+        assert_eq!(vec2(0, 0), MinimapVector::new(1, 0).project::<CellSpace>());
+        assert_eq!(vec2(0, 0), MinimapVector::new(0, 1).project::<CellSpace>());
+        assert_eq!(vec2(0, 0), MinimapVector::new(1, 1).project::<CellSpace>());
     }
 }
