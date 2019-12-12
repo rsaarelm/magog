@@ -1,4 +1,5 @@
 ///! Cell grid utilities
+use crate::space::Space;
 use euclid::vec2;
 
 /// Space for a cell grid. Used for both square and hex tile maps.
@@ -10,6 +11,10 @@ use euclid::vec2;
 /// neighbor hex. For a pointy-top hex map, x-axis points to the 3-o'clock (east) neighbor hex and
 /// y-axis points to the 7-o'clock (southwest) neighbor hex.
 pub struct CellSpace;
+
+impl Space for CellSpace {
+    type T = i32;
+}
 
 pub type CellVector = euclid::Vector2D<i32, CellSpace>;
 

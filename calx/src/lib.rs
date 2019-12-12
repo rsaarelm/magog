@@ -9,8 +9,10 @@ mod incremental;
 mod legend_builder;
 mod parser;
 mod prefab;
+pub mod project;
 mod rng;
 mod search;
+mod space;
 pub mod stego;
 mod system;
 mod text;
@@ -37,5 +39,6 @@ pub use prefab::{
 };
 pub use rng::{seeded_rng, RandomPermutation, RngExt};
 pub use search::{astar_path, Dijkstra, GridNode};
+pub use space::{ProjectPoint, ProjectVec, Space};
 pub use system::{app_data_path, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};
