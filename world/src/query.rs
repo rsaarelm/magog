@@ -10,9 +10,7 @@ use crate::{
     stats::Intrinsic,
     Ecs, FovStatus, Icon, ItemType, Sector, Slot, Terrain, World,
 };
-use calx::{
-    hex_neighbors, CellVector, Clamp, Dir6, HexFov, HexFovIter, HexGeom, Noise,
-};
+use calx::{hex_neighbors, CellVector, Clamp, Dir6, HexFov, HexFovIter, HexGeom, Noise};
 use calx_ecs::Entity;
 use euclid::vec2;
 use indexmap::IndexSet;
@@ -62,9 +60,7 @@ impl World {
     }
 
     /// Return visual brush for an entity.
-    pub fn entity_icon(&self, e: Entity) -> Option<Icon> {
-        self.ecs().desc.get(e).map(|x| x.icon)
-    }
+    pub fn entity_icon(&self, e: Entity) -> Option<Icon> { self.ecs().desc.get(e).map(|x| x.icon) }
 
     pub fn entity_name(&self, e: Entity) -> String {
         if let Some(desc) = self.ecs().desc.get(e) {
@@ -107,15 +103,11 @@ impl World {
     }
 
     /// Return whether location blocks line of sight.
-    pub fn blocks_sight(&self, loc: Location) -> bool {
-        self.terrain(loc).blocks_sight()
-    }
+    pub fn blocks_sight(&self, loc: Location) -> bool { self.terrain(loc).blocks_sight() }
 
     /// Return whether the entity can occupy a location.
     pub fn can_enter(&self, e: Entity, loc: Location) -> bool {
-        if self.terrain(loc).is_door()
-            && !self.has_intrinsic(e, Intrinsic::Hands)
-        {
+        if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
         }
@@ -126,9 +118,7 @@ impl World {
     }
 
     pub fn can_enter_terrain(&self, e: Entity, loc: Location) -> bool {
-        if self.terrain(loc).is_door()
-            && !self.has_intrinsic(e, Intrinsic::Hands)
-        {
+        if self.terrain(loc).is_door() && !self.has_intrinsic(e, Intrinsic::Hands) {
             // Can't open doors without hands.
             return false;
         }
@@ -243,10 +233,7 @@ impl World {
             .and_then(|desc| Some(&desc.singular_name[..]))
     }
 
-    pub fn extract_prefab<I: IntoIterator<Item = Location>>(
-        &self,
-        locs: I,
-    ) -> mapsave::Prefab {
+    pub fn extract_prefab<I: IntoIterator<Item = Location>>(&self, locs: I) -> mapsave::Prefab {
         let mut map = Vec::new();
         let mut origin = None;
 
@@ -287,10 +274,7 @@ impl World {
 
     pub fn free_equip_slot(&self, e: Entity, item: Entity) -> Option<Slot> {
         Slot::equipment_iter()
-            .find(|&&x| {
-                x.accepts(self.equip_type(item))
-                    && self.entity_equipped(e, x).is_none()
-            })
+            .find(|&&x| x.accepts(self.equip_type(item)) && self.entity_equipped(e, x).is_none())
             .cloned()
     }
 
@@ -302,8 +286,7 @@ impl World {
     pub fn empty_item_drop_location(&self, origin: Location) -> Location {
         static MAX_SPREAD_DISTANCE: i32 = 8;
         let is_valid = |v: CellVector| {
-            self.can_drop_item_at(origin.jump(self, v))
-                && v.hex_dist() <= MAX_SPREAD_DISTANCE
+            self.can_drop_item_at(origin.jump(self, v)) && v.hex_dist() <= MAX_SPREAD_DISTANCE
         };
         let mut seen = HashSet::new();
         let mut incoming = VecDeque::new();
@@ -323,10 +306,7 @@ impl World {
 
             let current_dist = offset.hex_dist();
             for v in hex_neighbors(offset) {
-                if v.hex_dist() > current_dist
-                    && !seen.contains(&v)
-                    && is_valid(v)
-                {
+                if v.hex_dist() > current_dist && !seen.contains(&v) && is_valid(v) {
                     incoming.push_back(v);
                 }
             }
@@ -339,12 +319,7 @@ impl World {
     ///
     /// Explosion centers will penetrate and hit cells with mobs, they will stop before cells with
     /// blocking terrain.
-    pub fn projected_explosion_center(
-        &self,
-        origin: Location,
-        dir: Dir6,
-        range: u32,
-    ) -> Location {
+    pub fn projected_explosion_center(&self, origin: Location, dir: Dir6, range: u32) -> Location {
         let mut loc = origin;
         for _ in 0..range {
             let new_loc = loc.jump(self, dir);
@@ -424,9 +399,7 @@ impl World {
         1.0
     }
 
-    pub fn sector_exists(&self, sector: Sector) -> bool {
-        self.world_cache.sector_exists(sector)
-    }
+    pub fn sector_exists(&self, sector: Sector) -> bool { self.world_cache.sector_exists(sector) }
 
     pub fn fov_from(&self, origin: Location, range: i32) -> IndexSet<Location> {
         // Use IndexSet as return type because eg. AI logic for dealing with seen things may depend
@@ -435,9 +408,7 @@ impl World {
 
         IndexSet::from_iter(
             HexFov::new(SightFov::new(self, range as u32, origin))
-                .add_fake_isometric_acute_corners(|pos, a| {
-                    self.terrain(a.origin + pos).is_wall()
-                })
+                .add_fake_isometric_acute_corners(|pos, a| self.terrain(a.origin + pos).is_wall())
                 .map(|(pos, a)| a.origin + pos),
         )
     }

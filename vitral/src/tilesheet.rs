@@ -17,8 +17,7 @@ type Pixel = image::Rgba<u8>;
 /// have transparent parts, so a solid color is needed to separate them.
 pub fn tilesheet_bounds(image: &RgbaImage) -> Vec<Rect<u32>> {
     let mut ret: Vec<Rect<i32>> = Vec::new();
-    let image_rect: Rect<i32> =
-        rect(0, 0, image.width() as i32, image.height() as i32);
+    let image_rect: Rect<i32> = rect(0, 0, image.width() as i32, image.height() as i32);
 
     let background = image.get_pixel(image.width() - 1, image.height() - 1);
     for y in image_rect.min_y()..image_rect.max_y() {
@@ -38,18 +37,12 @@ pub fn tilesheet_bounds(image: &RgbaImage) -> Vec<Rect<u32>> {
     ret.sort_by(|a, b| rect_key(a).cmp(&rect_key(b)));
     return ret.into_iter().map(|r| r.cast::<u32>()).collect();
 
-    fn rect_key(x: &Rect<i32>) -> (i32, i32) {
-        (x.bottom_right().y, x.bottom_right().x)
-    }
+    fn rect_key(x: &Rect<i32>) -> (i32, i32) { (x.bottom_right().y, x.bottom_right().x) }
 }
 
 /// Find the smallest bounding box around seed pixel whose sides are either all background color or
 /// image edge.
-fn tile_bounds(
-    image: &RgbaImage,
-    seed_pos: Point2D<i32>,
-    background: Pixel,
-) -> Rect<i32> {
+fn tile_bounds(image: &RgbaImage, seed_pos: Point2D<i32>, background: Pixel) -> Rect<i32> {
     let image_rect = rect(0, 0, image.width() as i32, image.height() as i32);
     let mut ret = Rect::new(seed_pos, Size2D::new(1, 1));
 
@@ -60,20 +53,10 @@ fn tile_bounds(
         for dir in 0..4 {
             // Try adding a 1-pixel wide strip to the tile rectangle.
             let new_area = match dir {
-                0 => Rect::new(
-                    ret.origin + vec2(0, -1),
-                    Size2D::new(ret.size.width, 1),
-                ),
-                1 => {
-                    Rect::new(ret.top_right(), Size2D::new(1, ret.size.height))
-                }
-                2 => {
-                    Rect::new(ret.bottom_left(), Size2D::new(ret.size.width, 1))
-                }
-                3 => Rect::new(
-                    ret.origin + vec2(-1, 0),
-                    Size2D::new(1, ret.size.height),
-                ),
+                0 => Rect::new(ret.origin + vec2(0, -1), Size2D::new(ret.size.width, 1)),
+                1 => Rect::new(ret.top_right(), Size2D::new(1, ret.size.height)),
+                2 => Rect::new(ret.bottom_left(), Size2D::new(ret.size.width, 1)),
+                3 => Rect::new(ret.origin + vec2(-1, 0), Size2D::new(1, ret.size.height)),
                 _ => panic!("Bad dir {}", dir),
             };
 
@@ -86,9 +69,7 @@ fn tile_bounds(
             // The new area is all background pixels, the tile ends here.
             if (new_area.min_x()..new_area.max_x())
                 .zip(new_area.min_y()..new_area.max_y())
-                .all(|(x, y)| {
-                    *image.get_pixel(x as u32, y as u32) == background
-                })
+                .all(|(x, y)| *image.get_pixel(x as u32, y as u32) == background)
             {
                 unchanged_count += 1;
                 continue;

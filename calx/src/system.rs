@@ -30,12 +30,7 @@ pub fn app_data_path(app_name: &str) -> PathBuf {
                 _ => Path::new(".").to_path_buf(),
             }
         } else {
-            Path::new(&format!(
-                "{}\\{}",
-                env::var("APPDATA").unwrap(),
-                app_name
-            ))
-            .to_path_buf()
+            Path::new(&format!("{}\\{}", env::var("APPDATA").unwrap(), app_name)).to_path_buf()
         }
     } else if cfg!(macos) {
         Path::new(&format!(
@@ -118,9 +113,7 @@ impl TimeLogItem {
 }
 
 impl Drop for TimeLogItem {
-    fn drop(&mut self) {
-        TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin);
-    }
+    fn drop(&mut self) { TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin); }
 }
 
 /// Save a timestamped screenshot to disk.
@@ -130,8 +123,7 @@ pub fn save_screenshot(
 ) -> io::Result<()> {
     let tmpdir = TempDir::new("calx")?;
     let timestamp = (time::precise_time_s() * 100.0) as u64;
-    let file =
-        Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
+    let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
     image::save_buffer(
         &tmpfile,

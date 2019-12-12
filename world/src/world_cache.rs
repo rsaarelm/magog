@@ -48,8 +48,7 @@ impl WorldCache {
 
         let sector = loc.sector();
         self.finalize(sector);
-        if let Some(t) = self.internal_cache.borrow().terrain.get(&loc).cloned()
-        {
+        if let Some(t) = self.internal_cache.borrow().terrain.get(&loc).cloned() {
             t
         } else {
             FALLBACK_TERRAIN
@@ -65,9 +64,7 @@ impl WorldCache {
             .map(|&p| loc + p)
     }
 
-    pub fn sector_exists(&self, sector: Sector) -> bool {
-        self.skeleton.contains_key(&sector)
-    }
+    pub fn sector_exists(&self, sector: Sector) -> bool { self.skeleton.contains_key(&sector) }
 
     /// Return latest list of spawns.
     ///
@@ -183,8 +180,7 @@ impl WorldCache {
         }
 
         if let Some(my_down) = self.downstairs(sector) {
-            let their_up =
-                self.upstairs(below).expect("No matching upstairs found");
+            let their_up = self.upstairs(below).expect("No matching upstairs found");
             self.make_stairs(my_down, their_up);
         }
 
@@ -211,9 +207,7 @@ impl WorldCache {
     fn downstairs(&self, sector: Sector) -> Option<Location> {
         self.generate(sector);
         for loc in sector.iter() {
-            if let Some(Terrain::Downstairs) =
-                self.internal_cache.borrow().terrain.get(&loc)
-            {
+            if let Some(Terrain::Downstairs) = self.internal_cache.borrow().terrain.get(&loc) {
                 return Some(loc);
             }
         }
@@ -223,9 +217,7 @@ impl WorldCache {
     fn upstairs(&self, sector: Sector) -> Option<Location> {
         self.generate(sector);
         for loc in sector.iter() {
-            if let Some(Terrain::Upstairs) =
-                self.internal_cache.borrow().terrain.get(&loc)
-            {
+            if let Some(Terrain::Upstairs) = self.internal_cache.borrow().terrain.get(&loc) {
                 return Some(loc);
             }
         }

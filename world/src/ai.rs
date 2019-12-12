@@ -120,8 +120,7 @@ impl World {
             }
         }
 
-        let brain_state =
-            self.brain_state(npc).expect("Running AI for non-mob");
+        let brain_state = self.brain_state(npc).expect("Running AI for non-mob");
         match brain_state {
             Asleep => {
                 // TODO: Noise waves that wake up sleeping mobs when they hit them, stop making
@@ -151,17 +150,10 @@ impl World {
 
     /// Approach and attack target entity.
     fn ai_hunt(&mut self, npc: Entity, target: Entity) {
-        if let (Some(my_loc), Some(target_loc)) =
-            (self.location(npc), self.location(target))
-        {
+        if let (Some(my_loc), Some(target_loc)) = (self.location(npc), self.location(target)) {
             if my_loc.metric_distance(target_loc) == 1 {
-                let _ = self.entity_melee(
-                    npc,
-                    my_loc.dir6_towards(target_loc).unwrap(),
-                );
-            } else if let Some(move_dir) =
-                self.pathing_dir_towards(npc, target_loc)
-            {
+                let _ = self.entity_melee(npc, my_loc.dir6_towards(target_loc).unwrap());
+            } else if let Some(move_dir) = self.pathing_dir_towards(npc, target_loc) {
                 let _ = self.entity_step(npc, move_dir);
             } else {
                 self.ai_drift(npc);
@@ -229,11 +221,7 @@ impl World {
         self.gain_status(e, Status::Delayed, delay);
     }
 
-    pub(crate) fn notify_attacked_by(
-        &mut self,
-        victim: Entity,
-        attacker: Entity,
-    ) {
+    pub(crate) fn notify_attacked_by(&mut self, victim: Entity, attacker: Entity) {
         // TODO: Check if victim is already in close combat and don't disengage against new target
         // if it is.
         // TODO: The idea is to do Doom-style thing where friendly fire will occasionally cause
@@ -352,15 +340,12 @@ impl World {
     pub fn is_alive(&self, e: Entity) -> bool { self.location(e).is_some() }
 
     /// Return whether an entity is under computer control
-    pub fn is_npc(&self, e: Entity) -> bool {
-        self.is_mob(e) && !self.is_player(e)
-    }
+    pub fn is_npc(&self, e: Entity) -> bool { self.is_mob(e) && !self.is_player(e) }
 
     /// Return whether an entity is the player avatar mob.
     pub fn is_player(&self, e: Entity) -> bool {
         // TODO: Should this just check self.flags.player?
-        self.brain_state(e) == Some(BrainState::PlayerControl)
-            && self.is_alive(e)
+        self.brain_state(e) == Some(BrainState::PlayerControl) && self.is_alive(e)
     }
 
     /// Return whether the entity is an awake mob.
@@ -412,12 +397,7 @@ impl World {
     }
 
     /// Look for targets to shoot in a direction.
-    pub fn find_ranged_target(
-        &self,
-        shooter: Entity,
-        dir: Dir6,
-        range: usize,
-    ) -> Option<Entity> {
+    pub fn find_ranged_target(&self, shooter: Entity, dir: Dir6, range: usize) -> Option<Entity> {
         let origin = self.location(shooter).unwrap();
         let mut loc = origin;
         for _ in 1..=range {
@@ -437,11 +417,7 @@ impl World {
     /// Try to get the next step on the path from origin towards destination.
     ///
     /// Tries to be fast, not necessarily doing proper pathfinding.
-    pub(crate) fn pathing_dir_towards(
-        &self,
-        e: Entity,
-        destination: Location,
-    ) -> Option<Dir6> {
+    pub(crate) fn pathing_dir_towards(&self, e: Entity, destination: Location) -> Option<Dir6> {
         // Could do all sorts of cool things here eventually like a Dijkstra map cache, but for now
         // just doing very simple stuff.
         if let Some(origin) = self.location(e) {
@@ -461,9 +437,7 @@ impl World {
     }
 
     /// Return whether the entity should have an idle animation.
-    pub fn is_bobbing(&self, e: Entity) -> bool {
-        self.is_active(e) && !self.is_player(e)
-    }
+    pub fn is_bobbing(&self, e: Entity) -> bool { self.is_active(e) && !self.is_player(e) }
 
     /// Return the set of mobs that are in update range.
     ///

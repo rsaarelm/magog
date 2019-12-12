@@ -56,8 +56,7 @@ fn test_ecs() {
 
     // Check that serialization works.
     let saved = serde_json::to_string(&ecs).expect("ECS serialization failed");
-    let ecs2: Ecs =
-        serde_json::from_str(&saved).expect("ECS deserialization failed");
+    let ecs2: Ecs = serde_json::from_str(&saved).expect("ECS deserialization failed");
     assert_eq!(ecs2.desc[e3].icon, 10);
 
     // Test deletion from component with multiple elements.

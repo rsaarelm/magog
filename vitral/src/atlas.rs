@@ -58,9 +58,7 @@ impl Atlas {
         }
     }
 
-    pub fn size(&self) -> Size2D<u32> {
-        size2(self.atlas.width(), self.atlas.height())
-    }
+    pub fn size(&self) -> Size2D<u32> { size2(self.atlas.width(), self.atlas.height()) }
 
     /// Find the smallest slot in the slot vector that will fit the given item.
     ///
@@ -80,8 +78,7 @@ impl Atlas {
                 self.slots.push(new_2);
                 // Sort by area from smallest to largest.
                 self.slots.sort_by(|&a, &b| {
-                    (a.size.width * a.size.height)
-                        .cmp(&(b.size.width * b.size.height))
+                    (a.size.width * a.size.height).cmp(&(b.size.width * b.size.height))
                 });
                 let ret = Rect::new(slot_pos, size);
                 self.placed.push(ret);
@@ -92,8 +89,7 @@ impl Atlas {
         return None;
 
         fn fits(size: Size2D<u32>, container_dim: Size2D<u32>) -> bool {
-            size.width <= container_dim.width
-                && size.height <= container_dim.height
+            size.width <= container_dim.width && size.height <= container_dim.height
         }
 
         /// Return the two remaining parts of container rect when the dim-sized
@@ -130,10 +126,7 @@ impl Atlas {
                     ),
                     Rect::new(
                         Point2D::new(rect_pos.x, rect_pos.y + dim.height),
-                        Size2D::new(
-                            rect_dim.width,
-                            rect_dim.height - dim.height,
-                        ),
+                        Size2D::new(rect_dim.width, rect_dim.height - dim.height),
                     ),
                 )
             } else {
@@ -148,10 +141,7 @@ impl Atlas {
                     ),
                     Rect::new(
                         Point2D::new(rect_pos.x + dim.width, rect_pos.y),
-                        Size2D::new(
-                            rect_dim.width - dim.width,
-                            rect_dim.height,
-                        ),
+                        Size2D::new(rect_dim.width - dim.width, rect_dim.height),
                     ),
                 )
             }

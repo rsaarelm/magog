@@ -7,13 +7,10 @@ use image;
 use std::io::prelude::*;
 use std::io::Cursor;
 use vitral::{
-    self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil,
-    Rgba, Scene, SceneSwitch,
+    self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
+    SceneSwitch,
 };
-use world::{
-    Ability, ActionOutcome, Command, Event, LerpLocation, Slot, World,
-    WorldSeed,
-};
+use world::{Ability, ActionOutcome, Command, Event, LerpLocation, Slot, World, WorldSeed};
 
 pub struct HotbarAction {
     ability: Ability,
@@ -91,9 +88,7 @@ impl GameRuntime {
                 }) => {
                     canvas.draw_item_icon(
                         pos + vec2(8, 8),
-                        self.world
-                            .entity_icon(item)
-                            .expect("Item icon missing"),
+                        self.world.entity_icon(item).expect("Item icon missing"),
                         self.world.count(item),
                     );
                 }
@@ -108,9 +103,7 @@ impl GameRuntime {
                 match canvas.click_state(&bounds) {
                     ButtonAction::LeftClicked => {
                         // Bind a usable item into the hotbar
-                        if let Some(&ability) =
-                            self.world.list_abilities(item).iter().next()
-                        {
+                        if let Some(&ability) = self.world.list_abilities(item).iter().next() {
                             self.hotbar[x] = Some(HotbarAction {
                                 ability,
                                 item: Some(item),
@@ -123,28 +116,17 @@ impl GameRuntime {
                 }
             } else {
                 match canvas.click_state(&bounds) {
-                    ButtonAction::LeftClicked
-                        if self.is_bindable_hotbar_action(x) =>
-                    {
+                    ButtonAction::LeftClicked if self.is_bindable_hotbar_action(x) => {
                         self.hotbar_focus = Some(x);
                     }
-                    ButtonAction::RightClicked
-                        if self.is_bindable_hotbar_action(x) =>
-                    {
+                    ButtonAction::RightClicked if self.is_bindable_hotbar_action(x) => {
                         self.hotbar_focus = Some(x);
                     }
 
                     // Right-click to immediately fire an untargeted action
-                    ButtonAction::RightClicked
-                        if self.is_untargeted_hotbar_action(x) =>
-                    {
-                        if let Some(HotbarAction { ability, item }) =
-                            self.hotbar[x]
-                        {
-                            self.force_command(Command::UntargetedAbility {
-                                ability,
-                                item,
-                            });
+                    ButtonAction::RightClicked if self.is_untargeted_hotbar_action(x) => {
+                        if let Some(HotbarAction { ability, item }) = self.hotbar[x] {
+                            self.force_command(Command::UntargetedAbility { ability, item });
                         }
                     }
 
@@ -184,10 +166,7 @@ enum Side {
 }
 
 impl Scene<GameRuntime> for GameLoop {
-    fn update(
-        &mut self,
-        ctx: &mut GameRuntime,
-    ) -> Option<SceneSwitch<GameRuntime>> {
+    fn update(&mut self, ctx: &mut GameRuntime) -> Option<SceneSwitch<GameRuntime>> {
         ctx.update_hotbar();
 
         if ctx.world.player_can_act() {
@@ -260,13 +239,11 @@ impl Scene<GameRuntime> for GameLoop {
         self.console.draw_small(canvas, &console_area);
 
         if view_area.contains(canvas.mouse_pos()) {
-            let mouse_loc = view.screen_to_cell(ScreenVector::from_untyped(
-                canvas.mouse_pos().to_vector(),
-            ));
+            let mouse_loc =
+                view.screen_to_cell(ScreenVector::from_untyped(canvas.mouse_pos().to_vector()));
             (|| {
                 let player = ctx.world.player()?;
-                let relative_vec =
-                    ctx.world.location(player)?.v2_at(mouse_loc)?;
+                let relative_vec = ctx.world.location(player)?.v2_at(mouse_loc)?;
                 let click_state = canvas.click_state(&view_area);
 
                 if click_state == ButtonAction::LeftClicked {
@@ -281,16 +258,10 @@ impl Scene<GameRuntime> for GameLoop {
                 // Use targeted ability with RMB
                 if click_state == ButtonAction::RightClicked {
                     if let Some(i) = ctx.hotbar_focus {
-                        if let Some(HotbarAction { ability, item }) =
-                            ctx.hotbar[i]
-                        {
+                        if let Some(HotbarAction { ability, item }) = ctx.hotbar[i] {
                             if relative_vec != CellVector::zero() {
                                 let dir = Dir6::from_v2(relative_vec);
-                                ctx.command = Some(Command::TargetedAbility {
-                                    ability,
-                                    dir,
-                                    item,
-                                });
+                                ctx.command = Some(Command::TargetedAbility { ability, dir, item });
                             }
                         }
                     }
@@ -372,11 +343,7 @@ impl Scene<GameRuntime> for GameLoop {
                 F5 => {
                     // Quick save.
 
-                    let enc = ron::ser::to_string_pretty(
-                        &ctx.world,
-                        Default::default(),
-                    )
-                    .unwrap();
+                    let enc = ron::ser::to_string_pretty(&ctx.world, Default::default()).unwrap();
                     let cover = canvas.screenshot();
                     let save = stego::embed_gzipped(&cover, enc.as_bytes());
                     let _ = image::save_buffer(
@@ -476,12 +443,7 @@ impl GameLoop {
         self.smart_step(ctx, actual_dir)
     }
 
-    fn status_draw(
-        &self,
-        ctx: &mut GameRuntime,
-        canvas: &mut Canvas,
-        area: &Rect<i32>,
-    ) {
+    fn status_draw(&self, ctx: &mut GameRuntime, canvas: &mut Canvas, area: &Rect<i32>) {
         canvas.fill_rect(area, Rgba::from(0x33_11_11_ff));
         canvas.draw_text(
             &*display::font(),
@@ -503,8 +465,7 @@ impl GameLoop {
                 Event::Damage { entity, amount } => {
                     let name = ctx.world.entity_name(*entity);
                     // TODO: Use graphical effect
-                    let _ =
-                        writeln!(&mut self.console, "{} dmg {}", name, amount);
+                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
                 }
             }
         }
@@ -528,11 +489,7 @@ impl Scene<GameRuntime> for InventoryScreen {
     ) -> Option<SceneSwitch<GameRuntime>> {
         use PickAction::*;
 
-        fn handle_action(
-            ctx: &mut GameRuntime,
-            slot: Slot,
-            action: Option<PickAction>,
-        ) {
+        fn handle_action(ctx: &mut GameRuntime, slot: Slot, action: Option<PickAction>) {
             match action {
                 Some(Pick(e)) => {
                     ctx.cursor_item = Some(e);
@@ -553,9 +510,7 @@ impl Scene<GameRuntime> for InventoryScreen {
                 Some(Swap(current, new)) => {
                     ctx.cursor_item = Some(new);
                     if let Some(old_slot) = ctx.world.entity_slot(current) {
-                        if ctx.force_command(Command::InventorySwap(
-                            old_slot, slot,
-                        )) {
+                        if ctx.force_command(Command::InventorySwap(old_slot, slot)) {
                             ctx.cursor_item = Some(new);
                         }
                     }
@@ -655,8 +610,7 @@ impl InventoryScreen {
         pos: Point2D<i32>,
         slot: Slot,
     ) -> Option<PickAction> {
-        let item: Option<Entity> =
-            (|| ctx.world.entity_equipped(ctx.world.player()?, slot))();
+        let item: Option<Entity> = (|| ctx.world.entity_equipped(ctx.world.player()?, slot))();
         let bounds = Rect::new(pos, size2(16, 16));
 
         if item != ctx.cursor_item {

@@ -1,7 +1,6 @@
 use crate::{
-    ai, animations, components, flags::Flags, item, spatial::Spatial,
-    spec::EntitySpawn, stats, world_cache::WorldCache, Distribution, Event,
-    ExternalEntity, Location, Rng, WorldSkeleton,
+    ai, animations, components, flags::Flags, item, spatial::Spatial, spec::EntitySpawn, stats,
+    world_cache::WorldCache, Distribution, Event, ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
 use serde_derive::{Deserialize, Serialize};
@@ -55,10 +54,7 @@ impl World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
             ecs: Ecs::new(),
-            world_cache: WorldCache::new(
-                world_seed.rng_seed,
-                world_seed.world_skeleton.clone(),
-            ),
+            world_cache: WorldCache::new(world_seed.rng_seed, world_seed.world_skeleton.clone()),
             generated_spawns: Default::default(),
             spatial: Spatial::new(),
             flags: Flags::new(),

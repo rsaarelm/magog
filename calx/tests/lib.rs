@@ -6,12 +6,12 @@ use std::collections::HashMap;
 fn splits_into(space: usize, line: &str, parts: &[&str]) {
     use calx::split_line;
 
-    split_line(line, |_| 1.0, space as f32).zip(parts).all(
-        |(actual, &expected)| {
+    split_line(line, |_| 1.0, space as f32)
+        .zip(parts)
+        .all(|(actual, &expected)| {
             assert_eq!(expected, actual);
             true
-        },
-    );
+        });
 
     assert_eq!(parts.len(), split_line(line, |_| 1.0, space as f32).count());
 }
@@ -69,8 +69,7 @@ fn test_weighted_choice() {
 #[test]
 fn test_random_permutation() {
     use calx::RandomPermutation;
-    let perm: Vec<usize> =
-        RandomPermutation::new(&mut rand::thread_rng(), 100).collect();
+    let perm: Vec<usize> = RandomPermutation::new(&mut rand::thread_rng(), 100).collect();
     let mut sorted = perm.clone();
     sorted.sort();
     assert_eq!(sorted, (0..100).collect::<Vec<usize>>());

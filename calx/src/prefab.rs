@@ -26,9 +26,7 @@ pub enum PrefabError {
 }
 
 impl fmt::Display for PrefabError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description())
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.description()) }
 }
 
 impl Error for PrefabError {
@@ -36,9 +34,7 @@ impl Error for PrefabError {
         match *self {
             PrefabError::InvalidInput => "Invalid input",
             PrefabError::MissingAnchor => "Anchor not found in input",
-            PrefabError::MultipleAnchors => {
-                "Multiple anchor positions found in input"
-            }
+            PrefabError::MultipleAnchors => "Multiple anchor positions found in input",
         }
     }
 }
@@ -73,9 +69,7 @@ impl Error for PrefabError {
 /// # }
 /// ```
 pub trait IntoPrefab<T> {
-    fn into_prefab<P: FromIterator<(CellVector, T)>>(
-        self,
-    ) -> Result<P, PrefabError>;
+    fn into_prefab<P: FromIterator<(CellVector, T)>>(self) -> Result<P, PrefabError>;
 }
 
 /// Trait for types that can be constructed from prefab data.
@@ -120,17 +114,13 @@ impl Space for TextSpace {
 // | 0   1 |
 
 impl project::From<TextSpace> for CellSpace {
-    fn vec_from(
-        vec: Vector2D<<TextSpace as Space>::T, TextSpace>,
-    ) -> Vector2D<Self::T, Self> {
+    fn vec_from(vec: Vector2D<<TextSpace as Space>::T, TextSpace>) -> Vector2D<Self::T, Self> {
         vec2((vec.x + vec.y) / 2, vec.y)
     }
 }
 
 impl project::From<CellSpace> for TextSpace {
-    fn vec_from(
-        vec: Vector2D<<CellSpace as Space>::T, CellSpace>,
-    ) -> Vector2D<Self::T, Self> {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
         vec2(2 * vec.x - vec.y, vec.y)
     }
 }
@@ -143,9 +133,7 @@ impl TextSpace {
 }
 
 impl<S: Into<String>> IntoPrefab<char> for S {
-    fn into_prefab<P: FromIterator<(CellVector, char)>>(
-        self,
-    ) -> Result<P, PrefabError> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
         /// Recognize the point set that only contains the origin markup and return the
         /// corresponding origin value.
         fn is_origin(points: &HashMap<TextVector, char>) -> Option<TextVector> {
@@ -311,9 +299,7 @@ impl FromPrefab for String {
 pub struct DenseTextMap<'a>(pub &'a str);
 
 impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
-    fn into_prefab<P: FromIterator<(CellVector, char)>>(
-        self,
-    ) -> Result<P, PrefabError> {
+    fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
         let mut elts = Vec::new();
         let mut min_x = i32::MAX;
         let mut min_y = i32::MAX;
@@ -368,17 +354,13 @@ where
     U: Space<T = i32>,
     CellSpace: project::From<U>,
 {
-    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(
-        self,
-    ) -> Result<Q, PrefabError> {
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
         // The coordinate space in which the image is in.
         //type LocalVector = Vector2D<i32, U>;
         let image = self.image;
 
         // Completely black pixels are assumed to be non-data.
-        fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(
-            p: P,
-        ) -> Option<SRgba> {
+        fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(p: P) -> Option<SRgba> {
             let (r, g, b, _) = p.channels4();
             if r != 0 || g != 0 || b != 0 {
                 Some(SRgba::new(r, g, b, 0xff))
@@ -430,9 +412,7 @@ where
 
         Ok(Q::from_iter(points.into_iter().flat_map(|(x, y)| {
             if let Some(c) = convert_nonblack(image.get_pixel(x, y)) {
-                let p =
-                    vec2::<U::T, U>(x as i32 - anchor.x, y as i32 - anchor.y)
-                        .project();
+                let p = vec2::<U::T, U>(x as i32 - anchor.x, y as i32 - anchor.y).project();
 
                 // Only insert a cell the first time we see it.
                 if !seen_cells.contains(&p) {
@@ -448,19 +428,14 @@ where
     }
 }
 
-impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>>
-    IntoPrefab<SRgba> for I
-{
-    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(
-        self,
-    ) -> Result<Q, PrefabError> {
+impl<I: image::GenericImage<Pixel = P>, P: image::Pixel<Subpixel = u8>> IntoPrefab<SRgba> for I {
+    fn into_prefab<Q: FromIterator<(CellVector, SRgba)>>(self) -> Result<Q, PrefabError> {
         let t: ProjectedImage<I, CellSpace> = ProjectedImage::new(self);
         t.into_prefab()
     }
 }
 
-impl<U> FromPrefab
-    for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
+impl<U> FromPrefab for ProjectedImage<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, U>
 where
     U: Space<T = i32>,
     CellSpace: project::From<U>,
@@ -486,10 +461,8 @@ where
         });
 
         // Add space for the origin axes
-        let mut image = image::ImageBuffer::new(
-            bounds.size.width as u32 + 1,
-            bounds.size.height as u32 + 1,
-        );
+        let mut image =
+            image::ImageBuffer::new(bounds.size.width as u32 + 1, bounds.size.height as u32 + 1);
 
         // Draw anchor dots.
         image.put_pixel(
@@ -505,8 +478,7 @@ where
 
         for y in 0..bounds.size.height {
             for x in 0..bounds.size.width {
-                let prefab_pos: CellVector =
-                    (bounds.origin.to_vector() + vec2(x, y)).project();
+                let prefab_pos: CellVector = (bounds.origin.to_vector() + vec2(x, y)).project();
                 // Don't use #000000 as actual data in your prefab because you'll lose it here.
                 // (Add the assert to that effect.)
                 let c = if let Some(&c) = prefab.get(&prefab_pos) {
@@ -530,8 +502,7 @@ impl FromPrefab for image::ImageBuffer<image::Rgba<u8>, Vec<u8>> {
     type Cell = SRgba;
 
     fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
-        let t: ProjectedImage<Self, CellSpace> =
-            FromPrefab::from_prefab(prefab);
+        let t: ProjectedImage<Self, CellSpace> = FromPrefab::from_prefab(prefab);
         t.image
     }
 }
@@ -572,9 +543,7 @@ impl project::From<MinimapSpace> for CellSpace {
 }
 
 impl project::From<CellSpace> for MinimapSpace {
-    fn vec_from(
-        vec: Vector2D<<CellSpace as Space>::T, CellSpace>,
-    ) -> Vector2D<Self::T, Self> {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
         vec2(2 * vec.x - 2 * vec.y, vec.x + vec.y)
     }
 }

@@ -97,19 +97,14 @@ impl<T: Incremental> IncrementalState<T> {
     /// Do arbitrary modification on event history, then replay state to match new history.
     ///
     /// Use this if you want to undo multiple steps, replaying can be very expensive.
-    pub fn edit_history<F: FnOnce(&mut History<T::Seed, T::Event>) -> U, U>(
-        &mut self,
-        f: F,
-    ) -> U {
+    pub fn edit_history<F: FnOnce(&mut History<T::Seed, T::Event>) -> U, U>(&mut self, f: F) -> U {
         let ret = f(&mut self.history);
         self.replay();
         ret
     }
 
     /// Cancel the last event and rewind state to the position before it.
-    pub fn undo(&mut self) -> Option<T::Event> {
-        self.edit_history(|h| h.events.pop())
-    }
+    pub fn undo(&mut self) -> Option<T::Event> { self.edit_history(|h| h.events.pop()) }
 
     fn replay(&mut self) {
         let mut state = T::from_seed(&self.history.seed);

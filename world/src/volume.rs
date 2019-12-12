@@ -21,8 +21,7 @@ impl Volume {
     pub fn sphere(w: &World, origin: Location, radius: u32) -> Volume {
         // TODO: Add stop predicate to API, allow passing through walls.
         Volume(Vec::from_iter(
-            HexFov::new(SphereVolumeFov::new(w, radius, origin))
-                .map(|(pos, a)| a.origin + pos),
+            HexFov::new(SphereVolumeFov::new(w, radius, origin)).map(|(pos, a)| a.origin + pos),
         ))
     }
 }

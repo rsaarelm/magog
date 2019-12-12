@@ -94,12 +94,8 @@ pub enum Layer {
 /// Set `is_solid` to true if the blob is the dark background part that fills the visible volume of
 /// the blob but doesn't have visible walls.
 #[allow(clippy::cognitive_complexity)]
-fn blobform<F>(
-    kernel: &Kernel,
-    brush: &Arc<Brush>,
-    is_solid: bool,
-    draw: &mut F,
-) where
+fn blobform<F>(kernel: &Kernel, brush: &Arc<Brush>, is_solid: bool, draw: &mut F)
+where
     F: FnMut(Layer, Angle, &Arc<Brush>, usize),
 {
     use self::Angle::*;
@@ -325,9 +321,7 @@ impl Kernel {
     }
 
     /// Bool is true if left/right half of wall should be extended.
-    pub fn wall_extends(&self) -> [bool; 2] {
-        [self.nw.is_wall(), self.ne.is_wall()]
-    }
+    pub fn wall_extends(&self) -> [bool; 2] { [self.nw.is_wall(), self.ne.is_wall()] }
 
     /// Bool is true if n/ne/se/s/sw/nw face of block is facing open air.
     pub fn blob_faces(&self) -> [bool; 6] {

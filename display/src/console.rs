@@ -17,8 +17,7 @@ struct Message {
 impl Message {
     fn new(text: String, time_start_s: f64) -> Message {
         const TIME_TO_READ_CHAR_S: f64 = 0.1;
-        let expire_time_s =
-            time_start_s + text.len() as f64 * TIME_TO_READ_CHAR_S;
+        let expire_time_s = time_start_s + text.len() as f64 * TIME_TO_READ_CHAR_S;
         Message {
             expire_time_s,
             text,
@@ -69,13 +68,7 @@ impl Console {
         // Draw the lines
         let mut pos = screen_area.origin;
         for line in lines.iter().rev() {
-            pos = canvas.draw_text(
-                &*self.font,
-                pos,
-                Align::Left,
-                color::WHITE.alpha(0.4),
-                line,
-            );
+            pos = canvas.draw_text(&*self.font, pos, Align::Left, color::WHITE.alpha(0.4), line);
         }
     }
 
@@ -112,13 +105,7 @@ impl Console {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
             for line in fragments.iter().rev() {
-                canvas.draw_text(
-                    &*self.font,
-                    Point2D::new(0, y),
-                    Align::Left,
-                    color,
-                    line,
-                );
+                canvas.draw_text(&*self.font, Point2D::new(0, y), Align::Left, color, line);
                 y -= h;
                 lines_left -= 1;
             }

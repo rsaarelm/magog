@@ -38,10 +38,7 @@ pub(crate) struct MessageFormatter2<'a, W> {
 }
 
 impl<'a> MessageFormatter0<'a, World> {
-    pub fn new(
-        world: &'a mut World,
-        msg: String,
-    ) -> MessageFormatter0<'a, World> {
+    pub fn new(world: &'a mut World, msg: String) -> MessageFormatter0<'a, World> {
         MessageFormatter0 { world, msg }
     }
 
@@ -56,8 +53,7 @@ impl<'a> MessageFormatter0<'a, World> {
 
     pub fn send(self) {
         use crate::grammar::Templater;
-        let event =
-            Event::Msg(grammar::EmptyTemplater.format(&self.msg).unwrap());
+        let event = Event::Msg(grammar::EmptyTemplater.format(&self.msg).unwrap());
         self.world.push_event(event);
     }
 }
@@ -182,11 +178,8 @@ pub fn attack_damage(roll: f32, advantage: i32, weapon_power: i32) -> i32 {
     const MAX_DAMAGE_MULTIPLIER: f32 = 4.0;
 
     let roll = roll + advantage as f32;
-    (weapon_power as f32
-        * (0.0..=MAX_DAMAGE_MULTIPLIER).clamp((roll - 2.0) * 0.05)) as i32
+    (weapon_power as f32 * (0.0..=MAX_DAMAGE_MULTIPLIER).clamp((roll - 2.0) * 0.05)) as i32
 }
 
 /// Standard deciban roll, clamp into [-20, 20].
-pub fn roll(rng: &mut impl rand::Rng) -> f32 {
-    (-20.0..=20.0).clamp(rng.gen::<Deciban>().0)
-}
+pub fn roll(rng: &mut impl rand::Rng) -> f32 { (-20.0..=20.0).clamp(rng.gen::<Deciban>().0) }

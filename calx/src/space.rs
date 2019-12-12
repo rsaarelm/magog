@@ -13,9 +13,7 @@ pub trait ProjectVec<U: Space> {
 }
 
 impl<U: Space> ProjectVec<U> for Vector2D<U::T, U> {
-    fn project<Dst: project::From<U>>(self) -> Vector2D<Dst::T, Dst> {
-        Dst::vec_from(self)
-    }
+    fn project<Dst: project::From<U>>(self) -> Vector2D<Dst::T, Dst> { Dst::vec_from(self) }
 }
 
 pub trait ProjectPoint<U: Space> {
@@ -23,7 +21,5 @@ pub trait ProjectPoint<U: Space> {
 }
 
 impl<U: Space> ProjectPoint<U> for Point2D<U::T, U> {
-    fn project<Dst: project::From<U>>(self) -> Point2D<Dst::T, Dst> {
-        Dst::point_from(self)
-    }
+    fn project<Dst: project::From<U>>(self) -> Point2D<Dst::T, Dst> { Dst::point_from(self) }
 }

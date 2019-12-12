@@ -7,9 +7,7 @@ use crate::{
     terrain::Terrain,
     vaults, {Distribution, Rng},
 };
-use calx::{
-    self, die, seeded_rng, CellVector, RngExt, Transformation, WeightedChoice,
-};
+use calx::{self, die, seeded_rng, CellVector, RngExt, Transformation, WeightedChoice};
 use euclid::{vec2, vec3};
 use lazy_static::lazy_static;
 use log::{debug, warn};
@@ -33,17 +31,7 @@ pub type SectorVector = euclid::Vector3D<i16, SectorSpace>;
 /// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
 /// coordinates form their own sector space that tiles the location space with sectors.
 #[derive(
-    Copy,
-    Clone,
-    Eq,
-    PartialEq,
-    Default,
-    Hash,
-    PartialOrd,
-    Ord,
-    Debug,
-    Serialize,
-    Deserialize,
+    Copy, Clone, Eq, PartialEq, Default, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize,
 )]
 pub struct Sector {
     pub x: i16,
@@ -157,8 +145,7 @@ impl TerrainHexSpace {
     pub fn sectors(terrain_hex: HexVector) -> Vec<Sector> {
         let out_of_phase = terrain_hex.y.rem_euclid(2) == 1;
         let origin = TerrainHexSpace::project(terrain_hex);
-        let sector =
-            Location::new(origin[0] as i16, origin[1] as i16, 0).sector();
+        let sector = Location::new(origin[0] as i16, origin[1] as i16, 0).sector();
 
         if out_of_phase {
             vec![
@@ -361,12 +348,10 @@ impl Transformation for HerringboneSpace {
             x.rem_euclid(HERRINGBONE_PATTERN_W),
             y.rem_euclid(HERRINGBONE_PATTERN_H),
         );
-        let offset = HERRINGBONE_OFFSETS[(y / HERRINGBONE_SIZE) as usize]
-            [(x / HERRINGBONE_SIZE) as usize];
+        let offset =
+            HERRINGBONE_OFFSETS[(y / HERRINGBONE_SIZE) as usize][(x / HERRINGBONE_SIZE) as usize];
 
-        (vec2(2 * pattern_x - 2 * pattern_y, pattern_x + 3 * pattern_y)
-            + offset)
-            .into()
+        (vec2(2 * pattern_x - 2 * pattern_y, pattern_x + 3 * pattern_y) + offset).into()
     }
 
     fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
@@ -432,9 +417,9 @@ impl Biome {
         };
 
         let offset = pos - CellVector::from(HerringboneSpace::project(chunk));
-        let cell = map.get(offset).unwrap_or_else(|| {
-            panic!("No offset {:?} in herringbone chunk at {:?}", offset, loc)
-        });
+        let cell = map
+            .get(offset)
+            .unwrap_or_else(|| panic!("No offset {:?} in herringbone chunk at {:?}", offset, loc));
         cell.terrain
     }
 }
@@ -513,8 +498,7 @@ impl WorldSkeleton {
             }
 
             let wide_p = wide_p - origin;
-            let (p, is_side) =
-                (CellVector::new(wide_p.x / 2, wide_p.y), wide_p.x % 2 != 0);
+            let (p, is_side) = (CellVector::new(wide_p.x / 2, wide_p.y), wide_p.x % 2 != 0);
 
             // (is_blocked_west, is_blocked_south, sector_biome)
             let entry = map.entry(p).or_insert((false, false, Biome::Water));
@@ -595,8 +579,7 @@ impl WorldSkeleton {
 /// perfectly deterministic given a world seed and the sector position, so new sectors can be
 /// lazily generated at any point of the game.
 pub fn generate(seed: u32, pos: Sector, world_skeleton: &WorldSkeleton) -> Map {
-    ConnectedSectorSpec::new(seed, pos, world_skeleton)
-        .sample(&mut calx::seeded_rng(&(seed, pos)))
+    ConnectedSectorSpec::new(seed, pos, world_skeleton).sample(&mut calx::seeded_rng(&(seed, pos)))
 }
 
 /// Wrapper for `SectorSpec` with references to neighboring sectors.
@@ -617,11 +600,7 @@ pub struct ConnectedSectorSpec<'a> {
 }
 
 impl<'a> ConnectedSectorSpec<'a> {
-    pub fn new(
-        seed: u32,
-        sector: Sector,
-        world_skeleton: &'a WorldSkeleton,
-    ) -> Self {
+    pub fn new(seed: u32, sector: Sector, world_skeleton: &'a WorldSkeleton) -> Self {
         ConnectedSectorSpec {
             seed,
             sector,
@@ -675,11 +654,7 @@ impl<'a> ConnectedSectorSpec<'a> {
         }
     }
 
-    fn place_stairs(
-        &self,
-        rng: &mut Rng,
-        map: &mut Map,
-    ) -> Result<(), Box<dyn Error>> {
+    fn place_stairs(&self, rng: &mut Rng, map: &mut Map) -> Result<(), Box<dyn Error>> {
         // TODO: Biome affects vault distribution
         if self.up.is_some() {
             let room: Entrance = self.sample(rng);
@@ -699,15 +674,11 @@ impl<'a> ConnectedSectorSpec<'a> {
     fn build_dungeon(&self, rng: &mut Rng) -> Map {
         const NUM_RETRIES: usize = 16;
 
-        if let Ok(map) =
-            calx::retry_gen(NUM_RETRIES, rng, |rng| self.dungeon_gen(rng))
-        {
+        if let Ok(map) = calx::retry_gen(NUM_RETRIES, rng, |rng| self.dungeon_gen(rng)) {
             map
         } else {
             // Fallback, couldn't generate map, let's do something foolproof.
-            warn!(
-                "Repeated dungeon generation failure, falling back to bigroom"
-            );
+            warn!("Repeated dungeon generation failure, falling back to bigroom");
             self.build_bigroom(rng)
         }
     }
@@ -741,8 +712,7 @@ impl<'a> ConnectedSectorSpec<'a> {
 
     fn upstairs_pos(&self) -> Option<CellVector> {
         self.up.map(|_| {
-            let mut upstairs_pos =
-                (self.sector + vec3(0, 0, 1)).downstairs_location(self.seed);
+            let mut upstairs_pos = (self.sector + vec3(0, 0, 1)).downstairs_location(self.seed);
             upstairs_pos.z -= 1;
             // Offset it so that the exits line up nicer.
             upstairs_pos.x -= 1;
@@ -766,19 +736,13 @@ impl<'a> ConnectedSectorSpec<'a> {
     fn dungeon_base_map(&self) -> Map {
         let mut ret = Map::new_base(
             Terrain::Rock,
-            Sector::points().filter(|&p| {
-                !(Location::default() + p).is_next_to_diagonal_sector()
-            }),
+            Sector::points().filter(|&p| !(Location::default() + p).is_next_to_diagonal_sector()),
         );
         self.place_stairwells(&mut ret);
         ret
     }
 
-    fn build_biome_sample_map(
-        &self,
-        rng: &mut Rng,
-        biome_fn: impl Fn(Location) -> Biome,
-    ) -> Map {
+    fn build_biome_sample_map(&self, rng: &mut Rng, biome_fn: impl Fn(Location) -> Biome) -> Map {
         let mut map = Map::default();
         for p in Sector::points() {
             let loc = self.sector.origin() + p;
@@ -804,8 +768,7 @@ impl<'a> ConnectedSectorSpec<'a> {
     }
 
     fn can_spawn(&self, spec: &dyn Spec) -> bool {
-        spec.min_depth() <= self.depth
-            && (spec.habitat() & (1 << self.biome as u64)) != 0
+        spec.min_depth() <= self.depth && (spec.habitat() & (1 << self.biome as u64)) != 0
     }
 }
 
@@ -880,9 +843,7 @@ impl Distribution<Room> for ConnectedSectorSpec<'_> {
 struct Exit(Arc<Map>);
 
 impl Distribution<Exit> for ConnectedSectorSpec<'_> {
-    fn sample(&self, rng: &mut Rng) -> Exit {
-        Exit(vaults::EXITS.choose(rng).unwrap().clone())
-    }
+    fn sample(&self, rng: &mut Rng) -> Exit { Exit(vaults::EXITS.choose(rng).unwrap().clone()) }
 }
 
 #[cfg(test)]

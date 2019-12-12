@@ -17,15 +17,10 @@ lazy_static! {
 /// Return the average frame duration for recent frames.
 ///
 /// Panics if called when an app isn't running via `run_app`.
-pub fn get_frame_duration() -> Flick {
-    ENGINE_STATE.lock().unwrap().average_frame_duration
-}
+pub fn get_frame_duration() -> Flick { ENGINE_STATE.lock().unwrap().average_frame_duration }
 
 /// Add a named image into the engine image atlas.
-pub fn add_sheet(
-    id: impl Into<String>,
-    sheet: impl Into<image::RgbaImage>,
-) -> ImageKey {
+pub fn add_sheet(id: impl Into<String>, sheet: impl Into<image::RgbaImage>) -> ImageKey {
     ENGINE_STATE
         .lock()
         .unwrap()

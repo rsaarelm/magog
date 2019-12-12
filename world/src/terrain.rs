@@ -23,9 +23,7 @@ impl World {
     }
 
     /// If location contains a portal, return the destination of the portal.
-    pub fn portal(&self, loc: Location) -> Option<Location> {
-        self.world_cache.get_portal(loc)
-    }
+    pub fn portal(&self, loc: Location) -> Option<Location> { self.world_cache.get_portal(loc) }
 
     /// Return whether location has a border portals.
     ///
@@ -158,9 +156,8 @@ impl Terrain {
     pub fn iter() -> slice::Iter<'static, Terrain> { TERRAIN_ENUM.iter() }
 
     pub fn from_color(color: SRgba) -> Option<Terrain> {
-        let key = (((color.r >> 4) as u16) << 8)
-            + (((color.g >> 4) as u16) << 4)
-            + (color.b >> 4) as u16;
+        let key =
+            (((color.r >> 4) as u16) << 8) + (((color.g >> 4) as u16) << 4) + (color.b >> 4) as u16;
         Self::iter()
             .filter(|t| t.is_regular())
             .find(|t| TERRAIN_DATA[**t as usize].color == key)
@@ -204,30 +201,22 @@ impl Terrain {
 
     pub fn is_wall(self) -> bool { self.form() == Form::Wall }
 
-    pub fn is_hull(self) -> bool {
-        self.form() == Form::Wall || self.form() == Form::Blob
-    }
+    pub fn is_hull(self) -> bool { self.form() == Form::Wall || self.form() == Form::Blob }
 
     pub fn is_blob(self) -> bool { self.form() == Form::Blob }
 
-    pub fn is_block(self) -> bool {
-        self.is_hull() || self.form() == Form::Prop
-    }
+    pub fn is_block(self) -> bool { self.is_hull() || self.form() == Form::Prop }
 
     pub fn is_regular(self) -> bool { TERRAIN_DATA[self as usize].is_regular }
 
     /// For constructing text maps.
-    pub fn preferred_map_chars(self) -> &'static str {
-        TERRAIN_DATA[self as usize].map_chars
-    }
+    pub fn preferred_map_chars(self) -> &'static str { TERRAIN_DATA[self as usize].map_chars }
 
     /// Terrain is a narrow object that blocks movement.
     ///
     /// Prop obstacles might not be distinguishable from floors if you only see a corner of the
     /// terrain tile. Use this if there's need to highlight partially visible terrain as obstacles.
-    pub fn is_narrow_obstacle(self) -> bool {
-        self.blocks_walk() && self.form() == Form::Prop
-    }
+    pub fn is_narrow_obstacle(self) -> bool { self.blocks_walk() && self.form() == Form::Prop }
 
     pub fn color(self) -> SRgba {
         let col = TERRAIN_DATA[self as usize].color;
@@ -266,8 +255,7 @@ mod test {
             .filter(|t| t.is_regular())
             .cloned()
             .collect();
-        let colors: HashSet<SRgba> =
-            terrains.iter().map(|t| t.color()).collect();
+        let colors: HashSet<SRgba> = terrains.iter().map(|t| t.color()).collect();
 
         assert_eq!(colors.len(), terrains.len());
     }

@@ -23,10 +23,7 @@ fn encode_capacity(w: u32, h: u32) -> usize {
     (w * h) as usize
 }
 
-fn embed_raw(
-    cover: &impl GenericImage<Pixel = Rgb<u8>>,
-    data: &[u8],
-) -> RgbImage {
+fn embed_raw(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     info!(
         "Embedding {} bytes into {} x {} cover",
         data.len(),
@@ -36,9 +33,7 @@ fn embed_raw(
     // Grow image by integer multiples if it doesn't look like it'll fit the data.
     let mut scale = 1;
 
-    while encode_capacity(cover.width() * scale, cover.height() * scale)
-        < data.len()
-    {
+    while encode_capacity(cover.width() * scale, cover.height() * scale) < data.len() {
         scale += 1;
     }
 
@@ -46,11 +41,9 @@ fn embed_raw(
         info!("Enlarging image cover by {}x", scale);
     }
 
-    let mut result = RgbImage::from_fn(
-        cover.width() * scale,
-        cover.height() * scale,
-        |x, y| cover.get_pixel(x / scale, y / scale).to_rgb(),
-    );
+    let mut result = RgbImage::from_fn(cover.width() * scale, cover.height() * scale, |x, y| {
+        cover.get_pixel(x / scale, y / scale).to_rgb()
+    });
 
     // The data is made to repeat with .cycle() so that it covers the entire image surface.
     // Dropping out halfway can look very conspicuous on the resulting image.
@@ -81,11 +74,9 @@ where
     type Item = u8;
     fn next(&mut self) -> Option<u8> {
         match self.pixels.next() {
-            Some((_, _, p)) => Some(
-                (p.0[0] << 5u8)
-                    | ((p.0[1] & 0b0000_0011) << 3u8)
-                    | (p.0[2] & 0b0000_0111),
-            ),
+            Some((_, _, p)) => {
+                Some((p.0[0] << 5u8) | ((p.0[1] & 0b0000_0011) << 3u8) | (p.0[2] & 0b0000_0111))
+            }
             None => None,
         }
     }
@@ -140,10 +131,7 @@ fn embed_base(
 /// 8:  big-endian u32 data payload byte count
 /// 12: data payload bytes
 /// ```
-pub fn embed(
-    cover: &impl GenericImage<Pixel = Rgb<u8>>,
-    data: &[u8],
-) -> RgbImage {
+pub fn embed(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     embed_base(cover, STGO_MAGIC, data)
 }
 
@@ -163,10 +151,7 @@ pub fn embed(
 /// 8:  big-endian u32 gzipped data payload byte count
 /// 12: gzipped data payload bytes
 /// ```
-pub fn embed_gzipped(
-    cover: &impl GenericImage<Pixel = Rgb<u8>>,
-    data: &[u8],
-) -> RgbImage {
+pub fn embed_gzipped(cover: &impl GenericImage<Pixel = Rgb<u8>>, data: &[u8]) -> RgbImage {
     let mut encoder = gzip::Encoder::new(Vec::new()).unwrap();
     io::copy(&mut Cursor::new(data), &mut encoder).unwrap();
     let data = encoder.finish().into_result().unwrap();
@@ -176,9 +161,7 @@ pub fn embed_gzipped(
 /// Extract steganographically embedded data from an image.
 ///
 /// Works for data encoded with `embed` or `embed_gzipped`.
-pub fn extract(
-    cover: &impl GenericImage<Pixel = Rgb<u8>>,
-) -> Result<Vec<u8>, ()> {
+pub fn extract(cover: &impl GenericImage<Pixel = Rgb<u8>>) -> Result<Vec<u8>, ()> {
     let mut bytes = StegRead {
         pixels: cover.pixels(),
     };
@@ -197,16 +180,13 @@ pub fn extract(
         _ => return Err(()),
     };
 
-    let payload_length =
-        bytes.read_u32::<BigEndian>().map_err(|_| ())? as usize;
+    let payload_length = bytes.read_u32::<BigEndian>().map_err(|_| ())? as usize;
     info!("Data payload of {} bytes", payload_length);
 
     // Sanity check. If the header specs more data than the image can hold, assume it's corrupted
     // and bail out.
     if payload_length > encode_capacity(cover.width(), cover.height()) {
-        warn!(
-            "Payload size larger than image can hold, assuming corrupt header."
-        );
+        warn!("Payload size larger than image can hold, assuming corrupt header.");
         return Err(());
     }
 
@@ -239,10 +219,8 @@ mod test {
 
     #[test]
     fn test_simple() {
-        let cover =
-            RgbImage::from_pixel(8, 8, Rgb::from_channels(255, 255, 255, 255));
-        let payload: Vec<u8> =
-            "squeamish ossifrage".as_bytes().iter().cloned().collect();
+        let cover = RgbImage::from_pixel(8, 8, Rgb::from_channels(255, 255, 255, 255));
+        let payload: Vec<u8> = "squeamish ossifrage".as_bytes().iter().cloned().collect();
 
         let stego = embed(&cover, &payload);
         let stegz = embed_gzipped(&cover, &payload);

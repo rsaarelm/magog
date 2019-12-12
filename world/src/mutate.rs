@@ -6,8 +6,7 @@ use crate::{
     sector::SECTOR_WIDTH,
     stats::Status,
     volume::Volume,
-    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity,
-    Location, Slot, World,
+    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity, Location, Slot, World,
 };
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
@@ -46,9 +45,7 @@ impl World {
         self.rebuild_stats(parent);
     }
 
-    pub(crate) fn set_player(&mut self, player: Option<Entity>) {
-        self.flags.player = player;
-    }
+    pub(crate) fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
 
     /// Mark an entity as dead, but don't remove it from the system yet.
     pub(crate) fn kill_entity(&mut self, e: Entity) {
@@ -97,9 +94,7 @@ impl World {
     }
 
     /// Push an event to the event queue for this tick.
-    pub(crate) fn push_event(&mut self, event: Event) {
-        self.events.push(event);
-    }
+    pub(crate) fn push_event(&mut self, event: Event) { self.events.push(event); }
 
     /// Access the persistent random number generator.
     pub(crate) fn rng(&mut self) -> &mut crate::Rng { &mut self.rng }
@@ -108,11 +103,7 @@ impl World {
     pub(crate) fn ecs_mut(&mut self) -> &mut Ecs { &mut self.ecs }
 
     /// Spawn an effect entity
-    pub(crate) fn spawn_fx(
-        &mut self,
-        loc: Location,
-        state: AnimState,
-    ) -> Entity {
+    pub(crate) fn spawn_fx(&mut self, loc: Location, state: AnimState) -> Entity {
         let e = self.ecs.make();
         self.place_entity(e, loc);
 
@@ -157,11 +148,7 @@ impl World {
     ////////////////////////////////////////////////////////////////////////////////
     // High-level commands, actual action can change because of eg. confusion.
 
-    pub(crate) fn entity_step(
-        &mut self,
-        e: Entity,
-        dir: Dir6,
-    ) -> ActionOutcome {
+    pub(crate) fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -169,11 +156,7 @@ impl World {
         }
     }
 
-    pub(crate) fn entity_melee(
-        &mut self,
-        e: Entity,
-        dir: Dir6,
-    ) -> ActionOutcome {
+    pub(crate) fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
             Some(true)
         } else {
@@ -197,11 +180,7 @@ impl World {
 
     ////////////////////////////////////////////////////////////////////////////////
 
-    pub(crate) fn really_step(
-        &mut self,
-        e: Entity,
-        dir: Dir6,
-    ) -> ActionOutcome {
+    pub(crate) fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         let origin = self.location(e)?;
         let loc = origin.jump(self, dir);
         if self.can_enter(e, loc) {
@@ -252,11 +231,7 @@ impl World {
         }
     }
 
-    pub(crate) fn spawn(
-        &mut self,
-        entity: &ExternalEntity,
-        loc: Location,
-    ) -> Entity {
+    pub(crate) fn spawn(&mut self, entity: &ExternalEntity, loc: Location) -> Entity {
         let e = self.inject(entity);
         self.place_entity(e, loc);
         e
@@ -269,11 +244,7 @@ impl World {
     /// If player exists, but is not placed in spatial, teleport the player here.
     ///
     /// If player does not exist, create the initial player entity.
-    pub(crate) fn spawn_player(
-        &mut self,
-        loc: Location,
-        spec: &ExternalEntity,
-    ) {
+    pub(crate) fn spawn_player(&mut self, loc: Location, spec: &ExternalEntity) {
         if let Some(player) = self.player() {
             if self.location(player).is_none() {
                 // Teleport player from limbo.
@@ -347,11 +318,7 @@ impl World {
     /// is run for player and AI entities.
     pub(crate) fn heartbeat(&mut self, e: Entity) { self.tick_statuses(e); }
 
-    pub(crate) fn use_ability(
-        &mut self,
-        _e: Entity,
-        _a: Ability,
-    ) -> ActionOutcome {
+    pub(crate) fn use_ability(&mut self, _e: Entity, _a: Ability) -> ActionOutcome {
         // TODO
         None
     }
@@ -390,11 +357,7 @@ impl World {
                 if let Some(target) = targets.choose(self.rng()) {
                     msg!(self, "There is a peal of thunder.").send();
                     let loc = self.location(*target).unwrap();
-                    self.apply_effect(
-                        &LIGHTNING_EFFECT,
-                        &Volume::point(loc),
-                        Some(e),
-                    );
+                    self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), Some(e));
                 } else {
                     msg!(self, "The spell fizzles.").send();
                 }
@@ -440,11 +403,7 @@ impl World {
                     amount: 6,
                     damage: Damage::Fire,
                 };
-                let center = self.projected_explosion_center(
-                    origin,
-                    dir,
-                    FIREBALL_RANGE,
-                );
+                let center = self.projected_explosion_center(origin, dir, FIREBALL_RANGE);
                 let volume = self.sphere_volume(center, FIREBALL_RADIUS);
                 self.apply_effect(&FIREBALL_EFFECT, &volume, Some(e));
 
@@ -467,16 +426,8 @@ impl World {
             Ability::Confuse => {
                 const CONFUSION_RANGE: u32 = 9;
 
-                let center = self.projected_explosion_center(
-                    origin,
-                    dir,
-                    CONFUSION_RANGE,
-                );
-                self.apply_effect(
-                    &Effect::Confuse,
-                    &Volume::point(center),
-                    Some(e),
-                );
+                let center = self.projected_explosion_center(origin, dir, CONFUSION_RANGE);
+                self.apply_effect(&Effect::Confuse, &Volume::point(center), Some(e));
             }
             _ => {
                 msg!(self, "TODO cast directed spell {:?}", a).send();

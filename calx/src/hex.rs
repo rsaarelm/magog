@@ -197,15 +197,12 @@ impl Sub<i32> for Dir6 {
 }
 
 impl Distribution<Dir6> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Dir6 {
-        Dir6::from_int(rng.gen_range(0, 6))
-    }
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
 }
 
 impl From<Dir6> for CellVector {
     fn from(d: Dir6) -> Self {
-        const DIRS: [(i32, i32); 6] =
-            [(-1, -1), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 0)];
+        const DIRS: [(i32, i32); 6] = [(-1, -1), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 0)];
 
         let (x, y) = DIRS[d as usize];
         vec2(x, y)
@@ -273,17 +270,11 @@ impl Dir12 {
             let mut cluster_end = None;
 
             for i in 0..6 {
-                if cluster_start.is_none()
-                    && neighbors[i]
-                    && !neighbors[(i + 5) % 6]
-                {
+                if cluster_start.is_none() && neighbors[i] && !neighbors[(i + 5) % 6] {
                     cluster_start = Some(i);
                 }
 
-                if cluster_end.is_none()
-                    && !neighbors[i]
-                    && neighbors[(i + 5) % 6]
-                {
+                if cluster_end.is_none() && !neighbors[i] && neighbors[(i + 5) % 6] {
                     cluster_end = Some(i);
                 }
             }
@@ -291,11 +282,7 @@ impl Dir12 {
             Some((cluster_start?, cluster_end?))
         }
 
-        fn is_single_cluster(
-            neighbors: [bool; 6],
-            start: usize,
-            end: usize,
-        ) -> bool {
+        fn is_single_cluster(neighbors: [bool; 6], start: usize, end: usize) -> bool {
             let mut in_cluster = true;
 
             for i in 0..6 {
@@ -361,10 +348,7 @@ mod test {
             None,
             Dir12::away_from([false, false, false, false, false, false])
         );
-        assert_eq!(
-            None,
-            Dir12::away_from([true, true, true, true, true, true])
-        );
+        assert_eq!(None, Dir12::away_from([true, true, true, true, true, true]));
         assert_eq!(
             None,
             Dir12::away_from([false, true, false, false, true, false])

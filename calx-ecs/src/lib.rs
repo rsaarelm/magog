@@ -9,18 +9,7 @@ use std::ops;
 use std::slice;
 
 /// Handle for an entity in the entity component system.
-#[derive(
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-    Debug,
-    Serialize,
-    Deserialize,
-)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub struct Entity {
     uid: u32,
     idx: u32,
@@ -77,9 +66,7 @@ impl<C> ComponentData<C> {
 
         if self.contains(e) {
             // Component is set for entity, replace existing component.
-            self.inner.data
-                [self.entity_idx_to_data[e.idx as usize].data_idx as usize] =
-                comp;
+            self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize] = comp;
         } else {
             // Grow lookup vector if needed.
             if e.idx as usize >= self.entity_idx_to_data.len() {
@@ -109,10 +96,7 @@ impl<C> ComponentData<C> {
     /// Get a reference to a component only if it exists for this entity.
     pub fn get(&self, e: Entity) -> Option<&C> {
         if self.contains(e) {
-            Some(
-                &self.inner.data
-                    [self.entity_idx_to_data[e.idx as usize].data_idx as usize],
-            )
+            Some(&self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
         } else {
             None
         }
@@ -121,27 +105,20 @@ impl<C> ComponentData<C> {
     /// Get a mutable reference to a component only if it exists for this entity.
     pub fn get_mut(&mut self, e: Entity) -> Option<&mut C> {
         if self.contains(e) {
-            Some(
-                &mut self.inner.data
-                    [self.entity_idx_to_data[e.idx as usize].data_idx as usize],
-            )
+            Some(&mut self.inner.data[self.entity_idx_to_data[e.idx as usize].data_idx as usize])
         } else {
             None
         }
     }
 
     /// Iterate entity ids in this component.
-    pub fn ent_iter(&self) -> slice::Iter<'_, Entity> {
-        self.inner.entities.iter()
-    }
+    pub fn ent_iter(&self) -> slice::Iter<'_, Entity> { self.inner.entities.iter() }
 
     /// Iterate elements in this component.
     pub fn iter(&self) -> slice::Iter<'_, C> { self.inner.data.iter() }
 
     /// Iterate mutable elements in this component.
-    pub fn iter_mut(&mut self) -> slice::IterMut<'_, C> {
-        self.inner.data.iter_mut()
-    }
+    pub fn iter_mut(&mut self) -> slice::IterMut<'_, C> { self.inner.data.iter_mut() }
 }
 
 impl<C> ops::Index<Entity> for ComponentData<C> {
@@ -164,10 +141,8 @@ impl<C> AnyComponent for ComponentData<C> {
             // To keep the data compact, we do swap-remove with the last data item and update the
             // lookup on the moved item. If the component being removed isn't the last item in the
             // list, we need to reset the lookup value for the component that was moved.
-            if removed_index.data_idx as usize != self.inner.entities.len() - 1
-            {
-                let last_entity =
-                    self.inner.entities[self.inner.entities.len() - 1];
+            if removed_index.data_idx as usize != self.inner.entities.len() - 1 {
+                let last_entity = self.inner.entities[self.inner.entities.len() - 1];
                 self.inner
                     .entities
                     .swap_remove(removed_index.data_idx as usize);
@@ -199,9 +174,7 @@ impl<C: serde::Serialize + Clone> serde::Serialize for ComponentData<C> {
     }
 }
 
-impl<'a, C: serde::Deserialize<'a>> serde::Deserialize<'a>
-    for ComponentData<C>
-{
+impl<'a, C: serde::Deserialize<'a>> serde::Deserialize<'a> for ComponentData<C> {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         let inner: DenseComponentData<C> = serde::Deserialize::deserialize(d)?;
 
@@ -209,8 +182,7 @@ impl<'a, C: serde::Deserialize<'a>> serde::Deserialize<'a>
         let mut entity_idx_to_data = Vec::new();
         for (i, e) in inner.entities.iter().enumerate() {
             if e.idx as usize >= entity_idx_to_data.len() {
-                entity_idx_to_data
-                    .resize(e.idx as usize + 1, Default::default());
+                entity_idx_to_data.resize(e.idx as usize + 1, Default::default());
             }
             entity_idx_to_data[e.idx as usize] = Index {
                 uid: e.uid,

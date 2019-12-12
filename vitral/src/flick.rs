@@ -17,14 +17,10 @@ impl Flick {
         Flick((seconds * FLICKS_PER_SECOND as f64) as i64)
     }
 
-    pub fn from_nanoseconds(nanos: i64) -> Flick {
-        Flick((nanos as i128 * 7056 / 10_000) as i64)
-    }
+    pub fn from_nanoseconds(nanos: i64) -> Flick { Flick((nanos as i128 * 7056 / 10_000) as i64) }
 
     /// Return current time in Flicks since an unspecified epoch.
-    pub fn now() -> Flick {
-        Flick::from_nanoseconds(time::precise_time_ns() as i64)
-    }
+    pub fn now() -> Flick { Flick::from_nanoseconds(time::precise_time_ns() as i64) }
 }
 
 impl fmt::Display for Flick {
@@ -43,8 +39,7 @@ impl From<Duration> for Flick {
 impl From<Flick> for Duration {
     fn from(f: Flick) -> Duration {
         let secs = (f.0 / FLICKS_PER_SECOND) as u64;
-        let nanos = ((f.0 % FLICKS_PER_SECOND) * 1_000_000_000
-            / FLICKS_PER_SECOND) as u32;
+        let nanos = ((f.0 % FLICKS_PER_SECOND) * 1_000_000_000 / FLICKS_PER_SECOND) as u32;
         Duration::new(secs, nanos)
     }
 }

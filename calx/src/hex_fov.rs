@@ -34,17 +34,14 @@ impl PolarPoint for HexPolarPoint {
         )
     }
 
-    fn is_below(&self, other: &HexPolarPoint) -> bool {
-        self.winding_index() < other.end_index()
-    }
+    fn is_below(&self, other: &HexPolarPoint) -> bool { self.winding_index() < other.end_index() }
 
     fn to_v2(&self) -> CellVector {
         if self.radius == 0 {
             return vec2(0, 0);
         }
         let index = self.winding_index();
-        let sector =
-            index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
+        let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
         let offset = index.mod_floor(&(self.radius as i32));
 
         let rod = Dir6::from_int(sector).to_v2();
@@ -183,15 +180,13 @@ mod test {
     #[test]
     fn trivial_fov() {
         // Just draw a small circle.
-        let field: HashMap<CellVector, Cell> =
-            HashMap::from_iter(HexFov::new(Cell { range: 2 }));
+        let field: HashMap<CellVector, Cell> = HashMap::from_iter(HexFov::new(Cell { range: 2 }));
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(!field.contains_key(&vec2(1, -1)));
 
         // Now test out the fake-isometric corners.
         let field: HashMap<CellVector, Cell> = HashMap::from_iter(
-            HexFov::new(Cell { range: 2 })
-                .add_fake_isometric_acute_corners(|_p, _t| true),
+            HexFov::new(Cell { range: 2 }).add_fake_isometric_acute_corners(|_p, _t| true),
         );
         assert!(field.contains_key(&vec2(1, 0)));
         assert!(field.contains_key(&vec2(1, -1)));

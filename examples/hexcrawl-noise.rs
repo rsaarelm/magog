@@ -14,8 +14,7 @@ fn main() {
                 continue;
             }
             let (x, y) = ((c + r) / 2 - 50, r - 30);
-            let offset = Location::new(x as i16, y as i16, 0)
-                .terrain_cell_displacement();
+            let offset = Location::new(x as i16, y as i16, 0).terrain_cell_displacement();
 
             let r = calx::HexGeom::hex_dist(&vec2(x + offset.x, y + offset.y));
             if r < HEX_SIZE {

@@ -79,10 +79,7 @@ impl<P: PolarPoint, T: FovValue> Iterator for Fov<P, T> {
                 return self.next();
             }
 
-            debug_assert!(
-                current.group_value
-                    == current.prev_value.advance(current.pt.to_v2())
-            );
+            debug_assert!(current.group_value == current.prev_value.advance(current.pt.to_v2()));
 
             let pos = current.pt.to_v2();
             let ret = current.group_value.clone();

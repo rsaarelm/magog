@@ -1,6 +1,4 @@
-use crate::{
-    spec::EntitySpawn, world::Loadout, Distribution, Rng, Slot, World,
-};
+use crate::{spec::EntitySpawn, world::Loadout, Distribution, Rng, Slot, World};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -58,10 +56,7 @@ impl World {
     }
 
     /// Inject a standalone entity structure into the world state.
-    pub(crate) fn inject(
-        &mut self,
-        external_entity: &ExternalEntity,
-    ) -> Entity {
+    pub(crate) fn inject(&mut self, external_entity: &ExternalEntity) -> Entity {
         let entity = external_entity.loadout.make(self.ecs_mut());
 
         for (slot, e) in &external_entity.contents {

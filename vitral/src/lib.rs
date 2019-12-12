@@ -10,9 +10,7 @@ pub use atlas_cache::ImageKey;
 mod backend;
 pub use backend::{App, AppConfig};
 mod colors;
-pub use colors::{
-    color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS,
-};
+pub use colors::{color, scolor, to_linear, to_srgb, Rgba, SRgba, NAMED_COLORS};
 mod flick;
 pub use flick::{Flick, FLICKS_PER_SECOND};
 mod keycode;
@@ -22,9 +20,7 @@ pub use rect_util::RectUtil;
 mod scene;
 pub use scene::{InputEvent, Scene, SceneSwitch};
 mod state;
-pub use state::{
-    add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image,
-};
+pub use state::{add_sheet, add_tilesheet, add_tilesheet_font, get_frame_duration, get_image};
 
 mod tilesheet;
 
@@ -74,11 +70,7 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub fn new(
-        pos: Point2D<f32>,
-        tex_coord: Point2D<f32>,
-        color: Rgba,
-    ) -> Self {
+    pub fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Rgba) -> Self {
         Vertex {
             pos: [pos.x, pos.y],
             tex_coord: [tex_coord.x, tex_coord.y],
@@ -133,12 +125,7 @@ impl<'a> Canvas<'a> {
     /// Index offsets are guaranteed to be consecutive and ascending as long as the current draw
     /// batch has not been switched, so you can grab the return value from the first `vertex_push`
     /// and express the rest by adding offsets to it.
-    pub fn push_vertex(
-        &mut self,
-        pos: Point2D<i32>,
-        tex_coord: Point2D<f32>,
-        color: Rgba,
-    ) -> u16 {
+    pub fn push_vertex(&mut self, pos: Point2D<i32>, tex_coord: Point2D<f32>, color: Rgba) -> u16 {
         self.push_raw_vertex(Vertex::new(pos.to_f32(), tex_coord, color))
     }
 
@@ -170,9 +157,7 @@ impl<'a> Canvas<'a> {
     }
 
     /// Return the screen bounds
-    pub fn screen_bounds(&self) -> Rect<i32> {
-        Rect::new(point2(0, 0), self.screen_size)
-    }
+    pub fn screen_bounds(&self) -> Rect<i32> { Rect::new(point2(0, 0), self.screen_size) }
 
     pub fn start_solid_texture(&mut self) {
         // XXX HACK assuming solid texture is at origin of texture 0
@@ -184,9 +169,7 @@ impl<'a> Canvas<'a> {
         point2(0.0, 0.0)
     }
 
-    pub fn start_texture(&mut self, texture: TextureIndex) {
-        self.check_batch(Some(texture));
-    }
+    pub fn start_texture(&mut self, texture: TextureIndex) { self.check_batch(Some(texture)); }
 
     fn current_batch_is_invalid(&self, texture: TextureIndex) -> bool {
         if self.draw_list.is_empty() {
@@ -219,9 +202,8 @@ impl<'a> Canvas<'a> {
             return;
         }
 
-        let texture = texture_needed.unwrap_or_else(|| {
-            self.draw_list[self.draw_list.len() - 1].texture
-        });
+        let texture =
+            texture_needed.unwrap_or_else(|| self.draw_list[self.draw_list.len() - 1].texture);
 
         let clip = self.ui.clip;
 
@@ -235,13 +217,7 @@ impl<'a> Canvas<'a> {
         }
     }
 
-    pub fn draw_line(
-        &mut self,
-        thickness: f32,
-        color: Rgba,
-        p1: Point2D<i32>,
-        p2: Point2D<i32>,
-    ) {
+    pub fn draw_line(&mut self, thickness: f32, color: Rgba, p1: Point2D<i32>, p2: Point2D<i32>) {
         if p1 == p2 {
             return;
         }
@@ -271,12 +247,7 @@ impl<'a> Canvas<'a> {
         self.push_triangle(idx, idx + 2, idx + 3);
     }
 
-    pub fn draw_tex_rect(
-        &mut self,
-        area: &Rect<i32>,
-        tex_coords: &Rect<f32>,
-        color: Rgba,
-    ) {
+    pub fn draw_tex_rect(&mut self, area: &Rect<i32>, tex_coords: &Rect<f32>, color: Rgba) {
         let idx = self.push_vertex(area.origin, tex_coords.origin, color);
         self.push_vertex(area.top_right(), tex_coords.top_right(), color);
         self.push_vertex(area.bottom_right(), tex_coords.bottom_right(), color);
@@ -292,12 +263,7 @@ impl<'a> Canvas<'a> {
         self.draw_tex_rect(area, &rect(p.x, p.y, 0.0, 0.0), color);
     }
 
-    pub fn draw_image(
-        &mut self,
-        image: &ImageData,
-        pos: Point2D<i32>,
-        color: Rgba,
-    ) {
+    pub fn draw_image(&mut self, image: &ImageData, pos: Point2D<i32>, color: Rgba) {
         self.start_texture(image.texture);
         self.draw_tex_rect(
             &Rect::new(pos, image.size.to_i32()),
@@ -352,32 +318,23 @@ impl<'a> Canvas<'a> {
 
         let is_hovering = area.contains(self.mouse_pos());
 
-        let left_press = self.ui.click_state[MouseButton::Left as usize]
-            .is_pressed()
-            && is_hovering;
+        let left_press =
+            self.ui.click_state[MouseButton::Left as usize].is_pressed() && is_hovering;
 
-        let right_press = self.ui.click_state[MouseButton::Right as usize]
-            .is_pressed()
-            && is_hovering;
+        let right_press =
+            self.ui.click_state[MouseButton::Right as usize].is_pressed() && is_hovering;
 
-        let middle_press = self.ui.click_state[MouseButton::Middle as usize]
-            .is_pressed()
-            && is_hovering;
+        let middle_press =
+            self.ui.click_state[MouseButton::Middle as usize].is_pressed() && is_hovering;
 
         let is_pressed = left_press || right_press;
 
         // Determine the return value.
-        if left_press
-            && self.ui.click_state[MouseButton::Left as usize].is_release()
-        {
+        if left_press && self.ui.click_state[MouseButton::Left as usize].is_release() {
             ButtonAction::LeftClicked
-        } else if right_press
-            && self.ui.click_state[MouseButton::Right as usize].is_release()
-        {
+        } else if right_press && self.ui.click_state[MouseButton::Right as usize].is_release() {
             ButtonAction::RightClicked
-        } else if middle_press
-            && self.ui.click_state[MouseButton::Middle as usize].is_release()
-        {
+        } else if middle_press && self.ui.click_state[MouseButton::Middle as usize].is_release() {
             ButtonAction::MiddleClicked
         } else if is_pressed {
             ButtonAction::Pressed
@@ -479,10 +436,7 @@ impl<'a> Canvas<'a> {
     }
 
     /// Screenshot using async callback.
-    pub fn screenshot_cb(
-        &mut self,
-        cb: impl FnOnce(image::RgbImage) + 'static,
-    ) {
+    pub fn screenshot_cb(&mut self, cb: impl FnOnce(image::RgbImage) + 'static) {
         self.backend.screenshot(cb)
     }
 
@@ -518,11 +472,7 @@ impl Default for UiState {
 
 impl UiState {
     /// Register mouse button state.
-    pub(crate) fn input_mouse_button(
-        &mut self,
-        id: MouseButton,
-        is_down: bool,
-    ) {
+    pub(crate) fn input_mouse_button(&mut self, id: MouseButton, is_down: bool) {
         if is_down {
             self.click_state[id as usize] =
                 self.click_state[id as usize].input_press(self.mouse_pos);
@@ -533,9 +483,7 @@ impl UiState {
     }
 
     /// Register mouse motion.
-    pub(crate) fn input_mouse_move(&mut self, x: i32, y: i32) {
-        self.mouse_pos = point2(x, y);
-    }
+    pub(crate) fn input_mouse_move(&mut self, x: i32, y: i32) { self.mouse_pos = point2(x, y); }
 }
 
 /// A sequence of primitive draw operarations.
@@ -579,18 +527,14 @@ enum ClickState {
 impl ClickState {
     fn tick(self) -> ClickState {
         match self {
-            ClickState::Unpressed | ClickState::Release(_, _) => {
-                ClickState::Unpressed
-            }
+            ClickState::Unpressed | ClickState::Release(_, _) => ClickState::Unpressed,
             ClickState::Press(p) | ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
 
     fn input_press(self, pos: Point2D<i32>) -> ClickState {
         match self {
-            ClickState::Unpressed | ClickState::Release(_, _) => {
-                ClickState::Press(pos)
-            }
+            ClickState::Unpressed | ClickState::Release(_, _) => ClickState::Press(pos),
             ClickState::Press(p) | ClickState::Drag(p) => ClickState::Drag(p),
         }
     }
@@ -598,17 +542,15 @@ impl ClickState {
     fn input_release(self, pos: Point2D<i32>) -> ClickState {
         match self {
             ClickState::Unpressed => ClickState::Unpressed,
-            ClickState::Press(p)
-            | ClickState::Drag(p)
-            | ClickState::Release(p, _) => ClickState::Release(p, pos),
+            ClickState::Press(p) | ClickState::Drag(p) | ClickState::Release(p, _) => {
+                ClickState::Release(p, pos)
+            }
         }
     }
 
     fn is_pressed(&self) -> bool {
         match *self {
-            ClickState::Press(_)
-            | ClickState::Drag(_)
-            | ClickState::Release(_, _) => true,
+            ClickState::Press(_) | ClickState::Drag(_) | ClickState::Release(_, _) => true,
             ClickState::Unpressed => false,
         }
     }
@@ -646,9 +588,7 @@ impl FontData {
     }
 
     /// Return the width of a char in the font.
-    pub fn char_width(&self, c: char) -> Option<i32> {
-        self.chars.get(&c).map(|c| c.advance)
-    }
+    pub fn char_width(&self, c: char) -> Option<i32> { self.chars.get(&c).map(|c| c.advance) }
 
     pub fn str_width(&self, s: &str) -> i32 {
         s.chars().map(|c| self.char_width(c).unwrap_or(0)).sum()
@@ -680,14 +620,10 @@ impl ButtonAction {
 }
 
 /// Normalized device coordinates for the top left corner of a pixel-perfect canvas in a window.
-pub(crate) fn pixel_canvas_pos(
-    window_size: Size2D<u32>,
-    canvas_size: Size2D<u32>,
-) -> Point2D<f32> {
+pub(crate) fn pixel_canvas_pos(window_size: Size2D<u32>, canvas_size: Size2D<u32>) -> Point2D<f32> {
     // Clip window dimensions to even numbers, pixel-perfect rendering has artifacts with odd
     // window dimensions.
-    let window_size =
-        Size2D::new(window_size.width & !1, window_size.height & !1);
+    let window_size = Size2D::new(window_size.width & !1, window_size.height & !1);
 
     // Scale based on whichever of X or Y axis is the tighter fit.
     let mut scale = (window_size.width as f32 / canvas_size.width as f32)
@@ -710,8 +646,7 @@ pub(crate) fn window_to_canvas_coordinates(
     window_pos: Point2D<i32>,
 ) -> Point2D<i32> {
     // Clip odd dimensions again.
-    let window_size =
-        Size2D::new(window_size.width & !1, window_size.height & !1);
+    let window_size = Size2D::new(window_size.width & !1, window_size.height & !1);
 
     let rp = pixel_canvas_pos(window_size, canvas_size);
     let rs = Size2D::new(rp.x.abs() * 2.0, rp.y.abs() * 2.0);

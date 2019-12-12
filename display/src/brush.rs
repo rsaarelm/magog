@@ -27,12 +27,7 @@ impl fmt::Debug for Splat {
 }
 
 impl Splat {
-    pub fn new(
-        geom: &Geom,
-        sheet: String,
-        color: Rgba,
-        back_color: Rgba,
-    ) -> Splat {
+    pub fn new(geom: &Geom, sheet: String, color: Rgba, back_color: Rgba) -> Splat {
         Splat {
             image: vitral::get_image(&ImageKey {
                 id: sheet,
@@ -100,11 +95,7 @@ impl Builder {
     }
 
     /// Set the foreground and background colors for the brush.
-    pub fn colors<C: Into<Rgba>, D: Into<Rgba>>(
-        mut self,
-        color: C,
-        back_color: D,
-    ) -> Builder {
+    pub fn colors<C: Into<Rgba>, D: Into<Rgba>>(mut self, color: C, back_color: D) -> Builder {
         self.color = color.into();
         self.back_color = back_color.into();
         self
@@ -134,14 +125,10 @@ impl Builder {
     }
 
     /// Add a single-frame splat for a standard tile to the splat matrix.
-    pub fn tile(self, x: u32, y: u32) -> Builder {
-        self.splat(Geom::tile(x, y))
-    }
+    pub fn tile(self, x: u32, y: u32) -> Builder { self.splat(Geom::tile(x, y)) }
 
     /// Add a single-frame splat for an item to the splat matrix.
-    pub fn item(self, x: u32, y: u32) -> Builder {
-        self.splat(Geom::item(x, y))
-    }
+    pub fn item(self, x: u32, y: u32) -> Builder { self.splat(Geom::item(x, y)) }
 
     /// Add an arbitrary sized rectangle.
     pub fn rect(self, x: u32, y: u32, w: u32, h: u32) -> Builder {
@@ -178,13 +165,7 @@ impl Builder {
     ///
     /// Wall tiles are chopped up from two 32x32 images. One contains the center pillar wallform
     /// and the other contains the two long sides wallform.
-    pub fn wall(
-        self,
-        center_x: u32,
-        center_y: u32,
-        sides_x: u32,
-        sides_y: u32,
-    ) -> Builder {
+    pub fn wall(self, center_x: u32, center_y: u32, sides_x: u32, sides_y: u32) -> Builder {
         self.splat(Geom::wall(center_x, center_y, sides_x, sides_y))
     }
 
@@ -252,9 +233,7 @@ impl Geom {
     }
 
     /// Single item sized tile.
-    pub fn item(x: u32, y: u32) -> Option<Geom> {
-        Some(Geom::new(8, 6, x, y, 16, 16))
-    }
+    pub fn item(x: u32, y: u32) -> Option<Geom> { Some(Geom::new(8, 6, x, y, 16, 16)) }
 
     /// Standard blobform tileset.
     #[rustfmt::skip]

@@ -1,6 +1,5 @@
 use crate::{
-    attack_damage, effect::Damage, roll, Ability, ActionOutcome, AnimState,
-    ItemType, Slot, World,
+    attack_damage, effect::Damage, roll, Ability, ActionOutcome, AnimState, ItemType, Slot, World,
 };
 use calx::Dir6;
 use calx_ecs::Entity;
@@ -41,8 +40,7 @@ pub struct Stats {
 
 impl Stats {
     pub fn new(base_power: i32, intrinsics: &[Intrinsic]) -> Stats {
-        let intrinsics =
-            intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
+        let intrinsics = intrinsics.iter().fold(0, |acc, &i| acc | (1 << i as u32));
         Stats {
             base_power,
             intrinsics,
@@ -124,9 +122,7 @@ impl Health {
     pub fn new() -> Health { Default::default() }
 }
 
-#[derive(
-    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize,
-)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
 /// Temporary creature properties
 pub enum Status {
     /// Creature is acting erratically
@@ -157,9 +153,7 @@ pub struct StatsComponent {
 }
 
 impl StatsComponent {
-    pub fn new(base: Stats) -> StatsComponent {
-        StatsComponent { base, actual: base }
-    }
+    pub fn new(base: Stats) -> StatsComponent { StatsComponent { base, actual: base } }
 }
 
 #[derive(Copy, Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
@@ -178,17 +172,11 @@ pub enum Intrinsic {
 }
 
 impl World {
-    pub fn power(&self, e: Entity) -> i32 {
-        self.stats(e).base_power + self.stats(e).level * 2
-    }
+    pub fn power(&self, e: Entity) -> i32 { self.stats(e).base_power + self.stats(e).level * 2 }
 
-    pub fn attack(&self, e: Entity) -> i32 {
-        self.stats(e).base_attack + self.stats(e).level * 2
-    }
+    pub fn attack(&self, e: Entity) -> i32 { self.stats(e).base_attack + self.stats(e).level * 2 }
 
-    pub fn defense(&self, e: Entity) -> i32 {
-        self.stats(e).base_defense + self.stats(e).level * 2
-    }
+    pub fn defense(&self, e: Entity) -> i32 { self.stats(e).base_defense + self.stats(e).level * 2 }
 
     /// Return maximum health of an entity.
     pub fn max_hp(&self, e: Entity) -> i32 { self.power(e) }
@@ -342,12 +330,7 @@ impl World {
         }
     }
 
-    pub(crate) fn gain_status(
-        &mut self,
-        e: Entity,
-        status: Status,
-        duration: u32,
-    ) {
+    pub(crate) fn gain_status(&mut self, e: Entity, status: Status, duration: u32) {
         if duration == 0 {
             return;
         }
@@ -414,20 +397,14 @@ impl World {
         true
     }
 
-    pub(crate) fn really_melee(
-        &mut self,
-        e: Entity,
-        dir: Dir6,
-    ) -> ActionOutcome {
+    pub(crate) fn really_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         let loc = self.location(e)?;
         let target = self.mob_at(loc.jump(self, dir))?;
 
         // XXX: Using power stat for damage, should this be different?
         // Do +5 since dmg 1 is really, really useless.
-        let advantage = self.attack(e) - self.defense(target)
-            + 2 * self.stats(target).armor;
-        let damage =
-            attack_damage(roll(self.rng()), advantage, 5 + self.power(e));
+        let advantage = self.attack(e) - self.defense(target) + 2 * self.stats(target).armor;
+        let damage = attack_damage(roll(self.rng()), advantage, 5 + self.power(e));
 
         if damage == 0 {
             msg!(self, "[One] miss[es] [another].")

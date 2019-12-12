@@ -43,11 +43,7 @@ pub struct App<T> {
 }
 
 impl<T: 'static> App<T> {
-    pub fn new(
-        config: AppConfig,
-        world: T,
-        scenes: Vec<Box<dyn Scene<T>>>,
-    ) -> App<T> {
+    pub fn new(config: AppConfig, world: T, scenes: Vec<Box<dyn Scene<T>>>) -> App<T> {
         let frame_duration = config.frame_duration;
         App {
             config,
@@ -68,8 +64,7 @@ impl<T: 'static> App<T> {
             .unwrap();
         let hidpi_factor = window.hidpi_factor();
         let size = window.inner_size().to_physical(hidpi_factor);
-        let (width, height) =
-            (size.width.round() as u32, size.height.round() as u32);
+        let (width, height) = (size.width.round() as u32, size.height.round() as u32);
 
         // WGPU setup
         //
@@ -80,13 +75,12 @@ impl<T: 'static> App<T> {
         })
         .expect("No WGPU adapter found");
 
-        let (device, mut queue) =
-            adapter.request_device(&wgpu::DeviceDescriptor {
-                extensions: wgpu::Extensions {
-                    anisotropic_filtering: false,
-                },
-                limits: wgpu::Limits::default(),
-            });
+        let (device, mut queue) = adapter.request_device(&wgpu::DeviceDescriptor {
+            extensions: wgpu::Extensions {
+                anisotropic_filtering: false,
+            },
+            limits: wgpu::Limits::default(),
+        });
         let mut sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8UnormSrgb,
@@ -103,8 +97,7 @@ impl<T: 'static> App<T> {
 
         // Main loop
         //
-        let mut render_buffer =
-            RenderBuffer::new(&device, self.config.resolution);
+        let mut render_buffer = RenderBuffer::new(&device, self.config.resolution);
         render_buffer.update_canvas_pos(size2(sc_desc.width, sc_desc.height));
 
         let mut input_events = Vec::new();
@@ -368,103 +361,94 @@ struct Gfx {
 
 impl Gfx {
     pub fn new(device: &wgpu::Device, resolution: Size2D<u32>) -> Gfx {
-        let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                bindings: &[
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 0,
-                        visibility: wgpu::ShaderStage::VERTEX,
-                        ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            bindings: &[
+                wgpu::BindGroupLayoutBinding {
+                    binding: 0,
+                    visibility: wgpu::ShaderStage::VERTEX,
+                    ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+                },
+                wgpu::BindGroupLayoutBinding {
+                    binding: 1,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::SampledTexture {
+                        multisampled: false,
+                        dimension: wgpu::TextureViewDimension::D2,
                     },
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 1,
-                        visibility: wgpu::ShaderStage::FRAGMENT,
-                        ty: wgpu::BindingType::SampledTexture {
-                            multisampled: false,
-                            dimension: wgpu::TextureViewDimension::D2,
-                        },
-                    },
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 2,
-                        visibility: wgpu::ShaderStage::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler,
-                    },
-                ],
-            });
+                },
+                wgpu::BindGroupLayoutBinding {
+                    binding: 2,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler,
+                },
+            ],
+        });
 
         // Rendering pipeline
-        let pipeline =
-            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                layout: &device.create_pipeline_layout(
-                    &wgpu::PipelineLayoutDescriptor {
-                        bind_group_layouts: &[&bind_group_layout],
-                    },
+        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            layout: &device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                bind_group_layouts: &[&bind_group_layout],
+            }),
+            vertex_stage: wgpu::ProgrammableStageDescriptor {
+                module: &device.create_shader_module(
+                    &wgpu::read_spirv(std::io::Cursor::new(&include_bytes!("sprite.vert.spv")[..]))
+                        .unwrap(),
                 ),
-                vertex_stage: wgpu::ProgrammableStageDescriptor {
-                    module: &device.create_shader_module(
-                        &wgpu::read_spirv(std::io::Cursor::new(
-                            &include_bytes!("sprite.vert.spv")[..],
-                        ))
+                entry_point: "main",
+            },
+            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+                module: &device.create_shader_module(
+                    &wgpu::read_spirv(std::io::Cursor::new(&include_bytes!("sprite.frag.spv")[..]))
                         .unwrap(),
-                    ),
-                    entry_point: "main",
-                },
-                fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                    module: &device.create_shader_module(
-                        &wgpu::read_spirv(std::io::Cursor::new(
-                            &include_bytes!("sprite.frag.spv")[..],
-                        ))
-                        .unwrap(),
-                    ),
-                    entry_point: "main",
-                }),
-                rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: wgpu::CullMode::None,
-                    depth_bias: 0,
-                    depth_bias_slope_scale: 0.0,
-                    depth_bias_clamp: 0.0,
-                }),
-                primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-                color_states: &[wgpu::ColorStateDescriptor {
-                    format: wgpu::TextureFormat::Bgra8UnormSrgb,
-                    color_blend: wgpu::BlendDescriptor::REPLACE,
-                    alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                    write_mask: wgpu::ColorWrite::ALL,
-                }],
-                depth_stencil_state: None,
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[wgpu::VertexBufferDescriptor {
-                    stride: std::mem::size_of::<Vertex>()
-                        as wgpu::BufferAddress,
-                    step_mode: wgpu::InputStepMode::Vertex,
-                    attributes: &[
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float2,
-                            offset: 0,
-                            shader_location: 0,
-                        },
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float2,
-                            offset: 2 * 4,
-                            shader_location: 1,
-                        },
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float4,
-                            offset: 4 * 4,
-                            shader_location: 2,
-                        },
-                        wgpu::VertexAttributeDescriptor {
-                            format: wgpu::VertexFormat::Float4,
-                            offset: 8 * 4,
-                            shader_location: 3,
-                        },
-                    ],
-                }],
-                sample_count: 1,
-                sample_mask: !0,
-                alpha_to_coverage_enabled: false,
-            });
+                ),
+                entry_point: "main",
+            }),
+            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: wgpu::CullMode::None,
+                depth_bias: 0,
+                depth_bias_slope_scale: 0.0,
+                depth_bias_clamp: 0.0,
+            }),
+            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
+            color_states: &[wgpu::ColorStateDescriptor {
+                format: wgpu::TextureFormat::Bgra8UnormSrgb,
+                color_blend: wgpu::BlendDescriptor::REPLACE,
+                alpha_blend: wgpu::BlendDescriptor::REPLACE,
+                write_mask: wgpu::ColorWrite::ALL,
+            }],
+            depth_stencil_state: None,
+            index_format: wgpu::IndexFormat::Uint16,
+            vertex_buffers: &[wgpu::VertexBufferDescriptor {
+                stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
+                step_mode: wgpu::InputStepMode::Vertex,
+                attributes: &[
+                    wgpu::VertexAttributeDescriptor {
+                        format: wgpu::VertexFormat::Float2,
+                        offset: 0,
+                        shader_location: 0,
+                    },
+                    wgpu::VertexAttributeDescriptor {
+                        format: wgpu::VertexFormat::Float2,
+                        offset: 2 * 4,
+                        shader_location: 1,
+                    },
+                    wgpu::VertexAttributeDescriptor {
+                        format: wgpu::VertexFormat::Float4,
+                        offset: 4 * 4,
+                        shader_location: 2,
+                    },
+                    wgpu::VertexAttributeDescriptor {
+                        format: wgpu::VertexFormat::Float4,
+                        offset: 8 * 4,
+                        shader_location: 3,
+                    },
+                ],
+            }],
+            sample_count: 1,
+            sample_mask: !0,
+            alpha_to_coverage_enabled: false,
+        });
 
         Gfx {
             pipeline,
@@ -487,8 +471,7 @@ impl Gfx {
         // Transformation matrix for the batch, geometry coordinates are in pixels, this maps the
         // pixel buffer into device coordinates.
         type Uniforms = [f32; 16];
-        let (w, h) =
-            (self.resolution.width as f32, self.resolution.height as f32);
+        let (w, h) = (self.resolution.width as f32, self.resolution.height as f32);
         #[rustfmt::skip]
         let matrix: Uniforms = [
             2.0/w,  0.0,  0.0, -1.0,
@@ -498,48 +481,37 @@ impl Gfx {
         ];
 
         let uniform_buf = device
-            .create_buffer_mapped(
-                1,
-                wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-            )
+            .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST)
             .fill_from_slice(&[matrix]);
 
         for batch in batches {
-            let bind_group =
-                device.create_bind_group(&wgpu::BindGroupDescriptor {
-                    layout: &self.bind_group_layout,
-                    bindings: &[
-                        wgpu::Binding {
-                            binding: 0,
-                            resource: wgpu::BindingResource::Buffer {
-                                buffer: &uniform_buf,
-                                range: 0..std::mem::size_of::<Uniforms>()
-                                    as u64,
-                            },
+            let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+                layout: &self.bind_group_layout,
+                bindings: &[
+                    wgpu::Binding {
+                        binding: 0,
+                        resource: wgpu::BindingResource::Buffer {
+                            buffer: &uniform_buf,
+                            range: 0..std::mem::size_of::<Uniforms>() as u64,
                         },
-                        wgpu::Binding {
-                            binding: 1,
-                            resource: textures[batch.texture].texture_binding(),
-                        },
-                        wgpu::Binding {
-                            binding: 2,
-                            resource: textures[batch.texture].sampler_binding(),
-                        },
-                    ],
-                });
+                    },
+                    wgpu::Binding {
+                        binding: 1,
+                        resource: textures[batch.texture].texture_binding(),
+                    },
+                    wgpu::Binding {
+                        binding: 2,
+                        resource: textures[batch.texture].sampler_binding(),
+                    },
+                ],
+            });
 
             let vertex_buf = device
-                .create_buffer_mapped(
-                    batch.vertices.len(),
-                    wgpu::BufferUsage::VERTEX,
-                )
+                .create_buffer_mapped(batch.vertices.len(), wgpu::BufferUsage::VERTEX)
                 .fill_from_slice(&batch.vertices);
 
             let index_buf = device
-                .create_buffer_mapped(
-                    batch.triangle_indices.len(),
-                    wgpu::BufferUsage::INDEX,
-                )
+                .create_buffer_mapped(batch.triangle_indices.len(), wgpu::BufferUsage::INDEX)
                 .fill_from_slice(&batch.triangle_indices);
 
             rpass.set_pipeline(&self.pipeline);
@@ -567,24 +539,19 @@ impl Gfx {
         batches: &[DrawBatch],
     ) -> wgpu::CommandBuffer {
         let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                todo: 0,
-            });
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
         {
-            let mut rpass =
-                encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    color_attachments: &[
-                        wgpu::RenderPassColorAttachmentDescriptor {
-                            attachment: &target,
-                            resolve_target: None,
-                            load_op: wgpu::LoadOp::Clear,
-                            store_op: wgpu::StoreOp::Store,
-                            clear_color: wgpu::Color::BLACK,
-                        },
-                    ],
-                    // Also need this for buffer renderer...
-                    depth_stencil_attachment: None,
-                });
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                    attachment: &target,
+                    resolve_target: None,
+                    load_op: wgpu::LoadOp::Clear,
+                    store_op: wgpu::StoreOp::Store,
+                    clear_color: wgpu::Color::BLACK,
+                }],
+                // Also need this for buffer renderer...
+                depth_stencil_attachment: None,
+            });
             self.draw(&device, &mut rpass, textures, batches);
         }
         encoder.finish()
@@ -607,80 +574,71 @@ impl RenderBuffer {
     pub fn new(device: &wgpu::Device, resolution: Size2D<u32>) -> RenderBuffer {
         let canvas_pos = point2(-1.0, -1.0);
 
-        let bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                bindings: &[
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 0,
-                        visibility: wgpu::ShaderStage::VERTEX,
-                        ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            bindings: &[
+                wgpu::BindGroupLayoutBinding {
+                    binding: 0,
+                    visibility: wgpu::ShaderStage::VERTEX,
+                    ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+                },
+                wgpu::BindGroupLayoutBinding {
+                    binding: 1,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::SampledTexture {
+                        multisampled: false,
+                        dimension: wgpu::TextureViewDimension::D2,
                     },
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 1,
-                        visibility: wgpu::ShaderStage::FRAGMENT,
-                        ty: wgpu::BindingType::SampledTexture {
-                            multisampled: false,
-                            dimension: wgpu::TextureViewDimension::D2,
-                        },
-                    },
-                    wgpu::BindGroupLayoutBinding {
-                        binding: 2,
-                        visibility: wgpu::ShaderStage::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler,
-                    },
-                ],
-            });
+                },
+                wgpu::BindGroupLayoutBinding {
+                    binding: 2,
+                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler,
+                },
+            ],
+        });
 
         // Rendering pipeline
-        let pipeline =
-            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                layout: &device.create_pipeline_layout(
-                    &wgpu::PipelineLayoutDescriptor {
-                        bind_group_layouts: &[&bind_group_layout],
-                    },
+        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            layout: &device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                bind_group_layouts: &[&bind_group_layout],
+            }),
+            vertex_stage: wgpu::ProgrammableStageDescriptor {
+                module: &device.create_shader_module(
+                    &wgpu::read_spirv(std::io::Cursor::new(&include_bytes!("blit.vert.spv")[..]))
+                        .unwrap(),
                 ),
-                vertex_stage: wgpu::ProgrammableStageDescriptor {
-                    module: &device.create_shader_module(
-                        &wgpu::read_spirv(std::io::Cursor::new(
-                            &include_bytes!("blit.vert.spv")[..],
-                        ))
+                entry_point: "main",
+            },
+            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+                module: &device.create_shader_module(
+                    &wgpu::read_spirv(std::io::Cursor::new(&include_bytes!("blit.frag.spv")[..]))
                         .unwrap(),
-                    ),
-                    entry_point: "main",
-                },
-                fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                    module: &device.create_shader_module(
-                        &wgpu::read_spirv(std::io::Cursor::new(
-                            &include_bytes!("blit.frag.spv")[..],
-                        ))
-                        .unwrap(),
-                    ),
-                    entry_point: "main",
-                }),
-                rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: wgpu::CullMode::None,
-                    depth_bias: 0,
-                    depth_bias_slope_scale: 0.0,
-                    depth_bias_clamp: 0.0,
-                }),
-                primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
-                color_states: &[wgpu::ColorStateDescriptor {
-                    format: wgpu::TextureFormat::Bgra8UnormSrgb,
-                    color_blend: wgpu::BlendDescriptor::REPLACE,
-                    alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                    write_mask: wgpu::ColorWrite::ALL,
-                }],
-                depth_stencil_state: None,
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[],
-                sample_count: 1,
-                sample_mask: !0,
-                alpha_to_coverage_enabled: false,
-            });
+                ),
+                entry_point: "main",
+            }),
+            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: wgpu::CullMode::None,
+                depth_bias: 0,
+                depth_bias_slope_scale: 0.0,
+                depth_bias_clamp: 0.0,
+            }),
+            primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
+            color_states: &[wgpu::ColorStateDescriptor {
+                format: wgpu::TextureFormat::Bgra8UnormSrgb,
+                color_blend: wgpu::BlendDescriptor::REPLACE,
+                alpha_blend: wgpu::BlendDescriptor::REPLACE,
+                write_mask: wgpu::ColorWrite::ALL,
+            }],
+            depth_stencil_state: None,
+            index_format: wgpu::IndexFormat::Uint16,
+            vertex_buffers: &[],
+            sample_count: 1,
+            sample_mask: !0,
+            alpha_to_coverage_enabled: false,
+        });
 
-        let render_buffer =
-            Texture::new_target(device, resolution.width, resolution.height);
+        let render_buffer = Texture::new_target(device, resolution.width, resolution.height);
         // TODO: Add depth buffer.
 
         RenderBuffer {
@@ -700,10 +658,7 @@ impl RenderBuffer {
         type Uniforms = euclid::default::Point2D<f32>;
 
         let uniform_buf = device
-            .create_buffer_mapped(
-                1,
-                wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-            )
+            .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST)
             .fill_from_slice(&[self.canvas_pos]);
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             layout: &self.bind_group_layout,
@@ -731,29 +686,20 @@ impl RenderBuffer {
         rpass.draw(0..4, 0..1);
     }
 
-    pub fn render(
-        &self,
-        device: &wgpu::Device,
-        target: &wgpu::TextureView,
-    ) -> wgpu::CommandBuffer {
+    pub fn render(&self, device: &wgpu::Device, target: &wgpu::TextureView) -> wgpu::CommandBuffer {
         let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                todo: 0,
-            });
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
         {
-            let mut rpass =
-                encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                    color_attachments: &[
-                        wgpu::RenderPassColorAttachmentDescriptor {
-                            attachment: &target,
-                            resolve_target: None,
-                            load_op: wgpu::LoadOp::Clear,
-                            store_op: wgpu::StoreOp::Store,
-                            clear_color: wgpu::Color::BLACK,
-                        },
-                    ],
-                    depth_stencil_attachment: None,
-                });
+            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                    attachment: &target,
+                    resolve_target: None,
+                    load_op: wgpu::LoadOp::Clear,
+                    store_op: wgpu::StoreOp::Store,
+                    clear_color: wgpu::Color::BLACK,
+                }],
+                depth_stencil_attachment: None,
+            });
             self.draw(&device, &mut rpass);
         }
         encoder.finish()
@@ -775,12 +721,10 @@ impl<'a> Screenshotter<'a> {
 
         // Copy render buffer texture into a readable WGPU buffer.
         let output_buffer = {
-            let output_buffer =
-                self.device.create_buffer(&wgpu::BufferDescriptor {
-                    size: (width * height) as u64 * 4,
-                    usage: wgpu::BufferUsage::MAP_READ
-                        | wgpu::BufferUsage::COPY_DST,
-                });
+            let output_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+                size: (width * height) as u64 * 4,
+                usage: wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_DST,
+            });
 
             let texture_extent = wgpu::Extent3d {
                 width,
@@ -789,9 +733,9 @@ impl<'a> Screenshotter<'a> {
             };
 
             let command_buffer = {
-                let mut encoder = self.device.create_command_encoder(
-                    &wgpu::CommandEncoderDescriptor { todo: 0 },
-                );
+                let mut encoder = self
+                    .device
+                    .create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
                 // Copy the data from the texture to the buffer
                 encoder.copy_texture_to_buffer(
                     wgpu::TextureCopyView {
@@ -824,12 +768,7 @@ impl<'a> Screenshotter<'a> {
                 let bytes = result.unwrap().data;
                 let image = image::RgbImage::from_fn(width, height, |x, y| {
                     let i = (x * 4 + y * width * 4) as usize;
-                    image::Pixel::from_channels(
-                        bytes[i + 2],
-                        bytes[i + 1],
-                        bytes[i],
-                        0xff,
-                    )
+                    image::Pixel::from_channels(bytes[i + 2], bytes[i + 1], bytes[i], 0xff)
                 });
                 cb(image)
             },
@@ -850,11 +789,7 @@ struct TextureInterface<'a> {
 impl<'a> crate::atlas_cache::TextureInterface for TextureInterface<'a> {
     type Texture = Texture;
 
-    fn update_texture(
-        &mut self,
-        texture: &mut Self::Texture,
-        image: &image::RgbaImage,
-    ) {
+    fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage) {
         texture.blit(self.device, self.queue, &image.as_flat_samples().samples);
     }
 
@@ -872,12 +807,7 @@ pub struct Texture {
 
 impl Texture {
     /// Fill texture with raw image data in the correct format
-    pub fn blit(
-        &self,
-        device: &wgpu::Device,
-        queue: &mut wgpu::Queue,
-        bytes: &[u8],
-    ) {
+    pub fn blit(&self, device: &wgpu::Device, queue: &mut wgpu::Queue, bytes: &[u8]) {
         assert_eq!(
             bytes.len() as u32,
             4 * self.extent.width * self.extent.height
@@ -887,9 +817,7 @@ impl Texture {
             .create_buffer_mapped(bytes.len(), wgpu::BufferUsage::COPY_SRC)
             .fill_from_slice(&bytes);
         let mut init_encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                todo: 0,
-            });
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
         init_encoder.copy_buffer_to_texture(
             wgpu::BufferCopyView {
                 buffer: &temp_buf,
@@ -922,11 +850,7 @@ impl Texture {
         )
     }
 
-    pub fn new_target(
-        device: &wgpu::Device,
-        width: u32,
-        height: u32,
-    ) -> Texture {
+    pub fn new_target(device: &wgpu::Device, width: u32, height: u32) -> Texture {
         Texture::new_typed(
             device,
             width,

@@ -26,9 +26,7 @@ impl World {
     // Trait return types before jumping to this.
 
     /// Return entities at the given location.
-    pub fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        self.spatial.entities_at(loc)
-    }
+    pub fn entities_at(&self, loc: Location) -> Vec<Entity> { self.spatial.entities_at(loc) }
 
     /// Return entities inside another entity.
     pub fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)> {
@@ -39,11 +37,7 @@ impl World {
     pub fn is_empty(&self, e: Entity) -> bool { self.spatial.is_empty(e) }
 
     /// Return the item parent has equipped in slot.
-    pub fn entity_equipped(
-        &self,
-        parent: Entity,
-        slot: Slot,
-    ) -> Option<Entity> {
+    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
         self.spatial.entity_equipped(parent, slot)
     }
 
@@ -67,9 +61,7 @@ impl World {
 
 /// Entities can be placed either on open locations or inside other entities.
 /// A sum type will represent this nicely.
-#[derive(
-    Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize,
-)]
+#[derive(Copy, Eq, PartialEq, Clone, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 pub enum Place {
     At(Location),
     // XXX: Implementation can store multiple entities in a single Slot-place, but in practice
@@ -122,9 +114,7 @@ impl Spatial {
     }
 
     /// Insert an entity into space.
-    pub fn insert_at(&mut self, e: Entity, loc: Location) {
-        self.insert(e, At(loc));
-    }
+    pub fn insert_at(&mut self, e: Entity, loc: Location) { self.insert(e, At(loc)); }
 
     /// Return whether the parent entity or an entity contained in the parent
     /// entity contains entity e.
@@ -200,9 +190,7 @@ impl Spatial {
     }
 
     /// List entities at a location.
-    pub fn entities_at(&self, loc: Location) -> Vec<Entity> {
-        self.entities(At(loc))
-    }
+    pub fn entities_at(&self, loc: Location) -> Vec<Entity> { self.entities(At(loc)) }
 
     /// List entities in a container.
     pub fn entities_in(&self, parent: Entity) -> Vec<(Slot, Entity)> {
@@ -240,11 +228,7 @@ impl Spatial {
         }
     }
 
-    pub fn entity_equipped(
-        &self,
-        parent: Entity,
-        slot: Slot,
-    ) -> Option<Entity> {
+    pub fn entity_equipped(&self, parent: Entity, slot: Slot) -> Option<Entity> {
         match self.place_to_entities.get(&In(parent, slot)) {
             None => None,
             Some(v) => {
@@ -255,9 +239,7 @@ impl Spatial {
     }
 
     /// Return the place of an entity if the entity is present in the space.
-    pub fn get(&self, e: Entity) -> Option<Place> {
-        self.entity_to_place.get(&e).cloned()
-    }
+    pub fn get(&self, e: Entity) -> Option<Place> { self.entity_to_place.get(&e).cloned() }
 
     /// Flatten to an easily serializable vector.
     fn dump(&self) -> Vec<Elt> {
@@ -349,10 +331,8 @@ mod test {
         spatial.insert(e1, p1);
         spatial.insert(e2, p2);
 
-        let saved =
-            ser::to_string(&spatial).expect("Spatial serialization failed");
-        let spatial2: Spatial =
-            de::from_str(&saved).expect("Spatial deserialization failed");
+        let saved = ser::to_string(&spatial).expect("Spatial serialization failed");
+        let spatial2: Spatial = de::from_str(&saved).expect("Spatial deserialization failed");
 
         assert_eq!(spatial2.get(e1), Some(p1));
         assert_eq!(spatial2.get(e2), Some(p2));

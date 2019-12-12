@@ -50,10 +50,7 @@ pub trait RectUtil: Sized {
     /// Return an anchor point from inside the rectangle.
     ///
     /// The anchor maps [-1, 1] into the rectangle span for both x and y axes.
-    fn anchor(
-        &self,
-        anchor: &Point2D<Self::T, UnknownUnit>,
-    ) -> Point2D<Self::T, Self::Unit>;
+    fn anchor(&self, anchor: &Point2D<Self::T, UnknownUnit>) -> Point2D<Self::T, Self::Unit>;
 
     /// Shrink `size` by (1, 1) for code that expects the bottom and right points to be inside.
     fn inclusivize(&self) -> Self;
@@ -77,17 +74,9 @@ pub trait RectUtil: Sized {
     fn bottom_right(&self) -> Point2D<Self::T, Self::Unit>;
 }
 
-fn transform<T, U>(
-    anchor: &Point2D<T, UnknownUnit>,
-    size: &Size2D<T, U>,
-) -> Vector2D<T, U>
+fn transform<T, U>(anchor: &Point2D<T, UnknownUnit>, size: &Size2D<T, U>) -> Vector2D<T, U>
 where
-    T: One
-        + Add<Output = T>
-        + Sub<Output = T>
-        + Mul<Output = T>
-        + Div<Output = T>
-        + Copy,
+    T: One + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Div<Output = T> + Copy,
 {
     let two = T::one() + T::one();
     vec2(
@@ -127,10 +116,7 @@ where
         Self::new_anchored(anchor, self.anchor(anchor), size)
     }
 
-    fn anchor(
-        &self,
-        anchor: &Point2D<Self::T, UnknownUnit>,
-    ) -> Point2D<Self::T, Self::Unit> {
+    fn anchor(&self, anchor: &Point2D<Self::T, UnknownUnit>) -> Point2D<Self::T, Self::Unit> {
         self.origin + transform(anchor, &self.size)
     }
 

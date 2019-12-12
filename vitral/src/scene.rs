@@ -7,10 +7,7 @@ pub(crate) struct SceneStack<T> {
 }
 
 impl<T> SceneStack<T> {
-    pub fn new(
-        frame_duration: Flick,
-        stack: Vec<Box<dyn Scene<T>>>,
-    ) -> SceneStack<T> {
+    pub fn new(frame_duration: Flick, stack: Vec<Box<dyn Scene<T>>>) -> SceneStack<T> {
         SceneStack {
             stack,
             frame_duration,
@@ -72,12 +69,7 @@ impl<T> SceneStack<T> {
     }
 
     /// Process input events at the topmost state and apply scene changes.
-    pub fn input(
-        &mut self,
-        ctx: &mut T,
-        event: &InputEvent,
-        canvas: &mut Canvas,
-    ) {
+    pub fn input(&mut self, ctx: &mut T, event: &InputEvent, canvas: &mut Canvas) {
         if self.is_empty() {
             return;
         }
@@ -107,13 +99,7 @@ pub trait Scene<T> {
     ///
     /// The render method can also introduce scene transitions in case there is immediate mode GUI
     /// logic written in the render code.
-    fn render(
-        &mut self,
-        _ctx: &mut T,
-        _canvas: &mut Canvas,
-    ) -> Option<SceneSwitch<T>> {
-        None
-    }
+    fn render(&mut self, _ctx: &mut T, _canvas: &mut Canvas) -> Option<SceneSwitch<T>> { None }
 
     /// Process an input event.
     fn input(

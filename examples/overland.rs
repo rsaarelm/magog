@@ -1,6 +1,4 @@
-use calx::{
-    hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage,
-};
+use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage};
 use euclid::vec2;
 use image;
 use image::{GenericImage, GenericImageView, Pixel, SubImage};
@@ -22,10 +20,7 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(
-        name = "generate",
-        help = "Generate a blank overland map image"
-    )]
+    #[structopt(name = "generate", help = "Generate a blank overland map image")]
     Generate {
         #[structopt(long = "minimap", help = "Use minimap projection")]
         minimap: bool,
@@ -55,10 +50,7 @@ enum Command {
         help = "Convert map from one projection to another and normalize the checkerboard pattern"
     )]
     Convert {
-        #[structopt(
-            long = "input-minimap",
-            help = "Input file has minimap projection"
-        )]
+        #[structopt(long = "input-minimap", help = "Input file has minimap projection")]
         input_minimap: bool,
 
         #[structopt(
@@ -113,9 +105,7 @@ fn checkerboard((pos, color): (CellVector, SRgba)) -> (CellVector, SRgba) {
     (pos, if is_dark { dark(color) } else { light(color) })
 }
 
-fn terrain_to_color(
-    (pos, terrain): (CellVector, Terrain),
-) -> (CellVector, SRgba) {
+fn terrain_to_color((pos, terrain): (CellVector, Terrain)) -> (CellVector, SRgba) {
     checkerboard((pos, terrain.color()))
 }
 
@@ -134,8 +124,7 @@ fn overland_locs(width: u32, height: u32) -> Vec<Location> {
 
 fn save(prefab: Prefab<SRgba>, is_minimap: bool, output_path: String) {
     let image: ImageBuffer = if is_minimap {
-        let p: ProjectedImage<ImageBuffer, MinimapSpace> =
-            FromPrefab::from_prefab(&prefab);
+        let p: ProjectedImage<ImageBuffer, MinimapSpace> = FromPrefab::from_prefab(&prefab);
         p.image
     } else {
         FromPrefab::from_prefab(&prefab)
@@ -186,8 +175,8 @@ fn convert(
     output_path: Option<String>,
     output_is_minimap: bool,
 ) {
-    let mut input = image::open(input_path.clone())
-        .expect(&format!("Unable to load '{}'", input_path.clone()));
+    let mut input =
+        image::open(input_path.clone()).expect(&format!("Unable to load '{}'", input_path.clone()));
     // Slice off the bottom row containing palette (h - 1).
     let (w, h) = (input.width(), input.height());
     let input_map = SubImage::new(&mut input, 0, 0, w, h - 1);
