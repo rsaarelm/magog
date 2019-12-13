@@ -29,6 +29,11 @@ use euclid::{Point2D, Vector2D};
 /// vec2(vec.x * M[0] + vec.y * M[1], vec.x * M[2] + vec.y * M[3])
 /// ```
 ///
+/// Projections from a fine space to a coarse space often use a handwritten custom projection
+/// method rather than just a straightforward matrix multiplication, since they may want to
+/// describe different tiling shapes (eg. hexagons) than the square grid that matrix multiplication
+/// will give you.
+///
 /// ```
 /// use calx::{project, CellSpace, CellVector, ProjectVec, Space};
 /// use euclid::{vec2, Vector2D};

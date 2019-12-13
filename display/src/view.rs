@@ -4,7 +4,7 @@ use crate::cache;
 use crate::render::{self, Angle, Layer};
 use crate::sprite::{Coloring, Sprite};
 use crate::Icon;
-use calx::{CellSpace, CellVector, Clamp, DeprecatedSpace, FovValue, HexFov, Transformation};
+use calx::{project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, Space};
 use calx_ecs::Entity;
 use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
@@ -45,7 +45,7 @@ impl WorldView {
             - vec2(PIXEL_UNIT / 2, 10)
             - cell_offset_to_screen_space(self.camera_loc.offset()))
         .to_vector();
-        self.camera_loc.location() + (pos - center).to_cell_space()
+        self.camera_loc.location() + (pos - center).project()
     }
 
     /// Recompute the cached screen view if the cache has been invalidated.
@@ -76,7 +76,7 @@ impl WorldView {
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
         let mouse_pos = ScreenVector::from_untyped(canvas.mouse_pos().to_vector());
-        let cursor_pos = (mouse_pos - center).to_cell_space();
+        let cursor_pos = (mouse_pos - center).project();
 
         for (&chart_pos, origins) in chart.iter() {
             assert!(!origins.is_empty());
@@ -120,7 +120,7 @@ impl WorldView {
                 }
             }
 
-            let screen_pos = ScreenVector::from_cell_space(chart_pos) + center;
+            let screen_pos = chart_pos.project() + center;
 
             let ambient = world.light_level(loc);
 
@@ -146,7 +146,7 @@ impl WorldView {
                             } else {
                                 player_pos.unwrap()
                             };
-                            PhysicsVector::from_cell_space(center_pos).normalize()
+                            center_pos.project::<PhysicsSpace>().to_3d().normalize()
                         } else {
                             vec3(-(2.0f32.sqrt()) / 2.0, 2.0f32.sqrt() / 2.0, 0.0)
                         };
@@ -364,7 +364,7 @@ impl WorldView {
 
         // Draw cursor.
         if let Some(origins) = chart.get(&cursor_pos) {
-            let screen_pos = ScreenVector::from_cell_space(cursor_pos) + center;
+            let screen_pos = cursor_pos.project() + center;
             let loc = origins[0] + cursor_pos;
             self.cursor_loc = Some(loc);
 
@@ -461,10 +461,7 @@ impl<'a> Eq for ScreenFov<'a> {}
 
 impl<'a> FovValue for ScreenFov<'a> {
     fn advance(&self, offset: CellVector) -> Option<Self> {
-        if !self
-            .screen_area
-            .contains(ScreenVector::from_cell_space(offset).to_point())
-        {
+        if !self.screen_area.contains(offset.project().to_point()) {
             return None;
         }
 
@@ -513,37 +510,38 @@ pub fn screen_fov(
 
 /// On-screen tile display pixel coordinates.
 pub struct ScreenSpace;
+impl Space for ScreenSpace {
+    type T = i32;
+}
 
 // a = PIXEL_UNIT
 //
 // |   a   -a |
 // | a/2  a/2 |
+
+impl project::From<CellSpace> for ScreenSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        let a = PIXEL_UNIT;
+        vec2(vec.x * a - vec.y * a, vec.x * a / 2 + vec.y * a / 2)
+    }
+}
+
+// a = PIXEL_UNIT
 //
 // |  1/2a  1/a |
 // | -1/2a  1/a |
 
-impl Transformation for ScreenSpace {
-    type Element = i32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let v = v.into();
-        [
-            v[0] * PIXEL_UNIT - v[1] * PIXEL_UNIT,
-            v[0] * PIXEL_UNIT / 2 + v[1] * PIXEL_UNIT / 2,
-        ]
-    }
-
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        let v = [v[0] as f32, v[1] as f32];
+impl project::From<ScreenSpace> for CellSpace {
+    fn vec_from(vec: Vector2D<<ScreenSpace as Space>::T, ScreenSpace>) -> Vector2D<Self::T, Self> {
+        let vec = vec2::<f32, ScreenSpace>(vec.x as f32, vec.y as f32);
 
         // Use a custom function here instead of the matrix inverse, because the naive matrix
         // version projects into an isometric grid instead of the more square on-screen hex cells
         // and feels off when aiming with the mouse.
         let c = PIXEL_UNIT as f32 / 2.0;
-        let column = ((v[0] + c) / (c * 2.0)).floor();
-        let row = ((v[1] - column * c) / (c * 2.0)).floor();
-        [(column + row) as i32, row as i32]
+        let column = ((vec.x + c) / (c * 2.0)).floor();
+        let row = ((vec.y - column * c) / (c * 2.0)).floor();
+        vec2((column + row) as i32, row as i32)
     }
 }
 
@@ -589,10 +587,16 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
         let p0 = (sector + vec3(-1, -1, 0)).center();
         let p1 = (sector + vec3(1, 1, 0)).center();
 
-        let (mut min_x, mut min_y) =
-            ScreenVector::from_cell_space(center.v2_at(p0).unwrap()).to_tuple();
-        let (mut max_x, mut max_y) =
-            ScreenVector::from_cell_space(center.v2_at(p1).unwrap()).to_tuple();
+        let (mut min_x, mut min_y) = center
+            .v2_at(p0)
+            .unwrap()
+            .project::<ScreenSpace>()
+            .to_tuple();
+        let (mut max_x, mut max_y) = center
+            .v2_at(p1)
+            .unwrap()
+            .project::<ScreenSpace>()
+            .to_tuple();
 
         // For each neighboring sector that does not exist, block scrolling towards that
         // direction.
@@ -612,7 +616,7 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
         rect(min_x, min_y, max_x - min_x, max_y - min_y)
     };
 
-    let camera_pos = ScreenVector::from_cell_space(center.v2_at(camera_loc.location()).unwrap())
+    let camera_pos = (center.v2_at(camera_loc.location()).unwrap()).project()
         + cell_offset_to_screen_space(camera_loc.offset());
     let camera_pos = screen_bounds.clamp(camera_pos.to_point());
 
@@ -622,28 +626,31 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
 
 /// 3D physics space, used for eg. lighting.
 pub struct PhysicsSpace;
+impl Space for PhysicsSpace {
+    type T = f32;
+}
 
 // |    1    -1 |
 // | -1/2  -1/2 |
-//
+
+impl project::From<CellSpace> for PhysicsSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        let vec = vec.cast::<f32>();
+        vec2(vec.x - vec.y, -vec.x / 2.0 - vec.y / 2.0)
+    }
+}
+
 // |  1/2  -1 |
 // | -1/2  -1 |
 
-impl Transformation for PhysicsSpace {
-    type Element = f32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let v = v.into();
-        let v = [v[0] as f32, v[1] as f32];
-        [v[0] - v[1], -v[0] / 2.0 - v[1] / 2.0]
-    }
-
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
-        let v = v.into();
-        [
-            (v[0] / 2.0 - v[1]).round() as i32,
-            (-v[0] / 2.0 - v[1]).round() as i32,
-        ]
+impl project::From<PhysicsSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        vec2(
+            (vec.x / 2.0 - vec.y).round() as i32,
+            (-vec.x / 2.0 - vec.y).round() as i32,
+        )
     }
 }
 

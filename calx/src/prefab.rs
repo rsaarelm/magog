@@ -109,15 +109,15 @@ impl Space for TextSpace {
 
 // | 1/2  1/2 |
 // |   0    1 |
-//
-// | 2  -1 |
-// | 0   1 |
 
 impl project::From<TextSpace> for CellSpace {
     fn vec_from(vec: Vector2D<<TextSpace as Space>::T, TextSpace>) -> Vector2D<Self::T, Self> {
         vec2((vec.x + vec.y) / 2, vec.y)
     }
 }
+
+// | 2  -1 |
+// | 0   1 |
 
 impl project::From<CellSpace> for TextSpace {
     fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
