@@ -1,7 +1,6 @@
 mod alg_misc;
 mod cell;
 mod colors;
-mod deprecated_space;
 pub mod ease;
 mod hex;
 mod hex_fov;
@@ -24,7 +23,6 @@ pub use alg_misc::{
 };
 pub use cell::{CellSpace, CellVector, Fov, FovValue, PolarPoint};
 pub use colors::{term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color};
-pub use deprecated_space::{DeprecatedSpace, Transformation};
 pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use incremental::{History, Incremental, IncrementalState};

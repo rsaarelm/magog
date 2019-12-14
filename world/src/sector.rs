@@ -7,8 +7,11 @@ use crate::{
     terrain::Terrain,
     vaults, {Distribution, Rng},
 };
-use calx::{self, die, seeded_rng, CellVector, RngExt, Transformation, WeightedChoice};
-use euclid::{vec2, vec3};
+use calx::{
+    self, die, project, seeded_rng, CellSpace, CellVector, ProjectVec, RngExt, Space,
+    WeightedChoice,
+};
+use euclid::{vec2, vec3, Vector2D};
 use lazy_static::lazy_static;
 use log::{debug, warn};
 use rand::seq::SliceRandom;
@@ -138,14 +141,17 @@ impl Sector {
 }
 
 pub struct TerrainHexSpace;
+impl Space for TerrainHexSpace {
+    type T = i32;
+}
 pub type HexVector = euclid::Vector2D<i32, TerrainHexSpace>;
 
 impl TerrainHexSpace {
     /// Return the group of sectors a terrain hex overlaps.
     pub fn sectors(terrain_hex: HexVector) -> Vec<Sector> {
         let out_of_phase = terrain_hex.y.rem_euclid(2) == 1;
-        let origin = TerrainHexSpace::project(terrain_hex);
-        let sector = Location::new(origin[0] as i16, origin[1] as i16, 0).sector();
+        let origin = terrain_hex.project();
+        let sector = (Location::default() + origin).sector();
 
         if out_of_phase {
             vec![
@@ -160,46 +166,53 @@ impl TerrainHexSpace {
     }
 }
 
-// Macro-hexes (uv) in cell space (xy)
-//
-//     o-------+===-->x
-//     |\  00  | 11
-//     | \ .   |   .
-//     |  \    |
-//     | . +---+   *
-//     |   |01  \
-//     |-10|   . \ .
-//     |   |      \
-//     +---+ . * . +
-//     I-11 \      |
-//     I   . \ .   |
-//     I      \    |
-//     + . * . +---+
-//     |
-//     v
-//     y
-//
-// The above rectangle produces a repeating pattern of terrain hexes that lines up perfectly with
-// the sector grid.
+const TERRAIN_HEX_SIZE: i32 = 20;
 
-lazy_static! {
-    static ref TERRAIN_HEX_OFFSETS: Vec<Vec<HexVector>> = {
-        fn to_signed(u2: u32) -> i32 {
-            if u2 > 1 {
-                -4 + u2 as i32
-            } else {
-                u2 as i32
-            }
-        }
+impl project::From<CellSpace> for TerrainHexSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        // Macro-hexes (uv) in cell space (xy)
+        //
+        //     o-------+===-->x
+        //     |\  00  | 11
+        //     | \ .   |   .
+        //     |  \    |
+        //     | . +---+   *
+        //     |   |01  \
+        //     |-10|   . \ .
+        //     |   |      \
+        //     +---+ . * . +
+        //     I-11 \      |
+        //     I   . \ .   |
+        //     I      \    |
+        //     + . * . +---+
+        //     |
+        //     v
+        //     y
+        //
+        // The above rectangle produces a repeating pattern of terrain hexes that lines up
+        // perfectly with the sector grid.
 
-        fn delta(c: char) -> HexVector {
-            let c = c.to_digit(16).expect("invalid pattern");
-            vec2(to_signed(c % 4), to_signed(c / 4))
-        }
+        lazy_static! {
+            static ref TERRAIN_HEX_OFFSETS: Vec<Vec<HexVector>> = {
+                fn to_signed(u2: u32) -> i32 {
+                    if u2 > 1 {
+                        -4 + u2 as i32
+                    } else {
+                        u2 as i32
+                    }
+                }
 
-        // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
-        // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
-        const PATTERN: &str = "\
+                fn delta(c: char) -> HexVector {
+                    let c = c.to_digit(16).expect("invalid pattern");
+                    vec2(to_signed(c % 4), to_signed(c / 4))
+                }
+
+                // TODO: Derive the pattern from TERRAIN_HEX_SIZE procedurally instead of having
+                // the ASCII art blob.
+
+                // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's
+                // complement signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
+                const PATTERN: &str = "\
 000000000000000000000000000000000000000011111111111111111111
 300000000000000000000000000000000000000055555555555555555555
 330000000000000000000000000000000000000055555555555555555555
@@ -261,39 +274,33 @@ lazy_static! {
 777777777777777777777777777777777777774444444444444444444444
 777777777777777777777777777777777777777444444444444444444444";
 
-        PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
-    };
-}
+                PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
+            };
+        }
 
-// TODO: Derive the pattern from TERRAIN_HEX_SIZE procedurally instead of having the ASCII art blob
-// over there. The fiddly part is that it must be pixel-perfect to line up with the sectors.
+        const TERRAIN_HEX_PATTERN_W: i32 = TERRAIN_HEX_SIZE * 3;
+        const TERRAIN_HEX_PATTERN_H: i32 = TERRAIN_HEX_SIZE * 3;
 
-const TERRAIN_HEX_SIZE: i32 = 20;
-const TERRAIN_HEX_PATTERN_W: i32 = TERRAIN_HEX_SIZE * 3;
-const TERRAIN_HEX_PATTERN_H: i32 = TERRAIN_HEX_SIZE * 3;
-
-impl Transformation for TerrainHexSpace {
-    type Element = i32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let [x, y] = v.into();
         let (pattern_x, pattern_y) = (
-            x.div_euclid(TERRAIN_HEX_PATTERN_W),
-            y.div_euclid(TERRAIN_HEX_PATTERN_H),
+            vec.x.div_euclid(TERRAIN_HEX_PATTERN_W),
+            vec.y.div_euclid(TERRAIN_HEX_PATTERN_H),
         );
         let (x, y) = (
-            x.rem_euclid(TERRAIN_HEX_PATTERN_W),
-            y.rem_euclid(TERRAIN_HEX_PATTERN_H),
+            vec.x.rem_euclid(TERRAIN_HEX_PATTERN_W),
+            vec.y.rem_euclid(TERRAIN_HEX_PATTERN_H),
         );
         let offset = TERRAIN_HEX_OFFSETS[y as usize][x as usize];
 
-        (vec2(2 * pattern_x - pattern_y, pattern_x + pattern_y) + offset).into()
+        vec2(2 * pattern_x - pattern_y, pattern_x + pattern_y) + offset
     }
+}
 
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+impl project::From<TerrainHexSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<TerrainHexSpace as Space>::T, TerrainHexSpace>,
+    ) -> Vector2D<Self::T, Self> {
         let a = TERRAIN_HEX_SIZE;
-        let v = v.into();
-        [a * v[0] + a * v[1], -a * v[0] + 2 * a * v[1]]
+        vec2(a * vec.x + a * vec.y, -a * vec.x + 2 * a * vec.y)
     }
 }
 
@@ -301,66 +308,70 @@ impl Transformation for TerrainHexSpace {
 ///
 /// Tiles with even x are horizontal, tiles with odd x are vertical.
 pub struct HerringboneSpace;
+impl Space for HerringboneSpace {
+    type T = i32;
+}
 pub type HerringboneVector = euclid::Vector2D<i32, HerringboneSpace>;
 
-lazy_static! {
-    static ref HERRINGBONE_OFFSETS: Vec<Vec<HerringboneVector>> = {
-        fn to_signed(u2: u32) -> i32 {
-            if u2 > 1 {
-                -4 + u2 as i32
-            } else {
-                u2 as i32
-            }
-        }
+pub const HERRINGBONE_SIZE: i32 = 11;
 
-        fn delta(c: char) -> HerringboneVector {
-            let c = c.to_digit(16).expect("invalid pattern");
-            // Table values are offset to fit into the -2, 1 range, correct this here.
-            vec2(to_signed(c % 4), to_signed(c / 4)) + vec2(0, 2)
-        }
+impl project::From<CellSpace> for HerringboneSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        const HERRINGBONE_PATTERN_W: i32 = HERRINGBONE_SIZE * 4;
+        const HERRINGBONE_PATTERN_H: i32 = HERRINGBONE_SIZE * 4;
 
-        // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
-        // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
-        const PATTERN: &str = "\
+        lazy_static! {
+            static ref HERRINGBONE_OFFSETS: Vec<Vec<HerringboneVector>> = {
+                fn to_signed(u2: u32) -> i32 {
+                    if u2 > 1 {
+                        -4 + u2 as i32
+                    } else {
+                        u2 as i32
+                    }
+                }
+
+                fn delta(c: char) -> HerringboneVector {
+                    let c = c.to_digit(16).expect("invalid pattern");
+                    // Table values are offset to fit into the -2, 1 range, correct this here.
+                    vec2(to_signed(c % 4), to_signed(c / 4)) + vec2(0, 2)
+                }
+
+                // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
+                // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
+                const PATTERN: &str = "\
 889d
 fccd
 f300
 2374";
 
-        PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
-    };
-}
+                PATTERN.lines().map(|line| line.chars().map(delta).collect()).collect()
+            };
+        }
 
-pub const HERRINGBONE_SIZE: i32 = 11;
-const HERRINGBONE_PATTERN_W: i32 = HERRINGBONE_SIZE * 4;
-const HERRINGBONE_PATTERN_H: i32 = HERRINGBONE_SIZE * 4;
-
-impl Transformation for HerringboneSpace {
-    type Element = i32;
-
-    fn unproject<V: Into<[i32; 2]>>(v: V) -> [Self::Element; 2] {
-        let [x, y] = v.into();
         let (pattern_x, pattern_y) = (
-            x.div_euclid(HERRINGBONE_PATTERN_W),
-            y.div_euclid(HERRINGBONE_PATTERN_H),
+            vec.x.div_euclid(HERRINGBONE_PATTERN_W),
+            vec.y.div_euclid(HERRINGBONE_PATTERN_H),
         );
         let (x, y) = (
-            x.rem_euclid(HERRINGBONE_PATTERN_W),
-            y.rem_euclid(HERRINGBONE_PATTERN_H),
+            vec.x.rem_euclid(HERRINGBONE_PATTERN_W),
+            vec.y.rem_euclid(HERRINGBONE_PATTERN_H),
         );
         let offset =
             HERRINGBONE_OFFSETS[(y / HERRINGBONE_SIZE) as usize][(x / HERRINGBONE_SIZE) as usize];
 
-        (vec2(2 * pattern_x - 2 * pattern_y, pattern_x + 3 * pattern_y) + offset).into()
+        vec2(2 * pattern_x - 2 * pattern_y, pattern_x + 3 * pattern_y) + offset
     }
+}
 
-    fn project<V: Into<[Self::Element; 2]>>(v: V) -> [i32; 2] {
+impl project::From<HerringboneSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<HerringboneSpace as Space>::T, HerringboneSpace>,
+    ) -> Vector2D<Self::T, Self> {
         let a = HERRINGBONE_SIZE;
-        let v = v.into();
         // Uneven step pattern for x
-        let sx = ((v[0] as f32 * 3.0) / 2.0).ceil() as i32;
-        let sx2 = (v[0] as f32 / 2.0).ceil() as i32;
-        [a * sx + a * v[1], -a * sx2 + a * v[1]]
+        let sx = ((vec.x as f32 * 3.0) / 2.0).ceil() as i32;
+        let sx2 = (vec.x as f32 / 2.0).ceil() as i32;
+        vec2(a * sx + a * vec.y, -a * sx2 + a * vec.y)
     }
 }
 
@@ -398,7 +409,7 @@ impl Biome {
         }
 
         let pos: CellVector = vec2(loc.x as i32, loc.y as i32);
-        let chunk: HerringboneVector = HerringboneSpace::unproject(pos).into();
+        let chunk = pos.project::<HerringboneSpace>();
 
         let map = {
             let (horiz, vert) = match self {
@@ -416,7 +427,7 @@ impl Biome {
             }
         };
 
-        let offset = pos - CellVector::from(HerringboneSpace::project(chunk));
+        let offset = pos - chunk.project();
         let cell = map
             .get(offset)
             .unwrap_or_else(|| panic!("No offset {:?} in herringbone chunk at {:?}", offset, loc));
@@ -849,6 +860,7 @@ impl Distribution<Exit> for ConnectedSectorSpec<'_> {
 #[cfg(test)]
 mod test {
     use super::{CellVector, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
+    use calx::{CellSpace, ProjectVec};
     use euclid::{vec2, vec3};
 
     #[test]
@@ -881,7 +893,6 @@ mod test {
     #[test]
     fn test_terrain_hex() {
         use super::TerrainHexSpace;
-        use calx::Transformation;
         use std::collections::HashSet;
 
         // Get a couple sectors to brute force the cells over.
@@ -916,7 +927,7 @@ mod test {
         // Points of the origin hex.
         let hex_points: HashSet<CellVector> = scan_space
             .iter()
-            .filter(|&p| TerrainHexSpace::unproject(*p) == [0, 0])
+            .filter(|&p| p.project::<TerrainHexSpace>() == vec2(0, 0))
             .cloned()
             .collect();
 
@@ -935,9 +946,8 @@ mod test {
 
         // Sanity check projection pairs.
         for p in &scan_space {
-            let hex = TerrainHexSpace::unproject(*p);
-            let pos = TerrainHexSpace::project(hex);
-            assert_eq!(TerrainHexSpace::unproject(pos), hex);
+            let hex = p.project::<TerrainHexSpace>();
+            assert_eq!(hex.project::<CellSpace>().project::<TerrainHexSpace>(), hex);
         }
 
         assert!(hex_points.is_superset(&center_sector));
@@ -980,16 +990,19 @@ mod test {
 
     #[test]
     fn test_herringbone_space() {
-        use super::{HerringboneSpace, HerringboneVector};
-        use calx::Transformation;
+        use super::HerringboneSpace;
 
-        assert_eq!(HerringboneSpace::unproject([5, 5]), [0, 0]);
-        for y in 0..80 {
-            for x in 0..80 {
-                let p = HerringboneVector::new(x as i32, y as i32);
-                let chunk = HerringboneSpace::unproject(p);
-                let chunk_pos = HerringboneSpace::project(chunk);
-                assert_eq!(HerringboneSpace::unproject(chunk_pos), chunk);
+        assert_eq!(
+            CellVector::new(5, 5).project::<HerringboneSpace>(),
+            vec2(0, 0)
+        );
+        for y in -10..10 {
+            for x in -10..10 {
+                let chunk = vec2::<_, HerringboneSpace>(x as i32, y as i32);
+                assert_eq!(
+                    chunk.project::<CellSpace>().project::<HerringboneSpace>(),
+                    chunk
+                );
             }
         }
     }
