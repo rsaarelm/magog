@@ -413,7 +413,6 @@ impl Biome {
 
         let map = {
             let (horiz, vert) = match self {
-                // TODO: Make biome-appropriate tiles
                 Grassland => (&*vaults::GRASS_HORIZ, &*vaults::GRASS_VERT),
                 Forest => (&*vaults::FOREST_HORIZ, &*vaults::FOREST_VERT),
                 Desert => (&*vaults::DESERT_HORIZ, &*vaults::DESERT_VERT),
