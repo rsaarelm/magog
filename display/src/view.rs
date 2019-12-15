@@ -1,9 +1,11 @@
 //! Main module for drawing the game map
 
-use crate::cache;
-use crate::render::{self, Angle, Layer};
-use crate::sprite::{Coloring, Sprite};
-use crate::Icon;
+use crate::{
+    cache,
+    render::{self, Angle, Layer},
+    sprite::{Coloring, Sprite},
+    Icon,
+};
 use calx::{project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, Space};
 use calx_ecs::Entity;
 use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
@@ -11,7 +13,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, FovStatus, LerpLocation, Location, World};
+use world::{AnimState, FovStatus, LerpLocation, Location, Sector, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -577,12 +579,13 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
     // XXX: Some messy stuff going on here due to the original CellSpace design not being good
     // with non-integer coordinates.
 
-    let sector = camera_loc.location().sector();
+    let sector = Sector::from(camera_loc.location());
 
     let center = sector.center();
     // Construct a screen space rectangle where camera position must stay in.
     // Origin is the center of the sector camera_loc is in.
     let screen_bounds: Rect<i32, ScreenSpace> = {
+        use world::{SectorDir::*, SectorVec};
         // Start with a rectangle, halfway to neighboring sectors, lots of buffer.
         let p0 = (sector + vec3(-1, -1, 0)).center();
         let p1 = (sector + vec3(1, 1, 0)).center();
@@ -598,18 +601,30 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
             .project::<ScreenSpace>()
             .to_tuple();
 
-        // For each neighboring sector that does not exist, block scrolling towards that
+        // For each neighboring sector group that does not exist, block scrolling towards that
         // direction.
-        if !world.sector_exists(sector + vec3(1, 0, 0)) {
+        if ![Northeast, East, Southeast]
+            .iter()
+            .any(|&d| world.sector_exists(sector + SectorVec::from(d)))
+        {
             max_x = 0;
         }
-        if !world.sector_exists(sector + vec3(-1, 0, 0)) {
+        if ![Northwest, West, Southwest]
+            .iter()
+            .any(|&d| world.sector_exists(sector + SectorVec::from(d)))
+        {
             min_x = 0
         }
-        if !world.sector_exists(sector + vec3(0, 1, 0)) {
+        if ![Southeast, Southwest]
+            .iter()
+            .any(|&d| world.sector_exists(sector + SectorVec::from(d)))
+        {
             max_y = 0;
         }
-        if !world.sector_exists(sector + vec3(0, -1, 0)) {
+        if ![Northwest, Northeast]
+            .iter()
+            .any(|&d| world.sector_exists(sector + SectorVec::from(d)))
+        {
             min_y = 0
         }
 

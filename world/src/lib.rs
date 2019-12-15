@@ -139,7 +139,7 @@ mod mutate;
 mod query;
 
 mod sector;
-pub use sector::{Sector, WorldSkeleton, SECTOR_HEIGHT, SECTOR_WIDTH};
+pub use sector::{Sector, SectorDir, SectorVec, WorldSkeleton, SECTOR_HEIGHT, SECTOR_WIDTH};
 
 mod spatial;
 mod spec;

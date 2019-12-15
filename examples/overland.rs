@@ -100,7 +100,7 @@ fn light(color: SRgba) -> SRgba {
 }
 
 fn checkerboard((pos, color): (CellVector, SRgba)) -> (CellVector, SRgba) {
-    let sec = Location::new(pos.x as i16, pos.y as i16, 0).sector();
+    let sec = Sector::from(Location::new(pos.x as i16, pos.y as i16, 0));
     let is_dark = (sec.x + sec.y) % 2 != 0;
     (pos, if is_dark { dark(color) } else { light(color) })
 }

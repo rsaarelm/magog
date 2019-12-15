@@ -1,6 +1,6 @@
 use crate::rng::RandomPermutation;
-use crate::CellVector;
-use euclid::vec2;
+use crate::{project, CellSpace, CellVector, Space};
+use euclid::{vec2, Vector2D};
 use num::Integer;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
@@ -297,6 +297,40 @@ impl Dir12 {
 
             true
         }
+    }
+}
+
+/// Staggered hex coordinate space
+///
+///    00    20
+///       10    30
+///    01    21
+///       11    31
+///    02    22
+///       12    32
+pub struct StaggeredHexSpace;
+
+impl Space for StaggeredHexSpace {
+    type T = i32;
+}
+
+impl project::From<CellSpace> for StaggeredHexSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        vec2(
+            vec.x - vec.y,
+            ((vec.x as f32 + vec.y as f32) / 2.0).floor() as i32,
+        )
+    }
+}
+
+impl project::From<StaggeredHexSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<StaggeredHexSpace as Space>::T, StaggeredHexSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        // Yeah I don't know either how you're supposed to come up with the right ceil/floor
+        // juggling, just tweaked it around until it passed all the unit tests.
+        let half_x = vec.x as f32 / 2.0;
+        vec2(half_x.ceil() as i32 + vec.y, vec.y - half_x.floor() as i32)
     }
 }
 

@@ -23,7 +23,9 @@ pub use alg_misc::{
 };
 pub use cell::{CellSpace, CellVector, Fov, FovValue, PolarPoint};
 pub use colors::{term_color, BaseTermColor, PseudoTermColor, TermColor, Xterm256Color};
-pub use hex::{hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom};
+pub use hex::{
+    hex_disc, hex_neighbors, taxicab_neighbors, Dir12, Dir6, HexDisc, HexGeom, StaggeredHexSpace,
+};
 pub use hex_fov::{AddFakeIsometricCorners, HexFov, HexFovIter, HexPolarPoint};
 pub use incremental::{History, Incremental, IncrementalState};
 pub use legend_builder::LegendBuilder;

@@ -1,13 +1,11 @@
 #![allow(clippy::cast_lossless)]
 
-use crate::{
-    sector::{Sector, SECTOR_HEIGHT, SECTOR_WIDTH},
-    World,
-};
+use crate::{sector::Sector, World};
 use calx::{
-    compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellVector, Dir6, GridNode, HexGeom,
+    compact_bits_by_2, hex_neighbors, spread_bits_by_2, CellSpace, CellVector, Dir6, GridNode,
+    HexGeom, ProjectVec,
 };
-use euclid::vec2;
+use euclid::{vec2, Vector2D};
 use serde_derive::{Deserialize, Serialize};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
@@ -107,53 +105,15 @@ impl Location {
         ctx.portal(loc).unwrap_or(loc)
     }
 
-    /// Return `Sector` this location is in.
-    pub fn sector(self) -> Sector {
-        let (u, v) = self.to_rect_coords();
-
-        Sector::new(
-            (u as f32 / SECTOR_WIDTH as f32).floor() as i16,
-            (v as f32 / SECTOR_HEIGHT as f32).floor() as i16,
-            self.z,
-        )
-    }
-
-    /// Map location's x, y to rectangular (offset) coordinates.
-    pub fn to_rect_coords(self) -> (i32, i32) {
-        let u = self.x as i32 - self.y as i32;
-        let v = ((self.x as f32 + self.y as f32) / 2.0).floor() as i32;
-        (u, v)
-    }
-
-    pub fn from_rect_coords(u: i32, v: i32, z: i16) -> Location {
-        // Yeah I don't know either how you're supposed to come up with the right ceil/floor
-        // juggling, just tweaked it around until it passed all the unit tests.
-        let half_u = u as f32 / 2.0;
-        Location::new(
-            (half_u.ceil() as i32 + v) as i16,
-            (v - half_u.floor() as i32) as i16,
-            z,
-        )
-    }
-
-    /// True for locations at sector corner that are connected to a diagonally adjacent sector.
-    ///
-    /// Locations that are next to a diagonal section direct travel between two diagonal sectors.
-    /// You may want to take care to block these locations during map generation to prevent
-    /// unexpected connections if the sector structure is designed with the assumption that sectors
-    /// are only connected along cardinal directions.
-    pub fn is_next_to_diagonal_sector(self) -> bool {
-        let sector = self.sector();
-
+    /// True for a one-cell wide border region between sectors
+    pub fn on_sector_border(self) -> bool {
+        let sec = Sector::from(self);
+        // Only test along three adjacent directions. This way we get a 1-cell wide border
+        // everywhere. Testing the full circle would produce a 2-cell wide border.
         hex_neighbors(self)
-            .map(|x| x.sector().taxicab_distance(sector))
-            .any(|d| d > 1)
-    }
-
-    /// True for locations that are adjacent to a cell from a different sector.
-    pub fn on_sector_edge(self) -> bool {
-        let sec = self.sector();
-        hex_neighbors(self).any(|loc| loc.sector() != sec)
+            .take(3)
+            .map(Sector::from)
+            .any(|s| s != sec)
     }
 
     /// Smooth noise offset for determinining overland cell boundaries at this location.
@@ -176,6 +136,16 @@ impl Location {
             (dx + dz, dy + dz)
         };
         vec2(dx.round() as i32, dy.round() as i32)
+    }
+}
+
+impl From<Location> for CellVector {
+    fn from(loc: Location) -> Self { vec2(loc.x as i32, loc.y as i32) }
+}
+
+impl From<Sector> for Location {
+    fn from(sec: Sector) -> Self {
+        Location::new(0, 0, sec.z) + Vector2D::from(sec).project::<CellSpace>()
     }
 }
 
@@ -250,6 +220,7 @@ impl Add<Portal> for Portal {
 mod test {
     use super::Location;
     use crate::sector::Sector;
+    use calx::{CellSpace, CellVector, ProjectVec, StaggeredHexSpace};
     use euclid::vec2;
 
     #[test]
@@ -272,30 +243,26 @@ mod test {
 
     #[test]
     fn test_location_to_sector() {
-        let s = Sector::new(0, 0, 0);
-        assert_eq!(s.origin(), Location::new(0, 0, 0));
-
         // Sector division near origin
-        assert_eq!(Location::new(0, 0, 0).sector(), Sector::new(0, 0, 0));
-        assert_eq!(Location::new(-1, -1, 0).sector(), Sector::new(0, -1, 0));
-        assert_eq!(Location::new(0, 1, 0).sector(), Sector::new(-1, 0, 0));
-        assert_eq!(Location::new(-1, 0, 0).sector(), Sector::new(-1, -1, 0));
+        assert_eq!(Sector::from(Location::new(0, 0, 0)), Sector::new(0, 0, 0));
+        assert_eq!(Sector::from(Location::new(0, 1, 0)), Sector::new(-1, 0, 0));
+        assert_eq!(
+            Sector::from(Location::new(-1, 0, 0)),
+            Sector::new(-1, -1, 0)
+        );
 
         for y in -100..100 {
             for x in -100..100 {
                 let loc = Location::new(x, y, 0);
-                let (u, v) = loc.to_rect_coords();
+                let vec = CellVector::from(loc);
                 assert_eq!(
-                    loc,
-                    Location::from_rect_coords(u, v, loc.z),
-                    "u: {}, v: {}",
-                    u,
-                    v
+                    vec,
+                    vec.project::<StaggeredHexSpace>().project::<CellSpace>()
                 );
 
                 assert!(
-                    loc.sector().iter().find(|&x| x == loc).is_some(),
-                    format!("{:?} not found in sector {:?}", loc, loc.sector())
+                    Sector::from(loc).iter().find(|&x| x == loc).is_some(),
+                    format!("{:?} not found in sector {:?}", loc, Sector::from(loc))
                 );
             }
         }
@@ -306,15 +273,7 @@ mod test {
         let s = Sector::new(0, 0, 0);
 
         for loc in s.iter() {
-            assert_eq!(s, loc.sector(), "Location: {:?}", loc);
+            assert_eq!(s, Sector::from(loc), "Location: {:?}", loc);
         }
-    }
-
-    #[test]
-    fn test_distance() {
-        let s = Sector::new(1, 2, 3);
-        assert_eq!(s.taxicab_distance(s), 0);
-        assert_eq!(s.taxicab_distance(Sector::new(3, 2, 1)), 4);
-        assert_eq!(Sector::new(3, 2, 1).taxicab_distance(s), 4);
     }
 }

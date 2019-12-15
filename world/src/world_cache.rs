@@ -46,8 +46,7 @@ impl WorldCache {
     pub fn get_terrain(&self, loc: Location) -> Terrain {
         const FALLBACK_TERRAIN: Terrain = Terrain::Rock;
 
-        let sector = loc.sector();
-        self.finalize(sector);
+        self.finalize(Sector::from(loc));
         if let Some(t) = self.internal_cache.borrow().terrain.get(&loc).cloned() {
             t
         } else {
@@ -56,7 +55,7 @@ impl WorldCache {
     }
 
     pub fn get_portal(&self, loc: Location) -> Option<Location> {
-        self.finalize(loc.sector());
+        self.finalize(Sector::from(loc));
         self.internal_cache
             .borrow()
             .portals
@@ -106,7 +105,7 @@ impl WorldCache {
             },
         ) in &map
         {
-            let loc = sector.origin() + *vec;
+            let loc = Location::from(sector) + *vec;
 
             if *terrain != Terrain::default() {
                 self.internal_cache
@@ -137,7 +136,7 @@ impl WorldCache {
 
         if sector == PLAYER_START_SECTOR {
             self.internal_cache.borrow_mut().player_entrance =
-                sector.origin() + map.player_entrance();
+                Location::from(sector) + map.player_entrance();
         }
 
         self.internal_cache

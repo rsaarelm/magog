@@ -9,7 +9,7 @@ use crate::{
 };
 use calx::{
     self, die, project, seeded_rng, CellSpace, CellVector, ProjectVec, RngExt, Space,
-    WeightedChoice,
+    StaggeredHexSpace, WeightedChoice,
 };
 use euclid::{vec2, vec3, Vector2D};
 use lazy_static::lazy_static;
@@ -23,154 +23,20 @@ use std::ops::{Add, Deref, DerefMut};
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub const SECTOR_WIDTH: i32 = 40;
-pub const SECTOR_HEIGHT: i32 = 20;
+pub const SECTOR_HEX_SIDE: i32 = 20;
+
+pub const SECTOR_HEIGHT: i32 = SECTOR_HEX_SIDE;
+pub const SECTOR_WIDTH: i32 = SECTOR_HEX_SIDE * 2;
 
 pub struct SectorSpace;
-pub type SectorVector = euclid::Vector3D<i16, SectorSpace>;
-
-/// Non-scrolling screen.
-///
-/// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
-/// coordinates form their own sector space that tiles the location space with sectors.
-#[derive(
-    Copy, Clone, Eq, PartialEq, Default, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize,
-)]
-pub struct Sector {
-    pub x: i16,
-    pub y: i16,
-    pub z: i16,
-}
-
-impl Add<SectorVector> for Sector {
-    type Output = Sector;
-    fn add(self, other: SectorVector) -> Sector {
-        Sector {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-}
-
-impl Add<euclid::Vector2D<i32, SectorSpace>> for Sector {
-    type Output = Sector;
-    fn add(self, other: euclid::Vector2D<i32, SectorSpace>) -> Sector {
-        Sector {
-            x: self.x + other.x as i16,
-            y: self.y + other.y as i16,
-            z: self.z,
-        }
-    }
-}
-
-impl Sector {
-    pub const fn new(x: i16, y: i16, z: i16) -> Sector { Sector { x, y, z } }
-
-    pub fn origin(self) -> Location { self.rect_coord_loc(0, 0) }
-
-    pub fn rect_coord_loc(self, u: i32, v: i32) -> Location {
-        Location::from_rect_coords(
-            self.x as i32 * SECTOR_WIDTH + u,
-            self.y as i32 * SECTOR_HEIGHT + v,
-            self.z,
-        )
-    }
-
-    /// Center location for this sector.
-    ///
-    /// Default camera position.
-    pub fn center(self) -> Location {
-        // XXX: If the width/height are even (as they currently are), there isn't a centered cell.
-        self.rect_coord_loc(SECTOR_WIDTH / 2 - 1, SECTOR_HEIGHT / 2 - 1)
-    }
-
-    pub fn iter(self) -> impl Iterator<Item = Location> {
-        let n = SECTOR_WIDTH * SECTOR_HEIGHT;
-        let pitch = SECTOR_WIDTH;
-        (0..n).map(move |i| self.rect_coord_loc(i % pitch, i / pitch))
-    }
-
-    /// Iterate offset points for a generic `Sector`.
-    pub fn points() -> impl Iterator<Item = CellVector> {
-        let sector = Sector::new(0, 0, 0);
-        let sector_origin = sector.origin();
-        sector
-            .iter()
-            .map(move |loc| sector_origin.v2_at(loc).unwrap())
-    }
-
-    pub fn taxicab_distance(self, other: Sector) -> i32 {
-        ((self.x as i32) - (other.x as i32)).abs()
-            + ((self.y as i32) - (other.y as i32)).abs()
-            + ((self.z as i32) - (other.z as i32)).abs()
-    }
-
-    /// Generate pseudorandom downstairs pos guaranteed not to collide with upstairs pos for this
-    /// sector.
-    pub fn downstairs_location(self, seed: u32) -> Location {
-        // The trick: Split the sector into vertical strips. Use odd strips for odd z coordinate
-        // floor's downstairs and even strips for even z coordinate floor's downstairs. This way
-        // consecutive stairwells are always guaranteed not to end up on the same spot.
-        //
-        // Since stairwells have some architecture around them, also keep the strips with one cell
-        // of padding between them. So we actually end up with
-        //
-        //     even: 1 + 4n
-        //     odd:  3 + 4n
-        //
-        // These are using the rectangular (u, v) sector coordinates instead of the regular (x, y)
-        // hex coordinates because the trick is formulated in terms of rectangular coordinate space
-        // columns.
-
-        // Bump for odd z floors.
-        let u_offset = 1 + (self.z as i32).rem_euclid(2) * 2;
-
-        let n = (SECTOR_WIDTH - 1) / 4;
-        debug_assert!(n > 0);
-        debug_assert!(SECTOR_HEIGHT > 6);
-
-        let mut rng = seeded_rng(&(&seed, &self));
-        let u = 4 * rng.gen_range(0, n) + u_offset;
-        // Leave space to top and bottom so you can make a path from the stairwell. Stairs usually
-        // have a vertical enclosure.
-        let v = rng.gen_range(3, SECTOR_HEIGHT - 3);
-
-        self.rect_coord_loc(u, v)
-    }
-}
-
-pub struct TerrainHexSpace;
-impl Space for TerrainHexSpace {
+impl Space for SectorSpace {
     type T = i32;
 }
-pub type HexVector = euclid::Vector2D<i32, TerrainHexSpace>;
+pub type SectorVec = euclid::Vector3D<i16, SectorSpace>;
 
-impl TerrainHexSpace {
-    /// Return the group of sectors a terrain hex overlaps.
-    pub fn sectors(terrain_hex: HexVector) -> Vec<Sector> {
-        let out_of_phase = terrain_hex.y.rem_euclid(2) == 1;
-        let origin = terrain_hex.project();
-        let sector = (Location::default() + origin).sector();
-
-        if out_of_phase {
-            vec![
-                sector,
-                sector + vec2(1, 0),
-                sector + vec2(0, 1),
-                sector + vec2(1, 1),
-            ]
-        } else {
-            vec![sector, sector + vec2(0, -1), sector + vec2(0, 1)]
-        }
-    }
-}
-
-const TERRAIN_HEX_SIZE: i32 = 20;
-
-impl project::From<CellSpace> for TerrainHexSpace {
+impl project::From<CellSpace> for SectorSpace {
     fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
-        // Macro-hexes (uv) in cell space (xy)
+        // Macro-hex sectors (uv) in cell space (xy)
         //
         //     o-------+===-->x
         //     |\  00  | 11
@@ -193,7 +59,9 @@ impl project::From<CellSpace> for TerrainHexSpace {
         // perfectly with the sector grid.
 
         lazy_static! {
-            static ref TERRAIN_HEX_OFFSETS: Vec<Vec<HexVector>> = {
+            static ref SECTOR_OFFSETS: Vec<Vec<Vector2D<i32, SectorSpace>>> = {
+                assert!(SECTOR_HEX_SIDE == 20, "TODO: Adjustable sector hex size");
+
                 fn to_signed(u2: u32) -> i32 {
                     if u2 > 1 {
                         -4 + u2 as i32
@@ -202,12 +70,12 @@ impl project::From<CellSpace> for TerrainHexSpace {
                     }
                 }
 
-                fn delta(c: char) -> HexVector {
+                fn delta(c: char) -> Vector2D<i32, SectorSpace> {
                     let c = c.to_digit(16).expect("invalid pattern");
                     vec2(to_signed(c % 4), to_signed(c / 4))
                 }
 
-                // TODO: Derive the pattern from TERRAIN_HEX_SIZE procedurally instead of having
+                // TODO: Derive the pattern from SECTOR_HEX_SIDE procedurally instead of having
                 // the ASCII art blob.
 
                 // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's
@@ -278,29 +146,174 @@ impl project::From<CellSpace> for TerrainHexSpace {
             };
         }
 
-        const TERRAIN_HEX_PATTERN_W: i32 = TERRAIN_HEX_SIZE * 3;
-        const TERRAIN_HEX_PATTERN_H: i32 = TERRAIN_HEX_SIZE * 3;
+        const SECTOR_PATTERN_W: i32 = SECTOR_HEX_SIDE * 3;
+        const SECTOR_PATTERN_H: i32 = SECTOR_HEX_SIDE * 3;
 
         let (pattern_x, pattern_y) = (
-            vec.x.div_euclid(TERRAIN_HEX_PATTERN_W),
-            vec.y.div_euclid(TERRAIN_HEX_PATTERN_H),
+            vec.x.div_euclid(SECTOR_PATTERN_W),
+            vec.y.div_euclid(SECTOR_PATTERN_H),
         );
         let (x, y) = (
-            vec.x.rem_euclid(TERRAIN_HEX_PATTERN_W),
-            vec.y.rem_euclid(TERRAIN_HEX_PATTERN_H),
+            vec.x.rem_euclid(SECTOR_PATTERN_W),
+            vec.y.rem_euclid(SECTOR_PATTERN_H),
         );
-        let offset = TERRAIN_HEX_OFFSETS[y as usize][x as usize];
+        let offset = SECTOR_OFFSETS[y as usize][x as usize];
 
         vec2(2 * pattern_x - pattern_y, pattern_x + pattern_y) + offset
     }
 }
 
-impl project::From<TerrainHexSpace> for CellSpace {
-    fn vec_from(
-        vec: Vector2D<<TerrainHexSpace as Space>::T, TerrainHexSpace>,
-    ) -> Vector2D<Self::T, Self> {
-        let a = TERRAIN_HEX_SIZE;
+impl project::From<SectorSpace> for CellSpace {
+    fn vec_from(vec: Vector2D<<SectorSpace as Space>::T, SectorSpace>) -> Vector2D<Self::T, Self> {
+        let a = SECTOR_HEX_SIDE;
         vec2(a * vec.x + a * vec.y, -a * vec.x + 2 * a * vec.y)
+    }
+}
+
+/// Non-scrolling screen.
+///
+/// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
+/// coordinates form their own sector space that tiles the location space with sectors.
+#[derive(
+    Copy, Clone, Eq, PartialEq, Default, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize,
+)]
+pub struct Sector {
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
+}
+
+impl Add<SectorVec> for Sector {
+    type Output = Sector;
+    fn add(self, other: SectorVec) -> Sector {
+        Sector {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+}
+
+impl Add<euclid::Vector2D<i32, SectorSpace>> for Sector {
+    type Output = Sector;
+    fn add(self, other: euclid::Vector2D<i32, SectorSpace>) -> Sector {
+        Sector {
+            x: self.x + other.x as i16,
+            y: self.y + other.y as i16,
+            z: self.z,
+        }
+    }
+}
+
+impl From<Location> for Sector {
+    fn from(loc: Location) -> Self {
+        Sector::new(0, 0, loc.z) + CellVector::from(loc).project::<SectorSpace>()
+    }
+}
+
+impl From<Sector> for Vector2D<i32, SectorSpace> {
+    fn from(sec: Sector) -> Self { vec2(sec.x as i32, sec.y as i32) }
+}
+
+impl Sector {
+    pub const fn new(x: i16, y: i16, z: i16) -> Sector { Sector { x, y, z } }
+
+    /// Center location for this sector.
+    ///
+    /// Default camera position.
+    pub fn center(self) -> Location { Location::from(self) + vec2(SECTOR_HEX_SIDE - 1, 0) }
+
+    pub fn iter(self) -> impl Iterator<Item = Location> {
+        let origin = Location::from(self);
+        Sector::shape().map(move |p| origin + p)
+    }
+
+    /// Yield the points that form the shape of the origin `Sector`.
+    pub fn shape() -> impl Iterator<Item = CellVector> {
+        ((-SECTOR_HEX_SIDE + 1)..(SECTOR_HEX_SIDE + 1))
+            .flat_map(move |y| (0..(SECTOR_HEX_SIDE * 2)).map(move |x| CellVector::new(x, y)))
+            .filter(|p| p.project::<SectorSpace>() == vec2(0, 0))
+    }
+
+    /// Generate pseudorandom downstairs pos guaranteed not to collide with upstairs pos for this
+    /// sector.
+    pub fn downstairs_location(self, seed: u32) -> Location {
+        // The trick: Split the sector into vertical strips. Use odd strips for odd z coordinate
+        // floor's downstairs and even strips for even z coordinate floor's downstairs. This way
+        // consecutive stairwells are always guaranteed not to end up on the same spot.
+        //
+        // Since stairwells have some architecture around them, also keep the strips with one cell
+        // of padding between them. So we actually end up with
+        //
+        //     even: 1 + 4n
+        //     odd:  3 + 4n
+        //
+        // These are using the rectangular (u, v) sector coordinates instead of the regular (x, y)
+        // hex coordinates because the trick is formulated in terms of rectangular coordinate space
+        // columns.
+
+        // Bump for odd z floors.
+        let u_offset = 1 + (self.z as i32).rem_euclid(2) * 2;
+
+        let n = (SECTOR_WIDTH - 1) / 4;
+        debug_assert!(n > 0);
+        debug_assert!(SECTOR_HEIGHT > 6);
+
+        let mut rng = seeded_rng(&(&seed, &self));
+        let u = 4 * rng.gen_range(0, n) + u_offset;
+        // Leave space to top and bottom so you can make a path from the stairwell. Stairs usually
+        // have a vertical enclosure.
+        let v = rng.gen_range(3, SECTOR_HEIGHT - 3);
+
+        Location::from(self) + vec2::<i32, StaggeredHexSpace>(u, v).project()
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize)]
+pub enum SectorDir {
+    Northeast = 0,
+    East,
+    Southeast,
+    Southwest,
+    West,
+    Northwest,
+    Up,
+    Down,
+}
+
+impl From<SectorDir> for SectorVec {
+    fn from(dir: SectorDir) -> Self {
+        use SectorDir::*;
+        match dir {
+            Northeast => vec2(0, -1).to_3d(),
+            East => vec2(1, 0).to_3d(),
+            Southeast => vec2(1, 1).to_3d(),
+            Southwest => vec2(0, 1).to_3d(),
+            West => vec2(-1, 0).to_3d(),
+            Northwest => vec2(-1, -1).to_3d(),
+            Up => vec3(0, 0, 1),
+            Down => vec3(0, 0, -1),
+        }
+    }
+}
+
+/// Parts of a hex `Sector`. The `CenterRectangle` part corresponds to the game screen. The
+/// triangles are the parts of the hex above and below that.
+pub enum SectorPart {
+    NorthTriangle,
+    CenterRectangle,
+    SouthTriangle,
+}
+
+impl From<CellVector> for SectorPart {
+    fn from(vec: CellVector) -> Self {
+        if vec.x < -vec.y {
+            SectorPart::NorthTriangle
+        } else if vec.x > SECTOR_HEX_SIDE * 2 - 2 - vec.y {
+            SectorPart::SouthTriangle
+        } else {
+            SectorPart::CenterRectangle
+        }
     }
 }
 
@@ -336,8 +349,8 @@ impl project::From<CellSpace> for HerringboneSpace {
                     vec2(to_signed(c % 4), to_signed(c / 4)) + vec2(0, 2)
                 }
 
-                // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's complement
-                // signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
+                // Hex char table, encode x and y coords for the HexVector offset as 2-bit 2's
+                // complement signed integers (-2 to 1). x is low 2 bits, y is high 2 bits.
                 const PATTERN: &str = "\
 889d
 fccd
@@ -444,8 +457,6 @@ pub struct SectorSpec {
     // By default create path/stairs if adjacent sector exists.
     pub depth: i32,
     pub biome: Biome,
-    pub west_wall: bool,
-    pub south_wall: bool,
 }
 
 #[derive(Clone, Default, Serialize, Deserialize)]
@@ -477,81 +488,43 @@ impl WorldSkeleton {
     }
 
     pub fn overworld_sprawl() -> WorldSkeleton {
-        use calx::{DenseTextMap, IntoPrefab};
+        // FIXME
+        use calx::IntoPrefab;
         const OVERWORLD_MAP: &str = "
              ~ ~ ~ ~ ~ ~ ^ ^ ^ ^
-             ~ ~ ~ ~ . % %|- - ^
-             ~ ~ . # . . %L- - ^
-             ~ . . . 0 . . .|- ^
-             ~ . . . . % ._-_- ^
-             ~ . . . . . . . . ^
+            ~ ~ ~ ~ . % % - - ^
+             ~ ~ . # . . % - - ^
+            ~ . . .[.]. . . - ^
+             ~ . . . . % . - - ^
+            ~ . . . . . . . . ^
              ~ . . . # # . . . ^
-             ~ ~ . . # . . . . ^
+            ~ ~ . . # . . . . ^
              ~ ~ . . . . . . . ^
-             ~ ~ ~ ~ ~ ~ ~ ^ ^ ^";
+            ~ ~ ~ ~ ~ ~ ~ ^ ^ ^";
 
-        let wide_map: HashMap<CellVector, char> = DenseTextMap(OVERWORLD_MAP)
-            .into_prefab()
-            .expect("Invalid overworld map");
-
-        let origin = wide_map
-            .iter()
-            .find(|(_, &c)| c == '0')
-            .map(|(&p, _)| p)
-            .expect("No origin sector defined");
-
-        let mut map = HashMap::new();
-
-        for (&wide_p, &c) in &wide_map {
-            if c == ' ' {
-                continue;
-            }
-
-            let wide_p = wide_p - origin;
-            let (p, is_side) = (CellVector::new(wide_p.x / 2, wide_p.y), wide_p.x % 2 != 0);
-
-            // (is_blocked_west, is_blocked_south, sector_biome)
-            let entry = map.entry(p).or_insert((false, false, Biome::Water));
-
-            if is_side {
-                match c {
-                    '|' => (*entry).0 = true,
-                    'L' => {
-                        (*entry).0 = true;
-                        (*entry).1 = true;
-                    }
-                    '_' => (*entry).1 = true,
-                    _ => panic!("Bad side char {}", c),
-                }
-            } else {
-                match c {
-                    '~' => (*entry).2 = Biome::Water,
-                    '-' => (*entry).2 = Biome::Desert,
-                    '.' => (*entry).2 = Biome::Grassland,
-                    '0' => (*entry).2 = Biome::Grassland,
-                    '%' => (*entry).2 = Biome::Forest,
-                    '#' => (*entry).2 = Biome::City,
-                    '^' => (*entry).2 = Biome::Mountain,
-                    _ => panic!("Unknown biome char {}", c),
-                }
-            }
-        }
-
-        // Legend (sector centers):
-        // 0: player start sector
-        // ~: sea
-        // .: grassland
-        // %: forest
-        // -: desert
-        // ^: mountain
-        // #: city
-        //
-        // Legend (sector edges):
-        // I, L, _: Edges between sectors to left, right and lower right
+        let map: HashMap<CellVector, Biome> = OVERWORLD_MAP
+            .into_prefab::<HashMap<CellVector, char>>()
+            .expect("Invalid overworld map")
+            .into_iter()
+            .map(|(p, c)| {
+                (
+                    p,
+                    match c {
+                        '~' => Biome::Water,
+                        '-' => Biome::Desert,
+                        '.' => Biome::Grassland,
+                        '%' => Biome::Forest,
+                        '#' => Biome::City,
+                        '^' => Biome::Mountain,
+                        _ => panic!("Unknown biome char {}", c),
+                    },
+                )
+            })
+            .collect();
 
         let mut ret = WorldSkeleton::default();
         // Overworld
-        for (p, (west_wall, south_wall, biome)) in &map {
+        for (p, biome) in &map {
             let depth = if *p == vec2(0, 0) {
                 // No spawns in entrance sector.
                 -1
@@ -562,8 +535,6 @@ impl WorldSkeleton {
             let spec = SectorSpec {
                 depth,
                 biome: *biome,
-                west_wall: *west_wall,
-                south_wall: *south_wall,
             };
             ret.insert(sector, spec);
         }
@@ -601,26 +572,31 @@ pub struct ConnectedSectorSpec<'a> {
     pub seed: u32,
     pub sector: Sector,
     pub spec: &'a SectorSpec,
-    pub north: Option<&'a SectorSpec>,
+    pub northeast: Option<&'a SectorSpec>,
     pub east: Option<&'a SectorSpec>,
-    pub south: Option<&'a SectorSpec>,
+    pub southwest: Option<&'a SectorSpec>,
+    pub southeast: Option<&'a SectorSpec>,
     pub west: Option<&'a SectorSpec>,
+    pub northwest: Option<&'a SectorSpec>,
     pub up: Option<&'a SectorSpec>,
     pub down: Option<&'a SectorSpec>,
 }
 
 impl<'a> ConnectedSectorSpec<'a> {
     pub fn new(seed: u32, sector: Sector, world_skeleton: &'a WorldSkeleton) -> Self {
+        use SectorDir::*;
         ConnectedSectorSpec {
             seed,
             sector,
             spec: world_skeleton.get(&sector).unwrap(),
-            north: world_skeleton.get(&(sector + vec3(0, -1, 0))),
-            east: world_skeleton.get(&(sector + vec3(1, 0, 0))),
-            south: world_skeleton.get(&(sector + vec3(0, 1, 0))),
-            west: world_skeleton.get(&(sector + vec3(-1, 0, 0))),
-            up: world_skeleton.get(&(sector + vec3(0, 0, 1))),
-            down: world_skeleton.get(&(sector + vec3(0, 0, -1))),
+            northeast: world_skeleton.get(&(sector + SectorVec::from(Northeast))),
+            east: world_skeleton.get(&(sector + SectorVec::from(East))),
+            southeast: world_skeleton.get(&(sector + SectorVec::from(Southeast))),
+            southwest: world_skeleton.get(&(sector + SectorVec::from(Southwest))),
+            west: world_skeleton.get(&(sector + SectorVec::from(West))),
+            northwest: world_skeleton.get(&(sector + SectorVec::from(Northwest))),
+            up: world_skeleton.get(&(sector + SectorVec::from(Up))),
+            down: world_skeleton.get(&(sector + SectorVec::from(Down))),
         }
     }
 }
@@ -641,6 +617,21 @@ impl<'a> Distribution<Map> for ConnectedSectorSpec<'a> {
 }
 
 impl<'a> ConnectedSectorSpec<'a> {
+    /// Sector base shape for map generation.
+    ///
+    /// The base will be deformed if the sector has no neighbors to the north or south. A
+    /// standalone sector will be cropped to align with an unscrolling game screen.
+    fn base_shape(&self) -> impl Iterator<Item = CellVector> {
+        let allow_north = self.northwest.is_some() || self.northeast.is_some();
+        let allow_south = self.southwest.is_some() || self.southeast.is_some();
+
+        Sector::shape().filter(move |p| match SectorPart::from(*p) {
+            SectorPart::NorthTriangle => allow_north,
+            SectorPart::SouthTriangle => allow_south,
+            _ => true,
+        })
+    }
+
     fn dungeon_gen(&self, rng: &mut Rng) -> Result<Map, Box<dyn Error>> {
         // TODO: Connect to side levels if they exist
 
@@ -713,8 +704,7 @@ impl<'a> ConnectedSectorSpec<'a> {
 
     fn downstairs_pos(&self) -> Option<CellVector> {
         self.down.map(|_| {
-            self.sector
-                .origin()
+            Location::from(self.sector)
                 .v2_at(self.sector.downstairs_location(self.seed))
                 .unwrap()
         })
@@ -727,7 +717,7 @@ impl<'a> ConnectedSectorSpec<'a> {
             // Offset it so that the exits line up nicer.
             upstairs_pos.x -= 1;
             upstairs_pos.y -= 1;
-            self.sector.origin().v2_at(upstairs_pos).unwrap()
+            Location::from(self.sector).v2_at(upstairs_pos).unwrap()
         })
     }
 
@@ -744,18 +734,15 @@ impl<'a> ConnectedSectorSpec<'a> {
     }
 
     fn dungeon_base_map(&self) -> Map {
-        let mut ret = Map::new_base(
-            Terrain::Rock,
-            Sector::points().filter(|&p| !(Location::default() + p).is_next_to_diagonal_sector()),
-        );
+        let mut ret = Map::new_base(Terrain::Rock, self.base_shape());
         self.place_stairwells(&mut ret);
         ret
     }
 
     fn build_biome_sample_map(&self, rng: &mut Rng, biome_fn: impl Fn(Location) -> Biome) -> Map {
         let mut map = Map::default();
-        for p in Sector::points() {
-            let loc = self.sector.origin() + p;
+        for p in self.base_shape() {
+            let loc = Location::from(self.sector) + p;
             let biome = biome_fn(loc);
 
             // TODO: If biome changes in three neighboring cells, turn terrain to ground
@@ -858,17 +845,19 @@ impl Distribution<Exit> for ConnectedSectorSpec<'_> {
 
 #[cfg(test)]
 mod test {
-    use super::{CellVector, Sector, SECTOR_HEIGHT, SECTOR_WIDTH};
-    use calx::{CellSpace, ProjectVec};
+    use super::{CellVector, Sector, SECTOR_HEIGHT, SECTOR_HEX_SIDE, SECTOR_WIDTH};
+    use calx::{CellSpace, ProjectVec, StaggeredHexSpace};
     use euclid::{vec2, vec3};
 
     #[test]
     fn test_rect_space() {
-        let s = Sector::new(0, 0, 0);
+        let shape: Vec<CellVector> = Sector::shape().collect();
         for v in 0..SECTOR_HEIGHT {
             for u in 0..SECTOR_WIDTH {
-                let loc = s.rect_coord_loc(u, v);
-                assert!(s.iter().find(|x| x == &loc).is_some());
+                assert!(shape
+                    .iter()
+                    .find(|x| x.project::<StaggeredHexSpace>() == vec2(u, v))
+                    .is_some());
             }
         }
     }
@@ -890,104 +879,6 @@ mod test {
     }
 
     #[test]
-    fn test_terrain_hex() {
-        use super::TerrainHexSpace;
-        use std::collections::HashSet;
-
-        // Get a couple sectors to brute force the cells over.
-        let mut scan_space = Vec::new();
-        for y in -1..=1 {
-            for x in -1..=1 {
-                scan_space.extend(
-                    Sector::new(x, y, 0)
-                        .iter()
-                        .map(|loc| vec2(loc.x as i32, loc.y as i32)),
-                );
-            }
-        }
-
-        //           _
-        //      |  _- -_  |
-        //      |_-hex 0-_|
-        //   ---o---------+---        CellSpace origin at 'o'
-        // side I sector 0I sectors
-        // -1,0 I overlapsI 1,0
-        //      I  hex 0  I
-        //   ---+---------+---
-        //      |-_hex 0_-|
-        //      |  -_ _-  |
-        //           -
-        //
-        // Origin hex and origin sector desired overlap. The hex should line up perfectly with the
-        // sector and not touch the neighboring sectors.
-        //
-        // NB: Picture is in screen/sector projection, NOT in the CellSpace xy projection.
-
-        // Points of the origin hex.
-        let hex_points: HashSet<CellVector> = scan_space
-            .iter()
-            .filter(|&p| p.project::<TerrainHexSpace>() == vec2(0, 0))
-            .cloned()
-            .collect();
-
-        // Center sector, must be fully covered by hex.
-        let center_sector: HashSet<CellVector> = Sector::new(0, 0, 0)
-            .iter()
-            .map(|loc| vec2(loc.x as i32, loc.y as i32))
-            .collect();
-
-        // Side sectors, must be untouched by hex.
-        let sector_sides: HashSet<CellVector> = Sector::new(1, 0, 0)
-            .iter()
-            .chain(Sector::new(-1, 0, 0).iter())
-            .map(|loc| vec2(loc.x as i32, loc.y as i32))
-            .collect();
-
-        // Sanity check projection pairs.
-        for p in &scan_space {
-            let hex = p.project::<TerrainHexSpace>();
-            assert_eq!(hex.project::<CellSpace>().project::<TerrainHexSpace>(), hex);
-        }
-
-        assert!(hex_points.is_superset(&center_sector));
-        assert!(hex_points.is_disjoint(&sector_sides));
-    }
-
-    #[test]
-    fn test_terrain_hex_cover() {
-        use super::TerrainHexSpace;
-        use euclid::vec2;
-        use std::collections::HashSet;
-
-        assert_eq!(
-            TerrainHexSpace::sectors(vec2(0, 0))
-                .into_iter()
-                .collect::<HashSet<_>>(),
-            vec![
-                Sector::new(0, -1, 0),
-                Sector::new(0, 0, 0),
-                Sector::new(0, 1, 0)
-            ]
-            .into_iter()
-            .collect()
-        );
-
-        assert_eq!(
-            TerrainHexSpace::sectors(vec2(0, 1))
-                .into_iter()
-                .collect::<HashSet<_>>(),
-            vec![
-                Sector::new(0, 1, 0),
-                Sector::new(-1, 1, 0),
-                Sector::new(0, 2, 0),
-                Sector::new(-1, 2, 0),
-            ]
-            .into_iter()
-            .collect()
-        );
-    }
-
-    #[test]
     fn test_herringbone_space() {
         use super::HerringboneSpace;
 
@@ -1004,5 +895,13 @@ mod test {
                 );
             }
         }
+    }
+
+    #[test]
+    fn test_sector_shape() {
+        assert_eq!(
+            Sector::shape().count() as i32,
+            3 * SECTOR_HEX_SIDE * SECTOR_HEX_SIDE
+        );
     }
 }
