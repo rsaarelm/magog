@@ -572,31 +572,16 @@ pub struct ConnectedSectorSpec<'a> {
     pub seed: u32,
     pub sector: Sector,
     pub spec: &'a SectorSpec,
-    pub northeast: Option<&'a SectorSpec>,
-    pub east: Option<&'a SectorSpec>,
-    pub southwest: Option<&'a SectorSpec>,
-    pub southeast: Option<&'a SectorSpec>,
-    pub west: Option<&'a SectorSpec>,
-    pub northwest: Option<&'a SectorSpec>,
-    pub up: Option<&'a SectorSpec>,
-    pub down: Option<&'a SectorSpec>,
+    pub skeleton: &'a WorldSkeleton,
 }
 
 impl<'a> ConnectedSectorSpec<'a> {
-    pub fn new(seed: u32, sector: Sector, world_skeleton: &'a WorldSkeleton) -> Self {
-        use SectorDir::*;
+    pub fn new(seed: u32, sector: Sector, skeleton: &'a WorldSkeleton) -> Self {
         ConnectedSectorSpec {
             seed,
             sector,
-            spec: world_skeleton.get(&sector).unwrap(),
-            northeast: world_skeleton.get(&(sector + SectorVec::from(Northeast))),
-            east: world_skeleton.get(&(sector + SectorVec::from(East))),
-            southeast: world_skeleton.get(&(sector + SectorVec::from(Southeast))),
-            southwest: world_skeleton.get(&(sector + SectorVec::from(Southwest))),
-            west: world_skeleton.get(&(sector + SectorVec::from(West))),
-            northwest: world_skeleton.get(&(sector + SectorVec::from(Northwest))),
-            up: world_skeleton.get(&(sector + SectorVec::from(Up))),
-            down: world_skeleton.get(&(sector + SectorVec::from(Down))),
+            spec: &skeleton[&sector],
+            skeleton,
         }
     }
 }
@@ -622,8 +607,10 @@ impl<'a> ConnectedSectorSpec<'a> {
     /// The base will be deformed if the sector has no neighbors to the north or south. A
     /// standalone sector will be cropped to align with an unscrolling game screen.
     fn base_shape(&self) -> impl Iterator<Item = CellVector> {
-        let allow_north = self.northwest.is_some() || self.northeast.is_some();
-        let allow_south = self.southwest.is_some() || self.southeast.is_some();
+        let allow_north = self.neighbor(SectorDir::Northwest).is_some()
+            || self.neighbor(SectorDir::Northeast).is_some();
+        let allow_south = self.neighbor(SectorDir::Southwest).is_some()
+            || self.neighbor(SectorDir::Southeast).is_some();
 
         Sector::shape().filter(move |p| match SectorPart::from(*p) {
             SectorPart::NorthTriangle => allow_north,
@@ -655,15 +642,19 @@ impl<'a> ConnectedSectorSpec<'a> {
         }
     }
 
+    pub fn neighbor(&self, offset: impl Into<SectorVec>) -> Option<&SectorSpec> {
+        self.skeleton.get(&(self.sector + offset.into()))
+    }
+
     fn place_stairs(&self, rng: &mut Rng, map: &mut Map) -> Result<(), Box<dyn Error>> {
         // TODO: Biome affects vault distribution
-        if self.up.is_some() {
+        if self.neighbor(SectorDir::Up).is_some() {
             let room: Entrance = self.sample(rng);
             debug!("Placing upstairs");
             map.place_room(rng, &*room.0)?;
         }
 
-        if self.down.is_some() {
+        if self.neighbor(SectorDir::Down).is_some() {
             // TODO: Make exit use a sampled type like Entrance does
             debug!("Placing downstairs");
             let room = vaults::EXITS.choose(rng).unwrap();
@@ -703,7 +694,7 @@ impl<'a> ConnectedSectorSpec<'a> {
     }
 
     fn downstairs_pos(&self) -> Option<CellVector> {
-        self.down.map(|_| {
+        self.neighbor(SectorDir::Down).map(|_| {
             Location::from(self.sector)
                 .v2_at(self.sector.downstairs_location(self.seed))
                 .unwrap()
@@ -711,7 +702,7 @@ impl<'a> ConnectedSectorSpec<'a> {
     }
 
     fn upstairs_pos(&self) -> Option<CellVector> {
-        self.up.map(|_| {
+        self.neighbor(SectorDir::Up).map(|_| {
             let mut upstairs_pos = (self.sector + vec3(0, 0, 1)).downstairs_location(self.seed);
             upstairs_pos.z -= 1;
             // Offset it so that the exits line up nicer.
