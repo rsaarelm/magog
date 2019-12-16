@@ -596,7 +596,7 @@ impl<'a> Distribution<Map> for ConnectedSectorSpec<'a> {
     fn sample(&self, rng: &mut Rng) -> Map {
         match self.biome {
             Biome::Dungeon => self.build_dungeon(rng),
-            x => self.build_biome_sample_map(rng, |_| x),
+            _ => self.build_biome_sample_map(rng),
         }
     }
 }
@@ -730,11 +730,17 @@ impl<'a> ConnectedSectorSpec<'a> {
         ret
     }
 
-    fn build_biome_sample_map(&self, rng: &mut Rng, biome_fn: impl Fn(Location) -> Biome) -> Map {
+    fn build_biome_sample_map(&self, rng: &mut Rng) -> Map {
         let mut map = Map::default();
         for p in self.base_shape() {
             let loc = Location::from(self.sector) + p;
-            let biome = biome_fn(loc);
+            let perturbed_loc = loc + loc.terrain_cell_displacement();
+            let mut biome = self.biome;
+            // Border noise can make neighboring sector terrain show up on this one.
+            let encroaching_sector = Sector::from(perturbed_loc);
+            if let Some(sector) = self.skeleton.get(&encroaching_sector) {
+                biome = sector.biome;
+            }
 
             // TODO: If biome changes in three neighboring cells, turn terrain to ground
             let terrain = biome.terrain_at(self.seed, loc);
