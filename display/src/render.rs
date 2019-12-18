@@ -1,13 +1,10 @@
 //! Game world display utilities.
 
-use crate::brush::Brush;
-use crate::cache;
-use crate::view::PhysicsVector;
-use crate::Icon;
+use crate::{brush::Brush, cache, Icon};
 use calx::{Dir12, Dir6};
 use euclid::vec3;
 use std::sync::Arc;
-use world::{terrain, Location, Terrain, World};
+use world::{terrain, Location, PhysicsVector, Terrain, World};
 
 /// Surface angle for a visible sprite, used for dynamic lighting.
 ///

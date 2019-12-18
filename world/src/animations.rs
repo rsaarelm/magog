@@ -1,10 +1,9 @@
 //! Animation effects embedded in the game world.
 
-use crate::location::Location;
-use crate::world::World;
-use calx::{ease, CellSpace};
+use crate::{location::Location, world::World};
+use calx::{ease, project, CellSpace, Space};
 use calx_ecs::Entity;
-use euclid::{vec2, Vector2D};
+use euclid::{vec2, Vector2D, Vector3D};
 use serde_derive::{Deserialize, Serialize};
 
 /// Location with a non-integer offset delta.
@@ -137,3 +136,35 @@ impl AnimState {
 impl Default for AnimState {
     fn default() -> Self { AnimState::Mob }
 }
+
+/// 3D physics space, used for eg. lighting.
+pub struct PhysicsSpace;
+impl Space for PhysicsSpace {
+    type T = f32;
+}
+
+// |    1    -1 |
+// | -1/2  -1/2 |
+
+impl project::From<CellSpace> for PhysicsSpace {
+    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
+        let vec = vec.cast::<f32>();
+        vec2(vec.x - vec.y, -vec.x / 2.0 - vec.y / 2.0)
+    }
+}
+
+// |  1/2  -1 |
+// | -1/2  -1 |
+
+impl project::From<PhysicsSpace> for CellSpace {
+    fn vec_from(
+        vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>,
+    ) -> Vector2D<Self::T, Self> {
+        vec2(
+            (vec.x / 2.0 - vec.y).round() as i32,
+            (-vec.x / 2.0 - vec.y).round() as i32,
+        )
+    }
+}
+
+pub type PhysicsVector = Vector3D<f32, PhysicsSpace>;

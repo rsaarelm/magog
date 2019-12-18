@@ -98,7 +98,7 @@ impl<'a> MessageFormatter2<'a, World> {
 mod ai;
 
 mod animations;
-pub use animations::{Anim, AnimState, LerpLocation};
+pub use animations::{Anim, AnimState, LerpLocation, PhysicsSpace, PhysicsVector};
 
 mod command;
 pub use command::{ActionOutcome, Command};

@@ -8,12 +8,12 @@ use crate::{
 };
 use calx::{project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, Space};
 use calx_ecs::Entity;
-use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
+use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, FovStatus, LerpLocation, Location, Sector, World};
+use world::{AnimState, FovStatus, LerpLocation, Location, Sector, World, PhysicsSpace};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -547,6 +547,16 @@ impl project::From<ScreenSpace> for CellSpace {
     }
 }
 
+// |  a   0 |
+// |  0  -a |
+
+impl project::From<PhysicsSpace> for ScreenSpace {
+    fn vec_from(vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>) -> Vector2D<Self::T, Self> {
+        let a = PIXEL_UNIT as f32;
+        vec2((vec.x * a) as i32, (vec.y * -a) as i32)
+    }
+}
+
 pub type ScreenVector = Vector2D<i32, ScreenSpace>;
 pub type ScreenRect = Rect<i32, ScreenSpace>;
 
@@ -638,35 +648,3 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
     let (vec, offset) = screen_space_to_lerp_location(camera_pos.to_vector());
     LerpLocation::new(center + vec, offset)
 }
-
-/// 3D physics space, used for eg. lighting.
-pub struct PhysicsSpace;
-impl Space for PhysicsSpace {
-    type T = f32;
-}
-
-// |    1    -1 |
-// | -1/2  -1/2 |
-
-impl project::From<CellSpace> for PhysicsSpace {
-    fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
-        let vec = vec.cast::<f32>();
-        vec2(vec.x - vec.y, -vec.x / 2.0 - vec.y / 2.0)
-    }
-}
-
-// |  1/2  -1 |
-// | -1/2  -1 |
-
-impl project::From<PhysicsSpace> for CellSpace {
-    fn vec_from(
-        vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>,
-    ) -> Vector2D<Self::T, Self> {
-        vec2(
-            (vec.x / 2.0 - vec.y).round() as i32,
-            (-vec.x / 2.0 - vec.y).round() as i32,
-        )
-    }
-}
-
-pub type PhysicsVector = Vector3D<f32, PhysicsSpace>;
