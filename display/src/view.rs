@@ -8,12 +8,12 @@ use crate::{
 };
 use calx::{project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, Space};
 use calx_ecs::Entity;
-use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D};
+use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, FovStatus, LerpLocation, Location, Sector, World, PhysicsSpace};
+use world::{AnimState, FovStatus, LerpLocation, Location, PhysicsSpace, Sector, World};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -550,10 +550,12 @@ impl project::From<ScreenSpace> for CellSpace {
 // |  a   0 |
 // |  0  -a |
 
-impl project::From<PhysicsSpace> for ScreenSpace {
-    fn vec_from(vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>) -> Vector2D<Self::T, Self> {
+impl project::From32<PhysicsSpace> for ScreenSpace {
+    fn vec_from(
+        vec: Vector3D<<PhysicsSpace as Space>::T, PhysicsSpace>,
+    ) -> Vector2D<Self::T, Self> {
         let a = PIXEL_UNIT as f32;
-        vec2((vec.x * a) as i32, (vec.y * -a) as i32)
+        vec2((vec.x * a) as i32, (-vec.y * a - vec.z * a) as i32)
     }
 }
 

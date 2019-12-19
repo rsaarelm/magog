@@ -1,5 +1,5 @@
 use crate::space::Space;
-use euclid::{Point2D, Vector2D};
+use euclid::{Point2D, Point3D, Vector2D, Vector3D};
 
 /// Transformation between different geometries, eg. tile map and on-screen isometric grid.
 ///
@@ -92,4 +92,12 @@ pub trait From<U: Space>: Sized + Space {
 // Identity projection
 impl<U: Space> From<U> for U {
     fn vec_from(vec: Vector2D<U::T, U>) -> Vector2D<Self::T, Self> { vec }
+}
+
+pub trait From32<U: Space>: Sized + Space {
+    fn vec_from(vec: Vector3D<U::T, U>) -> Vector2D<Self::T, Self>;
+
+    fn point_from(point: Point3D<U::T, U>) -> Point2D<Self::T, Self> {
+        Self::vec_from(point.to_vector()).to_point()
+    }
 }

@@ -1,7 +1,7 @@
 //! Animation effects embedded in the game world.
 
 use crate::{location::Location, world::World};
-use calx::{ease, project, CellSpace, Space};
+use calx::{ease, project, CellSpace, ProjectVec, Space};
 use calx_ecs::Entity;
 use euclid::{vec2, Vector2D, Vector3D};
 use serde_derive::{Deserialize, Serialize};
@@ -82,6 +82,23 @@ impl World {
             None
         }
     }
+
+    pub fn lerp_offset(&self, e: Entity) -> PhysicsVector {
+        if let Some(location) = self.location(e) {
+            if let Some(anim) = self.anim(e) {
+                let frame = (self.get_anim_tick() - anim.tween_start) as u32;
+                if frame < anim.tween_duration {
+                    if let Some(vec) = location.v2_at(anim.tween_from) {
+                        let offset = vec.project::<PhysicsSpace>().to_3d();
+                        let scalar = frame as f32 / anim.tween_duration as f32;
+                        let scalar = ease::cubic_in_out(1.0 - scalar);
+                        return offset * scalar;
+                    }
+                }
+            }
+        }
+        Default::default()
+    }
 }
 
 /// Entity animation state.
@@ -146,6 +163,8 @@ impl Space for PhysicsSpace {
 // |    1    -1 |
 // | -1/2  -1/2 |
 
+// NB: Produces a 2D PhysicsSpace vector, you need to 3d-ify it manually.
+
 impl project::From<CellSpace> for PhysicsSpace {
     fn vec_from(vec: Vector2D<<CellSpace as Space>::T, CellSpace>) -> Vector2D<Self::T, Self> {
         let vec = vec.cast::<f32>();
@@ -156,9 +175,9 @@ impl project::From<CellSpace> for PhysicsSpace {
 // |  1/2  -1 |
 // | -1/2  -1 |
 
-impl project::From<PhysicsSpace> for CellSpace {
+impl project::From32<PhysicsSpace> for CellSpace {
     fn vec_from(
-        vec: Vector2D<<PhysicsSpace as Space>::T, PhysicsSpace>,
+        vec: Vector3D<<PhysicsSpace as Space>::T, PhysicsSpace>,
     ) -> Vector2D<Self::T, Self> {
         vec2(
             (vec.x / 2.0 - vec.y).round() as i32,
