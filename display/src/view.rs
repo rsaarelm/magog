@@ -6,14 +6,18 @@ use crate::{
     sprite::{Coloring, Sprite},
     Icon,
 };
-use calx::{project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, Space};
+use calx::{
+    project, CellSpace, CellVector, Clamp, FovValue, HexFov, ProjectVec, ProjectVec32, Space,
+};
 use calx_ecs::Entity;
 use euclid::{rect, vec2, vec3, Rect, UnknownUnit, Vector2D, Vector3D};
 use std::collections::HashMap;
 use std::iter::FromIterator;
 use std::sync::Arc;
 use vitral::{color, Canvas};
-use world::{AnimState, FovStatus, LerpLocation, Location, PhysicsSpace, Sector, World};
+use world::{
+    AnimState, FovStatus, LerpLocation, Location, PhysicsSpace, PhysicsVector, Sector, World,
+};
 
 /// Useful general constant for cell dimension ops.
 pub static PIXEL_UNIT: i32 = 16;
@@ -45,9 +49,9 @@ impl WorldView {
         // XXX: Repeating the formula in draw
         let center = (self.screen_area.origin + self.screen_area.size / 2
             - vec2(PIXEL_UNIT / 2, 10)
-            - cell_offset_to_screen_space(self.camera_loc.offset()))
+            - self.camera_loc.offset.project())
         .to_vector();
-        self.camera_loc.location() + (pos - center).project()
+        self.camera_loc.location + (pos - center).project()
     }
 
     /// Recompute the cached screen view if the cache has been invalidated.
@@ -63,7 +67,7 @@ impl WorldView {
                 .translate(-(self.screen_area.origin + center).to_vector())
                 .inflate(PIXEL_UNIT * 2, PIXEL_UNIT * 2);
 
-            self.fov = Some(screen_fov(world, self.camera_loc.location(), bounds));
+            self.fov = Some(screen_fov(world, self.camera_loc.location, bounds));
         }
     }
 
@@ -73,7 +77,7 @@ impl WorldView {
 
         let center = (self.screen_area.origin + self.screen_area.size / 2
             - vec2(PIXEL_UNIT / 2, 10)
-            - cell_offset_to_screen_space(self.camera_loc.offset()))
+            - self.camera_loc.offset.project())
         .to_vector();
         let chart = self.fov.as_ref().unwrap();
         let mut sprites = Vec::new();
@@ -439,7 +443,7 @@ impl WorldView {
         fn lerp_offset(world: &World, e: Entity) -> ScreenVector {
             let loc = world.lerp_location(e).unwrap_or_else(|| Default::default());
 
-            cell_offset_to_screen_space(loc.offset())
+            loc.offset.project()
         }
     }
 }
@@ -559,39 +563,23 @@ impl project::From32<PhysicsSpace> for ScreenSpace {
     }
 }
 
+impl project::From<ScreenSpace> for PhysicsSpace {
+    fn vec_from(vec: Vector2D<<ScreenSpace as Space>::T, ScreenSpace>) -> Vector2D<Self::T, Self> {
+        let vec = vec2::<f32, ScreenSpace>(vec.x as f32, vec.y as f32);
+        let a = PIXEL_UNIT as f32;
+        vec2(vec.x / a, -vec.y / a)
+    }
+}
+
 pub type ScreenVector = Vector2D<i32, ScreenSpace>;
 pub type ScreenRect = Rect<i32, ScreenSpace>;
-
-// XXX: Nasty custom projection functions for fractional cell space used in LerpLocation.
-fn cell_offset_to_screen_space(offset: Vector2D<f32, CellSpace>) -> ScreenVector {
-    let a = PIXEL_UNIT as f32;
-    vec2(
-        offset.x * a - offset.y * a,
-        offset.x * a / 2.0 + offset.y * a / 2.0,
-    )
-    .cast()
-}
-
-fn screen_space_to_lerp_location(
-    screen_vector: ScreenVector,
-) -> (CellVector, Vector2D<f32, CellSpace>) {
-    let a = PIXEL_UNIT as f32;
-
-    let x = screen_vector.x as f32 / (a * 2.0) + screen_vector.y as f32 / a;
-    let y = -screen_vector.x as f32 / (a * 2.0) + screen_vector.y as f32 / a;
-
-    (
-        vec2(x.trunc() as i32, y.trunc() as i32),
-        vec2(x.fract(), y.fract()),
-    )
-}
 
 /// Constrain a scrolling camera when there's no sector to scroll to.
 fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
     // XXX: Some messy stuff going on here due to the original CellSpace design not being good
     // with non-integer coordinates.
 
-    let sector = Sector::from(camera_loc.location());
+    let sector = Sector::from(camera_loc.location);
 
     let center = sector.center();
     // Construct a screen space rectangle where camera position must stay in.
@@ -643,10 +631,54 @@ fn clip_camera(world: &World, camera_loc: LerpLocation) -> LerpLocation {
         rect(min_x, min_y, max_x - min_x, max_y - min_y)
     };
 
-    let camera_pos = (center.v2_at(camera_loc.location()).unwrap()).project()
-        + cell_offset_to_screen_space(camera_loc.offset());
+    let camera_pos =
+        (center.v2_at(camera_loc.location).unwrap()).project() + camera_loc.offset.project();
     let camera_pos = screen_bounds.clamp(camera_pos.to_point());
 
     let (vec, offset) = screen_space_to_lerp_location(camera_pos.to_vector());
-    LerpLocation::new(center + vec, offset)
+    LerpLocation {
+        location: center + vec,
+        offset,
+    }
+}
+
+fn screen_space_to_lerp_location(screen_vector: ScreenVector) -> (CellVector, PhysicsVector) {
+    let cell_vector: CellVector = screen_vector.project();
+
+    (
+        cell_vector,
+        (screen_vector.project::<PhysicsSpace>() - cell_vector.project::<PhysicsSpace>()).to_3d(),
+    )
+}
+
+#[cfg(test)]
+mod test {
+    use super::{ScreenSpace, ScreenVector};
+    use calx::{CellSpace, CellVector, ProjectVec, ProjectVec32};
+    use euclid::vec2;
+    use world::PhysicsSpace;
+
+    #[test]
+    fn test_projections() {
+        for y in -10..10 {
+            for x in -10..10 {
+                let pos: CellVector = vec2(x, y);
+                assert_eq!(
+                    pos.project::<ScreenSpace>(),
+                    pos.project::<PhysicsSpace>()
+                        .to_3d()
+                        .project::<ScreenSpace>(),
+                );
+            }
+        }
+
+        for y in -10..10 {
+            for x in -10..10 {
+                let pos: ScreenVector = vec2(x * 10, y * 10);
+                let p1 = pos.project::<PhysicsSpace>().to_3d().project::<CellSpace>();
+                let p2 = pos.project::<CellSpace>();
+                assert!((p2 - p1).cast::<f32>().length() <= 1.42);
+            }
+        }
+    }
 }

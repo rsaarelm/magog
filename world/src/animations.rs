@@ -11,31 +11,8 @@ use serde_derive::{Deserialize, Serialize};
 /// Use for tweened animations.
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
 pub struct LerpLocation {
-    location: Location,
-    offset: Vector2D<f32, CellSpace>,
-}
-
-impl LerpLocation {
-    pub fn new(location: Location, offset: Vector2D<f32, CellSpace>) -> LerpLocation {
-        // XXX: This could be normalized so that location gets displaced if offset is longer than a
-        // cell's width, but that doesn't work with the current display code that always draws
-        // entities in their logical location, not whatever LerpLocation says it is. Would need to
-        // develop a new spatial index that finds entities in the cell of LerpLocation for drawing.
-        // (This is mostly relevant to projectiles that fly across several cells).
-        //
-        // As it stands, the location field is a bit useless since it will always match the
-        // entity's logical location. It used to get moved before I noticed the bug with it.
-        LerpLocation {
-            location,
-            offset: vec2(offset.x, offset.y),
-        }
-    }
-
-    #[inline]
-    pub fn location(self) -> Location { self.location }
-
-    #[inline]
-    pub fn offset(self) -> Vector2D<f32, CellSpace> { self.offset }
+    pub location: Location,
+    pub offset: PhysicsVector,
 }
 
 impl From<Location> for LerpLocation {
@@ -65,19 +42,10 @@ impl World {
     /// Return a location structure that includes the entity's animation displacement
     pub fn lerp_location(&self, e: Entity) -> Option<LerpLocation> {
         if let Some(location) = self.location(e) {
-            if let Some(anim) = self.anim(e) {
-                let frame = (self.get_anim_tick() - anim.tween_start) as u32;
-                if frame < anim.tween_duration {
-                    if let Some(vec) = location.v2_at(anim.tween_from) {
-                        let scalar = frame as f32 / anim.tween_duration as f32;
-                        let scalar = ease::cubic_in_out(1.0 - scalar);
-
-                        let offset: euclid::Vector2D<f32, CellSpace> = vec.cast();
-                        return Some(LerpLocation::new(location, offset * scalar));
-                    }
-                }
-            }
-            Some(location.into())
+            Some(LerpLocation {
+                location,
+                offset: self.lerp_offset(e),
+            })
         } else {
             None
         }
