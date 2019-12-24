@@ -1,6 +1,6 @@
 //! Item and equipment logic
 
-use crate::{command::ActionOutcome, effect::Ability, world::World};
+use crate::{command::ActionOutcome, effect::Ability, msg, world::World};
 use calx_ecs::Entity;
 use serde_derive::{Deserialize, Serialize};
 use std::slice;
@@ -156,10 +156,8 @@ impl World {
         if let Some(slot) = self.free_bag_slot(e) {
             self.equip_item(item, e, slot);
             if self.is_player(e) {
-                msg!(self, "[One] pick[s] up [a thing].")
-                    .subject(e)
-                    .object(item)
-                    .send();
+                msg!("[One] pick[s] up [a thing].";
+                    self.subject(e), self.object(item));
             }
 
             self.end_turn(e);

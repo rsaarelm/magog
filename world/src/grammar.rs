@@ -17,6 +17,12 @@ pub struct Noun {
     is_plural: bool,
 }
 
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub enum GrammarPart {
+    Subject(Noun),
+    Object(Noun),
+}
+
 impl Noun {
     pub fn new(name: String) -> Noun {
         Noun {

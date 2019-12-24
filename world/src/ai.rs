@@ -1,6 +1,7 @@
 //! Creature AI and activity loop logic
 
 use crate::{
+    msg,
     stats::{Intrinsic, Status},
     Location, World,
 };
@@ -247,28 +248,28 @@ impl World {
         if let Some(shout) = self.ecs().brain.get(e).map(|b| b.shout) {
             match shout {
                 ShoutType::Shout => {
-                    msg!(self, "[One] shout[s] angrily.").subject(e).send();
+                    msg!("[One] shout[s] angrily."; self.subject(e));
                 }
                 ShoutType::Hiss => {
-                    msg!(self, "[One] hiss[es].").subject(e).send();
+                    msg!("[One] hiss[es]."; self.subject(e));
                 }
                 ShoutType::Buzz => {
-                    msg!(self, "[One] buzz[es] loudly.").subject(e).send();
+                    msg!("[One] buzz[es] loudly."; self.subject(e));
                 }
                 ShoutType::Roar => {
-                    msg!(self, "[One] roar[s] ferociously.").subject(e).send();
+                    msg!("[One] roar[s] ferociously."; self.subject(e));
                 }
                 ShoutType::Gurgle => {
-                    msg!(self, "[One] gurgle[s].").subject(e).send();
+                    msg!("[One] gurgle[s]."; self.subject(e));
                 }
                 ShoutType::Bark => {
-                    msg!(self, "[One] bark[s].").subject(e).send();
+                    msg!("[One] bark[s]."; self.subject(e));
                 }
                 ShoutType::Meow => {
-                    msg!(self, "[One] meow[s].").subject(e).send();
+                    msg!("[One] meow[s]."; self.subject(e));
                 }
                 ShoutType::Squeak => {
-                    msg!(self, "[One] squeak[s].").subject(e).send();
+                    msg!("[One] squeak[s]."; self.subject(e));
                 }
                 ShoutType::Silent => {}
             }

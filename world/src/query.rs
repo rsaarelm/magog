@@ -2,7 +2,7 @@
 
 use crate::{
     fov::SightFov,
-    grammar::{Noun, Pronoun},
+    grammar::{GrammarPart, Noun, Pronoun},
     item::{self, EquipType},
     location::Location,
     mapsave,
@@ -87,6 +87,12 @@ impl World {
         // TODO: Human mobs get he/she pronoun instead of it.
         ret
     }
+
+    /// Convenience method for formatted messages.
+    pub fn subject(&self, e: Entity) -> GrammarPart { GrammarPart::Subject(self.noun(e)) }
+
+    /// Convenience method for formatted messages.
+    pub fn object(&self, e: Entity) -> GrammarPart { GrammarPart::Object(self.noun(e)) }
 
     /// Return whether the entity can move in a direction.
     pub fn can_step(&self, e: Entity, dir: Dir6) -> bool {

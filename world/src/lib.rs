@@ -1,100 +1,5 @@
 use calx::{Clamp, Deciban};
 
-/// Helper macro for formatting textual event messages.
-macro_rules! msg {
-    ($ctx: expr, $fmt:expr) => {
-        $crate::MessageFormatter0::new($ctx, $fmt.to_string())
-    };
-
-    ($ctx: expr, $fmt:expr, $($arg:expr),*) => {
-        {
-            let __txt = format!($fmt, $($arg),*);
-            $crate::MessageFormatter0::new($ctx, __txt)
-        }
-    };
-}
-
-// XXX: Lots of code for pretty simple end result on the MessageFormatter...
-// XXX: W should be some trait that just provides the "push message" method
-#[must_use]
-pub(crate) struct MessageFormatter0<'a, W> {
-    world: &'a mut W,
-    msg: String,
-}
-
-#[must_use]
-pub(crate) struct MessageFormatter1<'a, W> {
-    world: &'a mut W,
-    subject: grammar::Noun,
-    msg: String,
-}
-
-#[must_use]
-pub(crate) struct MessageFormatter2<'a, W> {
-    world: &'a mut W,
-    subject: grammar::Noun,
-    object: grammar::Noun,
-    msg: String,
-}
-
-impl<'a> MessageFormatter0<'a, World> {
-    pub fn new(world: &'a mut World, msg: String) -> MessageFormatter0<'a, World> {
-        MessageFormatter0 { world, msg }
-    }
-
-    pub fn subject(self, e: calx_ecs::Entity) -> MessageFormatter1<'a, World> {
-        let subject = self.world.noun(e);
-        MessageFormatter1 {
-            world: self.world,
-            subject,
-            msg: self.msg,
-        }
-    }
-
-    pub fn send(self) {
-        use crate::grammar::Templater;
-        let event = Event::Msg(grammar::EmptyTemplater.format(&self.msg).unwrap());
-        self.world.push_event(event);
-    }
-}
-
-impl<'a> MessageFormatter1<'a, World> {
-    pub fn object(self, e: calx_ecs::Entity) -> MessageFormatter2<'a, World> {
-        let object = self.world.noun(e);
-        MessageFormatter2 {
-            world: self.world,
-            subject: self.subject,
-            object,
-            msg: self.msg,
-        }
-    }
-
-    pub fn send(self) {
-        use crate::grammar::Templater;
-        let event = Event::Msg(
-            grammar::SubjectTemplater::new(self.subject)
-                .format(&self.msg)
-                .unwrap(),
-        );
-        self.world.push_event(event);
-    }
-}
-
-impl<'a> MessageFormatter2<'a, World> {
-    pub fn send(self) {
-        use crate::grammar::Templater;
-        let event = Event::Msg(
-            grammar::ObjectTemplater::new(
-                grammar::SubjectTemplater::new(self.subject),
-                self.object,
-            )
-            .format(&self.msg)
-            .unwrap(),
-        );
-        self.world.push_event(event);
-    }
-}
-
 mod ai;
 
 mod animations;
@@ -133,6 +38,9 @@ mod mapsave;
 pub use mapsave::MapSave;
 
 mod map;
+
+mod msg;
+pub use msg::{register_msg_receiver, MsgReceiver};
 
 mod mutate;
 

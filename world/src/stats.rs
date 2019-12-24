@@ -1,5 +1,6 @@
 use crate::{
-    attack_damage, effect::Damage, roll, Ability, ActionOutcome, AnimState, ItemType, Slot, World,
+    attack_damage, effect::Damage, msg, roll, Ability, ActionOutcome, AnimState, ItemType, Slot,
+    World,
 };
 use calx::Dir6;
 use calx_ecs::Entity;
@@ -296,16 +297,14 @@ impl World {
                 if self.player_sees(loc) {
                     // TODO: message templating
                     msg!(
-                        self,
                         "[One] {}.",
                         match damage_type {
                             Damage::Physical => "die[s]",
                             Damage::Fire => "burn[s] to ash",
                             Damage::Electricity => "[is] electrocuted",
-                        }
-                    )
-                    .subject(e)
-                    .send();
+                        };
+                        self.subject(e)
+                    );
                 }
                 self.spawn_fx(loc, AnimState::Gib);
             }
@@ -407,15 +406,11 @@ impl World {
         let damage = attack_damage(roll(self.rng()), advantage, 5 + self.power(e));
 
         if damage == 0 {
-            msg!(self, "[One] miss[es] [another].")
-                .subject(e)
-                .object(target)
-                .send();
+            msg!("[One] miss[es] [another].";
+                self.subject(e), self.object(target));
         } else {
-            msg!(self, "[One] hit[s] [another] for {}.", damage)
-                .subject(e)
-                .object(target)
-                .send();
+            msg!("[One] hit[s] [another] for {}.", damage;
+                self.subject(e), self.object(target));
         }
         self.damage(target, damage, Damage::Physical, Some(e));
         self.end_turn(e);
@@ -474,9 +469,9 @@ impl World {
         }
 
         if self.is_player(e) {
-            msg!(self, "[One] feel[s] stronger.").subject(e).send();
+            msg!("[One] feel[s] stronger."; self.subject(e));
         } else {
-            msg!(self, "[One] look[s] stronger.").subject(e).send();
+            msg!("[One] look[s] stronger."; self.subject(e));
         }
     }
 }

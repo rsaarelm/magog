@@ -3,6 +3,7 @@
 use crate::{
     ai::Brain,
     effect::{Damage, Effect},
+    msg,
     sector::SECTOR_WIDTH,
     stats::Status,
     volume::Volume,
@@ -273,7 +274,7 @@ impl World {
             }
             Confuse => {
                 self.gain_status(target, Status::Confused, 40);
-                msg!(self, "[One] [is] confused.").subject(target).send();
+                msg!("[One] [is] confused."; self.subject(target));
             }
         }
     }
@@ -355,15 +356,15 @@ impl World {
                     .collect();
 
                 if let Some(target) = targets.choose(self.rng()) {
-                    msg!(self, "There is a peal of thunder.").send();
+                    msg!("There is a peal of thunder.");
                     let loc = self.location(*target).unwrap();
                     self.apply_effect(&LIGHTNING_EFFECT, &Volume::point(loc), Some(e));
                 } else {
-                    msg!(self, "The spell fizzles.").send();
+                    msg!("The spell fizzles.");
                 }
             }
             _ => {
-                msg!(self, "TODO cast untargeted spell {:?}", a).send();
+                msg!("TODO cast untargeted spell {:?}", a);
             }
         }
         self.drain_charge(item);
@@ -430,7 +431,7 @@ impl World {
                 self.apply_effect(&Effect::Confuse, &Volume::point(center), Some(e));
             }
             _ => {
-                msg!(self, "TODO cast directed spell {:?}", a).send();
+                msg!("TODO cast directed spell {:?}", a);
             }
         }
         self.drain_charge(item);
