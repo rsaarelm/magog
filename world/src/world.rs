@@ -1,6 +1,6 @@
 use crate::{
     ai, animations, components, flags::Flags, item, spatial::Spatial, spec::EntitySpawn, stats,
-    world_cache::WorldCache, Distribution, Event, ExternalEntity, Location, Rng, WorldSkeleton,
+    world_cache::WorldCache, Distribution, ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
 use serde_derive::{Deserialize, Serialize};
@@ -45,8 +45,6 @@ pub struct World {
     pub(crate) flags: Flags,
     /// Persistent random number generator.
     pub(crate) rng: Rng,
-    /// Event queue
-    pub(crate) events: Vec<Event>,
 }
 
 impl World {
@@ -59,7 +57,6 @@ impl World {
             spatial: Spatial::new(),
             flags: Flags::new(),
             rng: seeded_rng(&world_seed.rng_seed),
-            events: Vec::new(),
         };
 
         ret.spawn_player(
@@ -70,10 +67,6 @@ impl World {
 
         ret
     }
-
-    pub fn events(&self) -> &Vec<Event> { &self.events }
-
-    pub(crate) fn clear_events(&mut self) { self.events.clear() }
 
     pub(crate) fn generate_world_spawns(&mut self) {
         let mut spawns = self.world_cache.drain_spawns();

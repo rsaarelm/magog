@@ -57,7 +57,6 @@ impl Incremental for World {
     fn from_seed(s: &Self::Seed) -> Self { World::new(s) }
 
     fn update(&mut self, e: &Command) {
-        self.clear_events();
         if self.player_can_act() {
             debug_assert!(*e != Command::Wait, "Calling wait during player's turn");
             self.process_cmd(e);

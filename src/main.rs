@@ -13,6 +13,7 @@ use vitral::{self, AppConfig, Flick};
 use world::{ExternalEntity, WorldSeed, WorldSkeleton};
 
 pub mod game_loop;
+mod msg;
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -27,6 +28,8 @@ pub fn main() {
     env_logger::init();
 
     display::load_graphics();
+
+    msg::register();
 
     let rng_seed = opt.seed.unwrap_or_else(|| rand::thread_rng().gen());
     // Print out the seed in case worldgen has a bug and we want to debug stuff with the same seed.

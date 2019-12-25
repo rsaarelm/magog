@@ -14,9 +14,6 @@ pub use components::Icon;
 mod effect;
 pub use effect::Ability;
 
-mod event;
-pub use event::Event;
-
 mod extract;
 pub use extract::ExternalEntity;
 

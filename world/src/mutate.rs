@@ -7,7 +7,7 @@ use crate::{
     sector::SECTOR_WIDTH,
     stats::Status,
     volume::Volume,
-    Ability, ActionOutcome, Anim, AnimState, Ecs, Event, ExternalEntity, Location, Slot, World,
+    Ability, ActionOutcome, Anim, AnimState, Ecs, ExternalEntity, Location, Slot, World,
 };
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
@@ -94,9 +94,6 @@ impl World {
         }
     }
 
-    /// Push an event to the event queue for this tick.
-    pub(crate) fn push_event(&mut self, event: Event) { self.events.push(event); }
-
     /// Access the persistent random number generator.
     pub(crate) fn rng(&mut self) -> &mut crate::Rng { &mut self.rng }
 
@@ -168,11 +165,8 @@ impl World {
     /// The entity spends its action waiting.
     pub(crate) fn idle(&mut self, e: Entity) -> ActionOutcome {
         if self.consume_nutrition(e) {
-            if let Some(regen) = self.tick_regeneration(e) {
-                self.push_event(Event::Damage {
-                    entity: e,
-                    amount: -regen,
-                });
+            if let Some(_regen) = self.tick_regeneration(e) {
+                // TODO: animate/message the healing.
             }
         }
         self.end_turn(e);

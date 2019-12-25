@@ -1,3 +1,4 @@
+use crate::msg;
 use calx::{stego, CellVector, Dir6, IncrementalState};
 use calx_ecs::Entity;
 use display::{self, CanvasExt, ScreenVector};
@@ -10,7 +11,7 @@ use vitral::{
     self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
     SceneSwitch,
 };
-use world::{Ability, ActionOutcome, Command, Event, LerpLocation, Slot, World, WorldSeed};
+use world::{Ability, ActionOutcome, Command, LerpLocation, Slot, World, WorldSeed};
 
 pub struct HotbarAction {
     ability: Ability,
@@ -168,12 +169,12 @@ enum Side {
 impl Scene<GameRuntime> for GameLoop {
     fn update(&mut self, ctx: &mut GameRuntime) -> Option<SceneSwitch<GameRuntime>> {
         ctx.update_hotbar();
+        self.process_events(ctx);
 
         if ctx.world.player_can_act() {
             if let Some(cmd) = ctx.command {
                 ctx.world.update(cmd);
                 ctx.command = None;
-                self.process_events(ctx);
             } else {
                 ctx.world.tick_anims();
             }
@@ -197,7 +198,6 @@ impl Scene<GameRuntime> for GameLoop {
                     break;
                 }
                 ctx.world.update(Command::Wait);
-                self.process_events(ctx);
             }
         }
 
@@ -456,18 +456,9 @@ impl GameLoop {
         ctx.draw_hotbar(canvas);
     }
 
-    fn process_events(&mut self, ctx: &mut GameRuntime) {
-        for e in ctx.world.events() {
-            match e {
-                Event::Msg(text) => {
-                    let _ = writeln!(&mut self.console, "{}", text);
-                }
-                Event::Damage { entity, amount } => {
-                    let name = ctx.world.entity_name(*entity);
-                    // TODO: Use graphical effect
-                    let _ = writeln!(&mut self.console, "{} dmg {}", name, amount);
-                }
-            }
+    fn process_events(&mut self, _ctx: &mut GameRuntime) {
+        for msg in &msg::get() {
+            let _ = writeln!(&mut self.console, "{}", msg);
         }
     }
 }
