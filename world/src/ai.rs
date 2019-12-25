@@ -281,7 +281,7 @@ impl World {
 
     /// Return the AI state of an entity.
     fn brain_state(&self, e: Entity) -> Option<BrainState> {
-        self.ecs().brain.get(e).and_then(|brain| Some(brain.state))
+        self.ecs().brain.get(e).map(|brain| brain.state)
     }
 
     /// Return the value for how a mob will react to other mobs.

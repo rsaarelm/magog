@@ -441,7 +441,7 @@ impl WorldView {
 
         /// Return vector to add to position if entity's position is being animated.
         fn lerp_offset(world: &World, e: Entity) -> ScreenVector {
-            let loc = world.lerp_location(e).unwrap_or_else(|| Default::default());
+            let loc = world.lerp_location(e).unwrap_or_else(Default::default);
 
             loc.offset.project()
         }

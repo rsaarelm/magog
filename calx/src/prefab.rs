@@ -44,8 +44,6 @@ impl Error for PrefabError {
 /// # Examples
 ///
 /// ```
-/// # fn main() {
-///
 /// use std::collections::HashMap;
 /// use euclid::vec2;
 /// use calx::{CellVector, IntoPrefab};
@@ -65,8 +63,6 @@ impl Error for PrefabError {
 ///   ('7', ( 1,  1))] {
 ///     assert_eq!(Some(&c), map.get(&vec2(p.0, p.1)));
 /// }
-///
-/// # }
 /// ```
 pub trait IntoPrefab<T> {
     fn into_prefab<P: FromIterator<(CellVector, T)>>(self) -> Result<P, PrefabError>;
@@ -77,8 +73,6 @@ pub trait IntoPrefab<T> {
 /// # Examples
 ///
 /// ```
-/// # fn main() {
-///
 /// use std::collections::HashMap;
 /// use euclid::vec2;
 /// use calx::{CellVector, FromPrefab};
@@ -88,7 +82,6 @@ pub trait IntoPrefab<T> {
 /// prefab.insert(vec2(0, 1), 'y');
 ///
 /// assert_eq!(" [ ]x\n y", &String::from_prefab(&prefab));
-/// # }
 /// ```
 pub trait FromPrefab {
     type Cell;
@@ -277,7 +270,6 @@ impl FromPrefab for String {
 /// # Examples
 ///
 /// ```
-/// # fn main() {
 /// use std::collections::HashMap;
 /// use euclid::vec2;
 /// use calx::{CellVector, IntoPrefab, DenseTextMap};
@@ -293,8 +285,6 @@ impl FromPrefab for String {
 ///   ('4', (1, 1))] {
 ///     assert_eq!(Some(&c), map.get(&vec2(p.0, p.1)));
 /// }
-///
-/// # }
 /// ```
 pub struct DenseTextMap<'a>(pub &'a str);
 

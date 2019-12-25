@@ -141,7 +141,9 @@ impl Write for Console {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let s = str::from_utf8(buf).expect("Wrote non-UTF-8 to Console");
         let mut lines = s.split('\n');
-        lines.next().map(|text| self.output_buffer.push_str(text));
+        if let Some(line) = lines.next() {
+            self.output_buffer.push_str(line);
+        }
 
         for line in lines {
             self.end_message();

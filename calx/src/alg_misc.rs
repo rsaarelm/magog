@@ -67,7 +67,6 @@ impl<
 /// # Examples
 ///
 /// ```
-/// # fn main() {
 /// use rand::distributions::Uniform;
 /// use calx::Noise;
 ///
@@ -76,7 +75,6 @@ impl<
 /// assert_eq!(z, -0.6524992);
 /// let z: f32 = depth.noise(&(34, 12));
 /// assert_eq!(z, -0.5685262);
-/// # }
 /// ```
 pub trait Noise<T> {
     fn noise(&self, seed: &impl Hash) -> T;
@@ -293,7 +291,6 @@ pub fn retry_gen<R: Rng + ?Sized, T, E>(
 /// # Examples
 ///
 /// ```
-/// # fn main() {
 /// use euclid::point2;
 /// type Point2D<T> = euclid::Point2D<T, euclid::UnknownUnit>;
 ///
@@ -303,7 +300,6 @@ pub fn retry_gen<R: Rng + ?Sized, T, E>(
 /// assert!(rect.contains(point2(6, 7)));
 /// assert!(!rect.contains(point2(7, 7)));
 /// assert!(!rect.contains(point2(2, 2)));
-/// # }
 /// ```
 pub fn bounding_rect<'a, I, T, U>(points: I) -> Rect<T, U>
 where

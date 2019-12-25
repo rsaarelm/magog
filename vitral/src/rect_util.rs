@@ -7,7 +7,6 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 /// # Examples
 ///
 /// ```
-/// # fn main() {
 /// use euclid::default::Rect;
 /// use euclid::{rect, point2, size2};
 /// use vitral::RectUtil;
@@ -25,7 +24,6 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 /// let anchor = point2(1, 1);
 /// let widget: Rect<i32> = bounds.anchored(&anchor, size2(10, 10));
 /// assert_eq!(widget, rect(90, 90, 10, 10));
-/// # }
 /// ```
 pub trait RectUtil: Sized {
     type T;
