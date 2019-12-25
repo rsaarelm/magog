@@ -21,7 +21,7 @@ build_ecs! {
 
 #[test]
 fn test_ecs() {
-    let mut ecs = Ecs::new();
+    let mut ecs = Ecs::default();
 
     let e1 = ecs.make();
     assert!(ecs.contains(e1));
@@ -45,7 +45,7 @@ fn test_ecs() {
     assert_ne!(e2, e1);
 
     // Use the loadout system to create an entity.
-    let loadout = Loadout::new().c(Desc {
+    let loadout = Loadout::default().c(Desc {
         name: "Critter".to_string(),
         icon: 10,
     });

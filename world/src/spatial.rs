@@ -72,19 +72,13 @@ pub enum Place {
 }
 
 /// Spatial index for game entities
+#[derive(Default)]
 pub struct Spatial {
     place_to_entities: BTreeMap<Place, Vec<Entity>>,
     entity_to_place: BTreeMap<Entity, Place>,
 }
 
 impl Spatial {
-    pub fn new() -> Spatial {
-        Spatial {
-            place_to_entities: BTreeMap::new(),
-            entity_to_place: BTreeMap::new(),
-        }
-    }
-
     /// The most general insert method.
     pub fn insert(&mut self, e: Entity, p: Place) {
         // Remove the entity from its old position.
@@ -252,7 +246,7 @@ impl Spatial {
 
     /// Construct from the serialized vector.
     fn slurp(dump: Vec<Elt>) -> Spatial {
-        let mut ret = Spatial::new();
+        let mut ret = Spatial::default();
 
         for &Elt(e, loc) in &dump {
             ret.insert(e, loc);
@@ -285,7 +279,7 @@ mod test {
 
     #[test]
     fn test_place_adjacency() {
-        let mut ecs = Ecs::new();
+        let mut ecs = Ecs::default();
         let e1 = ecs.make();
         let e2 = ecs.make();
 
@@ -321,11 +315,11 @@ mod test {
         use ron::de;
         use ron::ser;
 
-        let mut ecs = Ecs::new();
+        let mut ecs = Ecs::default();
         let e1 = ecs.make();
         let e2 = ecs.make();
 
-        let mut spatial = Spatial::new();
+        let mut spatial = Spatial::default();
         let p1 = Place::At(Location::new(10, 10, 0));
         let p2 = Place::In(e1, Slot::Bag(0));
         spatial.insert(e1, p1);

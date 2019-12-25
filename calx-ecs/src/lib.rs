@@ -39,6 +39,15 @@ struct DenseComponentData<C> {
     entities: Vec<Entity>,
 }
 
+impl<C> Default for DenseComponentData<C> {
+    fn default() -> Self {
+        DenseComponentData {
+            data: Default::default(),
+            entities: Default::default(),
+        }
+    }
+}
+
 /// Storage for a single component type.
 pub struct ComponentData<C> {
     inner: DenseComponentData<C>,
@@ -48,18 +57,16 @@ pub struct ComponentData<C> {
     entity_idx_to_data: Vec<Index>,
 }
 
-impl<C> ComponentData<C> {
-    /// Construct new empty `ComponentData` instance.
-    pub fn new() -> ComponentData<C> {
+impl<C> Default for ComponentData<C> {
+    fn default() -> Self {
         ComponentData {
-            inner: DenseComponentData {
-                data: Vec::new(),
-                entities: Vec::new(),
-            },
-            entity_idx_to_data: Vec::new(),
+            inner: Default::default(),
+            entity_idx_to_data: Default::default(),
         }
     }
+}
 
+impl<C> ComponentData<C> {
     /// Insert a component to an entity.
     pub fn insert(&mut self, e: Entity, comp: C) {
         debug_assert_eq!(self.inner.data.len(), self.inner.entities.len());
@@ -218,18 +225,19 @@ pub struct Ecs<ST> {
     store: ST,
 }
 
-impl<ST: Default + Store> Ecs<ST> {
-    /// Construct a new entity component system.
-    pub fn new() -> Ecs<ST> {
+impl<ST: Default + Store> Default for Ecs<ST> {
+    fn default() -> Ecs<ST> {
         Ecs {
             next_uid: 1,
             next_idx: 0,
-            free_indices: Vec::new(),
-            active: ComponentData::new(),
+            free_indices: Default::default(),
+            active: Default::default(),
             store: Default::default(),
         }
     }
+}
 
+impl<ST: Default + Store> Ecs<ST> {
     /// Create a new empty entity.
     pub fn make(&mut self) -> Entity {
         let uid = self.next_uid;
@@ -304,7 +312,7 @@ macro_rules! build_ecs {
         impl ::std::default::Default for _ComponentStore {
             fn default() -> _ComponentStore {
                 _ComponentStore {
-                    $($compname: $crate::ComponentData::new()),+
+                    $($compname: $crate::ComponentData::default()),+
                 }
             }
         }
@@ -351,24 +359,13 @@ macro_rules! build_ecs {
 
         /// A straightforward representation for the complete data of an
         /// entity.
-        #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+        #[derive(Clone, Default, Debug, Eq, PartialEq, Serialize, Deserialize)]
         pub struct Loadout {
             $(pub $compname: Option<$comptype>),+
         }
 
-        impl ::std::default::Default for Loadout {
-            fn default() -> Loadout {
-                Loadout {
-                    $($compname: None),+
-                }
-            }
-        }
-
         #[allow(dead_code)]
         impl Loadout {
-            /// Create a new blank loadout.
-            pub fn new() -> Loadout { Default::default() }
-
             /// Get the loadout that corresponds to an existing entity.
             pub fn get(ecs: &Ecs, e: $crate::Entity) -> Loadout {
                 Loadout {

@@ -51,11 +51,11 @@ impl World {
     pub fn new(world_seed: &WorldSeed) -> World {
         let mut ret = World {
             version: GAME_VERSION.to_string(),
-            ecs: Ecs::new(),
+            ecs: Default::default(),
             world_cache: WorldCache::new(world_seed.rng_seed, world_seed.world_skeleton.clone()),
             generated_spawns: Default::default(),
-            spatial: Spatial::new(),
-            flags: Flags::new(),
+            spatial: Default::default(),
+            flags: Default::default(),
             rng: seeded_rng(&world_seed.rng_seed),
         };
 

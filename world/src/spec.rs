@@ -72,7 +72,7 @@ impl Default for MobSpec {
 impl Distribution<ExternalEntity> for MobSpec {
     fn sample(&self, _: &mut Rng) -> ExternalEntity {
         ExternalEntity::new(
-            Loadout::new()
+            Loadout::default()
                 .c(StatsComponent::new(Stats::new(
                     self.power,
                     &self.intrinsics,
@@ -131,7 +131,7 @@ impl Default for ItemSpec {
 
 impl Distribution<ExternalEntity> for ItemSpec {
     fn sample(&self, _: &mut Rng) -> ExternalEntity {
-        let mut loadout = Loadout::new()
+        let mut loadout = Loadout::default()
             .c(Desc::new(&self.name, self.icon))
             .c(StatsComponent::new(
                 Stats::new(self.power, &self.intrinsics)
