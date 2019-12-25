@@ -17,6 +17,7 @@ display = { path = "display" }
 env_logger = "0.7"
 euclid = "0.20"
 image = "0.22"
+lazy_static = "1.2"
 log = "0.4"
 rand = { version = "0.7", features = ["serde1"] }
 ron = "0.5"
