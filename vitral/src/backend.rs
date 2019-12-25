@@ -525,6 +525,8 @@ impl Gfx {
                     clip.size.width as u32,
                     clip.size.height as u32,
                 );
+            } else {
+                rpass.set_scissor_rect(0, 0, self.resolution.width, self.resolution.height);
             }
             rpass.draw_indexed(0..batch.triangle_indices.len() as u32, 0, 0..1);
         }
