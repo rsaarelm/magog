@@ -1,0 +1,13 @@
+Notes for design intentions that aren't obvious from source code
+ReproducibleGameplay
+	The gamestate must always be the same for the same RNG seed and sequence of player input
+	Easiest way to mess this up is to use HashMap or HashSet and rely on iteration order anywhere in gamestate relevant logic
+		Use BtreeMap when you can, IndexMap when you have something that only provides Hash
+MapDesign
+	Stairs/ramps going up should point north and stairs/ramps going down should point south
+		This gets us down-on-the-screen/down-in-the-dungeon visual shorthand
+AnimationLogic
+	Animation components in world state must never send information to non-animation components during the process of updating the animation
+		This includes generating new entities that only have an animation component, this might destabilize entity iteration order
+		If you need the animation to involve a sequence of entities, generate all the entities when the animation starts and keep the ones that show up later invisible and inert until they're needed
+	Reason for this is that animation logic can run out of step with the rest of the update logic, so animation update steps happen in unpredictable order related to the rest of the logic and will break ReproducibleGameplay if they send information to the rest of the logic
