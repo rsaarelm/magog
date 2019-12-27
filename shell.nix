@@ -41,6 +41,9 @@ in gcc9Stdenv.mkDerivation {
         libXi
         libXrandr
         vulkan-loader
+
+        openssl
+        zlib
       ]
     }"
 
