@@ -1,6 +1,6 @@
 use crate::{
-    ai, animations, components, flags::Flags, item, spatial::Spatial, spec::EntitySpawn, stats,
-    world_cache::WorldCache, Distribution, ExternalEntity, Location, Rng, WorldSkeleton,
+    ai, animations, components, desc, flags::Flags, item, spatial::Spatial, spec::EntitySpawn,
+    stats, world_cache::WorldCache, Distribution, ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
 use serde_derive::{Deserialize, Serialize};
@@ -11,7 +11,7 @@ pub const GAME_VERSION: &str = "0.1.0";
 calx_ecs::build_ecs! {
     anim: animations::Anim,
     brain: ai::Brain,
-    desc: components::Desc,
+    desc: desc::Desc,
     health: stats::Health,
     item: item::Item,
     map_memory: components::MapMemory,

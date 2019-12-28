@@ -9,10 +9,9 @@ use crate::{
     volume::Volume,
     Ability, ActionOutcome, Anim, AnimState, Ecs, ExternalEntity, Location, Slot, World,
 };
-use calx::{Dir6, RngExt};
+use calx::Dir6;
 use calx_ecs::Entity;
 use rand::seq::SliceRandom;
-use rand::Rng;
 
 /// World-mutating methods that are not exposed outside the crate.
 impl World {
@@ -47,21 +46,6 @@ impl World {
     }
 
     pub(crate) fn set_player(&mut self, player: Option<Entity>) { self.flags.player = player; }
-
-    /// Mark an entity as dead, but don't remove it from the system yet.
-    pub(crate) fn kill_entity(&mut self, e: Entity) {
-        if self.count(e) > 1 {
-            self.ecs_mut().stacking[e].count -= 1;
-        } else {
-            self.spatial.remove(e);
-        }
-    }
-
-    /// Remove an entity from the system.
-    ///
-    /// You generally do not want to call this directly. Mark the entity as dead and it will be
-    /// removed at the end of the turn.
-    pub(crate) fn remove_entity(&mut self, e: Entity) { self.ecs.remove(e); }
 
     /// Compute field-of-view into entity's map memory.
     ///
@@ -133,26 +117,8 @@ impl World {
         }
     }
 
-    pub(crate) fn place_entity(&mut self, e: Entity, mut loc: Location) {
-        if self.is_item(e) {
-            loc = self.empty_item_drop_location(loc);
-        }
-        self.set_entity_location(e, loc);
-        self.after_entity_moved(e);
-    }
-
-    pub(crate) fn after_entity_moved(&mut self, e: Entity) { self.do_fov(e); }
-
     ////////////////////////////////////////////////////////////////////////////////
     // High-level commands, actual action can change because of eg. confusion.
-
-    pub(crate) fn entity_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
-        if self.confused_move(e) {
-            Some(true)
-        } else {
-            self.really_step(e, dir)
-        }
-    }
 
     pub(crate) fn entity_melee(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
         if self.confused_move(e) {
@@ -174,57 +140,6 @@ impl World {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-
-    pub(crate) fn really_step(&mut self, e: Entity, dir: Dir6) -> ActionOutcome {
-        let origin = self.location(e)?;
-        let loc = origin.jump(self, dir);
-        if self.can_enter(e, loc) {
-            self.place_entity(e, loc);
-
-            let delay = self.action_delay(e);
-            debug_assert!(delay > 0);
-            let anim_tick = self.get_anim_tick();
-            if let Some(anim) = self.ecs_mut().anim.get_mut(e) {
-                anim.tween_from = origin;
-                anim.tween_start = anim_tick;
-                anim.tween_duration = delay;
-            }
-            self.end_turn(e);
-            return Some(true);
-        }
-
-        None
-    }
-
-    /// Randomly make a confused mob move erratically.
-    ///
-    /// Return true if confusion kicked in.
-    pub(crate) fn confused_move(&mut self, e: Entity) -> bool {
-        const CONFUSE_CHANCE_ONE_IN: u32 = 3;
-
-        if !self.has_status(e, Status::Confused) {
-            return false;
-        }
-
-        if self.rng().one_chance_in(CONFUSE_CHANCE_ONE_IN) {
-            let dir = self.rng().gen();
-            let loc = if let Some(loc) = self.location(e) {
-                loc
-            } else {
-                return false;
-            };
-            let destination = loc.jump(self, dir);
-
-            if self.mob_at(destination).is_some() {
-                let _ = self.really_melee(e, dir);
-            } else {
-                let _ = self.really_step(e, dir);
-            }
-            true
-        } else {
-            false
-        }
-    }
 
     pub(crate) fn spawn(&mut self, entity: &ExternalEntity, loc: Location) -> Entity {
         let e = self.inject(entity);
@@ -292,18 +207,6 @@ impl World {
     ) {
         for loc in &volume.0 {
             self.apply_effect_to(effect, *loc, source);
-        }
-    }
-
-    pub(crate) fn drain_charge(&mut self, item: Entity) {
-        if self.destroy_after_use(item) {
-            self.kill_entity(item);
-        }
-
-        if let Some(i) = self.ecs_mut().item.get_mut(item) {
-            if i.charges > 0 {
-                i.charges -= 1;
-            }
         }
     }
 

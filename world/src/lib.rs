@@ -9,7 +9,9 @@ mod command;
 pub use command::{ActionOutcome, Command};
 
 mod components;
-pub use components::Icon;
+
+mod desc;
+pub use desc::Icon;
 
 mod effect;
 pub use effect::Ability;
@@ -35,6 +37,8 @@ mod mapsave;
 pub use mapsave::MapSave;
 
 mod map;
+
+mod movement;
 
 mod msg;
 pub use msg::{register_msg_receiver, MsgReceiver};

@@ -2,7 +2,7 @@
 
 use crate::{
     ai::{Brain, ShoutType},
-    components::{Desc, Icon},
+    desc::{Desc, Icon},
     item::ItemType,
     item::{Item, Stacking},
     sector::Biome,
