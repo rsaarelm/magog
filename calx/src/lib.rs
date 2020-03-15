@@ -35,5 +35,5 @@ pub use prefab::{
 pub use rng::{seeded_rng, RandomPermutation, RngExt};
 pub use search::{astar_path, Dijkstra, GridNode};
 pub use space::{ProjectPoint, ProjectPoint32, ProjectVec, ProjectVec32, Space};
-pub use system::{app_data_path, save_screenshot, TimeLogItem};
+pub use system::{app_data_path, precise_time_s, save_screenshot, TimeLogItem};
 pub use text::{split_line, templatize};

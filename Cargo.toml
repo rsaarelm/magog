@@ -23,7 +23,7 @@ rand = { version = "0.7", features = ["serde1"] }
 ron = "0.5"
 serde = "1"
 structopt = "0.3"
-time = "0.1"
+time = "0.2"
 vitral = { path = "vitral" }
 world = { path = "world" }
 

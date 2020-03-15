@@ -1,10 +1,16 @@
-use image;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
-use time;
+
+/**
+ * Return seconds elapsed since epoch.
+ */
+pub fn precise_time_s() -> f64 {
+    let duration = time::OffsetDateTime::now() - time::OffsetDateTime::unix_epoch();
+    duration.as_seconds_f64()
+}
 
 /// Return the application data directory path for the current platform.
 pub fn app_data_path(app_name: &str) -> PathBuf {
@@ -106,13 +112,13 @@ impl TimeLogItem {
     pub fn new(name: &str) -> TimeLogItem {
         TimeLogItem {
             name: name.to_string(),
-            begin: time::precise_time_s(),
+            begin: precise_time_s(),
         }
     }
 }
 
 impl Drop for TimeLogItem {
-    fn drop(&mut self) { TimeLog::log(self.name.clone(), time::precise_time_s() - self.begin); }
+    fn drop(&mut self) { TimeLog::log(self.name.clone(), precise_time_s() - self.begin); }
 }
 
 /// Save a timestamped screenshot to disk.
@@ -121,7 +127,7 @@ pub fn save_screenshot(
     shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let tmpdir = TempDir::new("calx")?;
-    let timestamp = (time::precise_time_s() * 100.0) as u64;
+    let timestamp = (precise_time_s() * 100.0) as u64;
     let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
     let tmpfile = tmpdir.path().join(file.clone());
     image::save_buffer(

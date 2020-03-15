@@ -12,6 +12,11 @@ pub const FLICKS_PER_SECOND: i64 = 705_600_000;
 #[derive(Copy, Clone, Default, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Flick(pub i64);
 
+fn precise_time_ns() -> i64 {
+    let duration = time::OffsetDateTime::now() - time::OffsetDateTime::unix_epoch();
+    duration.whole_nanoseconds() as i64
+}
+
 impl Flick {
     pub fn from_seconds(seconds: f64) -> Flick {
         Flick((seconds * FLICKS_PER_SECOND as f64) as i64)
@@ -20,7 +25,7 @@ impl Flick {
     pub fn from_nanoseconds(nanos: i64) -> Flick { Flick((nanos as i128 * 7056 / 10_000) as i64) }
 
     /// Return current time in Flicks since an unspecified epoch.
-    pub fn now() -> Flick { Flick::from_nanoseconds(time::precise_time_ns() as i64) }
+    pub fn now() -> Flick { Flick::from_nanoseconds(precise_time_ns()) }
 }
 
 impl fmt::Display for Flick {

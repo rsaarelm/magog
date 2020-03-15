@@ -6,7 +6,6 @@ use std::io::prelude::*;
 use std::mem;
 use std::str;
 use std::sync::Arc;
-use time;
 use vitral::{color, Align, Canvas, FontData, Rgba};
 
 struct Message {
@@ -49,7 +48,7 @@ impl Default for Console {
 impl Console {
     /// Draw the console as a regular message display.
     pub fn draw_small(&mut self, canvas: &mut Canvas, screen_area: &Rect<i32>) {
-        let t = time::precise_time_s();
+        let t = calx::precise_time_s();
         let mut lines = Vec::new();
         // The log can be very long, and we're always most interested in the latest ones, so
         // do a backwards iteration with an early exist once we hit a sufficiently old item.
@@ -120,7 +119,7 @@ impl Console {
         let mut message_text = String::new();
         mem::swap(&mut message_text, &mut self.output_buffer);
 
-        let now = time::precise_time_s();
+        let now = calx::precise_time_s();
         if now > self.done_reading_s {
             self.done_reading_s = now;
         }
