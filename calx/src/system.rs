@@ -2,7 +2,6 @@ use image;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 use tempdir::TempDir;
 use time;
@@ -120,7 +119,7 @@ impl Drop for TimeLogItem {
 pub fn save_screenshot(
     basename: &str,
     shot: &image::ImageBuffer<image::Rgb<u8>, Vec<u8>>,
-) -> io::Result<()> {
+) -> Result<(), Box<dyn std::error::Error>> {
     let tmpdir = TempDir::new("calx")?;
     let timestamp = (time::precise_time_s() * 100.0) as u64;
     let file = Path::new(&format!("{}-{}.png", basename, timestamp)).to_path_buf();
@@ -130,8 +129,8 @@ pub fn save_screenshot(
         shot,
         shot.width(),
         shot.height(),
-        image::ColorType::RGB(8),
+        image::ColorType::Rgb8,
     )?;
 
-    fs::copy(&tmpfile, &file).map(|_| ())
+    Ok(fs::copy(&tmpfile, &file).map(|_| ())?)
 }

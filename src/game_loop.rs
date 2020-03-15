@@ -351,7 +351,7 @@ impl Scene<GameRuntime> for GameLoop {
                         &save,
                         save.width(),
                         save.height(),
-                        image::ColorType::RGB(8),
+                        image::ColorType::Rgb8,
                     );
                 }
                 F9 => {

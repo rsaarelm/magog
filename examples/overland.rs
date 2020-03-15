@@ -132,7 +132,7 @@ fn save(prefab: Prefab<SRgba>, is_minimap: bool, output_path: String) {
 
     // Impose palette
     let mut result = ImageBuffer::new(image.width(), image.height() + 1);
-    result.copy_from(&image, 0, 0);
+    result.copy_from(&image, 0, 0).expect("copy_from failed");
 
     for (x, t) in Terrain::iter().filter(|t| t.is_regular()).enumerate() {
         let light = light(t.color());
@@ -155,7 +155,7 @@ fn save(prefab: Prefab<SRgba>, is_minimap: bool, output_path: String) {
         &result,
         result.width(),
         result.height(),
-        image::ColorType::RGBA(8),
+        image::ColorType::Rgba8,
     )
     .unwrap();
 }

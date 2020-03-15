@@ -62,9 +62,8 @@ impl<T: 'static> App<T> {
             .with_inner_size(size)
             .build(&event_loop)
             .unwrap();
-        let hidpi_factor = window.hidpi_factor();
-        let size = window.inner_size().to_physical(hidpi_factor);
-        let (width, height) = (size.width.round() as u32, size.height.round() as u32);
+        let size = window.inner_size();
+        let (width, height) = (size.width, size.height);
 
         // WGPU setup
         //
@@ -111,42 +110,31 @@ impl<T: 'static> App<T> {
             match event {
                 Event::WindowEvent { event, .. } => match event {
                     WindowEvent::Resized(size) => {
-                        let physical = size.to_physical(hidpi_factor);
-                        log::info!("Resizing to {:?}", physical);
-                        sc_desc.width = physical.width.round() as u32;
-                        sc_desc.height = physical.height.round() as u32;
-                        swap_chain =
-                            device.create_swap_chain(&surface, &sc_desc);
-                        render_buffer.update_canvas_pos(size2(
-                            sc_desc.width,
-                            sc_desc.height,
-                        ));
+                        sc_desc.width = size.width;
+                        sc_desc.height = size.height;
+                        log::info!("Resizing to {:?}", (sc_desc.width, sc_desc.height));
+                        swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                        render_buffer.update_canvas_pos(size2(sc_desc.width, sc_desc.height));
                     }
                     WindowEvent::CloseRequested => {
                         *control_flow = ControlFlow::Exit;
                     }
                     WindowEvent::CursorMoved { position, .. } => {
-                        let pos = position.to_physical(hidpi_factor);
                         let pos = crate::window_to_canvas_coordinates(
                             size2(sc_desc.width, sc_desc.height),
                             self.config.resolution,
-                            point2(pos.x as i32, pos.y as i32),
+                            point2(position.x as i32, position.y as i32),
                         );
                         ui.input_mouse_move(pos.x, pos.y);
                     }
-                    WindowEvent::MouseInput { state, button, .. } => ui
-                        .input_mouse_button(
-                            match button {
-                                winit::event::MouseButton::Left => {
-                                    MouseButton::Left
-                                }
-                                winit::event::MouseButton::Right => {
-                                    MouseButton::Right
-                                }
-                                _ => MouseButton::Middle,
-                            },
-                            state == ElementState::Pressed,
-                        ),
+                    WindowEvent::MouseInput { state, button, .. } => ui.input_mouse_button(
+                        match button {
+                            winit::event::MouseButton::Left => MouseButton::Left,
+                            winit::event::MouseButton::Right => MouseButton::Right,
+                            _ => MouseButton::Middle,
+                        },
+                        state == ElementState::Pressed,
+                    ),
                     WindowEvent::ReceivedCharacter(c) => {
                         input_events.push(InputEvent::Typed(c));
                     }
@@ -161,31 +149,16 @@ impl<T: 'static> App<T> {
                         ..
                     } => {
                         let is_down = state == ElementState::Pressed;
-                        if is_down && virtual_keycode == Some(VirtualKeyCode::Return)
-                            && modifiers.alt
+                        if is_down
+                            && virtual_keycode == Some(VirtualKeyCode::Return)
+                            && modifiers.alt()
                         {
                             // Toggle fullscreen with Alt-Enter
                             if window.fullscreen().is_none() {
-                                restore_position = {
-                                    // XXX: Sometimes the position gets crazy coordinates like y:
-                                    // -4294966858.0. Ignore the value if this happens.
-                                    let new_pos = window.outer_position().ok();
-                                    if let Some(pos) = new_pos {
-                                        if pos.x < -10000.0 || pos.y < -10000.0 {
-                                            log::warn!("Ignoring invalid window.outer_position(): {:?}", pos);
-                                            restore_position
-                                        } else {
-                                            log::info!("window.outer_position(): {:?}", pos);
-                                            new_pos
-                                        }
-                                    } else {
-                                        new_pos
-                                    }
-                                };
-                                window.set_fullscreen(Some(
-                                    Fullscreen::Borderless( window.primary_monitor()
-                                    ),
-                                ));
+                                restore_position = window.outer_position().ok();
+                                window.set_fullscreen(Some(Fullscreen::Borderless(
+                                    window.primary_monitor(),
+                                )));
                             } else {
                                 window.set_fullscreen(None);
                                 if let Some(pos) = restore_position {
@@ -193,9 +166,8 @@ impl<T: 'static> App<T> {
                                 }
                             }
                         }
-                        let key = virtual_keycode.and_then(|virtual_keycode| {
-                            Keycode::try_from(virtual_keycode).ok()
-                        });
+                        let key = virtual_keycode
+                            .and_then(|virtual_keycode| Keycode::try_from(virtual_keycode).ok());
                         // Winit adjusts the Linux scancodes, take into account. Don't know if
                         // this belongs here in the glium module or in the Keycode translation
                         // maps...
@@ -225,14 +197,14 @@ impl<T: 'static> App<T> {
                             *control_flow = ControlFlow::Wait;
                         }
                     }
-                    WindowEvent::RedrawRequested => {
-                        // Do a one-off render even if not running after redraw was requested.
-                        self.scenes.update_clock();
-                        redraw_requested = true;
-                    }
                     _ => {}
                 },
-                Event::EventsCleared => {
+                Event::RedrawRequested(_) => {
+                    // Do a one-off render even if not running after redraw was requested.
+                    self.scenes.update_clock();
+                    redraw_requested = true;
+                }
+                Event::MainEventsCleared => {
                     // If window is out of focus, don't drain CPU cycles redrawing it unless a
                     // window redraw has been explicitly requested.
                     if !running && !redraw_requested {
@@ -264,19 +236,12 @@ impl<T: 'static> App<T> {
                             queue: &mut queue,
                             render_buffer: &render_buffer,
                         };
-                        let mut canvas = Canvas::new(
-                            self.config.resolution,
-                            &mut ui,
-                            screenshotter,
-                        );
+                        let mut canvas =
+                            Canvas::new(self.config.resolution, &mut ui, screenshotter);
                         self.scenes.render(&mut self.world, &mut canvas);
 
                         for event in input_events.drain(0..) {
-                            self.scenes.input(
-                                &mut self.world,
-                                &event,
-                                &mut canvas,
-                            );
+                            self.scenes.input(&mut self.world, &event, &mut canvas);
                         }
 
                         canvas.end_frame()
@@ -288,18 +253,13 @@ impl<T: 'static> App<T> {
                     }
 
                     // Render graphics to buffer.
-                    let sub_frame = render_buffer
-                        .render_buffer
-                        .texture
-                        .create_default_view();
-                    let command_buffer =
-                        gfx.render(&device, &sub_frame, &textures, &draw_batch);
+                    let sub_frame = render_buffer.render_buffer.texture.create_default_view();
+                    let command_buffer = gfx.render(&device, &sub_frame, &textures, &draw_batch);
                     queue.submit(&[command_buffer]);
 
                     // Render buffer to window.
                     let frame = swap_chain.get_next_texture();
-                    let command_buffer =
-                        render_buffer.render(&device, &frame.view);
+                    let command_buffer = render_buffer.render(&device, &frame.view);
                     queue.submit(&[command_buffer]);
                 }
                 _ => (),
@@ -312,20 +272,23 @@ impl<T: 'static> App<T> {
 fn window_geometry<T>(
     resolution: Size2D<u32>,
     event_loop: &EventLoop<T>,
-) -> (LogicalPosition, LogicalSize) {
+) -> (LogicalPosition<f64>, LogicalSize<f64>) {
     // Don't make it a completely fullscreen window, that might put the window title bar
     // outside the screen.
     const BUFFER: f64 = 8.0;
     let width = resolution.width as f64;
     let height = resolution.height as f64;
 
-    let monitor_size = event_loop.primary_monitor().size();
     // Get the most conservative DPI if there's a weird multi-monitor setup.
     let dpi_factor = event_loop
         .available_monitors()
-        .map(|m| m.hidpi_factor())
+        .map(|m| m.scale_factor())
         .max_by(|x, y| x.partial_cmp(y).unwrap())
         .expect("No monitors found!");
+    let monitor_size = event_loop
+        .primary_monitor()
+        .size()
+        .to_logical::<f64>(dpi_factor);
     log::info!("Scaling starting size to monitor");
     log::info!("Monitor size {:?}", monitor_size);
     log::info!("DPI Factor {}", dpi_factor);

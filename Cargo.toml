@@ -16,7 +16,7 @@ calx-ecs = { path = "calx-ecs" }
 display = { path = "display" }
 env_logger = "0.7"
 euclid = "0.20"
-image = "0.22"
+image = "0.23"
 lazy_static = "1.2"
 log = "0.4"
 rand = { version = "0.7", features = ["serde1"] }
@@ -28,7 +28,7 @@ vitral = { path = "vitral" }
 world = { path = "world" }
 
 [dev-dependencies]
-image = "0.22"
+image = "0.23"
 serde_json = "1"
 noise = { version = "0.6", default-features = false }
 

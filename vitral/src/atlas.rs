@@ -34,7 +34,9 @@ impl Atlas {
     pub fn add(&mut self, image: &image::RgbaImage) -> Option<ImageData> {
         if let Some(area) = self.place(size2(image.width(), image.height())) {
             // Draw the new image into the atlas image.
-            self.atlas.copy_from(image, area.origin.x, area.origin.y);
+            self.atlas
+                .copy_from(image, area.origin.x, area.origin.y)
+                .expect("Atlas copy_from failed");
 
             // Map texture coordinates to the unit rectangle.
             let x_scale = 1.0 / self.atlas.width() as f32;

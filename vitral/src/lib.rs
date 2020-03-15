@@ -42,7 +42,7 @@ impl<'a> From<PngBytes<'a>> for RgbaImage {
     fn from(data: PngBytes<'_>) -> Self {
         use std::io::Cursor;
 
-        let img = image::load(Cursor::new(data.0), image::ImageFormat::PNG)
+        let img = image::load(Cursor::new(data.0), image::ImageFormat::Png)
             .expect("Failed to load PNG data");
         img.to_rgba()
     }
