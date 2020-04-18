@@ -9,6 +9,7 @@ repository = "https://github.com/rsaarelm/vitral"
 edition = "2018"
 
 [dependencies]
+bytemuck = "1"
 cfg-if = "0.1"
 euclid = "0.20"
 image = "0.23"

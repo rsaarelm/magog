@@ -5,7 +5,7 @@ use crate::{
     {Canvas, DrawBatch, InputEvent, MouseButton, UiState, Vertex},
 };
 use euclid::{
-    default::{Point2D, Size2D},
+    default::{Point2D, Rect, Size2D},
     point2, size2,
 };
 use winit::{
@@ -420,16 +420,15 @@ impl Gfx {
         }
     }
 
-    pub fn draw(
+    pub fn render(
         &self,
         device: &wgpu::Device,
-        rpass: &mut wgpu::RenderPass,
+        target: &wgpu::TextureView,
         textures: &[Texture],
         batches: &[DrawBatch],
-    ) {
-        if batches.is_empty() {
-            return;
-        }
+    ) -> wgpu::CommandBuffer {
+        let mut encoder =
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
 
         // Transformation matrix for the batch, geometry coordinates are in pixels, this maps the
         // pixel buffer into device coordinates.
@@ -447,7 +446,20 @@ impl Gfx {
             .create_buffer_mapped(1, wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST)
             .fill_from_slice(&[matrix]);
 
+        struct BatchBuffers {
+            bind_group: wgpu::BindGroup,
+            vertex_buf: wgpu::Buffer,
+            index_buf: wgpu::Buffer,
+            n_indices: u32,
+            clip: Option<Rect<i32>>,
+        }
+
+        let mut batch_buffers = Vec::new();
         for batch in batches {
+            if batch.vertices.is_empty() {
+                continue;
+            }
+
             let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
                 layout: &self.bind_group_layout,
                 bindings: &[
@@ -476,12 +488,33 @@ impl Gfx {
             let index_buf = device
                 .create_buffer_mapped(batch.triangle_indices.len(), wgpu::BufferUsage::INDEX)
                 .fill_from_slice(&batch.triangle_indices);
+            batch_buffers.push(BatchBuffers {
+                bind_group,
+                vertex_buf,
+                index_buf,
+                n_indices: batch.triangle_indices.len() as u32,
+                clip: batch.clip,
+            });
+        }
 
+        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                attachment: &target,
+                resolve_target: None,
+                load_op: wgpu::LoadOp::Clear,
+                store_op: wgpu::StoreOp::Store,
+                clear_color: wgpu::Color::BLACK,
+            }],
+            // Also need this for buffer renderer...
+            depth_stencil_attachment: None,
+        });
+
+        for i in 0..batch_buffers.len() {
             rpass.set_pipeline(&self.pipeline);
-            rpass.set_bind_group(0, &bind_group, &[]);
-            rpass.set_index_buffer(&index_buf, 0);
-            rpass.set_vertex_buffers(0, &[(&vertex_buf, 0)]);
-            if let Some(clip) = batch.clip {
+            rpass.set_bind_group(0, &batch_buffers[i].bind_group, &[]);
+            rpass.set_index_buffer(&batch_buffers[i].index_buf, 0);
+            rpass.set_vertex_buffers(0, &[(&batch_buffers[i].vertex_buf, 0)]);
+            if let Some(clip) = batch_buffers[i].clip {
                 rpass.set_scissor_rect(
                     clip.origin.x as u32,
                     clip.origin.y as u32,
@@ -491,34 +524,9 @@ impl Gfx {
             } else {
                 rpass.set_scissor_rect(0, 0, self.resolution.width, self.resolution.height);
             }
-            rpass.draw_indexed(0..batch.triangle_indices.len() as u32, 0, 0..1);
+            rpass.draw_indexed(0..batch_buffers[i].n_indices, 0, 0..1);
         }
-    }
-
-    pub fn render(
-        &self,
-        device: &wgpu::Device,
-        target: &wgpu::TextureView,
-
-        textures: &[Texture],
-        batches: &[DrawBatch],
-    ) -> wgpu::CommandBuffer {
-        let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &target,
-                    resolve_target: None,
-                    load_op: wgpu::LoadOp::Clear,
-                    store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color::BLACK,
-                }],
-                // Also need this for buffer renderer...
-                depth_stencil_attachment: None,
-            });
-            self.draw(&device, &mut rpass, textures, batches);
-        }
+        drop(rpass);
         encoder.finish()
     }
 }
@@ -619,7 +627,10 @@ impl RenderBuffer {
         self.canvas_pos = crate::pixel_canvas_pos(window_size, self.resolution);
     }
 
-    pub fn draw(&self, device: &wgpu::Device, rpass: &mut wgpu::RenderPass) {
+    pub fn render(&self, device: &wgpu::Device, target: &wgpu::TextureView) -> wgpu::CommandBuffer {
+        let mut encoder =
+            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
+
         type Uniforms = euclid::default::Point2D<f32>;
 
         let uniform_buf = device
@@ -646,27 +657,22 @@ impl RenderBuffer {
             ],
         });
 
+        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
+                attachment: &target,
+                resolve_target: None,
+                load_op: wgpu::LoadOp::Clear,
+                store_op: wgpu::StoreOp::Store,
+                clear_color: wgpu::Color::BLACK,
+            }],
+            depth_stencil_attachment: None,
+        });
+
         rpass.set_pipeline(&self.pipeline);
         rpass.set_bind_group(0, &bind_group, &[]);
         rpass.draw(0..4, 0..1);
-    }
+        drop(rpass);
 
-    pub fn render(&self, device: &wgpu::Device, target: &wgpu::TextureView) -> wgpu::CommandBuffer {
-        let mut encoder =
-            device.create_command_encoder(&wgpu::CommandEncoderDescriptor { todo: 0 });
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
-                    attachment: &target,
-                    resolve_target: None,
-                    load_op: wgpu::LoadOp::Clear,
-                    store_op: wgpu::StoreOp::Store,
-                    clear_color: wgpu::Color::BLACK,
-                }],
-                depth_stencil_attachment: None,
-            });
-            self.draw(&device, &mut rpass);
-        }
         encoder.finish()
     }
 }

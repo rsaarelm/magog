@@ -69,6 +69,9 @@ pub struct Vertex {
     pub back_color: [f32; 4],
 }
 
+unsafe impl bytemuck::Pod for Vertex {}
+unsafe impl bytemuck::Zeroable for Vertex {}
+
 impl Vertex {
     pub fn new(pos: Point2D<f32>, tex_coord: Point2D<f32>, color: Rgba) -> Self {
         Vertex {
