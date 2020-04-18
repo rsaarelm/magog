@@ -439,7 +439,7 @@ impl<'a> Canvas<'a> {
     }
 
     /// Screenshot using async callback.
-    pub fn screenshot_cb(&mut self, cb: impl FnOnce(image::RgbImage) + 'static) {
+    pub fn screenshot_cb(&mut self, cb: impl FnOnce(image::RgbImage) + Send + 'static) {
         self.backend.screenshot(cb)
     }
 
