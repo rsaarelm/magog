@@ -1,48 +1,38 @@
-# Model for NixOS packaging script.
-#
-# After https://eipi.xyz/blog/packaging-a-rust-project-for-nix/
-# Run `nix-build` to build
-#
-# The cargoSha256 will get invalidated whenever new commits are made, running
-# nix-build will give you an error message that contains the correct hash,
-# replace value with that, then re-run nix-build.
-#
-# Use `src = ./.` instead of `src = fetchFromGithub { ... }` to build from
-# local sources. Having build artifacts (`target/` directory) in the local
-# directory seems to mess up `nix-build`, so do a `git clean -fdx` or clone a
-# fresh instance repository before trying this.
-
-with import <nixpkgs> { };
-
 let
-    rpath = with pkgs.xlibs; lib.makeLibraryPath
-      [ libXcursor libXi libXrandr vulkan-loader ];
-in
-rustPlatform.buildRustPackage rec {
-  name = "magog-${version}";
+  rpath = with pkgs; pkgs.stdenv.lib.makeLibraryPath [ vulkan-loader ];
+
+  # Tell Nix to ignore in-tree build artifact directory 'target' when
+  # determining the unique source fingerprint of the repo.
+  src = builtins.filterSource
+    (path: type: type != "directory" || builtins.baseNameOf path != "target")
+    ./.;
+
+  pkgs = import <nixpkgs> {};
+  sources = import ./nix/sources.nix;
+  naersk = pkgs.callPackage sources.naersk {};
+
   version = "0.1.0";
+  basename = "magog";
 
-  src = fetchFromGitHub {
-    owner = "rsaarelm";
-    repo = "magog";
+in naersk.buildPackage {
+  inherit src;
 
-    # TODO: Start using release versions when we have them.
-    # Now just using an arbitrary master commit from when this script was
-    # being set up.
-    rev = "fa716ed154937b641a22fdc0c6366b1a4ace279c";
-    # rev = "${version}";
+  name = "${basename}-${version}";
 
-    sha256 = "0z7ddzpibs5cgk3ijd6zhcyngkb0bfp7zfv4ykw1b2yhm4pi8vf0";
-  };
+  buildInputs = with pkgs; [
+    # Needed by cargo dependencies.
+    cmake gcc zlib pkgconfig openssl
 
-  buildInputs = [ openssl pkgconfig zlib gcc cmake makeWrapper x11 libGL ];
+    # wgpu graphics dependencies
+    vulkan-loader xorg.libXcursor xorg.libXi xorg.libXrandr
 
-  checkPhase = "cargo test --all";
-  cargoSha256 = "sha256:0z54m1xnzfhgh8b6cscdp8dm036g39lwnnmrlv4vcxrvbp3x0ndw";
+    makeWrapper
+  ];
 
-  # Binary size optimization
+  # Optimize binary size.
   prePatch = ''
     cat >> Cargo.toml << EOF
+
     [profile.release]
     lto = true
     codegen-units = 1
@@ -50,15 +40,18 @@ rustPlatform.buildRustPackage rec {
     EOF
   '';
 
-  # Binary wants to link dynamically to X11 libs, generate wrapper.
+  # Wrap with necessary runtime libraries
   postInstall = ''
-    wrapProgram $out/bin/magog --prefix LD_LIBRARY_PATH : "${rpath}"
+    if [[ -f $out/bin/${basename} ]]; then
+      wrapProgram $out/bin/${basename} --prefix LD_LIBRARY_PATH : "${rpath}"
+    fi
   '';
 
-  meta = with stdenv.lib; {
+  meta = with pkgs.stdenv.lib; {
     description = "A fantasy roguelike game";
     homepage = https://github.com/rsaarelm/magog;
     license = licenses.agpl3;
     platforms = platforms.all;
   };
 }
+

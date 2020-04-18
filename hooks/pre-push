@@ -1,3 +1,4 @@
 # Main program unit tests
 set -e
-cargo +stable test --all
+cargo fmt --all -- --check
+cargo test --all
