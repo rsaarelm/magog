@@ -5,7 +5,7 @@ use crate::{
     space::{ProjectVec, Space},
 };
 use euclid::{point2, vec2, Point2D, Vector2D};
-use image::{self, Pixel};
+use image::Pixel;
 use num::Integer;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;

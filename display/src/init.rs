@@ -5,7 +5,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use vec_map::VecMap;
 use vitral::color::*;
-use vitral::{self, PngBytes, Rgba};
+use vitral::{PngBytes, Rgba};
 
 /// Load all game graphics in memory from image data.
 ///

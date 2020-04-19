@@ -576,7 +576,7 @@ mod test {
         // Test that luma values from corresponding sRGBA and RGBA are same.
 
         use super::{to_srgb, Rgba, SRgba};
-        use rand::{self, Rng};
+        use rand::Rng;
 
         let mut rng = rand::thread_rng();
         for _ in 0..1000 {

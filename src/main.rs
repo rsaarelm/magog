@@ -5,7 +5,7 @@ use crate::game_loop::GameLoop;
 use log::info;
 use rand::Rng;
 use structopt::StructOpt;
-use vitral::{self, AppConfig, Flick};
+use vitral::{AppConfig, Flick};
 use world::{ExternalEntity, WorldSeed, WorldSkeleton};
 
 pub mod game_loop;

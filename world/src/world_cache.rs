@@ -1,8 +1,10 @@
-use crate::location::{Location, Portal};
-use crate::map::MapCell;
-use crate::sector::{self, Sector, WorldSkeleton};
-use crate::spec::EntitySpawn;
-use crate::terrain::Terrain;
+use crate::{
+    location::{Location, Portal},
+    map::MapCell,
+    sector::{self, Sector, WorldSkeleton},
+    spec::EntitySpawn,
+    terrain::Terrain,
+};
 use euclid::{vec2, vec3};
 use log::info;
 use serde;

@@ -4,7 +4,7 @@ use crate::Icon;
 use lazy_static::lazy_static;
 use std::sync::Arc;
 use vec_map::VecMap;
-use vitral::{self, FontData, PngBytes};
+use vitral::{FontData, PngBytes};
 
 lazy_static! {
     static ref TERRAIN_BRUSHES: VecMap<Arc<Brush>> = init::terrain_brushes();

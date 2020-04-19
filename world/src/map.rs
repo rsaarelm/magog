@@ -3,7 +3,7 @@
 use crate::mapsave::{self, build_textmap, MapSave};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
-use calx::{self, die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise};
+use calx::{die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise};
 use euclid::vec2;
 use indexmap::{IndexMap, IndexSet};
 use log::Level::Trace;

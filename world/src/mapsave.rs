@@ -1,6 +1,6 @@
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
-use calx::{self, CellVector, FromPrefab, IntoPrefab};
+use calx::{CellVector, FromPrefab, IntoPrefab};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;

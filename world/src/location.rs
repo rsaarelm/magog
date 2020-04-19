@@ -232,7 +232,7 @@ mod test {
 
     #[test]
     fn test_morton() {
-        use rand::{self, Rng};
+        use rand::Rng;
         let mut rng = rand::thread_rng();
 
         for _ in 0..1000 {

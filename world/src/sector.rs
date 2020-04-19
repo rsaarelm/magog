@@ -8,8 +8,8 @@ use crate::{
     vaults, {Distribution, Rng},
 };
 use calx::{
-    self, die, project, seeded_rng, CellSpace, CellVector, ProjectVec, RngExt, Space,
-    StaggeredHexSpace, WeightedChoice,
+    die, project, seeded_rng, CellSpace, CellVector, ProjectVec, RngExt, Space, StaggeredHexSpace,
+    WeightedChoice,
 };
 use euclid::{vec2, vec3, Vector2D};
 use lazy_static::lazy_static;

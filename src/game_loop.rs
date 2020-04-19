@@ -1,14 +1,13 @@
 use crate::msg;
 use calx::{stego, CellVector, Dir6, IncrementalState};
 use calx_ecs::Entity;
-use display::{self, CanvasExt, ScreenVector};
+use display::{CanvasExt, ScreenVector};
 use euclid::default::{Point2D, Rect};
 use euclid::{point2, size2, vec2};
 use std::io::prelude::*;
 use std::io::Cursor;
 use vitral::{
-    self, color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene,
-    SceneSwitch,
+    color, Align, ButtonAction, Canvas, InputEvent, Keycode, RectUtil, Rgba, Scene, SceneSwitch,
 };
 use world::{Ability, ActionOutcome, Command, LerpLocation, Slot, World, WorldSeed};
 

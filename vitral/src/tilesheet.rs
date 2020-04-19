@@ -1,7 +1,7 @@
 use crate::RectUtil;
 use euclid::default::{Point2D, Rect, Size2D};
 use euclid::{point2, rect, vec2};
-use image::{self, RgbaImage};
+use image::RgbaImage;
 
 type Pixel = image::Rgba<u8>;
 
