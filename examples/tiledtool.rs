@@ -1,9 +1,7 @@
 use calx::tiled;
 use euclid::point2;
-use serde_json;
 use std::io::{self, Read};
 use std::iter::FromIterator;
-use structopt;
 use structopt::StructOpt;
 use world::Sector;
 

@@ -5,7 +5,6 @@
     clippy::unreadable_literal
 )]
 
-use image;
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{Add, Mul, Sub};

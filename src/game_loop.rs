@@ -4,7 +4,6 @@ use calx_ecs::Entity;
 use display::{self, CanvasExt, ScreenVector};
 use euclid::default::{Point2D, Rect};
 use euclid::{point2, size2, vec2};
-use image;
 use std::io::prelude::*;
 use std::io::Cursor;
 use vitral::{

@@ -1,4 +1,3 @@
-use rand;
 use std::io::Write;
 use world::{attack_damage, roll};
 

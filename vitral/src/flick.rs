@@ -1,7 +1,6 @@
 use std::fmt;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
-use time;
 
 /// Conversion factor for the flick time unit
 pub const FLICKS_PER_SECOND: i64 = 705_600_000;

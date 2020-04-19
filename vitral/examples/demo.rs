@@ -1,5 +1,3 @@
-use vitral;
-
 use euclid::default::Rect;
 use euclid::point2;
 use vitral::{

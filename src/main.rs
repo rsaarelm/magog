@@ -2,12 +2,8 @@
 #![windows_subsystem = "windows"]
 
 use crate::game_loop::GameLoop;
-use display;
-use env_logger;
 use log::info;
-use rand;
 use rand::Rng;
-use structopt;
 use structopt::StructOpt;
 use vitral::{self, AppConfig, Flick};
 use world::{ExternalEntity, WorldSeed, WorldSkeleton};

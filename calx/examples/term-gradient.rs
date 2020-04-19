@@ -1,6 +1,3 @@
-use calx;
-use term;
-
 use calx::{term_color, PseudoTermColor};
 
 fn print(t: &mut Box<term::StdoutTerminal>, c: PseudoTermColor) {
