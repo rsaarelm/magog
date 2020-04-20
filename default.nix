@@ -54,4 +54,3 @@ in naersk.buildPackage {
     platforms = platforms.all;
   };
 }
-

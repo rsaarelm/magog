@@ -17,6 +17,9 @@ pkgs.mkShell {
     # SPIR-V shader compiler
     shaderc
 
+    # Linker
+    lld
+
     # Map editor
     tiled
   ];
@@ -36,5 +39,6 @@ pkgs.mkShell {
   '';
 
   RUST_BACKTRACE = "1";
+  RUSTFLAGS = "-C link-arg=-fuse-ld=lld";
   RUST_LOG = "calx-ecs=${log_level},vitral=${log_level},calx=${log_level},display=${log_level},world=${log_level},magog=${log_level}";
 }
