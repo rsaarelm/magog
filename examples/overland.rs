@@ -26,7 +26,7 @@ enum Command {
         #[structopt(
             short = "w",
             long = "width",
-            default_value = "8",
+            default_value = "12",
             help = "Width in sectors"
         )]
         width: u32,
@@ -34,7 +34,7 @@ enum Command {
         #[structopt(
             short = "h",
             long = "height",
-            default_value = "9",
+            default_value = "7",
             help = "Height in sectors"
         )]
         height: u32,
@@ -89,6 +89,14 @@ fn dark(color: SRgba) -> SRgba {
     color
 }
 
+fn mid(color: SRgba) -> SRgba {
+    let mut color = dark(color);
+    color.r += 0x8;
+    color.g += 0x8;
+    color.b += 0x8;
+    color
+}
+
 fn light(color: SRgba) -> SRgba {
     let mut color = dark(color);
     color.r += 0xF;
@@ -99,8 +107,12 @@ fn light(color: SRgba) -> SRgba {
 
 fn checkerboard((pos, color): (CellVector, SRgba)) -> (CellVector, SRgba) {
     let sec = Sector::from(Location::new(pos.x as i16, pos.y as i16, 0));
-    let is_dark = (sec.x + sec.y) % 2 != 0;
-    (pos, if is_dark { dark(color) } else { light(color) })
+    let color = match (sec.x + sec.y) % 3 {
+      0 => dark(color),
+      1 => mid(color),
+      _ => light(color)
+    };
+    (pos, color)
 }
 
 fn terrain_to_color((pos, terrain): (CellVector, Terrain)) -> (CellVector, SRgba) {
