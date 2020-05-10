@@ -167,6 +167,26 @@ pub struct Tileset {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum MapProperty {
+    #[serde(rename = "boolean")]
+    Boolean { name: String, value: bool },
+    #[serde(rename = "color")]
+    Color {
+        name: String,
+        value: String, // TODO: Deserialize to colory type from "#rrggbbaa"
+    },
+    #[serde(rename = "file")]
+    File { name: String, value: PathBuf },
+    #[serde(rename = "float")]
+    Float { name: String, value: f64 },
+    #[serde(rename = "int")]
+    Int { name: String, value: i32 },
+    #[serde(rename = "string")]
+    String { name: String, value: String },
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Map {
     #[serde(rename = "type")]
     pub type_: String,
@@ -179,6 +199,7 @@ pub struct Map {
     pub nextlayerid: u32,
     pub nextobjectid: u32,
     pub orientation: Orientation,
+    pub properties: Vec<MapProperty>,
     pub renderorder: String,
     pub tiledversion: String,
     pub tileheight: u32,
