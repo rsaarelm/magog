@@ -29,7 +29,11 @@ pub fn build_textmap(
 > {
     const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                             abcdefghijklmnopqrstuvwxyz\
-                            0123456789";
+                            αβγδεζηθικλμξπρστφχψω\
+                            ΓΔΛΞΠΣΦΨΩ\
+                            БГҐДЂЃЄЖЗЙЛЉЊПЎФЦЧЏШЩЪЭЮЯ\
+                            àèòùáêõýþâìúãíäîåæçéóëïðñôûöøüÿ\
+                            ÀÈÒÙÁÊÕÝÞÂÌÚÃÉÓÄÍÅÆÇËÎÔÏÐÑÖØÛßÜ";
 
     let chars_f = move |x: &(Terrain, Vec<EntitySpawn>)| {
         let &(ref t, ref e) = x;
