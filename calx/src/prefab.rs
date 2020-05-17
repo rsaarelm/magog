@@ -4,7 +4,7 @@ use crate::{
     project,
     space::{ProjectVec, Space},
 };
-use euclid::{point2, vec2, Point2D, Vector2D};
+use euclid::{point2, vec2, Point2D, Rect, Vector2D};
 use image::Pixel;
 use num::Integer;
 use std::collections::{HashMap, HashSet};
@@ -272,11 +272,11 @@ impl FromPrefab for String {
 /// ```
 /// use std::collections::HashMap;
 /// use euclid::vec2;
-/// use calx::{CellVector, IntoPrefab, DenseTextMap};
+/// use calx::{CellVector, IntoPrefab, FromPrefab, DenseTextMap};
 ///
-/// let map: HashMap<CellVector, char> = DenseTextMap(r#"
+/// let map: HashMap<CellVector, char> = DenseTextMap("
 ///   12
-///   34"#).into_prefab().expect("Failed to parse string map");
+///   34").into_prefab().expect("Failed to parse string map");
 ///
 /// for &(c, p) in &[
 ///   ('1', (0, 0)),
@@ -284,16 +284,21 @@ impl FromPrefab for String {
 ///   ('3', (0, 1)),
 ///   ('4', (1, 1))] {
 ///     assert_eq!(Some(&c), map.get(&vec2(p.0, p.1)));
+///
+/// let new_map = DenseTextMap::from_prefab(&map);
+/// assert_eq!(new_map.0, "\
+/// 12
+/// 34");
 /// }
 /// ```
-pub struct DenseTextMap<'a>(pub &'a str);
+pub struct DenseTextMap<S>(pub S);
 
-impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
+impl<S: AsRef<str>> IntoPrefab<char> for DenseTextMap<S> {
     fn into_prefab<P: FromIterator<(CellVector, char)>>(self) -> Result<P, PrefabError> {
         let mut elts = Vec::new();
         let mut min_x = i32::MAX;
         let mut min_y = i32::MAX;
-        for (y, line) in self.0.lines().enumerate() {
+        for (y, line) in self.0.as_ref().lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if !c.is_whitespace() {
                     let (x, y) = (x as i32, y as i32);
@@ -307,6 +312,29 @@ impl<'a> IntoPrefab<char> for DenseTextMap<'a> {
         Ok(P::from_iter(
             elts.into_iter().map(|(p, c)| (p - vec2(min_x, min_y), c)),
         ))
+    }
+}
+
+impl FromPrefab for DenseTextMap<String> {
+    type Cell = char;
+
+    fn from_prefab(prefab: &HashMap<CellVector, Self::Cell>) -> Self {
+        let bounds = Rect::from_points(prefab.keys().map(|v| v.to_point()));
+        let mut ret = String::new();
+        for y in bounds.min_y()..(bounds.max_y() + 1) {
+            for x in bounds.min_x()..(bounds.max_x() + 1) {
+                if let Some(&c) = prefab.get(&vec2(x, y)) {
+                    ret.push(c);
+                } else {
+                    ret.push(' ');
+                }
+            }
+            ret.truncate(ret.trim_end().len());
+            ret.push_str("\n");
+        }
+        ret.truncate(ret.trim_end().len());
+
+        DenseTextMap(ret)
     }
 }
 
