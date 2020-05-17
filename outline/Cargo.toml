@@ -1,0 +1,22 @@
+[package]
+name = "outline"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Non-self-describing sturctured data format"
+keywords = ["parser", "serialization", "serde"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[dependencies]
+deunicode = "1"
+lazy_static = "1"
+log = "0.4"
+nom = "5"
+serde = "1"
+serde_plain = "0.3"
+walkdir = "2"
+
+[dev-dependencies]
+env_logger = "0.7"
+pretty_assertions = "0.6"
+ron = "0.5"

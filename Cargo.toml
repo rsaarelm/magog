@@ -8,7 +8,7 @@ license = "GPL3"
 edition = "2018"
 
 [workspace]
-members = ["world", "display", "calx", "calx-ecs", "vitral"]
+members = ["calx", "calx-ecs", "display", "outline", "vitral", "world"]
 
 [dependencies]
 calx = { path = "calx" }
