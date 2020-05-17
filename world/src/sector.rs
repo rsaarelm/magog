@@ -400,7 +400,7 @@ pub enum Biome {
 }
 
 impl Default for Biome {
-    fn default() -> Self { Biome::Water }
+    fn default() -> Self { Biome::Dungeon }
 }
 
 impl Biome {
