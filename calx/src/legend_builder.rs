@@ -23,13 +23,13 @@ where
     F: FnMut(&T) -> &'static str,
 {
     /// Initialize the legend builder.
-    pub fn new(alphabet: String, prefix_fn: F) -> LegendBuilder<T, F> {
+    pub fn new(alphabet: impl Into<String>, prefix_fn: F) -> LegendBuilder<T, F> {
         LegendBuilder {
             legend: BTreeMap::new(),
             out_of_alphabet: false,
             seen_values: BTreeMap::new(),
             prefix_fn,
-            alphabet,
+            alphabet: alphabet.into(),
         }
     }
 
