@@ -34,6 +34,16 @@ pub trait Spec: Distribution<ExternalEntity> + Sync + Send {
     fn habitat(&self) -> u64;
 
     fn name(&self) -> &str;
+
+    /// Return base id of entity without pluralization
+    fn id(&self) -> &str {
+        let name = self.name();
+        if let Some(offset) = name.find('|') {
+            &name[..offset]
+        } else {
+            name
+        }
+    }
 }
 
 const EVERYWHERE: u64 = 0xffff_ffff_ffff_ffff;
@@ -164,7 +174,7 @@ macro_rules! specs {
         lazy_static! {
             pub static ref SPECS: BTreeMap<EntitySpawn, Arc<dyn Spec>> = {
                 let mut ret: BTreeMap<EntitySpawn, Arc<dyn Spec>> = BTreeMap::new();
-                $(ret.insert(EntitySpawn($item.name().to_string()), Arc::new($item));)+
+                $(ret.insert(EntitySpawn($item.id().to_string()), Arc::new($item));)+
                 ret
             };
         }
