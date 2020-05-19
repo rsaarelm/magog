@@ -34,7 +34,7 @@ pub use location::{Location, Portal};
 mod location_set;
 
 mod mapsave;
-pub use mapsave::MapSave;
+pub use mapsave::WorldData;
 
 mod map;
 

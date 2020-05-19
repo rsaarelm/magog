@@ -107,14 +107,15 @@ impl ChunkMap {
 pub enum Layer {
     #[serde(rename = "tilelayer")]
     TileLayer {
+        name: String,
+        id: u32,
+        visible: bool,
+        opacity: f32,
+
         x: i32,
         y: i32,
         width: u32,
         height: u32,
-        opacity: f32,
-        name: String,
-        id: u32,
-        visible: bool,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         chunks: Option<ChunkMap>,
@@ -124,17 +125,77 @@ pub enum Layer {
     },
     #[serde(rename = "objectgroup")]
     ObjectGroup {
-        x: i32,
-        y: i32,
-        opacity: f32,
         name: String,
         id: u32,
         visible: bool,
+        opacity: f32,
+
+        x: i32,
+        y: i32,
 
         draworder: String,
         objects: Vec<Object>,
     },
     // Not supported: imagelayer, group
+}
+
+impl Layer {
+    pub fn name(&self) -> &str {
+        match self {
+            Layer::TileLayer { name, .. } => name,
+            Layer::ObjectGroup { name, .. } => name,
+        }
+    }
+
+    pub fn is_tile_layer(&self) -> bool {
+        match self {
+            Layer::TileLayer { .. } => true,
+            _ => false,
+        }
+    }
+
+    pub fn iter_tiles(&self) -> Option<Box<dyn Iterator<Item = (Point2D<i32>, u32)> + '_>> {
+        if let Layer::TileLayer {
+            x,
+            y,
+            width,
+            chunks,
+            ref data,
+            ..
+        } = self
+        {
+            if let Some(chunks) = chunks {
+                Some(Box::new(chunks.iter()))
+            } else {
+                let data = data
+                    .as_ref()
+                    .expect("Invalid map, has neither chunks nor data");
+                let width = *width as usize;
+
+                Some(Box::new(data.iter().enumerate().filter_map(
+                    move |(i, c)| {
+                        if *c == 0 {
+                            return None;
+                        }
+
+                        let p = point2(x + (i % width) as i32, y + (i / width) as i32);
+
+                        Some((p, *c - 1))
+                    },
+                )))
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn iter_objects(&self) -> Option<impl Iterator<Item = &Object>> {
+        if let Layer::ObjectGroup { objects, .. } = self {
+            Some(objects.iter())
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -186,6 +247,7 @@ pub enum MapProperty {
     String { name: String, value: String },
 }
 
+/// Toplevel Tiled map data type
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Map {
     #[serde(rename = "type")]
@@ -199,7 +261,8 @@ pub struct Map {
     pub nextlayerid: u32,
     pub nextobjectid: u32,
     pub orientation: Orientation,
-    pub properties: Vec<MapProperty>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub properties: Option<Vec<MapProperty>>,
     pub renderorder: String,
     pub tiledversion: String,
     pub tileheight: u32,

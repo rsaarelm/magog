@@ -1,22 +1,30 @@
 use crate::spec::EntitySpawn;
-use crate::Terrain;
-use calx::{CellVector, FromPrefab, IntoPrefab};
+use crate::{Location, Terrain};
+use calx::{tiled, CellVector, FromPrefab, IntoPrefab};
+use euclid::vec2;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
+use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt;
+use std::str::FromStr;
 
 pub type Prefab = HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MapSave {
-    pub map: String,
-    pub legend: BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
-}
+const LEGEND_ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                               abcdefghijklmnopqrstuvwxyz\
+                               αβγδεζηθικλμξπρστφχψω\
+                               ΓΔΛΞΠΣΦΨΩ\
+                               БГҐДЂЃЄЖЗЙЛЉЊПЎФЦЧЏШЩЪЭЮЯ\
+                               àèòùáêõýþâìúãíäîåæçéóëïðñôûöøüÿ\
+                               ÀÈÒÙÁÊÕÝÞÂÌÚÃÉÓÄÍÅÆÇËÎÔÏÐÑÖØÛßÜ";
+
+const TILED_TILE_WIDTH: f32 = 16.0;
+const TILED_TILE_HEIGHT: f32 = 16.0;
 
 /// Types that can be described in pseudo-natural language.
 #[derive(Clone, Eq, PartialEq, Debug)]
-struct Parseable<T>(pub T);
+pub struct Parseable<T>(pub T);
 
 serde_plain::derive_deserialize_from_str!(Parseable<(Terrain, Vec<EntitySpawn>)>, "parseable");
 serde_plain::derive_serialize_from_display!(Parseable<(Terrain, Vec<EntitySpawn>)>);
@@ -51,105 +59,236 @@ impl std::fmt::Display for Parseable<(Terrain, Vec<EntitySpawn>)> {
     }
 }
 
-/// Convert a standard map prefab into an ASCII map with a legend.
-///
-/// The legend characters are assigned procedurally. The function will fail if the prefab is too
-/// complex and the legend generator runs out of separate characters to use.
-pub fn build_textmap(
-    prefab: &Prefab,
-) -> Result<
-    (
-        HashMap<CellVector, char>,
-        BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
-    ),
-    Box<dyn Error>,
-> {
-    const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                            abcdefghijklmnopqrstuvwxyz\
-                            αβγδεζηθικλμξπρστφχψω\
-                            ΓΔΛΞΠΣΦΨΩ\
-                            БГҐДЂЃЄЖЗЙЛЉЊПЎФЦЧЏШЩЪЭЮЯ\
-                            àèòùáêõýþâìúãíäîåæçéóëïðñôûöøüÿ\
-                            ÀÈÒÙÁÊÕÝÞÂÌÚÃÉÓÄÍÅÆÇËÎÔÏÐÑÖØÛßÜ";
-
-    let chars_f = move |x: &(Terrain, Vec<EntitySpawn>)| {
-        let &(ref t, ref e) = x;
-        if e.is_empty() {
-            t.preferred_map_chars()
-        } else {
-            ""
-        }
-    };
-
-    let mut legend_builder = calx::LegendBuilder::new(ALPHABET.to_string(), chars_f);
-
-    let prefab: HashMap<CellVector, _> = prefab
-        .clone()
-        .into_iter()
-        .map(|(p, e)| (p, legend_builder.add(&e)))
-        .collect();
-    // Values are still results, we need to check if legend building failed.
-    if legend_builder.out_of_alphabet {
-        return Err("Unable to build legend, scene too complex?".into());
-    }
-
-    // Mustn't have non-errs in the build prefab unless out_of_alphabet was flipped.
-    let prefab: HashMap<CellVector, _> = prefab.into_iter().map(|(p, e)| (p, e.unwrap())).collect();
-
-    Ok((prefab, legend_builder.legend))
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct MapPatch {
+    pub map: String,
+    pub legend: BTreeMap<char, Parseable<(Terrain, Vec<EntitySpawn>)>>,
 }
 
-impl MapSave {
-    pub fn from_prefab(prefab: &Prefab) -> Result<MapSave, Box<dyn Error>> {
-        let (prefab, legend) = build_textmap(prefab)?;
-        Ok(MapSave::new(prefab, legend))
-    }
-
-    pub fn into_prefab(self) -> Result<Prefab, Box<dyn Error>> {
-        let (map, legend) = (self.map, self.legend);
-        for c in map.chars() {
-            if c.is_whitespace() {
-                continue;
-            }
-            if !legend.contains_key(&c) {
-                return Err(format!("Unknown map character '{}'", c).into());
-            }
-        }
-
-        let prefab: HashMap<CellVector, char> = IntoPrefab::into_prefab(map)?;
-        let ret: Prefab = prefab
-            .into_iter()
-            .map(|(p, item)| (p, legend[&item].clone()))
-            .collect();
-        Ok(ret)
-    }
-
+impl MapPatch {
+    /// Construct a `MapPatch` from cell data.
+    ///
+    /// Will fail if there are so many unique cell types that the legend alphabet gets exhausted.
+    /// Does not preserve offset of the input, the result will have origin at the top left corner
+    /// of the bounding box containing all the map cells.
     pub fn new(
-        text_prefab: impl IntoIterator<Item = (CellVector, char)>,
-        legend: impl IntoIterator<Item = (char, (Terrain, Vec<EntitySpawn>))>,
-    ) -> MapSave {
-        MapSave {
-            map: String::from_prefab(&text_prefab.into_iter().collect()),
-            legend: legend.into_iter().collect(),
+        cells: impl IntoIterator<Item = (CellVector, (Terrain, Vec<EntitySpawn>))>,
+    ) -> Result<MapPatch, Box<dyn Error>> {
+        let chars_f = move |x: &(Terrain, Vec<EntitySpawn>)| {
+            let &(ref t, ref e) = x;
+            if e.is_empty() {
+                t.preferred_map_chars()
+            } else {
+                ""
+            }
+        };
+
+        let mut legend_builder = calx::LegendBuilder::new(LEGEND_ALPHABET.to_string(), chars_f);
+
+        let mut prefab = HashMap::new();
+        for (k, v) in cells.into_iter() {
+            if let Ok(c) = legend_builder.add(&v) {
+                prefab.insert(k, c);
+            } else {
+                Err("Unable to build legend, scene too complex?")?;
+            }
         }
+
+        let map = calx::DenseTextMap::from_prefab(&prefab).0;
+        let legend = legend_builder
+            .legend
+            .into_iter()
+            .map(|(c, k)| (c, Parseable(k)))
+            .collect();
+
+        Ok(MapPatch { map, legend })
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (CellVector, (Terrain, Vec<EntitySpawn>))> + '_ {
+        calx::DenseTextMap(&self.map)
+            .into_prefab::<HashMap<CellVector, char>>()
+            .unwrap()
+            .into_iter()
+            .map(move |(p, c)| (p, (self.legend.get(&c).unwrap().0).clone()))
     }
 }
 
-impl fmt::Display for MapSave {
+impl fmt::Display for MapPatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Custom RON prettyprint that prints prettier than ron::ser::pretty
-        writeln!(f, "(\n    map: \"")?;
-        for line in self.map.lines() {
-            writeln!(f, "{}", line.trim_end())?;
-        }
-        writeln!(f, "\",\n")?;
-        writeln!(f, "    legend: {{")?;
-        for (k, v) in &self.legend {
-            writeln!(f, "        {:?}: ({:?}, {:?}),", k, v.0, v.1)?;
-        }
-        writeln!(f, "    }}")?;
-        writeln!(f, ")")
+        writeln!(f, "{}", outline::into_outline(self).unwrap())
     }
+}
+
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct PatchData {
+    pub offset: Location,
+
+    #[serde(flatten)]
+    pub patch: MapPatch,
+}
+
+impl fmt::Display for PatchData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", outline::into_outline(self).unwrap())
+    }
+}
+
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct WorldData {
+    pub patches: Vec<PatchData>,
+}
+
+impl fmt::Display for WorldData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", outline::into_outline(self).unwrap())
+    }
+}
+
+impl TryFrom<tiled::Map> for WorldData {
+    type Error = Box<dyn Error>;
+
+    fn try_from(tiled: tiled::Map) -> Result<Self, Self::Error> {
+        // Find layer with magic name "surface" to fix z level with, otherwise z=0 is top layer and
+        // it counts down from there.
+        let starting_z = tiled
+            .layers
+            .iter()
+            .filter(|a| a.is_tile_layer())
+            .enumerate()
+            .find(|(_, a)| a.name().to_lowercase() == "surface")
+            .map(|(i, _)| (i as i32))
+            .unwrap_or(0);
+
+        let mut terrain_map = HashMap::new();
+        let mut spawn_map = HashMap::new();
+
+        // Process Tiled layers
+        let mut z = starting_z;
+        for layer in tiled.layers.iter().rev() {
+            let loc = Location::new(0, 0, z as i16);
+
+            if let Some(i) = layer.iter_tiles() {
+                for (pos, t) in i {
+                    let loc = loc + vec2(pos.x, pos.y);
+                    if let Some(t) = tiled_to_terrain(t) {
+                        terrain_map.insert(loc, t);
+                    }
+                }
+
+                z -= 1;
+            }
+
+            if let Some(i) = layer.iter_objects() {
+                for o in i {
+                    // XXX: Tiled makes Y be off by one, has upwards-pointing Y-axis?
+                    let loc = loc
+                        + vec2(
+                            (o.x / TILED_TILE_WIDTH).round() as i32,
+                            (o.y / TILED_TILE_HEIGHT).round() as i32 - 1,
+                        );
+                    spawn_map.insert(loc, tiled_to_spawn(o)?);
+                }
+            }
+        }
+
+        // Construct intermediate storage layers.
+        struct Layer {
+            // Extents of the terrain data, used to compute offset for the segment.
+            min_x: i32,
+            min_y: i32,
+            cells: HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>,
+        }
+
+        impl Default for Layer {
+            fn default() -> Self {
+                Layer {
+                    min_x: std::i32::MAX,
+                    min_y: std::i32::MAX,
+                    cells: Default::default(),
+                }
+            }
+        }
+
+        let mut layers = BTreeMap::new();
+        for (loc, c) in terrain_map {
+            let layer = layers.entry(loc.z).or_insert(Layer::default());
+            let pos = CellVector::new(loc.x as i32, loc.y as i32);
+            layer.min_x = layer.min_x.min(pos.x);
+            layer.min_y = layer.min_y.min(pos.y);
+            layer.cells.insert(pos, (c, Vec::new() as Vec<EntitySpawn>));
+        }
+
+        for (loc, c) in spawn_map {
+            let layer = layers.entry(loc.z).or_insert(Layer::default());
+            let pos = CellVector::new(loc.x as i32, loc.y as i32);
+            if let Some(cell) = layer.cells.get_mut(&pos) {
+                cell.1.push(c);
+            } else {
+                Err(format!("Object spawn {}: {:?} outside terrain", c, loc))?;
+            }
+        }
+
+        // Construct WorldData instance from intermediate data.
+
+        let mut patches = Vec::new();
+        for (z, layer) in layers.into_iter().rev() {
+            let offset = Location::new(layer.min_x as i16, layer.min_y as i16, z as i16);
+            let patch = MapPatch::new(layer.cells.into_iter())?;
+            patches.push(PatchData { offset, patch });
+        }
+
+        Ok(WorldData { patches })
+    }
+}
+
+fn tiled_to_terrain(tiled_id: u32) -> Option<Terrain> {
+    /// Hardcoded tileset used in Tiled maps. Edit as needed.
+    const TILED_TILES: [Terrain; 16] = [
+        // FIXME: Only have valid terrains in the list, keep this simple...
+        Terrain::Empty,
+        Terrain::Empty,
+        Terrain::Ground,
+        Terrain::Water,
+        Terrain::Empty, // TODO: Monolith terrain
+        Terrain::Tree,
+        Terrain::Wall,
+        Terrain::Rock,
+        Terrain::Window,
+        Terrain::Door,
+        Terrain::Downstairs,
+        Terrain::Upstairs,
+        Terrain::Grass,
+        Terrain::Shallows,
+        Terrain::Sand,
+        Terrain::Empty, // TODO: Mountain face terrain
+    ];
+    if let Some(&t) = TILED_TILES.get(tiled_id as usize) {
+        if t != Terrain::Empty {
+            Some(t)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+fn tiled_to_spawn(object: &tiled::Object) -> Result<EntitySpawn, Box<dyn Error>> {
+    const TILED_SPAWNS_OFFSET: usize = 129;
+    const TILED_SPAWNS: [&str; 4] = ["player", "dreg", "ooze", "sword"];
+
+    if !object.name.is_empty() {
+        return Ok(EntitySpawn::from_str(&object.name)?);
+    }
+
+    let gid = object.gid as usize;
+
+    if gid >= TILED_SPAWNS_OFFSET {
+        if let Some(s) = TILED_SPAWNS.get(gid - TILED_SPAWNS_OFFSET) {
+            return Ok(EntitySpawn::from_str(s)?);
+        }
+    }
+    Err("Bad spawn")?
 }
 
 #[cfg(test)]

@@ -16,6 +16,7 @@ indexmap = "1"
 lazy_static = "1"
 log = "0.4"
 noise = { version = "0.6", default-features = false }
+outline = { path = "../outline" }
 rand = "0.7"
 rand_xorshift = { version = "0.2", features = ["serde1"] }
 ron = "0.5"

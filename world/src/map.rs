@@ -1,6 +1,6 @@
 //! Map generation for individual sectors
 
-use crate::mapsave::{self, build_textmap, MapSave};
+use crate::mapsave::{self, MapPatch};
 use crate::spec::EntitySpawn;
 use crate::terrain::Terrain;
 use calx::{die, CellVector, DenseTextMap, Dir6, HexGeom, IntoPrefab, Noise};
@@ -528,16 +528,6 @@ impl Map {
         self.get(pos).map_or(false, |c| c.vault_kind.is_none())
     }
 
-    pub fn dump(&self) -> Result<MapSave, Box<dyn Error>> {
-        let (mut prefab, legend) = build_textmap(&mapsave::Prefab::from(self))?;
-        for (&p, c) in &self.contents {
-            if !c.can_dig {
-                prefab.insert(p, 'x');
-            }
-        }
-        Ok(MapSave::new(prefab, legend))
-    }
-
     /// Try to find a tunnel from `p1` to `p2`.
     ///
     /// Return a clone of the map with the tunnel drawn if a tunnel can be
@@ -562,23 +552,6 @@ impl Map {
             let p = points[0];
 
             let map = open[&p].clone();
-            if log_enabled!(Trace) {
-                if let Ok((mut prefab, legend)) = build_textmap(&mapsave::Prefab::from(&map)) {
-                    for (&p, c) in &map.contents {
-                        if !c.can_dig {
-                            prefab.insert(p, 'x');
-                        }
-                    }
-                    for &o in open.keys() {
-                        prefab.insert(o, '?');
-                    }
-                    prefab.insert(p, '!');
-                    let mapsave = MapSave::new(prefab, legend);
-                    trace!("Searching tunnel:\n{}", mapsave);
-                } else {
-                    trace!("*** COULDN'T CONSTRUCT TEXTMAP ***");
-                }
-            }
             for &d in Dir6::iter() {
                 let q = p + d.into();
                 if closed.contains(&q) {
@@ -605,9 +578,13 @@ impl Map {
 
 impl fmt::Display for Map {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let save = MapSave::from_prefab(&mapsave::Prefab::from(self))
-            .expect("Couldn't convert Map to displayable");
-        writeln!(f, "{}", save)
+        let patch = MapPatch::new(
+            self.contents
+                .iter()
+                .map(|(k, v)| (*k, (v.terrain, v.spawns.clone()))),
+        )
+        .expect("Couldn't convert Map to displayable");
+        writeln!(f, "{}", patch)
     }
 }
 

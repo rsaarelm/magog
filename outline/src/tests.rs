@@ -219,6 +219,42 @@ fn test_heading_struct() {
     );
 }
 
+/*
+
+// XXX: This seems to be impossible to get to work. Serde switches from struct parsing to map
+// parsing when flatten is used, and expected field names do not get communicated to map parsing.
+// The magic heading field can't be sent to all map parses because it usually isn't wanted, and
+// there's no way to tell when it is wanted.
+
+#[test]
+fn test_flattened_heading_struct() {
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Frame {
+        #[serde(rename = "__heading__")]
+        title: String,
+        #[serde(flatten)]
+        item: Item,
+    }
+
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Item {
+        a: i32,
+        b: i32,
+    }
+
+    test(
+        "\
+\tFoo
+\t\ta 1
+\t\tb 2",
+        Frame {
+            title: "Foo".into(),
+            item: Item { a: 1, b: 2 },
+        },
+    );
+}
+*/
+
 #[test]
 fn test_inline_struct() {
     #[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
