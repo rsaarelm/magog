@@ -861,8 +861,8 @@ mod test {
 
     #[test]
     fn test_stair_locations() {
-        for z in -1000..1000 {
-            let s = Sector::new(0, 0, z);
+        for z in -10..10 {
+            let s = Sector::new(0, 0, z * 10);
             let loc = s.downstairs_location(123);
 
             // Locations must be placed inside sector.
