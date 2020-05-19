@@ -12,7 +12,7 @@ pub const FLICKS_PER_SECOND: i64 = 705_600_000;
 pub struct Flick(pub i64);
 
 fn precise_time_ns() -> i64 {
-    let duration = time::OffsetDateTime::now() - time::OffsetDateTime::unix_epoch();
+    let duration = time::OffsetDateTime::now_utc() - time::OffsetDateTime::unix_epoch();
     duration.whole_nanoseconds() as i64
 }
 
