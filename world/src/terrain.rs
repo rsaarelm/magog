@@ -242,6 +242,20 @@ impl Default for Terrain {
     fn default() -> Self { Terrain::Empty }
 }
 
+impl std::str::FromStr for Terrain {
+    type Err = Box<dyn std::error::Error>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(t) = Terrain::iter()
+            .find(|t| t.name() == s)
+            .cloned() {
+                Ok(t)
+        } else {
+            Err(format!("Unknown terrain '{}'", s))?
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
