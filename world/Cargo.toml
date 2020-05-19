@@ -21,5 +21,6 @@ rand_xorshift = { version = "0.2", features = ["serde1"] }
 ron = "0.5"
 serde = "1"
 serde_derive = "1"
+serde_plain = "0.3"
 vec_map = "0.8"
 vitral = { path = "../vitral" }

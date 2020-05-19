@@ -1,5 +1,5 @@
 use crate::spec::EntitySpawn;
-use crate::terrain::Terrain;
+use crate::Terrain;
 use calx::{CellVector, FromPrefab, IntoPrefab};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
@@ -12,6 +12,43 @@ pub type Prefab = HashMap<CellVector, (Terrain, Vec<EntitySpawn>)>;
 pub struct MapSave {
     pub map: String,
     pub legend: BTreeMap<char, (Terrain, Vec<EntitySpawn>)>,
+}
+
+/// Types that can be described in pseudo-natural language.
+#[derive(Clone, Eq, PartialEq, Debug)]
+struct Parseable<T>(pub T);
+
+serde_plain::derive_deserialize_from_str!(Parseable<(Terrain, Vec<EntitySpawn>)>, "parseable");
+serde_plain::derive_serialize_from_display!(Parseable<(Terrain, Vec<EntitySpawn>)>);
+
+impl std::str::FromStr for Parseable<(Terrain, Vec<EntitySpawn>)> {
+    type Err = Box<dyn std::error::Error>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split(',').map(|s| s.trim()).collect();
+        if parts.is_empty() {
+            Err("No terrain set")?;
+        }
+
+        let terrain = Terrain::from_str(parts[0])?;
+        let mut spawns = Vec::new();
+        for spawn in parts.iter().skip(1) {
+            spawns.push(EntitySpawn::from_str(spawn)?);
+        }
+
+        Ok(Parseable((terrain, spawns)))
+    }
+}
+
+impl std::fmt::Display for Parseable<(Terrain, Vec<EntitySpawn>)> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (ref terrain, ref spawns) = self.0;
+        write!(f, "{}", terrain.name())?;
+        for c in spawns {
+            write!(f, ", {}", c)?;
+        }
+        Ok(())
+    }
 }
 
 /// Convert a standard map prefab into an ASCII map with a legend.
@@ -112,5 +149,55 @@ impl fmt::Display for MapSave {
         }
         writeln!(f, "    }}")?;
         writeln!(f, ")")
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_legend_parseable() {
+        use super::Parseable;
+        use crate::spec::EntitySpawn;
+        use crate::Terrain;
+        use std::str::FromStr;
+
+        type LegendEntry = Parseable<(Terrain, Vec<EntitySpawn>)>;
+
+        assert!(LegendEntry::from_str("").is_err());
+
+        assert_eq!(
+            LegendEntry::from_str("grass").unwrap(),
+            Parseable((Terrain::Grass, Vec::new()))
+        );
+        assert_eq!(
+            LegendEntry::from_str("grass, sword").unwrap(),
+            Parseable((
+                Terrain::Grass,
+                vec![EntitySpawn::from_str("sword").unwrap()]
+            ))
+        );
+        assert_eq!(
+            LegendEntry::from_str("sand, scroll of lightning, snake").unwrap(),
+            Parseable((
+                Terrain::Sand,
+                vec![
+                    EntitySpawn::from_str("scroll of lightning").unwrap(),
+                    EntitySpawn::from_str("snake").unwrap()
+                ]
+            ))
+        );
+        assert_eq!(
+            format!(
+                "{}",
+                Parseable((
+                    Terrain::Sand,
+                    vec![
+                        EntitySpawn::from_str("scroll of lightning").unwrap(),
+                        EntitySpawn::from_str("snake").unwrap()
+                    ]
+                ))
+            ),
+            "sand, scroll of lightning, snake"
+        );
     }
 }
