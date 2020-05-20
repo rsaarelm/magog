@@ -13,9 +13,7 @@ pub struct Sym<T: AsRef<str>>(T);
 impl<T: AsRef<str>> std::ops::Deref for Sym<T> {
     type Target = str;
 
-    fn deref(&self) -> &Self::Target {
-        self.0.as_ref()
-    }
+    fn deref(&self) -> &Self::Target { self.0.as_ref() }
 }
 
 impl<T: AsRef<str>> Sym<T> {
@@ -62,15 +60,11 @@ impl<T: AsRef<str> + Ord> Ord for Sym<T> {
 }
 
 impl<T: AsRef<str> + Ord> PartialOrd for Sym<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
 }
 
 impl<T: AsRef<str>> fmt::Display for Sym<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.as_ref())
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0.as_ref()) }
 }
 
 impl<'de, T: AsRef<str> + Deserialize<'de> + fmt::Debug> Deserialize<'de> for Sym<T> {

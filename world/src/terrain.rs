@@ -246,10 +246,8 @@ impl std::str::FromStr for Terrain {
     type Err = Box<dyn std::error::Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some(t) = Terrain::iter()
-            .find(|t| t.name() == s)
-            .cloned() {
-                Ok(t)
+        if let Some(t) = Terrain::iter().find(|t| t.name() == s).cloned() {
+            Ok(t)
         } else {
             Err(format!("Unknown terrain '{}'", s))?
         }

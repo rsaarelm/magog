@@ -80,9 +80,7 @@ impl<'de> Deserializer<'de> {
         Err(Error::default())
     }
 
-    fn headline_len(&self) -> Option<usize> {
-        self.outline.headline.as_ref().map(|s| s.len())
-    }
+    fn headline_len(&self) -> Option<usize> { self.outline.headline.as_ref().map(|s| s.len()) }
 
     fn peek_token(&self) -> Option<&str> {
         if let (Some(headline), Some(token_end)) = (&self.outline.headline, self.next_token_end()) {
@@ -579,21 +577,15 @@ impl<'a, 'de> de::MapAccess<'de> for Sequence<'a, 'de> {
 pub struct Error(String);
 
 impl de::Error for Error {
-    fn custom<T: fmt::Display>(msg: T) -> Error {
-        Error(format!("{}", msg))
-    }
+    fn custom<T: fmt::Display>(msg: T) -> Error { Error(format!("{}", msg)) }
 }
 
 impl error::Error for Error {
-    fn description(&self) -> &str {
-        &self.0
-    }
+    fn description(&self) -> &str { &self.0 }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
 
 #[cfg(test)]

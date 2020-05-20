@@ -36,9 +36,7 @@ impl Outline {
     }
 
     /// Return an iterator that recursively traverses the outline and its children.
-    pub fn iter(&self) -> OutlineIter<'_> {
-        OutlineIter(vec![self])
-    }
+    pub fn iter(&self) -> OutlineIter<'_> { OutlineIter(vec![self]) }
 
     /// Iterate outline giving files and line numbers that correspond to a headline.
     ///
@@ -55,17 +53,13 @@ impl Outline {
         }
     }
 
-    pub fn push(&mut self, outline: Outline) {
-        self.children.push(outline);
-    }
+    pub fn push(&mut self, outline: Outline) { self.children.push(outline); }
 
     pub fn push_str(&mut self, line: impl Into<String>) {
         self.push(Outline::new(line, Vec::new()));
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.headline.is_none() && self.children.is_empty()
-    }
+    pub fn is_empty(&self) -> bool { self.headline.is_none() && self.children.is_empty() }
 
     /// Extract embedded metadata block from the outline.
     ///
@@ -152,9 +146,7 @@ impl Outline {
     }
 
     /// Like `concatenate`, but never tries to merge into headline.
-    pub(crate) fn concatenate_child(&mut self, other: Outline) {
-        self.push(other);
-    }
+    pub(crate) fn concatenate_child(&mut self, other: Outline) { self.push(other); }
 
     /// Simplify outlines with empty headline and single child.
     ///
@@ -172,9 +164,7 @@ impl<'a> IntoIterator for &'a Outline {
     type Item = &'a Outline;
     type IntoIter = OutlineIter<'a>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
+    fn into_iter(self) -> Self::IntoIter { self.iter() }
 }
 
 impl From<&str> for Outline {
@@ -252,9 +242,7 @@ impl From<&str> for Outline {
 impl FromStr for Outline {
     type Err = ();
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(s.into())
-    }
+    fn from_str(s: &str) -> Result<Self, Self::Err> { Ok(s.into()) }
 }
 
 impl fmt::Display for Outline {
@@ -408,9 +396,7 @@ impl<'a> TryFrom<&'a Outline> for &'a Path {
     }
 }
 
-fn is_comma_string(s: &str) -> bool {
-    s.chars().all(|c| c == ',')
-}
+fn is_comma_string(s: &str) -> bool { s.chars().all(|c| c == ',') }
 
 fn unescape_comma_string(s: &str) -> &str {
     if is_comma_string(s) {

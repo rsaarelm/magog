@@ -108,9 +108,9 @@ fn light(color: SRgba) -> SRgba {
 fn checkerboard((pos, color): (CellVector, SRgba)) -> (CellVector, SRgba) {
     let sec = Sector::from(Location::new(pos.x as i16, pos.y as i16, 0));
     let color = match (sec.x + sec.y) % 3 {
-      0 => dark(color),
-      1 => mid(color),
-      _ => light(color)
+        0 => dark(color),
+        1 => mid(color),
+        _ => light(color),
     };
     (pos, color)
 }

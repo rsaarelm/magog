@@ -48,9 +48,7 @@ pub fn into_outline<T: Serialize>(value: T) -> Result<Outline> {
 }
 
 impl<T: fmt::Display> From<T> for Value {
-    fn from(item: T) -> Value {
-        Value::new(format!("{}", item))
-    }
+    fn from(item: T) -> Value { Value::new(format!("{}", item)) }
 }
 
 impl Value {
@@ -183,9 +181,7 @@ impl Expr {
 }
 
 impl<T: Into<Value>> From<T> for Expr {
-    fn from(item: T) -> Expr {
-        Atom(item.into())
-    }
+    fn from(item: T) -> Expr { Atom(item.into()) }
 }
 
 impl TryFrom<Expr> for Outline {
@@ -275,49 +271,27 @@ impl<'a> ser::Serializer for &'a mut Serializer {
     type SerializeStruct = Self;
     type SerializeStructVariant = Self;
 
-    fn serialize_bool(self, v: bool) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_bool(self, v: bool) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_i8(self, v: i8) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_i8(self, v: i8) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_i16(self, v: i16) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_i16(self, v: i16) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_i32(self, v: i32) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_i32(self, v: i32) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_i64(self, v: i64) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_i64(self, v: i64) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_u8(self, v: u8) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_u8(self, v: u8) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_u16(self, v: u16) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_u16(self, v: u16) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_u32(self, v: u32) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_u32(self, v: u32) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_u64(self, v: u64) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_u64(self, v: u64) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_f32(self, v: f32) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_f32(self, v: f32) -> Result<Expr> { Ok(v.into()) }
 
-    fn serialize_f64(self, v: f64) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_f64(self, v: f64) -> Result<Expr> { Ok(v.into()) }
 
     fn serialize_char(self, v: char) -> Result<Expr> {
         if v.is_whitespace() {
@@ -327,9 +301,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         Ok(v.into())
     }
 
-    fn serialize_str(self, v: &str) -> Result<Expr> {
-        Ok(v.into())
-    }
+    fn serialize_str(self, v: &str) -> Result<Expr> { Ok(v.into()) }
 
     fn serialize_bytes(self, _v: &[u8]) -> Result<Expr> {
         unimplemented!();
@@ -385,9 +357,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         unimplemented!();
     }
 
-    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
-        Ok(self)
-    }
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> { Ok(self) }
 
     fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
         self.serialize_seq(Some(len))
@@ -411,9 +381,7 @@ impl<'a> ser::Serializer for &'a mut Serializer {
         unimplemented!();
     }
 
-    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
-        Ok(self)
-    }
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> { Ok(self) }
 
     fn serialize_struct(self, _name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
         self.serialize_map(Some(len))
@@ -442,9 +410,7 @@ impl<'a> ser::SerializeSeq for &'a mut Serializer {
         Ok(())
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeTuple for &'a mut Serializer {
@@ -459,9 +425,7 @@ impl<'a> ser::SerializeTuple for &'a mut Serializer {
         Ok(())
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
@@ -475,9 +439,7 @@ impl<'a> ser::SerializeTupleStruct for &'a mut Serializer {
         unimplemented!();
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
@@ -491,9 +453,7 @@ impl<'a> ser::SerializeTupleVariant for &'a mut Serializer {
         unimplemented!();
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeMap for &'a mut Serializer {
@@ -542,9 +502,7 @@ impl<'a> ser::SerializeMap for &'a mut Serializer {
         Ok(())
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeStruct for &'a mut Serializer {
@@ -569,9 +527,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
         Ok(())
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
@@ -585,28 +541,20 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
         unimplemented!();
     }
 
-    fn end(self) -> Result<Expr> {
-        self.consume_acc()
-    }
+    fn end(self) -> Result<Expr> { self.consume_acc() }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Error(String);
 
 impl ser::Error for Error {
-    fn custom<T: fmt::Display>(msg: T) -> Self {
-        Error(msg.to_string())
-    }
+    fn custom<T: fmt::Display>(msg: T) -> Self { Error(msg.to_string()) }
 }
 
 impl error::Error for Error {
-    fn description(&self) -> &str {
-        &self.0
-    }
+    fn description(&self) -> &str { &self.0 }
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", self.0) }
 }
