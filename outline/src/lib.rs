@@ -5,7 +5,7 @@ mod ser;
 pub use crate::ser::into_outline;
 
 mod outline;
-pub use crate::outline::Outline;
+pub use crate::outline::{Outline, INDENT_PREFIX};
 
 mod symbol;
 pub use crate::symbol::Sym;

@@ -6,6 +6,8 @@ use std::iter::IntoIterator;
 use std::path::Path;
 use std::str::FromStr;
 
+pub const INDENT_PREFIX: &str = "\t";
+
 #[derive(Eq, PartialEq, Clone, Default)]
 /// Base datatype for an indented outline file
 pub struct Outline {
@@ -66,7 +68,7 @@ impl Outline {
     /// The metadata block is a twice-indented section right below the headline,
     ///
     /// ```
-    /// use outline::Outline;
+    /// use outline::{Outline, INDENT_PREFIX};
     /// use serde::Deserialize;
     ///
     /// #[derive(Eq, PartialEq, Debug, Deserialize)]
@@ -77,11 +79,12 @@ impl Outline {
     ///     z: Vec<i32>,
     /// }
     ///
-    /// let outline = Outline::from("\
-    /// First item
+    /// let text = "First item
     /// \t\tx 12
     /// \t\ta foobar
-    /// \tOutline content starts here");
+    /// \tOutline content starts here".replace('\t', INDENT_PREFIX);
+    ///
+    /// let outline = Outline::from(&text[..]);
     /// let first_item = outline.children[0].clone();
     ///
     /// assert_eq!(first_item.extract(), Some(Pt { x: 12, a: "foobar".into(), z: vec![] }));
@@ -173,12 +176,16 @@ impl From<&str> for Outline {
         //
         // Special case lines that are all whitespace into None values. (This parser does not
         // preserve trailing whitespace on all-whitespace lines.)
-        fn process_line(line: &str) -> Option<(i32, &str)> {
+        fn process_line(mut line: &str) -> Option<(i32, &str)> {
             if line.chars().all(|c| c.is_whitespace()) {
                 None
             } else {
-                let indent = line.chars().take_while(|c| *c == '\t').count();
-                Some((indent as i32, &line[indent..]))
+                let mut indent = 0;
+                while line.starts_with(INDENT_PREFIX) {
+                    line = &line[INDENT_PREFIX.len()..];
+                    indent += 1;
+                }
+                Some((indent, line))
             }
         }
 
@@ -250,7 +257,7 @@ impl fmt::Display for Outline {
         fn print_line(f: &mut fmt::Formatter, depth: i32, s: &str) -> fmt::Result {
             debug_assert!(depth >= 0);
             for _ in 0..depth {
-                write!(f, "\t")?;
+                write!(f, "{}", INDENT_PREFIX)?;
             }
             writeln!(f, "{}", s)
         }
@@ -469,20 +476,20 @@ mod tests {
 
     #[test]
     fn test_metadata_block() {
-        let outline = "\
-Outline headline
+        let outline = "Outline headline
 \t\tx 12
 \t\ta foobar
 \tOutline content starts here"
+            .replace('\t', INDENT_PREFIX)
             .parse::<Outline>()
             .unwrap()
             .children[0]
             .clone();
         test_roundtrip(&outline);
 
-        let metadata = "\
-\tx 12
+        let metadata = "\tx 12
 \ta foobar"
+            .replace('\t', INDENT_PREFIX)
             .parse::<Outline>()
             .unwrap()
             .children[0]
@@ -520,10 +527,10 @@ Outline headline
         }
 
         let mut outline = Outline::from(
-            "\
-Headline
+            &"Headline
 \t\tinfo foo bar
-\tstuff",
+\tstuff"
+                .replace('\t', INDENT_PREFIX)[..],
         );
         outline = outline.children[0].clone();
 

@@ -1,4 +1,4 @@
-use crate::{from_outline, into_outline, outline::Outline};
+use crate::{from_outline, into_outline, Outline, INDENT_PREFIX};
 use pretty_assertions::assert_eq;
 use serde::{de, Deserialize, Serialize};
 use std::fmt;
@@ -8,7 +8,10 @@ fn _test<T: de::DeserializeOwned + Serialize + fmt::Debug + PartialEq>(
     value: T,
     test_pretty_print: bool,
 ) {
-    let mut outline = Outline::from(outline);
+    let mut outline = outline
+        .replace('\t', INDENT_PREFIX)
+        .parse::<Outline>()
+        .unwrap();
 
     print!("\ntesting\n{}", outline);
 
@@ -407,9 +410,9 @@ fn test_serialize_outline() {
 \t\t\tbar",
         OutlineContainer {
             content: Outline::from(
-                "\
-foo
-\tbar",
+                &"foo
+\tbar"
+                    .replace('\t', INDENT_PREFIX)[..],
             ),
         },
     );
