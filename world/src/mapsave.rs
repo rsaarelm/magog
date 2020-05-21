@@ -1,5 +1,5 @@
 use crate::spec::EntitySpawn;
-use crate::{Location, Terrain};
+use crate::{Location, Sector, Terrain};
 use calx::{tiled, CellVector, FromPrefab, IntoPrefab};
 use euclid::vec2;
 use serde_derive::{Deserialize, Serialize};
@@ -211,16 +211,20 @@ impl TryFrom<tiled::Map> for WorldData {
 
         let mut layers = BTreeMap::new();
         for (loc, c) in terrain_map {
-            let layer = layers.entry(loc.z).or_insert(Layer::default());
-            let pos = CellVector::new(loc.x as i32, loc.y as i32);
+            let sector = Sector::from(loc);
+            let pos = Location::from(sector).v2_at(loc).unwrap();
+
+            let layer = layers.entry(sector).or_insert(Layer::default());
             layer.min_x = layer.min_x.min(pos.x);
             layer.min_y = layer.min_y.min(pos.y);
             layer.cells.insert(pos, (c, Vec::new() as Vec<EntitySpawn>));
         }
 
         for (loc, c) in spawn_map {
-            let layer = layers.entry(loc.z).or_insert(Layer::default());
-            let pos = CellVector::new(loc.x as i32, loc.y as i32);
+            let sector = Sector::from(loc);
+            let pos = Location::from(sector).v2_at(loc).unwrap();
+
+            let layer = layers.entry(sector).or_insert(Layer::default());
             if let Some(cell) = layer.cells.get_mut(&pos) {
                 cell.1.push(c);
             } else {
@@ -231,8 +235,8 @@ impl TryFrom<tiled::Map> for WorldData {
         // Construct WorldData instance from intermediate data.
 
         let mut patches = Vec::new();
-        for (z, layer) in layers.into_iter().rev() {
-            let offset = Location::new(layer.min_x as i16, layer.min_y as i16, z as i16);
+        for (sector, layer) in layers.into_iter() {
+            let offset = Location::from(sector) + vec2(layer.min_x, layer.min_y);
             let patch = MapPatch::new(layer.cells.into_iter())?;
             patches.push(PatchData { offset, patch });
         }
