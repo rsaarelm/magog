@@ -174,13 +174,21 @@ impl project::From<SectorSpace> for CellSpace {
 ///
 /// A sector represents a rectangular chunk of locations that fit on the visual screen. Sector
 /// coordinates form their own sector space that tiles the location space with sectors.
-#[derive(
-    Copy, Clone, Eq, PartialEq, Default, Hash, PartialOrd, Ord, Debug, Serialize, Deserialize,
-)]
+#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug, Serialize, Deserialize)]
 pub struct Sector {
     pub x: i16,
     pub y: i16,
     pub z: i16,
+}
+
+impl PartialOrd for Sector {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
+}
+
+impl Ord for Sector {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (-self.z, self.y, self.x).cmp(&(-other.z, other.y, other.x))
+    }
 }
 
 impl Add<SectorVec> for Sector {
