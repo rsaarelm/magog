@@ -11,13 +11,24 @@ use std::num::Wrapping;
 use std::ops::{Add, Sub};
 
 /// Unambiguous location in the game world.
-#[derive(
-    Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Default, Serialize, Deserialize,
-)]
+#[derive(Copy, Eq, PartialEq, Clone, Hash, PartialOrd, Ord, Debug, Default)]
 pub struct Location {
     pub x: i16,
     pub y: i16,
     pub z: i16,
+}
+
+impl serde::Serialize for Location {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        (self.x, self.y, self.z).serialize(s)
+    }
+}
+
+impl<'a> serde::Deserialize<'a> for Location {
+    fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
+        let (x, y, z): (i16, i16, i16) = serde::Deserialize::deserialize(d)?;
+        Ok(Location { x, y, z })
+    }
 }
 
 /// The type for a unique location in the game world.
