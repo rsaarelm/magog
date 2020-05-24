@@ -6,7 +6,7 @@ use std::iter::IntoIterator;
 use std::path::Path;
 use std::str::FromStr;
 
-pub const INDENT_PREFIX: &str = "\t";
+pub const INDENT_PREFIX: &str = "  ";
 
 #[derive(Eq, PartialEq, Clone, Default)]
 /// Base datatype for an indented outline file
