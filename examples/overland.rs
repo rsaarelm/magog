@@ -1,7 +1,10 @@
-use calx::{hex_disc, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage};
+use calx::{tiled, CellVector, FromPrefab, IntoPrefab, MinimapSpace, ProjectedImage};
 use euclid::vec2;
 use image::{GenericImage, GenericImageView, Pixel, SubImage};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::iter::FromIterator;
 use structopt::StructOpt;
 use vitral::SRgba;
 use world::{Location, Sector, Terrain};
@@ -43,6 +46,28 @@ enum Command {
         output: String,
     },
 
+    #[structopt(name = "generate-tiled", help = "Generate a blank overland Tiled json")]
+    GenerateTiled {
+        #[structopt(
+            short = "w",
+            long = "width",
+            default_value = "12",
+            help = "Width in sectors"
+        )]
+        width: u32,
+
+        #[structopt(
+            short = "h",
+            long = "height",
+            default_value = "7",
+            help = "Height in sectors"
+        )]
+        height: u32,
+
+        #[structopt(help = "Existing Tiled map to impose sector pattern on")]
+        path: String,
+    },
+
     #[structopt(
         name = "convert",
         help = "Convert map from one projection to another and normalize the checkerboard pattern"
@@ -71,10 +96,6 @@ fn default_map(width: u32, height: u32) -> Prefab<Terrain> {
     let mut terrain = HashMap::new();
 
     for &loc in &overland_locs(width, height) {
-        for edge in hex_disc(loc, 1) {
-            // Ensure land is surrounded by water past the sector edges.
-            terrain.entry(p(edge)).or_insert(Terrain::Water);
-        }
         terrain.insert(p(loc), Terrain::Grass);
     }
 
@@ -204,6 +225,42 @@ fn convert(
     save(prefab, output_is_minimap, output_path.unwrap_or(input_path));
 }
 
+fn generate_tiled(path: String, width: u32, height: u32) {
+    let map = default_map(width, height);
+    let mut tiled_map: tiled::Map = serde_json::from_reader(BufReader::new(
+        File::open(path).expect("Couldn't open file"),
+    ))
+    .expect("Couldn't parse Tiled JSON map");
+
+    tiled_map.layers = Vec::new();
+
+    let chunks = tiled::ChunkMap::from_iter(map.into_iter().map(|(pos, _)| {
+        let sec = Sector::from(Location::new(pos.x as i16, pos.y as i16, 0));
+        let tile = match (sec.x + sec.y) % 3 {
+            0 => 1,
+            1 => 2,
+            _ => 3,
+        };
+        (euclid::point2(pos.x, pos.y), tile)
+    }));
+
+    tiled_map.infinite = true;
+    tiled_map.layers.push(tiled::Layer::TileLayer {
+        name: "surface".into(),
+        id: 0,
+        visible: true,
+        opacity: 1.0,
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        chunks: Some(chunks),
+        data: None,
+    });
+
+    print!("{}", serde_json::to_string(&tiled_map).unwrap());
+}
+
 fn main() {
     let opt = Opt::from_args();
     match opt.cmd {
@@ -213,6 +270,11 @@ fn main() {
             minimap,
             output,
         } => generate(width, height, minimap, output),
+        Command::GenerateTiled {
+            width,
+            height,
+            path,
+        } => generate_tiled(path, width, height),
         Command::Convert {
             input,
             input_minimap,
