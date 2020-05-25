@@ -278,7 +278,7 @@ fn tiled_to_terrain(tiled_id: u32) -> Option<Terrain> {
 }
 
 fn tiled_to_spawn(object: &tiled::Object) -> Result<EntitySpawn, Box<dyn Error>> {
-    const TILED_SPAWNS_OFFSET: usize = 129;
+    const TILED_SPAWNS_OFFSET: usize = 130;
     const TILED_SPAWNS: [&str; 4] = ["player", "dreg", "ooze", "sword"];
 
     if !object.name.is_empty() {

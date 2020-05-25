@@ -98,7 +98,7 @@ impl ChunkMap {
             p += 1;
             Some(ret)
         })
-        .filter(|(_, t)| *t != 0)
+        .filter_map(|(p, c)| if c == 0 { None } else { Some((p, c - 1)) })
     }
 }
 
