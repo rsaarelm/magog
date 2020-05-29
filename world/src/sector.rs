@@ -786,7 +786,7 @@ impl Distribution<EntitySpawn> for ConnectedSectorSpec<'_> {
             })
             .unwrap();
 
-        EntitySpawn::from_str(item.name()).unwrap()
+        EntitySpawn::from_str(item.id()).unwrap()
     }
 }
 
