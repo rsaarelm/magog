@@ -98,7 +98,7 @@ impl ChunkMap {
             p += 1;
             Some(ret)
         })
-        .filter_map(|(p, c)| if c == 0 { None } else { Some((p, c - 1)) })
+        .filter_map(|(p, c)| if c == 0 { None } else { Some((p, c)) })
     }
 }
 
@@ -180,7 +180,7 @@ impl Layer {
 
                         let p = point2(x + (i % width) as i32, y + (i / width) as i32);
 
-                        Some((p, *c - 1))
+                        Some((p, *c))
                     },
                 )))
             }

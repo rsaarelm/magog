@@ -247,8 +247,9 @@ impl TryFrom<tiled::Map> for WorldData {
 
 fn tiled_to_terrain(tiled_id: u32) -> Option<Terrain> {
     /// Hardcoded tileset used in Tiled maps. Edit as needed.
-    const TILED_TILES: [Terrain; 16] = [
+    const TILED_TILES: [Terrain; 17] = [
         // FIXME: Only have valid terrains in the list, keep this simple...
+        Terrain::Empty,
         Terrain::Empty,
         Terrain::Empty,
         Terrain::Ground,
