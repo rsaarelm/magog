@@ -47,10 +47,10 @@ pub trait Spec: Distribution<ExternalEntity> + Sync + Send {
 }
 
 const EVERYWHERE: u64 = 0xffff_ffff_ffff_ffff;
-const DUNGEON: u64 = (1 << Biome::Dungeon as u64);
+const DUNGEON: u64 = 1 << Biome::Dungeon as u64;
 const TEMPERATE: u64 = (1 << Biome::Grassland as u64) | (1 << Biome::Forest as u64);
 const ARID: u64 = (1 << Biome::Desert as u64) | (1 << Biome::Mountain as u64);
-const URBAN: u64 = (1 << Biome::City as u64);
+const URBAN: u64 = 1 << Biome::City as u64;
 
 #[derive(Debug)]
 pub struct MobSpec {

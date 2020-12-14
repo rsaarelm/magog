@@ -8,7 +8,7 @@ pub struct MsgQueue {
 }
 
 lazy_static! {
-    pub static ref MSG_QUEUE: Mutex<RefCell<MsgQueue>> = { Default::default() };
+    pub static ref MSG_QUEUE: Mutex<RefCell<MsgQueue>> = Default::default();
 }
 
 struct QueueReceiver;

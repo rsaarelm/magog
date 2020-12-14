@@ -44,7 +44,7 @@ impl<'a> From<PngBytes<'a>> for RgbaImage {
 
         let img = image::load(Cursor::new(data.0), image::ImageFormat::Png)
             .expect("Failed to load PNG data");
-        img.to_rgba()
+        img.to_rgba8()
     }
 }
 

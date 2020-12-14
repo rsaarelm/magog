@@ -14,13 +14,13 @@ members = ["calx", "calx-ecs", "display", "outline", "vitral", "world"]
 calx = { path = "calx" }
 calx-ecs = { path = "calx-ecs" }
 display = { path = "display" }
-env_logger = "0.7"
-euclid = "0.20"
+env_logger = "0.8"
+euclid = "0.22"
 image = "0.23"
 lazy_static = "1.2"
 log = "0.4"
 rand = { version = "0.7", features = ["serde1"] }
-ron = "0.5"
+ron = "0.6"
 serde = "1"
 structopt = "0.3"
 time = "0.2"

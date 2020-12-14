@@ -356,7 +356,7 @@ impl Scene<GameRuntime> for GameLoop {
                     // Quick load
 
                     // TODO: Error handling when file is missing or not an image.
-                    let save = image::open("save.png").unwrap().to_rgb();
+                    let save = image::open("save.png").unwrap().to_rgb8();
                     // TODO: Error handling when stego data can't be retrieved
                     let save = stego::extract(&save).unwrap();
                     // TODO: Error handling when stego data can't be deserialized into world

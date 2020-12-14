@@ -11,7 +11,7 @@ pub struct EngineState {
 
 lazy_static! {
     /// Global game engine state.
-    pub static ref ENGINE_STATE: Mutex<EngineState> = { Default::default() };
+    pub static ref ENGINE_STATE: Mutex<EngineState> = Default::default();
 }
 
 /// Return the average frame duration for recent frames.
