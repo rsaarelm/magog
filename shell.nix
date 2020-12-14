@@ -5,7 +5,7 @@ let
 in
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    rustc cargo rustfmt rls cargo-outdated clippy
+    rustc cargo rustfmt rust-analyzer cargo-outdated clippy
 
     # Needed by cargo dependencies.
     cmake gcc zlib pkgconfig openssl
