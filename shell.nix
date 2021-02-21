@@ -27,7 +27,7 @@ pkgs.mkShell {
   shellHook = ''
     # Dynamic linking for Vulkan stuff for wgpu graphics
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${
-      with pkgs; pkgs.stdenv.lib.makeLibraryPath [ vulkan-loader ]
+      with pkgs; pkgs.stdenv.lib.makeLibraryPath [ vulkan-loader openssl zlib ]
     }"
 
     # Run clippy without showing stuff I don't care about.
