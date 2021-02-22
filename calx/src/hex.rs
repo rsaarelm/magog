@@ -197,7 +197,7 @@ impl Sub<i32> for Dir6 {
 }
 
 impl Distribution<Dir6> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0, 6)) }
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Dir6 { Dir6::from_int(rng.gen_range(0..6)) }
 }
 
 impl From<Dir6> for CellVector {

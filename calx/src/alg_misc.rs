@@ -116,7 +116,7 @@ impl Deciban {
 
 impl Distribution<Deciban> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> crate::Deciban {
-        Deciban::new(rng.gen_range(0.0, 1.0))
+        Deciban::new(rng.gen_range(0.0..1.0))
     }
 }
 

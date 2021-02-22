@@ -268,10 +268,10 @@ impl Sector {
         debug_assert!(SECTOR_HEIGHT > 6);
 
         let mut rng = seeded_rng(&(&seed, &self));
-        let u = 4 * rng.gen_range(0, n) + u_offset;
+        let u = 4 * rng.gen_range(0..n) + u_offset;
         // Leave space to top and bottom so you can make a path from the stairwell. Stairs usually
         // have a vertical enclosure.
-        let v = rng.gen_range(3, SECTOR_HEIGHT - 3);
+        let v = rng.gen_range(3..SECTOR_HEIGHT - 3);
 
         Location::from(self) + vec2::<i32, StaggeredHexSpace>(u, v).project()
     }

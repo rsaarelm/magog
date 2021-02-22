@@ -40,7 +40,7 @@ impl<T: Rng + ?Sized> RngExt for T {
 
     fn one_chance_in(&mut self, n: u32) -> bool { self.gen_bool(1.0 / n as f64) }
 
-    fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0, 1.0) < p }
+    fn with_chance(&mut self, p: f32) -> bool { self.gen_range(0.0..1.0) < p }
 
     fn with_log_odds(&mut self, db: Deciban) -> bool { db > self.gen::<Deciban>() }
 }
@@ -70,7 +70,7 @@ impl<'a, R: Rng + ?Sized> Iterator for RandomPermutation<'a, R> {
             return None;
         }
 
-        let swap_idx = self.rng.gen_range(0, self.remain);
+        let swap_idx = self.rng.gen_range(0..self.remain);
         self.remain -= 1;
 
         let head = *self.shuffle.get(self.remain).unwrap_or(&self.remain);

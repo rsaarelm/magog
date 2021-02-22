@@ -196,7 +196,7 @@ impl Map {
 
     /// Build a random rectangular room.
     pub fn new_plain_room(rng: &mut (impl Rng + ?Sized)) -> Map {
-        let (w, h) = (rng.gen_range(2, 8), rng.gen_range(2, 8));
+        let (w, h) = (rng.gen_range(2..8), rng.gen_range(2..8));
 
         let mut ret = Map::default();
 

@@ -24,4 +24,4 @@ winit = "0.24"
 
 [dev-dependencies]
 env_logger = "0.8"
-rand = "0.7"
+rand = { version = "0.8", features = ["serde1"] }
