@@ -19,8 +19,8 @@ log = "0.4"
 serde = "1"
 serde_derive = "1"
 time = "0.2"
-wgpu = "0.6"
-winit = "0.24"
+wgpu = "0.8"
+winit = "0.25"
 
 [dev-dependencies]
 env_logger = "0.8"

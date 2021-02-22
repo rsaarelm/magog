@@ -388,7 +388,7 @@ impl Map {
     /// Will return true if the cell is traversable but should not be dug, ie. if it's a vault
     /// interior cell or an already dug tunnel.
     pub fn can_tunnel(&self, pos: CellVector, dir: Dir6) -> bool {
-        let target_pos = pos + dir.into();
+        let target_pos = pos + CellVector::from(dir);
         if self.get(target_pos).map_or(false, |c| c.is_walkable()) {
             // Moving through open space, all is good.
             return true;
@@ -553,7 +553,7 @@ impl Map {
 
             let map = open[&p].clone();
             for &d in Dir6::iter() {
-                let q = p + d.into();
+                let q = p + CellVector::from(d);
                 if closed.contains(&q) {
                     continue;
                 }

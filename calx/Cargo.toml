@@ -14,7 +14,7 @@ euclid = "0.22"
 image = "0.23"
 libflate = "1"
 log = "0.4"
-num = "0.3"
+num = "0.4"
 rand = { version = "0.8", features = ["serde1"] }
 rand_xorshift = { version = "0.3", features = ["serde1"] }
 serde = "1"
