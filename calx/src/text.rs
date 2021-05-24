@@ -1,6 +1,5 @@
 //! String processing utilities
 
-use num::Zero;
 use std::ops::{Add, AddAssign};
 
 /// Split a long line into multiple lines that fit a given width.
@@ -30,7 +29,7 @@ pub struct LineSplit<'a, F, N> {
 impl<'a, F, N> Iterator for LineSplit<'a, F, N>
 where
     F: Fn(char) -> N,
-    N: Zero + Add + AddAssign + Copy + PartialOrd,
+    N: Default + Add + AddAssign + Copy + PartialOrd,
 {
     type Item = &'a str;
 
@@ -46,10 +45,10 @@ where
             prev: char,
         }
 
-        impl<N: Zero + Add + AddAssign + Copy> State<N> {
+        impl<N: Default + Add + AddAssign + Copy> State<N> {
             fn new() -> State<N> {
                 State {
-                    total_width: N::zero(),
+                    total_width: N::default(),
                     clip_pos: 0,
                     last_word_break: None,
                     prev: 'A',

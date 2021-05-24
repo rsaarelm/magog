@@ -2,7 +2,6 @@ use crate::cell::{Fov, PolarPoint};
 use crate::hex::Dir6;
 use crate::CellVector;
 use euclid::vec2;
-use num::Integer;
 
 pub type HexFov<T> = Fov<HexPolarPoint, T>;
 
@@ -41,8 +40,8 @@ impl PolarPoint for HexPolarPoint {
             return vec2(0, 0);
         }
         let index = self.winding_index();
-        let sector = index.mod_floor(&(self.radius as i32 * 6)) / self.radius as i32;
-        let offset = index.mod_floor(&(self.radius as i32));
+        let sector = index.rem_euclid(self.radius as i32 * 6) / self.radius as i32;
+        let offset = index.rem_euclid(self.radius as i32);
 
         let rod = Dir6::from_int(sector).to_v2();
         let tangent = Dir6::from_int(sector + 2).to_v2();

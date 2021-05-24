@@ -1,7 +1,6 @@
 use crate::rng::RandomPermutation;
 use crate::{project, CellSpace, CellVector, Space};
 use euclid::{vec2, Vector2D};
-use num::Integer;
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
 use serde_derive::{Deserialize, Serialize};
@@ -162,7 +161,7 @@ impl Dir6 {
     }
 
     /// Convert an integer to a hex dir using modular arithmetic.
-    pub fn from_int(i: i32) -> Dir6 { DIRS[i.mod_floor(&6) as usize] }
+    pub fn from_int(i: i32) -> Dir6 { DIRS[i.rem_euclid(6) as usize] }
 
     /// Convert a hex dir into the corresponding unit vector.
     pub fn to_v2(self) -> CellVector { CellVector::from(self) }

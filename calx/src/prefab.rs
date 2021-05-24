@@ -6,7 +6,6 @@ use crate::{
 };
 use euclid::{point2, vec2, Point2D, Rect, Vector2D};
 use image::Pixel;
-use num::Integer;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -544,7 +543,7 @@ impl project::From<MinimapSpace> for CellSpace {
     ) -> Vector2D<Self::T, Self> {
         // Snap in square cells
         vec.x &= -1; // Two-pixel columns
-        if vec.x.mod_floor(&4) < 2 {
+        if vec.x.rem_euclid(4) < 2 {
             // Even column
             vec.y &= !1;
         } else {
