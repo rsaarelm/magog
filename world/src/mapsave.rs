@@ -115,7 +115,11 @@ impl MapPatch {
 
 impl fmt::Display for MapPatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", outline::into_outline(self).unwrap())
+        writeln!(
+            f,
+            "{}",
+            ron::ser::to_string_pretty(self, Default::default()).unwrap()
+        )
     }
 }
 
@@ -129,7 +133,11 @@ pub struct PatchData {
 
 impl fmt::Display for PatchData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", outline::into_outline(self).unwrap())
+        writeln!(
+            f,
+            "{}",
+            ron::ser::to_string_pretty(self, Default::default()).unwrap()
+        )
     }
 }
 
@@ -140,7 +148,11 @@ pub struct WorldData {
 
 impl fmt::Display for WorldData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}", outline::into_outline(self).unwrap())
+        writeln!(
+            f,
+            "{}",
+            ron::ser::to_string_pretty(self, Default::default()).unwrap()
+        )
     }
 }
 
