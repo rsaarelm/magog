@@ -1,5 +1,5 @@
 let
-  rpath = with pkgs; pkgs.stdenv.lib.makeLibraryPath [ vulkan-loader ];
+  rpath = with pkgs; pkgs.lib.makeLibraryPath [ vulkan-loader ];
 
   # Tell Nix to ignore in-tree build artifact directory 'target' when
   # determining the unique source fingerprint of the repo.
@@ -47,7 +47,7 @@ in naersk.buildPackage {
     fi
   '';
 
-  meta = with pkgs.stdenv.lib; {
+  meta = with pkgs.lib; {
     description = "A fantasy roguelike game";
     homepage = https://github.com/rsaarelm/magog;
     license = licenses.agpl3;
