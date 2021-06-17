@@ -96,7 +96,7 @@ impl<T: Eq + Hash + Clone + Debug> AtlasCache<T> {
     ///
     /// If the added image is larger than `atlas_size` of the atlas cache in either x or y
     /// dimension, the image cannot be added and the method will panic.
-    pub fn get<'a>(&'a mut self, key: &SubImageSpec<T>) -> Option<ImageData> {
+    pub fn get(&mut self, key: &SubImageSpec<T>) -> Option<ImageData> {
         // This subimage already exists, return it.
         if self.atlas_images.contains_key(key) {
             return self.atlas_images.get(key).cloned();

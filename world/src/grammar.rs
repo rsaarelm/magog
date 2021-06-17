@@ -291,10 +291,7 @@ pub fn capitalize(word: &str) -> String {
 
 pub fn is_vowel(c: char) -> bool {
     // If accented chars are used, they need to be added here...
-    match c.to_lowercase().next().unwrap_or('\0') {
-        'a' | 'e' | 'i' | 'o' | 'u' => true,
-        _ => false,
-    }
+    matches!(c.to_lowercase().next().unwrap_or('\0'), 'a' | 'e' | 'i' | 'o' | 'u')
 }
 
 #[cfg(test)]

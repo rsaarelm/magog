@@ -1,4 +1,3 @@
-use serde;
 use serde_derive::{Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 

@@ -45,11 +45,7 @@ impl World {
             .entities_in(e)
             .into_iter()
             .filter_map(|(slot, e)| {
-                if let Some(e) = self.extract(e) {
-                    Some((slot, e))
-                } else {
-                    None
-                }
+                self.extract(e).map(|e| (slot, e))
             })
             .collect();
         Some(ExternalEntity { loadout, contents })

@@ -7,7 +7,6 @@ use crate::{
 };
 use euclid::{vec2, vec3};
 use log::info;
-use serde;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::mem;

@@ -31,9 +31,6 @@ pub enum Ability {
 impl Ability {
     pub fn is_targeted(self) -> bool {
         use Ability::*;
-        match self {
-            LightningBolt => false,
-            _ => true,
-        }
+        !matches!(self, LightningBolt)
     }
 }

@@ -27,10 +27,7 @@ pub enum Slot {
 
 impl Slot {
     pub fn is_equipment_slot(self) -> bool {
-        match self {
-            Slot::Bag(_) => false,
-            _ => true,
-        }
+        !matches!(self, Slot::Bag(_))
     }
 
     pub fn accepts(self, equip_type: Option<EquipType>) -> bool {
@@ -109,7 +106,7 @@ impl World {
     pub fn entities_in_bag(&self, parent: Entity) -> Vec<(Slot, Entity)> {
         self.entities_in(parent)
             .into_iter()
-            .filter(|(slot, _)| if let Slot::Bag(_) = slot { true } else { false })
+            .filter(|(slot, _)| matches!(slot, Slot::Bag(_)))
             .collect()
     }
 
@@ -302,11 +299,7 @@ impl World {
         // coincidentally the scrolls tend to be untargeted and the wands tend to be targeted
         // spells, so we'll just use that as proxy.
         self.ecs().item.get(item).map_or(false, |i| {
-            if let ItemType::UntargetedUsable(_) = i.item_type {
-                true
-            } else {
-                false
-            }
+            matches!(i.item_type, ItemType::UntargetedUsable(_))
         })
     }
 

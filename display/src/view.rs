@@ -457,7 +457,7 @@ struct ScreenFov<'a> {
 
 impl<'a> PartialEq for ScreenFov<'a> {
     fn eq(&self, other: &Self) -> bool {
-        self.w as *const World == other.w as *const World
+        std::ptr::eq(self.w, other.w)
             && self.screen_area == other.screen_area
             && self.origins == other.origins
     }

@@ -35,7 +35,7 @@ impl std::str::FromStr for Parseable<(Terrain, Vec<EntitySpawn>)> {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split(',').map(|s| s.trim()).collect();
         if parts.is_empty() {
-            Err("No terrain set")?;
+            return Err("No terrain set".into());
         }
 
         let terrain = Terrain::from_str(parts[0])?;
@@ -90,7 +90,7 @@ impl MapPatch {
             if let Ok(c) = legend_builder.add(&v) {
                 prefab.insert(k, c);
             } else {
-                Err("Unable to build legend, scene too complex?")?;
+                return Err("Unable to build legend, scene too complex?".into());
             }
         }
 
@@ -240,7 +240,7 @@ impl TryFrom<tiled::Map> for WorldData {
             if let Some(cell) = layer.cells.get_mut(&pos) {
                 cell.1.push(c);
             } else {
-                Err(format!("Object spawn {}: {:?} outside terrain", c, loc))?;
+                return Err(format!("Object spawn {}: {:?} outside terrain", c, loc).into());
             }
         }
 
@@ -305,7 +305,7 @@ fn tiled_to_spawn(object: &tiled::Object) -> Result<EntitySpawn, Box<dyn Error>>
             return Ok(EntitySpawn::from_str(s)?);
         }
     }
-    Err("Bad spawn")?
+    return Err("Bad spawn".into())
 }
 
 #[cfg(test)]

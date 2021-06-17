@@ -148,6 +148,6 @@ impl World {
         self.ecs()
             .desc
             .get(e)
-            .and_then(|desc| Some(&desc.singular_name[..]))
+            .map(|desc| &desc.singular_name[..])
     }
 }

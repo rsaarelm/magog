@@ -106,7 +106,7 @@ pub struct Deciban(pub f32);
 impl Deciban {
     /// Build a deciban value from a probability in [0, 1).
     pub fn new(p: f32) -> Deciban {
-        debug_assert!(p >= 0.0 && p < 1.0);
+        debug_assert!((0.0..1.0).contains(&p));
         Deciban(10.0 * (p / (1.0 - p)).log(10.0))
     }
 

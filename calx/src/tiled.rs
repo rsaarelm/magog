@@ -148,10 +148,7 @@ impl Layer {
     }
 
     pub fn is_tile_layer(&self) -> bool {
-        match self {
-            Layer::TileLayer { .. } => true,
-            _ => false,
-        }
+        matches!(self, Layer::TileLayer { .. })
     }
 
     pub fn iter_tiles(&self) -> Option<Box<dyn Iterator<Item = (Point2D<i32>, u32)> + '_>> {

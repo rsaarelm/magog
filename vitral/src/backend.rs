@@ -534,7 +534,7 @@ impl Gfx {
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachment {
-                view: &target,
+                view: target,
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
@@ -711,7 +711,7 @@ impl RenderBuffer {
 
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             color_attachments: &[wgpu::RenderPassColorAttachment {
-                view: &target,
+                view: target,
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
@@ -816,7 +816,7 @@ impl<'a> crate::atlas_cache::TextureInterface for TextureInterface<'a> {
     type Texture = Texture;
 
     fn update_texture(&mut self, texture: &mut Self::Texture, image: &image::RgbaImage) {
-        texture.blit(self.device, self.queue, &image.as_flat_samples().samples);
+        texture.blit(self.device, self.queue, image.as_flat_samples().samples);
     }
 
     fn new_texture(&mut self, size: Size2D<u32>) -> Self::Texture {
@@ -841,7 +841,7 @@ impl Texture {
 
         let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
-            contents: &bytes,
+            contents: bytes,
             usage: wgpu::BufferUsage::COPY_SRC,
         });
         let mut init_encoder =
@@ -931,9 +931,9 @@ impl Texture {
 
         Texture {
             texture,
-            view,
             sampler,
             extent,
+            view,
         }
     }
 

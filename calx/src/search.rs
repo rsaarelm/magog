@@ -102,8 +102,8 @@ where
         // returns the largest item first.
         let value = ::std::u32::MAX - dist.to_bits();
         MetricNode {
-            item,
             value,
+            item,
             come_from,
         }
     }

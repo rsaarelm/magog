@@ -11,7 +11,6 @@ use crate::{
     Anim, Distribution, ExternalEntity, Rng,
 };
 use lazy_static::lazy_static;
-use serde;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
@@ -557,7 +556,7 @@ impl serde::Serialize for EntitySpawn {
 impl<'a> serde::Deserialize<'a> for EntitySpawn {
     fn deserialize<D: serde::Deserializer<'a>>(d: D) -> Result<Self, D::Error> {
         let s: String = serde::Deserialize::deserialize(d)?;
-        Ok(EntitySpawn::from_str(&s).map_err(serde::de::Error::custom)?)
+        EntitySpawn::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
 

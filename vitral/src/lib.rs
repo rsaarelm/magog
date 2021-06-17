@@ -559,11 +559,7 @@ impl ClickState {
     }
 
     fn is_release(&self) -> bool {
-        if let ClickState::Release(_, _) = *self {
-            true
-        } else {
-            false
-        }
+        matches!(*self, ClickState::Release(_, _))
     }
 }
 

@@ -73,12 +73,7 @@ where
 {
     type Item = u8;
     fn next(&mut self) -> Option<u8> {
-        match self.pixels.next() {
-            Some((_, _, p)) => {
-                Some((p.0[0] << 5u8) | ((p.0[1] & 0b0000_0011) << 3u8) | (p.0[2] & 0b0000_0111))
-            }
-            None => None,
-        }
+        self.pixels.next().map(|(_, _, p)| (p.0[0] << 5u8) | ((p.0[1] & 0b0000_0011) << 3u8) | (p.0[2] & 0b0000_0111))
     }
 }
 

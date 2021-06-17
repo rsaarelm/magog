@@ -329,7 +329,7 @@ impl FromPrefab for DenseTextMap<String> {
                 }
             }
             ret.truncate(ret.trim_end().len());
-            ret.push_str("\n");
+            ret.push('\n');
         }
         ret.truncate(ret.trim_end().len());
 

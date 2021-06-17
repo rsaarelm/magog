@@ -1,7 +1,6 @@
 use self::Place::*;
 use crate::{Location, Slot, World};
 use calx_ecs::Entity;
-use serde;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::slice;
