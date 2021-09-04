@@ -2,7 +2,7 @@
 
 use euclid::default::Point2D;
 use euclid::point2;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::iter::{self, FromIterator, IntoIterator};
 use std::path::PathBuf;

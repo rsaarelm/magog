@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, Mul, Sub};
 use vitral::{Rgba, SRgba};
 

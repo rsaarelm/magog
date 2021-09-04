@@ -8,7 +8,7 @@ use tempdir::TempDir;
  * Return seconds elapsed since epoch.
  */
 pub fn precise_time_s() -> f64 {
-    let duration = time::OffsetDateTime::now_utc() - time::OffsetDateTime::unix_epoch();
+    let duration = time::OffsetDateTime::now_utc() - time::OffsetDateTime::UNIX_EPOCH;
     duration.as_seconds_f64()
 }
 

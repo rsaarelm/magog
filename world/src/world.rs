@@ -3,7 +3,7 @@ use crate::{
     stats, world_cache::WorldCache, Distribution, ExternalEntity, Location, Rng, WorldSkeleton,
 };
 use calx::seeded_rng;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 pub const GAME_VERSION: &str = "0.1.0";

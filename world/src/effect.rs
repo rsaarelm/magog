@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Game system effects on entities.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

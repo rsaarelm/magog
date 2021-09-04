@@ -1,7 +1,7 @@
 use crate::location::Location;
 use crate::location_set::LocationSet;
 use crate::FovStatus;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Map field-of-view and remembered terrain.
 #[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]

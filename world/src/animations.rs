@@ -4,7 +4,7 @@ use crate::{location::Location, world::World};
 use calx::{ease, project, CellSpace, ProjectVec, Space};
 use calx_ecs::Entity;
 use euclid::{vec2, Vector2D, Vector3D};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Location with a non-integer offset delta.
 ///

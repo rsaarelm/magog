@@ -2,7 +2,7 @@ use crate::spec::EntitySpawn;
 use crate::{Location, Sector, Terrain};
 use calx::{tiled, CellVector, FromPrefab, IntoPrefab};
 use euclid::vec2;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
 use std::error::Error;
@@ -26,7 +26,7 @@ const TILED_TILE_HEIGHT: f32 = 16.0;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Parseable<T>(pub T);
 
-serde_plain::derive_deserialize_from_str!(Parseable<(Terrain, Vec<EntitySpawn>)>, "parseable");
+serde_plain::derive_deserialize_from_fromstr!(Parseable<(Terrain, Vec<EntitySpawn>)>, "parseable");
 serde_plain::derive_serialize_from_display!(Parseable<(Terrain, Vec<EntitySpawn>)>);
 
 impl std::str::FromStr for Parseable<(Terrain, Vec<EntitySpawn>)> {

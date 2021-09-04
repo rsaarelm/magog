@@ -4,7 +4,7 @@ use crate::{msg, Ability, ActionOutcome, Location, World};
 use calx::{hex_neighbors, CellVector, HexGeom};
 use calx_ecs::Entity;
 use euclid::vec2;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::{HashSet, VecDeque};
 use std::slice;
 

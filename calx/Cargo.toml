@@ -17,11 +17,10 @@ log = "0.4"
 num = "0.4"
 rand = { version = "0.8", features = ["serde1"] }
 rand_xorshift = { version = "0.3", features = ["serde1"] }
-serde = "1"
-serde_derive = "1"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tempdir = "0.3"
-time = "0.2"
+time = "0.3"
 vec_map = "0.8"
 vitral = { path = "../vitral" }
 

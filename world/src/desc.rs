@@ -3,7 +3,7 @@ use crate::{
     World,
 };
 use calx_ecs::Entity;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// The visual representation for an entity
 ///

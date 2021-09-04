@@ -16,7 +16,7 @@ use lazy_static::lazy_static;
 use log::{debug, warn};
 use rand::seq::SliceRandom;
 use rand::Rng as _;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 use std::ops::{Add, Deref, DerefMut};

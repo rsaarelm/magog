@@ -6,7 +6,7 @@ use calx::{
     HexGeom, ProjectVec,
 };
 use euclid::{vec2, Vector2D};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::num::Wrapping;
 use std::ops::{Add, Sub};
 

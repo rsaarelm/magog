@@ -3,7 +3,7 @@ use crate::{project, CellSpace, CellVector, Space};
 use euclid::{vec2, Vector2D};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::cmp::max;
 use std::f32::consts::PI;
 use std::ops::{Add, Sub};

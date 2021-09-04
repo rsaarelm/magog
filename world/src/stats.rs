@@ -4,7 +4,7 @@ use crate::{
 };
 use calx::Dir6;
 use calx_ecs::Entity;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::default::Default;
 use std::ops::Add;

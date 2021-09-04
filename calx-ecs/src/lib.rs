@@ -2,7 +2,7 @@
 
 #![deny(missing_docs)]
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::ops;
 use std::slice;

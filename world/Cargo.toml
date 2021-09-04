@@ -19,8 +19,7 @@ noise = { version = "0.7", default-features = false }
 rand = { version = "0.8", features = ["serde1"] }
 rand_xorshift = { version = "0.3", features = ["serde1"] }
 ron = "0.6"
-serde = "1"
-serde_derive = "1"
-serde_plain = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_plain = "1"
 vec_map = "0.8"
 vitral = { path = "../vitral" }

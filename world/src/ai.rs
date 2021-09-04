@@ -7,7 +7,7 @@ use crate::{
 };
 use calx::{Dir6, RngExt};
 use calx_ecs::Entity;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Used to determine who tries to fight whom.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]

@@ -2,7 +2,7 @@ use crate::{Ability, Slot, World, WorldSeed};
 use calx::Dir6;
 use calx::Incremental;
 use calx_ecs::Entity;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Return type for actions that might fail.
 ///

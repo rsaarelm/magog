@@ -5,7 +5,7 @@
     clippy::unreadable_literal
 )]
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 use std::str::FromStr;

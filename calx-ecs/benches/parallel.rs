@@ -4,7 +4,7 @@
 extern crate test;
 
 use calx_ecs::{build_ecs, Entity};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use test::Bencher;
 
 pub const N: usize = 10000;
