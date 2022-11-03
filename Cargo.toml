@@ -9,6 +9,7 @@ edition = "2018"
 
 [workspace]
 members = ["calx", "calx-ecs", "display", "vitral", "world"]
+resolver = "2"
 
 [dependencies]
 calx = { path = "calx" }

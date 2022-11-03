@@ -3,3 +3,4 @@ target/
 build
 save.gam
 /*.png
+.idea/

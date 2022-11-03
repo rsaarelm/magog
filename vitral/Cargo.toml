@@ -18,7 +18,7 @@ lazy_static = "1.2"
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
 time = "0.3"
-wgpu = "0.8"
+wgpu = { version = "0.10", features = ["spirv"] }
 winit = "0.25"
 
 [dev-dependencies]
