@@ -11,14 +11,14 @@ name = "world"
 calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
 euclid = "0.22"
-image = "0.23"
+image = "0.24"
 indexmap = "1"
 lazy_static = "1"
 log = "0.4"
-noise = { version = "0.7", default-features = false }
+noise = { version = "0.8", default-features = false }
 rand = { version = "0.8", features = ["serde1"] }
 rand_xorshift = { version = "0.3", features = ["serde1"] }
-ron = "0.6"
+ron = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_plain = "1"
 vec_map = "0.8"

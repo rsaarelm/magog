@@ -53,9 +53,11 @@ impl<T: Eq + Hash + Clone + Debug> Default for AtlasCache<T> {
         // Hacky hack: Add one-pixel pure-white texture for drawing solid shapes without swapping
         // out the atlas texture. Assume atlas behavior will make it go in a predictable position
         // so we can just generate the image.
-        let solid =
-            image::RgbaImage::from_pixel(1, 1, image::Pixel::from_channels(0xff, 0xff, 0xff, 0xff));
-        let solid = atlas0.add(&solid).unwrap();
+        let solid = {
+            let pixel = image::Rgba([0xff, 0xff, 0xff, 0xff]);
+            let image = image::RgbaImage::from_pixel(1, 1, pixel);
+            atlas0.add(&image).unwrap()
+        };
 
         // Let's just make it so we can use a dirty hack and assume it shows up in origin without
         // even having AtlasCache reference available...

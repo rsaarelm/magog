@@ -318,9 +318,9 @@ macro_rules! build_ecs {
 
         impl $crate::Store for _ComponentStore {
             fn for_each_component<F>(&mut self, mut f: F)
-                where F: FnMut(&mut $crate::AnyComponent)
+                where F: FnMut(&mut dyn $crate::AnyComponent)
             {
-                $(f(&mut self.$compname as &mut $crate::AnyComponent);)+
+                $(f(&mut self.$compname as &mut dyn $crate::AnyComponent);)+
             }
         }
 

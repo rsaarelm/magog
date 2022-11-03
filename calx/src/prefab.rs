@@ -5,7 +5,6 @@ use crate::{
     space::{ProjectVec, Space},
 };
 use euclid::{point2, vec2, Point2D, Rect, Vector2D};
-use image::Pixel;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
@@ -25,7 +24,7 @@ pub enum PrefabError {
 }
 
 impl fmt::Display for PrefabError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.description()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.to_string()) }
 }
 
 impl Error for PrefabError {
@@ -378,10 +377,14 @@ where
 
         // Completely black pixels are assumed to be non-data.
         fn convert_nonblack<P: image::Pixel<Subpixel = u8>>(p: P) -> Option<SRgba> {
-            let (r, g, b, _) = p.channels4();
-            if r != 0 || g != 0 || b != 0 {
-                Some(SRgba::new(r, g, b, 0xff))
+            if let &[r, g, b, _] = p.channels() {
+                if r != 0 || g != 0 || b != 0 {
+                    Some(SRgba::new(r, g, b, 0xff))
+                } else {
+                    None
+                }
             } else {
+                log::error!("p should have 4 channels, probably only has 3 instead");
                 None
             }
         }
@@ -485,12 +488,12 @@ where
         image.put_pixel(
             (1 - bounds.origin.x) as u32,
             0,
-            image::Rgba::from_channels(0xff, 0xff, 0, 0xff),
+            image::Rgba([0xff, 0xff, 0, 0xff]),
         );
         image.put_pixel(
             0,
             (1 - bounds.origin.y) as u32,
-            image::Rgba::from_channels(0xff, 0xff, 0, 0xff),
+            image::Rgba([0xff, 0xff, 0, 0xff]),
         );
 
         for y in 0..bounds.size.height {
@@ -503,9 +506,9 @@ where
                         c != scolor::BLACK,
                         "Prefab contains full black color, converting to image will lose data"
                     );
-                    image::Rgba::from_channels(c.r, c.g, c.b, 0xff)
+                    image::Rgba([c.r, c.g, c.b, 0xff])
                 } else {
-                    image::Rgba::from_channels(0, 0, 0, 0xff)
+                    image::Rgba([0, 0, 0, 0xff])
                 };
                 image.put_pixel(x as u32 + 1, y as u32 + 1, c);
             }

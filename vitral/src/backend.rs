@@ -73,7 +73,7 @@ impl<T: 'static> App<T> {
 
         // WGPU setup
         //
-        let instance = wgpu::Instance::new(wgpu::BackendBit::PRIMARY);
+        let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
 
         let surface = unsafe { instance.create_surface(&window) };
 
@@ -90,14 +90,14 @@ impl<T: 'static> App<T> {
             .await
             .expect("Failed to create device");
 
-        let mut sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
+        let mut sc_desc = wgpu::SurfaceConfiguration {
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8UnormSrgb,
             width,
             height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
-        let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
+        surface.configure(&device, &sc_desc);
 
         // WGPU textures that contain the atlased graphics from the application.
         let mut textures: Vec<Texture> = Vec::new();
@@ -123,7 +123,7 @@ impl<T: 'static> App<T> {
                         sc_desc.width = size.width;
                         sc_desc.height = size.height;
                         log::info!("Resizing to {:?}", (sc_desc.width, sc_desc.height));
-                        swap_chain = device.create_swap_chain(&surface, &sc_desc);
+                        surface.configure(&device, &sc_desc);
                         render_buffer.update_canvas_pos(size2(sc_desc.width, sc_desc.height));
                     }
                     WindowEvent::CloseRequested => {
@@ -271,10 +271,10 @@ impl<T: 'static> App<T> {
                     queue.submit(Some(command_buffer));
 
                     // Render buffer to window.
-                    let frame = swap_chain
+                    let frame = surface
                         .get_current_frame()
                         .expect("Swap chain next texture timeout");
-                    let command_buffer = render_buffer.render(&device, &frame.output.view);
+                    let command_buffer = render_buffer.render(&device, &frame.output.texture.create_view(&wgpu::TextureViewDescriptor::default()));
                     queue.submit(Some(command_buffer));
                 }
                 _ => (),
@@ -346,7 +346,7 @@ impl Gfx {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
-                    visibility: wgpu::ShaderStage::VERTEX,
+                    visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
@@ -356,7 +356,7 @@ impl Gfx {
                 },
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
                         sample_type: wgpu::TextureSampleType::Float { filterable: true },
                         multisampled: false,
@@ -366,7 +366,7 @@ impl Gfx {
                 },
                 wgpu::BindGroupLayoutEntry {
                     binding: 2,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Sampler {
                         comparison: false,
                         filtering: true,
@@ -392,7 +392,7 @@ impl Gfx {
                 entry_point: "main",
                 buffers: &[wgpu::VertexBufferLayout {
                     array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
-                    step_mode: wgpu::InputStepMode::Vertex,
+                    step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &[
                         wgpu::VertexAttribute {
                             format: wgpu::VertexFormat::Float32x2,
@@ -427,7 +427,7 @@ impl Gfx {
                         color: wgpu::BlendComponent::REPLACE,
                         alpha: wgpu::BlendComponent::REPLACE,
                     }),
-                    write_mask: wgpu::ColorWrite::ALL,
+                    write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),
 
@@ -475,7 +475,7 @@ impl Gfx {
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(&matrix),
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
         struct BatchBuffers {
@@ -514,13 +514,13 @@ impl Gfx {
             let vertex_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: None,
                 contents: bytemuck::cast_slice(&batch.vertices),
-                usage: wgpu::BufferUsage::VERTEX,
+                usage: wgpu::BufferUsages::VERTEX,
             });
 
             let index_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: None,
                 contents: bytemuck::cast_slice(&batch.triangle_indices),
-                usage: wgpu::BufferUsage::INDEX,
+                usage: wgpu::BufferUsages::INDEX,
             });
 
             batch_buffers.push(BatchBuffers {
@@ -596,7 +596,7 @@ impl RenderBuffer {
             entries: &[
                 wgpu::BindGroupLayoutEntry {
                     binding: 0,
-                    visibility: wgpu::ShaderStage::VERTEX,
+                    visibility: wgpu::ShaderStages::VERTEX,
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Uniform,
                         has_dynamic_offset: false,
@@ -606,7 +606,7 @@ impl RenderBuffer {
                 },
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
                         multisampled: false,
                         sample_type: wgpu::TextureSampleType::Float { filterable: false },
@@ -616,7 +616,7 @@ impl RenderBuffer {
                 },
                 wgpu::BindGroupLayoutEntry {
                     binding: 2,
-                    visibility: wgpu::ShaderStage::FRAGMENT,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Sampler {
                         comparison: false,
                         filtering: true,
@@ -650,7 +650,7 @@ impl RenderBuffer {
                         color: wgpu::BlendComponent::REPLACE,
                         alpha: wgpu::BlendComponent::REPLACE,
                     }),
-                    write_mask: wgpu::ColorWrite::ALL,
+                    write_mask: wgpu::ColorWrites::ALL,
                 }],
             }),
 
@@ -688,7 +688,7 @@ impl RenderBuffer {
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: bytemuck::cast_slice(&self.canvas_pos.to_array()),
-            usage: wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: None,
@@ -748,7 +748,7 @@ impl<'a> Screenshotter<'a> {
             let output_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
                 size: (width * height) as u64 * 4,
-                usage: wgpu::BufferUsage::MAP_READ | wgpu::BufferUsage::COPY_DST,
+                usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             });
 
@@ -768,6 +768,7 @@ impl<'a> Screenshotter<'a> {
                         texture: &self.render_buffer.render_buffer.texture,
                         mip_level: 0,
                         origin: wgpu::Origin3d::ZERO,
+                        aspect: Default::default()
                     },
                     wgpu::ImageCopyBuffer {
                         buffer: &output_buffer,
@@ -787,7 +788,7 @@ impl<'a> Screenshotter<'a> {
             output_buffer
         };
 
-        let end = (width * height) as u64 * 4;
+        let _end = (width * height) as u64 * 4;
         let future = output_buffer.slice(..).map_async(wgpu::MapMode::Read);
 
         std::thread::spawn(move || {
@@ -795,7 +796,7 @@ impl<'a> Screenshotter<'a> {
             let bytes = &*output_buffer.slice(..).get_mapped_range();
             let image = image::RgbImage::from_fn(width, height, |x, y| {
                 let i = (x * 4 + (height - 1 - y) * width * 4) as usize;
-                image::Pixel::from_channels(bytes[i + 2], bytes[i + 1], bytes[i], 0xff)
+                image::Rgb([bytes[i + 2], bytes[i + 1], bytes[i]])
             });
             cb(image);
         });
@@ -842,7 +843,7 @@ impl Texture {
         let temp_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: None,
             contents: &bytes,
-            usage: wgpu::BufferUsage::COPY_SRC,
+            usage: wgpu::BufferUsages::COPY_SRC,
         });
         let mut init_encoder =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
@@ -859,6 +860,7 @@ impl Texture {
                 texture: &self.texture,
                 mip_level: 0,
                 origin: wgpu::Origin3d { x: 0, y: 0, z: 0 },
+                aspect: Default::default()
             },
             self.extent,
         );
@@ -871,7 +873,7 @@ impl Texture {
             width,
             height,
             wgpu::TextureFormat::Rgba8UnormSrgb,
-            wgpu::TextureUsage::SAMPLED | wgpu::TextureUsage::COPY_DST,
+            wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
         )
     }
 
@@ -881,10 +883,10 @@ impl Texture {
             width,
             height,
             wgpu::TextureFormat::Bgra8UnormSrgb,
-            wgpu::TextureUsage::SAMPLED
-                | wgpu::TextureUsage::COPY_DST
-                | wgpu::TextureUsage::COPY_SRC
-                | wgpu::TextureUsage::RENDER_ATTACHMENT,
+            wgpu::TextureUsages::TEXTURE_BINDING
+                | wgpu::TextureUsages::COPY_DST
+                | wgpu::TextureUsages::COPY_SRC
+                | wgpu::TextureUsages::RENDER_ATTACHMENT,
         )
     }
 
@@ -893,7 +895,7 @@ impl Texture {
         width: u32,
         height: u32,
         format: wgpu::TextureFormat,
-        usage: wgpu::TextureUsage,
+        usage: wgpu::TextureUsages,
     ) -> Texture {
         let extent = wgpu::Extent3d {
             width,

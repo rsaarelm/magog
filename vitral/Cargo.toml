@@ -13,14 +13,14 @@ bytemuck = "1"
 cfg-if = "1"
 euclid = "0.22"
 futures = "0.3"
-image = "0.23"
+image = "0.24"
 lazy_static = "1.2"
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
 time = "0.3"
-wgpu = "0.8"
-winit = "0.25"
+wgpu = { version = "0.10", features = ["spirv"] }
+winit = "0.27"
 
 [dev-dependencies]
-env_logger = "0.8"
+env_logger = "0.9"
 rand = { version = "0.8", features = ["serde1"] }
