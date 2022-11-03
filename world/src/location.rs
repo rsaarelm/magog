@@ -127,12 +127,12 @@ impl Location {
             .any(|s| s != sec)
     }
 
-    /// Smooth noise offset for determinining overland cell boundaries at this location.
+    /// Smooth noise offset for determining overland cell boundaries at this location.
     pub fn terrain_cell_displacement(self) -> CellVector {
         use lazy_static::lazy_static;
         use noise::NoiseFn;
         lazy_static! {
-            static ref NOISE: noise::OpenSimplex = noise::OpenSimplex::new();
+            static ref NOISE: noise::OpenSimplex = noise::OpenSimplex::default();
         }
 
         let (dx, dy) = {
