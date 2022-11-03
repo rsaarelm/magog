@@ -11,7 +11,7 @@ name = "world"
 calx = { path = "../calx" }
 calx-ecs = { path = "../calx-ecs" }
 euclid = "0.22"
-image = "0.23"
+image = "0.24"
 indexmap = "1"
 lazy_static = "1"
 log = "0.4"

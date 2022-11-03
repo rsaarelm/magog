@@ -796,7 +796,7 @@ impl<'a> Screenshotter<'a> {
             let bytes = &*output_buffer.slice(..).get_mapped_range();
             let image = image::RgbImage::from_fn(width, height, |x, y| {
                 let i = (x * 4 + (height - 1 - y) * width * 4) as usize;
-                image::Pixel::from_channels(bytes[i + 2], bytes[i + 1], bytes[i], 0xff)
+                image::Rgb([bytes[i + 2], bytes[i + 1], bytes[i]])
             });
             cb(image);
         });
